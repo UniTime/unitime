@@ -48,19 +48,7 @@ public class DistributionType extends BaseDistributionType implements Comparable
 	public DistributionType (Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public DistributionType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static Set findAll()  throws HibernateException {

@@ -38,20 +38,6 @@ public class StudentStatusType extends BaseStudentStatusType {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentStatusType (
-		java.lang.Long uniqueId,
-		java.lang.String abbreviation,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			abbreviation,
-			name);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

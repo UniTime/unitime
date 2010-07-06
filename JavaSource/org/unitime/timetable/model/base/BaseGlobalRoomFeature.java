@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,122 +21,58 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.GlobalRoomFeature;
+import org.unitime.timetable.model.RoomFeature;
 
-/**
- * This is an object that contains data related to the ROOM_FEATURE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_FEATURE"
- */
+public abstract class BaseGlobalRoomFeature extends RoomFeature implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseGlobalRoomFeature extends org.unitime.timetable.model.RoomFeature  implements Serializable {
+	private String iSisReference;
+	private String iSisValue;
 
-	public static String REF = "GlobalRoomFeature";
+
 	public static String PROP_SIS_REFERENCE = "sisReference";
 	public static String PROP_SIS_VALUE = "sisValue";
 
-
-	// constructors
-	public BaseGlobalRoomFeature () {
+	public BaseGlobalRoomFeature() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseGlobalRoomFeature (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseGlobalRoomFeature(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseGlobalRoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			label);
+	public String getSisReference() { return iSisReference; }
+	public void setSisReference(String sisReference) { iSisReference = sisReference; }
+
+	public String getSisValue() { return iSisValue; }
+	public void setSisValue(String sisValue) { iSisValue = sisValue; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof GlobalRoomFeature)) return false;
+		if (getUniqueId() == null || ((GlobalRoomFeature)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((GlobalRoomFeature)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String sisReference;
-	private java.lang.String sisValue;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: SIS_REFERENCE
-	 */
-	public java.lang.String getSisReference () {
-		return sisReference;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: SIS_REFERENCE
-	 * @param sisReference the SIS_REFERENCE value
-	 */
-	public void setSisReference (java.lang.String sisReference) {
-		this.sisReference = sisReference;
+	public String toString() {
+		return "GlobalRoomFeature["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: SIS_VALUE
-	 */
-	public java.lang.String getSisValue () {
-		return sisValue;
+	public String toDebugString() {
+		return "GlobalRoomFeature[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	Label: " + getLabel() +
+			"\n	SisReference: " + getSisReference() +
+			"\n	SisValue: " + getSisValue() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: SIS_VALUE
-	 * @param sisValue the SIS_VALUE value
-	 */
-	public void setSisValue (java.lang.String sisValue) {
-		this.sisValue = sisValue;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.GlobalRoomFeature)) return false;
-		else {
-			org.unitime.timetable.model.GlobalRoomFeature globalRoomFeature = (org.unitime.timetable.model.GlobalRoomFeature) obj;
-			if (null == this.getUniqueId() || null == globalRoomFeature.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(globalRoomFeature.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

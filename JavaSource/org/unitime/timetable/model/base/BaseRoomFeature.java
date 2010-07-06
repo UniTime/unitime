@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,157 +20,72 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomFeature;
 
-/**
- * This is an object that contains data related to the ROOM_FEATURE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_FEATURE"
- */
+public abstract class BaseRoomFeature implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomFeature  implements Serializable {
+	private Long iUniqueId;
+	private String iLabel;
+	private String iAbbv;
 
-	public static String REF = "RoomFeature";
+	private Set<Location> iRooms;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_LABEL = "label";
-    public static String PROP_ABBV = "abbv";
+	public static String PROP_ABBV = "abbv";
 
-
-	// constructors
-	public BaseRoomFeature () {
+	public BaseRoomFeature() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomFeature (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseRoomFeature(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setLabel(label);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getLabel() { return iLabel; }
+	public void setLabel(String label) { iLabel = label; }
+
+	public String getAbbv() { return iAbbv; }
+	public void setAbbv(String abbv) { iAbbv = abbv; }
+
+	public Set<Location> getRooms() { return iRooms; }
+	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
+	public void addTorooms(Location location) {
+		if (iRooms == null) iRooms = new HashSet();
+		iRooms.add(location);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String label;
-    private java.lang.String abbv;
-
-	// collections
-	private java.util.Set rooms;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomFeature)) return false;
+		if (getUniqueId() == null || ((RoomFeature)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomFeature)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: LABEL
-	 */
-	public java.lang.String getLabel () {
-		return label;
+	public String toString() {
+		return "RoomFeature["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: LABEL
-	 * @param label the LABEL value
-	 */
-	public void setLabel (java.lang.String label) {
-		this.label = label;
+	public String toDebugString() {
+		return "RoomFeature[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	Label: " + getLabel() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: rooms
-	 */
-	public java.util.Set getRooms () {
-		return rooms;
-	}
-
-	/**
-	 * Set the value related to the column: rooms
-	 * @param rooms the rooms value
-	 */
-	public void setRooms (java.util.Set rooms) {
-		this.rooms = rooms;
-	}
-
-
-    public String getAbbv() {
-        return abbv;
-    }
-    
-    public void setAbbv(String abbv) {
-        this.abbv = abbv;
-    }
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomFeature)) return false;
-		else {
-			org.unitime.timetable.model.RoomFeature roomFeature = (org.unitime.timetable.model.RoomFeature) obj;
-			if (null == this.getUniqueId() || null == roomFeature.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomFeature.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

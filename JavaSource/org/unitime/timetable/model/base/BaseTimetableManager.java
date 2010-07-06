@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,290 +20,117 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ManagerRole;
+import org.unitime.timetable.model.ManagerSettings;
+import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.TimetableManager;
 
-/**
- * This is an object that contains data related to the TIMETABLE_MANAGER table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="TIMETABLE_MANAGER"
- */
+public abstract class BaseTimetableManager implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseTimetableManager  implements Serializable {
+	private Long iUniqueId;
+	private String iExternalUniqueId;
+	private String iFirstName;
+	private String iMiddleName;
+	private String iLastName;
+	private String iEmailAddress;
 
-	public static String REF = "TimetableManager";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	private Set<ManagerSettings> iSettings;
+	private Set<Department> iDepartments;
+	private Set<ManagerRole> iManagerRoles;
+	private Set<SolverGroup> iSolverGroups;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_FIRST_NAME = "firstName";
 	public static String PROP_MIDDLE_NAME = "middleName";
 	public static String PROP_LAST_NAME = "lastName";
 	public static String PROP_EMAIL_ADDRESS = "emailAddress";
 
-
-	// constructors
-	public BaseTimetableManager () {
+	public BaseTimetableManager() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseTimetableManager (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseTimetableManager(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseTimetableManager (
-		java.lang.Long uniqueId,
-		java.lang.String firstName,
-		java.lang.String lastName) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setFirstName(firstName);
-		this.setLastName(lastName);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public String getFirstName() { return iFirstName; }
+	public void setFirstName(String firstName) { iFirstName = firstName; }
+
+	public String getMiddleName() { return iMiddleName; }
+	public void setMiddleName(String middleName) { iMiddleName = middleName; }
+
+	public String getLastName() { return iLastName; }
+	public void setLastName(String lastName) { iLastName = lastName; }
+
+	public String getEmailAddress() { return iEmailAddress; }
+	public void setEmailAddress(String emailAddress) { iEmailAddress = emailAddress; }
+
+	public Set<ManagerSettings> getSettings() { return iSettings; }
+	public void setSettings(Set<ManagerSettings> settings) { iSettings = settings; }
+	public void addTosettings(ManagerSettings managerSettings) {
+		if (iSettings == null) iSettings = new HashSet();
+		iSettings.add(managerSettings);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.String firstName;
-	private java.lang.String middleName;
-	private java.lang.String lastName;
-	private java.lang.String emailAddress;
-
-	// collections
-	private java.util.Set settings;
-	private java.util.Set departments;
-	private java.util.Set managerRoles;
-	private java.util.Set solverGroups;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<Department> getDepartments() { return iDepartments; }
+	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
+	public void addTodepartments(Department department) {
+		if (iDepartments == null) iDepartments = new HashSet();
+		iDepartments.add(department);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<ManagerRole> getManagerRoles() { return iManagerRoles; }
+	public void setManagerRoles(Set<ManagerRole> managerRoles) { iManagerRoles = managerRoles; }
+	public void addTomanagerRoles(ManagerRole managerRole) {
+		if (iManagerRoles == null) iManagerRoles = new HashSet();
+		iManagerRoles.add(managerRole);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public Set<SolverGroup> getSolverGroups() { return iSolverGroups; }
+	public void setSolverGroups(Set<SolverGroup> solverGroups) { iSolverGroups = solverGroups; }
+	public void addTosolverGroups(SolverGroup solverGroup) {
+		if (iSolverGroups == null) iSolverGroups = new HashSet();
+		iSolverGroups.add(solverGroup);
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof TimetableManager)) return false;
+		if (getUniqueId() == null || ((TimetableManager)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((TimetableManager)o).getUniqueId());
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: FIRST_NAME
-	 */
-	public java.lang.String getFirstName () {
-		return firstName;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: FIRST_NAME
-	 * @param firstName the FIRST_NAME value
-	 */
-	public void setFirstName (java.lang.String firstName) {
-		this.firstName = firstName;
+	public String toString() {
+		return "TimetableManager["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: MIDDLE_NAME
-	 */
-	public java.lang.String getMiddleName () {
-		return middleName;
+	public String toDebugString() {
+		return "TimetableManager[" +
+			"\n	EmailAddress: " + getEmailAddress() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FirstName: " + getFirstName() +
+			"\n	LastName: " + getLastName() +
+			"\n	MiddleName: " + getMiddleName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: MIDDLE_NAME
-	 * @param middleName the MIDDLE_NAME value
-	 */
-	public void setMiddleName (java.lang.String middleName) {
-		this.middleName = middleName;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: LAST_NAME
-	 */
-	public java.lang.String getLastName () {
-		return lastName;
-	}
-
-	/**
-	 * Set the value related to the column: LAST_NAME
-	 * @param lastName the LAST_NAME value
-	 */
-	public void setLastName (java.lang.String lastName) {
-		this.lastName = lastName;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EMAIL_ADDRESS
-	 */
-	public java.lang.String getEmailAddress () {
-		return emailAddress;
-	}
-
-	/**
-	 * Set the value related to the column: EMAIL_ADDRESS
-	 * @param emailAddress the EMAIL_ADDRESS value
-	 */
-	public void setEmailAddress (java.lang.String emailAddress) {
-		this.emailAddress = emailAddress;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: settings
-	 */
-	public java.util.Set getSettings () {
-		return settings;
-	}
-
-	/**
-	 * Set the value related to the column: settings
-	 * @param settings the settings value
-	 */
-	public void setSettings (java.util.Set settings) {
-		this.settings = settings;
-	}
-
-	public void addTosettings (org.unitime.timetable.model.ManagerSettings managerSettings) {
-		if (null == getSettings()) setSettings(new java.util.HashSet());
-		getSettings().add(managerSettings);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: departments
-	 */
-	public java.util.Set getDepartments () {
-		return departments;
-	}
-
-	/**
-	 * Set the value related to the column: departments
-	 * @param departments the departments value
-	 */
-	public void setDepartments (java.util.Set departments) {
-		this.departments = departments;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: managerRoles
-	 */
-	public java.util.Set getManagerRoles () {
-		return managerRoles;
-	}
-
-	/**
-	 * Set the value related to the column: managerRoles
-	 * @param managerRoles the managerRoles value
-	 */
-	public void setManagerRoles (java.util.Set managerRoles) {
-		this.managerRoles = managerRoles;
-	}
-
-	public void addTomanagerRoles (org.unitime.timetable.model.ManagerRole managerRole) {
-		if (null == getManagerRoles()) setManagerRoles(new java.util.HashSet());
-		getManagerRoles().add(managerRole);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: solverGroups
-	 */
-	public java.util.Set getSolverGroups () {
-		return solverGroups;
-	}
-
-	/**
-	 * Set the value related to the column: solverGroups
-	 * @param solverGroups the solverGroups value
-	 */
-	public void setSolverGroups (java.util.Set solverGroups) {
-		this.solverGroups = solverGroups;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.TimetableManager)) return false;
-		else {
-			org.unitime.timetable.model.TimetableManager timetableManager = (org.unitime.timetable.model.TimetableManager) obj;
-			if (null == this.getUniqueId() || null == timetableManager.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(timetableManager.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

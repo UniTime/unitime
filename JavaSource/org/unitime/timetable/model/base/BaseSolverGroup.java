@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,212 +20,96 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.TimetableManager;
 
-/**
- * This is an object that contains data related to the SOLVER_GROUP table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_GROUP"
- */
+public abstract class BaseSolverGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolverGroup  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iAbbv;
 
-	public static String REF = "SolverGroup";
+	private Session iSession;
+	private Set<TimetableManager> iTimetableManagers;
+	private Set<Department> iDepartments;
+	private Set<Solution> iSolutions;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_ABBV = "abbv";
-	public static String PROP_SESSION = "session";
 
-	// constructors
-	public BaseSolverGroup () {
+	public BaseSolverGroup() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolverGroup (Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolverGroup(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseSolverGroup (
-		Long uniqueId,
-		java.lang.String name,
-		java.lang.String abbv,
-		org.unitime.timetable.model.Session session) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setName(name);
-		this.setAbbv(abbv);
-		this.setSession(session);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getAbbv() { return iAbbv; }
+	public void setAbbv(String abbv) { iAbbv = abbv; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
+	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
+	public void addTotimetableManagers(TimetableManager timetableManager) {
+		if (iTimetableManagers == null) iTimetableManagers = new HashSet();
+		iTimetableManagers.add(timetableManager);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String abbv;
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set timetableManagers;
-	private java.util.Set departments;
-	private java.util.Set solutions;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public Long getUniqueId () {
-		return uniqueId;
+	public Set<Department> getDepartments() { return iDepartments; }
+	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
+	public void addTodepartments(Department department) {
+		if (iDepartments == null) iDepartments = new HashSet();
+		iDepartments.add(department);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<Solution> getSolutions() { return iSolutions; }
+	public void setSolutions(Set<Solution> solutions) { iSolutions = solutions; }
+	public void addTosolutions(Solution solution) {
+		if (iSolutions == null) iSolutions = new HashSet();
+		iSolutions.add(solution);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SolverGroup)) return false;
+		if (getUniqueId() == null || ((SolverGroup)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SolverGroup)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public java.lang.String getAbbv () {
-		return abbv;
+	public String toString() {
+		return "SolverGroup["+getUniqueId()+" "+getName()+"]";
 	}
 
-	public void setAbbv (java.lang.String abbv) {
-		this.abbv = abbv;
+	public String toDebugString() {
+		return "SolverGroup[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	Name: " + getName() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public org.unitime.timetable.model.Session getSession() {
-		return session;
-	}
-	
-	public void setSession(org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: timetableManagers
-	 */
-	public java.util.Set getTimetableManagers () {
-		return timetableManagers;
-	}
-
-	/**
-	 * Set the value related to the column: timetableManagers
-	 * @param timetableManagers the timetableManagers value
-	 */
-	public void setTimetableManagers (java.util.Set timetableManagers) {
-		this.timetableManagers = timetableManagers;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: departments
-	 */
-	public java.util.Set getDepartments () {
-		return departments;
-	}
-
-	/**
-	 * Set the value related to the column: departments
-	 * @param departments the departments value
-	 */
-	public void setDepartments (java.util.Set departments) {
-		this.departments = departments;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: solutions
-	 */
-	public java.util.Set getSolutions () {
-		return solutions;
-	}
-
-	/**
-	 * Set the value related to the column: solutions
-	 * @param solutions the solutions value
-	 */
-	public void setSolutions (java.util.Set solutions) {
-		this.solutions = solutions;
-	}
-
-	public void addTosolutions (org.unitime.timetable.model.Solution solution) {
-		if (null == getSolutions()) setSolutions(new java.util.HashSet());
-		getSolutions().add(solution);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SolverGroup)) return false;
-		else {
-			org.unitime.timetable.model.SolverGroup solverGroup = (org.unitime.timetable.model.SolverGroup) obj;
-			if (null == this.getUniqueId() || null == solverGroup.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solverGroup.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

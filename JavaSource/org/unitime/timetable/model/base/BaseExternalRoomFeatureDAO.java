@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,104 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ExternalRoomFeature;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseExternalRoomFeatureDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseExternalRoomFeatureDAO extends _RootDAO {
 
-	// query name references
+	private static ExternalRoomFeatureDAO sInstance;
 
-
-	public static ExternalRoomFeatureDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static ExternalRoomFeatureDAO getInstance () {
-		if (null == instance) instance = new ExternalRoomFeatureDAO();
-		return instance;
+		if (sInstance == null) sInstance = new ExternalRoomFeatureDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ExternalRoomFeature.class;
+		return ExternalRoomFeature.class;
 	}
 
-    public Order getDefaultOrder () {
-		return Order.asc("name");
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ExternalRoomFeature
-	 */
-	public org.unitime.timetable.model.ExternalRoomFeature cast (Object object) {
-		return (org.unitime.timetable.model.ExternalRoomFeature) object;
+	public Order getDefaultOrder () {
+		return null;
 	}
 
-	public org.unitime.timetable.model.ExternalRoomFeature get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ExternalRoomFeature) get(getReferenceClass(), key);
+	public ExternalRoomFeature get(Long uniqueId) {
+		return (ExternalRoomFeature) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ExternalRoomFeature get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ExternalRoomFeature) get(getReferenceClass(), key, s);
+	public ExternalRoomFeature get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ExternalRoomFeature) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ExternalRoomFeature load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ExternalRoomFeature) load(getReferenceClass(), key);
+	public ExternalRoomFeature load(Long uniqueId) {
+		return (ExternalRoomFeature) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ExternalRoomFeature load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ExternalRoomFeature) load(getReferenceClass(), key, s);
+	public ExternalRoomFeature load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ExternalRoomFeature) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ExternalRoomFeature loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.ExternalRoomFeature obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ExternalRoomFeature loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		ExternalRoomFeature externalRoomFeature = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(externalRoomFeature)) Hibernate.initialize(externalRoomFeature);
+		return externalRoomFeature;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param externalRoomFeature a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature)
-	{
-		return (java.lang.Long) super.save(externalRoomFeature);
+	public void save(ExternalRoomFeature externalRoomFeature) {
+		save((Object) externalRoomFeature);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param externalRoomFeature a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature, Session s)
-	{
-		return (java.lang.Long) save((Object) externalRoomFeature, s);
+	public void save(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
+		save((Object) externalRoomFeature, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param externalRoomFeature a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature)
-	{
+	public void saveOrUpdate(ExternalRoomFeature externalRoomFeature) {
 		saveOrUpdate((Object) externalRoomFeature);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param externalRoomFeature a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature, Session s)
-	{
-		saveOrUpdate((Object) externalRoomFeature, s);
+	public void saveOrUpdate(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) externalRoomFeature, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param externalRoomFeature a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature) 
-	{
+
+	public void update(ExternalRoomFeature externalRoomFeature) {
 		update((Object) externalRoomFeature);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param externalRoomFeature a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature, Session s)
-	{
-		update((Object) externalRoomFeature, s);
+	public void update(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
+		update((Object) externalRoomFeature, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param externalRoomFeature the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature)
-	{
+	public void delete(ExternalRoomFeature externalRoomFeature) {
 		delete((Object) externalRoomFeature);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param externalRoomFeature the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature, Session s)
-	{
-		delete((Object) externalRoomFeature, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ExternalRoomFeature externalRoomFeature, Session s)
-	{
-		refresh((Object) externalRoomFeature, s);
+	public void delete(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
+		delete((Object) externalRoomFeature, hibSession);
 	}
 
+	public void refresh(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
+		refresh((Object) externalRoomFeature, hibSession);
+	}
 
+	public List<ExternalRoomFeature> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ExternalRoomFeature").list();
+	}
+
+	public List<ExternalRoomFeature> findByRoom(org.hibernate.Session hibSession, Long roomId) {
+		return hibSession.createQuery("from ExternalRoomFeature x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
+	}
 }

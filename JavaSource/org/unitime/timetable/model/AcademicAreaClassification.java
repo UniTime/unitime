@@ -38,22 +38,6 @@ public class AcademicAreaClassification extends BaseAcademicAreaClassification {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public AcademicAreaClassification (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.timetable.model.AcademicClassification academicClassification,
-		org.unitime.timetable.model.AcademicArea academicArea) {
-
-		super (
-			uniqueId,
-			student,
-			academicClassification,
-			academicArea);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

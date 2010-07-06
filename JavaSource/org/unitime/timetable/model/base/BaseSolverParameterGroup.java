@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,187 +20,84 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
 
-/**
- * This is an object that contains data related to the SOLVER_PARAMETER_GROUP table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_PARAMETER_GROUP"
- */
+public abstract class BaseSolverParameterGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolverParameterGroup  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iDescription;
+	private Integer iOrder;
+	private Integer iType;
 
-	public static String REF = "SolverParameterGroup";
+	private Set<SolverParameterDef> iParameters;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_ORDER = "order";
+	public static String PROP_ORD = "order";
 	public static String PROP_PARAM_TYPE = "type";
 
-
-	// constructors
-	public BaseSolverParameterGroup () {
+	public BaseSolverParameterGroup() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolverParameterGroup (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolverParameterGroup(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
 
-	// primary key
-	private java.lang.Long uniqueId;
+	public Integer getOrder() { return iOrder; }
+	public void setOrder(Integer order) { iOrder = order; }
 
-	// fields
-	private java.lang.String name;
-	private java.lang.String description;
-	private java.lang.Integer order;
-	private java.lang.Integer type;
+	public Integer getType() { return iType; }
+	public void setType(Integer type) { iType = type; }
 
-	// collections
-	private java.util.Set parameters;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<SolverParameterDef> getParameters() { return iParameters; }
+	public void setParameters(Set<SolverParameterDef> parameters) { iParameters = parameters; }
+	public void addToparameters(SolverParameterDef solverParameterDef) {
+		if (iParameters == null) iParameters = new HashSet();
+		iParameters.add(solverParameterDef);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SolverParameterGroup)) return false;
+		if (getUniqueId() == null || ((SolverParameterGroup)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SolverParameterGroup)o).getUniqueId());
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toString() {
+		return "SolverParameterGroup["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescription () {
-		return description;
+	public String toDebugString() {
+		return "SolverParameterGroup[" +
+			"\n	Description: " + getDescription() +
+			"\n	Name: " + getName() +
+			"\n	Order: " + getOrder() +
+			"\n	Type: " + getType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param description the DESCRIPTION value
-	 */
-	public void setDescription (java.lang.String description) {
-		this.description = description;
-	}
-
-
-	/**
-	 * Return the value associated with the column: ORD
-	 */
-	public java.lang.Integer getOrder () {
-		return order;
-	}
-
-	/**
-	 * Set the value related to the column: ORD
-	 * @param order the ORD value
-	 */
-	public void setOrder (java.lang.Integer order) {
-		this.order = order;
-	}
-
-    public java.lang.Integer getType() {
-        return type;
-    }
-    
-    public void setType(java.lang.Integer type) {
-        this.type = type;
-    }
-
-
-	/**
-	 * Return the value associated with the column: parameters
-	 */
-	public java.util.Set getParameters () {
-		return parameters;
-	}
-
-	/**
-	 * Set the value related to the column: parameters
-	 * @param parameters the parameters value
-	 */
-	public void setParameters (java.util.Set parameters) {
-		this.parameters = parameters;
-	}
-
-	public void addToparameters (org.unitime.timetable.model.SolverParameterDef solverParameterDef) {
-		if (null == getParameters()) setParameters(new java.util.HashSet());
-		getParameters().add(solverParameterDef);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SolverParameterGroup)) return false;
-		else {
-			org.unitime.timetable.model.SolverParameterGroup solverParameterGroup = (org.unitime.timetable.model.SolverParameterGroup) obj;
-			if (null == this.getUniqueId() || null == solverParameterGroup.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solverParameterGroup.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

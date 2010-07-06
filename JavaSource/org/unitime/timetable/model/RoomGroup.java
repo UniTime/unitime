@@ -48,22 +48,6 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomGroup (
-		java.lang.Long uniqueId,
-		java.lang.String name,
-		java.lang.Boolean global,
-		java.lang.Boolean defaultGroup) {
-
-		super (
-			uniqueId,
-			name,
-			global,
-			defaultGroup);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
     /** Request attribute name for available room groups **/

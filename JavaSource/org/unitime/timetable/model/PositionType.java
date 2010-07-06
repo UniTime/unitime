@@ -46,18 +46,6 @@ public class PositionType extends BasePositionType implements Comparable{
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public PositionType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
     /** Request attribute name for available position typess **/

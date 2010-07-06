@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,116 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.hibernate.criterion.Order;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseCourseOfferingDAO extends org.unitime.timetable.model.dao._RootDAO {
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
-	// query name references
+public abstract class BaseCourseOfferingDAO extends _RootDAO {
 
+	private static CourseOfferingDAO sInstance;
 
-	public static CourseOfferingDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static CourseOfferingDAO getInstance () {
-		if (null == instance) instance = new CourseOfferingDAO();
-		return instance;
+		if (sInstance == null) sInstance = new CourseOfferingDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.CourseOffering.class;
+		return CourseOffering.class;
 	}
 
-    public Order getDefaultOrder () {
-		return Order.asc("title");
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.CourseOffering
-	 */
-	public org.unitime.timetable.model.CourseOffering cast (Object object) {
-		return (org.unitime.timetable.model.CourseOffering) object;
+	public Order getDefaultOrder () {
+		return null;
 	}
 
-	public org.unitime.timetable.model.CourseOffering get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.CourseOffering) get(getReferenceClass(), key);
+	public CourseOffering get(Long uniqueId) {
+		return (CourseOffering) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.CourseOffering get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.CourseOffering) get(getReferenceClass(), key, s);
+	public CourseOffering get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (CourseOffering) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.CourseOffering load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.CourseOffering) load(getReferenceClass(), key);
+	public CourseOffering load(Long uniqueId) {
+		return (CourseOffering) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.CourseOffering load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.CourseOffering) load(getReferenceClass(), key, s);
+	public CourseOffering load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (CourseOffering) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.CourseOffering loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.CourseOffering obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public CourseOffering loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		CourseOffering courseOffering = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(courseOffering)) Hibernate.initialize(courseOffering);
+		return courseOffering;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param courseOffering a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.CourseOffering courseOffering)
-	{
-		return (java.lang.Long) super.save(courseOffering);
+	public void save(CourseOffering courseOffering) {
+		save((Object) courseOffering);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param courseOffering a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.CourseOffering courseOffering, Session s)
-	{
-		return (java.lang.Long) save((Object) courseOffering, s);
+	public void save(CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		save((Object) courseOffering, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param courseOffering a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.CourseOffering courseOffering)
-	{
+	public void saveOrUpdate(CourseOffering courseOffering) {
 		saveOrUpdate((Object) courseOffering);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param courseOffering a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.CourseOffering courseOffering, Session s)
-	{
-		saveOrUpdate((Object) courseOffering, s);
+	public void saveOrUpdate(CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) courseOffering, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param courseOffering a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.CourseOffering courseOffering) 
-	{
+
+	public void update(CourseOffering courseOffering) {
 		update((Object) courseOffering);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param courseOffering a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.CourseOffering courseOffering, Session s)
-	{
-		update((Object) courseOffering, s);
+	public void update(CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		update((Object) courseOffering, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param courseOffering the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.CourseOffering courseOffering)
-	{
+	public void delete(CourseOffering courseOffering) {
 		delete((Object) courseOffering);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param courseOffering the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.CourseOffering courseOffering, Session s)
-	{
-		delete((Object) courseOffering, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.CourseOffering courseOffering, Session s)
-	{
-		refresh((Object) courseOffering, s);
+	public void delete(CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		delete((Object) courseOffering, hibSession);
 	}
 
+	public void refresh(CourseOffering courseOffering, org.hibernate.Session hibSession) {
+		refresh((Object) courseOffering, hibSession);
+	}
 
+	public List<CourseOffering> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from CourseOffering").list();
+	}
+
+	public List<CourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
+		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
+	}
+
+	public List<CourseOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
+		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
+	}
+
+	public List<CourseOffering> findByDemandOffering(org.hibernate.Session hibSession, Long demandOfferingId) {
+		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId").setLong("demandOfferingId", demandOfferingId).list();
+	}
+
+	public List<CourseOffering> findByDemandOfferingType(org.hibernate.Session hibSession, Long demandOfferingTypeId) {
+		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId").setLong("demandOfferingTypeId", demandOfferingTypeId).list();
+	}
 }

@@ -51,24 +51,6 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamOwner (
-	        java.lang.Long uniqueId,
-	        org.unitime.timetable.model.Exam exam,
-	        java.lang.Long ownerId,
-	        java.lang.Integer ownerType,
-	        org.unitime.timetable.model.CourseOffering course) {
-
-		super (
-			uniqueId,
-			exam,
-			ownerId,
-			ownerType,
-			course);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	

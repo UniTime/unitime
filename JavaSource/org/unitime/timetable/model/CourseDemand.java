@@ -39,26 +39,6 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseDemand (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		java.lang.Integer priority,
-		java.lang.Boolean waitlist,
-		java.lang.Boolean alternative,
-		java.util.Date timestamp) {
-
-		super (
-			uniqueId,
-			student,
-			priority,
-			waitlist,
-			alternative,
-			timestamp);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public int compareTo(Object o) {

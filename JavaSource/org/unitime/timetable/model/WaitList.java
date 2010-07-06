@@ -37,25 +37,7 @@ public class WaitList extends BaseWaitList {
 	public WaitList (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public WaitList (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.timetable.model.CourseOffering courseOffering,
-		java.lang.Integer type,
-		java.util.Date timestamp) {
-
-		super (
-			uniqueId,
-			student,
-			courseOffering,
-			type,
-			timestamp);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 

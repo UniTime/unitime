@@ -42,22 +42,6 @@ public class AcademicAreaHistory extends BaseAcademicAreaHistory {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public AcademicAreaHistory (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
-
-		super (
-			uniqueId,
-			oldValue,
-			newValue,
-			sessionId);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/**

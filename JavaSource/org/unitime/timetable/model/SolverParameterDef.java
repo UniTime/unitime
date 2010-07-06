@@ -47,18 +47,6 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SolverParameterDef (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverParameterGroup group) {
-
-		super (
-			uniqueId,
-			group);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	/*

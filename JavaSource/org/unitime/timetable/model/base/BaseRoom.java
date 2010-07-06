@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,209 +21,90 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomType;
 
-/**
- * This is an object that contains data related to the ROOM table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM"
- */
+public abstract class BaseRoom extends Location implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoom extends org.unitime.timetable.model.Location  implements Serializable {
+	private String iBuildingAbbv;
+	private String iRoomNumber;
+	private String iExternalUniqueId;
+	private String iClassification;
 
-	public static String REF = "Room";
-	public static String PROP_BUILDING_ABBV = "buildingAbbv";
+	private RoomType iRoomType;
+	private Building iBuilding;
+
 	public static String PROP_ROOM_NUMBER = "roomNumber";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
-	public static String PROP_ROOM_TYPE = "roomType";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CLASSIFICATION = "classification";
 
-
-	// constructors
-	public BaseRoom () {
+	public BaseRoom() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoom (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseRoom(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoom (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			permanentId,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
+	public String getBuildingAbbv() { return iBuildingAbbv; }
+	public void setBuildingAbbv(String buildingAbbv) { iBuildingAbbv = buildingAbbv; }
+
+	public String getRoomNumber() { return iRoomNumber; }
+	public void setRoomNumber(String roomNumber) { iRoomNumber = roomNumber; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public String getClassification() { return iClassification; }
+	public void setClassification(String classification) { iClassification = classification; }
+
+	public RoomType getRoomType() { return iRoomType; }
+	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
+
+	public Building getBuilding() { return iBuilding; }
+	public void setBuilding(Building building) { iBuilding = building; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Room)) return false;
+		if (getUniqueId() == null || ((Room)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Room)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String buildingAbbv;
-	private java.lang.String roomNumber;
-	private java.lang.String externalUniqueId;
-	private java.lang.String classification;
-
-	// many to one
-	private org.unitime.timetable.model.Building building;
-    private org.unitime.timetable.model.RoomType roomType;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: buildingAbbv
-	 */
-	public java.lang.String getBuildingAbbv () {
-		return buildingAbbv;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: buildingAbbv
-	 * @param buildingAbbv the buildingAbbv value
-	 */
-	public void setBuildingAbbv (java.lang.String buildingAbbv) {
-		this.buildingAbbv = buildingAbbv;
+	public String toString() {
+		return "Room["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: ROOM_NUMBER
-	 */
-	public java.lang.String getRoomNumber () {
-		return roomNumber;
+	public String toDebugString() {
+		return "Room[" +
+			"\n	Building: " + getBuilding() +
+			"\n	Capacity: " + getCapacity() +
+			"\n	Classification: " + getClassification() +
+			"\n	CoordinateX: " + getCoordinateX() +
+			"\n	CoordinateY: " + getCoordinateY() +
+			"\n	DisplayName: " + getDisplayName() +
+			"\n	ExamCapacity: " + getExamCapacity() +
+			"\n	ExamType: " + getExamType() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
+			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
+			"\n	ManagerIds: " + getManagerIds() +
+			"\n	Pattern: " + getPattern() +
+			"\n	PermanentId: " + getPermanentId() +
+			"\n	RoomNumber: " + getRoomNumber() +
+			"\n	RoomType: " + getRoomType() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: ROOM_NUMBER
-	 * @param roomNumber the ROOM_NUMBER value
-	 */
-	public void setRoomNumber (java.lang.String roomNumber) {
-		this.roomNumber = roomNumber;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
-	}
-
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ROOM_TYPE
-	 */
-	public org.unitime.timetable.model.RoomType getRoomType () {
-		return roomType;
-	}
-
-	/**
-	 * Set the value related to the column: ROOM_TYPE
-	 * @param scheduledRoomType the ROOM_TYPE value
-	 */
-	public void setRoomType (org.unitime.timetable.model.RoomType roomType) {
-		this.roomType = roomType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: CLASSIFICATION
-	 */
-	public java.lang.String getClassification () {
-		return classification;
-	}
-
-	/**
-	 * Set the value related to the column: CLASSIFICATION
-	 * @param classification the CLASSIFICATION value
-	 */
-	public void setClassification (java.lang.String classification) {
-		this.classification = classification;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: BUILDING_ID
-	 */
-	public org.unitime.timetable.model.Building getBuilding () {
-		return building;
-	}
-
-	/**
-	 * Set the value related to the column: BUILDING_ID
-	 * @param building the BUILDING_ID value
-	 */
-	public void setBuilding (org.unitime.timetable.model.Building building) {
-		this.building = building;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Room)) return false;
-		else {
-			org.unitime.timetable.model.Room room = (org.unitime.timetable.model.Room) obj;
-			if (null == this.getUniqueId() || null == room.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(room.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

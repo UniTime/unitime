@@ -49,18 +49,6 @@ public class Staff extends BaseStaff implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Staff (
-		java.lang.Long uniqueId,
-		java.lang.String lastName) {
-
-		super (
-			uniqueId,
-			lastName);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	/**

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,165 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.PreferenceLevel;
 
-/**
- * This is an object that contains data related to the PREFERENCE_LEVEL table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="PREFERENCE_LEVEL"
- */
+public abstract class BasePreferenceLevel implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BasePreferenceLevel  implements Serializable {
+	private Long iUniqueId;
+	private Integer iPrefId;
+	private String iPrefProlog;
+	private String iPrefName;
 
-	public static String REF = "PreferenceLevel";
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PREF_ID = "prefId";
 	public static String PROP_PREF_PROLOG = "prefProlog";
 	public static String PROP_PREF_NAME = "prefName";
 
-
-	// constructors
-	public BasePreferenceLevel () {
+	public BasePreferenceLevel() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BasePreferenceLevel (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BasePreferenceLevel(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BasePreferenceLevel (
-		java.lang.Long uniqueId,
-		java.lang.Integer prefId) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setPrefId(prefId);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getPrefId() { return iPrefId; }
+	public void setPrefId(Integer prefId) { iPrefId = prefId; }
+
+	public String getPrefProlog() { return iPrefProlog; }
+	public void setPrefProlog(String prefProlog) { iPrefProlog = prefProlog; }
+
+	public String getPrefName() { return iPrefName; }
+	public void setPrefName(String prefName) { iPrefName = prefName; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof PreferenceLevel)) return false;
+		if (getUniqueId() == null || ((PreferenceLevel)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((PreferenceLevel)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer prefId;
-	private java.lang.String prefProlog;
-	private java.lang.String prefName;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "PreferenceLevel["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: PREF_ID
-	 */
-	public java.lang.Integer getPrefId () {
-		return prefId;
+	public String toDebugString() {
+		return "PreferenceLevel[" +
+			"\n	PrefId: " + getPrefId() +
+			"\n	PrefName: " + getPrefName() +
+			"\n	PrefProlog: " + getPrefProlog() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: PREF_ID
-	 * @param prefId the PREF_ID value
-	 */
-	public void setPrefId (java.lang.Integer prefId) {
-		this.prefId = prefId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PREF_PROLOG
-	 */
-	public java.lang.String getPrefProlog () {
-		return prefProlog;
-	}
-
-	/**
-	 * Set the value related to the column: PREF_PROLOG
-	 * @param prefProlog the PREF_PROLOG value
-	 */
-	public void setPrefProlog (java.lang.String prefProlog) {
-		this.prefProlog = prefProlog;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PREF_NAME
-	 */
-	public java.lang.String getPrefName () {
-		return prefName;
-	}
-
-	/**
-	 * Set the value related to the column: PREF_NAME
-	 * @param prefName the PREF_NAME value
-	 */
-	public void setPrefName (java.lang.String prefName) {
-		this.prefName = prefName;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.PreferenceLevel)) return false;
-		else {
-			org.unitime.timetable.model.PreferenceLevel preferenceLevel = (org.unitime.timetable.model.PreferenceLevel) obj;
-			if (null == this.getUniqueId() || null == preferenceLevel.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(preferenceLevel.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

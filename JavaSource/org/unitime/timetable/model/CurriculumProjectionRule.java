@@ -23,22 +23,6 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CurriculumProjectionRule (
-			java.lang.Long uniqueId,
-			org.unitime.timetable.model.AcademicArea academicArea,
-			org.unitime.timetable.model.AcademicClassification academicClassification,
-			java.lang.Float projection) {
-
-		super (
-			uniqueId,
-			academicArea,
-			academicClassification,
-			projection);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static List<CurriculumProjectionRule> findAll(Long sessionId) {

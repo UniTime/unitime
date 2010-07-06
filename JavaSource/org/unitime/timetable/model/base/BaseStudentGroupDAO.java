@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,104 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseStudentGroupDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseStudentGroupDAO extends _RootDAO {
 
-	// query name references
+	private static StudentGroupDAO sInstance;
 
-
-	public static StudentGroupDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static StudentGroupDAO getInstance () {
-		if (null == instance) instance = new StudentGroupDAO();
-		return instance;
+		if (sInstance == null) sInstance = new StudentGroupDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.StudentGroup.class;
+		return StudentGroup.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.StudentGroup
-	 */
-	public org.unitime.timetable.model.StudentGroup cast (Object object) {
-		return (org.unitime.timetable.model.StudentGroup) object;
 	}
 
-	public org.unitime.timetable.model.StudentGroup get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.StudentGroup) get(getReferenceClass(), key);
+	public StudentGroup get(Long uniqueId) {
+		return (StudentGroup) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.StudentGroup get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.StudentGroup) get(getReferenceClass(), key, s);
+	public StudentGroup get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (StudentGroup) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.StudentGroup load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.StudentGroup) load(getReferenceClass(), key);
+	public StudentGroup load(Long uniqueId) {
+		return (StudentGroup) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.StudentGroup load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.StudentGroup) load(getReferenceClass(), key, s);
+	public StudentGroup load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (StudentGroup) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.StudentGroup loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.StudentGroup obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public StudentGroup loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		StudentGroup studentGroup = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(studentGroup)) Hibernate.initialize(studentGroup);
+		return studentGroup;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param studentGroup a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.StudentGroup studentGroup)
-	{
-		return (java.lang.Long) super.save(studentGroup);
+	public void save(StudentGroup studentGroup) {
+		save((Object) studentGroup);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param studentGroup a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.StudentGroup studentGroup, Session s)
-	{
-		return (java.lang.Long) save((Object) studentGroup, s);
+	public void save(StudentGroup studentGroup, org.hibernate.Session hibSession) {
+		save((Object) studentGroup, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param studentGroup a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.StudentGroup studentGroup)
-	{
+	public void saveOrUpdate(StudentGroup studentGroup) {
 		saveOrUpdate((Object) studentGroup);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param studentGroup a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.StudentGroup studentGroup, Session s)
-	{
-		saveOrUpdate((Object) studentGroup, s);
+	public void saveOrUpdate(StudentGroup studentGroup, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) studentGroup, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param studentGroup a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.StudentGroup studentGroup) 
-	{
+
+	public void update(StudentGroup studentGroup) {
 		update((Object) studentGroup);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param studentGroup a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.StudentGroup studentGroup, Session s)
-	{
-		update((Object) studentGroup, s);
+	public void update(StudentGroup studentGroup, org.hibernate.Session hibSession) {
+		update((Object) studentGroup, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param studentGroup the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.StudentGroup studentGroup)
-	{
+	public void delete(StudentGroup studentGroup) {
 		delete((Object) studentGroup);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param studentGroup the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.StudentGroup studentGroup, Session s)
-	{
-		delete((Object) studentGroup, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.StudentGroup studentGroup, Session s)
-	{
-		refresh((Object) studentGroup, s);
+	public void delete(StudentGroup studentGroup, org.hibernate.Session hibSession) {
+		delete((Object) studentGroup, hibSession);
 	}
 
+	public void refresh(StudentGroup studentGroup, org.hibernate.Session hibSession) {
+		refresh((Object) studentGroup, hibSession);
+	}
 
+	public List<StudentGroup> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from StudentGroup").list();
+	}
+
+	public List<StudentGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+	}
 }

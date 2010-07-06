@@ -649,7 +649,7 @@ public class CrossListsModifyAction extends Action {
 	            cor.setCourseOffering(co3);
 	            hibSession.saveOrUpdate(cor);
 	            
-	            io.getCourseOfferings().add(cor);
+	            io.getCourseReservations().add(cor);
 	            hibSession.saveOrUpdate(io);
 	        }
             

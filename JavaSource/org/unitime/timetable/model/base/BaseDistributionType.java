@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,228 +20,103 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.RefTableEntry;
 
-/**
- * This is an object that contains data related to the DISTRIBUTION_TYPE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DISTRIBUTION_TYPE"
- */
+public abstract class BaseDistributionType extends RefTableEntry implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDistributionType extends org.unitime.timetable.model.RefTableEntry  implements Serializable {
+	private Boolean iSequencingRequired;
+	private Integer iRequirementId;
+	private String iAllowedPref;
+	private String iDescr;
+	private String iAbbreviation;
+	private Boolean iInstructorPref;
+	private Boolean iExamPref;
 
-	public static String REF = "DistributionType";
+	private Set<Department> iDepartments;
+
 	public static String PROP_SEQUENCING_REQUIRED = "sequencingRequired";
-	public static String PROP_REQUIREMENT_ID = "requirementId";
+	public static String PROP_REQ_ID = "requirementId";
 	public static String PROP_ALLOWED_PREF = "allowedPref";
-	public static String PROP_DESCR = "descr";
+	public static String PROP_DESCRIPTION = "descr";
 	public static String PROP_ABBREVIATION = "abbreviation";
 	public static String PROP_INSTRUCTOR_PREF = "instructorPref";
 	public static String PROP_EXAM_PREF = "examPref";
 
-
-	// constructors
-	public BaseDistributionType () {
+	public BaseDistributionType() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDistributionType (Long uniqueId) {
-		super(uniqueId);
+	public BaseDistributionType(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDistributionType (
-		Long uniqueId,
-		java.lang.String reference) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reference);
+	public Boolean isSequencingRequired() { return iSequencingRequired; }
+	public Boolean getSequencingRequired() { return iSequencingRequired; }
+	public void setSequencingRequired(Boolean sequencingRequired) { iSequencingRequired = sequencingRequired; }
+
+	public Integer getRequirementId() { return iRequirementId; }
+	public void setRequirementId(Integer requirementId) { iRequirementId = requirementId; }
+
+	public String getAllowedPref() { return iAllowedPref; }
+	public void setAllowedPref(String allowedPref) { iAllowedPref = allowedPref; }
+
+	public String getDescr() { return iDescr; }
+	public void setDescr(String descr) { iDescr = descr; }
+
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public Boolean isInstructorPref() { return iInstructorPref; }
+	public Boolean getInstructorPref() { return iInstructorPref; }
+	public void setInstructorPref(Boolean instructorPref) { iInstructorPref = instructorPref; }
+
+	public Boolean isExamPref() { return iExamPref; }
+	public Boolean getExamPref() { return iExamPref; }
+	public void setExamPref(Boolean examPref) { iExamPref = examPref; }
+
+	public Set<Department> getDepartments() { return iDepartments; }
+	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
+	public void addTodepartments(Department department) {
+		if (iDepartments == null) iDepartments = new HashSet();
+		iDepartments.add(department);
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private boolean sequencingRequired;
-	private java.lang.Integer requirementId;
-	private java.lang.String allowedPref;
-	private java.lang.String descr;
-	private java.lang.String abbreviation;
-	private java.lang.Boolean instructorPref;
-	private java.lang.Boolean examPref;
-
-	// collections
-	private java.util.Set departments;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: SEQUENCING_REQUIRED
-	 */
-	public boolean isSequencingRequired () {
-		return sequencingRequired;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DistributionType)) return false;
+		if (getUniqueId() == null || ((DistributionType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DistributionType)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: SEQUENCING_REQUIRED
-	 * @param sequencingRequired the SEQUENCING_REQUIRED value
-	 */
-	public void setSequencingRequired (boolean sequencingRequired) {
-		this.sequencingRequired = sequencingRequired;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: REQ_ID
-	 */
-	public java.lang.Integer getRequirementId () {
-		return requirementId;
+	public String toString() {
+		return "DistributionType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: REQ_ID
-	 * @param requirementId the REQ_ID value
-	 */
-	public void setRequirementId (java.lang.Integer requirementId) {
-		this.requirementId = requirementId;
+	public String toDebugString() {
+		return "DistributionType[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	AllowedPref: " + getAllowedPref() +
+			"\n	Descr: " + getDescr() +
+			"\n	ExamPref: " + getExamPref() +
+			"\n	InstructorPref: " + getInstructorPref() +
+			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
+			"\n	RequirementId: " + getRequirementId() +
+			"\n	SequencingRequired: " + getSequencingRequired() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: ALLOWED_PREF
-	 */
-	public java.lang.String getAllowedPref () {
-		return allowedPref;
-	}
-
-	/**
-	 * Set the value related to the column: ALLOWED_PREF
-	 * @param allowedPref the ALLOWED_PREF value
-	 */
-	public void setAllowedPref (java.lang.String allowedPref) {
-		this.allowedPref = allowedPref;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescr () {
-		return descr;
-	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param descr the DESCRIPTION value
-	 */
-	public void setDescr (java.lang.String descr) {
-		this.descr = descr;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ABBREVIATION
-	 */
-	public java.lang.String getAbbreviation () {
-		return abbreviation;
-	}
-
-	/**
-	 * Set the value related to the column: ABBREVIATION
-	 * @param abbreviation the ABBREVIATION value
-	 */
-	public void setAbbreviation (java.lang.String abbreviation) {
-		this.abbreviation = abbreviation;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: INSTRUCTOR_PREF
-	 */
-	public java.lang.Boolean isInstructorPref () {
-		return instructorPref;
-	}
-
-	/**
-	 * Set the value related to the column: INSTRUCTOR_PREF
-	 * @param instructorPref the INSTRUCTOR_PREF value
-	 */
-	public void setInstructorPref (java.lang.Boolean instructorPref) {
-		this.instructorPref = instructorPref;
-	}
-
-    public java.lang.Boolean isExamPref () {
-        return examPref;
-    }
-
-    public void setExamPref (java.lang.Boolean examPref) {
-        this.examPref = examPref;
-    }
-
-
-	/**
-	 * Return the value associated with the column: departments
-	 */
-	public java.util.Set getDepartments () {
-		return departments;
-	}
-
-	/**
-	 * Set the value related to the column: departments
-	 * @param departments the departments value
-	 */
-	public void setDepartments (java.util.Set departments) {
-		this.departments = departments;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DistributionType)) return false;
-		else {
-			org.unitime.timetable.model.DistributionType distributionType = (org.unitime.timetable.model.DistributionType) obj;
-			if (null == this.getUniqueId() || null == distributionType.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(distributionType.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

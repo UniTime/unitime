@@ -137,18 +137,6 @@ public class PreferenceLevel extends BasePreferenceLevel {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public PreferenceLevel (
-		java.lang.Long uniqueId,
-		java.lang.Integer prefId) {
-
-		super (
-			uniqueId,
-			prefId);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/* Values

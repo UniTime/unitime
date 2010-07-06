@@ -40,28 +40,6 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public NonUniversityLocation (
-		java.lang.Long uniqueId,
-		java.lang.Long permanent_id,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
-
-		super (
-			uniqueId,
-			permanent_id,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String getLabel(){

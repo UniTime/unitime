@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,108 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseRoomDeptDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseRoomDeptDAO extends _RootDAO {
 
-	// query name references
+	private static RoomDeptDAO sInstance;
 
-
-	public static RoomDeptDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static RoomDeptDAO getInstance () {
-		if (null == instance) instance = new RoomDeptDAO();
-		return instance;
+		if (sInstance == null) sInstance = new RoomDeptDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.RoomDept.class;
+		return RoomDept.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.RoomDept
-	 */
-	public org.unitime.timetable.model.RoomDept cast (Object object) {
-		return (org.unitime.timetable.model.RoomDept) object;
 	}
 
-	public org.unitime.timetable.model.RoomDept get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.RoomDept) get(getReferenceClass(), key);
+	public RoomDept get(Long uniqueId) {
+		return (RoomDept) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.RoomDept get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.RoomDept) get(getReferenceClass(), key, s);
+	public RoomDept get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (RoomDept) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.RoomDept load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.RoomDept) load(getReferenceClass(), key);
+	public RoomDept load(Long uniqueId) {
+		return (RoomDept) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.RoomDept load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.RoomDept) load(getReferenceClass(), key, s);
+	public RoomDept load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (RoomDept) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.RoomDept loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.RoomDept obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public RoomDept loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		RoomDept roomDept = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(roomDept)) Hibernate.initialize(roomDept);
+		return roomDept;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param roomDept a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.RoomDept roomDept)
-	{
-		return (java.lang.Long) super.save(roomDept);
+	public void save(RoomDept roomDept) {
+		save((Object) roomDept);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param roomDept a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.RoomDept roomDept, Session s)
-	{
-		return (java.lang.Long) save((Object) roomDept, s);
+	public void save(RoomDept roomDept, org.hibernate.Session hibSession) {
+		save((Object) roomDept, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param roomDept a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.RoomDept roomDept)
-	{
+	public void saveOrUpdate(RoomDept roomDept) {
 		saveOrUpdate((Object) roomDept);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param roomDept a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.RoomDept roomDept, Session s)
-	{
-		saveOrUpdate((Object) roomDept, s);
+	public void saveOrUpdate(RoomDept roomDept, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) roomDept, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param roomDept a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.RoomDept roomDept) 
-	{
+
+	public void update(RoomDept roomDept) {
 		update((Object) roomDept);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param roomDept a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.RoomDept roomDept, Session s)
-	{
-		update((Object) roomDept, s);
+	public void update(RoomDept roomDept, org.hibernate.Session hibSession) {
+		update((Object) roomDept, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param roomDept the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.RoomDept roomDept)
-	{
+	public void delete(RoomDept roomDept) {
 		delete((Object) roomDept);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param roomDept the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.RoomDept roomDept, Session s)
-	{
-		delete((Object) roomDept, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.RoomDept roomDept, Session s)
-	{
-		refresh((Object) roomDept, s);
+	public void delete(RoomDept roomDept, org.hibernate.Session hibSession) {
+		delete((Object) roomDept, hibSession);
 	}
 
+	public void refresh(RoomDept roomDept, org.hibernate.Session hibSession) {
+		refresh((Object) roomDept, hibSession);
+	}
 
+	public List<RoomDept> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from RoomDept").list();
+	}
+
+	public List<RoomDept> findByRoom(org.hibernate.Session hibSession, Long roomId) {
+		return hibSession.createQuery("from RoomDept x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
+	}
+
+	public List<RoomDept> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from RoomDept x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+	}
 }

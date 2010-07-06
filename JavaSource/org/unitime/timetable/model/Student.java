@@ -51,26 +51,6 @@ public class Student extends BaseStudent implements Comparable<Student> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Student (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String firstName,
-		java.lang.String lastName,
-		java.lang.Integer freeTimeCategory,
-		java.lang.Integer schedulePreference) {
-
-		super (
-			uniqueId,
-			session,
-			firstName,
-			lastName,
-			freeTimeCategory,
-			schedulePreference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public void addToPosMajors (org.unitime.timetable.model.PosMajor major) {

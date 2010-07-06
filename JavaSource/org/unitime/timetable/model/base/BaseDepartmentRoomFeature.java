@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,102 +21,51 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.RoomFeature;
 
-/**
- * This is an object that contains data related to the ROOM_FEATURE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_FEATURE"
- */
+public abstract class BaseDepartmentRoomFeature extends RoomFeature implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDepartmentRoomFeature extends org.unitime.timetable.model.RoomFeature  implements Serializable {
-
-	public static String REF = "DepartmentRoomFeature";
+	private Department iDepartment;
 
 
-	// constructors
-	public BaseDepartmentRoomFeature () {
+	public BaseDepartmentRoomFeature() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDepartmentRoomFeature (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseDepartmentRoomFeature(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDepartmentRoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			label);
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DepartmentRoomFeature)) return false;
+		if (getUniqueId() == null || ((DepartmentRoomFeature)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DepartmentRoomFeature)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.Department department;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: DEPARTMENT_ID
-	 */
-	public org.unitime.timetable.model.Department getDepartment () {
-		return department;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: DEPARTMENT_ID
-	 * @param department the DEPARTMENT_ID value
-	 */
-	public void setDepartment (org.unitime.timetable.model.Department department) {
-		this.department = department;
+	public String toString() {
+		return "DepartmentRoomFeature["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DepartmentRoomFeature)) return false;
-		else {
-			org.unitime.timetable.model.DepartmentRoomFeature departmentRoomFeature = (org.unitime.timetable.model.DepartmentRoomFeature) obj;
-			if (null == this.getUniqueId() || null == departmentRoomFeature.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(departmentRoomFeature.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "DepartmentRoomFeature[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	Department: " + getDepartment() +
+			"\n	Label: " + getLabel() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

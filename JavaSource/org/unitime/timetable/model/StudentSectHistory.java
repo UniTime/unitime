@@ -38,24 +38,6 @@ public class StudentSectHistory extends BaseStudentSectHistory {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentSectHistory (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.commons.hibernate.blob.XmlBlobType data,
-		java.lang.Integer type,
-		java.util.Date timestamp) {
-
-		super (
-			uniqueId,
-			student,
-			data,
-			type,
-			timestamp);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

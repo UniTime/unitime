@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,109 +21,56 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 
-/**
- * This is an object that contains data related to the COURSE_CREDIT_UNIT_CONFIG table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="COURSE_CREDIT_UNIT_CONFIG"
- */
+public abstract class BaseFixedCreditUnitConfig extends CourseCreditUnitConfig implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseFixedCreditUnitConfig extends org.unitime.timetable.model.CourseCreditUnitConfig  implements Serializable {
+	private Float iFixedUnits;
 
-	public static String REF = "FixedCreditUnitConfig";
+
 	public static String PROP_FIXED_UNITS = "fixedUnits";
 
-
-	// constructors
-	public BaseFixedCreditUnitConfig () {
+	public BaseFixedCreditUnitConfig() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseFixedCreditUnitConfig (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseFixedCreditUnitConfig(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseFixedCreditUnitConfig (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseCreditType creditType,
-		org.unitime.timetable.model.CourseCreditUnitType creditUnitType,
-		java.lang.String creditFormat,
-		java.lang.Boolean definesCreditAtCourseLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			creditType,
-			creditUnitType,
-			creditFormat,
-			definesCreditAtCourseLevel);
+	public Float getFixedUnits() { return iFixedUnits; }
+	public void setFixedUnits(Float fixedUnits) { iFixedUnits = fixedUnits; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof FixedCreditUnitConfig)) return false;
+		if (getUniqueId() == null || ((FixedCreditUnitConfig)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((FixedCreditUnitConfig)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.Float fixedUnits;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: FIXED_UNITS
-	 */
-	public java.lang.Float getFixedUnits () {
-		return fixedUnits;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: FIXED_UNITS
-	 * @param fixedUnits the FIXED_UNITS value
-	 */
-	public void setFixedUnits (java.lang.Float fixedUnits) {
-		this.fixedUnits = fixedUnits;
+	public String toString() {
+		return "FixedCreditUnitConfig["+getUniqueId()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.FixedCreditUnitConfig)) return false;
-		else {
-			org.unitime.timetable.model.FixedCreditUnitConfig fixedCreditUnitConfig = (org.unitime.timetable.model.FixedCreditUnitConfig) obj;
-			if (null == this.getUniqueId() || null == fixedCreditUnitConfig.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(fixedCreditUnitConfig.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "FixedCreditUnitConfig[" +
+			"\n	CreditFormat: " + getCreditFormat() +
+			"\n	CreditType: " + getCreditType() +
+			"\n	CreditUnitType: " + getCreditUnitType() +
+			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
+			"\n	FixedUnits: " + getFixedUnits() +
+			"\n	InstructionalOfferingOwner: " + getInstructionalOfferingOwner() +
+			"\n	SubpartOwner: " + getSubpartOwner() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

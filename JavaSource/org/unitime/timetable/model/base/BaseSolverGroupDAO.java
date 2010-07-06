@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,104 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseSolverGroupDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseSolverGroupDAO extends _RootDAO {
 
-	// query name references
+	private static SolverGroupDAO sInstance;
 
-
-	public static SolverGroupDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static SolverGroupDAO getInstance () {
-		if (null == instance) instance = new SolverGroupDAO();
-		return instance;
+		if (sInstance == null) sInstance = new SolverGroupDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.SolverGroup.class;
+		return SolverGroup.class;
 	}
 
-    public Order getDefaultOrder () {
-		return Order.asc("name");
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.SolverGroup
-	 */
-	public org.unitime.timetable.model.SolverGroup cast (Object object) {
-		return (org.unitime.timetable.model.SolverGroup) object;
+	public Order getDefaultOrder () {
+		return null;
 	}
 
-	public org.unitime.timetable.model.SolverGroup get(Long key)
-	{
-		return (org.unitime.timetable.model.SolverGroup) get(getReferenceClass(), key);
+	public SolverGroup get(Long uniqueId) {
+		return (SolverGroup) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.SolverGroup get(Long key, Session s)
-	{
-		return (org.unitime.timetable.model.SolverGroup) get(getReferenceClass(), key, s);
+	public SolverGroup get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (SolverGroup) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.SolverGroup load(Long key)
-	{
-		return (org.unitime.timetable.model.SolverGroup) load(getReferenceClass(), key);
+	public SolverGroup load(Long uniqueId) {
+		return (SolverGroup) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.SolverGroup load(Long key, Session s)
-	{
-		return (org.unitime.timetable.model.SolverGroup) load(getReferenceClass(), key, s);
+	public SolverGroup load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (SolverGroup) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.SolverGroup loadInitialize(Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.SolverGroup obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public SolverGroup loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		SolverGroup solverGroup = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(solverGroup)) Hibernate.initialize(solverGroup);
+		return solverGroup;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param solverGroup a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public Long save(org.unitime.timetable.model.SolverGroup solverGroup)
-	{
-		return (Long) super.save(solverGroup);
+	public void save(SolverGroup solverGroup) {
+		save((Object) solverGroup);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param solverGroup a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public Long save(org.unitime.timetable.model.SolverGroup solverGroup, Session s)
-	{
-		return (Long) save((Object) solverGroup, s);
+	public void save(SolverGroup solverGroup, org.hibernate.Session hibSession) {
+		save((Object) solverGroup, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param solverGroup a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.SolverGroup solverGroup)
-	{
+	public void saveOrUpdate(SolverGroup solverGroup) {
 		saveOrUpdate((Object) solverGroup);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param solverGroup a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.SolverGroup solverGroup, Session s)
-	{
-		saveOrUpdate((Object) solverGroup, s);
+	public void saveOrUpdate(SolverGroup solverGroup, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) solverGroup, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param solverGroup a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.SolverGroup solverGroup) 
-	{
+
+	public void update(SolverGroup solverGroup) {
 		update((Object) solverGroup);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param solverGroup a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.SolverGroup solverGroup, Session s)
-	{
-		update((Object) solverGroup, s);
+	public void update(SolverGroup solverGroup, org.hibernate.Session hibSession) {
+		update((Object) solverGroup, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param solverGroup the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.SolverGroup solverGroup)
-	{
+	public void delete(SolverGroup solverGroup) {
 		delete((Object) solverGroup);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param solverGroup the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.SolverGroup solverGroup, Session s)
-	{
-		delete((Object) solverGroup, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.SolverGroup solverGroup, Session s)
-	{
-		refresh((Object) solverGroup, s);
+	public void delete(SolverGroup solverGroup, org.hibernate.Session hibSession) {
+		delete((Object) solverGroup, hibSession);
 	}
 
+	public void refresh(SolverGroup solverGroup, org.hibernate.Session hibSession) {
+		refresh((Object) solverGroup, hibSession);
+	}
 
+	public List<SolverGroup> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from SolverGroup").list();
+	}
+
+	public List<SolverGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from SolverGroup x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+	}
 }

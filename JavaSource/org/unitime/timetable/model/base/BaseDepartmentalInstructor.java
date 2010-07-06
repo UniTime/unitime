@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,333 +20,144 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Designator;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.PreferenceGroup;
 
-/**
- * This is an object that contains data related to the DEPARTMENTAL_INSTRUCTOR table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DEPARTMENTAL_INSTRUCTOR"
- */
+public abstract class BaseDepartmentalInstructor extends PreferenceGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.model.PreferenceGroup  implements Serializable {
+	private String iExternalUniqueId;
+	private String iCareerAcct;
+	private String iFirstName;
+	private String iMiddleName;
+	private String iLastName;
+	private String iNote;
+	private String iEmail;
+	private Boolean iIgnoreToFar;
 
-	public static String REF = "DepartmentalInstructor";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	private PositionType iPositionType;
+	private Department iDepartment;
+	private Set<ClassInstructor> iClasses;
+	private Set<Exam> iExams;
+	private Set<Designator> iDesignatorSubjectAreas;
+	private Set<Assignment> iAssignments;
+
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CAREER_ACCT = "careerAcct";
-	public static String PROP_FIRST_NAME = "firstName";
-	public static String PROP_MIDDLE_NAME = "middleName";
-	public static String PROP_LAST_NAME = "lastName";
+	public static String PROP_FNAME = "firstName";
+	public static String PROP_MNAME = "middleName";
+	public static String PROP_LNAME = "lastName";
 	public static String PROP_NOTE = "note";
 	public static String PROP_EMAIL = "email";
-	public static String PROP_IGNORE_TO_FAR = "ignoreToFar";
+	public static String PROP_IGNORE_TOO_FAR = "ignoreToFar";
 
-
-	// constructors
-	public BaseDepartmentalInstructor () {
+	public BaseDepartmentalInstructor() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDepartmentalInstructor (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseDepartmentalInstructor(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
+	protected void initialize() {}
 
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getCareerAcct() { return iCareerAcct; }
+	public void setCareerAcct(String careerAcct) { iCareerAcct = careerAcct; }
 
+	public String getFirstName() { return iFirstName; }
+	public void setFirstName(String firstName) { iFirstName = firstName; }
 
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.String careerAcct;
-	private java.lang.String firstName;
-	private java.lang.String middleName;
-	private java.lang.String lastName;
-	private java.lang.String note;
-	private java.lang.String email;
-	private java.lang.Boolean ignoreToFar;
+	public String getMiddleName() { return iMiddleName; }
+	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
-	// many to one
-	private org.unitime.timetable.model.PositionType positionType;
-	private org.unitime.timetable.model.Department department;
+	public String getLastName() { return iLastName; }
+	public void setLastName(String lastName) { iLastName = lastName; }
 
-	// collections
-	private java.util.Set classes;
-	private java.util.Set designatorSubjectAreas;
-	private java.util.Set assignments;
-	private java.util.Set exams;
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
 
+	public String getEmail() { return iEmail; }
+	public void setEmail(String email) { iEmail = email; }
 
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public Boolean isIgnoreToFar() { return iIgnoreToFar; }
+	public Boolean getIgnoreToFar() { return iIgnoreToFar; }
+	public void setIgnoreToFar(Boolean ignoreToFar) { iIgnoreToFar = ignoreToFar; }
+
+	public PositionType getPositionType() { return iPositionType; }
+	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
+
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
+
+	public Set<ClassInstructor> getClasses() { return iClasses; }
+	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
+	public void addToclasses(ClassInstructor classInstructor) {
+		if (iClasses == null) iClasses = new HashSet();
+		iClasses.add(classInstructor);
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public Set<Exam> getExams() { return iExams; }
+	public void setExams(Set<Exam> exams) { iExams = exams; }
+	public void addToexams(Exam exam) {
+		if (iExams == null) iExams = new HashSet();
+		iExams.add(exam);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: CAREER_ACCT
-	 */
-	public java.lang.String getCareerAcct () {
-		return careerAcct;
+	public Set<Designator> getDesignatorSubjectAreas() { return iDesignatorSubjectAreas; }
+	public void setDesignatorSubjectAreas(Set<Designator> designatorSubjectAreas) { iDesignatorSubjectAreas = designatorSubjectAreas; }
+	public void addTodesignatorSubjectAreas(Designator designator) {
+		if (iDesignatorSubjectAreas == null) iDesignatorSubjectAreas = new HashSet();
+		iDesignatorSubjectAreas.add(designator);
 	}
 
-	/**
-	 * Set the value related to the column: CAREER_ACCT
-	 * @param careerAcct the CAREER_ACCT value
-	 */
-	public void setCareerAcct (java.lang.String careerAcct) {
-		this.careerAcct = careerAcct;
+	public Set<Assignment> getAssignments() { return iAssignments; }
+	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
+	public void addToassignments(Assignment assignment) {
+		if (iAssignments == null) iAssignments = new HashSet();
+		iAssignments.add(assignment);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: FNAME
-	 */
-	public java.lang.String getFirstName () {
-		return firstName;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DepartmentalInstructor)) return false;
+		if (getUniqueId() == null || ((DepartmentalInstructor)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DepartmentalInstructor)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: FNAME
-	 * @param firstName the FNAME value
-	 */
-	public void setFirstName (java.lang.String firstName) {
-		this.firstName = firstName;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: MNAME
-	 */
-	public java.lang.String getMiddleName () {
-		return middleName;
+	public String toString() {
+		return "DepartmentalInstructor["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: MNAME
-	 * @param middleName the MNAME value
-	 */
-	public void setMiddleName (java.lang.String middleName) {
-		this.middleName = middleName;
+	public String toDebugString() {
+		return "DepartmentalInstructor[" +
+			"\n	CareerAcct: " + getCareerAcct() +
+			"\n	Department: " + getDepartment() +
+			"\n	Email: " + getEmail() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FirstName: " + getFirstName() +
+			"\n	IgnoreToFar: " + getIgnoreToFar() +
+			"\n	LastName: " + getLastName() +
+			"\n	MiddleName: " + getMiddleName() +
+			"\n	Note: " + getNote() +
+			"\n	PositionType: " + getPositionType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: LNAME
-	 */
-	public java.lang.String getLastName () {
-		return lastName;
-	}
-
-	/**
-	 * Set the value related to the column: LNAME
-	 * @param lastName the LNAME value
-	 */
-	public void setLastName (java.lang.String lastName) {
-		this.lastName = lastName;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NOTE
-	 */
-	public java.lang.String getNote () {
-		return note;
-	}
-
-	/**
-	 * Set the value related to the column: NOTE
-	 * @param note the NOTE value
-	 */
-	public void setNote (java.lang.String note) {
-		this.note = note;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EMAIL
-	 */
-	public java.lang.String getEmail () {
-		return email;
-	}
-
-	/**
-	 * Set the value related to the column: EMAIL
-	 * @param email the EMAIL value
-	 */
-	public void setEmail (java.lang.String email) {
-		this.email = email;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: IGNORE_TOO_FAR
-	 */
-	public java.lang.Boolean isIgnoreToFar () {
-		return ignoreToFar;
-	}
-
-	/**
-	 * Set the value related to the column: IGNORE_TOO_FAR
-	 * @param ignoreToFar the IGNORE_TOO_FAR value
-	 */
-	public void setIgnoreToFar (java.lang.Boolean ignoreToFar) {
-		this.ignoreToFar = ignoreToFar;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: POS_CODE_TYPE
-	 */
-	public org.unitime.timetable.model.PositionType getPositionType () {
-		return positionType;
-	}
-
-	/**
-	 * Set the value related to the column: POS_CODE_TYPE
-	 * @param positionType the POS_CODE_TYPE value
-	 */
-	public void setPositionType (org.unitime.timetable.model.PositionType positionType) {
-		this.positionType = positionType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DEPARTMENT_UNIQUEID
-	 */
-	public org.unitime.timetable.model.Department getDepartment () {
-		return department;
-	}
-
-	/**
-	 * Set the value related to the column: DEPARTMENT_UNIQUEID
-	 * @param department the DEPARTMENT_UNIQUEID value
-	 */
-	public void setDepartment (org.unitime.timetable.model.Department department) {
-		this.department = department;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: classes
-	 */
-	public java.util.Set getClasses () {
-		return classes;
-	}
-
-	/**
-	 * Set the value related to the column: classes
-	 * @param classes the classes value
-	 */
-	public void setClasses (java.util.Set classes) {
-		this.classes = classes;
-	}
-
-	public void addToclasses (org.unitime.timetable.model.ClassInstructor classInstructor) {
-		if (null == getClasses()) setClasses(new java.util.HashSet());
-		getClasses().add(classInstructor);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: designatorSubjectAreas
-	 */
-	public java.util.Set getDesignatorSubjectAreas () {
-		return designatorSubjectAreas;
-	}
-
-	/**
-	 * Set the value related to the column: designatorSubjectAreas
-	 * @param designatorSubjectAreas the designatorSubjectAreas value
-	 */
-	public void setDesignatorSubjectAreas (java.util.Set designatorSubjectAreas) {
-		this.designatorSubjectAreas = designatorSubjectAreas;
-	}
-
-	public void addTodesignatorSubjectAreas (org.unitime.timetable.model.Designator designator) {
-		if (null == getDesignatorSubjectAreas()) setDesignatorSubjectAreas(new java.util.HashSet());
-		getDesignatorSubjectAreas().add(designator);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: assignments
-	 */
-	public java.util.Set getAssignments () {
-		return assignments;
-	}
-
-	/**
-	 * Set the value related to the column: assignments
-	 * @param assignments the assignments value
-	 */
-	public void setAssignments (java.util.Set assignments) {
-		this.assignments = assignments;
-	}
-
-
-	public java.util.Set  getExams() {
-	    return exams;
-	}
-	
-	public void setExams(java.util.Set exams) {
-	    this.exams = exams;
-	}
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DepartmentalInstructor)) return false;
-		else {
-			org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor = (org.unitime.timetable.model.DepartmentalInstructor) obj;
-			if (null == this.getUniqueId() || null == departmentalInstructor.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(departmentalInstructor.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

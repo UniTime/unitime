@@ -38,24 +38,6 @@ public class ClassInstructor extends BaseClassInstructor implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ClassInstructor (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Class_ classInstructing,
-		org.unitime.timetable.model.DepartmentalInstructor instructor,
-		java.lang.Integer percentShare,
-		java.lang.Boolean lead) {
-
-		super (
-			uniqueId,
-			classInstructing,
-			instructor,
-			percentShare,
-			lead);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String nameLastNameFirst(){

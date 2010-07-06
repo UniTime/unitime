@@ -45,24 +45,6 @@ public class StudentGroup extends BaseStudentGroup {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentGroup (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.Long sessionId,
-		java.lang.String groupAbbreviation,
-		java.lang.String groupName) {
-
-		super (
-			uniqueId,
-			session,
-			sessionId,
-			groupAbbreviation,
-			groupName);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     /** Request attribute name for available student groups**/

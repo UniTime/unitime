@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,496 +20,193 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentStatusType;
+import org.unitime.timetable.model.WaitList;
 
-/**
- * This is an object that contains data related to the STUDENT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT"
- */
+public abstract class BaseStudent implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudent  implements Serializable {
+	private Long iUniqueId;
+	private String iExternalUniqueId;
+	private String iFirstName;
+	private String iMiddleName;
+	private String iLastName;
+	private String iEmail;
+	private Integer iFreeTimeCategory;
+	private Integer iSchedulePreference;
+	private Date iStatusChangeDate;
 
-	public static String REF = "Student";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	private StudentStatusType iStatus;
+	private Session iSession;
+	private Set<AcademicAreaClassification> iAcademicAreaClassifications;
+	private Set<PosMajor> iPosMajors;
+	private Set<PosMinor> iPosMinors;
+	private Set<StudentAccomodation> iAccomodations;
+	private Set<StudentGroup> iGroups;
+	private Set<WaitList> iWaitlists;
+	private Set<CourseDemand> iCourseDemands;
+	private Set<StudentClassEnrollment> iClassEnrollments;
+	private Set<LastLikeCourseDemand> iLastLikeCourseDemands;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_FIRST_NAME = "firstName";
 	public static String PROP_MIDDLE_NAME = "middleName";
 	public static String PROP_LAST_NAME = "lastName";
 	public static String PROP_EMAIL = "email";
-	public static String PROP_FREE_TIME_CATEGORY = "freeTimeCategory";
+	public static String PROP_FREE_TIME_CAT = "freeTimeCategory";
 	public static String PROP_SCHEDULE_PREFERENCE = "schedulePreference";
 	public static String PROP_STATUS_CHANGE_DATE = "statusChangeDate";
 
-
-	// constructors
-	public BaseStudent () {
+	public BaseStudent() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudent (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseStudent(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudent (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String firstName,
-		java.lang.String lastName,
-		java.lang.Integer freeTimeCategory,
-		java.lang.Integer schedulePreference) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSession(session);
-		this.setFirstName(firstName);
-		this.setLastName(lastName);
-		this.setFreeTimeCategory(freeTimeCategory);
-		this.setSchedulePreference(schedulePreference);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public String getFirstName() { return iFirstName; }
+	public void setFirstName(String firstName) { iFirstName = firstName; }
+
+	public String getMiddleName() { return iMiddleName; }
+	public void setMiddleName(String middleName) { iMiddleName = middleName; }
+
+	public String getLastName() { return iLastName; }
+	public void setLastName(String lastName) { iLastName = lastName; }
+
+	public String getEmail() { return iEmail; }
+	public void setEmail(String email) { iEmail = email; }
+
+	public Integer getFreeTimeCategory() { return iFreeTimeCategory; }
+	public void setFreeTimeCategory(Integer freeTimeCategory) { iFreeTimeCategory = freeTimeCategory; }
+
+	public Integer getSchedulePreference() { return iSchedulePreference; }
+	public void setSchedulePreference(Integer schedulePreference) { iSchedulePreference = schedulePreference; }
+
+	public Date getStatusChangeDate() { return iStatusChangeDate; }
+	public void setStatusChangeDate(Date statusChangeDate) { iStatusChangeDate = statusChangeDate; }
+
+	public StudentStatusType getStatus() { return iStatus; }
+	public void setStatus(StudentStatusType status) { iStatus = status; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<AcademicAreaClassification> getAcademicAreaClassifications() { return iAcademicAreaClassifications; }
+	public void setAcademicAreaClassifications(Set<AcademicAreaClassification> academicAreaClassifications) { iAcademicAreaClassifications = academicAreaClassifications; }
+	public void addToacademicAreaClassifications(AcademicAreaClassification academicAreaClassification) {
+		if (iAcademicAreaClassifications == null) iAcademicAreaClassifications = new HashSet();
+		iAcademicAreaClassifications.add(academicAreaClassification);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.String firstName;
-	private java.lang.String middleName;
-	private java.lang.String lastName;
-	private java.lang.String email;
-	private java.lang.Integer freeTimeCategory;
-	private java.lang.Integer schedulePreference;
-	private java.util.Date statusChangeDate;
-
-	// many to one
-	private org.unitime.timetable.model.StudentStatusType status;
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set academicAreaClassifications;
-	private java.util.Set posMajors;
-	private java.util.Set posMinors;
-	private java.util.Set accomodations;
-	private java.util.Set groups;
-	private java.util.Set waitlists;
-	private java.util.Set courseDemands;
-	private java.util.Set classEnrollments;
-	private java.util.Set lastLikeCourseDemands;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<PosMajor> getPosMajors() { return iPosMajors; }
+	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
+	public void addToposMajors(PosMajor posMajor) {
+		if (iPosMajors == null) iPosMajors = new HashSet();
+		iPosMajors.add(posMajor);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<PosMinor> getPosMinors() { return iPosMinors; }
+	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
+	public void addToposMinors(PosMinor posMinor) {
+		if (iPosMinors == null) iPosMinors = new HashSet();
+		iPosMinors.add(posMinor);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }
+	public void setAccomodations(Set<StudentAccomodation> accomodations) { iAccomodations = accomodations; }
+	public void addToaccomodations(StudentAccomodation studentAccomodation) {
+		if (iAccomodations == null) iAccomodations = new HashSet();
+		iAccomodations.add(studentAccomodation);
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public Set<StudentGroup> getGroups() { return iGroups; }
+	public void setGroups(Set<StudentGroup> groups) { iGroups = groups; }
+	public void addTogroups(StudentGroup studentGroup) {
+		if (iGroups == null) iGroups = new HashSet();
+		iGroups.add(studentGroup);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: FIRST_NAME
-	 */
-	public java.lang.String getFirstName () {
-		return firstName;
+	public Set<WaitList> getWaitlists() { return iWaitlists; }
+	public void setWaitlists(Set<WaitList> waitlists) { iWaitlists = waitlists; }
+	public void addTowaitlists(WaitList waitList) {
+		if (iWaitlists == null) iWaitlists = new HashSet();
+		iWaitlists.add(waitList);
 	}
 
-	/**
-	 * Set the value related to the column: FIRST_NAME
-	 * @param firstName the FIRST_NAME value
-	 */
-	public void setFirstName (java.lang.String firstName) {
-		this.firstName = firstName;
+	public Set<CourseDemand> getCourseDemands() { return iCourseDemands; }
+	public void setCourseDemands(Set<CourseDemand> courseDemands) { iCourseDemands = courseDemands; }
+	public void addTocourseDemands(CourseDemand courseDemand) {
+		if (iCourseDemands == null) iCourseDemands = new HashSet();
+		iCourseDemands.add(courseDemand);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: MIDDLE_NAME
-	 */
-	public java.lang.String getMiddleName () {
-		return middleName;
+	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
+	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
+	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
+		if (iClassEnrollments == null) iClassEnrollments = new HashSet();
+		iClassEnrollments.add(studentClassEnrollment);
 	}
 
-	/**
-	 * Set the value related to the column: MIDDLE_NAME
-	 * @param middleName the MIDDLE_NAME value
-	 */
-	public void setMiddleName (java.lang.String middleName) {
-		this.middleName = middleName;
+	public Set<LastLikeCourseDemand> getLastLikeCourseDemands() { return iLastLikeCourseDemands; }
+	public void setLastLikeCourseDemands(Set<LastLikeCourseDemand> lastLikeCourseDemands) { iLastLikeCourseDemands = lastLikeCourseDemands; }
+	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
+		if (iLastLikeCourseDemands == null) iLastLikeCourseDemands = new HashSet();
+		iLastLikeCourseDemands.add(lastLikeCourseDemand);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: LAST_NAME
-	 */
-	public java.lang.String getLastName () {
-		return lastName;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Student)) return false;
+		if (getUniqueId() == null || ((Student)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Student)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: LAST_NAME
-	 * @param lastName the LAST_NAME value
-	 */
-	public void setLastName (java.lang.String lastName) {
-		this.lastName = lastName;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: EMAIL
-	 */
-	public java.lang.String getEmail () {
-		return email;
+	public String toString() {
+		return "Student["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: EMAIL
-	 * @param email the EMAIL value
-	 */
-	public void setEmail (java.lang.String email) {
-		this.email = email;
+	public String toDebugString() {
+		return "Student[" +
+			"\n	Email: " + getEmail() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	FirstName: " + getFirstName() +
+			"\n	FreeTimeCategory: " + getFreeTimeCategory() +
+			"\n	LastName: " + getLastName() +
+			"\n	MiddleName: " + getMiddleName() +
+			"\n	SchedulePreference: " + getSchedulePreference() +
+			"\n	Session: " + getSession() +
+			"\n	Status: " + getStatus() +
+			"\n	StatusChangeDate: " + getStatusChangeDate() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: FREE_TIME_CAT
-	 */
-	public java.lang.Integer getFreeTimeCategory () {
-		return freeTimeCategory;
-	}
-
-	/**
-	 * Set the value related to the column: FREE_TIME_CAT
-	 * @param freeTimeCategory the FREE_TIME_CAT value
-	 */
-	public void setFreeTimeCategory (java.lang.Integer freeTimeCategory) {
-		this.freeTimeCategory = freeTimeCategory;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SCHEDULE_PREFERENCE
-	 */
-	public java.lang.Integer getSchedulePreference () {
-		return schedulePreference;
-	}
-
-	/**
-	 * Set the value related to the column: SCHEDULE_PREFERENCE
-	 * @param schedulePreference the SCHEDULE_PREFERENCE value
-	 */
-	public void setSchedulePreference (java.lang.Integer schedulePreference) {
-		this.schedulePreference = schedulePreference;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STATUS_CHANGE_DATE
-	 */
-	public java.util.Date getStatusChangeDate () {
-		return statusChangeDate;
-	}
-
-	/**
-	 * Set the value related to the column: STATUS_CHANGE_DATE
-	 * @param statusChangeDate the STATUS_CHANGE_DATE value
-	 */
-	public void setStatusChangeDate (java.util.Date statusChangeDate) {
-		this.statusChangeDate = statusChangeDate;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STATUS_TYPE_ID
-	 */
-	public org.unitime.timetable.model.StudentStatusType getStatus () {
-		return status;
-	}
-
-	/**
-	 * Set the value related to the column: STATUS_TYPE_ID
-	 * @param status the STATUS_TYPE_ID value
-	 */
-	public void setStatus (org.unitime.timetable.model.StudentStatusType status) {
-		this.status = status;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: academicAreaClassifications
-	 */
-	public java.util.Set getAcademicAreaClassifications () {
-		return academicAreaClassifications;
-	}
-
-	/**
-	 * Set the value related to the column: academicAreaClassifications
-	 * @param academicAreaClassifications the academicAreaClassifications value
-	 */
-	public void setAcademicAreaClassifications (java.util.Set academicAreaClassifications) {
-		this.academicAreaClassifications = academicAreaClassifications;
-	}
-
-	public void addToacademicAreaClassifications (org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification) {
-		if (null == getAcademicAreaClassifications()) setAcademicAreaClassifications(new java.util.HashSet());
-		getAcademicAreaClassifications().add(academicAreaClassification);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: posMajors
-	 */
-	public java.util.Set getPosMajors () {
-		return posMajors;
-	}
-
-	/**
-	 * Set the value related to the column: posMajors
-	 * @param posMajors the posMajors value
-	 */
-	public void setPosMajors (java.util.Set posMajors) {
-		this.posMajors = posMajors;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: posMinors
-	 */
-	public java.util.Set getPosMinors () {
-		return posMinors;
-	}
-
-	/**
-	 * Set the value related to the column: posMinors
-	 * @param posMinors the posMinors value
-	 */
-	public void setPosMinors (java.util.Set posMinors) {
-		this.posMinors = posMinors;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: accomodations
-	 */
-	public java.util.Set getAccomodations () {
-		return accomodations;
-	}
-
-	/**
-	 * Set the value related to the column: accomodations
-	 * @param accomodations the accomodations value
-	 */
-	public void setAccomodations (java.util.Set accomodations) {
-		this.accomodations = accomodations;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: groups
-	 */
-	public java.util.Set getGroups () {
-		return groups;
-	}
-
-	/**
-	 * Set the value related to the column: groups
-	 * @param groups the groups value
-	 */
-	public void setGroups (java.util.Set groups) {
-		this.groups = groups;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: waitlists
-	 */
-	public java.util.Set getWaitlists () {
-		return waitlists;
-	}
-
-	/**
-	 * Set the value related to the column: waitlists
-	 * @param waitlists the waitlists value
-	 */
-	public void setWaitlists (java.util.Set waitlists) {
-		this.waitlists = waitlists;
-	}
-
-	public void addTowaitlists (org.unitime.timetable.model.WaitList waitList) {
-		if (null == getWaitlists()) setWaitlists(new java.util.HashSet());
-		getWaitlists().add(waitList);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: courseDemands
-	 */
-	public java.util.Set getCourseDemands () {
-		return courseDemands;
-	}
-
-	/**
-	 * Set the value related to the column: courseDemands
-	 * @param courseDemands the courseDemands value
-	 */
-	public void setCourseDemands (java.util.Set courseDemands) {
-		this.courseDemands = courseDemands;
-	}
-
-	public void addTocourseDemands (org.unitime.timetable.model.CourseDemand courseDemand) {
-		if (null == getCourseDemands()) setCourseDemands(new java.util.HashSet());
-		getCourseDemands().add(courseDemand);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: classEnrollments
-	 */
-	public java.util.Set getClassEnrollments () {
-		return classEnrollments;
-	}
-
-	/**
-	 * Set the value related to the column: classEnrollments
-	 * @param classEnrollments the classEnrollments value
-	 */
-	public void setClassEnrollments (java.util.Set classEnrollments) {
-		this.classEnrollments = classEnrollments;
-	}
-
-	public void addToclassEnrollments (org.unitime.timetable.model.StudentClassEnrollment studentClassEnrollment) {
-		if (null == getClassEnrollments()) setClassEnrollments(new java.util.HashSet());
-		getClassEnrollments().add(studentClassEnrollment);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: lastLikeCourseDemands
-	 */
-	public java.util.Set getLastLikeCourseDemands () {
-		return lastLikeCourseDemands;
-	}
-
-	/**
-	 * Set the value related to the column: lastLikeCourseDemands
-	 * @param lastLikeCourseDemands the lastLikeCourseDemands value
-	 */
-	public void setLastLikeCourseDemands (java.util.Set lastLikeCourseDemands) {
-		this.lastLikeCourseDemands = lastLikeCourseDemands;
-	}
-
-	public void addTolastLikeCourseDemands (org.unitime.timetable.model.LastLikeCourseDemand lastLikeCourseDemand) {
-		if (null == getLastLikeCourseDemands()) setLastLikeCourseDemands(new java.util.HashSet());
-		getLastLikeCourseDemands().add(lastLikeCourseDemand);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Student)) return false;
-		else {
-			org.unitime.timetable.model.Student student = (org.unitime.timetable.model.Student) obj;
-			if (null == this.getUniqueId() || null == student.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(student.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

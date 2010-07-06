@@ -1,147 +1,80 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.SponsoringOrganization;
 
-/**
- * This is an object that contains data related to the SPONSORING_ORGANIZATION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SPONSORING_ORGANIZATION"
- */
+public abstract class BaseSponsoringOrganization implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSponsoringOrganization  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iEmail;
 
-	public static String REF = "SponsoringOrganization";
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_EMAIL = "email";
 
-
-	// constructors
-	public BaseSponsoringOrganization () {
+	public BaseSponsoringOrganization() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSponsoringOrganization (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSponsoringOrganization(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseSponsoringOrganization (
-		java.lang.Long uniqueId,
-		java.lang.String name) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setName(name);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getEmail() { return iEmail; }
+	public void setEmail(String email) { iEmail = email; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SponsoringOrganization)) return false;
+		if (getUniqueId() == null || ((SponsoringOrganization)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SponsoringOrganization)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String email;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "SponsoringOrganization["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toDebugString() {
+		return "SponsoringOrganization[" +
+			"\n	Email: " + getEmail() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EMAIL
-	 */
-	public java.lang.String getEmail () {
-		return email;
-	}
-
-	/**
-	 * Set the value related to the column: EMAIL
-	 * @param email the EMAIL value
-	 */
-	public void setEmail (java.lang.String email) {
-		this.email = email;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SponsoringOrganization)) return false;
-		else {
-			org.unitime.timetable.model.SponsoringOrganization sponsoringOrganization = (org.unitime.timetable.model.SponsoringOrganization) obj;
-			if (null == this.getUniqueId() || null == sponsoringOrganization.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(sponsoringOrganization.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

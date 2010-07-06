@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,209 +21,78 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.SubjectArea;
 
-/**
- * This is an object that contains data related to the LASTLIKE_COURSE_DEMAND table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="LASTLIKE_COURSE_DEMAND"
- */
+public abstract class BaseLastLikeCourseDemand implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseLastLikeCourseDemand  implements Serializable {
+	private Long iUniqueId;
+	private String iCourseNbr;
+	private Integer iPriority;
+	private String iCoursePermId;
 
-	public static String REF = "LastLikeCourseDemand";
+	private Student iStudent;
+	private SubjectArea iSubjectArea;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_COURSE_NBR = "courseNbr";
 	public static String PROP_PRIORITY = "priority";
 	public static String PROP_COURSE_PERM_ID = "coursePermId";
 
-
-	// constructors
-	public BaseLastLikeCourseDemand () {
+	public BaseLastLikeCourseDemand() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseLastLikeCourseDemand (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseLastLikeCourseDemand(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseLastLikeCourseDemand (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		java.lang.String courseNbr,
-		java.lang.Integer priority) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setStudent(student);
-		this.setSubjectArea(subjectArea);
-		this.setCourseNbr(courseNbr);
-		this.setPriority(priority);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getCourseNbr() { return iCourseNbr; }
+	public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+
+	public Integer getPriority() { return iPriority; }
+	public void setPriority(Integer priority) { iPriority = priority; }
+
+	public String getCoursePermId() { return iCoursePermId; }
+	public void setCoursePermId(String coursePermId) { iCoursePermId = coursePermId; }
+
+	public Student getStudent() { return iStudent; }
+	public void setStudent(Student student) { iStudent = student; }
+
+	public SubjectArea getSubjectArea() { return iSubjectArea; }
+	public void setSubjectArea(SubjectArea subjectArea) { iSubjectArea = subjectArea; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof LastLikeCourseDemand)) return false;
+		if (getUniqueId() == null || ((LastLikeCourseDemand)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((LastLikeCourseDemand)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String courseNbr;
-	private java.lang.Integer priority;
-	private java.lang.String coursePermId;
-
-	// many to one
-	private org.unitime.timetable.model.Student student;
-	private org.unitime.timetable.model.SubjectArea subjectArea;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "LastLikeCourseDemand["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: COURSE_NBR
-	 */
-	public java.lang.String getCourseNbr () {
-		return courseNbr;
+	public String toDebugString() {
+		return "LastLikeCourseDemand[" +
+			"\n	CourseNbr: " + getCourseNbr() +
+			"\n	CoursePermId: " + getCoursePermId() +
+			"\n	Priority: " + getPriority() +
+			"\n	Student: " + getStudent() +
+			"\n	SubjectArea: " + getSubjectArea() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: COURSE_NBR
-	 * @param courseNbr the COURSE_NBR value
-	 */
-	public void setCourseNbr (java.lang.String courseNbr) {
-		this.courseNbr = courseNbr;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PRIORITY
-	 */
-	public java.lang.Integer getPriority () {
-		return priority;
-	}
-
-	/**
-	 * Set the value related to the column: PRIORITY
-	 * @param priority the PRIORITY value
-	 */
-	public void setPriority (java.lang.Integer priority) {
-		this.priority = priority;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: COURSE_PERM_ID
-	 */
-	public java.lang.String getCoursePermId () {
-		return coursePermId;
-	}
-
-	/**
-	 * Set the value related to the column: COURSE_PERM_ID
-	 * @param coursePermId the COURSE_PERM_ID value
-	 */
-	public void setCoursePermId (java.lang.String coursePermId) {
-		this.coursePermId = coursePermId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STUDENT_ID
-	 */
-	public org.unitime.timetable.model.Student getStudent () {
-		return student;
-	}
-
-	/**
-	 * Set the value related to the column: STUDENT_ID
-	 * @param student the STUDENT_ID value
-	 */
-	public void setStudent (org.unitime.timetable.model.Student student) {
-		this.student = student;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SUBJECT_AREA_ID
-	 */
-	public org.unitime.timetable.model.SubjectArea getSubjectArea () {
-		return subjectArea;
-	}
-
-	/**
-	 * Set the value related to the column: SUBJECT_AREA_ID
-	 * @param subjectArea the SUBJECT_AREA_ID value
-	 */
-	public void setSubjectArea (org.unitime.timetable.model.SubjectArea subjectArea) {
-		this.subjectArea = subjectArea;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.LastLikeCourseDemand)) return false;
-		else {
-			org.unitime.timetable.model.LastLikeCourseDemand lastLikeCourseDemand = (org.unitime.timetable.model.LastLikeCourseDemand) obj;
-			if (null == this.getUniqueId() || null == lastLikeCourseDemand.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(lastLikeCourseDemand.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

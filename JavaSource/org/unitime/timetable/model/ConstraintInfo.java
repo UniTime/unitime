@@ -44,18 +44,6 @@ public class ConstraintInfo extends BaseConstraintInfo {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ConstraintInfo (
-		java.lang.Long uniqueId,
-		org.dom4j.Document value) {
-
-		super (
-			uniqueId,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String generateId() {

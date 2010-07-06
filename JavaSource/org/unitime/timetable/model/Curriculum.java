@@ -22,24 +22,6 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Curriculum (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.AcademicArea academicArea,
-		org.unitime.timetable.model.Department department,
-		java.lang.String abbv,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			academicArea,
-			department,
-			abbv,
-			name);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static List<Curriculum> findAll(Long sessionId) {

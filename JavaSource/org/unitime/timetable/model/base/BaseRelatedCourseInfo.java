@@ -1,7 +1,8 @@
-/* 
- * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2008, UniTime LLC
- * 
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -15,196 +16,77 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */ 
- 
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.RelatedCourseInfo;
 
-/**
- * This is an object that contains data related to the RELATED_COURSE_INFO table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="RELATED_COURSE_INFO"
- */
+public abstract class BaseRelatedCourseInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRelatedCourseInfo  implements Serializable {
+	private Long iUniqueId;
+	private Long iOwnerId;
+	private Integer iOwnerType;
 
-	public static String REF = "RelatedCourseInfo";
+	private CourseEvent iEvent;
+	private CourseOffering iCourse;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_OWNER_ID = "ownerId";
 	public static String PROP_OWNER_TYPE = "ownerType";
 
-
-	// constructors
-	public BaseRelatedCourseInfo () {
+	public BaseRelatedCourseInfo() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRelatedCourseInfo (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseRelatedCourseInfo(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRelatedCourseInfo (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseEvent event,
-		org.unitime.timetable.model.CourseOffering course,
-		java.lang.Long ownerId,
-		java.lang.Integer ownerType) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setEvent(event);
-		this.setCourse(course);
-		this.setOwnerId(ownerId);
-		this.setOwnerType(ownerType);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Long getOwnerId() { return iOwnerId; }
+	public void setOwnerId(Long ownerId) { iOwnerId = ownerId; }
+
+	public Integer getOwnerType() { return iOwnerType; }
+	public void setOwnerType(Integer ownerType) { iOwnerType = ownerType; }
+
+	public CourseEvent getEvent() { return iEvent; }
+	public void setEvent(CourseEvent event) { iEvent = event; }
+
+	public CourseOffering getCourse() { return iCourse; }
+	public void setCourse(CourseOffering course) { iCourse = course; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RelatedCourseInfo)) return false;
+		if (getUniqueId() == null || ((RelatedCourseInfo)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RelatedCourseInfo)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Long ownerId;
-	private java.lang.Integer ownerType;
-
-	// many to one
-	private org.unitime.timetable.model.CourseEvent event;
-	private org.unitime.timetable.model.CourseOffering course;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "RelatedCourseInfo["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: OWNER_ID
-	 */
-	public java.lang.Long getOwnerId () {
-		return ownerId;
+	public String toDebugString() {
+		return "RelatedCourseInfo[" +
+			"\n	Course: " + getCourse() +
+			"\n	Event: " + getEvent() +
+			"\n	OwnerId: " + getOwnerId() +
+			"\n	OwnerType: " + getOwnerType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: OWNER_ID
-	 * @param ownerId the OWNER_ID value
-	 */
-	public void setOwnerId (java.lang.Long ownerId) {
-		this.ownerId = ownerId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: OWNER_TYPE
-	 */
-	public java.lang.Integer getOwnerType () {
-		return ownerType;
-	}
-
-	/**
-	 * Set the value related to the column: OWNER_TYPE
-	 * @param ownerType the OWNER_TYPE value
-	 */
-	public void setOwnerType (java.lang.Integer ownerType) {
-		this.ownerType = ownerType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EVENT_ID
-	 */
-	public org.unitime.timetable.model.CourseEvent getEvent () {
-		return event;
-	}
-
-	/**
-	 * Set the value related to the column: EVENT_ID
-	 * @param event the EVENT_ID value
-	 */
-	public void setEvent (org.unitime.timetable.model.CourseEvent event) {
-		this.event = event;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: COURSE_ID
-	 */
-	public org.unitime.timetable.model.CourseOffering getCourse () {
-		return course;
-	}
-
-	/**
-	 * Set the value related to the column: COURSE_ID
-	 * @param course the COURSE_ID value
-	 */
-	public void setCourse (org.unitime.timetable.model.CourseOffering course) {
-		this.course = course;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RelatedCourseInfo)) return false;
-		else {
-			org.unitime.timetable.model.RelatedCourseInfo relatedCourseInfo = (org.unitime.timetable.model.RelatedCourseInfo) obj;
-			if (null == this.getUniqueId() || null == relatedCourseInfo.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(relatedCourseInfo.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,131 +1,88 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.RelatedCourseInfo;
 
-/**
- * This is an object that contains data related to the EVENT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="EVENT"
- */
+public abstract class BaseCourseEvent extends Event implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCourseEvent extends org.unitime.timetable.model.Event  implements Serializable {
+	private Boolean iReqAttendance;
 
-	public static String REF = "CourseEvent";
-	public static String PROP_REQ_ATTENDANCE = "reqAttendance";
+	private Set<RelatedCourseInfo> iRelatedCourses;
 
+	public static String PROP_REQ_ATTD = "reqAttendance";
 
-	// constructors
-	public BaseCourseEvent () {
+	public BaseCourseEvent() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCourseEvent (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseCourseEvent(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCourseEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
+	public Boolean isReqAttendance() { return iReqAttendance; }
+	public Boolean getReqAttendance() { return iReqAttendance; }
+	public void setReqAttendance(Boolean reqAttendance) { iReqAttendance = reqAttendance; }
+
+	public Set<RelatedCourseInfo> getRelatedCourses() { return iRelatedCourses; }
+	public void setRelatedCourses(Set<RelatedCourseInfo> relatedCourses) { iRelatedCourses = relatedCourses; }
+	public void addTorelatedCourses(RelatedCourseInfo relatedCourseInfo) {
+		if (iRelatedCourses == null) iRelatedCourses = new HashSet();
+		iRelatedCourses.add(relatedCourseInfo);
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.Boolean reqAttendance;
-
-	// collections
-	private java.util.Set relatedCourses;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: REQ_ATTD
-	 */
-	public java.lang.Boolean isReqAttendance () {
-		return reqAttendance;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseEvent)) return false;
+		if (getUniqueId() == null || ((CourseEvent)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseEvent)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: REQ_ATTD
-	 * @param reqAttendance the REQ_ATTD value
-	 */
-	public void setReqAttendance (java.lang.Boolean reqAttendance) {
-		this.reqAttendance = reqAttendance;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: relatedCourses
-	 */
-	public java.util.Set getRelatedCourses () {
-		return relatedCourses;
+	public String toString() {
+		return "CourseEvent["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: relatedCourses
-	 * @param relatedCourses the relatedCourses value
-	 */
-	public void setRelatedCourses (java.util.Set relatedCourses) {
-		this.relatedCourses = relatedCourses;
+	public String toDebugString() {
+		return "CourseEvent[" +
+			"\n	Email: " + getEmail() +
+			"\n	EventName: " + getEventName() +
+			"\n	MainContact: " + getMainContact() +
+			"\n	MaxCapacity: " + getMaxCapacity() +
+			"\n	MinCapacity: " + getMinCapacity() +
+			"\n	ReqAttendance: " + getReqAttendance() +
+			"\n	SponsoringOrganization: " + getSponsoringOrganization() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public void addTorelatedCourses (org.unitime.timetable.model.RelatedCourseInfo relatedCourseInfo) {
-		if (null == getRelatedCourses()) setRelatedCourses(new java.util.HashSet());
-		getRelatedCourses().add(relatedCourseInfo);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CourseEvent)) return false;
-		else {
-			org.unitime.timetable.model.CourseEvent courseEvent = (org.unitime.timetable.model.CourseEvent) obj;
-			if (null == this.getUniqueId() || null == courseEvent.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(courseEvent.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

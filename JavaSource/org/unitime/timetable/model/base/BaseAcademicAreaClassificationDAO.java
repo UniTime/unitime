@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,112 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.AcademicAreaClassificationDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseAcademicAreaClassificationDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseAcademicAreaClassificationDAO extends _RootDAO {
 
-	// query name references
+	private static AcademicAreaClassificationDAO sInstance;
 
-
-	public static AcademicAreaClassificationDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static AcademicAreaClassificationDAO getInstance () {
-		if (null == instance) instance = new AcademicAreaClassificationDAO();
-		return instance;
+		if (sInstance == null) sInstance = new AcademicAreaClassificationDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.AcademicAreaClassification.class;
+		return AcademicAreaClassification.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.AcademicAreaClassification
-	 */
-	public org.unitime.timetable.model.AcademicAreaClassification cast (Object object) {
-		return (org.unitime.timetable.model.AcademicAreaClassification) object;
 	}
 
-	public org.unitime.timetable.model.AcademicAreaClassification get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.AcademicAreaClassification) get(getReferenceClass(), key);
+	public AcademicAreaClassification get(Long uniqueId) {
+		return (AcademicAreaClassification) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.AcademicAreaClassification get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.AcademicAreaClassification) get(getReferenceClass(), key, s);
+	public AcademicAreaClassification get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (AcademicAreaClassification) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.AcademicAreaClassification load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.AcademicAreaClassification) load(getReferenceClass(), key);
+	public AcademicAreaClassification load(Long uniqueId) {
+		return (AcademicAreaClassification) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.AcademicAreaClassification load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.AcademicAreaClassification) load(getReferenceClass(), key, s);
+	public AcademicAreaClassification load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (AcademicAreaClassification) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.AcademicAreaClassification loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.AcademicAreaClassification obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public AcademicAreaClassification loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		AcademicAreaClassification academicAreaClassification = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(academicAreaClassification)) Hibernate.initialize(academicAreaClassification);
+		return academicAreaClassification;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param academicAreaClassification a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification)
-	{
-		return (java.lang.Long) super.save(academicAreaClassification);
+	public void save(AcademicAreaClassification academicAreaClassification) {
+		save((Object) academicAreaClassification);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param academicAreaClassification a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification, Session s)
-	{
-		return (java.lang.Long) save((Object) academicAreaClassification, s);
+	public void save(AcademicAreaClassification academicAreaClassification, org.hibernate.Session hibSession) {
+		save((Object) academicAreaClassification, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param academicAreaClassification a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification)
-	{
+	public void saveOrUpdate(AcademicAreaClassification academicAreaClassification) {
 		saveOrUpdate((Object) academicAreaClassification);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param academicAreaClassification a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification, Session s)
-	{
-		saveOrUpdate((Object) academicAreaClassification, s);
+	public void saveOrUpdate(AcademicAreaClassification academicAreaClassification, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) academicAreaClassification, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param academicAreaClassification a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification) 
-	{
+
+	public void update(AcademicAreaClassification academicAreaClassification) {
 		update((Object) academicAreaClassification);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param academicAreaClassification a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification, Session s)
-	{
-		update((Object) academicAreaClassification, s);
+	public void update(AcademicAreaClassification academicAreaClassification, org.hibernate.Session hibSession) {
+		update((Object) academicAreaClassification, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param academicAreaClassification the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification)
-	{
+	public void delete(AcademicAreaClassification academicAreaClassification) {
 		delete((Object) academicAreaClassification);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param academicAreaClassification the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification, Session s)
-	{
-		delete((Object) academicAreaClassification, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.AcademicAreaClassification academicAreaClassification, Session s)
-	{
-		refresh((Object) academicAreaClassification, s);
+	public void delete(AcademicAreaClassification academicAreaClassification, org.hibernate.Session hibSession) {
+		delete((Object) academicAreaClassification, hibSession);
 	}
 
+	public void refresh(AcademicAreaClassification academicAreaClassification, org.hibernate.Session hibSession) {
+		refresh((Object) academicAreaClassification, hibSession);
+	}
 
+	public List<AcademicAreaClassification> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from AcademicAreaClassification").list();
+	}
+
+	public List<AcademicAreaClassification> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from AcademicAreaClassification x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+	}
+
+	public List<AcademicAreaClassification> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
+		return hibSession.createQuery("from AcademicAreaClassification x where x.academicClassification.uniqueId = :academicClassificationId").setLong("academicClassificationId", academicClassificationId).list();
+	}
+
+	public List<AcademicAreaClassification> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
+		return hibSession.createQuery("from AcademicAreaClassification x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
+	}
 }

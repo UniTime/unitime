@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,148 +20,69 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+
+import org.unitime.timetable.model.IndividualReservation;
+import org.unitime.timetable.model.Reservation;
+
+public abstract class BaseIndividualReservation extends Reservation implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private String iExternalUniqueId;
+	private Boolean iOverLimit;
+	private Date iExpirationDate;
 
 
-/**
- * This is an object that contains data related to the INDIVIDUAL_RESERVATION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="INDIVIDUAL_RESERVATION"
- */
-
-public abstract class BaseIndividualReservation extends org.unitime.timetable.model.Reservation  implements Serializable {
-
-	public static String REF = "IndividualReservation";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_OVER_LIMIT = "overLimit";
 	public static String PROP_EXPIRATION_DATE = "expirationDate";
 
-
-	// constructors
-	public BaseIndividualReservation () {
+	public BaseIndividualReservation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseIndividualReservation (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseIndividualReservation(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseIndividualReservation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ReservationType reservationType,
-		java.lang.String ownerClassId,
-		java.lang.Long owner,
-		java.lang.Integer priority) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reservationType,
-			ownerClassId,
-			owner,
-			priority);
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public Boolean isOverLimit() { return iOverLimit; }
+	public Boolean getOverLimit() { return iOverLimit; }
+	public void setOverLimit(Boolean overLimit) { iOverLimit = overLimit; }
+
+	public Date getExpirationDate() { return iExpirationDate; }
+	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof IndividualReservation)) return false;
+		if (getUniqueId() == null || ((IndividualReservation)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((IndividualReservation)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.Boolean overLimit;
-	private java.util.Date expirationDate;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public String toString() {
+		return "IndividualReservation["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: OVER_LIMIT
-	 */
-	public java.lang.Boolean isOverLimit () {
-		return overLimit;
+	public String toDebugString() {
+		return "IndividualReservation[" +
+			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	OverLimit: " + getOverLimit() +
+			"\n	Owner: " + getOwner() +
+			"\n	OwnerClassId: " + getOwnerClassId() +
+			"\n	Priority: " + getPriority() +
+			"\n	ReservationType: " + getReservationType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: OVER_LIMIT
-	 * @param overLimit the OVER_LIMIT value
-	 */
-	public void setOverLimit (java.lang.Boolean overLimit) {
-		this.overLimit = overLimit;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXPIRATION_DATE
-	 */
-	public java.util.Date getExpirationDate () {
-		return expirationDate;
-	}
-
-	/**
-	 * Set the value related to the column: EXPIRATION_DATE
-	 * @param expirationDate the EXPIRATION_DATE value
-	 */
-	public void setExpirationDate (java.util.Date expirationDate) {
-		this.expirationDate = expirationDate;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.IndividualReservation)) return false;
-		else {
-			org.unitime.timetable.model.IndividualReservation individualReservation = (org.unitime.timetable.model.IndividualReservation) obj;
-			if (null == this.getUniqueId() || null == individualReservation.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(individualReservation.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

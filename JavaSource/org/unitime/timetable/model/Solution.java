@@ -79,24 +79,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Solution (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverGroup owner,
-		java.util.Date created,
-		java.lang.Boolean valid,
-		java.lang.Boolean commited) {
-
-		super (
-			uniqueId,
-			owner,
-			created,
-			valid,
-			commited);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public SolutionInfo getSolutionInfo(String name) throws Exception {

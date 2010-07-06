@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,100 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ConstraintInfo;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ConstraintInfoDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseConstraintInfoDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseConstraintInfoDAO extends _RootDAO {
 
-	// query name references
+	private static ConstraintInfoDAO sInstance;
 
-
-	public static ConstraintInfoDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static ConstraintInfoDAO getInstance () {
-		if (null == instance) instance = new ConstraintInfoDAO();
-		return instance;
+		if (sInstance == null) sInstance = new ConstraintInfoDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ConstraintInfo.class;
+		return ConstraintInfo.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ConstraintInfo
-	 */
-	public org.unitime.timetable.model.ConstraintInfo cast (Object object) {
-		return (org.unitime.timetable.model.ConstraintInfo) object;
 	}
 
-	public org.unitime.timetable.model.ConstraintInfo get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ConstraintInfo) get(getReferenceClass(), key);
+	public ConstraintInfo get(Long uniqueId) {
+		return (ConstraintInfo) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ConstraintInfo get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ConstraintInfo) get(getReferenceClass(), key, s);
+	public ConstraintInfo get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ConstraintInfo) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ConstraintInfo load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ConstraintInfo) load(getReferenceClass(), key);
+	public ConstraintInfo load(Long uniqueId) {
+		return (ConstraintInfo) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ConstraintInfo load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ConstraintInfo) load(getReferenceClass(), key, s);
+	public ConstraintInfo load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ConstraintInfo) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ConstraintInfo loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.ConstraintInfo obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ConstraintInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		ConstraintInfo constraintInfo = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(constraintInfo)) Hibernate.initialize(constraintInfo);
+		return constraintInfo;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param constraintInfo a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ConstraintInfo constraintInfo)
-	{
-		return (java.lang.Long) super.save(constraintInfo);
+	public void save(ConstraintInfo constraintInfo) {
+		save((Object) constraintInfo);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param constraintInfo a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ConstraintInfo constraintInfo, Session s)
-	{
-		return (java.lang.Long) save((Object) constraintInfo, s);
+	public void save(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
+		save((Object) constraintInfo, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param constraintInfo a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ConstraintInfo constraintInfo)
-	{
+	public void saveOrUpdate(ConstraintInfo constraintInfo) {
 		saveOrUpdate((Object) constraintInfo);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param constraintInfo a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ConstraintInfo constraintInfo, Session s)
-	{
-		saveOrUpdate((Object) constraintInfo, s);
+	public void saveOrUpdate(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) constraintInfo, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param constraintInfo a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.ConstraintInfo constraintInfo) 
-	{
+
+	public void update(ConstraintInfo constraintInfo) {
 		update((Object) constraintInfo);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param constraintInfo a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.ConstraintInfo constraintInfo, Session s)
-	{
-		update((Object) constraintInfo, s);
+	public void update(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
+		update((Object) constraintInfo, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param constraintInfo the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ConstraintInfo constraintInfo)
-	{
+	public void delete(ConstraintInfo constraintInfo) {
 		delete((Object) constraintInfo);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param constraintInfo the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ConstraintInfo constraintInfo, Session s)
-	{
-		delete((Object) constraintInfo, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ConstraintInfo constraintInfo, Session s)
-	{
-		refresh((Object) constraintInfo, s);
+	public void delete(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
+		delete((Object) constraintInfo, hibSession);
 	}
 
+	public void refresh(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
+		refresh((Object) constraintInfo, hibSession);
+	}
 
+	public List<ConstraintInfo> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ConstraintInfo").list();
+	}
 }

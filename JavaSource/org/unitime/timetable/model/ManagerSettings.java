@@ -38,22 +38,6 @@ public class ManagerSettings extends BaseManagerSettings {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ManagerSettings (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Settings key,
-		org.unitime.timetable.model.TimetableManager manager,
-		java.lang.String value) {
-
-		super (
-			uniqueId,
-			key,
-			manager,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

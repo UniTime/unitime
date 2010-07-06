@@ -98,21 +98,7 @@ public class DistributionPref extends BaseDistributionPref {
 	public DistributionPref (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public DistributionPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
-
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public String preferenceText() {

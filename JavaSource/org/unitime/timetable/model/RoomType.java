@@ -44,18 +44,6 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static TreeSet<RoomType> findAll() {

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,167 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.PreferenceGroup;
 
-/**
- * This is an object that contains data related to the DISTRIBUTION_OBJECT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DISTRIBUTION_OBJECT"
- */
+public abstract class BaseDistributionObject implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDistributionObject  implements Serializable {
+	private Long iUniqueId;
+	private Integer iSequenceNumber;
 
-	public static String REF = "DistributionObject";
+	private DistributionPref iDistributionPref;
+	private PreferenceGroup iPrefGroup;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_SEQUENCE_NUMBER = "sequenceNumber";
 
-
-	// constructors
-	public BaseDistributionObject () {
+	public BaseDistributionObject() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDistributionObject (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseDistributionObject(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDistributionObject (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.DistributionPref distributionPref,
-		org.unitime.timetable.model.PreferenceGroup prefGroup) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setDistributionPref(distributionPref);
-		this.setPrefGroup(prefGroup);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getSequenceNumber() { return iSequenceNumber; }
+	public void setSequenceNumber(Integer sequenceNumber) { iSequenceNumber = sequenceNumber; }
+
+	public DistributionPref getDistributionPref() { return iDistributionPref; }
+	public void setDistributionPref(DistributionPref distributionPref) { iDistributionPref = distributionPref; }
+
+	public PreferenceGroup getPrefGroup() { return iPrefGroup; }
+	public void setPrefGroup(PreferenceGroup prefGroup) { iPrefGroup = prefGroup; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DistributionObject)) return false;
+		if (getUniqueId() == null || ((DistributionObject)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DistributionObject)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer sequenceNumber;
-
-	// many to one
-	private org.unitime.timetable.model.DistributionPref distributionPref;
-	private org.unitime.timetable.model.PreferenceGroup prefGroup;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "DistributionObject["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: SEQUENCE_NUMBER
-	 */
-	public java.lang.Integer getSequenceNumber () {
-		return sequenceNumber;
+	public String toDebugString() {
+		return "DistributionObject[" +
+			"\n	DistributionPref: " + getDistributionPref() +
+			"\n	PrefGroup: " + getPrefGroup() +
+			"\n	SequenceNumber: " + getSequenceNumber() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: SEQUENCE_NUMBER
-	 * @param sequenceNumber the SEQUENCE_NUMBER value
-	 */
-	public void setSequenceNumber (java.lang.Integer sequenceNumber) {
-		this.sequenceNumber = sequenceNumber;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DIST_PREF_ID
-	 */
-	public org.unitime.timetable.model.DistributionPref getDistributionPref () {
-		return distributionPref;
-	}
-
-	/**
-	 * Set the value related to the column: DIST_PREF_ID
-	 * @param distributionPref the DIST_PREF_ID value
-	 */
-	public void setDistributionPref (org.unitime.timetable.model.DistributionPref distributionPref) {
-		this.distributionPref = distributionPref;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PREF_GROUP_ID
-	 */
-	public org.unitime.timetable.model.PreferenceGroup getPrefGroup () {
-		return prefGroup;
-	}
-
-	/**
-	 * Set the value related to the column: PREF_GROUP_ID
-	 * @param prefGroup the PREF_GROUP_ID value
-	 */
-	public void setPrefGroup (org.unitime.timetable.model.PreferenceGroup prefGroup) {
-		this.prefGroup = prefGroup;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DistributionObject)) return false;
-		else {
-			org.unitime.timetable.model.DistributionObject distributionObject = (org.unitime.timetable.model.DistributionObject) obj;
-			if (null == this.getUniqueId() || null == distributionObject.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(distributionObject.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

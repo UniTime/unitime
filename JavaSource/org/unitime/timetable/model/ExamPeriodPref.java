@@ -40,20 +40,6 @@ public class ExamPeriodPref extends BaseExamPeriodPref {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamPeriodPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
-
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public String preferenceText() { 

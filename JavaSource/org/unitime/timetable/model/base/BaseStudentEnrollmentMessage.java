@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,231 +20,86 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 
-/**
- * This is an object that contains data related to the STUDENT_ENRL_MSG table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT_ENRL_MSG"
- */
+public abstract class BaseStudentEnrollmentMessage implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudentEnrollmentMessage  implements Serializable {
+	private Long iUniqueId;
+	private String iMessage;
+	private Integer iLevel;
+	private Integer iType;
+	private Date iTimestamp;
+	private Integer iOrder;
 
-	public static String REF = "StudentEnrollmentMessage";
+	private CourseDemand iCourseDemand;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_MESSAGE = "message";
-	public static String PROP_LEVEL = "level";
+	public static String PROP_MSG_LEVEL = "level";
 	public static String PROP_TYPE = "type";
 	public static String PROP_TIMESTAMP = "timestamp";
-    public static String PROP_ORD = "order";
+	public static String PROP_ORD = "order";
 
-
-	// constructors
-	public BaseStudentEnrollmentMessage () {
+	public BaseStudentEnrollmentMessage() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudentEnrollmentMessage (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseStudentEnrollmentMessage(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudentEnrollmentMessage (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseDemand courseDemand,
-		java.lang.String message,
-		java.lang.Integer level,
-		java.lang.Integer type,
-        java.util.Date timestamp,
-        java.lang.Integer order) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setCourseDemand(courseDemand);
-		this.setMessage(message);
-		this.setLevel(level);
-		this.setType(type);
-		this.setTimestamp(timestamp);
-        this.setOrder(order);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getMessage() { return iMessage; }
+	public void setMessage(String message) { iMessage = message; }
+
+	public Integer getLevel() { return iLevel; }
+	public void setLevel(Integer level) { iLevel = level; }
+
+	public Integer getType() { return iType; }
+	public void setType(Integer type) { iType = type; }
+
+	public Date getTimestamp() { return iTimestamp; }
+	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
+
+	public Integer getOrder() { return iOrder; }
+	public void setOrder(Integer order) { iOrder = order; }
+
+	public CourseDemand getCourseDemand() { return iCourseDemand; }
+	public void setCourseDemand(CourseDemand courseDemand) { iCourseDemand = courseDemand; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof StudentEnrollmentMessage)) return false;
+		if (getUniqueId() == null || ((StudentEnrollmentMessage)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentEnrollmentMessage)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String message;
-	private java.lang.Integer level;
-	private java.lang.Integer type;
-	private java.util.Date timestamp;
-    private java.lang.Integer order;
-
-	// many to one
-	private org.unitime.timetable.model.CourseDemand courseDemand;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "StudentEnrollmentMessage["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: MESSAGE
-	 */
-	public java.lang.String getMessage () {
-		return message;
+	public String toDebugString() {
+		return "StudentEnrollmentMessage[" +
+			"\n	CourseDemand: " + getCourseDemand() +
+			"\n	Level: " + getLevel() +
+			"\n	Message: " + getMessage() +
+			"\n	Order: " + getOrder() +
+			"\n	Timestamp: " + getTimestamp() +
+			"\n	Type: " + getType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: MESSAGE
-	 * @param message the MESSAGE value
-	 */
-	public void setMessage (java.lang.String message) {
-		this.message = message;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: MSG_LEVEL
-	 */
-	public java.lang.Integer getLevel () {
-		return level;
-	}
-
-	/**
-	 * Set the value related to the column: MSG_LEVEL
-	 * @param level the MSG_LEVEL value
-	 */
-	public void setLevel (java.lang.Integer level) {
-		this.level = level;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TYPE
-	 */
-	public java.lang.Integer getType () {
-		return type;
-	}
-
-	/**
-	 * Set the value related to the column: TYPE
-	 * @param type the TYPE value
-	 */
-	public void setType (java.lang.Integer type) {
-		this.type = type;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TIMESTAMP
-	 */
-	public java.util.Date getTimestamp () {
-		return timestamp;
-	}
-
-	/**
-	 * Set the value related to the column: TIMESTAMP
-	 * @param timestamp the TIMESTAMP value
-	 */
-	public void setTimestamp (java.util.Date timestamp) {
-		this.timestamp = timestamp;
-	}
-
-    /**
-     * Return the value associated with the column: ORD
-     */
-    public java.lang.Integer getOrder () {
-        return order;
-    }
-
-    /**
-     * Set the value related to the column: ORD
-     * @param order the ORD value
-     */
-    public void setOrder (java.lang.Integer order) {
-        this.order = order;
-    }
-
-
-	/**
-	 * Return the value associated with the column: COURSE_DEMAND_ID
-	 */
-	public org.unitime.timetable.model.CourseDemand getCourseDemand () {
-		return courseDemand;
-	}
-
-	/**
-	 * Set the value related to the column: COURSE_DEMAND_ID
-	 * @param courseDemand the COURSE_DEMAND_ID value
-	 */
-	public void setCourseDemand (org.unitime.timetable.model.CourseDemand courseDemand) {
-		this.courseDemand = courseDemand;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.StudentEnrollmentMessage)) return false;
-		else {
-			org.unitime.timetable.model.StudentEnrollmentMessage studentEnrollmentMessage = (org.unitime.timetable.model.StudentEnrollmentMessage) obj;
-			if (null == this.getUniqueId() || null == studentEnrollmentMessage.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(studentEnrollmentMessage.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

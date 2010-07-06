@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,100 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BasePositionTypeDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BasePositionTypeDAO extends _RootDAO {
 
-	// query name references
+	private static PositionTypeDAO sInstance;
 
-
-	public static PositionTypeDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static PositionTypeDAO getInstance () {
-		if (null == instance) instance = new PositionTypeDAO();
-		return instance;
+		if (sInstance == null) sInstance = new PositionTypeDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.PositionType.class;
+		return PositionType.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.PositionType
-	 */
-	public org.unitime.timetable.model.PositionType cast (Object object) {
-		return (org.unitime.timetable.model.PositionType) object;
 	}
 
-	public org.unitime.timetable.model.PositionType get(Long key)
-	{
-		return (org.unitime.timetable.model.PositionType) get(getReferenceClass(), key);
+	public PositionType get(Long uniqueId) {
+		return (PositionType) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.PositionType get(Long key, Session s)
-	{
-		return (org.unitime.timetable.model.PositionType) get(getReferenceClass(), key, s);
+	public PositionType get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (PositionType) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.PositionType load(Long key)
-	{
-		return (org.unitime.timetable.model.PositionType) load(getReferenceClass(), key);
+	public PositionType load(Long uniqueId) {
+		return (PositionType) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.PositionType load(Long key, Session s)
-	{
-		return (org.unitime.timetable.model.PositionType) load(getReferenceClass(), key, s);
+	public PositionType load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (PositionType) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.PositionType loadInitialize(Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.PositionType obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public PositionType loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		PositionType positionType = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(positionType)) Hibernate.initialize(positionType);
+		return positionType;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param positionType a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public Long save(org.unitime.timetable.model.PositionType positionType)
-	{
-		return (Long) super.save(positionType);
+	public void save(PositionType positionType) {
+		save((Object) positionType);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param positionType a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public Long save(org.unitime.timetable.model.PositionType positionType, Session s)
-	{
-		return (Long) save((Object) positionType, s);
+	public void save(PositionType positionType, org.hibernate.Session hibSession) {
+		save((Object) positionType, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param positionType a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.PositionType positionType)
-	{
+	public void saveOrUpdate(PositionType positionType) {
 		saveOrUpdate((Object) positionType);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param positionType a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.PositionType positionType, Session s)
-	{
-		saveOrUpdate((Object) positionType, s);
+	public void saveOrUpdate(PositionType positionType, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) positionType, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param positionType a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.PositionType positionType) 
-	{
+
+	public void update(PositionType positionType) {
 		update((Object) positionType);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param positionType a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.PositionType positionType, Session s)
-	{
-		update((Object) positionType, s);
+	public void update(PositionType positionType, org.hibernate.Session hibSession) {
+		update((Object) positionType, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param positionType the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.PositionType positionType)
-	{
+	public void delete(PositionType positionType) {
 		delete((Object) positionType);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param positionType the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.PositionType positionType, Session s)
-	{
-		delete((Object) positionType, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.PositionType positionType, Session s)
-	{
-		refresh((Object) positionType, s);
+	public void delete(PositionType positionType, org.hibernate.Session hibSession) {
+		delete((Object) positionType, hibSession);
 	}
 
+	public void refresh(PositionType positionType, org.hibernate.Session hibSession) {
+		refresh((Object) positionType, hibSession);
+	}
 
+	public List<PositionType> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from PositionType").list();
+	}
 }

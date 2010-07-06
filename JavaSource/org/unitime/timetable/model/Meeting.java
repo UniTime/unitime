@@ -50,26 +50,6 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Meeting (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Event event,
-		java.util.Date meetingDate,
-		java.lang.Integer startPeriod,
-		java.lang.Integer stopPeriod,
-		java.lang.Boolean classCanOverride) {
-
-		super (
-			uniqueId,
-			event,
-			meetingDate,
-			startPeriod,
-			stopPeriod,
-			classCanOverride);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	@Override

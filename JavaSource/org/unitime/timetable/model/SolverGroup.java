@@ -47,22 +47,6 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SolverGroup (
-		Long uniqueId,
-		java.lang.String name,
-		java.lang.String abbv,
-		org.unitime.timetable.model.Session session) {
-
-		super (
-			uniqueId,
-			name,
-			abbv,
-			session);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public boolean isExternalManager(){

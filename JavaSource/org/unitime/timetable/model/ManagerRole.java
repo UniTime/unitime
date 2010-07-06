@@ -38,20 +38,6 @@ public class ManagerRole extends BaseManagerRole {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ManagerRole (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Roles role,
-		org.unitime.timetable.model.TimetableManager timetableManager) {
-
-		super (
-			uniqueId,
-			role,
-			timetableManager);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

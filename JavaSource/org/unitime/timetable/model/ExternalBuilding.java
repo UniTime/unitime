@@ -45,20 +45,6 @@ public class ExternalBuilding extends BaseExternalBuilding {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExternalBuilding (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String abbreviation) {
-
-		super (
-			uniqueId,
-			session,
-			abbreviation);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

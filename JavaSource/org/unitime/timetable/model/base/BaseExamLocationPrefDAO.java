@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,112 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ExamLocationPref;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseExamLocationPrefDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseExamLocationPrefDAO extends _RootDAO {
 
-	// query name references
+	private static ExamLocationPrefDAO sInstance;
 
-
-	public static BaseExamLocationPrefDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
-	public static BaseExamLocationPrefDAO getInstance () {
-		if (null == instance) instance = new ExamLocationPrefDAO();
-		return instance;
+	public static ExamLocationPrefDAO getInstance () {
+		if (sInstance == null) sInstance = new ExamLocationPrefDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ExamLocationPref.class;
+		return ExamLocationPref.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ExamLocationPref
-	 */
-	public org.unitime.timetable.model.ExamLocationPref cast (Object object) {
-		return (org.unitime.timetable.model.ExamLocationPref) object;
 	}
 
-	public org.unitime.timetable.model.ExamLocationPref get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ExamLocationPref) get(getReferenceClass(), key);
+	public ExamLocationPref get(Long uniqueId) {
+		return (ExamLocationPref) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ExamLocationPref get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ExamLocationPref) get(getReferenceClass(), key, s);
+	public ExamLocationPref get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ExamLocationPref) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ExamLocationPref load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ExamLocationPref) load(getReferenceClass(), key);
+	public ExamLocationPref load(Long uniqueId) {
+		return (ExamLocationPref) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ExamLocationPref load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ExamLocationPref) load(getReferenceClass(), key, s);
+	public ExamLocationPref load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ExamLocationPref) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ExamLocationPref loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.ExamLocationPref obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ExamLocationPref loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		ExamLocationPref examLocationPref = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(examLocationPref)) Hibernate.initialize(examLocationPref);
+		return examLocationPref;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param ExamLocationPref a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ExamLocationPref ExamLocationPref)
-	{
-		return (java.lang.Long) super.save(ExamLocationPref);
+	public void save(ExamLocationPref examLocationPref) {
+		save((Object) examLocationPref);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param ExamLocationPref a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ExamLocationPref ExamLocationPref, Session s)
-	{
-		return (java.lang.Long) save((Object) ExamLocationPref, s);
+	public void save(ExamLocationPref examLocationPref, org.hibernate.Session hibSession) {
+		save((Object) examLocationPref, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param ExamLocationPref a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ExamLocationPref ExamLocationPref)
-	{
-		saveOrUpdate((Object) ExamLocationPref);
+	public void saveOrUpdate(ExamLocationPref examLocationPref) {
+		saveOrUpdate((Object) examLocationPref);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param ExamLocationPref a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.AcadAreaPosReservation ExamLocationPref, Session s)
-	{
-		saveOrUpdate((Object) ExamLocationPref, s);
-	}
-
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param ExamLocationPref a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.AcadAreaPosReservation ExamLocationPref) 
-	{
-		update((Object) ExamLocationPref);
-	}
-
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param ExamLocationPref a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.AcadAreaPosReservation ExamLocationPref, Session s)
-	{
-		update((Object) ExamLocationPref, s);
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param ExamLocationPref the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ExamLocationPref ExamLocationPref)
-	{
-		delete((Object) ExamLocationPref);
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param ExamLocationPref the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ExamLocationPref ExamLocationPref, Session s)
-	{
-		delete((Object) ExamLocationPref, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ExamLocationPref ExamLocationPref, Session s)
-	{
-		refresh((Object) ExamLocationPref, s);
+	public void saveOrUpdate(ExamLocationPref examLocationPref, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) examLocationPref, hibSession);
 	}
 
 
+	public void update(ExamLocationPref examLocationPref) {
+		update((Object) examLocationPref);
+	}
+
+	public void update(ExamLocationPref examLocationPref, org.hibernate.Session hibSession) {
+		update((Object) examLocationPref, hibSession);
+	}
+
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
+	}
+
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
+	}
+
+	public void delete(ExamLocationPref examLocationPref) {
+		delete((Object) examLocationPref);
+	}
+
+	public void delete(ExamLocationPref examLocationPref, org.hibernate.Session hibSession) {
+		delete((Object) examLocationPref, hibSession);
+	}
+
+	public void refresh(ExamLocationPref examLocationPref, org.hibernate.Session hibSession) {
+		refresh((Object) examLocationPref, hibSession);
+	}
+
+	public List<ExamLocationPref> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ExamLocationPref").list();
+	}
+
+	public List<ExamLocationPref> findByLocation(org.hibernate.Session hibSession, Long locationId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.location.uniqueId = :locationId").setLong("locationId", locationId).list();
+	}
+
+	public List<ExamLocationPref> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.prefLevel.uniqueId = :prefLevelId").setLong("prefLevelId", prefLevelId).list();
+	}
+
+	public List<ExamLocationPref> findByExamPeriod(org.hibernate.Session hibSession, Long examPeriodId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.examPeriod.uniqueId = :examPeriodId").setLong("examPeriodId", examPeriodId).list();
+	}
 }

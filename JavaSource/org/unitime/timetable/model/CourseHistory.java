@@ -42,22 +42,6 @@ public class CourseHistory extends BaseCourseHistory {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseHistory (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
-
-		super (
-			uniqueId,
-			oldValue,
-			newValue,
-			sessionId);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/**

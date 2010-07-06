@@ -38,28 +38,6 @@ public class FreeTime extends BaseFreeTime {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public FreeTime (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String name,
-		java.lang.Integer dayCode,
-		java.lang.Integer startSlot,
-		java.lang.Integer length,
-		java.lang.Integer category) {
-
-		super (
-			uniqueId,
-			session,
-			name,
-			dayCode,
-			startSlot,
-			length,
-			category);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

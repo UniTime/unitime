@@ -37,22 +37,6 @@ public class ExamLocationPref extends BaseExamLocationPref implements Comparable
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamLocationPref (
-	        java.lang.Long uniqueId,
-	        org.unitime.timetable.model.Location location,
-	        org.unitime.timetable.model.PreferenceLevel prefLevel,
-	        org.unitime.timetable.model.ExamPeriod period) {
-
-		super (
-			uniqueId,
-			location,
-			prefLevel,
-			period);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public int compareTo(ExamLocationPref pref) {

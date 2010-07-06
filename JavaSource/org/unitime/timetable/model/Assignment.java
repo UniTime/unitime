@@ -61,22 +61,6 @@ public class Assignment extends BaseAssignment {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Assignment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.TimePattern timePattern,
-		org.unitime.timetable.model.Solution solution,
-		org.unitime.timetable.model.Class_ clazz) {
-
-		super (
-			uniqueId,
-			timePattern,
-			solution,
-			clazz);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public int[] getStartSlots() {

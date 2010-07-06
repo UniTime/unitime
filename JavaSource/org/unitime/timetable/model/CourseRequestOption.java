@@ -37,23 +37,7 @@ public class CourseRequestOption extends BaseCourseRequestOption {
 	public CourseRequestOption (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseRequestOption (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseRequest courseRequest,
-		java.lang.Integer optionType,
-		org.unitime.commons.hibernate.blob.XmlBlobType value) {
-
-		super (
-			uniqueId,
-			courseRequest,
-			optionType,
-			value);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 

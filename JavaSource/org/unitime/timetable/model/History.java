@@ -45,22 +45,6 @@ public class History extends BaseHistory {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public History (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
-
-		super (
-			uniqueId,
-			oldValue,
-			newValue,
-			sessionId);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/**

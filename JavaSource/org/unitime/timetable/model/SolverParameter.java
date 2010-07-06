@@ -38,18 +38,6 @@ public class SolverParameter extends BaseSolverParameter implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SolverParameter (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverParameterDef definition) {
-
-		super (
-			uniqueId,
-			definition);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public int compareTo(Object o) {

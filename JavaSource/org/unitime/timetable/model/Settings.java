@@ -48,24 +48,6 @@ public class Settings extends BaseSettings {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Settings (
-		java.lang.Long uniqueId,
-		java.lang.String key,
-		java.lang.String defaultValue,
-		java.lang.String allowedValues,
-		java.lang.String description) {
-
-		super (
-			uniqueId,
-			key,
-			defaultValue,
-			allowedValues,
-			description);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/** Request attribute name **/

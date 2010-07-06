@@ -36,20 +36,6 @@ public class DistributionObject extends BaseDistributionObject implements Compar
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public DistributionObject (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.DistributionPref distributionPref,
-		org.unitime.timetable.model.PreferenceGroup prefGroup) {
-
-		super (
-			uniqueId,
-			distributionPref,
-			prefGroup);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 		
 	public String preferenceText(){

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,277 +20,108 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.FreeTime;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 
-/**
- * This is an object that contains data related to the COURSE_DEMAND table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="COURSE_DEMAND"
- */
+public abstract class BaseCourseDemand implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCourseDemand  implements Serializable {
+	private Long iUniqueId;
+	private Integer iPriority;
+	private Boolean iWaitlist;
+	private Boolean iAlternative;
+	private Date iTimestamp;
 
-	public static String REF = "CourseDemand";
+	private Student iStudent;
+	private FreeTime iFreeTime;
+	private Set<CourseRequest> iCourseRequests;
+	private Set<StudentEnrollmentMessage> iEnrollmentMessages;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PRIORITY = "priority";
 	public static String PROP_WAITLIST = "waitlist";
-	public static String PROP_ALTERNATIVE = "alternative";
+	public static String PROP_IS_ALTERNATIVE = "alternative";
 	public static String PROP_TIMESTAMP = "timestamp";
 
-
-	// constructors
-	public BaseCourseDemand () {
+	public BaseCourseDemand() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCourseDemand (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCourseDemand(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCourseDemand (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		java.lang.Integer priority,
-		java.lang.Boolean waitlist,
-		java.lang.Boolean alternative,
-		java.util.Date timestamp) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setStudent(student);
-		this.setPriority(priority);
-		this.setWaitlist(waitlist);
-		this.setAlternative(alternative);
-		this.setTimestamp(timestamp);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getPriority() { return iPriority; }
+	public void setPriority(Integer priority) { iPriority = priority; }
+
+	public Boolean isWaitlist() { return iWaitlist; }
+	public Boolean getWaitlist() { return iWaitlist; }
+	public void setWaitlist(Boolean waitlist) { iWaitlist = waitlist; }
+
+	public Boolean isAlternative() { return iAlternative; }
+	public Boolean getAlternative() { return iAlternative; }
+	public void setAlternative(Boolean alternative) { iAlternative = alternative; }
+
+	public Date getTimestamp() { return iTimestamp; }
+	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
+
+	public Student getStudent() { return iStudent; }
+	public void setStudent(Student student) { iStudent = student; }
+
+	public FreeTime getFreeTime() { return iFreeTime; }
+	public void setFreeTime(FreeTime freeTime) { iFreeTime = freeTime; }
+
+	public Set<CourseRequest> getCourseRequests() { return iCourseRequests; }
+	public void setCourseRequests(Set<CourseRequest> courseRequests) { iCourseRequests = courseRequests; }
+	public void addTocourseRequests(CourseRequest courseRequest) {
+		if (iCourseRequests == null) iCourseRequests = new HashSet();
+		iCourseRequests.add(courseRequest);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer priority;
-	private java.lang.Boolean waitlist;
-	private java.lang.Boolean alternative;
-	private java.util.Date timestamp;
-
-	// many to one
-	private org.unitime.timetable.model.Student student;
-	private org.unitime.timetable.model.FreeTime freeTime;
-
-	// collections
-	private java.util.Set courseRequests;
-    private java.util.Set enrollmentMessages;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<StudentEnrollmentMessage> getEnrollmentMessages() { return iEnrollmentMessages; }
+	public void setEnrollmentMessages(Set<StudentEnrollmentMessage> enrollmentMessages) { iEnrollmentMessages = enrollmentMessages; }
+	public void addToenrollmentMessages(StudentEnrollmentMessage studentEnrollmentMessage) {
+		if (iEnrollmentMessages == null) iEnrollmentMessages = new HashSet();
+		iEnrollmentMessages.add(studentEnrollmentMessage);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseDemand)) return false;
+		if (getUniqueId() == null || ((CourseDemand)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseDemand)o).getUniqueId());
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: PRIORITY
-	 */
-	public java.lang.Integer getPriority () {
-		return priority;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: PRIORITY
-	 * @param priority the PRIORITY value
-	 */
-	public void setPriority (java.lang.Integer priority) {
-		this.priority = priority;
+	public String toString() {
+		return "CourseDemand["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: WAITLIST
-	 */
-	public java.lang.Boolean isWaitlist () {
-		return waitlist;
+	public String toDebugString() {
+		return "CourseDemand[" +
+			"\n	Alternative: " + getAlternative() +
+			"\n	FreeTime: " + getFreeTime() +
+			"\n	Priority: " + getPriority() +
+			"\n	Student: " + getStudent() +
+			"\n	Timestamp: " + getTimestamp() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Waitlist: " + getWaitlist() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: WAITLIST
-	 * @param waitlist the WAITLIST value
-	 */
-	public void setWaitlist (java.lang.Boolean waitlist) {
-		this.waitlist = waitlist;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: IS_ALTERNATIVE
-	 */
-	public java.lang.Boolean isAlternative () {
-		return alternative;
-	}
-
-	/**
-	 * Set the value related to the column: IS_ALTERNATIVE
-	 * @param alternative the IS_ALTERNATIVE value
-	 */
-	public void setAlternative (java.lang.Boolean alternative) {
-		this.alternative = alternative;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TIMESTAMP
-	 */
-	public java.util.Date getTimestamp () {
-		return timestamp;
-	}
-
-	/**
-	 * Set the value related to the column: TIMESTAMP
-	 * @param timestamp the TIMESTAMP value
-	 */
-	public void setTimestamp (java.util.Date timestamp) {
-		this.timestamp = timestamp;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STUDENT_ID
-	 */
-	public org.unitime.timetable.model.Student getStudent () {
-		return student;
-	}
-
-	/**
-	 * Set the value related to the column: STUDENT_ID
-	 * @param student the STUDENT_ID value
-	 */
-	public void setStudent (org.unitime.timetable.model.Student student) {
-		this.student = student;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: FREE_TIME_ID
-	 */
-	public org.unitime.timetable.model.FreeTime getFreeTime () {
-		return freeTime;
-	}
-
-	/**
-	 * Set the value related to the column: FREE_TIME_ID
-	 * @param freeTime the FREE_TIME_ID value
-	 */
-	public void setFreeTime (org.unitime.timetable.model.FreeTime freeTime) {
-		this.freeTime = freeTime;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: courseRequests
-	 */
-	public java.util.Set getCourseRequests () {
-		return courseRequests;
-	}
-
-	/**
-	 * Set the value related to the column: courseRequests
-	 * @param courseRequests the courseRequests value
-	 */
-	public void setCourseRequests (java.util.Set courseRequests) {
-		this.courseRequests = courseRequests;
-	}
-
-	public void addTocourseRequests (org.unitime.timetable.model.CourseRequest courseRequest) {
-		if (null == getCourseRequests()) setCourseRequests(new java.util.HashSet());
-		getCourseRequests().add(courseRequest);
-	}
-
-
-    /**
-     * Return the value associated with the column: enrollmentMessages
-     */
-    public java.util.Set getEnrollmentMessages () {
-        return enrollmentMessages;
-    }
-
-    /**
-     * Set the value related to the column: enrollmentMessages
-     * @param enrollmentMessages the enrollmentMessages value
-     */
-    public void setEnrollmentMessages (java.util.Set enrollmentMessages) {
-        this.enrollmentMessages = enrollmentMessages;
-    }
-
-    public void addToenrollmentMessages (org.unitime.timetable.model.StudentEnrollmentMessage studentEnrollmentMessage) {
-        if (null == getEnrollmentMessages()) setEnrollmentMessages(new java.util.HashSet());
-        getEnrollmentMessages().add(studentEnrollmentMessage);
-    }
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CourseDemand)) return false;
-		else {
-			org.unitime.timetable.model.CourseDemand courseDemand = (org.unitime.timetable.model.CourseDemand) obj;
-			if (null == this.getUniqueId() || null == courseDemand.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(courseDemand.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,133 +21,60 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ApplicationConfig;
 
-/**
- * This is an object that contains data related to the APPLICATION_CONFIG table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="APPLICATION_CONFIG"
- */
+public abstract class BaseApplicationConfig implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseApplicationConfig  implements Serializable {
+	private String iKey;
+	private String iValue;
+	private String iDescription;
 
-	public static String REF = "ApplicationConfig";
+
+	public static String PROP_NAME = "key";
 	public static String PROP_VALUE = "value";
 	public static String PROP_DESCRIPTION = "description";
 
-
-	// constructors
-	public BaseApplicationConfig () {
+	public BaseApplicationConfig() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseApplicationConfig (java.lang.String key) {
-		this.setKey(key);
+	public BaseApplicationConfig(String key) {
+		setKey(key);
 		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public String getKey() { return iKey; }
+	public void setKey(String key) { iKey = key; }
 
+	public String getValue() { return iValue; }
+	public void setValue(String value) { iValue = value; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
 
-	// primary key
-	private java.lang.String key;
-
-	// fields
-	private java.lang.String value;
-	private java.lang.String description;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  column="KEY"
-     */
-	public java.lang.String getKey () {
-		return key;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ApplicationConfig)) return false;
+		if (getKey() == null || ((ApplicationConfig)o).getKey() == null) return false;
+		return getKey().equals(((ApplicationConfig)o).getKey());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param key the new ID
-	 */
-	public void setKey (java.lang.String key) {
-		this.key = key;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getKey() == null) return super.hashCode();
+		return getKey().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: VALUE
-	 */
-	public java.lang.String getValue () {
-		return value;
+	public String toString() {
+		return "ApplicationConfig["+getKey()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: VALUE
-	 * @param value the VALUE value
-	 */
-	public void setValue (java.lang.String value) {
-		this.value = value;
+	public String toDebugString() {
+		return "ApplicationConfig[" +
+			"\n	Description: " + getDescription() +
+			"\n	Key: " + getKey() +
+			"\n	Value: " + getValue() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescription () {
-		return description;
-	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param description the DESCRIPTION value
-	 */
-	public void setDescription (java.lang.String description) {
-		this.description = description;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ApplicationConfig)) return false;
-		else {
-			org.unitime.timetable.model.ApplicationConfig applicationConfig = (org.unitime.timetable.model.ApplicationConfig) obj;
-			if (null == this.getKey() || null == applicationConfig.getKey()) return false;
-			else return (this.getKey().equals(applicationConfig.getKey()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getKey()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getKey().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

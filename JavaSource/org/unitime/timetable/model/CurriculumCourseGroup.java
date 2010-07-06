@@ -19,22 +19,6 @@ public class CurriculumCourseGroup extends BaseCurriculumCourseGroup implements 
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CurriculumCourseGroup (
-		java.lang.Long uniqueId,
-		java.lang.String name,
-		java.lang.Integer type,
-		org.unitime.timetable.model.Curriculum curriculum) {
-
-		super (
-			uniqueId,
-			name,
-			type,
-			curriculum);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(CurriculumCourseGroup c) {

@@ -38,24 +38,6 @@ public class LastLikeCourseDemand extends BaseLastLikeCourseDemand {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public LastLikeCourseDemand (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		java.lang.String courseNbr,
-		java.lang.Integer priority) {
-
-		super (
-			uniqueId,
-			student,
-			subjectArea,
-			courseNbr,
-			priority);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

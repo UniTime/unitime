@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,189 +21,72 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.History;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the HISTORY table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="HISTORY"
- */
+public abstract class BaseHistory implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseHistory  implements Serializable {
+	private Long iUniqueId;
+	private String iOldValue;
+	private String iNewValue;
+	private Long iSessionId;
 
-	public static String REF = "History";
+	private Session iSession;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_OLD_VALUE = "oldValue";
 	public static String PROP_NEW_VALUE = "newValue";
 	public static String PROP_SESSION_ID = "sessionId";
 
-
-	// constructors
-	public BaseHistory () {
+	public BaseHistory() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseHistory (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseHistory(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseHistory (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setOldValue(oldValue);
-		this.setNewValue(newValue);
-		this.setSessionId(sessionId);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getOldValue() { return iOldValue; }
+	public void setOldValue(String oldValue) { iOldValue = oldValue; }
+
+	public String getNewValue() { return iNewValue; }
+	public void setNewValue(String newValue) { iNewValue = newValue; }
+
+	public Long getSessionId() { return iSessionId; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof History)) return false;
+		if (getUniqueId() == null || ((History)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((History)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String oldValue;
-	private java.lang.String newValue;
-	private java.lang.Long sessionId;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "History["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: OLD_VALUE
-	 */
-	public java.lang.String getOldValue () {
-		return oldValue;
+	public String toDebugString() {
+		return "History[" +
+			"\n	NewValue: " + getNewValue() +
+			"\n	OldValue: " + getOldValue() +
+			"\n	Session: " + getSession() +
+			"\n	SessionId: " + getSessionId() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: OLD_VALUE
-	 * @param oldValue the OLD_VALUE value
-	 */
-	public void setOldValue (java.lang.String oldValue) {
-		this.oldValue = oldValue;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NEW_VALUE
-	 */
-	public java.lang.String getNewValue () {
-		return newValue;
-	}
-
-	/**
-	 * Set the value related to the column: NEW_VALUE
-	 * @param newValue the NEW_VALUE value
-	 */
-	public void setNewValue (java.lang.String newValue) {
-		this.newValue = newValue;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public java.lang.Long getSessionId () {
-		return sessionId;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param sessionId the SESSION_ID value
-	 */
-	public void setSessionId (java.lang.Long sessionId) {
-		this.sessionId = sessionId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.History)) return false;
-		else {
-			org.unitime.timetable.model.History history = (org.unitime.timetable.model.History) obj;
-			if (null == this.getUniqueId() || null == history.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(history.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

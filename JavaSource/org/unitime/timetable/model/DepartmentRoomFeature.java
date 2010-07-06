@@ -43,18 +43,6 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public DepartmentRoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
-
-		super (
-			uniqueId,
-			label);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	public static String featureTypeDisplayString() {
 		return "Department";		

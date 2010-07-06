@@ -55,28 +55,6 @@ public abstract class Location extends BaseLocation implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Location (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
-
-		super (
-			uniqueId,
-			permanentId,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static final int sExamLocationTypeNone = 0;

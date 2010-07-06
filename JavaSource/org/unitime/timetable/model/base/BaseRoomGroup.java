@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,254 +20,104 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the ROOM_GROUP table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_GROUP"
- */
+public abstract class BaseRoomGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomGroup  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iAbbv;
+	private String iDescription;
+	private Boolean iGlobal;
+	private Boolean iDefaultGroup;
 
-	public static String REF = "RoomGroup";
+	private Department iDepartment;
+	private Session iSession;
+	private Set<Location> iRooms;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
+	public static String PROP_ABBV = "abbv";
 	public static String PROP_DESCRIPTION = "description";
 	public static String PROP_GLOBAL = "global";
-    public static String PROP_ABBV = "abbv";
 	public static String PROP_DEFAULT_GROUP = "defaultGroup";
 
-
-	// constructors
-	public BaseRoomGroup () {
+	public BaseRoomGroup() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomGroup (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseRoomGroup(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomGroup (
-		java.lang.Long uniqueId,
-		java.lang.String name,
-		java.lang.Boolean global,
-		java.lang.Boolean defaultGroup) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setName(name);
-		this.setGlobal(global);
-		this.setDefaultGroup(defaultGroup);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getAbbv() { return iAbbv; }
+	public void setAbbv(String abbv) { iAbbv = abbv; }
+
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
+
+	public Boolean isGlobal() { return iGlobal; }
+	public Boolean getGlobal() { return iGlobal; }
+	public void setGlobal(Boolean global) { iGlobal = global; }
+
+	public Boolean isDefaultGroup() { return iDefaultGroup; }
+	public Boolean getDefaultGroup() { return iDefaultGroup; }
+	public void setDefaultGroup(Boolean defaultGroup) { iDefaultGroup = defaultGroup; }
+
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<Location> getRooms() { return iRooms; }
+	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
+	public void addTorooms(Location location) {
+		if (iRooms == null) iRooms = new HashSet();
+		iRooms.add(location);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String description;
-    private java.lang.String abbv;
-	private java.lang.Boolean global;
-	private java.lang.Boolean defaultGroup;
-
-	// many to one
-	private org.unitime.timetable.model.Department department;
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set rooms;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomGroup)) return false;
+		if (getUniqueId() == null || ((RoomGroup)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomGroup)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toString() {
+		return "RoomGroup["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toDebugString() {
+		return "RoomGroup[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	DefaultGroup: " + getDefaultGroup() +
+			"\n	Department: " + getDepartment() +
+			"\n	Description: " + getDescription() +
+			"\n	Global: " + getGlobal() +
+			"\n	Name: " + getName() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescription () {
-		return description;
-	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param description the DESCRIPTION value
-	 */
-	public void setDescription (java.lang.String description) {
-		this.description = description;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: GLOBAL
-	 */
-	public java.lang.Boolean isGlobal () {
-		return global;
-	}
-
-	/**
-	 * Set the value related to the column: GLOBAL
-	 * @param global the GLOBAL value
-	 */
-	public void setGlobal (java.lang.Boolean global) {
-		this.global = global;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DEFAULT_GROUP
-	 */
-	public java.lang.Boolean isDefaultGroup () {
-		return defaultGroup;
-	}
-
-	/**
-	 * Set the value related to the column: DEFAULT_GROUP
-	 * @param defaultGroup the DEFAULT_GROUP value
-	 */
-	public void setDefaultGroup (java.lang.Boolean defaultGroup) {
-		this.defaultGroup = defaultGroup;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DEPARTMENT_ID
-	 */
-	public org.unitime.timetable.model.Department getDepartment () {
-		return department;
-	}
-
-	/**
-	 * Set the value related to the column: DEPARTMENT_ID
-	 * @param department the DEPARTMENT_ID value
-	 */
-	public void setDepartment (org.unitime.timetable.model.Department department) {
-		this.department = department;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: rooms
-	 */
-	public java.util.Set getRooms () {
-		return rooms;
-	}
-
-	/**
-	 * Set the value related to the column: rooms
-	 * @param rooms the rooms value
-	 */
-	public void setRooms (java.util.Set rooms) {
-		this.rooms = rooms;
-	}
-
-    public String getAbbv() {
-        return abbv;
-    }
-    
-    public void setAbbv(String abbv) {
-        this.abbv = abbv;
-    }
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomGroup)) return false;
-		else {
-			org.unitime.timetable.model.RoomGroup roomGroup = (org.unitime.timetable.model.RoomGroup) obj;
-			if (null == this.getUniqueId() || null == roomGroup.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomGroup.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

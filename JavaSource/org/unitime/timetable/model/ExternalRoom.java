@@ -43,28 +43,6 @@ public class ExternalRoom extends BaseExternalRoom {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExternalRoom (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ExternalBuilding building,
-		java.lang.String roomNumber,
-		java.lang.Integer capacity,
-		java.lang.String classification,
-		org.unitime.timetable.model.RoomType roomType,
-		java.lang.Boolean isInstructional) {
-
-		super (
-			uniqueId,
-			building,
-			roomNumber,
-			capacity,
-			classification,
-			roomType,
-			isInstructional);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static ExternalRoom findExternalRoomForSession(String externalUniqueId, Session session){

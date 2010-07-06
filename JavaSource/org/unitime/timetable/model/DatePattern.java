@@ -69,22 +69,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public DatePattern (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String pattern,
-		java.lang.Integer offset) {
-
-		super (
-			uniqueId,
-			session,
-			pattern,
-			offset);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	public int getPatternOffset() {
 		Calendar cal = Calendar.getInstance(Locale.US);

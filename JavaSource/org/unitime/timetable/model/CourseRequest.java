@@ -37,27 +37,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 	public CourseRequest (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseRequest (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseDemand courseDemand,
-		org.unitime.timetable.model.CourseOffering courseOffering,
-		java.lang.Integer order,
-		java.lang.Boolean allowOverlap,
-		java.lang.Integer credit) {
-
-		super (
-			uniqueId,
-			courseDemand,
-			courseOffering,
-			order,
-			allowOverlap,
-			credit);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
     
     public int compareTo(Object o) {

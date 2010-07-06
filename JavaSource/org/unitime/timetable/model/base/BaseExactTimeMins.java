@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,190 +21,72 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ExactTimeMins;
 
-/**
- * This is an object that contains data related to the EXACT_TIME_MINS table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="EXACT_TIME_MINS"
- */
+public abstract class BaseExactTimeMins implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseExactTimeMins  implements Serializable {
+	private Long iUniqueId;
+	private Integer iMinsPerMtgMin;
+	private Integer iMinsPerMtgMax;
+	private Integer iNrSlots;
+	private Integer iBreakTime;
 
-	public static String REF = "ExactTimeMins";
-	public static String PROP_MINS_PER_MTG_MIN = "minsPerMtgMin";
-	public static String PROP_MINS_PER_MTG_MAX = "minsPerMtgMax";
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_MINS_MIN = "minsPerMtgMin";
+	public static String PROP_MINS_MAX = "minsPerMtgMax";
 	public static String PROP_NR_SLOTS = "nrSlots";
 	public static String PROP_BREAK_TIME = "breakTime";
 
-
-	// constructors
-	public BaseExactTimeMins () {
+	public BaseExactTimeMins() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExactTimeMins (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseExactTimeMins(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseExactTimeMins (
-		java.lang.Long uniqueId,
-		java.lang.Integer minsPerMtgMin,
-		java.lang.Integer minsPerMtgMax,
-		java.lang.Integer nrSlots,
-		java.lang.Integer breakTime) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setMinsPerMtgMin(minsPerMtgMin);
-		this.setMinsPerMtgMax(minsPerMtgMax);
-		this.setNrSlots(nrSlots);
-		this.setBreakTime(breakTime);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getMinsPerMtgMin() { return iMinsPerMtgMin; }
+	public void setMinsPerMtgMin(Integer minsPerMtgMin) { iMinsPerMtgMin = minsPerMtgMin; }
+
+	public Integer getMinsPerMtgMax() { return iMinsPerMtgMax; }
+	public void setMinsPerMtgMax(Integer minsPerMtgMax) { iMinsPerMtgMax = minsPerMtgMax; }
+
+	public Integer getNrSlots() { return iNrSlots; }
+	public void setNrSlots(Integer nrSlots) { iNrSlots = nrSlots; }
+
+	public Integer getBreakTime() { return iBreakTime; }
+	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ExactTimeMins)) return false;
+		if (getUniqueId() == null || ((ExactTimeMins)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ExactTimeMins)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer minsPerMtgMin;
-	private java.lang.Integer minsPerMtgMax;
-	private java.lang.Integer nrSlots;
-	private java.lang.Integer breakTime;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "ExactTimeMins["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: MINS_MIN
-	 */
-	public java.lang.Integer getMinsPerMtgMin () {
-		return minsPerMtgMin;
+	public String toDebugString() {
+		return "ExactTimeMins[" +
+			"\n	BreakTime: " + getBreakTime() +
+			"\n	MinsPerMtgMax: " + getMinsPerMtgMax() +
+			"\n	MinsPerMtgMin: " + getMinsPerMtgMin() +
+			"\n	NrSlots: " + getNrSlots() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: MINS_MIN
-	 * @param minsPerMtgMin the MINS_MIN value
-	 */
-	public void setMinsPerMtgMin (java.lang.Integer minsPerMtgMin) {
-		this.minsPerMtgMin = minsPerMtgMin;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: MINS_MAX
-	 */
-	public java.lang.Integer getMinsPerMtgMax () {
-		return minsPerMtgMax;
-	}
-
-	/**
-	 * Set the value related to the column: MINS_MAX
-	 * @param minsPerMtgMax the MINS_MAX value
-	 */
-	public void setMinsPerMtgMax (java.lang.Integer minsPerMtgMax) {
-		this.minsPerMtgMax = minsPerMtgMax;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NR_SLOTS
-	 */
-	public java.lang.Integer getNrSlots () {
-		return nrSlots;
-	}
-
-	/**
-	 * Set the value related to the column: NR_SLOTS
-	 * @param nrSlots the NR_SLOTS value
-	 */
-	public void setNrSlots (java.lang.Integer nrSlots) {
-		this.nrSlots = nrSlots;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: BREAK_TIME
-	 */
-	public java.lang.Integer getBreakTime () {
-		return breakTime;
-	}
-
-	/**
-	 * Set the value related to the column: BREAK_TIME
-	 * @param breakTime the BREAK_TIME value
-	 */
-	public void setBreakTime (java.lang.Integer breakTime) {
-		this.breakTime = breakTime;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ExactTimeMins)) return false;
-		else {
-			org.unitime.timetable.model.ExactTimeMins exactTimeMins = (org.unitime.timetable.model.ExactTimeMins) obj;
-			if (null == this.getUniqueId() || null == exactTimeMins.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(exactTimeMins.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,126 +21,60 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseHistory;
+import org.unitime.timetable.model.History;
 
-/**
- * This is an object that contains data related to the HISTORY table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="HISTORY"
- */
+public abstract class BaseCourseHistory extends History implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCourseHistory extends org.unitime.timetable.model.History  implements Serializable {
+	private String iOldNumber;
+	private String iNewNumber;
 
-	public static String REF = "CourseHistory";
+
 	public static String PROP_OLD_NUMBER = "oldNumber";
 	public static String PROP_NEW_NUMBER = "newNumber";
 
-
-	// constructors
-	public BaseCourseHistory () {
+	public BaseCourseHistory() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCourseHistory (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseCourseHistory(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCourseHistory (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			oldValue,
-			newValue,
-			sessionId);
+	public String getOldNumber() { return iOldNumber; }
+	public void setOldNumber(String oldNumber) { iOldNumber = oldNumber; }
+
+	public String getNewNumber() { return iNewNumber; }
+	public void setNewNumber(String newNumber) { iNewNumber = newNumber; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseHistory)) return false;
+		if (getUniqueId() == null || ((CourseHistory)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseHistory)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String oldNumber;
-	private java.lang.String newNumber;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: OLD_NUMBER
-	 */
-	public java.lang.String getOldNumber () {
-		return oldNumber;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: OLD_NUMBER
-	 * @param oldNumber the OLD_NUMBER value
-	 */
-	public void setOldNumber (java.lang.String oldNumber) {
-		this.oldNumber = oldNumber;
+	public String toString() {
+		return "CourseHistory["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: NEW_NUMBER
-	 */
-	public java.lang.String getNewNumber () {
-		return newNumber;
+	public String toDebugString() {
+		return "CourseHistory[" +
+			"\n	NewNumber: " + getNewNumber() +
+			"\n	NewValue: " + getNewValue() +
+			"\n	OldNumber: " + getOldNumber() +
+			"\n	OldValue: " + getOldValue() +
+			"\n	Session: " + getSession() +
+			"\n	SessionId: " + getSessionId() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: NEW_NUMBER
-	 * @param newNumber the NEW_NUMBER value
-	 */
-	public void setNewNumber (java.lang.String newNumber) {
-		this.newNumber = newNumber;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CourseHistory)) return false;
-		else {
-			org.unitime.timetable.model.CourseHistory courseHistory = (org.unitime.timetable.model.CourseHistory) obj;
-			if (null == this.getUniqueId() || null == courseHistory.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(courseHistory.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

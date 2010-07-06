@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,104 +21,51 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.RoomPref;
 
-/**
- * This is an object that contains data related to the ROOM_PREF table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_PREF"
- */
+public abstract class BaseRoomPref extends Preference implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomPref extends org.unitime.timetable.model.Preference  implements Serializable {
-
-	public static String REF = "RoomPref";
+	private Location iRoom;
 
 
-	// constructors
-	public BaseRoomPref () {
+	public BaseRoomPref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomPref (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseRoomPref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
+	public Location getRoom() { return iRoom; }
+	public void setRoom(Location room) { iRoom = room; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomPref)) return false;
+		if (getUniqueId() == null || ((RoomPref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomPref)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.Location room;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: ROOM_ID
-	 */
-	public org.unitime.timetable.model.Location getRoom () {
-		return room;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: ROOM_ID
-	 * @param room the ROOM_ID value
-	 */
-	public void setRoom (org.unitime.timetable.model.Location room) {
-		this.room = room;
+	public String toString() {
+		return "RoomPref["+getUniqueId()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomPref)) return false;
-		else {
-			org.unitime.timetable.model.RoomPref roomPref = (org.unitime.timetable.model.RoomPref) obj;
-			if (null == this.getUniqueId() || null == roomPref.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomPref.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "RoomPref[" +
+			"\n	Owner: " + getOwner() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	Room: " + getRoom() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,169 +21,67 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomDept;
 
-/**
- * This is an object that contains data related to the ROOM_DEPT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_DEPT"
- */
+public abstract class BaseRoomDept implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomDept  implements Serializable {
+	private Long iUniqueId;
+	private Boolean iControl;
 
-	public static String REF = "RoomDept";
-	public static String PROP_CONTROL = "control";
+	private Location iRoom;
+	private Department iDepartment;
 
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_IS_CONTROL = "control";
 
-	// constructors
-	public BaseRoomDept () {
+	public BaseRoomDept() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomDept (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseRoomDept(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomDept (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Location room,
-		org.unitime.timetable.model.Department department,
-		java.lang.Boolean control) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setRoom(room);
-		this.setDepartment(department);
-		this.setControl(control);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Boolean isControl() { return iControl; }
+	public Boolean getControl() { return iControl; }
+	public void setControl(Boolean control) { iControl = control; }
+
+	public Location getRoom() { return iRoom; }
+	public void setRoom(Location room) { iRoom = room; }
+
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomDept)) return false;
+		if (getUniqueId() == null || ((RoomDept)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomDept)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Boolean control;
-
-	// many to one
-	private org.unitime.timetable.model.Location room;
-	private org.unitime.timetable.model.Department department;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "RoomDept["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: IS_CONTROL
-	 */
-	public java.lang.Boolean isControl () {
-		return control;
+	public String toDebugString() {
+		return "RoomDept[" +
+			"\n	Control: " + getControl() +
+			"\n	Department: " + getDepartment() +
+			"\n	Room: " + getRoom() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: IS_CONTROL
-	 * @param control the IS_CONTROL value
-	 */
-	public void setControl (java.lang.Boolean control) {
-		this.control = control;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ROOM_ID
-	 */
-	public org.unitime.timetable.model.Location getRoom () {
-		return room;
-	}
-
-	/**
-	 * Set the value related to the column: ROOM_ID
-	 * @param room the ROOM_ID value
-	 */
-	public void setRoom (org.unitime.timetable.model.Location room) {
-		this.room = room;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DEPARTMENT_ID
-	 */
-	public org.unitime.timetable.model.Department getDepartment () {
-		return department;
-	}
-
-	/**
-	 * Set the value related to the column: DEPARTMENT_ID
-	 * @param department the DEPARTMENT_ID value
-	 */
-	public void setDepartment (org.unitime.timetable.model.Department department) {
-		this.department = department;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomDept)) return false;
-		else {
-			org.unitime.timetable.model.RoomDept roomDept = (org.unitime.timetable.model.RoomDept) obj;
-			if (null == this.getUniqueId() || null == roomDept.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomDept.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

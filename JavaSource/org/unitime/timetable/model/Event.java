@@ -53,20 +53,6 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Event (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
-
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static final int sEventTypeClass = 0;

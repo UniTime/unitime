@@ -1,235 +1,112 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.PosMajor;
 
-/**
- * This is an object that contains data related to the curricula table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="curricula"
- */
+public abstract class BaseCurriculum implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCurriculum  implements Serializable {
+	private Long iUniqueId;
+	private String iAbbv;
+	private String iName;
 
-	public static String REF = "Curriculum";
+	private AcademicArea iAcademicArea;
+	private Department iDepartment;
+	private Set<PosMajor> iMajors;
+	private Set<CurriculumClassification> iClassifications;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_ABBV = "abbv";
 	public static String PROP_NAME = "name";
 
-
-	// constructors
-	public BaseCurriculum () {
+	public BaseCurriculum() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCurriculum (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCurriculum(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCurriculum (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.AcademicArea academicArea,
-		org.unitime.timetable.model.Department department,
-		java.lang.String abbv,
-		java.lang.String name) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setAcademicArea(academicArea);
-		this.setDepartment(department);
-		this.setAbbv(abbv);
-		this.setName(name);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getAbbv() { return iAbbv; }
+	public void setAbbv(String abbv) { iAbbv = abbv; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public AcademicArea getAcademicArea() { return iAcademicArea; }
+	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
+
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
+
+	public Set<PosMajor> getMajors() { return iMajors; }
+	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
+	public void addTomajors(PosMajor posMajor) {
+		if (iMajors == null) iMajors = new HashSet();
+		iMajors.add(posMajor);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String abbv;
-	private java.lang.String name;
-
-	// many to one
-	private org.unitime.timetable.model.AcademicArea academicArea;
-	private org.unitime.timetable.model.Department department;
-
-	// collections
-	private java.util.Set classifications;
-	private java.util.Set majors;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="uniqueid"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<CurriculumClassification> getClassifications() { return iClassifications; }
+	public void setClassifications(Set<CurriculumClassification> classifications) { iClassifications = classifications; }
+	public void addToclassifications(CurriculumClassification curriculumClassification) {
+		if (iClassifications == null) iClassifications = new HashSet();
+		iClassifications.add(curriculumClassification);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Curriculum)) return false;
+		if (getUniqueId() == null || ((Curriculum)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Curriculum)o).getUniqueId());
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: abbv
-	 */
-	public java.lang.String getAbbv () {
-		return abbv;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: abbv
-	 * @param abbv the abbv value
-	 */
-	public void setAbbv (java.lang.String abbv) {
-		this.abbv = abbv;
+	public String toString() {
+		return "Curriculum["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: name
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toDebugString() {
+		return "Curriculum[" +
+			"\n	Abbv: " + getAbbv() +
+			"\n	AcademicArea: " + getAcademicArea() +
+			"\n	Department: " + getDepartment() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: name
-	 * @param name the name value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: acad_area_id
-	 */
-	public org.unitime.timetable.model.AcademicArea getAcademicArea () {
-		return academicArea;
-	}
-
-	/**
-	 * Set the value related to the column: acad_area_id
-	 * @param academicArea the acad_area_id value
-	 */
-	public void setAcademicArea (org.unitime.timetable.model.AcademicArea academicArea) {
-		this.academicArea = academicArea;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: dept_id
-	 */
-	public org.unitime.timetable.model.Department getDepartment () {
-		return department;
-	}
-
-	/**
-	 * Set the value related to the column: dept_id
-	 * @param department the dept_id value
-	 */
-	public void setDepartment (org.unitime.timetable.model.Department department) {
-		this.department = department;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: classifications
-	 */
-	public java.util.Set getClassifications () {
-		return classifications;
-	}
-
-	/**
-	 * Set the value related to the column: classifications
-	 * @param classifications the classifications value
-	 */
-	public void setClassifications (java.util.Set classifications) {
-		this.classifications = classifications;
-	}
-
-	public void addToclassifications (org.unitime.timetable.model.CurriculumClassification curriculumClassification) {
-		if (null == getClassifications()) setClassifications(new java.util.HashSet());
-		getClassifications().add(curriculumClassification);
-	}
-
-	/**
-	 * Return the value associated with the column: majors
-	 */
-	public java.util.Set getMajors () {
-		return majors;
-	}
-
-	/**
-	 * Set the value related to the column: majors
-	 * @param majors the majors value
-	 */
-	public void setMajors (java.util.Set majors) {
-		this.majors = majors;
-	}
-
-	public void addTomajors (org.unitime.timetable.model.PosMajor major) {
-		if (null == getMajors()) setMajors(new java.util.HashSet());
-		getMajors().add(major);
-	}
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Curriculum)) return false;
-		else {
-			org.unitime.timetable.model.Curriculum curriculum = (org.unitime.timetable.model.Curriculum) obj;
-			if (null == this.getUniqueId() || null == curriculum.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculum.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -38,22 +38,6 @@ public class RoomDept extends BaseRoomDept implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomDept (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Location room,
-		org.unitime.timetable.model.Department department,
-		java.lang.Boolean control) {
-
-		super (
-			uniqueId,
-			room,
-			department,
-			control);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(Object o) {

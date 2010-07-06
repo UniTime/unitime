@@ -22,20 +22,6 @@ public abstract class ExamEvent extends BaseExamEvent {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
-
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public Set<Student> getStudents() {

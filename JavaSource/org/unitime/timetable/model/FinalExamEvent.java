@@ -19,20 +19,6 @@ public class FinalExamEvent extends BaseFinalExamEvent {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public FinalExamEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
-
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public int getEventType() { return sEventTypeFinalExam; }

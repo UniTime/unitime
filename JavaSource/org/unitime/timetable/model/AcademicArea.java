@@ -46,24 +46,6 @@ public class AcademicArea extends BaseAcademicArea {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public AcademicArea (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String academicAreaAbbreviation,
-		java.lang.String shortTitle,
-		java.lang.String longTitle) {
-
-		super (
-			uniqueId,
-			session,
-			academicAreaAbbreviation,
-			shortTitle,
-			longTitle);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/** Request Attribute name for Academic Area **/

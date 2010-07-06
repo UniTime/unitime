@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,146 +21,60 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.User;
 
-/**
- * This is an object that contains data related to the USERS table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="USERS"
- */
+public abstract class BaseUser implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseUser  implements Serializable {
+	private String iUsername;
+	private String iPassword;
+	private String iExternalUniqueId;
 
-	public static String REF = "User";
-	public static String PROP_PASSWORD = "password";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+
 	public static String PROP_USERNAME = "username";
+	public static String PROP_PASSWORD = "password";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 
-
-	// constructors
-	public BaseUser () {
+	public BaseUser() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseUser (java.lang.String username) {
-		this.setUsername(username);
+	public BaseUser(String username) {
+		setUsername(username);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseUser (
-		java.lang.String username,
-		java.lang.String password) {
+	protected void initialize() {}
 
-		this.setUsername(username);
-		this.setPassword(password);
-		initialize();
+	public String getUsername() { return iUsername; }
+	public void setUsername(String username) { iUsername = username; }
+
+	public String getPassword() { return iPassword; }
+	public void setPassword(String password) { iPassword = password; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof User)) return false;
+		if (getUsername() == null || ((User)o).getUsername() == null) return false;
+		return getUsername().equals(((User)o).getUsername());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.String username;
-
-	// fields
-	private java.lang.String password;
-	private java.lang.String externalUniqueId;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="assigned"
-     *  column="USERNAME"
-     */
-	public java.lang.String getUsername () {
-		return username;
+	public int hashCode() {
+		if (getUsername() == null) return super.hashCode();
+		return getUsername().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param username the new ID
-	 */
-	public void setUsername (java.lang.String username) {
-		this.username = username;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "User["+getUsername()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: PASSWORD
-	 */
-	public java.lang.String getPassword () {
-		return password;
+	public String toDebugString() {
+		return "User[" +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	Password: " + getPassword() +
+			"\n	Username: " + getUsername() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: PASSWORD
-	 * @param password the PASSWORD value
-	 */
-	public void setPassword (java.lang.String password) {
-		this.password = password;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
-	}
-
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
-	}
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.User)) return false;
-		else {
-			org.unitime.timetable.model.User user = (org.unitime.timetable.model.User) obj;
-			if (null == this.getUsername() || null == user.getUsername()) return false;
-			else return (this.getUsername().equals(user.getUsername()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUsername()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUsername().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

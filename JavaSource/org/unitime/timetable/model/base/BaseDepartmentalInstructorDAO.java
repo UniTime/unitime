@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,108 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseDepartmentalInstructorDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseDepartmentalInstructorDAO extends _RootDAO {
 
-	// query name references
+	private static DepartmentalInstructorDAO sInstance;
 
-
-	public static DepartmentalInstructorDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static DepartmentalInstructorDAO getInstance () {
-		if (null == instance) instance = new DepartmentalInstructorDAO();
-		return instance;
+		if (sInstance == null) sInstance = new DepartmentalInstructorDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.DepartmentalInstructor.class;
+		return DepartmentalInstructor.class;
 	}
 
-    public Order getDefaultOrder () {
-		return Order.asc("lastName");
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.DepartmentalInstructor
-	 */
-	public org.unitime.timetable.model.DepartmentalInstructor cast (Object object) {
-		return (org.unitime.timetable.model.DepartmentalInstructor) object;
+	public Order getDefaultOrder () {
+		return null;
 	}
 
-	public org.unitime.timetable.model.DepartmentalInstructor get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.DepartmentalInstructor) get(getReferenceClass(), key);
+	public DepartmentalInstructor get(Long uniqueId) {
+		return (DepartmentalInstructor) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.DepartmentalInstructor get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.DepartmentalInstructor) get(getReferenceClass(), key, s);
+	public DepartmentalInstructor get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (DepartmentalInstructor) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.DepartmentalInstructor load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.DepartmentalInstructor) load(getReferenceClass(), key);
+	public DepartmentalInstructor load(Long uniqueId) {
+		return (DepartmentalInstructor) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.DepartmentalInstructor load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.DepartmentalInstructor) load(getReferenceClass(), key, s);
+	public DepartmentalInstructor load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (DepartmentalInstructor) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.DepartmentalInstructor loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.DepartmentalInstructor obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public DepartmentalInstructor loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		DepartmentalInstructor departmentalInstructor = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(departmentalInstructor)) Hibernate.initialize(departmentalInstructor);
+		return departmentalInstructor;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param departmentalInstructor a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor)
-	{
-		return (java.lang.Long) super.save(departmentalInstructor);
+	public void save(DepartmentalInstructor departmentalInstructor) {
+		save((Object) departmentalInstructor);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param departmentalInstructor a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor, Session s)
-	{
-		return (java.lang.Long) save((Object) departmentalInstructor, s);
+	public void save(DepartmentalInstructor departmentalInstructor, org.hibernate.Session hibSession) {
+		save((Object) departmentalInstructor, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param departmentalInstructor a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor)
-	{
+	public void saveOrUpdate(DepartmentalInstructor departmentalInstructor) {
 		saveOrUpdate((Object) departmentalInstructor);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param departmentalInstructor a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor, Session s)
-	{
-		saveOrUpdate((Object) departmentalInstructor, s);
+	public void saveOrUpdate(DepartmentalInstructor departmentalInstructor, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) departmentalInstructor, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param departmentalInstructor a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor) 
-	{
+
+	public void update(DepartmentalInstructor departmentalInstructor) {
 		update((Object) departmentalInstructor);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param departmentalInstructor a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor, Session s)
-	{
-		update((Object) departmentalInstructor, s);
+	public void update(DepartmentalInstructor departmentalInstructor, org.hibernate.Session hibSession) {
+		update((Object) departmentalInstructor, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param departmentalInstructor the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor)
-	{
+	public void delete(DepartmentalInstructor departmentalInstructor) {
 		delete((Object) departmentalInstructor);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param departmentalInstructor the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor, Session s)
-	{
-		delete((Object) departmentalInstructor, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.DepartmentalInstructor departmentalInstructor, Session s)
-	{
-		refresh((Object) departmentalInstructor, s);
+	public void delete(DepartmentalInstructor departmentalInstructor, org.hibernate.Session hibSession) {
+		delete((Object) departmentalInstructor, hibSession);
 	}
 
+	public void refresh(DepartmentalInstructor departmentalInstructor, org.hibernate.Session hibSession) {
+		refresh((Object) departmentalInstructor, hibSession);
+	}
 
+	public List<DepartmentalInstructor> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from DepartmentalInstructor").list();
+	}
+
+	public List<DepartmentalInstructor> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
+		return hibSession.createQuery("from DepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId").setLong("positionTypeId", positionTypeId).list();
+	}
+
+	public List<DepartmentalInstructor> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from DepartmentalInstructor x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+	}
 }

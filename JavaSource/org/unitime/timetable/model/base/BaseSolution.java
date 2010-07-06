@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,20 +20,38 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.JointEnrollment;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolutionInfo;
+import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.SolverParameter;
+import org.unitime.timetable.model.StudentEnrollment;
 
-/**
- * This is an object that contains data related to the SOLUTION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLUTION"
- */
+public abstract class BaseSolution implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolution  implements Serializable {
+	private Long iUniqueId;
+	private Date iCreated;
+	private Boolean iValid;
+	private Boolean iCommited;
+	private Date iCommitDate;
+	private String iNote;
+	private String iCreator;
 
-	public static String REF = "Solution";
+	private SolverGroup iOwner;
+	private SolutionInfo iGlobalInfo;
+	private Set<SolverParameter> iParameters;
+	private Set<SolutionInfo> iSolutionInfo;
+	private Set<StudentEnrollment> iStudentEnrollments;
+	private Set<Assignment> iAssignments;
+	private Set<JointEnrollment> iJointEnrollments;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_CREATED = "created";
 	public static String PROP_VALID = "valid";
 	public static String PROP_COMMITED = "commited";
@@ -41,363 +59,106 @@ public abstract class BaseSolution  implements Serializable {
 	public static String PROP_NOTE = "note";
 	public static String PROP_CREATOR = "creator";
 
-
-	// constructors
-	public BaseSolution () {
+	public BaseSolution() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolution (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolution(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseSolution (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverGroup owner,
-		java.util.Date created,
-		java.lang.Boolean valid,
-		java.lang.Boolean commited) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setOwner(owner);
-		this.setCreated(created);
-		this.setValid(valid);
-		this.setCommited(commited);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Date getCreated() { return iCreated; }
+	public void setCreated(Date created) { iCreated = created; }
+
+	public Boolean isValid() { return iValid; }
+	public Boolean getValid() { return iValid; }
+	public void setValid(Boolean valid) { iValid = valid; }
+
+	public Boolean isCommited() { return iCommited; }
+	public Boolean getCommited() { return iCommited; }
+	public void setCommited(Boolean commited) { iCommited = commited; }
+
+	public Date getCommitDate() { return iCommitDate; }
+	public void setCommitDate(Date commitDate) { iCommitDate = commitDate; }
+
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
+
+	public String getCreator() { return iCreator; }
+	public void setCreator(String creator) { iCreator = creator; }
+
+	public SolverGroup getOwner() { return iOwner; }
+	public void setOwner(SolverGroup owner) { iOwner = owner; }
+
+	public SolutionInfo getGlobalInfo() { return iGlobalInfo; }
+	public void setGlobalInfo(SolutionInfo globalInfo) { iGlobalInfo = globalInfo; }
+
+	public Set<SolverParameter> getParameters() { return iParameters; }
+	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
+	public void addToparameters(SolverParameter solverParameter) {
+		if (iParameters == null) iParameters = new HashSet();
+		iParameters.add(solverParameter);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.util.Date created;
-	private java.lang.Boolean valid;
-	private java.lang.Boolean commited;
-	private java.util.Date commitDate;
-	private java.lang.String note;
-	private java.lang.String creator;
-
-	// many to one
-	private org.unitime.timetable.model.SolverGroup owner;
-	private org.unitime.timetable.model.SolutionInfo globalInfo;
-
-	// collections
-	private java.util.Set parameters;
-	private java.util.Set solutionInfo;
-	private java.util.Set studentEnrollments;
-	private java.util.Set assignments;
-	private java.util.Set jointEnrollments;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<SolutionInfo> getSolutionInfo() { return iSolutionInfo; }
+	public void setSolutionInfo(Set<SolutionInfo> solutionInfo) { iSolutionInfo = solutionInfo; }
+	public void addTosolutionInfo(SolutionInfo solutionInfo) {
+		if (iSolutionInfo == null) iSolutionInfo = new HashSet();
+		iSolutionInfo.add(solutionInfo);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<StudentEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
+	public void setStudentEnrollments(Set<StudentEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
+	public void addTostudentEnrollments(StudentEnrollment studentEnrollment) {
+		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet();
+		iStudentEnrollments.add(studentEnrollment);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: CREATED
-	 */
-	public java.util.Date getCreated () {
-		return created;
+	public Set<Assignment> getAssignments() { return iAssignments; }
+	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
+	public void addToassignments(Assignment assignment) {
+		if (iAssignments == null) iAssignments = new HashSet();
+		iAssignments.add(assignment);
 	}
 
-	/**
-	 * Set the value related to the column: CREATED
-	 * @param created the CREATED value
-	 */
-	public void setCreated (java.util.Date created) {
-		this.created = created;
+	public Set<JointEnrollment> getJointEnrollments() { return iJointEnrollments; }
+	public void setJointEnrollments(Set<JointEnrollment> jointEnrollments) { iJointEnrollments = jointEnrollments; }
+	public void addTojointEnrollments(JointEnrollment jointEnrollment) {
+		if (iJointEnrollments == null) iJointEnrollments = new HashSet();
+		iJointEnrollments.add(jointEnrollment);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: VALID
-	 */
-	public java.lang.Boolean isValid () {
-		return valid;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Solution)) return false;
+		if (getUniqueId() == null || ((Solution)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Solution)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: VALID
-	 * @param valid the VALID value
-	 */
-	public void setValid (java.lang.Boolean valid) {
-		this.valid = valid;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: COMMITED
-	 */
-	public java.lang.Boolean isCommited () {
-		return commited;
+	public String toString() {
+		return "Solution["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: COMMITED
-	 * @param commited the COMMITED value
-	 */
-	public void setCommited (java.lang.Boolean commited) {
-		this.commited = commited;
+	public String toDebugString() {
+		return "Solution[" +
+			"\n	CommitDate: " + getCommitDate() +
+			"\n	Commited: " + getCommited() +
+			"\n	Created: " + getCreated() +
+			"\n	Creator: " + getCreator() +
+			"\n	Note: " + getNote() +
+			"\n	Owner: " + getOwner() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Valid: " + getValid() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: COMMIT_DATE
-	 */
-	public java.util.Date getCommitDate () {
-		return commitDate;
-	}
-
-	/**
-	 * Set the value related to the column: COMMIT_DATE
-	 * @param commitDate the COMMIT_DATE value
-	 */
-	public void setCommitDate (java.util.Date commitDate) {
-		this.commitDate = commitDate;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NOTE
-	 */
-	public java.lang.String getNote () {
-		return note;
-	}
-
-	/**
-	 * Set the value related to the column: NOTE
-	 * @param note the NOTE value
-	 */
-	public void setNote (java.lang.String note) {
-		this.note = note;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: CREATOR
-	 */
-	public java.lang.String getCreator () {
-		return creator;
-	}
-
-	/**
-	 * Set the value related to the column: CREATOR
-	 * @param creator the CREATOR value
-	 */
-	public void setCreator (java.lang.String creator) {
-		this.creator = creator;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: OWNER_ID
-	 */
-	public org.unitime.timetable.model.SolverGroup getOwner () {
-		return owner;
-	}
-
-	/**
-	 * Set the value related to the column: OWNER_ID
-	 * @param owner the OWNER_ID value
-	 */
-	public void setOwner (org.unitime.timetable.model.SolverGroup owner) {
-		this.owner = owner;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: globalInfo
-	 */
-	public org.unitime.timetable.model.SolutionInfo getGlobalInfo () {
-		return globalInfo;
-	}
-
-	/**
-	 * Set the value related to the column: globalInfo
-	 * @param globalInfo the globalInfo value
-	 */
-	public void setGlobalInfo (org.unitime.timetable.model.SolutionInfo globalInfo) {
-		this.globalInfo = globalInfo;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: parameters
-	 */
-	public java.util.Set getParameters () {
-		return parameters;
-	}
-
-	/**
-	 * Set the value related to the column: parameters
-	 * @param parameters the parameters value
-	 */
-	public void setParameters (java.util.Set parameters) {
-		this.parameters = parameters;
-	}
-
-	public void addToparameters (org.unitime.timetable.model.SolverParameter solverParameter) {
-		if (null == getParameters()) setParameters(new java.util.HashSet());
-		getParameters().add(solverParameter);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: solutionInfo
-	 */
-	public java.util.Set getSolutionInfo () {
-		return solutionInfo;
-	}
-
-	/**
-	 * Set the value related to the column: solutionInfo
-	 * @param solutionInfo the solutionInfo value
-	 */
-	public void setSolutionInfo (java.util.Set solutionInfo) {
-		this.solutionInfo = solutionInfo;
-	}
-
-	public void addTosolutionInfo (org.unitime.timetable.model.SolverInfo solverInfo) {
-		if (null == getSolutionInfo()) setSolutionInfo(new java.util.HashSet());
-		getSolutionInfo().add(solverInfo);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: studentEnrollments
-	 */
-	public java.util.Set getStudentEnrollments () {
-		return studentEnrollments;
-	}
-
-	/**
-	 * Set the value related to the column: studentEnrollments
-	 * @param studentEnrollments the studentEnrollments value
-	 */
-	public void setStudentEnrollments (java.util.Set studentEnrollments) {
-		this.studentEnrollments = studentEnrollments;
-	}
-
-	public void addTostudentEnrollments (org.unitime.timetable.model.StudentEnrollment studentEnrollment) {
-		if (null == getStudentEnrollments()) setStudentEnrollments(new java.util.HashSet());
-		getStudentEnrollments().add(studentEnrollment);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: assignments
-	 */
-	public java.util.Set getAssignments () {
-		return assignments;
-	}
-
-	/**
-	 * Set the value related to the column: assignments
-	 * @param assignments the assignments value
-	 */
-	public void setAssignments (java.util.Set assignments) {
-		this.assignments = assignments;
-	}
-
-	public void addToassignments (org.unitime.timetable.model.Assignment assignment) {
-		if (null == getAssignments()) setAssignments(new java.util.HashSet());
-		getAssignments().add(assignment);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: jointEnrollments
-	 */
-	public java.util.Set getJointEnrollments () {
-		return jointEnrollments;
-	}
-
-	/**
-	 * Set the value related to the column: jointEnrollments
-	 * @param jointEnrollments the jointEnrollments value
-	 */
-	public void setJointEnrollments (java.util.Set jointEnrollments) {
-		this.jointEnrollments = jointEnrollments;
-	}
-
-	public void addTojointEnrollments (org.unitime.timetable.model.JointEnrollment jointEnrollment) {
-		if (null == getJointEnrollments()) setJointEnrollments(new java.util.HashSet());
-		getJointEnrollments().add(jointEnrollment);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Solution)) return false;
-		else {
-			org.unitime.timetable.model.Solution solution = (org.unitime.timetable.model.Solution) obj;
-			if (null == this.getUniqueId() || null == solution.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solution.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,172 +1,92 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-public abstract class BaseCurriculumCourseGroup implements Serializable {
-	
-	public static String REF = "BaseCurriculumCourseGroup";
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumCourseGroup;
 
+public abstract class BaseCurriculumCourseGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private Long iUniqueId;
+	private String iName;
+	private String iColor;
+	private Integer iType;
+
+	private Curriculum iCurriculum;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_COLOR = "color";
 	public static String PROP_TYPE = "type";
 
-
-	// constructors
-	public BaseCurriculumCourseGroup () {
+	public BaseCurriculumCourseGroup() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCurriculumCourseGroup (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCurriculumCourseGroup(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCurriculumCourseGroup (
-		java.lang.Long uniqueId,
-		java.lang.String name,
-		java.lang.Integer type, 
-		org.unitime.timetable.model.Curriculum curriculum) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setName(name);
-		this.setType(type);
-		this.setCurriculum(curriculum);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getColor() { return iColor; }
+	public void setColor(String color) { iColor = color; }
+
+	public Integer getType() { return iType; }
+	public void setType(Integer type) { iType = type; }
+
+	public Curriculum getCurriculum() { return iCurriculum; }
+	public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CurriculumCourseGroup)) return false;
+		if (getUniqueId() == null || ((CurriculumCourseGroup)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CurriculumCourseGroup)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String color;
-	private java.lang.Integer type;
-
-	// many to one
-	private org.unitime.timetable.model.Curriculum curriculum;
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="uniqueid"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "CurriculumCourseGroup["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: name
-	 */
-	public java.lang.String getName () {
-		return name;
-	}
-
-	/**
-	 * Set the value related to the column: name
-	 * @param name the name value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: color
-	 */
-	public java.lang.String getColor () {
-		return color;
-	}
-
-	/**
-	 * Set the value related to the column: color
-	 * @param color the color value
-	 */
-	public void setColor (java.lang.String color) {
-		this.color = color;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: type
-	 */
-	public java.lang.Integer getType () {
-		return type;
-	}
-
-	/**
-	 * Set the value related to the column: type
-	 * @param type the type value
-	 */
-	public void setType (java.lang.Integer type) {
-		this.type = type;
-	}
-
-	/**
-	 * Return the value associated with the column: curricula_id
-	 */
-	public org.unitime.timetable.model.Curriculum getCurriculum () {
-		return curriculum;
-	}
-
-	/**
-	 * Set the value related to the column: curricula_id
-	 * @param curriculum the curricula_id value
-	 */
-	public void setCurriculum (org.unitime.timetable.model.Curriculum curriculum) {
-		this.curriculum = curriculum;
-	}
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CurriculumCourse)) return false;
-		else {
-			org.unitime.timetable.model.CurriculumCourse curriculumCourse = (org.unitime.timetable.model.CurriculumCourse) obj;
-			if (null == this.getUniqueId() || null == curriculumCourse.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculumCourse.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
+	public String toDebugString() {
+		return "CurriculumCourseGroup[" +
+			"\n	Color: " + getColor() +
+			"\n	Curriculum: " + getCurriculum() +
+			"\n	Name: " + getName() +
+			"\n	Type: " + getType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
 }

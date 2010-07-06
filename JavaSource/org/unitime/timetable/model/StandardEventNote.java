@@ -41,18 +41,6 @@ public class StandardEventNote extends BaseStandardEventNote {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StandardEventNote (
-		java.lang.Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
    public static List findAll() {

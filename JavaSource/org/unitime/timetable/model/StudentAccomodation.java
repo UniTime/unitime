@@ -39,22 +39,6 @@ public class StudentAccomodation extends BaseStudentAccomodation {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentAccomodation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String name,
-		java.lang.String abbreviation) {
-
-		super (
-			uniqueId,
-			session,
-			name,
-			abbreviation);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public static StudentAccomodation findByAbbv(Long sessionId, String abbv) {
