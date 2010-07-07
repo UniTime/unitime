@@ -59,7 +59,7 @@ public interface CurriculaServiceAsync {
 	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void updateCurriculaByProjections(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses,  AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void populateCourseProjectedDemands(boolean includeOtherStudents, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId, AsyncCallback<Boolean> callback) throws CurriculaException;
 
