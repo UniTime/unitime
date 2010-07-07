@@ -60,7 +60,7 @@ public interface CurriculaService extends RemoteService {
 	public Boolean canAddCurriculum() throws CurriculaException;
 	public Boolean isAdmin() throws CurriculaException;
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException;
-	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds) throws CurriculaException;
+	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException;
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException;
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException;
 	

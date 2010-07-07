@@ -277,7 +277,7 @@ public class CurriculaTable extends Composite {
 						if (Window.confirm("Do you realy want to update " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + "?")) {
 							LoadingWidget.getInstance().show("Updating " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + " ... " +
 									"&nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...", 300000);
-							iService.updateCurriculaByProjections(curIds, new AsyncCallback<Boolean>() {
+							iService.updateCurriculaByProjections(curIds, false, new AsyncCallback<Boolean>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									setError("Unable to update curricula (" + caught.getMessage() + ")");
@@ -304,6 +304,54 @@ public class CurriculaTable extends Composite {
 				});
 				updatePlanned.getElement().getStyle().setCursor(Cursor.POINTER);
 				menu.addItem(updatePlanned);
+				MenuItem updatePlannedInclCourses = new MenuItem("Update Planned Enrollment And Course Projections", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						HashSet<Long> curIds = null;
+						if (iSelectedCurricula.isEmpty()) {
+							for (CurriculumInterface c: iData)
+								if (c.isEditable()) {
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), "unitime-TableRowProblem");
+								}
+						} else {
+							curIds = new HashSet<Long>();
+							for (CurriculumInterface c: iData)
+								if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+									curIds.add(c.getId());
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), "unitime-TableRowProblem");
+								}
+						}
+						if (Window.confirm("Do you realy want to update " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + "?")) {
+							LoadingWidget.getInstance().show("Updating " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + " ... " +
+									"&nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...", 300000);
+							iService.updateCurriculaByProjections(curIds, true, new AsyncCallback<Boolean>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									setError("Unable to update curricula (" + caught.getMessage() + ")");
+									for (CurriculumInterface c: iData)
+										if (c.isEditable()) {
+											iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+										}
+									LoadingWidget.getInstance().hide();
+								}
+
+								@Override
+								public void onSuccess(Boolean result) {
+									LoadingWidget.getInstance().hide();
+									query(iLastQuery, null);
+								}
+							});
+						} else {
+							for (CurriculumInterface c: iData)
+								if (c.isEditable()) {
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+								}
+						}
+					}
+				});
+				updatePlannedInclCourses.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(updatePlannedInclCourses);
 				if (iIsAdmin) {
 					menu.addSeparator();
 					MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
