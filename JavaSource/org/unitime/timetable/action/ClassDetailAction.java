@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -356,15 +355,14 @@ public class ClassDetailAction extends PreferencesAction {
 	        	request.setAttribute(Reservation.RESV_REQUEST_ATTR, resvHtml);
 
 	        if (c.getNbrRooms().intValue()>0) {
-	        	Vector roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
+	        	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
 	        	StringBuffer rooms = new StringBuffer();
 	        	if (roomLocations.isEmpty()) {
 	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR,
 	        				"<font color='red'><b>No rooms are available.</b></font>");
 	        	} else {
 	        		int idx = 0;
-	        		for (Enumeration e=roomLocations.elements();e.hasMoreElements();idx++) {
-	        			RoomLocation rl = (RoomLocation)e.nextElement();
+	        		for (RoomLocation rl: roomLocations) {
 	        			if (idx>0) rooms.append(", ");
 	    				if (idx==4)
 	    					rooms.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">...</a></span><span id='room_rest' style='display:none'>");

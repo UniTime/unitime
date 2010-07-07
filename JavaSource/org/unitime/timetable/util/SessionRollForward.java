@@ -1881,13 +1881,13 @@ public class SessionRollForward {
 	public void rollTimePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollTimePatternsForwardFrom());
-		Vector fromDatePatterns = TimePattern.findAll(fromSession, null);
+		List<TimePattern> fromDatePatterns = TimePattern.findAll(fromSession, null);
 		TimePattern fromTimePattern = null;
 		TimePattern toTimePattern = null;
 		TimePatternDAO tpDao = new TimePatternDAO();
 		try {
-			for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
-				fromTimePattern = (TimePattern) it.next();
+			for(Iterator<TimePattern> it = fromDatePatterns.iterator(); it.hasNext();){
+				fromTimePattern = it.next();
 				if (fromTimePattern != null){
 					toTimePattern = (TimePattern) fromTimePattern.clone();
 					toTimePattern.setSession(toSession);

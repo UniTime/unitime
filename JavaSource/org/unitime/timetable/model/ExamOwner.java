@@ -144,7 +144,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         if (cmp!=0) return cmp;
         
         switch (getOwnerType()) {
-            case sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare(getOwnerObject(), owner.getOwnerObject());
+            case sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare((Class_)getOwnerObject(), (Class_)owner.getOwnerObject());
             case sOwnerTypeConfig : return new InstrOfferingConfigComparator(null).compare(getOwnerObject(), owner.getOwnerObject());
         }
            

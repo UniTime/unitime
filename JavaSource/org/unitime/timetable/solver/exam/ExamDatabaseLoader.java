@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +72,7 @@ import net.sf.cpsolver.exam.model.ExamRoom;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.model.Constraint;
+import net.sf.cpsolver.ifs.util.ArrayList;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
@@ -219,7 +219,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
             
-            Vector periodPlacements = new Vector();
+            List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
             boolean hasReqPeriod = false;
             Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
             for (ExamPeriod period: getModel().getPeriods()) {
@@ -265,7 +265,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             
             int minSize = 0;
-            Vector<ExamOwner> owners = new Vector();
+            List<ExamOwner> owners = new ArrayList<ExamOwner>();
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
                 ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
@@ -376,8 +376,8 @@ public class ExamDatabaseLoader extends ExamLoader {
         return (ExamInstructor)iInstructors.get(instructor.getUniqueId());
     }
 
-    protected Vector<ExamRoomPlacement> findRooms(org.unitime.timetable.model.Exam exam) {
-        Vector<ExamRoomPlacement> rooms = new Vector();
+    protected List<ExamRoomPlacement> findRooms(org.unitime.timetable.model.Exam exam) {
+        List<ExamRoomPlacement> rooms = new ArrayList<ExamRoomPlacement>();
         boolean reqRoom = false;
         boolean reqBldg = false;
         boolean reqGroup = false;

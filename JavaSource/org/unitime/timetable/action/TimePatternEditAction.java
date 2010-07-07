@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -650,7 +649,7 @@ public class TimePatternEditAction extends Action {
 			    new String[] {"left", "left", "left", "left", "left","left", "left", "left", "left", "left"},
 			    null );
         
-        Vector patterns = TimePattern.findAll(request,null);
+        List<TimePattern> patterns = TimePattern.findAll(request,null);
 		if(patterns.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No time pattern defined for this academic initiative and term."}, null, null );			    
 		}
@@ -659,8 +658,7 @@ public class TimePatternEditAction extends Action {
     	Session session = Session.getCurrentAcadSession(user);
 		Set used = TimePattern.findAllUsed(session);
 
-        for (Enumeration e=patterns.elements();e.hasMoreElements();) {
-        	TimePattern pattern = (TimePattern)e.nextElement();
+        for (TimePattern pattern: patterns) {
         	String onClick = "onClick=\"document.location='timePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
         	String deptStr = "";
         	String deptCmp = "";

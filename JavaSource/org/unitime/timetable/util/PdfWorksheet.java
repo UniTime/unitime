@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -241,11 +242,11 @@ public class PdfWorksheet {
     private String[] room(Class_ clazz) {
         Assignment assgn = (iUseCommitedAssignments?clazz.getCommittedAssignment():null);
         if (assgn==null || assgn.getRoomLocations().isEmpty()) {
-            Vector roomLocations = TimetableDatabaseLoader.computeRoomLocations(clazz);
+            List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(clazz);
             if (roomLocations.size()==clazz.getNbrRooms().intValue()) {
                 String[] rooms = new String[roomLocations.size()];
                 for (int x=0;x<roomLocations.size();x++) {
-                    RoomLocation r = (RoomLocation)roomLocations.elementAt(x); 
+                    RoomLocation r = (RoomLocation)roomLocations.get(x); 
                     rooms[x] = r.getName();
                 }
                 return rooms;
@@ -294,10 +295,10 @@ public class PdfWorksheet {
     }
     
     private String[] instructor(Class_ clazz) {
-        Vector leads = clazz.getLeadInstructors();
+        List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
         String[] instr = new String[leads.size()];
         for (int x=0;x<clazz.getLeadInstructors().size();x++) {
-            DepartmentalInstructor in = (DepartmentalInstructor)leads.elementAt(x); 
+            DepartmentalInstructor in = (DepartmentalInstructor)leads.get(x); 
             instr[x] = in.nameShort();
         }
         return instr;

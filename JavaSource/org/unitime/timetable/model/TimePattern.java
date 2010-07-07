@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,7 +37,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 
-public class TimePattern extends BaseTimePattern implements Comparable {
+public class TimePattern extends BaseTimePattern implements Comparable<TimePattern> {
     private static final long serialVersionUID = 1L;
     
     public static final int sTypeStandard = 0;
@@ -70,17 +69,17 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 
     /*[CONSTRUCTOR MARKER END]*/
 
-    public static Vector findAll(HttpServletRequest request, Boolean visible) throws Exception {
+    public static List<TimePattern> findAll(HttpServletRequest request, Boolean visible) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
     	return findAll(session, visible);
     }
 
-    public static Vector findAll(Session session, Boolean visible) {
+    public static List<TimePattern> findAll(Session session, Boolean visible) {
     	return findAll(session.getUniqueId(), visible);
     }
     
-    public static Vector findAll(Long sessionId, Boolean visible) {
+    public static List<TimePattern> findAll(Long sessionId, Boolean visible) {
     	String query = "from TimePattern tp " +
     				 	"where tp.session.uniqueId=:sessionId";
     	if (visible!=null) 
@@ -93,12 +92,12 @@ public class TimePattern extends BaseTimePattern implements Comparable {
     	if (visible!=null) 
     	    q.setBoolean("visible", visible.booleanValue());
     	
-        Vector v = new Vector(q.list());
+        List<TimePattern> v = q.list();
         Collections.sort(v);
         return v;
     }
     
-    public static Vector findApplicable(HttpServletRequest request, int minPerWeek, boolean includeExactTime, Department department) throws Exception {
+    public static List<TimePattern> findApplicable(HttpServletRequest request, int minPerWeek, boolean includeExactTime, Department department) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
     	TimetableManager mgr = TimetableManager.getManager(user);
@@ -106,14 +105,14 @@ public class TimePattern extends BaseTimePattern implements Comparable {
     	return findByMinPerWeek(session, false, includeExtended, includeExactTime, minPerWeek,(includeExtended?null:department));
     }
     
-    public static Vector findByMinPerWeek(Session session, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
+    public static List<TimePattern> findByMinPerWeek(Session session, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
     	return findByMinPerWeek(session.getUniqueId(),includeHidden,includeExtended,includeExactTime,minPerWeek,department); 
     }
     
-    public static Vector findByMinPerWeek(Long sessionId, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
-    	Vector list = null;
+    public static List<TimePattern> findByMinPerWeek(Long sessionId, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
+    	List<TimePattern> list = null;
     	if (includeExactTime && department==null) {
-    		list = new Vector((new TimePatternDAO()).getSession().
+    		list = (List<TimePattern>)new TimePatternDAO().getSession().
         			createQuery("select distinct p from TimePattern as p "+
         					"where p.session.uniqueId=:sessionId and "+
         					(!includeHidden?"p.visible=true and ":"")+
@@ -122,9 +121,9 @@ public class TimePattern extends BaseTimePattern implements Comparable {
         					"p.minPerMtg * p.nrMeetings = :minPerWeek ))").
         					setLong("sessionId",sessionId.longValue()).
         					setInteger("minPerWeek",minPerWeek).
-        					setCacheable(true).list());
+        					setCacheable(true).list();
     	} else {
-    		list = new Vector((new TimePatternDAO()).getSession().
+    		list = (List<TimePattern>)(new TimePatternDAO()).getSession().
     			createQuery("select distinct p from TimePattern as p "+
     					"where p.session.uniqueId=:sessionId and "+
     					"p.type!="+sTypeExactTime+" and "+
@@ -133,7 +132,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
     					"p.minPerMtg * p.nrMeetings = :minPerWeek").
     					setLong("sessionId",sessionId.longValue()).
     					setInteger("minPerWeek",minPerWeek).
-    					setCacheable(true).list());
+    					setCacheable(true).list();
     	}
     	
     	if (!includeExtended && department!=null) {
@@ -208,12 +207,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
         return getUniqueId().equals(((TimePattern)o).getUniqueId());
     }
     
-    public int compareTo(Object o) {
-        if ((o==null) || !(o instanceof TimePattern))
-            return -1;
-
-        TimePattern t = (TimePattern) o;
-        
+    public int compareTo(TimePattern t) {
         int cmp = getType().compareTo(t.getType());
         
         if (cmp!=0) return cmp;
