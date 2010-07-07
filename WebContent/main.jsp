@@ -105,7 +105,7 @@
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
-    				<td colspan="3" align="center" style="color:#777777;">
+    				<td colspan="3" align="center" style="color:#777777; max-width: 800px;">
     					<tt:property name="tmtbl.page.disclaimer"/>
     				</td>
     			</tr>
