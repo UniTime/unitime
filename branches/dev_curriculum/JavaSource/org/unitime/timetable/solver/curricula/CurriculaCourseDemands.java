@@ -109,7 +109,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		int value = value(buckets);
 		int idle = 0, it = 0;
 		sLog.info("  -- initial value: " + value);
-		while (!halfFullBuckets.isEmpty() && value > 0 && idle < 10000) {
+		while (!halfFullBuckets.isEmpty() && value > 0 && idle < 1000) {
 			Move move = generateMove(halfFullBuckets, students);
 			move.perform();
 			int newValue = value(buckets);
