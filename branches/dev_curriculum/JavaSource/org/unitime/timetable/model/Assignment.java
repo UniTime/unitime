@@ -279,7 +279,7 @@ public class Assignment extends BaseAssignment {
 		return getClazz().getClassLabel();
 	}
 	
-	public Set getRooms() {
+	public Set<Location> getRooms() {
 		try {
 			return super.getRooms();
 		} catch (LazyInitializationException e) {

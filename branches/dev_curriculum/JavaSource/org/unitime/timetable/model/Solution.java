@@ -324,7 +324,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         return false;
     }
 
-	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
+	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
 		List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",getOwner())).list();
 		Solution uncommittedSolution = null;
 		for (Iterator i=solutions.iterator();i.hasNext();) {
@@ -368,7 +368,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
 					Assignment b=(Assignment)k.next();
 					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.addElement("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
+						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
 						isOK=false;
 					}
 				}
@@ -404,7 +404,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
 					Assignment b=(Assignment)k.next();
 					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.addElement("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
+						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
 						isOK=false;
 					}
 				}
@@ -495,7 +495,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return true;
 	}
 	
-	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, Vector messages) {
+	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, List<String> messages) {
 		try {
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.notif.commit", ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true"))))
 				return; //email notification disabled
@@ -514,8 +514,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	mail += "\r\n";
         	if (messages!=null && !messages.isEmpty()) {
         		mail += "Message(s): ----------------- \r\n";
-        		for (Enumeration e=messages.elements();e.hasMoreElements();) {
-        			String m = (String)e.nextElement();
+        		for (String m: messages) {
         			mail += m + "\r\n";
         		}
             	mail += "\r\n";
@@ -635,12 +634,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			if (o instanceof Assignment) {
 				Assignment assignment = (Assignment)o;
 				Class_ clazz = assignment.getClazz();
-				Vector leads = clazz.getLeadInstructors();
+				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
-				for (Enumeration e=leads.elements();e.hasMoreElements();) {
-					DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+				for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+					DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
 					leadsSb.append(instructor.getName(instructorFormat));
-					if (e.hasMoreElements()) leadsSb.append(";");
+					if (e.hasNext()) leadsSb.append(";");
 				}
 				Placement placement = assignment.getPlacement();
 				if (isCommited().booleanValue()) {
@@ -675,12 +674,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				}
 			} else {
 				Class_ clazz = (Class_)o;
-				Vector leads = clazz.getLeadInstructors();
+				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
-				for (Enumeration e=leads.elements();e.hasMoreElements();) {
-					DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+				for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+					DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
 					leadsSb.append(instructor.getName(instructorFormat));
-					if (e.hasMoreElements()) leadsSb.append(";");
+					if (e.hasNext()) leadsSb.append(";");
 				}
 				if (isCommited().booleanValue()) {
 					file.addLine(new CSVField[] {

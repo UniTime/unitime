@@ -36,6 +36,7 @@ import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+import net.sf.cpsolver.ifs.util.ArrayList;
 
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;
@@ -142,12 +143,11 @@ public class Class_ extends BaseClass_ {
 	}
 
     private Set classInstructorPrefsOfType(Class type) {
-    	Vector instructors = getLeadInstructors();
+    	List<DepartmentalInstructor> instructors = getLeadInstructors();
     	if (instructors.isEmpty()) return null;
     	Set ret = null;
-    	for (Enumeration e=instructors.elements();e.hasMoreElements();) {
-    		DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
-    		if (ret==null)
+    	for (DepartmentalInstructor instructor: instructors) {
+    		if (ret == null)
     			ret = instructor.getPreferences(type);
     		else
     			ret = combinePreferences(ret, instructor.getPreferences(type));
@@ -177,24 +177,24 @@ public class Class_ extends BaseClass_ {
 		return ret;
     }
 
-    private Set combinePreferences(Set instrPrefs1, Set instrPrefs2) {
+    private Set<Preference> combinePreferences(Set<Preference> instrPrefs1, Set<Preference> instrPrefs2) {
     	if (instrPrefs1==null || instrPrefs1.isEmpty()) return instrPrefs2;
     	if (instrPrefs2==null || instrPrefs2.isEmpty()) return instrPrefs1;
 
-    	Set ret = new TreeSet();
+    	Set<Preference> ret = new TreeSet<Preference>();
 
     	TimePref tp = null;
     	boolean hasTimePref = false;
-    	for (Iterator i=instrPrefs1.iterator();i.hasNext();) {
-    		Preference p1 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs1.iterator();i.hasNext();) {
+    		Preference p1 = i.next();
     		if (p1 instanceof TimePref) {
     			if (tp==null) {
     				tp = (TimePref)p1.clone();
     			} else tp.combineWith((TimePref)p1,false);
     		} else ret.add(p1);
     	}
-    	for (Iterator i=instrPrefs2.iterator();i.hasNext();) {
-    		Preference p2 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs2.iterator();i.hasNext();) {
+    		Preference p2 = i.next();
     		if (p2 instanceof TimePref) {
     			if (tp==null) {
     				tp = (TimePref)p2.clone();
@@ -202,11 +202,11 @@ public class Class_ extends BaseClass_ {
     		}
     	}
 
-    	for (Iterator i=instrPrefs2.iterator();i.hasNext();) {
-    		Preference p2 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs2.iterator();i.hasNext();) {
+    		Preference p2 = i.next();
     		Preference p1 = null;
-			for (Iterator j=ret.iterator();j.hasNext();) {
-				Preference p = (Preference)j.next();
+			for (Iterator<Preference> j=ret.iterator();j.hasNext();) {
+				Preference p = j.next();
 				if (p.isSame(p2)) {
 					p1 = p; j.remove(); break;
 				}
@@ -535,14 +535,13 @@ public class Class_ extends BaseClass_ {
     	return getSectionNumber()+getSchedulingSubpart().getSchedulingSubpartSuffix();
     }
 
-    public Vector getLeadInstructors() {
-    	Vector ret = new Vector();
-    	if (getClassInstructors() == null){
-    		return(ret);
+    public List<DepartmentalInstructor> getLeadInstructors() {
+    	List<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>();
+    	if (getClassInstructors() == null) {
+    		return ret;
     	}
-    	for (Iterator i=getClassInstructors().iterator();i.hasNext();) {
-    		ClassInstructor classInstructor = (ClassInstructor)i.next();
-    		if (classInstructor.isLead().booleanValue()) ret.addElement(classInstructor.getInstructor());
+    	for (ClassInstructor classInstructor: getClassInstructors()) {
+    		if (classInstructor.isLead().booleanValue()) ret.add(classInstructor.getInstructor());
     	}
     	return ret;
     }

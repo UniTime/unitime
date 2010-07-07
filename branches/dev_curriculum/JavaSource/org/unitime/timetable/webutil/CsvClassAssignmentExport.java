@@ -21,9 +21,8 @@ package org.unitime.timetable.webutil;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -67,12 +66,12 @@ public class CsvClassAssignmentExport {
 		
 		for (Iterator i=classes.iterator();i.hasNext();) {
 			Class_ clazz = (Class_)i.next();
-			Vector leads = clazz.getLeadInstructors();
+			List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 			StringBuffer leadsSb = new StringBuffer();
-			for (Enumeration e=leads.elements();e.hasMoreElements();) {
-				DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+			for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+				DepartmentalInstructor instructor = e.next();
 				leadsSb.append(instructor.getName(instructorFormat));
-				if (e.hasMoreElements()) leadsSb.append("\n");
+				if (e.hasNext()) leadsSb.append("\n");
 			}
             String divSec = clazz.getDivSecNumber();
             if (divSec==null)
@@ -149,21 +148,21 @@ public class CsvClassAssignmentExport {
         int idx = 1;
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ clazz = (Class_)i.next();
-            Vector leads = clazz.getLeadInstructors();
+            List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
             StringBuffer lastNameSb = new StringBuffer();
             StringBuffer firstNameSb = new StringBuffer();
             StringBuffer midNameSb = new StringBuffer();
             StringBuffer iniSb = new StringBuffer();
             StringBuffer rankSb = new StringBuffer();
-            for (Enumeration e=leads.elements();e.hasMoreElements();) {
-                DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+            for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+                DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
                 lastNameSb.append(instructor.getLastName()==null?"":instructor.getLastName().trim().substring(0,1)+instructor.getLastName().trim().substring(1).toLowerCase());
                 firstNameSb.append(instructor.getFirstName()==null?"":instructor.getFirstName().trim().substring(0,1)+instructor.getFirstName().trim().substring(1).toLowerCase());
                 midNameSb.append(instructor.getMiddleName()==null?"":instructor.getMiddleName().trim());
                 iniSb.append(instructor.getFirstName()==null || instructor.getFirstName().length()==0?"":instructor.getFirstName().substring(0,1));
                 iniSb.append(instructor.getMiddleName()==null || instructor.getMiddleName().length()==0?"":" "+instructor.getMiddleName().substring(0,1));
                 rankSb.append(instructor.getPositionType().getLabel());
-                if (e.hasMoreElements()) {
+                if (e.hasNext()) {
                     lastNameSb.append("\n");
                     firstNameSb.append("\n");
                     midNameSb.append("\n");

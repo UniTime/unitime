@@ -135,7 +135,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         if (cmp!=0) return cmp;
         
         switch (getOwnerType()) {
-            case ExamOwner.sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare(getOwnerObject(), owner.getOwnerObject());
+            case ExamOwner.sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare((Class_)getOwnerObject(), (Class_)owner.getOwnerObject());
             case ExamOwner.sOwnerTypeConfig : return new InstrOfferingConfigComparator(null).compare(getOwnerObject(), owner.getOwnerObject());
         }
            

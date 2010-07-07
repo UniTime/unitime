@@ -237,12 +237,12 @@ public class DistributionPref extends BaseDistributionPref {
     	return ToolBox.equals(getDistributionType(),((DistributionPref)other).getDistributionType()) && ToolBox.equals(getDistributionObjects(),((DistributionPref)other).getDistributionObjects());
     }
     /** Ordered set of distribution objects */
-    public Set getOrderedSetOfDistributionObjects() {
+    public Set<DistributionObject> getOrderedSetOfDistributionObjects() {
     	try {
-    		return new TreeSet(getDistributionObjects());
+    		return new TreeSet<DistributionObject>(getDistributionObjects());
     	} catch (ObjectNotFoundException ex) {
     		(new DistributionPrefDAO()).getSession().refresh(this);
-    		return new TreeSet(getDistributionObjects());
+    		return new TreeSet<DistributionObject>(getDistributionObjects());
     	}
     }
     

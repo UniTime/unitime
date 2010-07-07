@@ -157,7 +157,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupTimePatterns(HttpServletRequest request) throws Exception {
-        Vector v = TimePattern.findAll(org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(request.getSession())), Boolean.TRUE);
+        List<TimePattern> v = TimePattern.findAll(org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(request.getSession())), Boolean.TRUE);
         request.setAttribute(TimePattern.TIME_PATTERN_ATTR_NAME, v);
     }
     

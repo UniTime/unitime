@@ -20,9 +20,8 @@
 package org.unitime.timetable.solver.ui;
 
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -42,12 +41,12 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 				Class_ clazz = (Class_)j.next();
 				String name = clazz.getClassLabel();
 				String onClick = "window.open('suggestions.do?id="+clazz.getUniqueId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
-				Vector leads = clazz.getLeadInstructors();
+				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
-				for (Enumeration e=leads.elements();e.hasMoreElements();) {
-					DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+				for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+					DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
 					leadsSb.append(instructor.getName(instructorFormat));
-					if (e.hasMoreElements()) leadsSb.append(";");
+					if (e.hasNext()) leadsSb.append(";");
 				}
 				String instructorName = leadsSb.toString();
 				int nrStudents = ((Number)hibSession.

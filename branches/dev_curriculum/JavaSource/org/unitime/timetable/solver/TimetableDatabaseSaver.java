@@ -20,13 +20,14 @@
 package org.unitime.timetable.solver;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -163,11 +164,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			}
     			for (int i=0;i<solutionIds.length;i++) {
     				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
-    				Vector messages = new Vector();
+    				List<String> messages = new ArrayList<String>();
     				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
     				touchedSolutions.add(solution);
-    				for (Enumeration e=messages.elements();e.hasMoreElements();) {
-    					iProgress.error("Unable to commit: "+e.nextElement());
+    				for (String m: messages) {
+    					iProgress.error("Unable to commit: "+m);
     				}
     				hibSession.update(solution);
     				iProgress.incProgress();
@@ -478,24 +479,24 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		if (defBtbInstrInfo==null)
     			iProgress.warn("Back-to-back instructor info is not registered.");
     		
-    		Hashtable lectures4solution = new Hashtable();
+    		Hashtable<Solution, List<Lecture>> lectures4solution = new Hashtable<Solution, List<Lecture>>();
     		for (Lecture lecture: getModel().variables()) {
        			Solution s = getSolution(lecture, hibSession);
        			if (s==null) continue;
-       			Vector lectures = (Vector)lectures4solution.get(s);
+       			List<Lecture> lectures = lectures4solution.get(s);
        			if (lectures==null) {
-       				lectures = new Vector();
+       				lectures = new ArrayList<Lecture>();
        				lectures4solution.put(s, lectures);
        			}
-       			lectures.addElement(lecture);
+       			lectures.add(lecture);
     		}
     		
    			iProgress.setPhase("Saving global info ...", solverGroups.size());
    			for (Enumeration e=solverGroups.elements();e.hasMoreElements();) {
    				SolverGroup solverGroup = (SolverGroup)e.nextElement();
    				Solution solution = (Solution)iSolutions.get(solverGroup.getUniqueId());
-   				Vector lectures = (Vector)lectures4solution.get(solution);
-   				if (lectures==null) lectures = new Vector(0);
+   				List<Lecture> lectures = lectures4solution.get(solution);
+   				if (lectures==null) lectures = new ArrayList<Lecture>(0);
            		SolutionInfo solutionInfo = new SolutionInfo();
            		solutionInfo.setDefinition(defGlobalInfo);
            		solutionInfo.setOpt(null);
@@ -520,8 +521,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			iProgress.setPhase("Saving conflict-based statistics ...", 1);
     			for (Enumeration e=iSolutions.elements();e.hasMoreElements();) {
     				Solution solution = (Solution)e.nextElement();
-    				Vector lectures = (Vector)lectures4solution.get(solution);
-    				if (lectures==null) lectures = new Vector(0);
+    				List<Lecture> lectures = lectures4solution.get(solution);
+    				if (lectures==null) lectures = new ArrayList<Lecture>(0);
             		SolutionInfo cbsSolutionInfo = new SolutionInfo();
             		cbsSolutionInfo.setDefinition(defCbsInfo);
             		cbsSolutionInfo.setOpt(null);

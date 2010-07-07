@@ -39,7 +39,7 @@ public class NavigationComparator implements Comparator {
 	
 	public int compare(Object o1, Object o2) {
 		if (o1 instanceof Class_)
-			return iClassComparator.compare(o1, o2);
+			return iClassComparator.compare((Class_)o1, (Class_)o2);
 		if (o1 instanceof SchedulingSubpart)
 			return iSchedulingSubpartComparator.compare(o1, o2);
 		if (o1 instanceof InstrOfferingConfig) {

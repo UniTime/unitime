@@ -21,12 +21,13 @@ package org.unitime.timetable.model.comparators;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -40,7 +41,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
  * 
  * @author Heston Fernandes, Tomas Muller
  */
-public class ClassComparator implements Comparator {
+public class ClassComparator implements Comparator<Class_> {
 	private Long subjectUID = null;
 	
     /** Compare 2 classes on UniqueId - Default **/
@@ -83,13 +84,13 @@ public class ClassComparator implements Comparator {
     	return (c1==null?(c2==null?0:-1):(c2==null?1:c1.compareTo(c2)));
     }
     
-    public static int compareInstructors(Vector i1, Vector i2) {
+    public static int compareInstructors(List<DepartmentalInstructor> i1, List<DepartmentalInstructor> i2) {
     	if (i1.isEmpty() || i2.isEmpty())
     		return Double.compare(i1.size(),i2.size());
     	if (i1.size()>1) Collections.sort(i1);
     	if (i2.size()>1) Collections.sort(i2);
     	for (int i=0;i<Math.min(i1.size(),i2.size());i++) {
-    		int cmp = compare((Comparable)i1.elementAt(i),(Comparable)i2.elementAt(i));
+    		int cmp = compare(i1.get(i),i2.get(i));
     		if (cmp!=0) return cmp;
     	}
     	return Double.compare(i1.size(),i2.size());
@@ -245,9 +246,7 @@ public class ClassComparator implements Comparator {
     	return c1.getUniqueId().compareTo(c2.getUniqueId());
     }
     
-    public int compare(Object o1, Object o2) {
-        Class_ c1 = (Class_) o1;
-        Class_ c2 = (Class_) o2;
+    public int compare(Class_ c1, Class_ c2) {
         if (classListFormSortBy!=null) {
         	if (keepSubparts) {
         		return compareByParentChildSameIType(c1, c2);

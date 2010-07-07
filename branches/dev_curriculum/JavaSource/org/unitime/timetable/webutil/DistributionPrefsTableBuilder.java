@@ -23,9 +23,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -159,10 +159,9 @@ public class DistributionPrefsTableBuilder {
 		Set prefs = clazz.effectiveDistributionPreferences(null); 
 			//DistributionPref.getPreferences(clazz.getSessionId(), clazz.getManagingDept().getUniqueId(), false, clazz.getUniqueId());
 
-		Vector leadInstructors = clazz.getLeadInstructors();
+		List<DepartmentalInstructor> leadInstructors = clazz.getLeadInstructors();
 		if (!leadInstructors.isEmpty()) {
-			for (Enumeration e=leadInstructors.elements();e.hasMoreElements();) {
-				DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+			for (DepartmentalInstructor instructor: leadInstructors) {
 				prefs.addAll(instructor.getDistributionPreferences());
 			}
 		}
