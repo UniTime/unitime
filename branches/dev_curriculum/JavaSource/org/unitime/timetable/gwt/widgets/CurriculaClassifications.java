@@ -72,7 +72,7 @@ public class CurriculaClassifications extends Composite {
 		iTable.getCellFormatter().setWordWrap(2, 0, false);
 		iTable.setText(3, 0, "Projected by Rule:");
 		iTable.getCellFormatter().setWordWrap(3, 0, false);
-		iTable.setText(4, 0, "Planned Enrollment:");
+		iTable.setText(4, 0, "Requested Enrollment:");
 		iTable.getCellFormatter().setWordWrap(4, 0, false);
 		iTable.setText(5, 0, "Current Enrollment:");
 		iTable.getCellFormatter().setWordWrap(5, 0, false);

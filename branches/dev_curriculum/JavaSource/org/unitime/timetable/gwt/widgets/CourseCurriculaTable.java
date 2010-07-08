@@ -94,13 +94,13 @@ public class CourseCurriculaTable extends Composite {
 	
 	
 	public static enum Type {
-		EXP ("Planned"),
+		EXP ("Requested"),
 		ENRL ("Current"),
 		LAST ("Last-Like"),
 		PROJ ("Projected by Rule"),
-		EXP2ENRL ("Planned / Current"),
-		EXP2LAST ("Planned / Last-Like"),
-		EXP2PROJ ("Planned / Projected"),
+		EXP2ENRL ("Requested / Current"),
+		EXP2LAST ("Requested / Last-Like"),
+		EXP2PROJ ("Requested / Projected"),
 		LAST2ENRL ("Last-Like / Current"),
 		PROJ2ENRL ("Projected / Current");
 

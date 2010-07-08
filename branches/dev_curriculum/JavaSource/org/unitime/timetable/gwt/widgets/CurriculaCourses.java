@@ -446,7 +446,7 @@ public class CurriculaCourses extends Composite {
 					}));
 					if (iEditable) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Clear Planned Enrollments (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
+						menu.addItem(new MenuItem("Clear Requested Enrollments (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -462,7 +462,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.LAST)
-						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Requested (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -482,7 +482,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL)
-						menu.addItem(new MenuItem("Copy Current &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
+						menu.addItem(new MenuItem("Copy Current &rarr; Requested (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -502,7 +502,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));		
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ)
-						menu.addItem(new MenuItem("Copy Projection &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
+						menu.addItem(new MenuItem("Copy Projection &rarr; Requested (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -609,7 +609,7 @@ public class CurriculaCourses extends Composite {
 					}
 					if (iVisibleCourses == null && iEditable) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Clear Planned Enrollments" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
+						menu.addItem(new MenuItem("Clear Requested Enrollments" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -622,7 +622,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.LAST)
-						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Requested" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -639,7 +639,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL)
-						menu.addItem(new MenuItem("Copy Current &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
+						menu.addItem(new MenuItem("Copy Current &rarr; Requested" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -656,7 +656,7 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ)
-						menu.addItem(new MenuItem("Copy Projection &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
+						menu.addItem(new MenuItem("Copy Projection &rarr; Requested" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
