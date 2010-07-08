@@ -106,9 +106,6 @@ public class Client implements EntryPoint {
 				comp.insert(panel);
 			}
 			public void onFailure(Throwable reason) {
-				Label error = new Label("Failed to load the component (" + reason.getMessage() + ")");
-				error.setStyleName("unitime-ErrorMessage");
-				panel.clear(); panel.add(error);
 			}
 		});
 	}
