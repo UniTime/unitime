@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -279,7 +280,7 @@ public class CurriculumProjectionRules extends Composite {
 		for (int row = 1; row < iTable.getRowCount(); row++) {
 			for (int col = 1; col < iTable.getCellCount(row); col++) {
 				Widget w = iTable.getWidget(row, col);
-				if (w != null) ((MyCell)w).update();
+				if (w != null) ((Updatable)w).update();
 			}
 		}
 	}
@@ -299,6 +300,7 @@ public class CurriculumProjectionRules extends Composite {
 		
 		List<Set<AcademicClassificationInterface>> col2clasf = new ArrayList<Set<AcademicClassificationInterface>>();
 		HashMap<AcademicClassificationInterface, Integer> clasf2col = new HashMap<AcademicClassificationInterface, Integer>();
+		HashMap<Integer, List<MyCell>> col2cells = new HashMap<Integer, List<MyCell>>();
 		
 		int row = 1;
 		for (AcademicAreaInterface area: areas) {
@@ -333,11 +335,22 @@ public class CurriculumProjectionRules extends Composite {
 			if (!rr.hasLastLike()) continue;
 			
 			iTable.setText(row, 0, area.getAbbv());
+			List<MyCell> cells = new ArrayList<MyCell>();
 			for (AcademicClassificationInterface clasf: classifications) {
 				if (rr.getLastLike(clasf) <= 0) continue;
 				Integer col = clasf2col.get(clasf);
-				iTable.setWidget(row, 1 + col, new MyCell(rr, clasf));
+				MyCell cell = new MyCell(rr, clasf);
+				iTable.setWidget(row, 1 + col, cell);
+				cells.add(cell);
+				List<MyCell> cellsThisCol = col2cells.get(col);
+				if (cellsThisCol == null) {
+					cellsThisCol = new ArrayList<MyCell>();
+					col2cells.put(col, cellsThisCol);
+				}
+				cellsThisCol.add(cell);
 			}
+			iTable.setWidget(row, 1 + col2clasf.size(), new MySumCell(cells, false));
+			iTable.getCellFormatter().getElement(row, 1 + col2clasf.size()).getStyle().setBackgroundColor("#EEEEEE");
 			row ++;
 			
 			for (MajorInterface major: new TreeSet<MajorInterface>(iRules.get(area).keySet())) {
@@ -350,12 +363,23 @@ public class CurriculumProjectionRules extends Composite {
 				Label majorLabel = new Label(major.getCode(), false);
 				majorLabel.getElement().getStyle().setMarginLeft(10, Unit.PX);
 				iTable.setWidget(row, 0, majorLabel);
+				List<MyCell> mcells = new ArrayList<MyCell>();
 				for (AcademicClassificationInterface clasf: classifications) {
 					if (r.getLastLike(clasf) <= 0) continue;
 					Integer col = clasf2col.get(clasf);
-					iTable.setWidget(row, 1 + col, new MyCell(r, clasf));
+					MyCell cell = new MyCell(r, clasf);
+					mcells.add(cell);
+					iTable.setWidget(row, 1 + col, cell);
+					List<MyCell> cellsThisCol = col2cells.get(col);
+					if (cellsThisCol == null) {
+						cellsThisCol = new ArrayList<MyCell>();
+						col2cells.put(col, cellsThisCol);
+					}
+					cellsThisCol.add(cell);
 				}
+				iTable.setWidget(row, 1 + col2clasf.size(), new MySumCell(mcells, false));
 				iTable.getRowFormatter().setVisible(row, r.hasProjection());
+				iTable.getCellFormatter().getElement(row, 1 + col2clasf.size()).getStyle().setBackgroundColor("#EEEEEE");
 				row ++;
 			}
 		}
@@ -465,8 +489,25 @@ public class CurriculumProjectionRules extends Composite {
 		label.addClickHandler(menu);
 		iTable.getFlexCellFormatter().setStyleName(0, 0, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, 0, label);
+		HTML totals = new HTML("Totals", false);
+		totals.addClickHandler(menu);
+		iTable.getFlexCellFormatter().setStyleName(0, col2clasf.size() + 1, "unitime-ClickableTableHeader");
+		iTable.setWidget(0, col2clasf.size() + 1, totals);
 		if (row == 1)
 			throw new CurriculaException("No last-like enrollments.");
+		
+		iTable.setText(row, 0, "Totals");
+		iTable.getCellFormatter().getElement(row, 0).getStyle().setBackgroundColor("#EEEEEE");
+		List<MyCell> cells = new ArrayList<MyCell>();
+		for (int c = 0; c < col2clasf.size(); c++) {
+			List<MyCell> cellsThisCol = col2cells.get(c);
+			if (cellsThisCol == null || cellsThisCol.isEmpty()) continue;
+			cells.addAll(cellsThisCol);
+			iTable.setWidget(row, 1 + c, new MySumCell(cellsThisCol, true));
+			iTable.getCellFormatter().getElement(row, 1 + c).getStyle().setBackgroundColor("#EEEEEE");
+		}
+		iTable.setWidget(row, 1 + col2clasf.size(), new MySumCell(cells, true));
+		iTable.getCellFormatter().getElement(row, 1 + col2clasf.size()).getStyle().setBackgroundColor("#EEEEEE");
 		
 		for (int r = 1; r < iTable.getRowCount(); r++) {
 			for (int c = iTable.getCellCount(r); c < 1 + col2clasf.size(); c++) {
@@ -478,7 +519,12 @@ public class CurriculumProjectionRules extends Composite {
 		iTable.setVisible(true);
 	}
 	
-	private class MyCell extends Composite {
+	private interface Updatable {
+		public void update();
+		public void focus();
+	}
+	
+	private class MyCell extends Composite implements Updatable {
 		private MyRow iRow;
 		private AcademicClassificationInterface iClasf;
 		
@@ -489,6 +535,8 @@ public class CurriculumProjectionRules extends Composite {
 		private HTML iHint = null;
 		private PopupPanel iHintPanel = null;
 		private boolean iCellEditable = true;
+		
+		private List<MySumCell> iSums = new ArrayList<MySumCell>();
 	
 		
 		public MyCell(MyRow row, AcademicClassificationInterface clasf) {
@@ -506,7 +554,6 @@ public class CurriculumProjectionRules extends Composite {
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
-					float oldValue = iRow.getProjection(iClasf);
 					try {
 						if (iTextBox.getText().isEmpty()) {
 							iRow.setProjection(iClasf, null);
@@ -522,24 +569,28 @@ public class CurriculumProjectionRules extends Composite {
 						iRow.setProjection(iClasf, null);
 					}
 					update();
-					if (iRow.getChildren() != null) {
-						for (MyRow r: iRow.getChildren()) {
-							if (r.iData.get(iClasf)[0] == null) {
-								MyCell c = r.getCell(iClasf);
-								if (c != null) c.update();
+					for (MySumCell sum: iSums)
+						sum.update();
+					for (MyRow r: iRow.getChildren()) {
+						if (r.iData.get(iClasf)[0] == null) {
+							MyCell c = r.getCell(iClasf);
+							if (c != null) {
+								c.update();
+								for (MySumCell sum: c.iSums)
+									sum.update();
 							}
 						}
 					}
 				}
 			});
 			
-			iFrontLabel = new HTML(String.valueOf(iRow.getLastLike(iClasf)) + " &rarr;&nbsp;");
-			iFrontLabel.setWidth("50px");
+			iFrontLabel = new HTML(String.valueOf(iRow.getLastLike(iClasf)) + "&nbsp;&rarr;&nbsp;", false);
+			iFrontLabel.setWidth("55px");
 			iFrontLabel.setStyleName("unitime-Label");
 			iFrontLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			
-			iRearLabel = new HTML("&nbsp;(of&nbsp;" + String.valueOf(iRow.getLastLike(iClasf))+")");
-			iRearLabel.setWidth("50px");
+			iRearLabel = new HTML("&nbsp;(of&nbsp;" + String.valueOf(iRow.getLastLike(iClasf))+")", false);
+			iRearLabel.setWidth("55px");
 			iRearLabel.setStyleName("unitime-Label");
 			iRearLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			
@@ -566,6 +617,20 @@ public class CurriculumProjectionRules extends Composite {
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEOUT);
 			sinkEvents(Event.ONMOUSEMOVE);
+		}
+		
+		public void addSum(MySumCell sum) { iSums.add(sum); }
+		
+		public List<MySumCell> getSums() { return iSums; }
+		
+		public void focus() {
+			iTextBox.setFocus(true);
+			DeferredCommand.addCommand(new Command() {
+				@Override
+				public void execute() {
+					iTextBox.selectAll();
+				}
+			});
 		}
 		
 		public void onBrowserEvent(final Event event) {
@@ -634,7 +699,7 @@ public class CurriculumProjectionRules extends Composite {
 			if (projection == 1.0f) {
 				iFrontLabel.setHTML("&nbsp;");
 			} else {
-				iFrontLabel.setHTML(String.valueOf(iRow.getLastLike(iClasf)) + " &rarr;&nbsp;");
+				iFrontLabel.setHTML(String.valueOf(iRow.getLastLike(iClasf)) + "&nbsp;&rarr;&nbsp;");
 			}
 		}
 		
@@ -642,12 +707,166 @@ public class CurriculumProjectionRules extends Composite {
 		public AcademicClassificationInterface getClassification() { return iClasf; }
 	}
 	
+	private class MySumCell extends Composite implements Updatable {
+		private List<MyCell> iCells;
+		private boolean iVertical;
+		
+		private TextBox iTextBox;
+		private HTML iFrontLabel, iRearLabel;
+		private HorizontalPanel iPanel;
+		
+		private boolean iCellEditable = true;
+	
+		
+		public MySumCell(List<MyCell> cells, boolean vertical) {
+			iCells = cells;
+			for (MyCell cell: iCells)
+				cell.addSum(this);
+			iVertical = vertical;
+			
+			iPanel = new HorizontalPanel();
+			
+			iTextBox = new TextBox();
+			iTextBox.setWidth("60px");
+			iTextBox.setStyleName("unitime-TextBox");
+			iTextBox.setMaxLength(6);
+			iTextBox.setTextAlignment(TextBox.ALIGN_RIGHT);
+			iTextBox.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					HashSet<MySumCell> sums = new HashSet<MySumCell>();
+					sums.add(MySumCell.this);
+					Float projection = null;
+					try {
+						if (iTextBox.getText().isEmpty()) {
+						} else if (iTextBox.getText().endsWith("%")) {
+							projection = Float.valueOf(iTextBox.getText().substring(0, iTextBox.getText().length() - 1)) / 100.0f;
+						} else {
+							int lastLike = 0;
+							for (MyCell cell: iCells) {
+								if (iVertical && cell.getRow().getParent() == null) continue;
+								lastLike += cell.getRow().getLastLike(cell.getClassification());
+							}
+							projection = Float.valueOf(iTextBox.getText()) / lastLike;
+						}
+					} catch (Exception e) {
+					}
+					for (MyCell cell: iCells) {
+						if (iVertical && cell.getRow().getParent() != null)
+							cell.getRow().setProjection(cell.getClassification(), null);
+						else
+							cell.getRow().setProjection(cell.getClassification(), projection);
+						cell.update();
+						sums.addAll(cell.getSums());
+					}
+					if (!iVertical) {
+						for (MyCell cell: iCells) {
+							for (MyRow r: cell.getRow().getChildren()) {
+								if (r.iData.get(cell.getClassification())[0] == null) {
+									MyCell c = r.getCell(cell.getClassification());
+									if (c != null) {
+										c.update();
+										sums.addAll(c.getSums());
+									}
+								}
+							}
+						}
+					}
+					for (MySumCell sum: sums)
+						sum.update();
+				}
+			});
+			
+			int lastLike = 0;
+			for (MyCell cell: iCells) {
+				if (iVertical && cell.getRow().getParent() == null) continue;
+				lastLike += cell.getRow().getLastLike(cell.getClassification());
+			}
+			
+			iFrontLabel = new HTML(String.valueOf(lastLike) + "&nbsp;&rarr;&nbsp;", false);
+			iFrontLabel.setWidth("55px");
+			iFrontLabel.setStyleName("unitime-Label");
+			iFrontLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			
+			iRearLabel = new HTML("&nbsp;(of&nbsp;" + String.valueOf(lastLike)+")", false);
+			iRearLabel.setWidth("55px");
+			iRearLabel.setStyleName("unitime-Label");
+			iRearLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			
+			iPanel.add(iFrontLabel);
+			iPanel.setCellVerticalAlignment(iFrontLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+
+			iPanel.add(iTextBox);
+			iPanel.setCellVerticalAlignment(iTextBox, HasVerticalAlignment.ALIGN_MIDDLE);
+			
+			iPanel.add(iRearLabel);
+			iPanel.setCellVerticalAlignment(iFrontLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+
+			initWidget(iPanel);	
+			
+			update();
+		}
+		
+		public void focus() {
+			iTextBox.setFocus(true);
+			DeferredCommand.addCommand(new Command() {
+				@Override
+				public void execute() {
+					iTextBox.selectAll();
+				}
+			});
+		}
+		
+		public void update() {
+			int lastLike = 0;
+			float projected = 0.0f;
+			boolean allDefault = true;
+			for (MyCell cell: iCells) {
+				if (allDefault && !cell.getRow().isDefaultProjection(cell.getClassification())) allDefault = false;
+				if (iVertical && cell.getRow().getParent() == null) continue;
+				lastLike += cell.getRow().getLastLike(cell.getClassification());
+				projected += cell.getRow().getProjection(cell.getClassification()) * cell.getRow().getLastLike(cell.getClassification());
+			}
+			float projection = projected / lastLike;
+			if (CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent()) {
+				iTextBox.setText(NF.format(100.0 * projection) + "%");
+			} else {
+				iTextBox.setText(String.valueOf(Math.round(projection * lastLike)));
+			}
+			if (allDefault)
+				iTextBox.addStyleName("unitime-GrayText");
+			else
+				iTextBox.removeStyleName("unitime-GrayText");
+			setVisible(lastLike > 0);
+			if (iCellEditable != iEditable) {
+				iCellEditable = iEditable;
+				iTextBox.setEnabled(iCellEditable);
+				if (iCellEditable) {
+					iTextBox.getElement().getStyle().setBorderColor(null);
+					iTextBox.getElement().getStyle().setBackgroundColor(null);
+				} else {
+					iTextBox.getElement().getStyle().setBorderColor("transparent");
+					iTextBox.getElement().getStyle().setBackgroundColor("transparent");
+				}
+			}
+			iFrontLabel.setVisible(CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike() && !CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent());
+			iRearLabel.setVisible(CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike() && CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent());
+			if (projection == 1.0f) {
+				iFrontLabel.setHTML("&nbsp;");
+			} else {
+				iFrontLabel.setHTML(String.valueOf(lastLike) + "&nbsp;&rarr;&nbsp;");
+			}
+		}
+		
+		public List<MyCell> getCell() { return iCells; }
+	}
+	
 	private class MyRow {
 		private AcademicAreaInterface iArea;
 		private MajorInterface iMajor;
 		private HashMap<AcademicClassificationInterface, Number[]> iData;
 		private MyRow iParent = null;
-		private List<MyRow> iChildren = null;
+		private List<MyRow> iChildren = new ArrayList<MyRow>();
 		private HashMap<AcademicClassificationInterface, MyCell> iCells = new HashMap<AcademicClassificationInterface, MyCell>();
 		
 		public MyRow(AcademicAreaInterface area, MajorInterface major, HashMap<AcademicClassificationInterface, Number[]> data) {
@@ -666,7 +885,7 @@ public class CurriculumProjectionRules extends Composite {
 			return (proj == null ? 1.0f : proj.floatValue());
 		}
 		public boolean isDefaultProjection(AcademicClassificationInterface clasf) {
-			return iData.get(clasf)[0] == null;
+			return (iData.get(clasf)[0] == null || (iMajor == null && iData.get(clasf)[0].floatValue() == 1.0f));
 		}
 		public void setProjection(AcademicClassificationInterface clasf, Float projection) {
 			iData.get(clasf)[0] = projection;
@@ -725,14 +944,8 @@ public class CurriculumProjectionRules extends Composite {
 			if (!getRowFormatter().isVisible(row) || col >= getCellCount(row)) return false;
 			final Widget w = getWidget(row, col);
 			if (w == null || !w.isVisible()) return false;
-			if (w instanceof MyCell) {
-				((MyCell)w).iTextBox.setFocus(true);
-				DeferredCommand.addCommand(new Command() {
-					@Override
-					public void execute() {
-						((MyCell)w).iTextBox.selectAll();
-					}
-				});
+			if (w instanceof Updatable) {
+				((Updatable)w).focus();
 				event.stopPropagation();
 				return true;
 			}
@@ -740,12 +953,18 @@ public class CurriculumProjectionRules extends Composite {
 		}
 		
 		public MyRow getMyRow(int row) {
-			if (row == 0) return null;
-		    for (int c = 1; c < getCellCount(row); c ++) {
+			if (row == 0 || row + 1 >= iTable.getRowCount()) return null;
+		    for (int c = 1; c < getCellCount(row) - 1; c ++) {
 			    Widget w = getWidget(row, c);
 			    if (w != null) return ((MyCell)w).getRow();
 		    }
 		    return null;
+		}
+		
+		private void moveRow(Element tr, Element before) {
+			Element body = DOM.getParent(tr);
+			DOM.removeChild(body, tr);
+			DOM.insertBefore(body, tr, before);
 		}
 		
 		public void onBrowserEvent(Event event) {
@@ -755,21 +974,24 @@ public class CurriculumProjectionRules extends Composite {
 			int col = DOM.getChildIndex(tr, td);
 		    Element body = DOM.getParent(tr);
 		    int row = DOM.getChildIndex(body, tr);
+		    if (row == 0) return;
 		    
 		    MyRow r = getMyRow(row);
-		    if (r == null) return;
 
 			String style = getRowFormatter().getStyleName(row);
 
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
 				getRowFormatter().setStyleName(row, "unitime-TableRowHover");
-				if (r.getMajor() != null) getRowFormatter().getElement(row).getStyle().setCursor(Cursor.AUTO);
+				if (r != null) getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().setBackgroundColor(null);
+				if (r == null || r.getChildren().isEmpty()) getRowFormatter().getElement(row).getStyle().setCursor(Cursor.AUTO);
 				break;
 			case Event.ONMOUSEOUT:
 				getRowFormatter().setStyleName(row, null);	
+				if (r != null) getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().setBackgroundColor("#EEEEEE");
 				break;
 			case Event.ONCLICK:
+			    if (r == null) break;
 				if (r.getMajor() != null) break;
 				Element element = DOM.eventGetTarget(event);
 				while (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("div"))
@@ -777,7 +999,7 @@ public class CurriculumProjectionRules extends Composite {
 				if (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("td")) {
 					if (r.getMajor() == null) {
 						boolean canCollapse = false;
-						for (int rx = row + 1; rx < getRowCount(); rx++) {
+						for (int rx = row + 1; rx < getRowCount() - 1; rx++) {
 							r = getMyRow(rx);
 							if (r == null || r.getMajor() == null) break;
 							if (r.hasProjection()) continue;
@@ -785,7 +1007,7 @@ public class CurriculumProjectionRules extends Composite {
 								canCollapse = true; break;
 							}
 						}
-						for (int rx = row + 1; rx < getRowCount(); rx++) {
+						for (int rx = row + 1; rx < getRowCount() - 1; rx++) {
 							r = getMyRow(rx);
 							if (r == null || r.getMajor() == null) break;
 							if (r.hasProjection()) continue;
@@ -820,11 +1042,56 @@ public class CurriculumProjectionRules extends Composite {
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
 				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
+					if (r != null) {
+						Updatable u = (Updatable)getWidget(row, col);
+						if (r.getMajor() != null) {
+						    MyRow p = getMyRow(row - 1);
+						    if (p.getMajor() != null) {
+						    	moveRow(tr, DOM.getChild(body, row - 1));
+						    }
+						} else {
+						    MyRow p = getMyRow(row - 1);
+						    if (p != null && p.getParent() != null) p = p.getParent();
+						    if (p != null && p.getMajor() == null) {
+						    	Element x = DOM.getChild(body, row - 1 - p.getChildren().size());
+						    	for (int i = 0; i <= r.getChildren().size(); i++) {
+						    		moveRow(DOM.getChild(body, row + i), x);
+						    	}
+						    }
+						}
+				    	u.focus();
+					}
+			    	event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN && event.getCtrlKey()) {
+					if (r != null) {
+				    	Updatable u = (Updatable)getWidget(row, col);
+						if (r.getMajor() != null) {
+						    MyRow p = getMyRow(row + 1);
+						    if (p.getMajor() != null) {
+						    	moveRow(tr, DOM.getChild(body, row + 2));
+						    }
+						} else {
+							MyRow p = getMyRow(1 + row + r.getChildren().size());
+							if (p != null && p.getMajor() == null) {
+								Element x = DOM.getChild(body, row + 2 + r.getChildren().size() + p.getChildren().size());
+						    	for (int i = 0; i <= r.getChildren().size(); i++) {
+						    		moveRow(DOM.getChild(body, row), x);
+						    	}
+							}
+						}
+				    	u.focus();
+					}
+			    	event.stopPropagation();
+			    	event.preventDefault();
+				}
 				break;
 		    }
 		}
 	}
-	
+		
 	public static class ProjectionRulesEvent {
 	}
 	
