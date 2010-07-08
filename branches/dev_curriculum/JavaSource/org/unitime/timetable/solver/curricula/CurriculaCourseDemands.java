@@ -51,6 +51,8 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	}
 
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
+		iLastLikeStudentCourseDemands.init(hibSession, progress, session);
+
 		List<Curriculum> curricula = hibSession.createQuery(
 				"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
 				.setLong("sessionId", session.getUniqueId()).list();
@@ -66,7 +68,6 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		if (iDemands.isEmpty()) {
 			progress.warn("There are no curricula, using last-like course demands instead.");
 		}
-		iLastLikeStudentCourseDemands.init(hibSession, progress, session);
 	}
 	
 	private void init(CurriculumClassification clasf) {
