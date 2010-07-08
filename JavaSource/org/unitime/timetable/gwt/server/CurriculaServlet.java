@@ -444,20 +444,22 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to " + (c.getUniqueId() == null ? "create" : "update") + " this curriculum.");
 				if (c.getMajors() == null) {
 					c.setMajors(new HashSet());
-					for (MajorInterface m: curriculum.getMajors()) {
-						c.getMajors().add(PosMajorDAO.getInstance().get(m.getId(), hibSession));
-					}
+					if (curriculum.hasMajors()) 
+						for (MajorInterface m: curriculum.getMajors()) {
+							c.getMajors().add(PosMajorDAO.getInstance().get(m.getId(), hibSession));
+						}
 				} else {
 					HashSet<PosMajor> remove = new HashSet<PosMajor>(c.getMajors());
-					majors: for (MajorInterface m: curriculum.getMajors()) {
-						for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext();) {
-							PosMajor major = i.next();
-							if (major.getUniqueId().equals(m.getId())) {
-								remove.remove(major); continue majors;
+					if (curriculum.hasMajors()) 
+						majors: for (MajorInterface m: curriculum.getMajors()) {
+							for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext();) {
+								PosMajor major = i.next();
+								if (major.getUniqueId().equals(m.getId())) {
+									remove.remove(major); continue majors;
+								}
 							}
+							c.getMajors().add(PosMajorDAO.getInstance().get(m.getId(), hibSession));
 						}
-						c.getMajors().add(PosMajorDAO.getInstance().get(m.getId(), hibSession));
-					}
 					if (!remove.isEmpty())
 						c.getMajors().removeAll(remove);
 				}
@@ -1444,6 +1446,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					}
 				});
 				majors.addAll(area.getPosMajors());
+				if (majors.isEmpty()) return null; // Special case: academic area has no majors
 				majors.removeAll(
 						hibSession.createQuery("select m from Curriculum c inner join c.majors m where c.academicArea = :academicAreaId and c.uniqueId != :curriculumId")
 						.setLong("academicAreaId", academicAreaId).setLong("curriculumId", (curriculumId == null ? -1l : curriculumId)).setCacheable(true).list());
