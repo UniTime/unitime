@@ -355,6 +355,8 @@ public class MakeCurriculaFromLastlikeDemands {
                 }
                 curriculum.setDepartment(dept);
 
+                if (dept == null) continue;
+                
                 hibSession.saveOrUpdate(curriculum);
                 for (CurriculumCourseGroup g: createdGroups)
                 	hibSession.saveOrUpdate(g);
