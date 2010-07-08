@@ -44,9 +44,9 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 					int sharedStudents = 0;
 					for (WeightedStudentId s: s1)
 						if (s2.contains(s)) sharedStudents++;
-					float planned = c1.getCourse().getPercShare() * clasf.getNrStudents();
+					float requested = c1.getCourse().getPercShare() * clasf.getNrStudents();
 					int lastLike = s1.size();
-					share = Math.round((planned / lastLike) * sharedStudents); 
+					share = Math.round((requested / lastLike) * sharedStudents); 
 				} else {
 					share = Math.round(c1.getCourse().getPercShare() * c2.getCourse().getPercShare() * clasf.getNrStudents());
 				}

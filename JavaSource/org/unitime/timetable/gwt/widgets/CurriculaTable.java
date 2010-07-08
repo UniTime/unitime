@@ -256,7 +256,7 @@ public class CurriculaTable extends Composite {
 				});
 				rules.getElement().getStyle().setCursor(Cursor.POINTER);
 				menu.addItem(rules);
-				MenuItem updatePlanned = new MenuItem("Update Planned Enrollment by Projection Rules", true, new Command() {
+				MenuItem updateRequested = new MenuItem("Update Requested Enrollment by Projection Rules", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
@@ -302,9 +302,9 @@ public class CurriculaTable extends Composite {
 						}
 					}
 				});
-				updatePlanned.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(updatePlanned);
-				MenuItem updatePlannedInclCourses = new MenuItem("Update Planned Enrollment And Course Projections", true, new Command() {
+				updateRequested.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(updateRequested);
+				MenuItem updateRequestedInclCourses = new MenuItem("Update Requested Enrollment And Course Projections", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
@@ -350,8 +350,8 @@ public class CurriculaTable extends Composite {
 						}
 					}
 				});
-				updatePlannedInclCourses.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(updatePlannedInclCourses);
+				updateRequestedInclCourses.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(updateRequestedInclCourses);
 				if (iIsAdmin) {
 					menu.addSeparator();
 					MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
@@ -615,7 +615,7 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		HTML expLabel = new HTML("Planned<br>Enrollment", false);
+		HTML expLabel = new HTML("Requested<br>Enrollment", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 		iTable.setWidget(0, col, expLabel);
@@ -625,7 +625,7 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				MenuItem sort = new MenuItem("Sort by Planned Enrollment", true, new Command() {
+				MenuItem sort = new MenuItem("Sort by Requested Enrollment", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
