@@ -32,9 +32,9 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 
 public class LastLikeStudentCourseDemands implements StudentCourseDemands {
-	private org.hibernate.Session iHibSession;
-	private Hashtable<String, Set<WeightedStudentId>> iDemandsForPemId = new Hashtable<String, Set<WeightedStudentId>>();
-	private Hashtable<Long, Hashtable<String, Set<WeightedStudentId>>> iDemandsForSubjectCourseNbr = new Hashtable<Long, Hashtable<String,Set<WeightedStudentId>>>();
+	protected org.hibernate.Session iHibSession;
+	protected Hashtable<String, Set<WeightedStudentId>> iDemandsForPemId = new Hashtable<String, Set<WeightedStudentId>>();
+	protected Hashtable<Long, Hashtable<String, Set<WeightedStudentId>>> iDemandsForSubjectCourseNbr = new Hashtable<Long, Hashtable<String,Set<WeightedStudentId>>>();
 	
 	public LastLikeStudentCourseDemands(DataProperties properties) {
 	}
@@ -43,7 +43,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 		iHibSession = hibSession;
 	}
 	
-	public Hashtable<String, Set<WeightedStudentId>> loadSubject(SubjectArea subject) {
+	protected Hashtable<String, Set<WeightedStudentId>> loadSubject(SubjectArea subject) {
 		Hashtable<String, Set<WeightedStudentId>> demandsForCourseNbr = new Hashtable<String, Set<WeightedStudentId>>();
 		iDemandsForSubjectCourseNbr.put(subject.getUniqueId(), demandsForCourseNbr);
 		for (Object[] d: (List<Object[]>)iHibSession.createQuery("select d.courseNbr, d.student.uniqueId, d.coursePermId "+

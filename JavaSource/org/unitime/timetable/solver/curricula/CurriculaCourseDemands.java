@@ -44,14 +44,14 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private long lastStudentId = -1;
 	private int iGenMoveLastIndexIn = 0;
 	private int iGenMoveLastIndexOut = 0;
-	protected LastLikeStudentCourseDemands iLastLikeStudentCourseDemands = null;
+	protected ProjectedStudentCourseDemands iFallback;
 
 	public CurriculaCourseDemands(DataProperties properties) {
-		iLastLikeStudentCourseDemands = new LastLikeStudentCourseDemands(properties);
+		iFallback = new ProjectedStudentCourseDemands(properties);
 	}
 
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
-		iLastLikeStudentCourseDemands.init(hibSession, progress, session);
+		iFallback.init(hibSession, progress, session);
 
 		List<Curriculum> curricula = hibSession.createQuery(
 				"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
@@ -66,7 +66,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		}
 		
 		if (iDemands.isEmpty()) {
-			progress.warn("There are no curricula, using last-like course demands instead.");
+			progress.warn("There are no curricula, using projected course demands instead.");
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	}
 
 	public Set<WeightedStudentId> getDemands(CourseOffering course) {
-		if (iDemands.isEmpty()) return iLastLikeStudentCourseDemands.getDemands(course);
+		if (iDemands.isEmpty()) return iFallback.getDemands(course);
 		return iDemands.get(course.getUniqueId());
 	}
 

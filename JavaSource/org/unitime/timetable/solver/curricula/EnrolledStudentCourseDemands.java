@@ -30,12 +30,12 @@ import org.unitime.timetable.model.Session;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 
-public class EnrolledStudentsCourseDemands implements StudentCourseDemands {
+public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	private org.hibernate.Session iHibSession = null;
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private boolean iCacheAll = true;
 	
-	public EnrolledStudentsCourseDemands(DataProperties properties) {
+	public EnrolledStudentCourseDemands(DataProperties properties) {
 		iCacheAll = properties.getPropertyBoolean("EnrolledStudentsCourseDemands.CacheAll", iCacheAll);
 	}
 

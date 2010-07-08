@@ -38,8 +38,8 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 			for (Bucket c2: buckets) {
 				if (c1.getCourse().getUniqueId() >= c2.getCourse().getUniqueId()) continue;
 				int share = 0;
-				Set<WeightedStudentId> s1 = iLastLikeStudentCourseDemands.getDemands(c1.getCourse().getCourse());
-				Set<WeightedStudentId> s2 = iLastLikeStudentCourseDemands.getDemands(c2.getCourse().getCourse());
+				Set<WeightedStudentId> s1 = iFallback.getDemands(c1.getCourse().getCourse());
+				Set<WeightedStudentId> s2 = iFallback.getDemands(c2.getCourse().getCourse());
 				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
 					int sharedStudents = 0;
 					for (WeightedStudentId s: s1)
