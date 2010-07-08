@@ -87,6 +87,8 @@ public class CurriculumEdit extends Composite {
 	
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
 	
+	private boolean iAreaHasNoMajors = false;
+	
 	public CurriculumEdit() {
 		
 		iCurriculumPanel = new VerticalPanel();
@@ -608,7 +610,7 @@ public class CurriculumEdit extends Composite {
 				iCurriculum.addMajor(m);
 			}
 		
-		if (iCurriculumMajors.getItemCount() == 0 && iCurriculumArea.getSelectedIndex() >= 0) {
+		if (iCurriculumMajors.getItemCount() == 0 && iCurriculumArea.getSelectedIndex() >= 0 && !iAreaHasNoMajors) {
 			iCurriculumAreaError.setText("Selected academic area has no majors without a curriculum.");
 			iCurriculumAreaError.setVisible(true);
 			ret = false;
@@ -653,6 +655,12 @@ public class CurriculumEdit extends Composite {
 
 						@Override
 						public void onSuccess(TreeSet<MajorInterface> result) {
+							if (result == null) {
+								iAreaHasNoMajors = true;
+								result = new TreeSet<MajorInterface>();
+							} else {
+								iAreaHasNoMajors = false;
+							}
 							String defaultAbbv = "", defaultName = "";
 							AcademicAreaInterface area = null;
 							try {
@@ -711,7 +719,7 @@ public class CurriculumEdit extends Composite {
 					majorIds.add(Long.valueOf(iCurriculumMajors.getValue(i)));
 				}
 			}
-			if (majorIds.isEmpty()) return;
+			if (majorIds.isEmpty() && !iAreaHasNoMajors) return;
 			
 			showLoading("Loading course enrollments ...");
 			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
