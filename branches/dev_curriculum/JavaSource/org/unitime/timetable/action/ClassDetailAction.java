@@ -371,6 +371,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        					"<font color='"+PreferenceLevel.int2color(rl.getPreference())+"'>"+
 	        					rl.getName()+
 	        					"</font></span>");
+	        			idx++;
 	        		}
 	        		if (idx>=4) rooms.append("</span>");
 		        	if (roomLocations.size()<c.getNbrRooms().intValue()) {
