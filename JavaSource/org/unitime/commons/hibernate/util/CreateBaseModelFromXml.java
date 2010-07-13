@@ -212,6 +212,7 @@ public class CreateBaseModelFromXml {
 		
 		Vector<String[]> manyToOnes = new Vector<String[]>();
 		TreeSet<String> properties = new TreeSet<String>();
+		Vector<String[]> compositeId = new Vector<String[]>();
 		
 		Element discriminator = classEl.element("discriminator");
 		String discriminatorColumn = null;
@@ -255,6 +256,7 @@ public class CreateBaseModelFromXml {
 				if ("default".equals(attribute)) attribute = "defaultValue";
 				pwa.println("	private "+type+" i"+name+";");
 				properties.add(name);
+				compositeId.add(new String[] {type, name});
 				pwb.println();
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
@@ -273,6 +275,7 @@ public class CreateBaseModelFromXml {
 				String column = el.attributeValue("column");
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 				if ("default".equals(attribute)) attribute = "defaultValue";
+				compositeId.add(new String[] {type, name});
 				pwa.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
@@ -396,7 +399,7 @@ public class CreateBaseModelFromXml {
 			imports.add(ext);
 			ext = ext.substring(ext.lastIndexOf('.')+1);
 		}
-		if (idName != null)
+		if (idName != null || !compositeId.isEmpty())
 			imports.add(fixType(classEl.attributeValue("name"), pkg));
 		
 		// Base class
@@ -459,6 +462,40 @@ public class CreateBaseModelFromXml {
 				pw.println("		return \""+className+"[\"+get"+idName+"()+\" \"+getLabel()+\"]\";");
 			else
 				pw.println("		return \""+className+"[\"+get"+idName+"()+\"]\";");
+			pw.println("	}");
+		} else if (!compositeId.isEmpty()) {
+			String x = className.substring(0,1).toLowerCase()+className.substring(1);
+			pw.println();
+			pw.println("	public boolean equals(Object o) {");
+			pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
+			pw.println("		"+className+" "+x+" = ("+className+")o;");
+			for (String[] typeName: compositeId) {
+				String type = typeName[0], name = typeName[1];
+				pw.println("		if (get"+name+"() == null || "+x+".get"+name+"() == null || !get"+name+"().equals("+x+".get"+name+"())) return false;");
+			}
+			pw.println("		return true;");
+			pw.println("	}");
+			pw.println();
+			pw.println("	public int hashCode() {");
+			String xor = "", isNull = "";
+			for (String[] typeName: compositeId) {
+				String type = typeName[0], name = typeName[1];
+				if (!xor.isEmpty()) { xor += " ^ "; isNull += " || "; }
+				xor += "get"+name+"().hashCode()";
+				isNull += "get"+name+"() == null";
+			}
+			pw.println("		if ("+isNull+") return super.hashCode();");
+			pw.println("		return "+xor+";");
+			pw.println("	}");
+			pw.println();
+			pw.println("	public String toString() {");
+			String names = "";
+			for (String[] typeName: compositeId) {
+				String type = typeName[0], name = typeName[1];
+				if (!names.isEmpty()) names += " + \", \" + ";
+				names += "get"+name+"()";
+			}
+			pw.println("		return \""+className+"[\" + "+names+" + \"]\";");
 			pw.println("	}");
 		}
 		pw.println();
