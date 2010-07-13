@@ -708,9 +708,9 @@ public class Class_ extends BaseClass_ {
         return(false);
     }
 
-    public Set getAvailableRooms() {
+    public Set<Location> getAvailableRooms() {
 
-    	Set rooms =  new TreeSet();
+    	Set<Location> rooms =  new TreeSet<Location>();
         for (Iterator i=getManagingDept().getRoomDepts().iterator();i.hasNext();) {
         	RoomDept roomDept = (RoomDept)i.next();
         	rooms.add(roomDept.getRoom());
