@@ -126,7 +126,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<Long, Student> iStudents = new Hashtable<Long, Student>();
 	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
 	private Hashtable<Integer, List<TimePattern>> iPatterns = new Hashtable<Integer, List<TimePattern>>();
-	private Hashtable iClasses = new Hashtable();
+	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
 	private Set iAllUsedDatePatterns = new HashSet();
 	private Set iAllClasses = null;
 	
@@ -135,6 +135,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iInteractiveMode = false;
     private boolean iSpread = true;
     private boolean iAutoSameStudents = true;
+    private boolean iLoadCommittedAssignments = false;
 
     private double iFewerSeatsDisouraged = 0.01;
     private double iFewerSeatsStronglyDisouraged = 0.02;
@@ -220,6 +221,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iProgress.warn("Failed to load custom student course demands class, using last-like course demands instead.",e);
         	iStudentCourseDemands = new LastLikeStudentCourseDemands(getModel().getProperties());
         }
+        
+        iLoadCommittedAssignments = getModel().getProperties().getPropertyBoolean("General.LoadCommittedAssignments", iLoadCommittedAssignments);
     }
     
     private String getClassLabel(Class_ clazz) {
@@ -1575,6 +1578,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (allExternallyManaged) return;
     	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
+    		if (!classInstructor.isLead()) continue;
    			Class_ clazz = (Class_)classInstructor.getClassInstructing();
    			Lecture lecture = getLecture(clazz);
    			if (lecture==null) {
@@ -2666,6 +2670,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		loadAssignment(assignment);
             		iProgress.incProgress();
             	}
+        	}
+        } else if (iLoadCommittedAssignments) {
+        	iProgress.setPhase("Creating initial assignment ...", getModel().variables().size());
+        	for (Lecture lecture: getModel().variables()) {
+        		if (lecture.isCommitted()) continue;
+        		Class_ clazz = iClasses.get(lecture.getClassId());
+        		if (clazz != null && clazz.getCommittedAssignment() != null)
+        			loadAssignment(clazz.getCommittedAssignment());
+        		iProgress.incProgress();
         	}
         }
         
