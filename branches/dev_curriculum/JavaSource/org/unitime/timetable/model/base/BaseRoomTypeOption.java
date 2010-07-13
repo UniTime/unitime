@@ -22,6 +22,7 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 
 import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 
 public abstract class BaseRoomTypeOption implements Serializable {
@@ -53,6 +54,23 @@ public abstract class BaseRoomTypeOption implements Serializable {
 
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomTypeOption)) return false;
+		RoomTypeOption roomTypeOption = (RoomTypeOption)o;
+		if (getRoomType() == null || roomTypeOption.getRoomType() == null || !getRoomType().equals(roomTypeOption.getRoomType())) return false;
+		if (getSession() == null || roomTypeOption.getSession() == null || !getSession().equals(roomTypeOption.getSession())) return false;
+		return true;
+	}
+
+	public int hashCode() {
+		if (getRoomType() == null || getSession() == null) return super.hashCode();
+		return getRoomType().hashCode() ^ getSession().hashCode();
+	}
+
+	public String toString() {
+		return "RoomTypeOption[" + getRoomType() + ", " + getSession() + "]";
+	}
 
 	public String toDebugString() {
 		return "RoomTypeOption[" +

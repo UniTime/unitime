@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.UserData;
+
 public abstract class BaseUserData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -45,6 +47,23 @@ public abstract class BaseUserData implements Serializable {
 
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof UserData)) return false;
+		UserData userData = (UserData)o;
+		if (getExternalUniqueId() == null || userData.getExternalUniqueId() == null || !getExternalUniqueId().equals(userData.getExternalUniqueId())) return false;
+		if (getName() == null || userData.getName() == null || !getName().equals(userData.getName())) return false;
+		return true;
+	}
+
+	public int hashCode() {
+		if (getExternalUniqueId() == null || getName() == null) return super.hashCode();
+		return getExternalUniqueId().hashCode() ^ getName().hashCode();
+	}
+
+	public String toString() {
+		return "UserData[" + getExternalUniqueId() + ", " + getName() + "]";
+	}
 
 	public String toDebugString() {
 		return "UserData[" +
