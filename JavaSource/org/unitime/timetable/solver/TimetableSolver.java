@@ -1355,12 +1355,13 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
             Long sessionId = getProperties().getPropertyLong("General.SessionId",-1);
             org.unitime.timetable.model.Session session = new SessionDAO().get(sessionId); 
             Long[] solverGroupIds = getProperties().getPropertyLongArry("General.SolverGroupId", new Long[]{});
-            //TODO: checked OK, tested OK
             String name = "pu-"+session.getAcademicTerm()+session.getSessionStartYear();
             for (int i=0;i<solverGroupIds.length;i++) {
                 SolverGroup sg = new SolverGroupDAO().get(solverGroupIds[i]);
                 name+="-"+sg.getAbbv();
             }
+            if (name.length() > 100)
+            	name = name.substring(0, 97) + "...";
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.export.id-conv","true"))) {
                 getProperties().setProperty("Xml.ConvertIds", "true");
                 getProperties().setProperty("Xml.SaveBest", "false");
