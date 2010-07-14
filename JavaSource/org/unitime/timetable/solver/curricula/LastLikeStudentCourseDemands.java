@@ -83,7 +83,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 		if (studentIds == null)
 			studentIds = demandsForCourseNbr.get(course.getCourseNbr());
 
-		if (course.getDemandOffering() != null) {
+		if (course.getDemandOffering() != null && !course.getDemandOffering().equals(course)) {
 			if (studentIds == null)
 				studentIds = getDemands(course.getDemandOffering());
 			else {
