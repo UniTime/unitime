@@ -198,12 +198,12 @@ public class FixCourseTimetablingInconsistencies {
 						DistributionObject o1 = new DistributionObject();
 						o1.setDistributionPref(dp);
 						o1.setPrefGroup(a.getClazz());
-						o1.setSequenceNumber(0);
+						o1.setSequenceNumber(1);
 						dp.getDistributionObjects().add(o1);
 						DistributionObject o2 = new DistributionObject();
 						o2.setDistributionPref(dp);
 						o2.setPrefGroup(b.getClazz());
-						o2.setSequenceNumber(1);
+						o2.setSequenceNumber(2);
 						dp.getDistributionObjects().add(o2);
 						iHibSession.saveOrUpdate(dp);
 					}
@@ -556,12 +556,12 @@ public class FixCourseTimetablingInconsistencies {
 						DistributionObject o1 = new DistributionObject();
 						o1.setDistributionPref(dp);
 						o1.setPrefGroup(a.getClazz());
-						o1.setSequenceNumber(0);
+						o1.setSequenceNumber(1);
 						dp.getDistributionObjects().add(o1);
 						DistributionObject o2 = new DistributionObject();
 						o2.setDistributionPref(dp);
 						o2.setPrefGroup(b.getClazz());
-						o2.setSequenceNumber(1);
+						o2.setSequenceNumber(2);
 						dp.getDistributionObjects().add(o2);
 						iHibSession.saveOrUpdate(dp);						
 					} else {
