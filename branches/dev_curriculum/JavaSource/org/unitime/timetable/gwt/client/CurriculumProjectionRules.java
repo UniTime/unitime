@@ -104,7 +104,7 @@ public class CurriculumProjectionRules extends Composite {
 				iService.saveProjectionRules(iRules, new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						showError("Failed to curricula projection rules (" + caught.getMessage() + ")");
+						showError("Failed to save curricula projection rules (" + caught.getMessage() + ")");
 						LoadingWidget.getInstance().hide();
 						for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 							h.onException(caught);
@@ -565,14 +565,14 @@ public class CurriculumProjectionRules extends Composite {
 		label.addClickHandler(menu);
 		iTable.getFlexCellFormatter().setStyleName(0, 0, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, 0, label);
-		HTML totals = new HTML("Totals", false);
+		HTML totals = new HTML("Total", false);
 		totals.addClickHandler(menu);
 		iTable.getFlexCellFormatter().setStyleName(0, col2clasf.size() + 1, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, col2clasf.size() + 1, totals);
 		if (row == 1)
 			throw new CurriculaException("No last-like enrollments.");
 		
-		iTable.setText(row, 0, "Totals");
+		iTable.setText(row, 0, "Total");
 		iTable.getCellFormatter().getElement(row, 0).getStyle().setBackgroundColor("#EEEEEE");
 		List<MyCell> cells = new ArrayList<MyCell>();
 		for (int c = 0; c < col2clasf.size(); c++) {
@@ -677,7 +677,7 @@ public class CurriculumProjectionRules extends Composite {
 			iPanel.setCellVerticalAlignment(iTextBox, HasVerticalAlignment.ALIGN_MIDDLE);
 			
 			iPanel.add(iRearLabel);
-			iPanel.setCellVerticalAlignment(iFrontLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+			iPanel.setCellVerticalAlignment(iRearLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 
 			initWidget(iPanel);	
 			

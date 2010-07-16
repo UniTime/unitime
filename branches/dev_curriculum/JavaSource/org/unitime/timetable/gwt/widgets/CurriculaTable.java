@@ -93,6 +93,8 @@ public class CurriculaTable extends Composite {
 	
 	private boolean iIsAdmin = false;
 	
+	private EditClassificationHandler iEditClassificationHandler = null;
+	
 	public CurriculaTable() {
 		iTable = new MyFlexTable();
 		
@@ -139,6 +141,31 @@ public class CurriculaTable extends Composite {
 				menu.addItem(clear);
 				if (!iSelectedCurricula.isEmpty()) {
 					menu.addSeparator();
+				}
+				if (iSelectedCurricula.size() > 1) {
+					boolean allHasClassifications = true;
+					for (CurriculumInterface c: iData)
+						if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+							if (!c.hasClassifications()) allHasClassifications = false;
+						}
+					if (iEditClassificationHandler != null && allHasClassifications) {
+						MenuItem editClasf = new MenuItem("Edit Requested Enrollments", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								List<CurriculumInterface> selected = new ArrayList<CurriculumInterface>();
+								for (CurriculumInterface c: iData)
+									if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+										selected.add(c);
+									}
+								iEditClassificationHandler.doEdit(selected);
+							}
+						});
+						editClasf.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(editClasf);
+					}
+				}
+				if (!iSelectedCurricula.isEmpty()) {
 					MenuItem delete = new MenuItem("Delete Selected Curricula", true, new Command() {
 						@Override
 						public void execute() {
@@ -201,7 +228,7 @@ public class CurriculaTable extends Composite {
 							}
 						}
 					if (canMerge) {
-						MenuItem delete = new MenuItem("Merge Selected Curricula", true, new Command() {
+						MenuItem merge = new MenuItem("Merge Selected Curricula", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -242,8 +269,8 @@ public class CurriculaTable extends Composite {
 								}
 							}
 						});
-						delete.getElement().getStyle().setCursor(Cursor.POINTER);
-						menu.addItem(delete);						
+						merge.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(merge);						
 					}
 				}
 				menu.addSeparator();
@@ -1081,5 +1108,12 @@ public class CurriculaTable extends Composite {
 	public List<CurriculumInterface> getCurricula() {
 		return iData;
 	}
-
+	
+	public interface EditClassificationHandler {
+		public void doEdit(List<CurriculumInterface> curricula);
+	}
+	
+	public void setEditClassificationHandler(EditClassificationHandler h) {
+		iEditClassificationHandler = h;
+	}
 }
