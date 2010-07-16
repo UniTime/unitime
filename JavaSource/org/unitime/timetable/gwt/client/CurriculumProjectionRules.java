@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,8 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
+import org.unitime.timetable.gwt.services.MenuService;
+import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
@@ -51,6 +54,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -71,6 +75,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class CurriculumProjectionRules extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 
 	private MyFlexTable iTable;
@@ -83,6 +88,7 @@ public class CurriculumProjectionRules extends Composite {
 	private boolean iEditable = false;
 	
 	private HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> iRules = null;
+	private HashMap<String, String> iOrder = null;
 	
 	private List<ProjectionRulesHandler> iProjectionRulesHandlers = new ArrayList<ProjectionRulesHandler>();
 	
@@ -194,51 +200,79 @@ public class CurriculumProjectionRules extends Composite {
 			}
 			@Override
 			public void onSuccess(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> result) {
-				try {
-					iRules = result;
-					hideError();
-					refreshTable();
-					
-					iService.canEditProjectionRules(new AsyncCallback<Boolean>() {
-						@Override
-						public void onFailure(Throwable caught) {
-						}
-						@Override
-						public void onSuccess(Boolean result) {
-							if (result) {
-								for (int i = 0; i < iSave.length; i++) {
-									iSave[i].setVisible(true);
-									iPrint[i].setVisible(!iClose[i].isVisible());
-								}
-								iEditable = true;
-								updateAll();
-							}
-						}
-					});
-					
-					ProjectionRulesEvent e = new ProjectionRulesEvent();
-					for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
-						h.onRulesLoaded(e);
+				iRules = result;
+				Set<String> ordRequest = new HashSet<String>();
+				ordRequest.add("CurProjRules.Order");
+				for (AcademicAreaInterface area: iRules.keySet())
+					ordRequest.add("CurProjRules.Order["+area.getAbbv()+"]");
+				hideError();
+				iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
+					@Override
+					public void onSuccess(HashMap<String, String> result) {
+						iOrder = result;
+						refreshTableAndAll();
 					}
-				} catch (Throwable t) {
-					showError("Loading failed (" + t.getMessage() + ")");
-					for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
-						h.onException(t);
+					@Override
+					public void onFailure(Throwable caught) {
+						refreshTableAndAll();
 					}
-				} finally {
-					LoadingWidget.getInstance().hide();
-				}
+				});
 			}
 		});
+	}
+	
+	private void refreshTableAndAll() {
+		try {
+			refreshTable();
+			
+			iService.canEditProjectionRules(new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+				@Override
+				public void onSuccess(Boolean result) {
+					if (result) {
+						for (int i = 0; i < iSave.length; i++) {
+							iSave[i].setVisible(true);
+							iPrint[i].setVisible(!iClose[i].isVisible());
+						}
+						iEditable = true;
+						updateAll();
+					}
+				}
+			});
+			
+			ProjectionRulesEvent e = new ProjectionRulesEvent();
+			for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
+				h.onRulesLoaded(e);
+			}
+			
+		} catch (Throwable t) {
+			showError("Loading failed (" + t.getMessage() + ")");
+			for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
+				h.onException(t);
+			}
+		} finally {
+			LoadingWidget.getInstance().hide();
+		}
 	}
 	
 	public void showError(String error) {
 		for (int i = 0; i < iErrorMessage.length; i++) {
 			iErrorMessage[i].setText(error);
 			iErrorMessage[i].setVisible(true);
+			iErrorMessage[i].setStyleName("unitime-ErrorMessage");
 		}
 	}
 	
+	public void showMessage(String message) {
+		for (int i = 0; i < iErrorMessage.length; i++) {
+			iErrorMessage[i].setText(message);
+			iErrorMessage[i].setVisible(true);
+			iErrorMessage[i].setStyleName("unitime-Message");
+		}
+	}
+
 	public void hideError() {
 		for (int i = 0; i < iErrorMessage.length; i++) {
 			iErrorMessage[i].setVisible(false);
@@ -292,7 +326,27 @@ public class CurriculumProjectionRules extends Composite {
 		if (iRules == null || iRules.isEmpty())
 			throw new CurriculaException("No academic areas defined.");
 
-		TreeSet<AcademicAreaInterface> areas = new TreeSet<AcademicAreaInterface>(iRules.keySet());
+		String areaOrd = (iOrder == null ? null : iOrder.get("CurProjRules.Order"));
+		TreeSet<AcademicAreaInterface> areas = null;
+		if (areaOrd != null && areaOrd.length() > 0) {
+			final String ord = "|" + areaOrd + "|";
+			areas = new TreeSet<AcademicAreaInterface>(new Comparator<AcademicAreaInterface>() {
+				@Override
+				public int compare(AcademicAreaInterface a1, AcademicAreaInterface a2) {
+					int i1 = ord.indexOf("|" + a1.getAbbv() + "|");
+					if (i1 >= 0) {
+						int i2 = ord.indexOf("|" + a2.getAbbv() + "|");
+						if (i2 >= 0) {
+							return (i1 < i2 ? -1 : i1 > i2 ? 1 : a1.compareTo(a2));
+						}
+					}
+					return a1.compareTo(a2);
+				}
+			});
+			areas.addAll(iRules.keySet());
+		} else {
+			areas = new TreeSet<AcademicAreaInterface>(iRules.keySet());
+		}
 		TreeSet<AcademicClassificationInterface> classifications = null;
 		
 		MajorInterface defaultMajor = new MajorInterface();
@@ -353,7 +407,29 @@ public class CurriculumProjectionRules extends Composite {
 			iTable.getCellFormatter().getElement(row, 1 + col2clasf.size()).getStyle().setBackgroundColor("#EEEEEE");
 			row ++;
 			
-			for (MajorInterface major: new TreeSet<MajorInterface>(iRules.get(area).keySet())) {
+			String majorOrd = (iOrder == null ? null : iOrder.get("CurProjRules.Order["+area.getAbbv()+"]"));
+			TreeSet<MajorInterface> majors = null;
+			if (majorOrd != null && majorOrd.length() > 0) {
+				final String ord = "|" + majorOrd + "|";
+				majors = new TreeSet<MajorInterface>(new Comparator<MajorInterface>() {
+					@Override
+					public int compare(MajorInterface m1, MajorInterface m2) {
+						int i1 = ord.indexOf("|" + m1.getCode() + "|");
+						if (i1 >= 0) {
+							int i2 = ord.indexOf("|" + m2.getCode() + "|");
+							if (i2 >= 0) {
+								return (i1 < i2 ? -1 : i1 > i2 ? 1 : m1.compareTo(m2));
+							}
+						}
+						return m1.compareTo(m2);
+					}
+				});
+				majors.addAll(iRules.get(area).keySet());
+			} else {
+				majors = new TreeSet<MajorInterface>(iRules.get(area).keySet());
+			}
+			
+			for (MajorInterface major: majors) {
 				if (major.getId() < 0) continue;
 				
 				MyRow r = new MyRow(area, major, rules.get(major));
@@ -927,6 +1003,7 @@ public class CurriculumProjectionRules extends Composite {
 	}
 	
 	private class MyFlexTable extends FlexTable {
+		private Timer iTimer = null;
 		
 		public MyFlexTable() {
 			super();
@@ -938,6 +1015,12 @@ public class CurriculumProjectionRules extends Composite {
 			sinkEvents(Event.ONKEYDOWN);
 			setStylePrimaryName("unitime-MainTable");
 			addStyleName("unitime-NotPrintableBottomLine");
+			iTimer = new Timer() {
+				@Override
+				public void run() {
+					saveOrder();
+				}
+			};
 		}
 		
 		private boolean focus(Event event, int oldRow, int oldCol, int row, int col) {
@@ -965,6 +1048,38 @@ public class CurriculumProjectionRules extends Composite {
 			Element body = DOM.getParent(tr);
 			DOM.removeChild(body, tr);
 			DOM.insertBefore(body, tr, before);
+		}
+		
+		public void saveOrder() {
+			showMessage("Saving order...");
+			String areaOrd = "";
+			HashMap<String, String> area2majorOrd = new HashMap<String, String>();
+			for (int i = 1; i < getRowCount() - 1; i++) {
+			    MyRow r = getMyRow(i);
+			    if (r == null) continue;
+			    if (r.getMajor() == null) {
+			    	if (!areaOrd.isEmpty()) areaOrd += "|";
+			    	areaOrd += r.getArea().getAbbv();
+			    } else {
+			    	String majorOrd = area2majorOrd.get(r.getArea().getAbbv());
+		    		area2majorOrd.put(r.getArea().getAbbv(), (majorOrd == null ? "" : majorOrd + "|") + r.getMajor().getCode());
+			    }
+			}
+			List<String[]> ord = new ArrayList<String[]>();
+			ord.add(new String[] {"CurProjRules.Order", areaOrd});
+			for (Map.Entry<String, String> e: area2majorOrd.entrySet()) {
+				ord.add(new String[] {"CurProjRules.Order[" + e.getKey() + "]", e.getValue()});
+			}
+			iMenuService.setUserData(ord, new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					showError("Failed to save table order (" + caught.getMessage() + ")");
+				}
+				@Override
+				public void onSuccess(Boolean result) {
+					hideError();
+				}
+			});
 		}
 		
 		public void onBrowserEvent(Event event) {
@@ -1060,6 +1175,7 @@ public class CurriculumProjectionRules extends Composite {
 						    	}
 						    }
 						}
+						iTimer.schedule(5000);
 				    	u.focus();
 					}
 			    	event.stopPropagation();
@@ -1082,6 +1198,7 @@ public class CurriculumProjectionRules extends Composite {
 						    	}
 							}
 						}
+						iTimer.schedule(5000);
 				    	u.focus();
 					}
 			    	event.stopPropagation();
