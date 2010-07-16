@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.User;
@@ -91,6 +96,26 @@ public class UserData extends BaseUserData {
 	public static String getProperty(HttpSession session, String name, String defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?value:defaultValue);
+	}
+	
+	public static HashMap<String,String> getProperties(HttpSession session, Collection<String> names) {
+		User user = Web.getUser(session);
+		if (user==null || user.getId()==null) return null;
+		return getProperties(user.getId(), names);
+	}
+
+	public static HashMap<String,String> getProperties(String externalUniqueId, Collection<String> names) {
+		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId and u.name in (";
+		for (Iterator<String> i = names.iterator(); i.hasNext(); ) {
+			q += "'" + i.next() + "'";
+			if (i.hasNext()) q += ",";
+		}
+		q += ")";
+		HashMap<String,String> ret = new HashMap<String, String>();
+		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setString("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
+			ret.put(u.getName(), u.getValue());
+		}
+		return ret;
 	}
 
 	public static void removeProperty(HttpSession session, String name) {

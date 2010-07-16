@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.services;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,4 +38,9 @@ public interface MenuService extends RemoteService {
 	public HashMap<String, String> getSolverInfo() throws MenuException;
 	
 	public String getHelpPage(String title) throws MenuException;
+	
+	public String getUserData(String property) throws MenuException;
+	public Boolean setUserData(String property, String value) throws MenuException;
+	public HashMap<String, String> getUserData(Collection<String> property) throws MenuException;
+	public Boolean setUserData(List<String[]> property2value) throws MenuException;
 }

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.services;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,4 +37,9 @@ public interface MenuServiceAsync {
 	public void getSolverInfo(AsyncCallback<HashMap<String, String>> callback) throws MenuException;
 
 	public void getHelpPage(String title, AsyncCallback<String> callback) throws MenuException;
+	
+	public void getUserData(String property, AsyncCallback<String> callback) throws MenuException;
+	public void setUserData(String property, String value, AsyncCallback<Boolean> callback) throws MenuException;
+	public void getUserData(Collection<String> property, AsyncCallback<HashMap<String, String>> callback) throws MenuException;
+	public void setUserData(List<String[]> property2value, AsyncCallback<Boolean> callback) throws MenuException;
 }

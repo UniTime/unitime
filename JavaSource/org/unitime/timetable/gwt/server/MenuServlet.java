@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.solver.SolverProxy;
@@ -403,4 +405,65 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			throw new MenuException("help pages are disabled");
 		}
 	}
+	
+	public String getUserData(String property) throws MenuException {
+		try {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				return UserData.getProperty(getThreadLocalRequest().getSession(), property);
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof MenuException) throw (MenuException)e;
+			throw new MenuException(e.getMessage());
+		}
+	}
+	
+	public Boolean setUserData(String property, String value) throws MenuException {
+		try {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				UserData.setProperty(getThreadLocalRequest().getSession(), property, value);
+				return null;
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof MenuException) throw (MenuException)e;
+			throw new MenuException(e.getMessage());
+		}
+	}
+	
+	public HashMap<String, String> getUserData(Collection<String> property) throws MenuException {
+		try {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				return UserData.getProperties(getThreadLocalRequest().getSession(), property);
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof MenuException) throw (MenuException)e;
+			throw new MenuException(e.getMessage());
+		}
+	}
+	
+	public Boolean setUserData(List<String[]> property2value) throws MenuException {
+		try {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				for (String[] p: property2value)
+					UserData.setProperty(getThreadLocalRequest().getSession(), p[0], p[1]);
+				return null;
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof MenuException) throw (MenuException)e;
+			throw new MenuException(e.getMessage());
+		}
+	}
+
+
 }
