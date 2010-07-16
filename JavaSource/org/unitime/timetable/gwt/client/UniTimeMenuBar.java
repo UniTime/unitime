@@ -30,11 +30,15 @@ import org.unitime.timetable.gwt.widgets.PageLabel;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -45,12 +49,14 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class UniTimeMenuBar extends Composite {
 	private final MenuServiceAsync iService = GWT.create(MenuService.class);
 	
 	private MenuBar iMenu;
+	private Timer iTimer = null;
 
 	public UniTimeMenuBar() {
 		
@@ -104,7 +110,7 @@ public class UniTimeMenuBar extends Composite {
 		}
 	}
 	
-	private void openUrl(String name, String url, String target) {
+	private void openUrl(final String name, final String url, String target) {
 		/*
 		if (url.indexOf('?') >= 0)
 			url += "&gwt.codesvr=127.0.0.1:9997";
@@ -117,7 +123,7 @@ public class UniTimeMenuBar extends Composite {
 			final DialogBox dialog = new MyDialogBox();
 			dialog.setAutoHideEnabled(true);
 			dialog.setModal(true);
-			final Frame frame = new Frame();
+			final Frame frame = new MyFrame(name);
 			frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
 			dialog.setGlassEnabled(true);
 			dialog.setAnimationEnabled(true);
@@ -125,7 +131,26 @@ public class UniTimeMenuBar extends Composite {
 			dialog.setText(name);
 			frame.setUrl(url);
 			frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
+			
+			iTimer = new Timer() {
+				@Override
+				public void run() {
+					if (LoadingWidget.getInstance().isShowing())
+						LoadingWidget.getInstance().fail(name + " does not seem to load, " +
+								"please check <a href='" + url + "' style='white-space: nowrap;'>" + url + "</a> for yourself.");
+				}
+			};
+
+			dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+				@Override
+				public void onClose(CloseEvent<PopupPanel> event) {
+					if (LoadingWidget.getInstance().isShowing())
+						LoadingWidget.getInstance().hide();
+				}
+			});
+
 			dialog.center();
+			iTimer.schedule(30000);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
@@ -193,4 +218,29 @@ public class UniTimeMenuBar extends Composite {
 				MyDialogBox.this.hide();
 		}
 	}
+	
+	public static void notifyFrameLoaded() {
+		LoadingWidget.getInstance().hide();
+	}
+	
+	public class MyFrame extends Frame {
+		private String iName;
+		
+		public MyFrame(String name) {
+			super();
+			iName = name;
+			hookFremaLoaded((FrameElement)getElement().cast());
+		}
+		
+		public void onLoad() {
+			super.onLoad();
+			LoadingWidget.getInstance().show("Loading " + iName + " ...");
+		}
+	}
+	
+	public native void hookFremaLoaded(FrameElement element) /*-{
+		element.onload = function() {
+			@org.unitime.timetable.gwt.client.UniTimeMenuBar::notifyFrameLoaded()();
+		}
+	}-*/;
 }
