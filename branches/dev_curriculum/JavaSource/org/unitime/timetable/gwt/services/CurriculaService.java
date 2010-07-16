@@ -52,6 +52,7 @@ public interface CurriculaService extends RemoteService {
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException;
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException;
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException;
+	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException;
 	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException;
 	public String retrieveCourseDetails(String course) throws CurriculaException;

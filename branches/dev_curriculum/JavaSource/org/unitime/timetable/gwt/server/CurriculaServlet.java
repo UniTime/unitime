@@ -632,6 +632,74 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		}
 	}
 	
+	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException {
+		try {
+			sLog.info("saveClassifications()");
+			Long s0 = System.currentTimeMillis();
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			Transaction tx = null;
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				int ord = 0;
+				for (CurriculumInterface curriculum: curricula) {
+					Curriculum c = CurriculumDAO.getInstance().get(curriculum.getId(), hibSession);
+					if (c == null || !c.canUserEdit(user)) continue;
+					
+					HashSet<CurriculumClassification> remove = new HashSet<CurriculumClassification>(c.getClassifications());
+					
+					clasf: for (CurriculumClassificationInterface clasf: curriculum.getClassifications()) {
+						if (clasf.getExpected() == null) continue;
+						
+						for (Iterator<CurriculumClassification> i = c.getClassifications().iterator(); i.hasNext();) {
+							CurriculumClassification cl = i.next();
+							if (cl.getAcademicClassification().getUniqueId().equals(clasf.getAcademicClassification().getId())) {
+								cl.setNrStudents(clasf.getExpected());
+								remove.remove(cl);
+								hibSession.saveOrUpdate(cl);
+								continue clasf;
+							}
+						}
+						
+						CurriculumClassification cl = new CurriculumClassification();
+						cl.setAcademicClassification(AcademicClassificationDAO.getInstance().get(clasf.getAcademicClassification().getId()));
+						cl.setName(clasf.getAcademicClassification().getCode());
+						cl.setNrStudents(clasf.getExpected());
+						cl.setOrd(ord++);
+						cl.setCurriculum(c);
+						c.getClassifications().add(cl);
+						hibSession.saveOrUpdate(cl);
+					}
+					
+					for (CurriculumClassification cl: remove) {
+						c.getClassifications().remove(cl);
+						cl.setCurriculum(null);
+						hibSession.delete(cl);
+					}
+					
+					hibSession.saveOrUpdate(c);
+				}
+				hibSession.flush();
+				tx.commit(); tx = null;
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Saved classifications for " + curricula.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+	
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException {
 		try {
 			sLog.info("deleteCurriculum(curriculumId=" + curriculumId + ")");
