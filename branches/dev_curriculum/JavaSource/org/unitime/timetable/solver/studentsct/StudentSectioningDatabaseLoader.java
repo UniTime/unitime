@@ -19,13 +19,18 @@
 */
 package org.unitime.timetable.solver.studentsct;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -33,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -54,12 +60,14 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.util.DateUtils;
 
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
@@ -70,6 +78,7 @@ import net.sf.cpsolver.studentsct.StudentSectioningLoader;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.Test;
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
+import net.sf.cpsolver.studentsct.model.Choice;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -96,6 +105,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private String iYear = null;
     private Long iSessionId = null;
     private long iMakeupAssignmentId = 0;
+	private BitSet iFreeTimePattern = null;
+	private Date iDatePatternFirstDate = null;
+	private boolean iTweakLimits = false;
+	private boolean iLoadSectioningInfos = false;
     
     private Progress iProgress = null;
 
@@ -110,6 +123,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iYear = model.getProperties().getProperty("Data.Year");
         iTerm = model.getProperties().getProperty("Data.Term");
         iSessionId = model.getProperties().getPropertyLong("General.SessionId", null);
+        iTweakLimits = model.getProperties().getPropertyBoolean("Load.TweakLimits", iTweakLimits);
+        iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
         iProgress = Progress.getInstance(getModel());
     }
     
@@ -267,128 +282,131 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return p;
     }
     
-    private Section loadSection(Subpart subpart, Section parentSection, Class_ c, int limit) {
-        Placement p = null;
-        if (iMakeupAssignmentsFromRequiredPrefs) {
-            p = makeupPlacement(c);
-        } else {
-            Assignment a = c.getCommittedAssignment();
-            p = (a==null?null:a.getPlacement());
-        }
-        Section section = new Section(c.getUniqueId().longValue(), limit, c.getClassLabel(), subpart, p, getInstructorIds(c), getInstructorNames(c), parentSection);
-        if (section.getTime()!=null && section.getTime().getDatePatternId().equals(c.getSession().getDefaultDatePattern().getUniqueId()))
-            section.getTime().setDatePattern(section.getTime().getDatePatternId(),"",section.getTime().getWeekCode());
-        if (section.getTime()!=null && section.getTime().getDatePatternName().startsWith("generated")) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
-            section.getTime().setDatePattern(
-                    section.getTime().getDatePatternId(), 
-                    sdf.format(c.effectiveDatePattern().getStartDate())+" - "+sdf.format(c.effectiveDatePattern().getEndDate()), 
-                    section.getTime().getWeekCode());
-        }
-        return section;
-    }
-
-    private Offering loadOffering(InstructionalOffering io, Hashtable courseTable, Hashtable classTable) {
-        iProgress.debug("Loading offering "+io.getCourseName());
-        if (!io.hasClasses()) {
-            iProgress.warn("Offering "+io.getCourseName()+" has no classes");
-            return null;
-        }
-        Offering offering = new Offering(io.getUniqueId().longValue(), io.getCourseName());
-        boolean unlimited = false;
-        for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();) {
-            InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
-            if (ioc.isUnlimitedEnrollment().booleanValue()) unlimited = true;
-        }
-        for (Iterator i=io.getCourseOfferings().iterator();i.hasNext();) {
-            CourseOffering co = (CourseOffering)i.next();
+    private Offering loadOffering(InstructionalOffering io, Hashtable<Long, Course> courseTable, Hashtable<Long, Section> classTable) {
+    	if (io.getInstrOfferingConfigs().isEmpty()) {
+    		return null;
+    	}
+    	String courseName = io.getCourseName();
+        Offering offering = new Offering(io.getUniqueId().longValue(), courseName);
+        for (Iterator<CourseOffering> i = io.getCourseOfferings().iterator(); i.hasNext(); ) {
+        	CourseOffering co = i.next();
             int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
-            int limit = co.getInstructionalOffering().getLimit().intValue();
-            if (unlimited) limit=-1;
-            for (Iterator j=co.getInstructionalOffering().getCourseReservations().iterator();j.hasNext();) {
-                CourseOfferingReservation reservation = (CourseOfferingReservation)j.next();
+            boolean unlimited = false;
+            int limit = 0;
+            for (Iterator<InstrOfferingConfig> j = io.getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
+            	InstrOfferingConfig ioc = j.next();
+                if (ioc.isUnlimitedEnrollment()) unlimited = true;
+                limit += ioc.getLimit();
+            }
+            for (Iterator<CourseOfferingReservation> k = co.getCourseReservations().iterator(); k.hasNext(); ) {
+            	CourseOfferingReservation reservation = k.next();
                 if (reservation.getCourseOffering().equals(co) && reservation.getReserved()!=null)
-                    limit = reservation.getReserved().intValue();
+                    limit = reservation.getReserved();
             }
-            Course course = new Course(co.getUniqueId().longValue(), co.getSubjectAreaAbbv(), co.getCourseNbr(), offering, limit, projected);
+            if (limit >= 9999) unlimited = true;
+            if (unlimited) limit=-1;
+            Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
             courseTable.put(co.getUniqueId(), course);
-            iProgress.trace("created course "+course);
         }
-        Hashtable class2section = new Hashtable();
-        Hashtable ss2subpart = new Hashtable();
-        for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();) {
-            InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
-            if (!ioc.hasClasses()) {
-                iProgress.warn("Config "+ioc.getName()+" has no class");
-                continue;
-            }
-            Config config = new Config(ioc.getUniqueId().longValue(), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
-            iProgress.trace("created config "+config);
-            TreeSet subparts = new TreeSet(new SchedulingSubpartComparator());
+        Hashtable<Long,Section> class2section = new Hashtable<Long,Section>();
+        Hashtable<Long,Subpart> ss2subpart = new Hashtable<Long, Subpart>();
+        DecimalFormat df = new DecimalFormat("000");
+        for (Iterator<InstrOfferingConfig> i = io.getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
+        	InstrOfferingConfig ioc = i.next();
+            Config config = new Config(ioc.getUniqueId(), courseName + " [" + ioc.getName() + "]", offering);
+            TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
-            for (Iterator j=subparts.iterator();j.hasNext();) {
-                SchedulingSubpart ss = (SchedulingSubpart)j.next();
+            for (SchedulingSubpart ss: subparts) {
                 String sufix = ss.getSchedulingSubpartSuffix();
-                Subpart parentSubpart = (ss.getParentSubpart()==null?null:(Subpart)ss2subpart.get(ss.getParentSubpart()));
-                if (ss.getParentSubpart()!=null && parentSubpart==null) {
-                    iProgress.error("Subpart "+ss.getSchedulingSubpartLabel()+" has parent "+ss.getParentSubpart().getSchedulingSubpartLabel()+", but the appropriate parent subpart is not loaded.");
+                Subpart parentSubpart = (ss.getParentSubpart() == null ? null : (Subpart)ss2subpart.get(ss.getParentSubpart().getUniqueId()));
+                if (ss.getParentSubpart() != null && parentSubpart == null) {
+                    iProgress.error("Subpart " + ss.getSchedulingSubpartLabel() + " has parent " + 
+                    		ss.getSchedulingSubpartLabel() +", but the appropriate parent subpart is not loaded.");
                 }
-                Subpart subpart = new Subpart(ss.getUniqueId().longValue(), ss.getItype().getItype().toString()+sufix, ss.getItypeDesc().trim()+(sufix==null || sufix.length()==0?"":" ("+sufix+")"), config, parentSubpart);
-                ss2subpart.put(ss, subpart);
-                iProgress.trace("created subpart "+subpart);
-                for (Iterator k=ss.getClasses().iterator();k.hasNext();) {
-                    Class_ c = (Class_)k.next();
-                    int limit = c.getClassLimit();
-                    if (ioc.isUnlimitedEnrollment().booleanValue()) limit = -1;
-                    Section parentSection = (c.getParentClass()==null?null:(Section)class2section.get(c.getParentClass()));
+                Subpart subpart = new Subpart(ss.getUniqueId().longValue(), df.format(ss.getItype().getItype()) + sufix,
+                		ss.getItype().getAbbv().trim(), config, parentSubpart);
+                ss2subpart.put(ss.getUniqueId(), subpart);
+                for (Iterator<Class_> j = ss.getClasses().iterator(); j.hasNext(); ) {
+                	Class_ c = j.next();
+                    Section parentSection = (c.getParentClass() == null ? null : (Section)class2section.get(c.getParentClass().getUniqueId()));
                     if (c.getParentClass()!=null && parentSection==null) {
-                        iProgress.error("Class "+c.getClassLabel()+" has parent "+c.getParentClass().getClassLabel()+", but the appropriate parent section is not loaded.");
+                        iProgress.error("Class " + c.getClassLabel() + " has parent " + c.getClassLabel() + ", but the appropriate parent section is not loaded.");
                     }
-                    Section section = loadSection(subpart, parentSection, c, limit);
-                    class2section.put(c, section);
+                    Assignment a = c.getCommittedAssignment();
+                    Placement p = null;
+                    if (iMakeupAssignmentsFromRequiredPrefs) {
+                        p = makeupPlacement(c);
+                    } else if (a != null) {
+                        p = a.getPlacement();
+                    }
+                    if (p != null && p.getTimeLocation() != null) {
+                    	p.getTimeLocation().setDatePattern(
+                    			p.getTimeLocation().getDatePatternId(),
+                    			datePatternName(p.getTimeLocation()),
+                    			p.getTimeLocation().getWeekCode());
+                    }
+                    int minLimit = c.getExpectedCapacity();
+                	int maxLimit = c.getMaxExpectedCapacity();
+                	int limit = maxLimit;
+                	if (minLimit < maxLimit && p != null) {
+                		int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
+                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+                	}
+                    if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
+                    		getInstructorIds(c), getInstructorNames(c), parentSection);
+                    class2section.put(c.getUniqueId(), section);
                     classTable.put(c.getUniqueId(), section);
-                    iProgress.trace("created section "+section);
                 }
             }
         }
         return offering;
     }
     
-    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable courseTable, Hashtable classTable) {
+    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
+
         Student student = new Student(s.getUniqueId().longValue());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
-        int priority = 0;
-        for (Iterator i=new TreeSet(s.getCourseDemands()).iterator();i.hasNext();) {
-            CourseDemand cd = (CourseDemand)i.next();
+
+		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
+			public int compare(CourseDemand d1, CourseDemand d2) {
+				if (d1.isAlternative() && !d2.isAlternative()) return 1;
+				if (!d1.isAlternative() && d2.isAlternative()) return -1;
+				int cmp = d1.getPriority().compareTo(d2.getPriority());
+				if (cmp != 0) return cmp;
+				return d1.getUniqueId().compareTo(d2.getUniqueId());
+			}
+		});
+		demands.addAll(s.getCourseDemands());
+        for (CourseDemand cd: demands) {
             if (cd.getFreeTime()!=null) {
-                Request request = new FreeTimeRequest(
-                        cd.getUniqueId().longValue(),
-                        (cd.getPriority()==null || cd.getPriority()<0?priority++:cd.getPriority()),
-                        cd.isAlternative().booleanValue(),
-                        student,
-                        new TimeLocation(
-                                cd.getFreeTime().getDayCode().intValue(),
-                                cd.getFreeTime().getStartSlot().intValue(),
-                                cd.getFreeTime().getLength().intValue(),
-                                0, 0, 
-                                s.getSession().getDefaultDatePattern().getUniqueId(),
-                                "",
-                                s.getSession().getDefaultDatePattern().getPatternBitSet(),
-                                0)
-                        );
-                iProgress.trace("added request "+request);
+            	TimeLocation ft = new TimeLocation(
+                        cd.getFreeTime().getDayCode(),
+                        cd.getFreeTime().getStartSlot(),
+                        cd.getFreeTime().getLength(),
+                        0, 0, -1l, "", iFreeTimePattern, 0);
+                new FreeTimeRequest(
+                        cd.getUniqueId(),
+                        cd.getPriority(),
+                        cd.isAlternative(),
+                        student, ft);
             } else if (!cd.getCourseRequests().isEmpty()) {
-                Vector courses = new Vector();
-                HashSet selChoices = new HashSet();
-                HashSet wlChoices = new HashSet();
-                HashSet assignedSections = new HashSet();
+                Vector<Course> courses = new Vector<Course>();
+                HashSet<Choice> selChoices = new HashSet<Choice>();
+                HashSet<Choice> wlChoices = new HashSet<Choice>();
+                HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
-                for (Iterator j=new TreeSet(cd.getCourseRequests()).iterator();j.hasNext();) {
-                    org.unitime.timetable.model.CourseRequest cr = (org.unitime.timetable.model.CourseRequest)j.next();
-                    Course course = (Course)courseTable.get(cr.getCourseOffering().getUniqueId());
+                TreeSet<org.unitime.timetable.model.CourseRequest> crs = new TreeSet<org.unitime.timetable.model.CourseRequest>(new Comparator<org.unitime.timetable.model.CourseRequest>() {
+                	public int compare(org.unitime.timetable.model.CourseRequest r1, org.unitime.timetable.model.CourseRequest r2) {
+                		return r1.getOrder().compareTo(r2.getOrder());
+                	}
+				});
+                crs.addAll(cd.getCourseRequests());
+                for (org.unitime.timetable.model.CourseRequest cr: crs) {
+                    Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
-                        iProgress.warn("Course "+cr.getCourseOffering().getCourseName()+" not loaded.");
+                        iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
                     }
                     for (Iterator k=cr.getClassWaitLists().iterator();k.hasNext();) {
@@ -402,12 +420,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         }
                     }
                     if (assignedConfig==null) {
-                        for (Iterator k=cr.getClassEnrollments().iterator();k.hasNext();) {
-                            StudentClassEnrollment sce = (StudentClassEnrollment)k.next();
-                            Section section = course.getOffering().getSection(sce.getClazz().getUniqueId().longValue());
+                        HashSet<Long> subparts = new HashSet<Long>();
+                        for (Iterator<StudentClassEnrollment> i = (cr.getClassEnrollments() == null ? s.getClassEnrollments() : cr.getClassEnrollments()).iterator(); i.hasNext(); ) {
+                        	StudentClassEnrollment enrl = i.next();
+                        	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                             if (section!=null) {
                                 assignedSections.add(section);
+                                if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                                }
                                 assignedConfig = section.getSubpart().getConfig();
+                                if (!subparts.add(section.getSubpart().getId())) {
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                                }
+                            } else {
+                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
                             }
                         }
                     }
@@ -415,27 +442,162 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
                 if (courses.isEmpty()) continue;
                 CourseRequest request = new CourseRequest(
-                        cd.getUniqueId().longValue(),
-                        (cd.getPriority()==null || cd.getPriority()<0?priority++:cd.getPriority()),
-                        cd.isAlternative().booleanValue(),
+                        cd.getUniqueId(),
+                        cd.getPriority(),
+                        cd.isAlternative(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue());
+                        cd.isWaitlist());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
-                if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
+                if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                     request.setInitialAssignment(enrollment);
                 }
-                iProgress.trace("added request "+request);
-            } else {
-                iProgress.warn("Course demand "+cd.getUniqueId()+" has no course requests");
+                if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
+                			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
+                }
             }
+        }
+
+        if (student.getRequests().isEmpty() && !s.getClassEnrollments().isEmpty()) {
+        	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
+        		public int compare(Course c1, Course c2) {
+        			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
+        		}
+        	});
+        	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
+        		StudentClassEnrollment enrl = i.next();
+        		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
+                if (course==null) {
+                    iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
+                    continue;
+                }
+                courses.add(course);
+        	}
+        	int priority = 0;
+        	courses: for (Course course: courses) {
+        		Vector<Course> cx = new Vector<Course>(); cx.add(course);
+                CourseRequest request = new CourseRequest(
+                        course.getId(),
+                        priority++,
+                        false,
+                        student,
+                        cx,
+                        false);
+                HashSet<Section> assignedSections = new HashSet<Section>();
+                Config assignedConfig = null;
+                HashSet<Long> subparts = new HashSet<Long>();
+                for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
+                	StudentClassEnrollment enrl = i.next();
+                	if (course.getId() != enrl.getCourseOffering().getUniqueId()) continue;
+                	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
+                    if (section!=null) {
+                        assignedSections.add(section);
+                        if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                        	continue courses;
+                        }
+                        assignedConfig = section.getSubpart().getConfig();
+                        if (!subparts.add(section.getSubpart().getId())) {
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                        	continue courses;
+                        }
+                    } else {
+                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                    	Section x = classTable.get(enrl.getClazz().getUniqueId());
+                    	if (x != null) {
+                    		iProgress.info("  but a class with the same id is loaded, but under offering " + x.getSubpart().getConfig().getOffering().getName() + " (id is " + x.getSubpart().getConfig().getOffering().getId() + 
+                    				", expected " +course.getOffering().getId() + ")");
+                    	}
+                    	continue courses;
+                    }
+                }
+                if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
+                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                    request.setInitialAssignment(enrollment);
+                }
+                if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
+                			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
+                }
+        	}
         }
         
         return student;
     }
     
+    public void assignStudent(Student student, org.unitime.timetable.model.Student s) {
+		for (Request r: student.getRequests()) {
+			if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
+               if (r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
+               	r.assign(0, r.getInitialAssignment());
+               } else {
+               	CourseRequest cr = (CourseRequest)r;
+               	Enrollment enrl = (Enrollment)r.getInitialAssignment();
+               	iProgress.error("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ")");
+               	boolean hasLimit = false, hasOverlap = false;
+               	sections: for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
+               		Section section = i.next();
+               		if (section.getTime() != null) {
+                   		for (Request q: student.getRequests()) {
+                   			if (q.getAssignment() == null || !(q instanceof CourseRequest)) continue;
+                   			Enrollment enrlx = (Enrollment)q.getAssignment();
+                   			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
+                   				Section sectionx = j.next();
+                   				if (sectionx.getTime() == null) continue;
+                   				if (sectionx.getTime().hasIntersection(section.getTime())) {
+                   					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
+                   							" overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
+                   							sectionx.getName() + " " + sectionx.getTime().getLongName());
+                   					hasOverlap = true;
+                   					continue sections;
+                   				}
+                   			}
+                   		}
+               		}
+               		if (section.getLimit() >= section.getEnrollments().size()) {
+       					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()) +
+       							" has no space available (limit is "+ section.getLimit() + ")");
+       					if (iTweakLimits) {
+       						section.setLimit(section.getEnrollments().size() + 1);
+       						iProgress.info("    limit increased to "+section.getLimit());
+       					}
+               			hasLimit = true;
+               			continue sections;
+               		}
+   					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()));
+               	}
+               	if (!hasLimit && !hasOverlap) {
+               		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
+               			Enrollment enrlx = i.next();
+               			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
+               				Section sectionx = j.next();
+               				iProgress.info("    conflicts with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
+           							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName()));
+               			}
+           				if (enrlx.getRequest().getStudent().getId() != student.getId())
+           					iProgress.info("    of a different student");
+               		}
+               	}
+               	if (hasLimit && iTweakLimits && r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
+                   	r.assign(0, r.getInitialAssignment());
+               	}
+               }
+			}
+		}
+		for (Request r: student.getRequests()) {
+			if (r instanceof FreeTimeRequest) {
+				FreeTimeRequest ft = (FreeTimeRequest)r;
+               Enrollment enrollment = ft.createEnrollment();
+               if (r.getModel().conflictValues(enrollment).isEmpty()) {
+                   ft.setInitialAssignment(enrollment);
+                   ft.assign(0, enrollment);
+               }
+			}
+		}
+   }
     
     private void fixWeights() {
         Hashtable lastLike = new Hashtable();
@@ -567,10 +729,101 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
     }
+	public static BitSet getFreeTimeBitSet(Session session) {
+		int startMonth = session.getStartMonth() - 3;
+		int endMonth = session.getEndMonth() + 3;
+		int size = DateUtils.getDayOfYear(0, endMonth + 1, session.getSessionStartYear()) - DateUtils.getDayOfYear(1, startMonth, session.getSessionStartYear());
+		BitSet ret = new BitSet(size);
+		for (int i = 0; i < size; i++)
+			ret.set(i);
+		return ret;
+	}
+	
+    private String datePatternName(TimeLocation time) {
+    	if (time.getWeekCode().isEmpty()) return time.getDatePatternName();
+    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+    	cal.setTime(iDatePatternFirstDate);
+    	int idx = time.getWeekCode().nextSetBit(0);
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date first = null;
+    	while (idx < time.getWeekCode().size() && first == null) {
+    		if (time.getWeekCode().get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) first = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
+    	}
+    	if (first == null) return time.getDatePatternName();
+    	cal.setTime(iDatePatternFirstDate);
+    	idx = time.getWeekCode().length() - 1;
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date last = null;
+    	while (idx >= 0 && last == null) {
+    		if (time.getWeekCode().get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) last = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
+    	}
+    	if (last == null) return time.getDatePatternName();
+        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+    	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    }
+
+	public static Date getDatePatternFirstDay(Session s) {
+		return DateUtils.getDate(1, s.getStartMonth() - 3, s.getSessionStartYear());
+	}
 
     public void load(Session session, org.hibernate.Session hibSession) {
-        Hashtable courseTable = new Hashtable();
-        Hashtable classTable = new Hashtable();
+    	iFreeTimePattern = getFreeTimeBitSet(session);
+		iDatePatternFirstDate = getDatePatternFirstDay(session);
+    	
+        Hashtable<Long, Course> courseTable = new Hashtable<Long, Course>();
+        Hashtable<Long, Section> classTable = new Hashtable<Long, Section>();
         List offerings = hibSession.createQuery(
                 "select distinct io from InstructionalOffering io " +
                 "left join fetch io.courseOfferings as co "+
@@ -584,6 +837,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iProgress.setPhase("Loading course offerings...", offerings.size());
         for (Iterator i=offerings.iterator();i.hasNext();) {
             InstructionalOffering io = (InstructionalOffering)i.next(); iProgress.incProgress();
+            if (io.isNotOffered()) continue;
             Offering offering = loadOffering(io, courseTable, classTable);
             if (offering!=null) getModel().addOffering(offering);
         }
@@ -594,18 +848,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
+                    "left join fetch s.classEnrollments as e " +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
             iProgress.setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); iProgress.incProgress();
-                if (s.getCourseDemands().isEmpty()) continue;
+                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
                 Student student = loadStudent(s, courseTable, classTable);
                 if (student!=null)
                     getModel().addStudent(student);
                 if (s.getExternalUniqueId()!=null)
                     loadedStudentIds.add(s.getExternalUniqueId());
+            	assignStudent(student, s);
             }
         }
         
@@ -630,6 +886,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
             }
         
+            Hashtable<Long, org.unitime.timetable.model.Student> students = new Hashtable<Long, org.unitime.timetable.model.Student>();
             List enrollments = hibSession.createQuery(
                     "select d, c.uniqueId from LastLikeCourseDemand d left join fetch d.student s, CourseOffering c left join c.demandOffering cx " +
                     "where d.subjectArea.session.uniqueId=:sessionId and c.subjectArea.session.uniqueId=:sessionId and " +
@@ -648,41 +905,38 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 Long courseOfferingId = (Long)o[1];
                 if (s.getExternalUniqueId()!=null && loadedStudentIds.contains(s.getExternalUniqueId())) continue;
                 loadLastLikeStudent(hibSession, d, s, courseOfferingId, lastLikeStudentTable, courseTable, classTable, classAssignments);
+                students.put(s.getUniqueId(), s);
             }
             for (Enumeration e=lastLikeStudentTable.elements();e.hasMoreElements();) {
                 Student student = (Student)e.nextElement();
                 getModel().addStudent(student);
+            	assignStudent(student, students.get(student.getId()));
             }
-            iProgress.setPhase("Assigning course requests...", getModel().variables().size());
-            for (Request request: getModel().variables()) {
-            	iProgress.incProgress();
-                if (request.getInitialAssignment()==null) continue;
-                Set conflicts = getModel().conflictValues(request.getInitialAssignment());
-                if (conflicts.isEmpty())
-                    request.assign(0, request.getInitialAssignment());
-                else {
-                    if (request.getStudent().isDummy())
-                        iProgress.debug("Unable to assign "+request.getName()+" with "+request.getInitialAssignment().getName()+", conflicts: "+conflicts);
-                    else
-                        iProgress.warn("Unable to assign "+request.getName()+" with "+request.getInitialAssignment().getName()+", conflicts: "+conflicts);
-                }
-            }
-            iProgress.setPhase("Assigning free-time requests...", getModel().variables().size());
-            for (Request request: getModel().variables()) {
-            	iProgress.incProgress();
-                if (request instanceof FreeTimeRequest && request.getStudent().canAssign(request)) {
-                    FreeTimeRequest ft = (FreeTimeRequest)request;
-                    Enrollment enrollment = ft.createEnrollment();
-                    if (getModel().conflictValues(enrollment).isEmpty()) {
-                        ft.setInitialAssignment(enrollment);
-                        ft.assign(0, enrollment);
-                    }
-                }
-            }
-            fixWeights();
-            
-            iProgress.setPhase("Done",1);iProgress.incProgress();
         }
+        
+        if (iLoadSectioningInfos) {
+        	List<SectioningInfo> infos = hibSession.createQuery(
+				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+				.setLong("sessionId", iSessionId)
+				.list();
+        	iProgress.setPhase("Loading sectioning infos...", infos.size());
+        	for (SectioningInfo info : infos) {
+        		iProgress.incProgress();
+        		Section section = classTable.get(info.getClazz().getUniqueId());
+        		if (section != null) {
+        			section.setSpaceExpected(info.getNbrExpectedStudents());
+        			section.setSpaceHeld(info.getNbrHoldingStudents());
+        			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
+        				iProgress.info("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
+        						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
+        						", expected: " + section.getSpaceExpected() + ")");
+        		}
+        	}	
+        }
+        
+        fixWeights();
+        
+        iProgress.setPhase("Done",1);iProgress.incProgress();
     }
     
     
