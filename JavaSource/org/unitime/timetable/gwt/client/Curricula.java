@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterfac
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.widgets.ClassificationsEdit;
 import org.unitime.timetable.gwt.widgets.CurriculaTable;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit;
 import org.unitime.timetable.gwt.widgets.LoadingWidget;
@@ -89,6 +90,7 @@ public class Curricula extends Composite {
 	private WebTable.Row iLastCourse;
 	
 	private CurriculumEdit iCurriculumPanel = null;
+	private ClassificationsEdit iClassificationsEdit = null;
 	
 	public Curricula() {
 		iPanel = new VerticalPanel();
@@ -160,6 +162,10 @@ public class Curricula extends Composite {
 		iCurriculumPanel = new CurriculumEdit();
 		iCurriculumPanel.setVisible(false);
 		iPanel.add(iCurriculumPanel);
+		
+		iClassificationsEdit = new ClassificationsEdit();
+		iClassificationsEdit.setVisible(false);
+		iPanel.add(iClassificationsEdit);
 		
 		initWidget(iPanel);
 		
@@ -258,6 +264,17 @@ public class Curricula extends Composite {
 			}
 		});
 		
+		iCurriculaTable.setEditClassificationHandler(new CurriculaTable.EditClassificationHandler() {
+			
+			@Override
+			public void doEdit(List<CurriculumInterface> curricula) {
+				iCurriculaPanel.setVisible(false);
+				iClassificationsEdit.setData(curricula);
+				setPageName("Curriculum Requested Enrollments");
+				iClassificationsEdit.setVisible(true);
+			}
+		});
+		
 		iCurriculumPanel.addEditFinishedHandler(new CurriculumEdit.EditFinishedHandler() {
 			
 			@Override
@@ -279,6 +296,25 @@ public class Curricula extends Composite {
 			@Override
 			public void onBack(EditFinishedEvent evt) {
 				iCurriculumPanel.setVisible(false);
+				setPageName("Curricula");
+				iCurriculaPanel.setVisible(true);
+				iCurriculaTable.scrollIntoView();
+			}
+		});
+		
+		iClassificationsEdit.addEditFinishedHandler(new ClassificationsEdit.EditFinishedHandler() {
+			
+			@Override
+			public void onSave(ClassificationsEdit.EditFinishedEvent evt) {
+				iClassificationsEdit.setVisible(false);
+				setPageName("Curricula");
+				iCurriculaPanel.setVisible(true);
+				loadCurricula();
+			}
+			
+			@Override
+			public void onBack(ClassificationsEdit.EditFinishedEvent evt) {
+				iClassificationsEdit.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
