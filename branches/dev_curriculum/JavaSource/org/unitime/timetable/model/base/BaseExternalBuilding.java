@@ -33,8 +33,8 @@ public abstract class BaseExternalBuilding implements Serializable {
 	private Long iUniqueId;
 	private String iExternalUniqueId;
 	private String iAbbreviation;
-	private Integer iCoordinateX;
-	private Integer iCoordinateY;
+	private Double iCoordinateX;
+	private Double iCoordinateY;
 	private String iDisplayName;
 
 	private Session iSession;
@@ -67,11 +67,11 @@ public abstract class BaseExternalBuilding implements Serializable {
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
-	public Integer getCoordinateX() { return iCoordinateX; }
-	public void setCoordinateX(Integer coordinateX) { iCoordinateX = coordinateX; }
+	public Double getCoordinateX() { return iCoordinateX; }
+	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
-	public Integer getCoordinateY() { return iCoordinateY; }
-	public void setCoordinateY(Integer coordinateY) { iCoordinateY = coordinateY; }
+	public Double getCoordinateY() { return iCoordinateY; }
+	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
 	public String getDisplayName() { return iDisplayName; }
 	public void setDisplayName(String displayName) { iDisplayName = displayName; }

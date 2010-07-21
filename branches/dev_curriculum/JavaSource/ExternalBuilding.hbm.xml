@@ -58,17 +58,15 @@
 		<property
 			name="coordinateX"
 			column="COORDINATE_X"
-			type="java.lang.Integer"
+			type="java.lang.Double"
 			not-null="false"
-			length="5"
 		/>
 
 		<property
 			name="coordinateY"
 			column="COORDINATE_Y"
-			type="java.lang.Integer"
+			type="java.lang.Double"
 			not-null="false"
-			length="5"
 		/>
 
 		<property

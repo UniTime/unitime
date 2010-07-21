@@ -31,8 +31,8 @@ public abstract class BaseBuilding implements Serializable {
 	private String iExternalUniqueId;
 	private String iAbbreviation;
 	private String iName;
-	private Integer iCoordinateX;
-	private Integer iCoordinateY;
+	private Double iCoordinateX;
+	private Double iCoordinateY;
 
 	private Session iSession;
 
@@ -66,11 +66,11 @@ public abstract class BaseBuilding implements Serializable {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
-	public Integer getCoordinateX() { return iCoordinateX; }
-	public void setCoordinateX(Integer coordinateX) { iCoordinateX = coordinateX; }
+	public Double getCoordinateX() { return iCoordinateX; }
+	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
-	public Integer getCoordinateY() { return iCoordinateY; }
-	public void setCoordinateY(Integer coordinateY) { iCoordinateY = coordinateY; }
+	public Double getCoordinateY() { return iCoordinateY; }
+	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }

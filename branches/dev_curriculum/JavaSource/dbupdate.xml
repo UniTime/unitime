@@ -2692,4 +2692,46 @@
 			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="56" date="21-Jul-2010" comment="Allow for GPS coordinates">
+		<mysql>alter table %SCHEMA%.building modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.building modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.room modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.room modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.external_building modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.external_building modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.external_room modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.external_room modify coordinate_y double null</mysql>
+		
+		<plsql>alter table %SCHEMA%.building modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.building modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.room modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.room modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_building modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_building modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_y double precision</plsql>
+		
+		<plsql>alter table %SCHEMA%.building drop constraint nn_building_coordinate_x</plsql>
+		<plsql>alter table %SCHEMA%.building drop constraint nn_building_coordinate_y</plsql>
+		<plsql>alter table %SCHEMA%.room drop constraint nn_room_coordinate_x</plsql>
+		<plsql>alter table %SCHEMA%.room drop constraint nn_room_coordinate_y</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location drop constraint nn_non_univ_loc_coord_x</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location drop constraint nn_non_univ_loc_coord_y</plsql>
+		
+		<sql>update %SCHEMA%.building set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.building set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.room set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.room set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.non_university_location set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.non_university_location set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.external_building set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.external_building set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.external_room set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.external_room set coordinate_y = null where coordinate_y = -1</sql>
+	</update>
 </dbupdate>

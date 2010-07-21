@@ -31,6 +31,7 @@ import net.sf.cpsolver.coursett.Constants;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.ArrayList;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -74,9 +75,12 @@ public class FixCourseTimetablingInconsistencies {
 
     private Long iSessionId;
     private org.hibernate.Session iHibSession;
+    private DistanceMetric iDistanceMetric;
     
 	public FixCourseTimetablingInconsistencies(Long sessionId) {
 		iSessionId = sessionId;
+		iDistanceMetric = new DistanceMetric(
+				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
 	}
 	
 	public void fixAll(org.hibernate.Session hibSession) {
@@ -482,8 +486,8 @@ public class FixCourseTimetablingInconsistencies {
         int s2 = p2.getTimeLocation().getStartSlot() % Constants.SLOTS_PER_DAY;
         if (s1 + p1.getTimeLocation().getLength() != s2 && s2 + p2.getTimeLocation().getLength() != s1)
             return false;
-        double distance = Placement.getDistance(p1, p2);
-        return (distance > 20.0);
+        double distance = Placement.getDistanceInMeters(iDistanceMetric, p1, p2);
+        return (distance > iDistanceMetric.getInstructorProhibitedLimit());
     }
 	
 	private void fixInstructors(Class_ clazz, Assignment a) {

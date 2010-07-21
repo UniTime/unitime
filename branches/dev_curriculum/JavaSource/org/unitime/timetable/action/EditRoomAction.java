@@ -165,8 +165,8 @@ public class EditRoomAction extends Action {
             editRoomForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeMidterm));
             editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
-            editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
-            editRoomForm.setCoordY(location.getCoordinateY()==null || location.getCoordinateY().intValue()<0?null:location.getCoordinateY().toString());
+            editRoomForm.setCoordX(location.getCoordinateX()==null ? null : location.getCoordinateX().toString());
+            editRoomForm.setCoordY(location.getCoordinateY()==null ? null : location.getCoordinateY().toString());
             editRoomForm.setControlDept(null);
             
             PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
@@ -323,8 +323,8 @@ public class EditRoomAction extends Action {
             
             location.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
 			
-			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
-			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
+			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
+			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
 			
 			if (location.isExamEnabled(Exam.sExamTypeFinal)) {
 			    PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
@@ -402,8 +402,8 @@ public class EditRoomAction extends Action {
             room.setIgnoreRoomCheck(editRoomForm.isIgnoreRoomCheck()!=null && editRoomForm.isIgnoreRoomCheck().booleanValue());
             room.setExternalUniqueId(editRoomForm.getExternalId());
             room.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
-            room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
-            room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
+            room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
+            room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
             room.setSession(session);
             
             LocationPermIdGenerator.setPermanentId(room);

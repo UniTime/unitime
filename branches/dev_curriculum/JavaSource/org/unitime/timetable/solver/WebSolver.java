@@ -56,6 +56,7 @@ import org.unitime.timetable.tags.SolverWarnings;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressListener;
 
@@ -411,6 +412,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             if (extraParams!=null && extraParams.get("Exam.Type")!=null)
                 properties.setProperty("Exam.Type", extraParams.get("Exam.Type").toString());
         }
+        properties.setProperty("Distances.Eclipsoid", ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name()));
         properties.expand();
         return properties;
 	}

@@ -37,8 +37,8 @@ public abstract class BaseLocation implements Serializable {
 	private Long iUniqueId;
 	private Long iPermanentId;
 	private Integer iCapacity;
-	private Integer iCoordinateX;
-	private Integer iCoordinateY;
+	private Double iCoordinateX;
+	private Double iCoordinateY;
 	private Boolean iIgnoreTooFar;
 	private Boolean iIgnoreRoomCheck;
 	private String iManagerIds;
@@ -87,11 +87,11 @@ public abstract class BaseLocation implements Serializable {
 	public Integer getCapacity() { return iCapacity; }
 	public void setCapacity(Integer capacity) { iCapacity = capacity; }
 
-	public Integer getCoordinateX() { return iCoordinateX; }
-	public void setCoordinateX(Integer coordinateX) { iCoordinateX = coordinateX; }
+	public Double getCoordinateX() { return iCoordinateX; }
+	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
-	public Integer getCoordinateY() { return iCoordinateY; }
-	public void setCoordinateY(Integer coordinateY) { iCoordinateY = coordinateY; }
+	public Double getCoordinateY() { return iCoordinateY; }
+	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
 	public Boolean isIgnoreTooFar() { return iIgnoreTooFar; }
 	public Boolean getIgnoreTooFar() { return iIgnoreTooFar; }

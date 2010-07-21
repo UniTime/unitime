@@ -24,6 +24,8 @@
 <%@ page import="org.unitime.timetable.model.Building" %>
 <%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.Roles" %>
+<%@ page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -205,8 +207,10 @@
 						<html:hidden property="coordX" />
 						<html:hidden property="coordY" />
 					<% } else { %>
-					<html:text property="coordX" maxlength="5" size="5"/>, <html:text property="coordY" maxlength="5" size="5"/>
+					<html:text property="coordX" maxlength="12" size="12"/>, <html:text property="coordY" maxlength="12" size="12"/>
 					<% } %>
+					<% DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())); %>
+					&nbsp;&nbsp;&nbsp;<i><%=eclipsoid.getEclipsoindName()%></i>
 				</TD>
 			</TR>
 		</logic:equal>

@@ -20,7 +20,49 @@
 package org.unitime.timetable.solver;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import net.sf.cpsolver.coursett.TimetableLoader;
+import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
+import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
+import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
+import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
+import net.sf.cpsolver.coursett.constraint.RoomConstraint;
+import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
+import net.sf.cpsolver.coursett.model.Configuration;
+import net.sf.cpsolver.coursett.model.InitialSectioning;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
+import net.sf.cpsolver.ifs.model.Constraint;
+import net.sf.cpsolver.ifs.model.Value;
+import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,34 +120,6 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.RoomAvailability;
 
-import net.sf.cpsolver.coursett.TimetableLoader;
-import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.InitialSectioning;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
-import net.sf.cpsolver.ifs.util.ArrayList;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-
 /**
  * @author Tomas Muller
  */
@@ -127,8 +141,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
 	private Hashtable<Integer, List<TimePattern>> iPatterns = new Hashtable<Integer, List<TimePattern>>();
 	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
-	private Set iAllUsedDatePatterns = new HashSet();
-	private Set iAllClasses = null;
+	private Set<DatePattern> iAllUsedDatePatterns = new HashSet<DatePattern>();
+	private Set<Class_> iAllClasses = null;
 	
     private boolean iDeptBalancing = true;
     private boolean iMppAssignment = true;
@@ -479,8 +493,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				(bldg==null?null:bldg.getUniqueId()),
             				prefInt,
             				room.getCapacity().intValue(),
-            				(room.getCoordinateX()==null?-1:room.getCoordinateX().intValue()),
-            				(room.getCoordinateY()==null?-1:room.getCoordinateY().intValue()),
+            				room.getCoordinateX(),
+            				room.getCoordinateY(),
             				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
             				null));
         }
@@ -753,8 +767,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 				(bldg==null?null:bldg.getUniqueId()),
                 				prefInt,
                 				room.getCapacity().intValue(),
-                				(room.getCoordinateX()==null?-1:room.getCoordinateX().intValue()),
-                				(room.getCoordinateY()==null?-1:room.getCoordinateY().intValue()),
+                				room.getCoordinateX(),
+                				room.getCoordinateY(),
                 				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
                 				getRoomConstraint(clazz.getManagingDept(),room,hibSession)));
             }
@@ -1157,8 +1171,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						buildingId,
     						location.getCapacity().intValue(), 
     						sharingModel, 
-    						(location.getCoordinateX()==null?-1:location.getCoordinateX().intValue()),
-    						(location.getCoordinateY()==null?-1:location.getCoordinateY().intValue()),
+    						location.getCoordinateX(),
+    						location.getCoordinateY(),
     						(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue()),
     						(location.isIgnoreRoomCheck()==null?true:!location.isIgnoreRoomCheck().booleanValue())
     				)
@@ -1169,8 +1183,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						buildingId,
     						location.getCapacity().intValue(), 
     						sharingModel, 
-    						(location.getCoordinateX()==null?-1:location.getCoordinateX().intValue()),
-    						(location.getCoordinateY()==null?-1:location.getCoordinateY().intValue()),
+    						location.getCoordinateX(),
+    						location.getCoordinateY(),
     						(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue()),
     						(location.isIgnoreRoomCheck()==null?true:!location.isIgnoreRoomCheck().booleanValue())
     				)
@@ -2038,7 +2052,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         Hashtable solutions = null;
         if (iSolutionId!=null && iSolutionId.length>0) {
         	solutions = new Hashtable();
-        	//iLoadStudentEnrlsFromSolution = true;
         	String note="";
         	for (int i=0;i<iSolutionId.length;i++) {
         		Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
@@ -2136,7 +2149,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		Hashtable offerings = new Hashtable();
 		Hashtable configurations = new Hashtable();
 		Hashtable<InstructionalOffering, List<Configuration>> altConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
-		Hashtable io2lectures = new Hashtable();
 		int ord = 0;
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 			Class_ clazz = (Class_)i1.next();
@@ -2170,14 +2182,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			SchedulingSubpart subpart = clazz.getSchedulingSubpart();
 			InstrOfferingConfig config = subpart.getInstrOfferingConfig();
 			InstructionalOffering offering = config.getInstructionalOffering();
-			
-			HashSet lectures = (HashSet)io2lectures.get(offering.getUniqueId());
-			if (lectures==null) {
-				lectures = new HashSet();
-				io2lectures.put(offering.getUniqueId(), lectures);
-			}
-			lectures.add(lecture);
-			
+						
 			iSubparts.put(subpart.getUniqueId(),subpart);
 
 			if (lecture.getParent()==null) {
@@ -2783,7 +2788,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
         	           		} else if (ic.getDistancePreference(p1,p2)==PreferenceLevel.sIntLevelProhibited && lecture.roomLocations().size()==1 && other.roomLocations().size()==1) {
-        	           			iProgress.warn("Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistance(p1,p2))+"m) required:"+
+        	           			iProgress.warn("Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2))+"m) required:"+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
         	           		}

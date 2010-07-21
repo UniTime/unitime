@@ -152,7 +152,7 @@ public class BuildingEditAction extends Action {
         }
         
         if ("Export PDF".equals(op)) {
-            DecimalFormat df5 = new DecimalFormat("####0");
+            DecimalFormat df5 = new DecimalFormat("####0.######");
             PdfWebTable table = new PdfWebTable( 5,
                     "Buildings", null,
                     new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
@@ -166,13 +166,13 @@ public class BuildingEditAction extends Action {
                             b.getAbbreviation(),
                             b.getName(),
                             b.getExternalUniqueId()==null?"@@ITALIC N/A @@END_ITALIC ":b.getExternalUniqueId().toString(),
-                            (b.getCoordinateX()==null || b.getCoordinateX()<0?"":df5.format(b.getCoordinateX())),
-                            (b.getCoordinateY()==null || b.getCoordinateY()<0?"":df5.format(b.getCoordinateY())),
+                            (b.getCoordinateX()==null ? "" : df5.format(b.getCoordinateX())),
+                            (b.getCoordinateY()==null ? "" : df5.format(b.getCoordinateY())),
                             }, 
                         new Comparable[] {
                             b.getAbbreviation(),
                             b.getName(),
-                            b.getExternalUniqueId()==null?"":b.getExternalUniqueId(),
+                            b.getExternalUniqueId()==null ? "" : b.getExternalUniqueId(),
                             b.getCoordinateX(),
                             b.getCoordinateY(),
                             });

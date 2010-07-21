@@ -18,6 +18,8 @@
  --%>
 <%@ page import="org.unitime.commons.web.*" %>
 <%@ page import="java.text.DecimalFormat" %>
+<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
@@ -45,9 +47,10 @@
 		</tt:section-header>
 	</td></tr>
 <%
+	DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name()));
     WebTable webTable = new WebTable( 5,
     null, "buildingList.do?ord=%%",
-    new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
+    new String[] {"Abbreviation", "Name", "External ID", eclipsoid.getFirstCoordinateName(), eclipsoid.getSecondCoordinateName()},
     new String[] {"left", "left","left","right","right"},
     new boolean[] {true,true,true,true,true} );
     WebTable.setOrder(session, "BuildingList.ord", request.getParameter("ord"), 1);
@@ -56,15 +59,15 @@
 <logic:iterate name="buildingListForm" property="buildings" id="bldg" >
 <%
 org.unitime.timetable.model.Building b = (org.unitime.timetable.model.Building) bldg;
-DecimalFormat df5 = new DecimalFormat("####0");
+DecimalFormat df5 = new DecimalFormat("####0.######");
 webTable.addLine(
 	"onClick=\"document.location='buildingEdit.do?op=Edit&id="+b.getUniqueId()+"';\"",
 	new String[] {
 		b.getAbbreviation(),
 		b.getName(),
 		b.getExternalUniqueId()==null?"<i>N/A</i>":b.getExternalUniqueId().toString(),
-		(b.getCoordinateX()==null || b.getCoordinateX()<0?"":df5.format(b.getCoordinateX())),
-		(b.getCoordinateY()==null || b.getCoordinateY()<0?"":df5.format(b.getCoordinateY()))
+		(b.getCoordinateX()==null ? "" : df5.format(b.getCoordinateX())),
+		(b.getCoordinateY()==null ? "" : df5.format(b.getCoordinateY()))
 		}, 
 	new Comparable[] {
 		b.getAbbreviation(),

@@ -65,9 +65,9 @@ public class BuildingCoordsAjax extends Action {
         try {
             Building building = new BuildingDAO().get(Long.valueOf(request.getParameter("id")));
             print(out, "x", 
-                    (building.getCoordinateX()==null || building.getCoordinateX()<0?"":building.getCoordinateX().toString()));
+                    (building.getCoordinateX()==null ? "" : building.getCoordinateX().toString()));
             print(out, "y", 
-                    (building.getCoordinateY()==null || building.getCoordinateY()<0?"":building.getCoordinateY().toString()));
+                    (building.getCoordinateY()==null ? "" : building.getCoordinateY().toString()));
         } catch (Exception e) {
             Debug.error(e);
             print(out, "x", ""); print(out, "y", "");

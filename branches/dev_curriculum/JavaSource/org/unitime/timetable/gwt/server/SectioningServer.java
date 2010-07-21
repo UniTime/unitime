@@ -38,6 +38,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.SectionLimit;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -81,6 +82,7 @@ public class SectioningServer {
 	private Hashtable<String, TreeSet<CourseInfo>> iCourseForName = new Hashtable<String, TreeSet<CourseInfo>>();
 	private TreeSet<CourseInfo> iCourses = new TreeSet<CourseInfo>();
 	private StudentSectioningModel iModel = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
+	private DistanceMetric iDistanceMetric = null;
 	
 	private Hashtable<Long, Course> iCourseTable = new Hashtable<Long, Course>();
 	private Hashtable<Long, Section> iClassTable = new Hashtable<Long, Section>();
@@ -130,6 +132,8 @@ public class SectioningServer {
 		} finally {
 			hibSession.close();
 		}
+		iDistanceMetric = new DistanceMetric(
+				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
 	}
 	
 	public StudentSectioningModel getModel() { return iModel; }
@@ -598,7 +602,7 @@ public class SectioningServer {
 								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
 							}
-							if (d > dc.getAllowedDistance(s.getTime())) {
+							if (d > s.getTime().getBreakTime()) {
 								a.setDistanceConflict(true);
 							}
 						}
@@ -631,21 +635,21 @@ public class SectioningServer {
 		return ret;	
 	}
 	
-    private double distance(Section s1, Section s2) {
-        if (s1.getPlacement()==null || s2.getPlacement()==null) return 0.0;
+    private int distance(Section s1, Section s2) {
+        if (s1.getPlacement()==null || s2.getPlacement()==null) return 0;
         TimeLocation t1 = s1.getTime();
         TimeLocation t2 = s2.getTime();
-        if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0.0;
+        if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
         int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
         if (a1+t1.getNrSlotsPerMeeting()==a2) {
-            return Placement.getDistance(s1.getPlacement(), s2.getPlacement());
+            return Placement.getDistanceInMinutes(iDistanceMetric, s1.getPlacement(), s2.getPlacement());
         }
         /*
         else if (a2+t2.getNrSlotsPerMeeting()==a1) {
         	return Placement.getDistance(s1.getPlacement(), s2.getPlacement());
         }
         */
-        return 0.0;
+        return 0;
     }
 	
     @SuppressWarnings("unchecked")

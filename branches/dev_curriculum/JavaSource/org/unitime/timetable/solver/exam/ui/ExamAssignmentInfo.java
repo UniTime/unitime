@@ -95,7 +95,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 }
             }
             iDirects.addAll(directs.values());
-            int btbDist = model.getBackToBackDistance();
+            double btbDist = model.getBackToBackDistance();
             Hashtable<Exam,BackToBackConflict> backToBacks = new Hashtable();
             for (ExamStudent student: exam.getStudents()) {
                 if (placement.getPeriod().prev()!=null) {
@@ -104,7 +104,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = backToBacks.get(other);
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
@@ -122,7 +122,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
                             BackToBackConflict btb = backToBacks.get(other);
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
                                         (btbDist<0?false:distance>btbDist), distance);
@@ -179,7 +179,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = ibackToBacks.get(other);
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
@@ -197,7 +197,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
                             BackToBackConflict btb = ibackToBacks.get(other);
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
                                         (btbDist<0?false:distance>btbDist), distance);
