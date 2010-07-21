@@ -133,7 +133,7 @@ public class SectioningServer {
 			hibSession.close();
 		}
 		iDistanceMetric = new DistanceMetric(
-				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
 	}
 	
 	public StudentSectioningModel getModel() { return iModel; }

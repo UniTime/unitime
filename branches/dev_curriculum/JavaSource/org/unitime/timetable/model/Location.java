@@ -455,7 +455,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (this instanceof Location && isIgnoreTooFar()!=null && isIgnoreTooFar().booleanValue()) return 0.0;
     	if (other instanceof Location && other.isIgnoreTooFar()!=null && other.isIgnoreTooFar().booleanValue()) return 0.0;
     	DistanceMetric m = new DistanceMetric(
-				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
     	return m.getDistanceInMeters(getCoordinateX(), getCoordinateY(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	

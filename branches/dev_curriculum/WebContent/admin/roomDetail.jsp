@@ -192,8 +192,8 @@
 		<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
 			<TR>
 				<TD>Coordinates:</TD><TD><%=frm.getCoordinateX()%>, <%=frm.getCoordinateY()%>
-					<% DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())); %>
-					&nbsp;&nbsp;&nbsp;<i><%=eclipsoid.getEclipsoindName()%></i>
+					<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
+					&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 				</TD>
 			</TR>
 		<% } else {%>
