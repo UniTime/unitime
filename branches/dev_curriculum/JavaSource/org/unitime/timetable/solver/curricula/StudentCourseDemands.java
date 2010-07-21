@@ -24,6 +24,8 @@ import java.util.Set;
 import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 
 public interface StudentCourseDemands {
@@ -45,6 +47,7 @@ public interface StudentCourseDemands {
 	public static class WeightedStudentId {
 		private long iStudentId;
 		private float iWeight;
+		private String iAreaAbbv, iClasfCode, iMajorCode;
 		
 		public WeightedStudentId(long studentId, float weight) {
 			iStudentId = studentId;
@@ -61,6 +64,26 @@ public interface StudentCourseDemands {
 		
 		public float getWeight() {
 			return iWeight;
+		}
+		
+		public void setStats(String areaAbbv, String clasfCode, String majorCode) {
+			iAreaAbbv = areaAbbv;
+			iClasfCode = clasfCode;
+			iMajorCode = majorCode;
+		}
+		
+		public boolean match(String areaAbbv, String clasfCode, String majorCode) {
+			return areaAbbv.equals(iAreaAbbv) && clasfCode.equals(iClasfCode) && majorCode.equals(iMajorCode);
+		}
+		
+		public boolean match(CurriculumClassification clasf) {
+			if (!clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation().equals(iAreaAbbv)) return false;
+			if (!clasf.getAcademicClassification().getCode().equals(iClasfCode)) return false;
+			if (clasf.getCurriculum().getMajors().isEmpty()) return true;
+			for (PosMajor m: clasf.getCurriculum().getMajors()) {
+				if (m.getCode().equals(iMajorCode)) return true;
+			}
+			return false;
 		}
 		
 		public int hashCode() {
