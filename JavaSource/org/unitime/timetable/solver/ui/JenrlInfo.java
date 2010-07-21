@@ -31,6 +31,7 @@ import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
@@ -76,7 +77,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			setIsFixed(first.nrTimeLocations()==1 && second.nrTimeLocations()==1);
 			setIsDistance(!firstPl.getTimeLocation().hasIntersection(secondPl.getTimeLocation()));
 			if (isDistance())
-				setDistance(Placement.getDistance(firstPl,secondPl));
+				setDistance(Placement.getDistanceInMeters(((TimetableModel)jc.getModel()).getDistanceMetric(),firstPl,secondPl));
 		}
 	}
 	
@@ -108,7 +109,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 						info.iSecond = new ClassAssignmentDetails(solver,(Lecture)pl.variable(),pl,false);
 					}
 					if (info.isDistance())
-						info.setDistance(Placement.getDistance(placement,pl));
+						info.setDistance(Placement.getDistanceInMeters(((TimetableModel)lecture.getModel()).getDistanceMetric(),placement,pl));
 					ret.put(pl.getAssignmentId(),info);
 				}
 				info.setJenrl(info.getJenrl()+1.0);

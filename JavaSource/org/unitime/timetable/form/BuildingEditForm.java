@@ -113,8 +113,8 @@ public class BuildingEditForm extends ActionForm {
         setExternalId(building.getExternalUniqueId());
         setName(building.getName());
         setAbbreviation(building.getAbbreviation());
-        setCoordX(building.getCoordinateX()==null || building.getCoordinateX()<0? null: building.getCoordinateX().toString());
-        setCoordY(building.getCoordinateY()==null || building.getCoordinateY()<0? null: building.getCoordinateY().toString());
+        setCoordX(building.getCoordinateX()==null ? null : building.getCoordinateX().toString());
+        setCoordY(building.getCoordinateY()==null ? null : building.getCoordinateY().toString());
     }
     
     public void saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession, Session session) throws Exception {
@@ -124,8 +124,8 @@ public class BuildingEditForm extends ActionForm {
         building.setName(getName());
         building.setAbbreviation(getAbbreviation());
         building.setExternalUniqueId(getExternalId()!=null && getExternalId().length()==0?null:getExternalId());
-        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0?-1:Integer.parseInt(getCoordX()));
-        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0?-1:Integer.parseInt(getCoordY()));
+        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0 ? null : Double.valueOf(getCoordX()));
+        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0 ? null : Double.valueOf(getCoordY()));
         building.setSession(session);
         hibSession.saveOrUpdate(building);
         ChangeLog.addChange(

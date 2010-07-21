@@ -189,8 +189,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     location.getLabel(),
                     location.getCapacity(),
                     location.getExamCapacity(),
-                    (location.getCoordinateX()==null?-1:location.getCoordinateX()),
-                    (location.getCoordinateY()==null?-1:location.getCoordinateY()));
+                    location.getCoordinateX(),
+                    location.getCoordinateY());
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
             iRooms.put(room.getId(),room);

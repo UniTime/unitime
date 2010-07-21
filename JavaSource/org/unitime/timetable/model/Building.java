@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
@@ -180,11 +182,11 @@ public class Building extends BaseBuilding implements Comparable {
 			bldg.setName(extBldg.getDisplayName());
 			updated = true;
 		}
-		if((bldg.getCoordinateX().compareTo(extBldg.getCoordinateX())) != 0) {
+		if (!ToolBox.equals(bldg.getCoordinateX(), extBldg.getCoordinateX())) {
 			bldg.setCoordinateX(extBldg.getCoordinateX());
 			updated = true;
 		}
-		if((bldg.getCoordinateY().compareTo(extBldg.getCoordinateY())) != 0) {
+		if (!ToolBox.equals(bldg.getCoordinateY(), extBldg.getCoordinateY())) {
 			bldg.setCoordinateY(extBldg.getCoordinateY());
 			updated = true;
 		}

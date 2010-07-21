@@ -227,8 +227,8 @@ public class Assignment extends BaseAssignment {
 					(room instanceof Room? ((Room)room).getBuilding().getUniqueId() : null),
 					0,
 					room.getCapacity().intValue(),
-					room.getCoordinateX().intValue(),
-					room.getCoordinateY().intValue(),
+					room.getCoordinateX(),
+					room.getCoordinateY(),
 					room.isIgnoreTooFar().booleanValue(),
 					null);
 			ret.addElement(roomLocation);

@@ -44,8 +44,8 @@ public class RoomDetailForm extends ActionForm {
 	private String name;
     private String externalId;
 	private Integer capacity;
-	private Integer coordinateX;
-	private Integer coordinateY;
+	private Double coordinateX;
+	private Double coordinateY;
 	private Long type;
     private String typeName;
 	private String patterns;
@@ -109,19 +109,19 @@ public class RoomDetailForm extends ActionForm {
 		this.capacity = capacity;
 	}
 
-	public Integer getCoordinateX() {
+	public Double getCoordinateX() {
 		return coordinateX;
 	}
 
-	public void setCoordinateX(Integer coordinateX) {
+	public void setCoordinateX(Double coordinateX) {
 		this.coordinateX = coordinateX;
 	}
 
-	public Integer getCoordinateY() {
+	public Double getCoordinateY() {
 		return coordinateY;
 	}
 
-	public void setCoordinateY(Integer coordinateY) {
+	public void setCoordinateY(Double coordinateY) {
 		this.coordinateY = coordinateY;
 	}
 

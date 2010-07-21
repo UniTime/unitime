@@ -32,6 +32,7 @@ import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.solver.Solver;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 /**
  * @author Tomas Muller
@@ -107,17 +108,18 @@ public class PerturbationReport implements Serializable {
 	        deltaStudentConflicts=lecture.countStudentConflicts(assignedPlacement)-lecture.countInitialStudentConflicts();
 	        deltaTimePreferences=(assignedPlacement.getTimeLocation().getNormalizedPreference() - initialPlacement.getTimeLocation().getNormalizedPreference());
 	        
-	        distance = Placement.getDistance(initialPlacement, assignedPlacement);
+	        DistanceMetric m = ((TimetableModel)lecture.getModel()).getDistanceMetric();
+	        distance = Placement.getDistanceInMeters(m,initialPlacement, assignedPlacement);
 	        if (!lecture.getInstructorConstraints().isEmpty()) {
-	            if (distance>0.0 && distance<=5.0) {
+	            if (distance>m.getInstructorNoPreferenceLimit() && distance<=m.getInstructorDiscouragedLimit()) {
 	                tooFarForInstructors+=PreferenceLevel.sIntLevelDiscouraged;
-	            } else if (distance>5.0 && distance<=20.0) {
+	            } else if (distance>m.getInstructorDiscouragedLimit() && distance<=m.getInstructorProhibitedLimit()) {
 	                tooFarForInstructors+=PreferenceLevel.sIntLevelStronglyDiscouraged;
-	            } else if (distance>20.0) {
+	            } else if (distance>m.getInstructorProhibitedLimit()) {
 	                tooFarForInstructors+=PreferenceLevel.sIntLevelProhibited;
 	            }
 	        }
-	        if (distance > ((TimetableModel)lecture.getModel()).getStudentDistanceLimit())
+	        if (distance > m.minutes2meters(10))
 	        	tooFarForStudents = (int)lecture.classLimit();
 	        
 	        Set newStudentConflictsVect = lecture.conflictStudents(assignedPlacement);

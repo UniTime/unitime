@@ -87,8 +87,8 @@ public class BuildingRoomImport extends BaseImport {
 		ExternalBuilding building = new ExternalBuilding();
 		building.setExternalUniqueId(element.attributeValue("externalId"));
 		building.setAbbreviation(element.attributeValue("abbreviation"));
-		building.setCoordinateX(Integer.decode(element.attributeValue("locationX")));
-		building.setCoordinateY(Integer.decode(element.attributeValue("locationY")));
+		building.setCoordinateX(element.attributeValue("locationX") == null ? null : Double.valueOf(element.attributeValue("locationX")));
+		building.setCoordinateY(element.attributeValue("locationY") == null ? null : Double.valueOf(element.attributeValue("locationY")));
 		building.setDisplayName(element.attributeValue("name"));
 		building.setSession(session);
 		getHibSession().save(building);
@@ -103,8 +103,8 @@ public class BuildingRoomImport extends BaseImport {
 	private void importRoom(Element element, ExternalBuilding building) throws Exception {
 		ExternalRoom room = new ExternalRoom();
 		room.setExternalUniqueId(element.attributeValue("externalId"));
-		room.setCoordinateX(Integer.decode(element.attributeValue("locationX")));
-		room.setCoordinateY(Integer.decode(element.attributeValue("locationY")));
+		room.setCoordinateX(element.attributeValue("locationX") == null ? null : Double.valueOf(element.attributeValue("locationX")));
+		room.setCoordinateY(element.attributeValue("locationY") == null ? null : Double.valueOf(element.attributeValue("locationY")));
 		room.setRoomNumber(element.attributeValue("roomNumber"));
 		room.setClassification(element.attributeValue("roomClassification"));
 		room.setCapacity(Integer.decode(element.attributeValue("capacity")));

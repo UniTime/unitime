@@ -2,20 +2,23 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.LocationDAO;
 
 import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     private Long iId = null;
     private String iName = null;
     private int iPreference = 0;
     private int iCapacity, iExamCapacity = 0;
-    private int iX = -1, iY = -1;
+    private Double iX = null, iY = null;
     private transient Location iLocation = null;
+    private transient static DistanceMetric sDistanceMetric = null;
     
     public ExamRoomInfo(ExamRoom room, int preference) {
         iId = room.getId();
@@ -33,8 +36,8 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         iCapacity = location.getCapacity();
         iExamCapacity = (location.getExamCapacity()==null?location.getCapacity()/2:location.getExamCapacity());
         iPreference = preference;
-        iX = (location.getCoordinateX()==null?-1:location.getCoordinateX().intValue());
-        iY = (location.getCoordinateY()==null?-1:location.getCoordinateY().intValue());
+        iX = location.getCoordinateX();
+        iY = location.getCoordinateY();
     }
     
     public Long getLocationId() { return iId; }
@@ -76,14 +79,15 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         return getLocationId().hashCode();
     }
     
-    public int getCoordX() { return iX; }
-    public int getCoordY() { return iY; }
+    public Double getCoordX() { return iX; }
+    public Double getCoordY() { return iY; }
     
-    public int getDistance(ExamRoomInfo other) {
-        if (getCoordX()<0 || getCoordY()<0 || other.getCoordX()<0 || other.getCoordY()<0) return 10000;
-        int dx = getCoordX()-other.getCoordX();
-        int dy = getCoordY()-other.getCoordY();
-        return (int)Math.sqrt(dx*dx+dy*dy);
+    public double getDistance(ExamRoomInfo other) {
+    	if (sDistanceMetric == null) {
+    		sDistanceMetric = new DistanceMetric(
+    				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+    	}
+    	return sDistanceMetric.getDistanceInMeters(getCoordX(), getCoordY(), other.getCoordX(), other.getCoordY());
     }
 
 }

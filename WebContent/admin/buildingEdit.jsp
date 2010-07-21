@@ -19,6 +19,8 @@
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
+<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -100,9 +102,11 @@
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
-				<html:text property="coordX" size="10" maxlength="10"/>,
-				<html:text property="coordY" size="10" maxlength="10"/>
+				<html:text property="coordX" size="12" maxlength="12"/>,
+				<html:text property="coordY" size="12" maxlength="12"/>
 				&nbsp;<html:errors property="coordX"/> <html:errors property="coordy"/>
+				<% DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())); %>
+				&nbsp;&nbsp;&nbsp;<i><%=eclipsoid.getEclipsoindName()%></i>
 			</TD>
 		</TR>
 

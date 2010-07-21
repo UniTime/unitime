@@ -29,9 +29,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.ifs.util.DistanceMetric;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -451,14 +454,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (getUniqueId().equals(other.getUniqueId())) return 0.0;
     	if (this instanceof Location && isIgnoreTooFar()!=null && isIgnoreTooFar().booleanValue()) return 0.0;
     	if (other instanceof Location && other.isIgnoreTooFar()!=null && other.isIgnoreTooFar().booleanValue()) return 0.0;
-    	int x1 = (getCoordinateX()==null?-1:getCoordinateX().intValue());
-    	int y1 = (getCoordinateY()==null?-1:getCoordinateY().intValue());
-    	int x2 = (other.getCoordinateX()==null?-1:other.getCoordinateX().intValue());
-    	int y2 = (other.getCoordinateY()==null?-1:other.getCoordinateY().intValue());
-    	if (x1<0 || x2<0 || y1<0 || y2<0) return 10000.0;
-		long x = x1-x2;
-		long y = y1-y2;
-		return Math.sqrt((x*x)+(y*y));
+    	DistanceMetric m = new DistanceMetric(
+				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+    	return m.getDistanceInMeters(getCoordinateX(), getCoordinateY(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	
 	public Department getControllingDepartment() {

@@ -35,8 +35,8 @@ public abstract class BaseExternalRoom implements Serializable {
 	private Long iUniqueId;
 	private String iExternalUniqueId;
 	private String iRoomNumber;
-	private Integer iCoordinateX;
-	private Integer iCoordinateY;
+	private Double iCoordinateX;
+	private Double iCoordinateY;
 	private Integer iCapacity;
 	private Integer iExamCapacity;
 	private String iClassification;
@@ -79,11 +79,11 @@ public abstract class BaseExternalRoom implements Serializable {
 	public String getRoomNumber() { return iRoomNumber; }
 	public void setRoomNumber(String roomNumber) { iRoomNumber = roomNumber; }
 
-	public Integer getCoordinateX() { return iCoordinateX; }
-	public void setCoordinateX(Integer coordinateX) { iCoordinateX = coordinateX; }
+	public Double getCoordinateX() { return iCoordinateX; }
+	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
-	public Integer getCoordinateY() { return iCoordinateY; }
-	public void setCoordinateY(Integer coordinateY) { iCoordinateY = coordinateY; }
+	public Double getCoordinateY() { return iCoordinateY; }
+	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
 	public Integer getCapacity() { return iCapacity; }
 	public void setCapacity(Integer capacity) { iCapacity = capacity; }

@@ -21,6 +21,9 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 
+import net.sf.cpsolver.ifs.util.DistanceMetric;
+
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -37,12 +40,13 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     private String iName = null;
     private int iPreference = 0;
     private int iCapacity;
-    private int iX = -1, iY = -1;
+    private Double iX = null, iY = null;
     private boolean iIgnoreTooFar;
     private transient Location iLocation = null;
     private String iNote = null;
     private boolean iIgnoreRoomChecks;
     private String iRoomType = null;
+    private transient static DistanceMetric sDistanceMetric = null;
     
     public ClassRoomInfo(Location location, int preference) {
         iLocation = location;
@@ -50,8 +54,8 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         iName = location.getLabel();
         iCapacity = location.getCapacity();
         iPreference = preference;
-        iX = (location.getCoordinateX()==null?-1:location.getCoordinateX().intValue());
-        iY = (location.getCoordinateY()==null?-1:location.getCoordinateY().intValue());
+        iX = location.getCoordinateX();
+        iY = location.getCoordinateY();
         iIgnoreTooFar = location.isIgnoreTooFar().booleanValue();
         iIgnoreRoomChecks = location.isIgnoreRoomCheck();
         iRoomType = location.getRoomTypeLabel();
@@ -112,15 +116,16 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         return getLocationId().hashCode();
     }
     
-    public int getCoordX() { return iX; }
-    public int getCoordY() { return iY; }
+    public Double getCoordX() { return iX; }
+    public Double getCoordY() { return iY; }
     
-    public int getDistance(ClassRoomInfo other) {
+    public double getDistance(ClassRoomInfo other) {
     	if (isIgnoreTooFar() || other.isIgnoreTooFar()) return 0;
-        if (getCoordX()<0 || getCoordY()<0 || other.getCoordX()<0 || other.getCoordY()<0) return 10000;
-        int dx = getCoordX()-other.getCoordX();
-        int dy = getCoordY()-other.getCoordY();
-        return (int)Math.sqrt(dx*dx+dy*dy);
+    	if (sDistanceMetric == null) {
+    		sDistanceMetric = new DistanceMetric(
+    				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+    	}
+    	return sDistanceMetric.getDistanceInMeters(getCoordX(), getCoordY(), other.getCoordX(), other.getCoordY());
     }
     
     public String getNameHtml() {

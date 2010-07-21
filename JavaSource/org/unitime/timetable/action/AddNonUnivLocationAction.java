@@ -170,9 +170,8 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setIgnoreTooFar(Boolean.valueOf(nonUnivLocationForm.isIgnoreTooFar()));
 			nonUniv.setIgnoreRoomCheck(Boolean.valueOf(nonUnivLocationForm.isIgnoreRoomCheck()));
 				
-			Integer coordinate = Integer.valueOf("-1");
-			nonUniv.setCoordinateX(coordinate);
-			nonUniv.setCoordinateY(coordinate);
+			nonUniv.setCoordinateX(null);
+			nonUniv.setCoordinateY(null);
 			
 			nonUniv.setFeatures(new HashSet());
 			nonUniv.setAssignments(new HashSet());

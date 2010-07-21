@@ -53,12 +53,12 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 	            	for (Placement prevPlacement: prevPlacements) {
 	            		if (prevPlacement.equals(placement)) continue;
 	            		if (!used.add(prevPlacement+"."+placement)) continue; 
-	            		double dist = Placement.getDistance(prevPlacement,placement);
-	            		if (dist>model.getInstructorNoPreferenceLimit() && dist<=model.getInstructorDiscouragedLimit())
+	            		double dist = Placement.getDistanceInMeters(model.getDistanceMetric(), prevPlacement,placement);
+	            		if (dist>model.getDistanceMetric().getInstructorNoPreferenceLimit() && dist<=model.getDistanceMetric().getInstructorDiscouragedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sDiscouraged));
-	            		if (dist>model.getInstructorDiscouragedLimit() && dist<=model.getInstructorProhibitedLimit()) 
+	            		if (dist>model.getDistanceMetric().getInstructorDiscouragedLimit() && dist<=model.getDistanceMetric().getInstructorProhibitedLimit()) 
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sStronglyDiscouraged));
-	            		if (dist>model.getInstructorProhibitedLimit())
+	            		if (dist>model.getDistanceMetric().getInstructorProhibitedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sProhibited));
 	            			
 	            	}
