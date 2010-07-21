@@ -244,9 +244,6 @@
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do"/>
 			<item name="Standard Notes" page="eventStandardNotes.do"/>
 		</menu>
-		<menu name="Custom">
-			<item name="Users" page="userEdit.do"/>
-		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do"/>
 			<item name="User Settings" page="settings.do"/>
