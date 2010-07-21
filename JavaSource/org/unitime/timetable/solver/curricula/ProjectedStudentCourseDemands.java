@@ -93,6 +93,7 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 			String clasfCode = (String)d[4];
 			String majorCode = (String)d[5];
 			WeightedStudentId studentId = new WeightedStudentId((Long)d[1], getProjection(areaAbbv, clasfCode, majorCode));
+			studentId.setStats(areaAbbv, clasfCode, majorCode);
 			Set<WeightedStudentId> studentIds = demandsForCourseNbr.get(courseNbr);
 			if (studentIds == null) {
 				studentIds = new HashSet<WeightedStudentId>();

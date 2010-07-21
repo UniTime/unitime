@@ -41,11 +41,14 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 				Set<WeightedStudentId> s1 = iFallback.getDemands(c1.getCourse().getCourse());
 				Set<WeightedStudentId> s2 = iFallback.getDemands(c2.getCourse().getCourse());
 				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
-					int sharedStudents = 0;
-					for (WeightedStudentId s: s1)
-						if (s2.contains(s)) sharedStudents++;
+					int sharedStudents = 0, lastLike = 0;
+					for (WeightedStudentId s: s1) {
+						if (s.match(clasf)) {
+							lastLike++;
+							if (s2.contains(s)) sharedStudents++;
+						}
+					}
 					float requested = c1.getCourse().getPercShare() * clasf.getNrStudents();
-					int lastLike = s1.size();
 					share = Math.round((requested / lastLike) * sharedStudents); 
 				} else {
 					share = Math.round(c1.getCourse().getPercShare() * c2.getCourse().getPercShare() * clasf.getNrStudents());
