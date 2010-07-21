@@ -123,7 +123,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     	if (isIgnoreTooFar() || other.isIgnoreTooFar()) return 0;
     	if (sDistanceMetric == null) {
     		sDistanceMetric = new DistanceMetric(
-    				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+    				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
     	}
     	return sDistanceMetric.getDistanceInMeters(getCoordX(), getCoordY(), other.getCoordX(), other.getCoordY());
     }

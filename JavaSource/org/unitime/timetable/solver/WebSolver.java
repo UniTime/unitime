@@ -412,7 +412,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             if (extraParams!=null && extraParams.get("Exam.Type")!=null)
                 properties.setProperty("Exam.Type", extraParams.get("Exam.Type").toString());
         }
-        properties.setProperty("Distances.Eclipsoid", ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name()));
+        properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
         properties.expand();
         return properties;
 	}

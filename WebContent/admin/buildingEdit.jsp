@@ -105,8 +105,8 @@
 				<html:text property="coordX" size="12" maxlength="12"/>,
 				<html:text property="coordY" size="12" maxlength="12"/>
 				&nbsp;<html:errors property="coordX"/> <html:errors property="coordy"/>
-				<% DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())); %>
-				&nbsp;&nbsp;&nbsp;<i><%=eclipsoid.getEclipsoindName()%></i>
+				<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
+				&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 			</TD>
 		</TR>
 

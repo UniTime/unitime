@@ -80,7 +80,7 @@ public class FixCourseTimetablingInconsistencies {
 	public FixCourseTimetablingInconsistencies(Long sessionId) {
 		iSessionId = sessionId;
 		iDistanceMetric = new DistanceMetric(
-				DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name())));
+				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
 	}
 	
 	public void fixAll(org.hibernate.Session hibSession) {

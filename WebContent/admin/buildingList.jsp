@@ -47,10 +47,10 @@
 		</tt:section-header>
 	</td></tr>
 <%
-	DistanceMetric.Eclipsoid eclipsoid = DistanceMetric.Eclipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.eclipsoid", DistanceMetric.Eclipsoid.LEGACY.name()));
+	DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
     WebTable webTable = new WebTable( 5,
     null, "buildingList.do?ord=%%",
-    new String[] {"Abbreviation", "Name", "External ID", eclipsoid.getFirstCoordinateName(), eclipsoid.getSecondCoordinateName()},
+    new String[] {"Abbreviation", "Name", "External ID", ellipsoid.getFirstCoordinateName(), ellipsoid.getSecondCoordinateName()},
     new String[] {"left", "left","left","right","right"},
     new boolean[] {true,true,true,true,true} );
     WebTable.setOrder(session, "BuildingList.ord", request.getParameter("ord"), 1);
