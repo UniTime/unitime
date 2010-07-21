@@ -36,6 +36,7 @@ import javax.servlet.ServletException;
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -75,10 +76,10 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		try {
 			String menu = ApplicationProperties.getProperty("unitime.menu","menu.xml");
 			Document document = null;
-	        URL dbUpdateFileUrl = ApplicationProperties.class.getClassLoader().getResource(menu);
-	        if (dbUpdateFileUrl!=null) {
-	            Debug.info("Reading menu from " + URLDecoder.decode(dbUpdateFileUrl.getPath(), "UTF-8") + " ...");
-	            document = (new SAXReader()).read(dbUpdateFileUrl.openStream());
+	        URL menuUrl = ApplicationProperties.class.getClassLoader().getResource(menu);
+	        if (menuUrl!=null) {
+	            Debug.info("Reading menu from " + URLDecoder.decode(menuUrl.getPath(), "UTF-8") + " ...");
+	            document = (new SAXReader()).read(menuUrl.openStream());
 	        } else if (new File(menu).exists()) {
 	            Debug.info("Reading menu from " + menu + " ...");
 	            document = (new SAXReader()).read(new File(menu));
@@ -88,9 +89,81 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 
 	        if (!"unitime-menu".equals(document.getRootElement().getName())) throw new ServletException("Menu has an unknown format.");
 	        iRoot = document.getRootElement();
+	        
+	        String customMenu = ApplicationProperties.getProperty("unitime.menu.custom","menu-custom.xml");
+			Document customDocument = null;
+	        URL customMenuUrl = ApplicationProperties.class.getClassLoader().getResource(customMenu);
+	        if (customMenuUrl!=null) {
+	            Debug.info("Reading custom menu from " + URLDecoder.decode(customMenuUrl.getPath(), "UTF-8") + " ...");
+	            customDocument = (new SAXReader()).read(customMenuUrl.openStream());
+	        } else if (new File(customMenu).exists()) {
+	            Debug.info("Reading custom menu from " + customMenu + " ...");
+	            customDocument = (new SAXReader()).read(new File(customMenu));
+	        }
+	        if (customDocument != null) {
+	        	merge(iRoot, customDocument.getRootElement());
+	        }
+	        
 		} catch (Exception e) {
 			if (e instanceof ServletException) throw (ServletException)e;
 			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
+		}
+	}
+	
+	private void merge(Element menu, Element custom) {
+		if ("remove".equals(custom.getName())) {
+			menu.getParent().remove(menu);
+			return;
+		}
+		for (Iterator<Attribute> i = custom.attributeIterator(); i.hasNext();) {
+			Attribute a = i.next();
+			menu.addAttribute(a.getName(), a.getValue());
+		}
+		for (Iterator<Element> i = custom.elementIterator(); i.hasNext(); ) {
+			Element e = i.next();
+			if ("condition".equals(e.getName())) {
+				menu.add(e.createCopy());
+				continue;
+			}
+			if ("new-condition".equals(e.getName())) {
+				for (Iterator<Element> j = menu.elementIterator("condition"); j.hasNext(); ) {
+					menu.remove(j.next());
+				}
+				Element f = e.createCopy();
+				f.setName("condition");
+				menu.add(f);
+				continue;
+			}
+			String name = e.attributeValue("name");
+			Element x = null;
+			if (name != null) {
+				for (Iterator<Element> j = menu.elementIterator(); j.hasNext(); ) {
+					Element f = j.next();
+					if (name.equals(f.attributeValue("name"))) { x = f; break; }
+				}
+			}
+			if (x != null) {
+				merge(x, e);
+			} else {
+				int pos = Integer.parseInt(e.attributeValue("position", "-1"));
+				if (pos >= 0) {
+					List<Element> after = new ArrayList<Element>();
+					for (Iterator<Element> j = menu.elementIterator(); j.hasNext(); ) {
+						Element f = j.next();
+						if ("condition".equals(f.getName())) continue;
+						if (pos > 0) {
+							pos--;
+						} else {
+							after.add(f);
+							menu.remove(f);
+						}
+					}
+					menu.add(e.createCopy());
+					for (Element f: after)
+						menu.add(f);
+				} else
+					menu.add(e.createCopy());
+			}
 		}
 	}
 	
