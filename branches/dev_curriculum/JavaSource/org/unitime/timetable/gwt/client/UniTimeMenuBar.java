@@ -67,6 +67,7 @@ public class UniTimeMenuBar extends Composite {
 		iMenu = new MenuBar();
 		iMenu.setVisible(false);
 		iMenu.addStyleName("unitime-NoPrint");
+		iMenu.addStyleName("unitime-Menu");
 		initWidget(iMenu);
 		
 		if (absolute) {
@@ -117,9 +118,24 @@ public class UniTimeMenuBar extends Composite {
 				lastSeparator = new MenuItemSeparator();
 				menu.addSeparator(lastSeparator);
 			} else if (item.hasSubMenus()) {
-				MenuBar m = new MenuBar(true);
-				initMenu(m, item.getSubMenus(), level + 1);
-				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
+				if (item.getPage() == null) {
+					MenuBar m = new MenuBar(true);
+					initMenu(m, item.getSubMenus(), level + 1);
+					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
+				} else {
+					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
+						@Override
+						public void execute() {
+							if (item.isGWT()) 
+								//openPageAsync(item.getPage());
+								openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
+							else {
+								openUrl(item.getName(), item.getPage(), item.getTarget());
+							}
+						}
+					}));
+					initMenu(menu, item.getSubMenus(), level);
+				}
 			} else {
 				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
 					@Override

@@ -138,6 +138,11 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<div id="contentMain">
 	<table align="center">
     <tr>
+    <td valign="top" rowspan="2">
+    	<logic:equal name="showMenu" value="true">
+    		<span id='UniTimeGWT:SideBar' style="display: none;" ></span>
+	    </logic:equal>
+    </td>
     <td valign="top">
 	    <table class="unitime-Page" width="100%">
 	    <tr><td>
@@ -170,7 +175,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 				</tiles:insert>
         	</span>
 	    </td></tr></table>
-    </td></tr><tr><td>
+    </td></tr><tr><td valign="top">
     	<table class="unitime-Footer">
     		<tr>
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>

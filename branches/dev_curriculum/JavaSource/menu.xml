@@ -14,12 +14,14 @@
 			<item name="Classes" page="classShowSearch.do"/>
 			<item name="Curricula" page="curricula" type="gwt"/>
 			<separator/>
-			<item name="Instructors" page="instructorSearch.do"/>
-			<item name="Designator List" page="designatorList.do"/>
+			<menu name="Instructors" page="instructorSearch.do">
+				<item name="Designator List" page="designatorList.do"/>
+			</menu>
 			<separator/>
-			<item name="Rooms" page="roomSearch.do"/>
-			<item name="Room Features" page="roomFeatureSearch.do"/>
-			<item name="Room Groups" page="roomGroupSearch.do"/>
+			<menu name="Rooms" page="roomSearch.do">
+				<item name="Room Features" page="roomFeatureSearch.do"/>
+				<item name="Room Groups" page="roomGroupSearch.do"/>
+			</menu>
 			<separator/>
 			<item name="Distribution Preferences" page="distributionPrefs.do"/>
 			<item name="Reservations" page="reservationList.do"/>
@@ -96,8 +98,9 @@
 			</or>
 			<canSectionStudents/>
 		</condition>
-		<item name="Batch Solver" page="studentSolver.do"/>
-		<item name="Solver Log" page="studentSolverLog.do"/>
+		<menu name="Batch Solver" page="studentSolver.do">
+			<item name="Solver Log" page="studentSolverLog.do"/>
+		</menu>
 		<separator/>
 		<item name="Scheduling Assistant" page="sectioning" type="gwt"/>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
@@ -113,14 +116,15 @@
 		<menu name="Input Data">
 			<item name="Instructors" page="instructorSearch.do"/>
 			<separator/>
-			<item name="Rooms" page="roomSearch.do?default=Exam"/>
-			<item name="Room Features" page="roomFeatureSearch.do?default=Exam"/>
-			<item name="Room Groups" page="roomGroupSearch.do?default=Exam"/>
-			<item name="Room Availability" page="roomAvailability.do">
-				<condition>
-					<hasRoomAvailability/>
-				</condition>
-			</item>
+			<menu name="Rooms" page="roomSearch.do?default=Exam">
+				<item name="Room Features" page="roomFeatureSearch.do?default=Exam"/>
+				<item name="Room Groups" page="roomGroupSearch.do?default=Exam"/>
+				<item name="Room Availability" page="roomAvailability.do">
+					<condition>
+						<hasRoomAvailability/>
+					</condition>
+				</item>
+			</menu>
 			<separator/>
 			<item name="Examinations" page="examList.do"/>
 			<item name="Distribution Preferences" page="examDistributionPrefs.do"/>
@@ -139,23 +143,15 @@
 			<item name="Solver Log" page="examSolverLog.do"/>
 			<separator/>
 			<item name="Reports" page="examAssignmentReport.do"/>
-			<item name="Pdf Reports" page="examPdfReport.do">
-				<condition>
-					<or>
-						<hasRole name="Administrator"/>
-						<hasRole name="Exam Mgr"/>
-					</or>
-				</condition>
-			</item>
 		</menu>
-		<menu name="Examination Timetabling">
+		<item name="Pdf Reports" page="examPdfReport.do">
 			<condition>
-				<not>
-					<canTimetableExams/>
-				</not>
+				<or>
+					<hasRole name="Administrator"/>
+					<hasRole name="Exam Mgr"/>
+				</or>
 			</condition>
-			<item name="Pdf Reports" page="examPdfReport.do"/>
-		</menu>
+		</item>
 	</menu>
 	<item name="Classes" page="classes.do">
 		<condition>

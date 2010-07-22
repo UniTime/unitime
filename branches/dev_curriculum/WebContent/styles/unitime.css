@@ -1044,6 +1044,7 @@ h1 {
 
 .unitime-MenuHeaderLabel {
 	color: #6991CE;
+	margin-left: 5px;
 }
 
 .unitime-MenuHeaderOpen {
@@ -1058,7 +1059,6 @@ h1 {
 
 .unitime-MenuHeaderClose {
 	margin-top: 10px;
-	background: red;
 	padding: 2px;
 	background: transparent;
 }
@@ -1076,6 +1076,7 @@ h1 {
 
 .gwt-DisclosurePanel .content {
   border-left: 1px solid #9CB0CE;
+  border-bottom: 1px solid #9CB0CE;
   padding: 6px 2px 6px 6px;
   margin-left: 6px;
   -webkit-border-bottom-left: 5px;
@@ -1099,7 +1100,7 @@ h1 {
   border: 1px solid #9CB0CE;
   border-bottom: 0px;
   background: white;
-  padding: 2px 2px 10px 5px;
+  padding: 2px;
 }
 
 .unitime-Print {
@@ -1160,4 +1161,8 @@ h1 {
 }
 
 .unitime-BlankSeparator {
+}
+
+.unitime-Menu {
+	z-index: 1500000;
 }
