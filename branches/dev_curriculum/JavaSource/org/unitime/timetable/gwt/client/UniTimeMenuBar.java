@@ -35,12 +35,15 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -51,26 +54,55 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 
 public class UniTimeMenuBar extends Composite {
-	private final MenuServiceAsync iService = GWT.create(MenuService.class);
+	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
 	
 	private MenuBar iMenu;
 	private Timer iTimer = null;
+	private SimplePanel iSimple = null;
 
-	public UniTimeMenuBar() {
-		
+	public UniTimeMenuBar(boolean absolute) {
 		iMenu = new MenuBar();
 		iMenu.setVisible(false);
 		iMenu.addStyleName("unitime-NoPrint");
-		
 		initWidget(iMenu);
+		
+		if (absolute) {
+			DOM.setStyleAttribute(iMenu.getElement(), "position", "absolute");
+			iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
+			Window.addResizeHandler(new ResizeHandler() {
+				@Override
+				public void onResize(ResizeEvent event) {
+					iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
+				}
+			});
+			final Timer showTimer = new Timer() {
+				@Override
+				public void run() {
+					DOM.setStyleAttribute(iMenu.getElement(), "left", String.valueOf(Window.getScrollLeft()));
+					DOM.setStyleAttribute(iMenu.getElement(), "top", String.valueOf(Window.getScrollTop()));
+					iMenu.setVisible(true);
+				}
+			};
+			Window.addWindowScrollHandler(new Window.ScrollHandler() {
+				@Override
+				public void onWindowScroll(ScrollEvent event) {
+					iMenu.setVisible(false);
+					showTimer.schedule(100);
+				}
+			});
+			iSimple = new SimplePanel();
+		}
 		
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
 			@Override
 			public void onSuccess(List<MenuInterface> result) {
 				initMenu(iMenu, result, 0);
 				iMenu.setVisible(true);
+				if (iSimple != null)
+					iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
 			}
 			@Override
 			public void onFailure(Throwable caught) {
@@ -110,7 +142,7 @@ public class UniTimeMenuBar extends Composite {
 		}
 	}
 	
-	private void openUrl(final String name, final String url, String target) {
+	protected void openUrl(final String name, final String url, String target) {
 		/*
 		if (url.indexOf('?') >= 0)
 			url += "&gwt.codesvr=127.0.0.1:9997";
@@ -156,7 +188,7 @@ public class UniTimeMenuBar extends Composite {
 		}
 	}
 	
-	private void openPageAsync(final String page) {
+	protected void openPageAsync(final String page) {
 		LoadingWidget.getInstance().show();
 		if (RootPanel.get("UniTimeGWT:Content") == null || RootPanel.get("UniTimeGWT:TitlePanel") == null) {
 			ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=" + page);
@@ -180,7 +212,7 @@ public class UniTimeMenuBar extends Composite {
 		});
 	}
 	
-	private void openPage(String page) {
+	protected void openPage(String page) {
 		try {
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
@@ -208,9 +240,13 @@ public class UniTimeMenuBar extends Composite {
 	public void insert(final RootPanel panel) {
 		panel.add(this);
 		panel.setVisible(true);
+		if (iSimple != null) {
+			iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
+			panel.add(iSimple);
+		}
 	}
 	
-	private class MyDialogBox extends DialogBox {
+	protected class MyDialogBox extends DialogBox {
 		private MyDialogBox() { super(); }
 		protected void onPreviewNativeEvent(NativePreviewEvent event) {
 			super.onPreviewNativeEvent(event);
