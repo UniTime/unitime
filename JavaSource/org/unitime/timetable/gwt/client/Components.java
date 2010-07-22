@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public enum Components {
 	courseCurricula("UniTimeGWT:CourseCurricula", new ComponentFactory() { public void insert(RootPanel panel) { new CourseCurriculaTable(true, true).insert(panel); } }),
 	title("UniTimeGWT:Title", new ComponentFactory() { public void insert(RootPanel panel) { new PageLabel().insert(panel); } }),
+	sidebar("UniTimeGWT:SideBar", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar().insert(panel); } }),
 	menubar("UniTimeGWT:MenuBar", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(true).insert(panel); } }),
 	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeHeader().insert(panel); } }),
 	version("UniTimeGWT:Version", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeVersion().insert(panel); } }),
