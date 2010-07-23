@@ -58,6 +58,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>When a manager of a class is changed, not only delete all related class assignments (class belongs to a different problem), but also delete the related class event.
+					<line>This (class having an event associated but no committed assignment) was causing a problem on the Class Assignment page.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
