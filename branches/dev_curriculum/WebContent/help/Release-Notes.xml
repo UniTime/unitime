@@ -27,11 +27,64 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
-		<title>NEW FEATURES</title>
+		<title>First Release of UniTime 3.2</title>
 		<item>
-			<name>Curriculum-based course timetabling</name>
-		</item>	
-		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+			<name>Look &amp; feel changes</name>
+			<description>
+				<line>Menu on the top of the page</line>
+				<line>User / solver info -> solver, user, session components under page title</line>
+				<line>Back button (does not work well in Chrome)</line>
+				<line>Help page opens in a dialog</line>
+				<line>A disclaimer message (in HTML format) can be added at the bottom of every page.
+					<line>Value of the application property tmtbl.page.disclaimer.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver changes</name>
+			<description>
+				<line>Use projected course demands (last-like + curricula projections)</line>
+				<line>Added ability to use GPS coordinates
+					<line>Back-to-back distance student conflict are now based on break times</line>
+				</line>
+				<line>Use curriculum-based course demands</line>
+			</description>
+		</item>
+		<item>
+			<name>New features</name>
+			<description>
+				<line>Curriculum-based Course Timetabling
+					<line>Curriculum Projections page</line>
+					<line>Curricula / Curriculum Edit / Curriculum Details page</line>
+					<line>Curricula section on Instructional Offering Details page</line>
+				</line>
+				<line>Student Sectioning Assistant
+					<line>Still only as a demo as course and student enrollment updates are not solved</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Update of underlying technologies
+					<line>Constraint Solver Library 1.2</line>
+					<line>Hibernate 3.5, Struts 1.3.10, iText 5.0.2</line>
+				</line>
+				<line>Unified sending of emails</line>
+				<line>Replaced Hibernate Synchronizer with a home-made class</line>
+				<line>Code cleanup</line>
+			</description>
+		</item>
+		<item>
+			<name>Fixes</name>
+			<description>
+				<line>All recent fixes of UniTime 3.1 are included (see below)</line>
+				<line>Personal Schedule -- fixed the ability to change sessions for an administrator looking up a student's schedule</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>UniTime 3.1 Bug Fixes &amp; Other Improvements</title>
 		<item>
 			<name>PDF Exam reports</name>
 			<description>
@@ -59,6 +112,14 @@
 				<line>Student Enrollment Import
 					<line>Update class / course enrollments by default.</line>
 					<line>Fixed the queries that do the update to work on MySQL as well.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>When a manager of a class is changed, not only delete all related class assignments (class belongs to a different problem), but also delete the related class event.
+					<line>This (class having an event associated but no committed assignment) was causing a problem on the Class Assignment page.</line>
 				</line>
 			</description>
 		</item>
