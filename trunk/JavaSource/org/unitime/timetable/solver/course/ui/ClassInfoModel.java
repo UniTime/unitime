@@ -569,7 +569,8 @@ public class ClassInfoModel implements Serializable {
             }
             
             if (iTimes.isEmpty()) {
-            	throw new RuntimeException("Class "+getClazz().getClassName()+" has no available time.");
+            	iForm.setMessage("Class "+getClazz().getClassName()+" has no available time.");
+            	return iTimes;
             }
         }
         return iTimes;
