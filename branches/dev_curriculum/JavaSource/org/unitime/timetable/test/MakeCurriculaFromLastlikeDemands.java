@@ -195,7 +195,13 @@ public class MakeCurriculaFromLastlikeDemands {
         for (Map.Entry<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> e1 : curricula.entrySet()) {
         	Hashtable<String,Hashtable<String, Float>> rules = getRules(hibSession, e1.getKey().getUniqueId());
             for (Map.Entry<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> e2 : e1.getValue().entrySet()) {
-                sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
+            	if (!e1.getKey().getPosMajors().contains(e2.getKey())) {
+            		sLog.warn("Academic area " + e1.getKey().getAcademicAreaAbbreviation() + " - " + Constants.toInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) +
+            				" does not contain major " + e2.getKey().getCode() + " - " + Constants.toInitialCase(e2.getKey().getName()));
+            		continue;
+            	}
+            	
+            	sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
                 Hashtable<Department,Integer> deptCounter = new Hashtable<Department, Integer>();
 
                 Curriculum curriculum = new Curriculum();
