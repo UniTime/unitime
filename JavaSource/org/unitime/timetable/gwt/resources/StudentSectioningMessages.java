@@ -271,8 +271,8 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Send {0} an email.")
 	String sendEmail(String name);
 	
-	@DefaultMessage("(~{0} m)")
-	String distanceConflict(int distanceInMeters);
+	@DefaultMessage("(~{0} min)")
+	String distanceConflict(int distanceInMinutes);
 	
 	/* Student Sectioning widget messags
 	 */
@@ -374,8 +374,8 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Interface messages
 	 */
-	@DefaultMessage("Distance to travel from {0} is approx. {1} meters.")
-	String backToBackDistance(String rooms, int distanceInMeters);
+	@DefaultMessage("Distance to travel from {0} is approx. {1} minutes.")
+	String backToBackDistance(String rooms, int distanceInMinutes);
 	
 	@DefaultMessage("&infin;")
 	String unlimited();
