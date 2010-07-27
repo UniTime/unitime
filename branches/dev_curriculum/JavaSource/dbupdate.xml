@@ -20,8 +20,15 @@
  -->
 
 <dbupdate>
+	<dialect type="mysql">org.hibernate.dialect.MySQLDialect</dialect>
 	<dialect type="mysql">org.hibernate.dialect.MySQLInnoDBDialect</dialect>
+	<dialect type="mysql">org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
+	<dialect type="mysql">org.hibernate.dialect.MySQL5Dialect</dialect>
 	<dialect type="plsql">org.hibernate.dialect.OracleDialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.Oracle8iDialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.Oracle9Dialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.Oracle9iDialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.Oracle10gDialect</dialect>
 	<update version="1" date="11-Jun-2007" comment="Package Renames, Column Renames">
 		<sql>
 			update %SCHEMA%.solver_info_def set implementation=replace(implementation,'edu.purdue.smas','org.unitime') where implementation like 'edu.purdue.smas%'
