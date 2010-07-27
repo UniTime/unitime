@@ -588,14 +588,14 @@ public class SectioningServer {
 					if (requiredSections != null && requiredSections.contains(section)) a.setPinned(true);
 					a.setSubpartId(section.getSubpart().getId());
 					a.setHasAlternatives(hasAlt);
-					double dist = 0.0;
+					int dist = 0;
 					String from = null;
 					for (Enrollment x: enrollments) {
 						if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 						for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
 							Section s = j.next();
 							if (s == section || s.getTime() == null) continue;
-							double d = distance(s, section);
+							int d = distance(s, section);
 							if (d > dist) {
 								dist = d;
 								from = "";
@@ -607,7 +607,7 @@ public class SectioningServer {
 							}
 						}
 					}
-					a.setBackToBackDistance(10 * (int)Math.round(dist));
+					a.setBackToBackDistance(dist);
 					a.setBackToBackRooms(from);
 					// if (dist > 0.0) a.setDistanceConflict(true);
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
