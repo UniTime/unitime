@@ -185,6 +185,14 @@
 			</or>
 			<canSeeEvents/>
 		</condition>
+		<menu name="Rooms" page="roomSearch.do?default=Exam">
+			<condition>
+				<hasRole name="Event Mgr"/>
+			</condition>
+			<item name="Room Features" page="roomFeatureSearch.do"/>
+			<item name="Room Groups" page="roomGroupSearch.do"/>
+		</menu>
+		<separator/>
 		<item name="Events" page="eventList.do"/>
 		<item name="Meetings" page="meetingList.do"/>
 		<item name="Add Event" page="eventAdd.do"/>
