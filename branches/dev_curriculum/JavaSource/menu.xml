@@ -12,7 +12,10 @@
 		<menu name="Input Data" title="Course Timetabling Input Data">
 			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do"/>
 			<item name="Classes" page="classShowSearch.do"/>
-			<item name="Curricula" page="curricula" type="gwt"/>
+			<separator/>
+			<menu name="Curricula" page="curricula" type="gwt">
+				<item name="Projection Rules" page="curprojrules" type="gwt"/>
+			</menu>
 			<separator/>
 			<menu name="Instructors" page="instructorSearch.do">
 				<item name="Designator List" page="designatorList.do"/>
@@ -89,6 +92,7 @@
 			<hasRole name="Curriculum Mgr"/>
 		</condition>
 		<item name="Curricula" page="curricula" type="gwt"/>
+		<item name="Projection Rules" page="curprojrules" type="gwt"/>
 	</menu>
 	<menu name="Students">
 		<condition>
@@ -225,7 +229,6 @@
 			<item name="Time Patterns" page="timePatternEdit.do"/>
 			<item name="Exact Time" page="exactTimeEdit.do"/>
 			<separator/>
-			<item name="Curriculum Projections" page="curprojrules" type="gwt"/>
 			<item name="Examination Periods" page="examPeriodEdit.do"/>
 			<item name="Data Exchange" page="dataImport.do"/>
 			<item name="Roll Forward Session" page="rollForwardSession.do"/>
