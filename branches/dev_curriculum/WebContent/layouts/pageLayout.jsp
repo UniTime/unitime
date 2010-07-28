@@ -91,7 +91,15 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
     <logic:equal name="showMenu" value="true">
-    	<span id='UniTimeGWT:MenuBar' style="display: none;" ></span>
+    	<tt:notHasProperty name="unitime.menu.style" user="true">
+	    	<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+    	</tt:notHasProperty>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic On Top">
+    		<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+    	</tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
+    		<span id='UniTimeGWT:TopMenu' style="display: none;" ></span>
+    	</tt:propertyEquals>
     </logic:equal>
     
     <tt:hasProperty name="tmtbl.global.warn">
@@ -140,7 +148,12 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     <tr>
     <td valign="top" rowspan="2">
     	<logic:equal name="showMenu" value="true">
-    		<span id='UniTimeGWT:SideBar' style="display: none;" ></span>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
+    			<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+	    	</tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
+    			<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+	    	</tt:propertyEquals>
 	    </logic:equal>
     </td>
     <td valign="top">
