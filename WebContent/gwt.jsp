@@ -32,14 +32,25 @@
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
-    <span id='UniTimeGWT:MenuBar' style="display: none;" ></span>
+    <tt:notHasProperty name="unitime.menu.style" user="true">
+	   	<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+    </tt:notHasProperty>
+    <tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic On Top">
+    	<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+    </tt:propertyEquals>
+    <tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
+    	<span id='UniTimeGWT:TopMenu' style="display: none;" ></span>
+    </tt:propertyEquals>
 
     <table align="center">
     <tr>
     <td valign="top" rowspan="2">
-    	<logic:equal name="showMenu" value="true">
-    		<span id='UniTimeGWT:SideBar' style="display: none;" ></span>
-	    </logic:equal>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
+    		<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
+    		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+	   	</tt:propertyEquals>
     </td>
     <td valign="top">
 	    <table class="unitime-Page" width="100%"><tr>
