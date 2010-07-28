@@ -142,7 +142,16 @@
 				</TD>
 			</TR>
 		</logic:messagesPresent>
-	
+		
+		<tt:hasProperty name="unitime.minimap.url">
+			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
+				</table>
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr><td valign="top"> <!-- 450, 463 -->
+						<table width="100%" border="0" cellspacing="0" cellpadding="3">
+			<% } %>
+		</tt:hasProperty>
+		
 		<logic:notEmpty name="<%=frmName%>" property="externalId">
 			<TR>
 				<TD>External Id:</TD><TD><bean:write name="<%=frmName%>" property="externalId"/></TD>
@@ -272,6 +281,17 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		
+		<tt:hasProperty name="unitime.minimap.url">
+			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
+						</table>
+					</td><td width="1%" nowrap="nowrap" style="padding-right: 3px;">
+						<img src="<%=ApplicationProperties.getProperty("unitime.minimap.url").replace("%x",frm.getCoordinateX().toString()).replace("%y",frm.getCoordinateY().toString())%>" border='0' alt="Minimap" style="border: 1px solid #9CB0CE;"/>
+					</td></tr>
+				</table>
+				<table width="100%" border="0" cellspacing="0" cellpadding="3">
+			<% } %>
+		</tt:hasProperty>
 		
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
