@@ -19,7 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+import javax.servlet.http.HttpSession;
+
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseManagerSettings;
+import org.unitime.timetable.model.dao.ManagerSettingsDAO;
+import org.unitime.timetable.model.dao.SettingsDAO;
 
 
 
@@ -40,5 +45,57 @@ public class ManagerSettings extends BaseManagerSettings {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	
+	public static String getValue(HttpSession session, String name, String defaultValue) {
+		org.unitime.commons.User user = Web.getUser(session);
+		return getValue(Web.getUser(session), name, defaultValue);
+	}
+	
+	public static String getValue(HttpSession session, String name) {
+		return getValue(session, name, null);
+	}
+	
+	public static String getValue(org.unitime.commons.User user, String name, String defaultValue) {
+		if (user == null) {
+			Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
+					"select s from Settings s where s.key = :key"
+					).setString("key", name).setCacheable(true).uniqueResult();
+			return (s == null ? defaultValue : s.getDefaultValue());
+		}
+		return getValue(TimetableManager.getManager(user), name, defaultValue);
+	}
 
+	public static String getValue(org.unitime.commons.User user, String name) {
+		return getValue(user, name, null);
+	}
+	
+	public static String getValue(TimetableManager mgr, String name, String defaultValue) {
+		if (mgr == null) {
+			Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
+					"select s from Settings s where s.key = :key"
+					).setString("key", name).setCacheable(true).uniqueResult();
+			return (s == null ? defaultValue : s.getDefaultValue());
+		}
+		return getValue(mgr.getUniqueId(), name, defaultValue);
+	}
+
+	public static String getValue(TimetableManager mgr, String name) {
+		return getValue(mgr, name, null);
+	}
+	
+	public static String getValue(Long managerId, String name, String defaultValue) {
+		if (managerId == null) return defaultValue;
+		Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
+				"select s from Settings s where s.key = :key"
+				).setString("key", name).setCacheable(true).uniqueResult();
+		if (s == null) return defaultValue;
+		ManagerSettings m = (ManagerSettings)ManagerSettingsDAO.getInstance().getSession().createQuery(
+				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId"
+				).setLong("managerId", managerId).setLong("settingsId", s.getUniqueId()).setCacheable(true).uniqueResult();
+		return (m == null? s.getDefaultValue() : m.getValue());
+	}
+
+	public static String getValue(Long managerId, String name) {
+		return getValue(managerId, name, null);
+	}
 }
