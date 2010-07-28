@@ -22,6 +22,7 @@ package org.unitime.timetable.tags;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.ManagerSettings;
 
 
 /**
@@ -32,6 +33,19 @@ public class HasProperty extends BodyTagSupport {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 	
+	private boolean iUser = false;
+	public boolean isUser() { return iUser; }
+	public void setUser(boolean user) { iUser = user; }
+	
+	protected String getProperty() {
+		if (isUser()) {
+			return ManagerSettings.getValue(pageContext.getSession(), getName(),
+					ApplicationProperties.getProperty(getName()));
+		} else {
+			return ApplicationProperties.getProperty(getName());
+		}
+	}
+
 	public int doStartTag() {
 		return EVAL_BODY_BUFFERED;
 	}
@@ -39,7 +53,7 @@ public class HasProperty extends BodyTagSupport {
 	public int doEndTag() {
         try {
             String body = (getBodyContent()==null?null:getBodyContent().getString());
-            String value = ApplicationProperties.getProperty(getName());
+            String value = getProperty();
             if (value!=null && value.length()>0 && body!=null) 
                 pageContext.getOut().println(body.replaceAll("%"+getName()+"%", value));
         } catch (Exception e) {}

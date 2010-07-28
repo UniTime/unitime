@@ -22,6 +22,7 @@ package org.unitime.timetable.tags;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.ManagerSettings;
 
 
 /**
@@ -32,9 +33,22 @@ public class NotHasProperty extends TagSupport {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 	
+	private boolean iUser = false;
+	public boolean isUser() { return iUser; }
+	public void setUser(boolean user) { iUser = user; }
+	
+	protected String getProperty() {
+		if (isUser()) {
+			return ManagerSettings.getValue(pageContext.getSession(), getName(),
+					ApplicationProperties.getProperty(getName()));
+		} else {
+			return ApplicationProperties.getProperty(getName());
+		}
+	}
+	
 	public int doStartTag() {
         try {
-            String value = ApplicationProperties.getProperty(getName());
+            String value = getProperty();
             if (value==null || value.length()==0) return EVAL_BODY_INCLUDE;
         } catch (Exception e) {}
         return SKIP_BODY;

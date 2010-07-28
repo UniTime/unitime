@@ -24,6 +24,7 @@ import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.ManagerSettings;
 
 /**
  * @author Tomas Muller
@@ -33,6 +34,19 @@ public class Property  extends BodyTagSupport {
     public String getName() { return iName; }
     public void setName(String name) { iName = name; }
 	
+	private boolean iUser = false;
+	public boolean isUser() { return iUser; }
+	public void setUser(boolean user) { iUser = user; }
+	
+	protected String getProperty(String defaultValue) {
+		if (isUser()) {
+			return ManagerSettings.getValue(pageContext.getSession(), getName(),
+					ApplicationProperties.getProperty(getName(), defaultValue));
+		} else {
+			return ApplicationProperties.getProperty(getName(), defaultValue);
+		}
+	}
+
 	public int doStartTag() throws JspException {
 		return EVAL_BODY_BUFFERED;
 	}
