@@ -21,8 +21,6 @@ package org.unitime.timetable.tags;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
-import org.unitime.timetable.ApplicationProperties;
-
 
 /**
  * @author Tomas Muller
@@ -34,9 +32,11 @@ public class PropertyEquals extends NotHasProperty {
 	
 	public int doStartTag() {
         try {
-            String value = ApplicationProperties.getProperty(getName());
+        	String value = getProperty();
             if (ToolBox.equals(value,getValue())) return EVAL_BODY_INCLUDE;
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
         return SKIP_BODY;
 	}
 }
