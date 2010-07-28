@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.widgets.LoadingWidget;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.FrameElement;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -46,8 +47,10 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -79,13 +82,13 @@ public class UniTimeSideBar extends Composite {
 
 	private SimplePanel iPanel;
 	private DisclosurePanel iDisclosurePanel;
-	private StackPanel iStackPanel;
+	private MyStackPanel iStackPanel;
 	private Tree iTree;
 	private Set<String> iOpennedNodes = new TreeSet<String>();
 	
 	private int iTop = 0;
 	
-	public UniTimeSideBar() {
+	public UniTimeSideBar(boolean useStackPanel) {
 		
 		iPanel = new SimplePanel();
 		iPanel.addStyleName("unitime-NoPrint");
@@ -139,7 +142,7 @@ public class UniTimeSideBar extends Composite {
 			}
 		});
 		
-		iStackPanel = new StackPanel();
+		iStackPanel = new MyStackPanel();
 		iTree = new Tree(RESOURCES, true);
 		iTree.addOpenHandler(new OpenHandler<TreeItem>() {
 			@Override
@@ -155,8 +158,10 @@ public class UniTimeSideBar extends Composite {
 		});
 		
 		SimplePanel simple = new SimplePanel();
-		//simple.setWidget(iStackPanel);
-		simple.setWidget(iTree);
+		if (useStackPanel)
+			simple.setWidget(iStackPanel);
+		else
+			simple.setWidget(iTree);
 		
 		iDisclosurePanel.add(simple);
 		
@@ -186,7 +191,7 @@ public class UniTimeSideBar extends Composite {
 		Window.addWindowScrollHandler(new Window.ScrollHandler() {
 			@Override
 			public void onWindowScroll(Window.ScrollEvent event) {
-				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop() + 20, 0); // 20 pixels for the top menu
+				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
 				int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
 				iDisclosurePanel.getAbsoluteTop();
 				if (fromTop <= fromBottom) {
@@ -217,8 +222,20 @@ public class UniTimeSideBar extends Composite {
 	
 	public void saveState() {
 		List<String> nodes = new ArrayList<String>();
-		for (int i = 0; i < iTree.getItemCount(); i++) {
-			openedNodes(nodes, iTree.getItem(i));
+		if (iStackPanel.isAttached()) {
+			nodes.add(iStackPanel.getStackText(iStackPanel.getSelectedIndex()));
+			for (int i = 0; i < iStackPanel.getWidgetCount(); i++) {
+				if (iStackPanel.getWidget(i) instanceof Tree) {
+					Tree t = (Tree)iStackPanel.getWidget(i);
+					for (int j = 0; j < t.getItemCount(); j++) {
+						openedNodes(nodes, t.getItem(j));
+					}
+				}
+			}
+		} else {
+			for (int i = 0; i < iTree.getItemCount(); i++) {
+				openedNodes(nodes, iTree.getItem(i));
+			}
 		}
 		String sideBarCookie = "";
 		if (iDisclosurePanel.isOpen()) sideBarCookie += "Root";
@@ -242,9 +259,22 @@ public class UniTimeSideBar extends Composite {
 			for (String node: sideBarCookie.split("\\|"))
 				nodes.add(node);
 		iDisclosurePanel.setOpen(nodes.contains("Root"));
-		for (int i = 0; i < iTree.getItemCount(); i++) {
-			openNodes(nodes, iTree.getItem(i));
-		}
+		if (iStackPanel.isAttached())
+			for (int i = 0 ; i < iStackPanel.getWidgetCount(); i++) {
+				if (nodes.contains(iStackPanel.getStackText(i))) {
+					iStackPanel.showStack(i);
+				}
+				if (iStackPanel.getWidget(i) instanceof Tree) {
+					Tree t = (Tree)iStackPanel.getWidget(i);
+					for (int j = 0; j < t.getItemCount(); j++) {
+						openNodes(nodes, t.getItem(j));
+					}
+				}
+			}
+		else
+			for (int i = 0; i < iTree.getItemCount(); i++) {
+				openNodes(nodes, iTree.getItem(i));
+			}
 	}
 	
 	public void insert(final RootPanel panel) {
@@ -275,7 +305,7 @@ public class UniTimeSideBar extends Composite {
 	}
 	
 	private void initMenu(List<MenuInterface> items) {
-		for (MenuInterface item: items) {
+		for (final MenuInterface item: items) {
 			if (item.isSeparator()) continue;
 			iTree.addItem(generateItem(item));
 			if (item.hasSubMenus()) {
@@ -284,13 +314,33 @@ public class UniTimeSideBar extends Composite {
 					if (!subItem.isSeparator())
 						tree.addItem(generateItem(subItem));
 				iStackPanel.add(tree, item.getName());
+				tree.addOpenHandler(new OpenHandler<TreeItem>() {
+					@Override
+					public void onOpen(OpenEvent<TreeItem> event) {
+						saveState();
+					}
+				});
+				tree.addCloseHandler(new CloseHandler<TreeItem>() {
+					@Override
+					public void onClose(CloseEvent<TreeItem> event) {
+						saveState();
+					}
+				});
 			} else {
-				Tree tree = new Tree(RESOURCES, true);
-				tree.addItem(generateItem(item));
-				iStackPanel.add(tree, item.getName());
+				iStackPanel.add(new Command() {
+					@Override
+					public void execute() {
+						if (item.isGWT()) 
+							openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
+						else {
+							openUrl(item.getName(), item.getPage(), item.getTarget());
+						}
+					}
+				}, item.getName());
 			}
 		}
 		restoreState();
+		iStackPanel.setActive(true);
 	}
 	
 	protected void openUrl(final String name, final String url, String target) {
@@ -366,4 +416,54 @@ public class UniTimeSideBar extends Composite {
 			@org.unitime.timetable.gwt.client.UniTimeSideBar::notifyFrameLoaded()();
 		}
 	}-*/;
+	
+	public class MyStackPanel extends StackPanel {
+		private Element body = null;
+		private boolean iActive = false;
+		
+		public MyStackPanel() {
+			super();
+			body = DOM.getFirstChild(getElement());
+		}
+		
+		public String getStackText(int index) {
+		    if (index >= getWidgetCount()) {
+		        return null;
+		      }
+		      Element tdWrapper = DOM.getChild(DOM.getChild(body, index * 2), 0);
+		      return DOM.getFirstChild(tdWrapper).getInnerText();
+		}
+		
+		public void add(Command cmd, String text) {
+			add(new DummyWidget(cmd), text);
+		}
+		
+		public void showStack(int index) {
+			if (iActive) {
+				if (getWidget(index) instanceof DummyWidget) {
+					((DummyWidget)getWidget(index)).getClickCommand().execute();
+				} else {
+					super.showStack(index);
+					saveState();
+				}
+			} else {
+				super.showStack(index);
+			}
+		}
+		
+		public void setActive(boolean active) {
+			iActive = active;
+		}
+		
+		public class DummyWidget extends SimplePanel {
+			private Command iClickCommand = null;
+			public DummyWidget(Command cmd) {
+				getElement().getStyle().setDisplay(Display.NONE);
+				iClickCommand = cmd;
+			}
+			public Command getClickCommand() {
+				return iClickCommand;
+			}
+		}
+	}
 }
