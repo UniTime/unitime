@@ -217,7 +217,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		iWorking = true;
     		try {
     			((TimetableModel)currentSolution().getModel()).switchStudents();
-   	    		//((TimetableModel)currentSolution().getModel()).checkStudentEnrollments(Progress.getInstance(currentSolution().getModel()));
+   	    		//new EnrollmentCheck((TimetableModel)currentSolution().getModel()).checkStudentEnrollments(Progress.getInstance(currentSolution().getModel()));
     		} finally {
     			iWorking = false;
     			Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
@@ -244,7 +244,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 			iWorking = true;
 			if (currentSolution().getBestInfo()!=null)
 				currentSolution().restoreBest();
-			if (getProperties().getPropertyBoolean("General.SwitchStudents",false)) {
+			if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
 				((TimetableModel)currentSolution().getModel()).switchStudents();
 				currentSolution().saveBest();
 			}
@@ -1391,8 +1391,8 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
                 getProperties().remove("Xml.SaveBest");
                 getProperties().remove("Xml.SaveInitial");
                 getProperties().remove("Xml.SaveCurrent");
-                getProperties().remove("Xml.ExportStudentSectioning");
-                getProperties().remove("Xml.ShowNames");
+                getProperties().setProperty("Xml.ExportStudentSectioning", "true");
+                getProperties().setProperty("Xml.ShowNames", "true");
                 getProperties().remove("Xml.IdConv");
             }
             return ret.toByteArray();

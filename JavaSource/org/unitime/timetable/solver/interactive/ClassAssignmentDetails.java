@@ -663,6 +663,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        		sb.append(getOther().getRoom()[i].toHtml(false,false));
 		        	}
 		        sb.append(props.isEmpty()?"":" <i>"+props+"</i>");
+		        sb.append(" <i>" + iInfo.getCurriculumText() + "</i>");
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);

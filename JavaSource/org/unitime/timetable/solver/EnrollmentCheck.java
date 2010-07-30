@@ -47,7 +47,7 @@ import net.sf.cpsolver.ifs.util.Progress;
  * @author Tomas Muller
  */
 public class EnrollmentCheck {
-    private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.00",new java.text.DecimalFormatSymbols(Locale.US));
+    private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.##",new java.text.DecimalFormatSymbols(Locale.US));
     private TimetableModel iModel = null;
     
     public EnrollmentCheck(TimetableModel model) {
@@ -193,8 +193,12 @@ public class EnrollmentCheck {
         if (iModel.getStudentDistanceConflicts()!=iModel.countStudentDistanceConflicts()) {
             p.warn("Inconsistent number of distance student conflits (counter="+iModel.getStudentDistanceConflicts()+", actual="+iModel.countStudentDistanceConflicts()+").");
         }
-        if (iModel.getCommitedStudentConflicts()!=iModel.countCommitedStudentConflicts()) {
-            p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts()+").");
+        if (iModel.getCommittedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(false)) {
+            p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts(false)+").");
+        }
+        if (iModel.getViolatedCommitttedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false)) {
+            p.warn("Inconsistent number of committed student course conflits (counter="+iModel.getCommitedStudentConflicts()+
+            		", actual="+(iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false))+").");
         }
         p.setPhase("Checking class limits...", iModel.variables().size());
         for (Lecture lecture: iModel.variables()) {
@@ -211,7 +215,7 @@ public class EnrollmentCheck {
                     p.warn("Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
             }
         }
-        //iModel.checkJenrl(p);
+        // checkJenrl(p);
         p.setPhase("Checking enrollments...", iModel.getAllStudents().size());
         for (Iterator i=iModel.getAllStudents().iterator();i.hasNext();) {
             p.incProgress();

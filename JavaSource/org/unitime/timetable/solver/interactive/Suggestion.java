@@ -563,6 +563,7 @@ public class Suggestion implements Serializable, Comparable {
 		        }
 		        sb.append("</td><td "+(iSecondInfo==null?"":"rowspan='2'")+" nowrap>");
 		        sb.append(props.isEmpty()?"":" <i>"+props+"</i>");
+		        sb.append(" <i>" + iInfo.getCurriculumText()+"</i>");
 		        if (iSecondInfo!=null) {
 		        	sb.append("</td></tr><tr><td nowrap>");
 		        	sb.append(iSecondInfo.getClazz().toHtml(link && !iInfo.isCommited())+" ");

@@ -35,12 +35,19 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 	protected org.hibernate.Session iHibSession;
 	protected Hashtable<String, Set<WeightedStudentId>> iDemandsForPemId = new Hashtable<String, Set<WeightedStudentId>>();
 	protected Hashtable<Long, Hashtable<String, Set<WeightedStudentId>>> iDemandsForSubjectCourseNbr = new Hashtable<Long, Hashtable<String,Set<WeightedStudentId>>>();
+	protected Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = null;
+	protected Long iSessionId = null;
 	
 	public LastLikeStudentCourseDemands(DataProperties properties) {
 	}
 	
+	public boolean isMakingUpStudents() { return false; }
+	
+	public boolean isWeightStudentsToFillUpOffering() { return false; }
+	
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
 		iHibSession = hibSession;
+		iSessionId = session.getUniqueId();
 	}
 	
 	protected Hashtable<String, Set<WeightedStudentId>> loadSubject(SubjectArea subject) {
@@ -96,6 +103,30 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 			studentIds = new HashSet<WeightedStudentId>();
 		
 		return studentIds;
+	}
+	
+	public Set<WeightedCourseOffering> getCourses(Long studentId) {
+		if (iStudentRequests == null) {
+			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
+			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
+					"select s.uniqueId, co " +
+					"from LastLikeCourseDemand x inner join x.student s, CourseOffering co where " +
+					"x.subjectArea.session.uniqueId = :sessionId and "+
+					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
+					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+					.setLong("sessionId", iSessionId)
+					.setCacheable(true).list()) {
+				Long sid = (Long)o[0];
+				CourseOffering co = (CourseOffering)o[1];
+				Set<WeightedCourseOffering> courses = iStudentRequests.get(sid);
+				if (courses == null) {
+					courses = new HashSet<WeightedCourseOffering>();
+					iStudentRequests.put(sid, courses);
+				}
+				courses.add(new WeightedCourseOffering(co));
+			}
+		}
+		return iStudentRequests.get(studentId);
 	}
 
 }

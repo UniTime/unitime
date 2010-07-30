@@ -33,25 +33,36 @@ import net.sf.cpsolver.ifs.util.Progress;
 public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	private org.hibernate.Session iHibSession = null;
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
+	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private boolean iCacheAll = true;
 	
 	public EnrolledStudentCourseDemands(DataProperties properties) {
 		iCacheAll = properties.getPropertyBoolean("EnrolledStudentsCourseDemands.CacheAll", iCacheAll);
 	}
 
+	public boolean isMakingUpStudents() { return false; }
+	
+	public boolean isWeightStudentsToFillUpOffering() { return false; }
+
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
 		iHibSession = hibSession;
 		if (iCacheAll)
-			for (Object[] o: (List<Object[]>)hibSession.createQuery("select e.courseOffering.uniqueId, e.student.uniqueId from StudentClassEnrollment e where " +
+			for (Object[] o: (List<Object[]>)hibSession.createQuery("select e.courseOffering, e.student.uniqueId from StudentClassEnrollment e where " +
 					"e.courseOffering.subjectArea.session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
-				Long courseId = (Long)o[0];
+				CourseOffering course = (CourseOffering)o[0];
 				Long studentId = (Long)o[1];
-				Set<WeightedStudentId> students = iDemands.get(courseId);
+				Set<WeightedStudentId> students = iDemands.get(course.getUniqueId());
 				if (students == null) {
 					students = new HashSet<WeightedStudentId>();
-					iDemands.put(courseId, students);
+					iDemands.put(course.getUniqueId(), students);
 				}
 				students.add(new WeightedStudentId(studentId));
+				Set<WeightedCourseOffering> courses = iStudentRequests.get(studentId);
+				if (courses == null) {
+					courses = new HashSet<WeightedCourseOffering>();
+					iStudentRequests.put(studentId, courses);
+				}
+				courses.add(new WeightedCourseOffering(course));
 			}
 	}
 
@@ -64,6 +75,18 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 			students.add(new WeightedStudentId(studentId));
 		}
 		return students;
+	}
+	
+	public Set<WeightedCourseOffering> getCourses(Long studentId) {
+		if (iCacheAll)
+			return iStudentRequests.get(studentId);
+		HashSet<WeightedCourseOffering> ret = new HashSet<WeightedCourseOffering>();
+		for (CourseOffering course: (List<CourseOffering>)iHibSession.createQuery(
+				"select distinct e.courseOffering from StudentClassEnrollment e where " +
+				"e.student.uniqueId = :studentId").setLong("studentId", studentId).list()) {
+			ret.add(new WeightedCourseOffering(course));
+		}
+		return ret;
 	}
 
 }

@@ -94,12 +94,12 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		if (ofTheSameProblem) {
 			setNrStudentConflicts(lecture.countStudentConflictsOfTheSameProblem(placement));
 			setNrHardStudentConflicts(lecture.countHardStudentConflictsOfTheSameProblem(placement));
-			setNrCommitedStudentConflicts(0);
+			setNrCommitedStudentConflicts(lecture.countCommittedStudentConflictsOfTheSameProblem(placement));
 			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflictsOfTheSameProblem(placement));
 		} else {
 			setNrStudentConflicts(lecture.countStudentConflicts(placement)+lecture.getCommitedConflicts(placement));
 			setNrHardStudentConflicts(lecture.countHardStudentConflicts(placement));
-			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement));
+			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement) + lecture.countCommittedStudentConflicts(placement));
 			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflicts(placement));
 		}
 		setNrRoomLocations(lecture.nrRoomLocations());

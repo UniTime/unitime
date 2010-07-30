@@ -98,7 +98,7 @@
 %>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=studentConflictsReportTable%>
-		<tr><td colspan='8'><tt:displayPrefLevelLegend/></td></tr>
+		<tr><td colspan='9'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
 <% 
 	}

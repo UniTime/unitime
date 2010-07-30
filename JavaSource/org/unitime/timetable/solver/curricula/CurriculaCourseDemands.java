@@ -41,6 +41,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 public class CurriculaCourseDemands implements StudentCourseDemands {
 	private static Log sLog = LogFactory.getLog(CurriculaCourseDemands.class);
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
+	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private long lastStudentId = -1;
 	private int iGenMoveLastIndexIn = 0;
 	private int iGenMoveLastIndexOut = 0;
@@ -49,6 +50,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	public CurriculaCourseDemands(DataProperties properties) {
 		iFallback = new ProjectedStudentCourseDemands(properties);
 	}
+	
+	public boolean isMakingUpStudents() { return true; }
+	
+	public boolean isWeightStudentsToFillUpOffering() { return false; }
 
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
 		iFallback.init(hibSession, progress, session);
@@ -78,6 +83,9 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		// Makeup students
 		List<WeightedStudentId> students = new ArrayList<WeightedStudentId>();
 		for (int i = 0; i < clasf.getNrStudents(); i++) {
+			WeightedStudentId student  = new WeightedStudentId(lastStudentId--);
+			student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), null);
+			student.setCurriculum(clasf.getCurriculum().getAbbv());
 			students.add(new WeightedStudentId(lastStudentId--));
 		}
 		
@@ -133,6 +141,14 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 				iDemands.put(bucket.getCourse().getCourse().getUniqueId(), courseStudents);
 			}
 			courseStudents.addAll(bucket.getStudents());
+			for (WeightedStudentId student: bucket.getStudents()) {
+				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getStudentId());
+				if (courses == null) {
+					courses = new HashSet<WeightedCourseOffering>();
+					iStudentRequests.put(student.getStudentId(), courses);
+				}
+				courses.add(new WeightedCourseOffering(bucket.getCourse().getCourse(), student.getWeight()));
+			}
 		}
 	}
 	
@@ -199,6 +215,11 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	public Set<WeightedStudentId> getDemands(CourseOffering course) {
 		if (iDemands.isEmpty()) return iFallback.getDemands(course);
 		return iDemands.get(course.getUniqueId());
+	}
+	
+	public Set<WeightedCourseOffering> getCourses(Long studentId) {
+		if (iStudentRequests.isEmpty()) return iFallback.getCourses(studentId);
+		return iStudentRequests.get(studentId);
 	}
 
 	protected class Bucket {
