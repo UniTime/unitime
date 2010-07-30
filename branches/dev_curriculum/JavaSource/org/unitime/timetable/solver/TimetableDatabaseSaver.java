@@ -410,33 +410,35 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		iProgress.setPhase("Saving student enrollments ...", getModel().variables().size());
-    		for (Lecture lecture: getModel().variables()) {
-    			Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
-    			if (clazz==null) continue;
-    			iProgress.trace("save "+lecture.getName());
-				Solution solution = getSolution(lecture, hibSession);
-				if (solution==null) {
-						iProgress.warn("Unable to save student enrollments for class "+lecture+"  -- none or wrong solution group assigned to the class");
-						continue;
-				}
-    			
-    			for (Iterator i2=lecture.students().iterator();i2.hasNext();) {
-    				Student student = (Student)i2.next();
-    				StudentEnrollment enrl = new StudentEnrollment();
-    				enrl.setStudentId(student.getId());
-    				enrl.setClazz(clazz);
-    				enrl.setSolution(solution);
-    				hibSession.save(enrl);
-    				if (++batchIdx % BATCH_SIZE == 0) {
-    					hibSession.flush(); hibSession.clear();
+    		if (getModel().getProperties().getPropertyBoolean("General.SaveStudentEnrollments", true)) {
+        		iProgress.setPhase("Saving student enrollments ...", getModel().variables().size());
+        		for (Lecture lecture: getModel().variables()) {
+        			Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
+        			if (clazz==null) continue;
+        			iProgress.trace("save "+lecture.getName());
+    				Solution solution = getSolution(lecture, hibSession);
+    				if (solution==null) {
+    						iProgress.warn("Unable to save student enrollments for class "+lecture+"  -- none or wrong solution group assigned to the class");
+    						continue;
     				}
-    			}
-    			
-    			iProgress.incProgress();
+        			
+        			for (Iterator i2=lecture.students().iterator();i2.hasNext();) {
+        				Student student = (Student)i2.next();
+        				StudentEnrollment enrl = new StudentEnrollment();
+        				enrl.setStudentId(student.getId());
+        				enrl.setClazz(clazz);
+        				enrl.setSolution(solution);
+        				hibSession.save(enrl);
+        				if (++batchIdx % BATCH_SIZE == 0) {
+        					hibSession.flush(); hibSession.clear();
+        				}
+        			}
+        			
+        			iProgress.incProgress();
+        		}
+        		
+        		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		}
-    		
-    		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		/**  // is this needed?
     		iProgress.setPhase("Saving joint enrollments ...", getModel().getJenrlConstraints().size());

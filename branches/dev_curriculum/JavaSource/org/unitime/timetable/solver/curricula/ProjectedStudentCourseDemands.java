@@ -27,6 +27,7 @@ import java.util.Set;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -94,6 +95,7 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 			String majorCode = (String)d[5];
 			WeightedStudentId studentId = new WeightedStudentId((Long)d[1], getProjection(areaAbbv, clasfCode, majorCode));
 			studentId.setStats(areaAbbv, clasfCode, majorCode);
+			studentId.setCurriculum(areaAbbv + "/" + majorCode);
 			Set<WeightedStudentId> studentIds = demandsForCourseNbr.get(courseNbr);
 			if (studentIds == null) {
 				studentIds = new HashSet<WeightedStudentId>();
@@ -116,5 +118,34 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 		}
 
 		return demandsForCourseNbr;
+	}
+	
+	public Set<WeightedCourseOffering> getCourses(Long studentId) {
+		if (iStudentRequests == null) {
+			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
+			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
+					"select s.uniqueId, co, " +
+					"a.academicAreaAbbreviation, f.code, m.code " +
+					"from LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications c inner join s.posMajors m " +
+					"inner join c.academicArea a inner join c.academicClassification f, CourseOffering co where " +
+					"x.subjectArea.session.uniqueId = :sessionId and "+
+					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
+					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+					.setLong("sessionId", iSessionId)
+					.setCacheable(true).list()) {
+				Long sid = (Long)o[0];
+				CourseOffering co = (CourseOffering)o[1];
+				String areaAbbv = (String)o[2];
+				String clasfCode = (String)o[3];
+				String majorCode = (String)o[4];
+				Set<WeightedCourseOffering> courses = iStudentRequests.get(sid);
+				if (courses == null) {
+					courses = new HashSet<WeightedCourseOffering>();
+					iStudentRequests.put(sid, courses);
+				}
+				courses.add(new WeightedCourseOffering(co, getProjection(areaAbbv, clasfCode, majorCode)));
+			}
+		}
+		return iStudentRequests.get(studentId);
 	}
 }

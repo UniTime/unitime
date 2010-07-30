@@ -2741,4 +2741,69 @@
 		<sql>update %SCHEMA%.external_room set coordinate_x = null where coordinate_x = -1</sql>
 		<sql>update %SCHEMA%.external_room set coordinate_y = null where coordinate_y = -1</sql>
 	</update>
+	<update version="57" date="30-Jul-2010" comment="Solver changes (coordinates, curricula)">
+		<!--  deprecated parameters -->
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Weight last-like students (deprecated)' where name = 'General.WeightStudents'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Student Conflict: Distance Limit (after 75min class, deprecated)' where name = 'Student.DistanceLimit75min'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Student Conflict: Distance Limit (deprecated)' where name = 'Student.DistanceLimit'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Do not load committed student conflicts (deprecated)' where name = 'General.IgnoreCommittedStudentConflicts'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Students sectioning' where name = 'General.SwitchStudents'</sql>
+		<!-- cleanup test defs -->
+		<sql>delete from %SCHEMA%.solver_parameter_def where name in ('Curriculum.StudentCourseDemadsClass', 'Distances.Ellipsoid', 'Distances.Speed', 'General.LoadCommittedAssignments', 'General.CommittedStudentConflicts')</sql>
+		<!--  MySQL changes -->
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="GID_BASIC">select uniqueid from %SCHEMA%.solver_parameter_group where name='Basic'</mysql>
+		<mysql into="ORD_BASIC">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_BASIC%</mysql>
+		<mysql into="GID_GENERAL">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="ORD_GENERAL">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_GENERAL%</mysql>
+		<mysql into="GID_DISTANCE">select uniqueid from %SCHEMA%.solver_parameter_group where name='Distance'</mysql>
+		<mysql into="ORD_DISTANCE">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_DISTANCE%</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%, 'Curriculum.StudentCourseDemadsClass', 'Projected Student Course Demands', 'Student course demands', 'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Enrolled Student Course Demands)', %ORD_GENERAL%+1, 1, %GID_GENERAL%),
+			(%ID%+1, 'General.CommittedStudentConflicts', 'Load', 'Committed student conflicts', 'enum(Load,Compute,Ignore)',  %ORD_GENERAL%+2, 1, %GID_GENERAL%),
+			(%ID%+2, 'Distances.Ellipsoid', 'DEFAULT', 'Ellipsoid to be used to compute distances', 'enum(DEFAULT,LEGACY,WGS84,GRS80,Airy1830,Intl1924,Clarke1880,GRS67)', %ORD_DISTANCE%+1, 1, %GID_DISTANCE%),
+			(%ID%+3, 'Distances.Speed', '67.0', 'Student speed in meters per minute', 'double', %ORD_DISTANCE%+2, 1, %GID_DISTANCE%),
+			(%ID%+4, 'General.LoadCommittedAssignments', 'false', 'Load committed assignments', 'boolean', %ORD_BASIC%+1, 1, %GID_BASIC%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<!-- Oracle changes -->
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Curriculum.StudentCourseDemadsClass' as name, 'Projected Student Course Demands' as default_value,
+			'Student course demands' as description,
+			'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Enrolled Student Course Demands)' as type,
+			15 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'General.CommittedStudentConflicts' as name, 'Load' as default_value,
+			'Committed student conflicts' as description,
+			'enum(Load,Compute,Ignore)' as type, 16 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'General.LoadCommittedAssignments' as name, 'false' as default_value,
+			'Load committed assignments' as description,
+			'boolean' as type, 4 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Basic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Distances.Ellipsoid' as name, 'DEFAULT' as default_value,
+			'Ellipsoid to be used to compute distances' as description,
+			'enum(DEFAULT,LEGACY,WGS84,GRS80,Airy1830,Intl1924,Clarke1880,GRS67)' as type, 5 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Distance')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Distances.Speed' as name, '67.0' as default_value,
+			'Student speed in meters per minute' as description,
+			'double' as type, 6 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Distance')
+		</plsql>
+	</update>
 </dbupdate>

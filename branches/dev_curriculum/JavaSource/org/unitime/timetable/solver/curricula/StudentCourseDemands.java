@@ -27,6 +27,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
 public interface StudentCourseDemands {
 	/**
@@ -44,10 +45,25 @@ public interface StudentCourseDemands {
 	 */
 	public Set<WeightedStudentId> getDemands(CourseOffering course);
 	
+	/**
+	 * Return true if students are made up (i.e, it does not make any sense to save them with the solution).
+	 */
+	public boolean isMakingUpStudents();
+	
+	/**
+	 * Return true if students should be weghted so that the offering is filled in completely.
+	 */
+	public boolean isWeightStudentsToFillUpOffering();
+	
+	/**
+	 * List of courses for a student
+	 */
+	public Set<WeightedCourseOffering> getCourses(Long studentId);
+	
 	public static class WeightedStudentId {
 		private long iStudentId;
 		private float iWeight;
-		private String iAreaAbbv, iClasfCode, iMajorCode;
+		private String iAreaAbbv, iClasfCode, iMajorCode, iCurriculum;
 		
 		public WeightedStudentId(long studentId, float weight) {
 			iStudentId = studentId;
@@ -72,6 +88,13 @@ public interface StudentCourseDemands {
 			iMajorCode = majorCode;
 		}
 		
+		public void setCurriculum(String curriculum) { iCurriculum = curriculum; }
+		
+		public String getArea() { return iAreaAbbv; }
+		public String getClasf() { return iClasfCode; }
+		public String getMajor() { return iMajorCode; }
+		public String getCurriculum() { return iCurriculum; }
+		
 		public boolean match(String areaAbbv, String clasfCode, String majorCode) {
 			return areaAbbv.equals(iAreaAbbv) && clasfCode.equals(iClasfCode) && majorCode.equals(iMajorCode);
 		}
@@ -93,6 +116,42 @@ public interface StudentCourseDemands {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof WeightedStudentId)) return false;
 			return getStudentId() == ((WeightedStudentId)o).getStudentId();
+		}
+	}
+	
+	public static class WeightedCourseOffering {
+		private transient CourseOffering iCourseOffering = null;
+		private long iCourseOfferingId;
+		private float iWeight = 1.0f;
+		
+		public WeightedCourseOffering(CourseOffering courseOffering) {
+			iCourseOffering = courseOffering;
+			iCourseOfferingId = courseOffering.getUniqueId();
+		}
+		
+		public WeightedCourseOffering(Long courseOfferingId) {
+			iCourseOfferingId = courseOfferingId;
+		}
+		
+		public WeightedCourseOffering(CourseOffering courseOffering, float weight) {
+			this(courseOffering);
+			iWeight = weight;
+		}
+		
+		public WeightedCourseOffering(Long courseOfferingId, float weight) {
+			this(courseOfferingId);
+			iWeight = weight;
+		}
+		
+		public Long getCourseOfferingId() { return iCourseOfferingId; }
+		
+		public CourseOffering getCourseOffering() { 
+			if (iCourseOffering == null) iCourseOffering = CourseOfferingDAO.getInstance().get(iCourseOfferingId);
+			return iCourseOffering;
+		}
+		
+		public float getWeight() {
+			return iWeight;
 		}
 	}
 }

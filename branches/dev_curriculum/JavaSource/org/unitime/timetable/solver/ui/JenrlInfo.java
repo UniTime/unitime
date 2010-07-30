@@ -20,9 +20,13 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.dom4j.Element;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -38,6 +42,7 @@ import net.sf.cpsolver.ifs.solver.Solver;
  * @author Tomas Muller
  */
 public class JenrlInfo implements TimetableInfo, Serializable {
+	private static DecimalFormat sDF = new DecimalFormat("0.#");
 	private static final long serialVersionUID = 1L;
 	public static int sVersion = 1; // to be able to do some changes in the future
 	public double iJenrl = 0.0;
@@ -48,6 +53,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public boolean iIsCommited = false;
 	public double iDistance = 0.0;
 	public ClassAssignmentDetails iFirst = null, iSecond = null;
+	private TreeSet<Map.Entry<String, Double>> iCurriculum2nrStudents = null;
 	
 	public JenrlInfo() {
 		super();
@@ -76,8 +82,25 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			setIsHard(first.areStudentConflictsHard(second));
 			setIsFixed(first.nrTimeLocations()==1 && second.nrTimeLocations()==1);
 			setIsDistance(!firstPl.getTimeLocation().hasIntersection(secondPl.getTimeLocation()));
+			setIsCommited(jc.areStudentConflictsCommitted());
 			if (isDistance())
 				setDistance(Placement.getDistanceInMeters(((TimetableModel)jc.getModel()).getDistanceMetric(),firstPl,secondPl));
+		}
+		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
+		for (Student student: jc.first().sameStudents(jc.second())) {
+			if (student.getCurriculum() == null) continue;
+			Double nrStudents = curriculum2nrStudents.get(student.getCurriculum());
+			curriculum2nrStudents.put(student.getCurriculum(), jc.getJenrlWeight(student) + (nrStudents == null ? 0.0 : nrStudents));
+		}
+		if (!curriculum2nrStudents.isEmpty()) {
+			iCurriculum2nrStudents = new TreeSet<Map.Entry<String, Double>>(new Comparator<Map.Entry<String, Double>>() {
+				public int compare(Map.Entry<String, Double> a, Map.Entry<String, Double> b) {
+					int cmp = b.getValue().compareTo(a.getValue());
+					if (cmp != 0) return cmp;
+					return a.getKey().compareTo(b.getKey());
+				}
+			});
+			iCurriculum2nrStudents.addAll(curriculum2nrStudents.entrySet());
 		}
 	}
 	
@@ -88,8 +111,9 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		return getCommitedJenrlInfos(null, lecture);
 	}
 	
-	public static Hashtable getCommitedJenrlInfos(Solver solver, Lecture lecture) {
-		Hashtable ret = new Hashtable();
+	public static Hashtable<Long, JenrlInfo> getCommitedJenrlInfos(Solver solver, Lecture lecture) {
+		Hashtable<Long, JenrlInfo> ret = new Hashtable<Long, JenrlInfo>();
+		Hashtable<Long, Hashtable<String, Double>> assignment2curriculum2nrStudents = new Hashtable<Long, Hashtable<String,Double>>();
 		Placement placement = (Placement)lecture.getAssignment();
 		if (placement==null) return ret;
 		for (Iterator i2=lecture.students().iterator();i2.hasNext();) {
@@ -98,7 +122,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			if (conflicts==null) continue;
 			for (Iterator i3=conflicts.iterator();i3.hasNext();) {
 				Placement pl = (Placement)i3.next();
-				JenrlInfo info = (JenrlInfo)ret.get(pl.getAssignmentId());
+				JenrlInfo info = ret.get(pl.getAssignmentId());
 				if (info==null) {
 					info = new JenrlInfo();
 					info.setIsCommited(true);
@@ -112,7 +136,31 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 						info.setDistance(Placement.getDistanceInMeters(((TimetableModel)lecture.getModel()).getDistanceMetric(),placement,pl));
 					ret.put(pl.getAssignmentId(),info);
 				}
-				info.setJenrl(info.getJenrl()+1.0);
+				if (student.getCurriculum() != null) {
+					Hashtable<String, Double> curriculum2nrStudents = assignment2curriculum2nrStudents.get(pl.getAssignmentId());
+					if (curriculum2nrStudents == null) {
+						curriculum2nrStudents = new Hashtable<String, Double>();
+						assignment2curriculum2nrStudents.put(pl.getAssignmentId(), curriculum2nrStudents);
+					}
+					Double nrStudents = curriculum2nrStudents.get(student.getCurriculum());
+					curriculum2nrStudents.put(student.getCurriculum(), student.getJenrlWeight(lecture, pl.variable()) + (nrStudents == null ? 0.0 : nrStudents));
+				}
+				info.setJenrl(info.getJenrl() + student.getJenrlWeight(lecture, pl.variable()));
+			}
+		}
+		for (Map.Entry<Long, Hashtable<String, Double>> entry: assignment2curriculum2nrStudents.entrySet()) {
+			Long assignmentId = entry.getKey();
+			Hashtable<String, Double> curriculum2nrStudents = entry.getValue();
+			if (!curriculum2nrStudents.isEmpty()) {
+				JenrlInfo info = ret.get(assignmentId);
+				info.iCurriculum2nrStudents = new TreeSet<Map.Entry<String, Double>>(new Comparator<Map.Entry<String, Double>>() {
+					public int compare(Map.Entry<String, Double> a, Map.Entry<String, Double> b) {
+						int cmp = b.getValue().compareTo(a.getValue());
+						if (cmp != 0) return cmp;
+						return a.getKey().compareTo(b.getKey());
+					}
+				});
+				info.iCurriculum2nrStudents.addAll(curriculum2nrStudents.entrySet());
 			}
 		}
 		return ret;
@@ -132,6 +180,37 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public void setIsCommited(boolean isCommited) { iIsCommited = isCommited; }
 	public double getDistance() { return iDistance; }
 	public void setDistance(double distance) { iDistance = distance; }
+	
+	public boolean hasCurricula() { return iCurriculum2nrStudents != null; }
+	public String getCurriculumText() {
+		if (!hasCurricula()) return "";
+		int top = 0;
+		double cover = 0.0;
+		double last = 0.0;
+		double total = 0.0;
+		double first = 0.0;
+		for (Map.Entry<String, Double> entry: iCurriculum2nrStudents) {
+			total += entry.getValue();
+		}
+		String ret = "";
+		for (Map.Entry<String, Double> entry: iCurriculum2nrStudents) {
+			double fraction = entry.getValue() / total;
+			// if (top == 0 || (top < 4 && cover < 0.75 && last <= 2 * fraction && first <= 5 * fraction)) {
+			if (top < 3) {
+				if (top == 0) first = fraction;
+				top++;
+				cover += fraction;
+				last = fraction;
+				if (!ret.isEmpty()) ret += ", ";
+				ret += sDF.format(100.0 * fraction) + "% " + entry.getKey();
+				if (fraction == 1.0) return entry.getKey();
+			} else {
+				ret += ", ...";
+				break;
+			}
+		}
+		return ret;
+	}
 	
 	public void load(Element root) throws Exception {
 		int version = Integer.parseInt(root.attributeValue("version"));

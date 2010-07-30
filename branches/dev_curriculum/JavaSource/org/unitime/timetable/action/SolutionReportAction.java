@@ -609,17 +609,20 @@ public class SolutionReportAction extends Action {
 
 	public PdfWebTable getStudentConflictsReportTable(HttpServletRequest request, StudentConflictsReport report, boolean noHtml) {
 		WebTable.setOrder(request.getSession(),"solutionReports.studConf.ord",request.getParameter("studconf_ord"),-1);
-		PdfWebTable webTable = new PdfWebTable( 8,
+		PdfWebTable webTable = new PdfWebTable( 9,
    	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited"},
-   				new String[] {"left", "left", "left", "left", "left", "left","left","left"},
+   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
+   				new String[] {"left", "left", "left", "left", "left", "left","left","left", "left"},
    				null);
         webTable.setRowStyle("white-space:nowrap");
         
         try {
         	int idx = 0;
+        	int total[] = new int [] { 0, 0, 0, 0, 0};
         	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
         		JenrlInfo g = (JenrlInfo)i.next();
+        		
+        		if (Math.round(g.getJenrl()) <= 0) continue;
         		
         		StringBuffer rSB = new StringBuffer();
         		for (int j=0;j<g.getFirst().getRoom().length;j++)
@@ -639,7 +642,8 @@ public class SolutionReportAction extends Action {
         				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
         				(g.isDistance()?String.valueOf(Math.round(10.0*g.getDistance()))+"m":""),
         				(noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":""),
-        				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":"")
+        				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":""),
+        				g.getCurriculumText()
         			},
         			new Comparable[] {
         				new Double(g.getJenrl()),
@@ -647,9 +651,39 @@ public class SolutionReportAction extends Action {
         				new Integer(g.isHard()?1:0),
         				new Double(g.getDistance()),
         				new Integer(g.isFixed()?1:0),
-        				new Integer(g.isCommited()?1:0)
+        				new Integer(g.isCommited()?1:0),
+        				null
         			});
+        		
+        		total[0] += Math.round(g.getJenrl());
+        		if (g.isHard()) total[1] += Math.round(g.getJenrl());
+        		if (g.isDistance()) total[2] += Math.round(g.getJenrl());
+        		if (g.isFixed()) total[3] += Math.round(g.getJenrl());
+        		if (g.isCommited()) total[4] += Math.round(g.getJenrl());
         	}
+        	
+    		webTable.addLine(null,
+    	    		new String[] {
+        				String.valueOf(total[0]),
+        				"<i>Total</i>",
+        				"",
+        				"",
+        				String.valueOf(total[1]),
+        				String.valueOf(total[2]),
+        				String.valueOf(total[3]),
+        				String.valueOf(total[4]),
+        				""
+        			},
+        			new Comparable[] {
+        				new Double(total[0]),
+        				new DuoComparable("",""), null, null,
+        				new Integer(total[1]),
+        				new Double(1000.0 * total[2]),
+        				new Integer(total[3]),
+        				new Integer(total[4]),
+        				null
+        			});
+        	
         } catch (Exception e) {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
