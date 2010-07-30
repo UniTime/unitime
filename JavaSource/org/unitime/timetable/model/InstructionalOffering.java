@@ -146,13 +146,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	}
 
 
-	/**
-	 * Return the value associated with the column: instrOfferingConfigs
-	 */
-	public java.util.Set getInstrOfferingConfigs () {
-		return super.getInstrOfferingConfigs();
-	}
-
 	public Department getDepartment() {
 		return (this.getControllingCourseOffering().getDepartment());
 	}
