@@ -104,7 +104,7 @@
 
 		<set
 			name="rooms"
-			lazy="true" 
+			lazy="false" 
 			table="ASSIGNED_ROOMS"
 			>
 			<cache include="non-lazy" usage="read-write"/>
