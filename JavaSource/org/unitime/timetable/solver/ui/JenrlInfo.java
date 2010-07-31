@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public boolean iIsCommited = false;
 	public double iDistance = 0.0;
 	public ClassAssignmentDetails iFirst = null, iSecond = null;
-	private TreeSet<Map.Entry<String, Double>> iCurriculum2nrStudents = null;
+	private TreeSet<CurriculumInfo> iCurriculum2nrStudents = null;
 	
 	public JenrlInfo() {
 		super();
@@ -93,14 +92,10 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			curriculum2nrStudents.put(student.getCurriculum(), jc.getJenrlWeight(student) + (nrStudents == null ? 0.0 : nrStudents));
 		}
 		if (!curriculum2nrStudents.isEmpty()) {
-			iCurriculum2nrStudents = new TreeSet<Map.Entry<String, Double>>(new Comparator<Map.Entry<String, Double>>() {
-				public int compare(Map.Entry<String, Double> a, Map.Entry<String, Double> b) {
-					int cmp = b.getValue().compareTo(a.getValue());
-					if (cmp != 0) return cmp;
-					return a.getKey().compareTo(b.getKey());
-				}
-			});
-			iCurriculum2nrStudents.addAll(curriculum2nrStudents.entrySet());
+			iCurriculum2nrStudents = new TreeSet<CurriculumInfo>();
+			for (Map.Entry<String, Double> entry: curriculum2nrStudents.entrySet()) {
+				iCurriculum2nrStudents.add(new CurriculumInfo(entry.getKey(), entry.getValue()));
+			}
 		}
 	}
 	
@@ -153,14 +148,10 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			Hashtable<String, Double> curriculum2nrStudents = entry.getValue();
 			if (!curriculum2nrStudents.isEmpty()) {
 				JenrlInfo info = ret.get(assignmentId);
-				info.iCurriculum2nrStudents = new TreeSet<Map.Entry<String, Double>>(new Comparator<Map.Entry<String, Double>>() {
-					public int compare(Map.Entry<String, Double> a, Map.Entry<String, Double> b) {
-						int cmp = b.getValue().compareTo(a.getValue());
-						if (cmp != 0) return cmp;
-						return a.getKey().compareTo(b.getKey());
-					}
-				});
-				info.iCurriculum2nrStudents.addAll(curriculum2nrStudents.entrySet());
+				info.iCurriculum2nrStudents = new TreeSet<CurriculumInfo>();
+				for (Map.Entry<String, Double> e: curriculum2nrStudents.entrySet()) {
+					info.iCurriculum2nrStudents.add(new CurriculumInfo(e.getKey(), e.getValue()));
+				}
 			}
 		}
 		return ret;
@@ -189,12 +180,12 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		double last = 0.0;
 		double total = 0.0;
 		double first = 0.0;
-		for (Map.Entry<String, Double> entry: iCurriculum2nrStudents) {
-			total += entry.getValue();
+		for (CurriculumInfo i: iCurriculum2nrStudents) {
+			total += i.getNrStudents();
 		}
 		String ret = "";
-		for (Map.Entry<String, Double> entry: iCurriculum2nrStudents) {
-			double fraction = entry.getValue() / total;
+		for (CurriculumInfo i: iCurriculum2nrStudents) {
+			double fraction = i.getNrStudents() / total;
 			// if (top == 0 || (top < 4 && cover < 0.75 && last <= 2 * fraction && first <= 5 * fraction)) {
 			if (top < 3) {
 				if (top == 0) first = fraction;
@@ -202,8 +193,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 				cover += fraction;
 				last = fraction;
 				if (!ret.isEmpty()) ret += ", ";
-				ret += sDF.format(100.0 * fraction) + "% " + entry.getKey();
-				if (fraction == 1.0) return entry.getKey();
+				ret += sDF.format(100.0 * fraction) + "% " + i.getName();
+				if (fraction == 1.0) return i.getName();
 			} else {
 				ret += ", ...";
 				break;
@@ -243,5 +234,24 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 
 	public boolean saveToFile() {
 		return false;
+	}
+	
+	public static class CurriculumInfo implements Serializable, Comparable<CurriculumInfo> {
+		private static final long serialVersionUID = 1L;
+		private String iName;
+		private double iNrStudents;
+		public CurriculumInfo(String name, double nrStudents) {
+			iName = name;
+			iNrStudents = nrStudents;
+		}
+		
+		public String getName() { return iName; }
+		public double getNrStudents() { return iNrStudents; }
+		
+		public int compareTo(CurriculumInfo i) {
+			int cmp = Double.compare(i.getNrStudents(), getNrStudents());
+			if (cmp != 0) return cmp;
+			return getName().compareTo(i.getName());
+		}
 	}
 }
