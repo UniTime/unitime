@@ -112,6 +112,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.solver.curricula.EnrolledStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
@@ -2140,9 +2141,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	getModel().getProperties().setProperty("General.DepartmentIds",iDepartmentIds);
 		
-        Hashtable solutions = null;
+        Hashtable<Long, Solution> solutions = null;
         if (iSolutionId!=null && iSolutionId.length>0) {
-        	solutions = new Hashtable();
+        	solutions = new Hashtable<Long, Solution>();
         	String note="";
         	for (int i=0;i<iSolutionId.length;i++) {
         		Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
@@ -2156,15 +2157,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			note += solution.getNote();
         		}
         		solutions.put(solution.getOwner().getUniqueId(),solution);
-        		if (!solution.isCommited().booleanValue()) iLoadStudentEnrlsFromSolution = false;
         	}
-        	for (int i=0;iLoadStudentEnrlsFromSolution && i<iSolverGroupId.length;i++)
-        		if (!solutions.containsKey(iSolverGroupId[i]))
-        			iLoadStudentEnrlsFromSolution = false;
         	getModel().getProperties().setProperty("General.Note",note);
             String solutionIdStr = "";
         	for (int i=0;i<iSolverGroupId.length;i++) {
-        		Solution solution = (Solution)solutions.get(iSolverGroupId[i]);
+        		Solution solution = solutions.get(iSolverGroupId[i]);
         		if (solution!=null) {
         			if (solutionIdStr.length()>0) solutionIdStr += ",";
         			solutionIdStr += solution.getUniqueId().toString();
@@ -2492,7 +2489,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			iProgress.warn("Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offering.getLimit().intValue()+").");
 
     		if (totalCourseLimit > offering.getLimit().intValue())
-    			iProgress.warn("Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
+    			iProgress.info("Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
     		
     		if (totalCourseLimit == 0) continue;
     		
@@ -2661,17 +2658,18 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
 
-    	if (solutions!=null && iLoadStudentEnrlsFromSolution) {
-        	for (int idx=0;idx<iSolverGroupId.length;idx++) {
-        		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
-        		List studentEnrls = hibSession
-        			.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.uniqueId=:solutionId")
-        			.setInteger("solutionId", solution.getUniqueId().intValue())
-        			.list();
-        		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
-        		Hashtable subpart2students = new Hashtable();
-            	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
-            		Object o[] = (Object[])i1.next();
+    	Hashtable<Student, Set<Lecture>> iPreEnrollments = new Hashtable<Student, Set<Lecture>>();
+    	if (iLoadStudentEnrlsFromSolution) {
+    		if (iStudentCourseDemands instanceof EnrolledStudentCourseDemands) {
+    			// Load real student enrollments (not saved last-like)
+    			List<Object[]> enrollments = (List<Object[]>)hibSession.createQuery(
+    					"select distinct e.student.uniqueId, e.clazz.uniqueId from " +
+    					"StudentClassEnrollment e, Class_ c where " + 
+    					"e.courseOffering.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
+    					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
+    			iProgress.setPhase("Loading current student enrolments  ...", enrollments.size());
+    			int totalEnrollments = 0;
+    			for (Object[] o: enrollments) {
             		Long studentId = (Long)o[0];
             		Long clazzId = (Long)o[1];
             		
@@ -2680,15 +2678,106 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     
                     Lecture lecture = (Lecture)iLectures.get(clazzId);
                     if (lecture!=null) {
-                    	if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+
+                		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                		if (preEnrollments == null) {
+                			preEnrollments = new HashSet<Lecture>();
+                			iPreEnrollments.put(student, preEnrollments);
+                		}
+                		preEnrollments.add(lecture);
+                		
+                		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                     		student.addLecture(lecture);
                     		lecture.addStudent(student);
+                    		totalEnrollments ++;
                     	}
                     }
-                    
-                    iProgress.incProgress();
+
+    				iProgress.incProgress();
+    			}
+    			iProgress.info("Loaded " + totalEnrollments + " enrollments of " + iPreEnrollments.size() + " students.");
+    		} else {
+    			// Load enrollments from selected / committed solutions
+            	for (int idx=0;idx<iSolverGroupId.length;idx++) {
+            		Solution solution = (solutions == null ? null : solutions.get(iSolverGroupId[idx]));
+            		List studentEnrls = null;
+            		if (solution != null) {
+            			studentEnrls = hibSession
+            				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.uniqueId=:solutionId")
+            				.setLong("solutionId", solution.getUniqueId())
+            				.list();
+            		} else {
+            			studentEnrls = hibSession
+        				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.owner.uniqueId=:sovlerGroupId and e.solution.commited = true")
+        				.setLong("sovlerGroupId", iSolverGroupId[idx])
+        				.list();
+            		}
+            		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
+            		Hashtable subpart2students = new Hashtable();
+                	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
+                		Object o[] = (Object[])i1.next();
+                		Long studentId = (Long)o[0];
+                		Long clazzId = (Long)o[1];
+                		
+                        Student student = (Student)iStudents.get(studentId);
+                        if (student==null) continue;
+                        
+                        Lecture lecture = (Lecture)iLectures.get(clazzId);
+                        if (lecture!=null) {
+                    		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                    		if (preEnrollments == null) {
+                    			preEnrollments = new HashSet<Lecture>();
+                    			iPreEnrollments.put(student, preEnrollments);
+                    		}
+                    		preEnrollments.add(lecture);
+
+                        	if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+                        		student.addLecture(lecture);
+                        		lecture.addStudent(student);
+                        	}
+                        }
+                        
+                        iProgress.incProgress();
+                	}
             	}
-        	}
+            	
+            	if (getModel().getProperties().getPropertyBoolean("Global.LoadOtherCommittedStudentEnrls", true)) {
+                	// Other committed enrollments
+        			List<Object[]> enrollments = (List<Object[]>)hibSession.createQuery(
+        					"select distinct e.studentId, e.clazz.uniqueId from " +
+        					"StudentEnrollment e, Class_ c where " + 
+        					"e.solution.commited = true and e.solution.owner.uniqueId not in (" + iSolverGroupIds + ") and " +
+        					"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
+        					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
+        			iProgress.setPhase("Loading other committed student enrolments  ...", enrollments.size());
+
+        			for (Object[] o: enrollments) {
+                		Long studentId = (Long)o[0];
+                		Long clazzId = (Long)o[1];
+                		
+                        Student student = (Student)iStudents.get(studentId);
+                        if (student==null) continue;
+                        
+                        Lecture lecture = (Lecture)iLectures.get(clazzId);
+                        if (lecture!=null) {
+
+                    		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                    		if (preEnrollments == null) {
+                    			preEnrollments = new HashSet<Lecture>();
+                    			iPreEnrollments.put(student, preEnrollments);
+                    		}
+                    		preEnrollments.add(lecture);
+                    		
+                    		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+                        		student.addLecture(lecture);
+                        		lecture.addStudent(student);
+                        	}
+                        }
+
+        				iProgress.incProgress();
+        			}
+        		}
+    		}
     	}
     	
     	if (!hibSession.isOpen())
@@ -2713,8 +2802,37 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		iProgress.incProgress();
     	}
+
     	for (Enumeration e=iStudents.elements();e.hasMoreElements();) {
     		((Student)e.nextElement()).clearDistanceCache();
+    	}
+    	
+    	if (!iPreEnrollments.isEmpty()) {
+        	iProgress.setPhase("Checking loaded enrollments ....", iPreEnrollments.size());
+        	for (Map.Entry<Student, Set<Lecture>> entry: iPreEnrollments.entrySet()) {
+        		iProgress.incProgress();
+        		Student student = entry.getKey();
+        		Set<Lecture> lectures = entry.getValue();
+        		for (Lecture lecture: lectures) {
+        			if (!lecture.students().contains(student)) {
+        				iProgress.warn("Student " + student.getId() + " is supposed to be enrolled to " + getClassLabel(lecture));
+        			}
+        		}
+        		for (Lecture lecture: student.getLectures()) {
+        			if (!lectures.contains(lecture)) {
+        				Lecture instead = null;
+        				if (lecture.sameStudentsLectures() != null) {
+            				for (Lecture other: lecture.sameStudentsLectures()) {
+            					if (lectures.contains(other)) instead = other;
+            				}
+        				}
+        				if (instead != null)
+            				iProgress.warn("Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ", he/she should have " + getClassLabel(instead) + " instead.");
+        				else
+            				iProgress.info("Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ".");
+        			}
+        		}
+        	}
     	}
         
     	if (!hibSession.isOpen())
