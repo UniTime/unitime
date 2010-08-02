@@ -31,23 +31,36 @@
 		<item>
 			<name>Look &amp; feel changes</name>
 			<description>
-				<line>Menu on the top of the page</line>
+				<line>Menu on the top of the page or on the side
+					<line>Can be changed in user preferences (user.menu.style property)</line>
+				</line>
 				<line>User / solver info -> solver, user, session components under page title</line>
 				<line>Back button (does not work well in Chrome)</line>
 				<line>Help page opens in a dialog</line>
 				<line>A disclaimer message (in HTML format) can be added at the bottom of every page.
 					<line>Value of the application property tmtbl.page.disclaimer.</line>
 				</line>
+				<line>Room &amp; building coordinates can be in GPS
+					<line>A map showing the room's location can be displayed  on the Room Detail page</line>
+				</line>
 			</description>
 		</item>
 		<item>
 			<name>Solver changes</name>
 			<description>
-				<line>Use projected course demands (last-like + curricula projections)</line>
 				<line>Added ability to use GPS coordinates
 					<line>Back-to-back distance student conflict are now based on break times</line>
+					<line>Course demand can be based on
+						<line>Last-like student enrollments</line>
+						<line>Projected course demands (last-like + curriculum projections)</line>
+						<line>Curriculum-based (with or without last-like information)</line>
+						<line>Current student enrollments</line>
+					</line>
 				</line>
-				<line>Use curriculum-based course demands</line>
+				<line>Student sectioning in course timetabling changes
+					<line>Students can be moved among committed classes as well</line>
+					<line>May or may not include courses that do not have any classes of the problem (default only for curriculum-based demands where students are made up)</line>
+				</line>
 			</description>
 		</item>
 		<item>
