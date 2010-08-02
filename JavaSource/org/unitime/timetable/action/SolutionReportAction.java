@@ -640,7 +640,7 @@ public class SolutionReportAction extends Action {
         				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
         				rSB.toString(),
         				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
-        				(g.isDistance()?String.valueOf(Math.round(10.0*g.getDistance()))+"m":""),
+        				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
         				(noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":""),
         				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":""),
         				g.getCurriculumText()
