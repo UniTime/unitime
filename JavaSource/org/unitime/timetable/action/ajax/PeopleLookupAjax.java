@@ -123,7 +123,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from Staff s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -138,7 +138,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from EventContact s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -154,7 +154,7 @@ public class PeopleLookupAjax extends Action {
         if (session==null || session.length()==0) return people; 
         String q = "select s from Student s where s.session.uniqueId="+session+" and ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -169,7 +169,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from TimetableManager s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
