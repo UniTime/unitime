@@ -66,41 +66,28 @@ public class HibSessionFilter implements Filter {
 		if (request.getAttribute("TimeStamp")==null)
 			request.setAttribute("TimeStamp", new Double(JProf.currentTimeSec()));
 		
-		Session hibSession = null;
 		try {
-			hibSession = new _RootDAO().getSession();
-			//if(!hibSession.getTransaction().isActive()) {
-		        //Debug.info("Starting transaction");
-			    //hibSession.beginTransaction();
-			//}
-			
 			// Process request
 			chain.doFilter(request,response);
 			
-			// Close hibernate session, after request is processed
-			//if(!hibSession.getTransaction().isActive()) {
-				//Debug.info("Committing transaction");
-			    //hibSession.getTransaction().commit();
-			//}
-
-			if(hibSession!=null && hibSession.isOpen()) {
+			Session hibSession = new _RootDAO().getCurrentThreadSession();
+			if(hibSession != null && hibSession.isOpen()) {
+				Debug.info("Closing an openned hibernate session");
 			    hibSession.close();
 			}
-		} 
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
             // Rollback only
-            //ex.printStackTrace();
+			Session hibSession = new _RootDAO().getCurrentThreadSession();
             try {
-                if (hibSession!=null && hibSession.isOpen() && hibSession.getTransaction().isActive()) {
+                if (hibSession != null && hibSession.isOpen() && hibSession.getTransaction().isActive()) {
                     Debug.debug("Trying to rollback database transaction after exception");
                     hibSession.getTransaction().rollback();
                 }
             } catch (Throwable rbEx) {
                 Debug.error(rbEx);
             } finally {
-    			if(hibSession!=null && hibSession.isOpen()) {
-    			    hibSession.close();
-    			}
+    			if(hibSession != null && hibSession.isOpen())
+    				hibSession.close();
             }
             
             if (ex instanceof ServletException) throw (ServletException)ex;
