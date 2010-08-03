@@ -18,9 +18,9 @@
  --%>
 <%@ page language="java" pageEncoding="ISO-8859-1"%>
 <%@ page import="org.unitime.timetable.form.RollForwardSessionForm"%>
-<%@page import="org.unitime.timetable.util.SessionRollForward"%>
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html"%>
+<%@ page import="org.unitime.timetable.util.SessionRollForward"%>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
  
@@ -54,7 +54,15 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
-		
+	<logic:notEmpty name="table" scope="request">
+		<TR><TD>
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+				<bean:write name="table" scope="request" filter="false"/>
+			</TABLE>
+		</TD></TR>
+		<TR><TD>&nbsp;</TD></TR>
+	</logic:notEmpty>
+			
 		<tr>
 			<td valign="top" nowrap ><b>Session To Roll Foward To: </b>
 			<html:select style="width:200;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
