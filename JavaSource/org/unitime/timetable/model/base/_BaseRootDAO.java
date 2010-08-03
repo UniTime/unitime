@@ -186,6 +186,34 @@ public abstract class _BaseRootDAO {
 			}
 		}
 	}
+	
+	/**
+	 * Get current thread opened session, if there is any
+	 */
+	public Session getCurrentThreadSession() {
+		return getCurrentThreadSession(getConfigurationFileName());
+	}
+	
+	/**
+	 * Get current thread opened session, if there is any
+	 */
+	private Session getCurrentThreadSession(String configFile) {
+		if (configFile == null) {
+			if (sessions != null) {
+				Session session = (Session) sessions.get();
+				if (session != null) return session;
+			}
+		} else {
+			if (mappedSessions != null) {
+				java.util.HashMap map = (java.util.HashMap) mappedSessions.get();
+				if (map != null) {
+					Session session = (Session) map.get(configFile);
+					return session;
+				}
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Close all sessions for the current thread
