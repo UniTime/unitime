@@ -72,7 +72,6 @@ public class HibSessionFilter implements Filter {
 			
 			Session hibSession = new _RootDAO().getCurrentThreadSession();
 			if(hibSession != null && hibSession.isOpen()) {
-				Debug.info("Closing an openned hibernate session");
 			    hibSession.close();
 			}
 		} catch (Throwable ex) {
