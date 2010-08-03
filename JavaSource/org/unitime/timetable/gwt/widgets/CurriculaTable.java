@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.ToolBox;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -493,6 +494,20 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
+				MenuItem disp = new MenuItem(CurriculumCookie.getInstance().getCurriculaDisplayMode().isCurriculumAbbv() ? "Show Names" : "Show Abbreviations", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						boolean abbv = !CurriculumCookie.getInstance().getCurriculaDisplayMode().isCurriculumAbbv();
+						CurriculumCookie.getInstance().getCurriculaDisplayMode().setCurriculumAbbv(abbv);
+						for (int i = 0; i < iData.size(); i ++) {
+							CurriculumInterface c = iData.get(i);
+							iTable.setText(1 + c.getRow(), 1, abbv ? c.getAbbv() : c.getName());
+						}
+					}
+				});
+				disp.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(disp);
 				MenuItem sort = new MenuItem("Sort by Curricula", true, new Command() {
 					@Override
 					public void execute() {
@@ -518,6 +533,20 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
+				MenuItem disp = new MenuItem(CurriculumCookie.getInstance().getCurriculaDisplayMode().isAreaAbbv() ? "Show Names" : "Show Abbreviations", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						boolean abbv = !CurriculumCookie.getInstance().getCurriculaDisplayMode().isAreaAbbv();
+						CurriculumCookie.getInstance().getCurriculaDisplayMode().setAreaAbbv(abbv);
+						for (int i = 0; i < iData.size(); i ++) {
+							CurriculumInterface c = iData.get(i);
+							iTable.setText(1 + c.getRow(), 2, abbv ? c.getAcademicArea().getAbbv() : c.getAcademicArea().getName());
+						}
+					}
+				});
+				disp.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(disp);
 				MenuItem sort = new MenuItem("Sort by Academic Area", true, new Command() {
 					@Override
 					public void execute() {
@@ -543,6 +572,24 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
+				MenuItem disp = new MenuItem(CurriculumCookie.getInstance().getCurriculaDisplayMode().isMajorAbbv() ? "Show Names" : "Show Codes", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						boolean abbv = !CurriculumCookie.getInstance().getCurriculaDisplayMode().isMajorAbbv();
+						CurriculumCookie.getInstance().getCurriculaDisplayMode().setMajorAbbv(abbv);
+						for (int i = 0; i < iData.size(); i ++) {
+							CurriculumInterface c = iData.get(i);
+							iTable.setHTML(1 + c.getRow(), 3, abbv ? c.getMajorCodes(", ") : c.getMajorNames("<br>"));
+							if (abbv)
+								iTable.getCellFormatter().addStyleName(1 + c.getRow(), 3, "unitime-Wrap");
+							else
+								iTable.getCellFormatter().removeStyleName(1 + c.getRow(), 3, "unitime-Wrap");
+						}
+					}
+				});
+				disp.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(disp);
 				MenuItem sort = new MenuItem("Sort by Major(s)", true, new Command() {
 					@Override
 					public void execute() {
@@ -568,6 +615,22 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
+				for (final DeptMode m: DeptMode.values()) {
+					if (m == CurriculumCookie.getInstance().getCurriculaDisplayMode().getDeptMode()) continue;
+					MenuItem disp = new MenuItem("Show " + m.getName(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							CurriculumCookie.getInstance().getCurriculaDisplayMode().setDeptMode(m);
+							for (int i = 0; i < iData.size(); i ++) {
+								CurriculumInterface c = iData.get(i);
+								iTable.setText(1 + c.getRow(), 4, CurriculumCookie.getInstance().getCurriculaDisplayMode().formatDepartment(c.getDepartment()));
+							}
+						}
+					});
+					disp.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(disp);
+				}
 				MenuItem sort = new MenuItem("Sort by Department", true, new Command() {
 					@Override
 					public void execute() {
@@ -826,10 +889,16 @@ public class CurriculaTable extends Composite {
 			iTable.setText(1 + c.getRow(), col++, "");
 		}
 		iTable.getCellFormatter().addStyleName(1 + c.getRow(), 0, "unitime-NoPrint");
-		iTable.setText(1 + c.getRow(), col++, c.getAbbv());
-		iTable.setText(1 + c.getRow(), col++, c.getAcademicArea().getName());
-		iTable.setHTML(1 + c.getRow(), col++, (c.hasMajors() && c.getMajors().size() > 3 ? c.getMajorCodes(", ") : c.getMajorNames("<br>")));
-		iTable.setText(1 + c.getRow(), col++, c.getDepartment().getLabel());
+		DisplayMode m = CurriculumCookie.getInstance().getCurriculaDisplayMode();
+		iTable.setText(1 + c.getRow(), col++, m.isCurriculumAbbv() ? c.getAbbv() : c.getName());
+		iTable.setText(1 + c.getRow(), col++, m.isAreaAbbv() ? c.getAcademicArea().getAbbv() : c.getAcademicArea().getName());
+		
+		iTable.setHTML(1 + c.getRow(), col, m.isMajorAbbv() ? c.getMajorCodes(", ") : c.getMajorNames("<br>"));
+		if (m.isMajorAbbv())
+			iTable.getCellFormatter().addStyleName(1 + c.getRow(), col, "unitime-Wrap");
+		col++;
+				
+		iTable.setText(1 + c.getRow(), col++, m.formatDepartment(c.getDepartment()));
 		iTable.getFlexCellFormatter().setHorizontalAlignment(1 + c.getRow(), col, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.setText(1 + c.getRow(), col++, (c.getLastLike() == null ? "" : c.getLastLikeString()));
 		iTable.getFlexCellFormatter().setHorizontalAlignment(1 + c.getRow(), col, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -1115,5 +1184,96 @@ public class CurriculaTable extends Composite {
 	
 	public void setEditClassificationHandler(EditClassificationHandler h) {
 		iEditClassificationHandler = h;
+	}
+	
+	public static enum DeptMode {
+		CODE('0', "Code"),
+		ABBV('1', "Abbreviation"),
+		NAME('2', "Name"),
+		ABBV_NAME('3', "Abbv - Name"),
+		CODE_NAME('4', "Code - Name");
+
+		private char iCode;
+		private String iName;
+		
+		DeptMode(char code, String name) { iCode = code; iName = name; }
+		
+		public String getName() { return iName; }
+		public char getCode() { return iCode; }
+	}
+	
+	public abstract static class DisplayMode {
+		private boolean iCurriculumAbbv = true;
+		private boolean iAreaAbbv = false;
+		private boolean iMajorAbbv = false;
+		private DeptMode iDeptMode = DeptMode.ABBV_NAME;
+		
+		public boolean isCurriculumAbbv() {
+			return iCurriculumAbbv;
+		}
+		
+		public void setCurriculumAbbv(boolean curriculumAbbv) {
+			iCurriculumAbbv = curriculumAbbv;
+			changed();
+		}
+		
+		public boolean isAreaAbbv() {
+			return iAreaAbbv;
+		}
+		
+		public void setAreaAbbv(boolean areaAbbv) {
+			iAreaAbbv = areaAbbv;
+			changed();
+		}
+		
+		public boolean isMajorAbbv() {
+			return iMajorAbbv;
+		}
+		
+		public void setMajorAbbv(boolean majorAbbv) {
+			iMajorAbbv = majorAbbv;
+			changed();
+		}
+		
+		public DeptMode getDeptMode() {
+			return iDeptMode;
+		}
+		public void setDeptMode(DeptMode deptMode) {
+			iDeptMode = deptMode; changed();
+		}
+		
+		public String formatDepartment(DepartmentInterface dept) {
+			switch (iDeptMode) {
+			case CODE:
+				return dept.getCode();
+			case ABBV:
+				return (dept.getAbbv() == null || dept.getAbbv().isEmpty() ? dept.getCode() : dept.getAbbv());
+			case NAME:
+				return dept.getName();
+			case ABBV_NAME:
+				return dept.getCode() + " - " + dept.getName();
+			default:
+				return (dept.getAbbv() == null || dept.getAbbv().isEmpty() ? dept.getCode() : dept.getAbbv()) + " - " + dept.getName();
+			}
+		}
+
+		public String toString() {
+			String ret = "";
+			if (iCurriculumAbbv) ret += "c";
+			if (iAreaAbbv) ret += "a";
+			if (iMajorAbbv) ret += "m";
+			ret += iDeptMode.getCode();
+			return ret;
+		}
+		
+		public void fromString(String str) {
+			iCurriculumAbbv = (str.indexOf('c') >= 0);
+			iAreaAbbv = (str.indexOf('a') >= 0);
+			iMajorAbbv = (str.indexOf('m') >= 0);
+			for (DeptMode m: DeptMode.values())
+				if (str.indexOf(m.getCode()) >= 0) { iDeptMode = m; break; }
+		}
+		
+		public abstract void changed();
 	}
 }

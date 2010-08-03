@@ -551,8 +551,8 @@ public class CurriculumEdit extends Composite {
 			iCurriculumMajors.setVisible(false);
 			iCurriculumMajorsHTML.setVisible(true);
 		}
-		iCurriculumMajorsHTML.setHTML(iCurriculum.getMajorNames("<br>"));
-		iCurriculumMajorsPrint.setHTML(iCurriculum.getMajorNames("<br>"));
+		iCurriculumMajorsHTML.setHTML(iCurriculum.getCodeMajorNames("<br>"));
+		iCurriculumMajorsPrint.setHTML(iCurriculum.getCodeMajorNames("<br>"));
 		loadMajors(detailsEditable);
 		iCurriculumMajors.setEnabled(iCurriculum.isEditable() && detailsEditable);
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
@@ -673,8 +673,9 @@ public class CurriculumEdit extends Composite {
 							iCurriculumMajors.clear();
 							int idx = 0;
 							boolean allSelected = true;
+							CurriculumCookie.getInstance().getCurriculaDisplayMode();
 							for (MajorInterface m: result) {
-								iCurriculumMajors.addItem(m.getName(), m.getId().toString());
+								iCurriculumMajors.addItem(m.getCode() + " - " + m.getName(), m.getId().toString());
 								if (iCurriculum != null && iCurriculum.hasMajors()) {
 									iCurriculumMajors.setItemSelected(idx, iCurriculum.getMajors().contains(m));
 									if (iCurriculum.getMajors().contains(m)) {
@@ -804,7 +805,7 @@ public class CurriculumEdit extends Composite {
 		iAreas.clear(); iAreas.addAll(result);
 		iCurriculumArea.clear();
 		for (AcademicAreaInterface area: result) {
-			iCurriculumArea.addItem(area.getName(), area.getId().toString());
+			iCurriculumArea.addItem(area.getAbbv() + " - " + area.getName(), area.getId().toString());
 		}
 	}
 	
