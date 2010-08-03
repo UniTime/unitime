@@ -22,12 +22,18 @@ package org.unitime.timetable.gwt.widgets;
 import com.google.gwt.user.client.Cookies;
 
 public class CurriculumCookie {
-	private CourseCurriculaTable.Type iType;
-	private CurriculaCourses.Mode iMode;
+	private CourseCurriculaTable.Type iType = CourseCurriculaTable.Type.EXP;
+	private CurriculaCourses.Mode iMode = CurriculaCourses.Mode.NONE;
 	private boolean iPercent = true;
 	private boolean iRulesPercent = true;
 	private boolean iRulesShowLastLike = false;
 	private boolean iCourseDetails = false;
+	private CurriculaTable.DisplayMode iCurMode = new CurriculaTable.DisplayMode() {
+		@Override
+		public void changed() {
+			save();
+		}
+	};
 	
 	private static CurriculumCookie sInstance = null;
 	
@@ -42,8 +48,10 @@ public class CurriculumCookie {
 				iRulesPercent = "T".equals(values[3]);
 				iRulesShowLastLike = "T".equals(values[4]);
 				iCourseDetails = "T".equals(values[5]);
+				iCurMode.fromString(values[6]);
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 	}
 	
 	private void save() {
@@ -53,7 +61,8 @@ public class CurriculumCookie {
 			(iPercent ? "T": "F") + ":" +
 			(iRulesPercent ? "T" : "F") + ":" +
 			(iRulesShowLastLike ? "T" : "F") + ":" +
-			(iCourseDetails ? "T": "F")
+			(iCourseDetails ? "T": "F") + ":" +
+			iCurMode.toString()
 			;
 		Cookies.setCookie("UniTime:Curriculum", cookie);
 	}
@@ -116,6 +125,10 @@ public class CurriculumCookie {
 	public void setCurriculaCoursesDetails(boolean details) {
 		iCourseDetails = details;
 		save();
+	}
+	
+	public CurriculaTable.DisplayMode getCurriculaDisplayMode() {
+		return iCurMode;
 	}
 
 }
