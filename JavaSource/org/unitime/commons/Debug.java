@@ -62,6 +62,13 @@ public class Debug {
         LogFactory.getLog(ToolBox.getCaller()).error(message);
 	}
 
+	/** Prints an error message to log.
+	 * @param message an error message
+	 */
+	public static synchronized void error(String message, Throwable t) {
+        LogFactory.getLog(ToolBox.getCaller()).error(message, t);
+	}
+
 	/** Prints a warning message to log.
 	 * @param message a warning message
 	 */
