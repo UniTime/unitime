@@ -46,7 +46,6 @@ public class DataImportForm extends ActionForm {
 	private boolean iExportCurricula;
     private boolean iEmail = false;
     private String iAddr = null;
-    private String iLog = null;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -72,7 +71,6 @@ public class DataImportForm extends ActionForm {
 		iFile = null;
 		iExportCourses = false; iExportFinalExams = false; iExportMidtermExams = false; iExportTimetable = false; iExportCurricula = false;
 		iEmail = false; iAddr = null;
-		iLog = null;
         TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
         if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
 	}
@@ -98,7 +96,18 @@ public class DataImportForm extends ActionForm {
     public String getAddress() { return iAddr; }
     public void setAddress(String addr) { iAddr = addr; }
     
-    public String getLog() { return iLog; }
-    public void setLog(String log) { iLog = log; }
+    public Object clone() {
+    	DataImportForm form = new DataImportForm();
+    	form.iFile = iFile;
+    	form.iOp = iOp;
+    	form.iExportCourses= iExportCourses;
+    	form.iExportFinalExams = iExportFinalExams;
+    	form.iExportMidtermExams = iExportMidtermExams;
+    	form.iExportTimetable = iExportTimetable;
+    	form.iExportCurricula = iExportCurricula;
+        form.iEmail = iEmail;
+        form.iAddr = iAddr;
+        return form;
+    }
 }
 

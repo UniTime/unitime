@@ -1,6 +1,5 @@
 package org.unitime.timetable.dataexchange;
 
-import java.io.PrintWriter;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -18,7 +17,7 @@ public class DataExchangeHelper {
     public static String sLogLevelWarn = "WARN";
     public static String sLogLevelError = "ERROR";
     public static String sLogLevelFatal = "FATAL";
-    protected PrintWriter iTextLog;
+    protected LogWriter iTextLog;
     protected org.hibernate.Session iHibSession = null;
     protected org.hibernate.Transaction iTx = null;
     protected int iFlushIfNeededCounter = 0;
@@ -58,10 +57,10 @@ public class DataExchangeHelper {
     public DataExchangeHelper() {
     }
     
-    public void setLog(PrintWriter out) {
+    public void setLog(LogWriter out) {
         iTextLog = out;
     }
-    public PrintWriter getLog() {
+    public LogWriter getLog() {
         return iTextLog;
     }
     public void log(String level, String message, Throwable t) {
@@ -196,16 +195,20 @@ public class DataExchangeHelper {
         return (BaseExport)sExportRegister.get(type).getConstructor().newInstance();
     }
     
-    public static void importDocument(Document document, TimetableManager manager, PrintWriter log) throws Exception {
+    public static void importDocument(Document document, TimetableManager manager, LogWriter log) throws Exception {
         BaseImport imp = createImportBase(document.getRootElement().getName());
         imp.setLog(log);
         imp.setManager(manager);
         imp.loadXml(document.getRootElement());
     }
     
-    public static Document exportDocument(String rootName, Session session, Properties parameters, PrintWriter log) throws Exception {
+    public static Document exportDocument(String rootName, Session session, Properties parameters, LogWriter log) throws Exception {
         BaseExport exp = createExportBase(rootName);
         exp.setLog(log);
         return exp.saveXml(session, parameters);
+    }
+    
+    public interface LogWriter {
+    	public void println(String message);
     }
 }
