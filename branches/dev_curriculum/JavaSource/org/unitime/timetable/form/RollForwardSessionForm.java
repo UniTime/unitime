@@ -639,4 +639,51 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setClassPrefsAction(String classPrefsAction) {
 		this.classPrefsAction = classPrefsAction;
 	}
+	
+	public void copyTo(RollForwardSessionForm form) {
+		form.subjectAreas = subjectAreas;
+		form.subjectAreaIds = subjectAreaIds;
+		form.buttonAction = buttonAction;
+		form.isAdmin = isAdmin;
+		form.toSessions = toSessions;
+		form.fromSessions = fromSessions;
+		form.sessionToRollForwardTo = sessionToRollForwardTo;
+		form.rollForwardDatePatterns = rollForwardDatePatterns;
+		form.sessionToRollDatePatternsForwardFrom = sessionToRollDatePatternsForwardFrom;
+		form.rollForwardTimePatterns = rollForwardTimePatterns;
+		form.sessionToRollTimePatternsForwardFrom = sessionToRollTimePatternsForwardFrom;
+		form.rollForwardDepartments = rollForwardDepartments;
+		form.sessionToRollDeptsFowardFrom = sessionToRollDeptsFowardFrom;
+		form.rollForwardManagers = rollForwardManagers;
+		form.sessionToRollManagersForwardFrom = sessionToRollManagersForwardFrom;
+		form.rollForwardRoomData = rollForwardRoomData;
+		form.sessionToRollRoomDataForwardFrom = sessionToRollRoomDataForwardFrom;
+		form.rollForwardSubjectAreas = rollForwardSubjectAreas;
+		form.sessionToRollSubjectAreasForwardFrom = sessionToRollSubjectAreasForwardFrom;
+		form.rollForwardInstructorData = rollForwardInstructorData;
+		form.sessionToRollInstructorDataForwardFrom = sessionToRollInstructorDataForwardFrom;
+		form.rollForwardCourseOfferings = rollForwardCourseOfferings;
+		form.sessionToRollCourseOfferingsForwardFrom = sessionToRollCourseOfferingsForwardFrom;
+		form.availableRollForwardSubjectAreas = availableRollForwardSubjectAreas;
+		form.rollForwardSubjectAreaIds = rollForwardSubjectAreaIds;
+		form.rollForwardClassInstructors = rollForwardClassInstructors;
+		form.rollForwardClassInstrSubjectIds = rollForwardClassInstrSubjectIds;
+		form.addNewCourseOfferings = addNewCourseOfferings;
+		form.addNewCourseOfferingsSubjectIds = addNewCourseOfferingsSubjectIds;
+		form.rollForwardExamConfiguration = rollForwardExamConfiguration;
+		form.sessionToRollExamConfigurationForwardFrom = sessionToRollExamConfigurationForwardFrom;
+		form.rollForwardMidtermExams = rollForwardMidtermExams;
+		form.rollForwardFinalExams = rollForwardFinalExams;
+		form.rollForwardStudents = rollForwardStudents;
+		form.rollForwardStudentsMode = rollForwardStudentsMode;
+		form.subpartLocationPrefsAction = subpartLocationPrefsAction;
+		form.subpartTimePrefsAction = subpartTimePrefsAction;
+		form.classPrefsAction = classPrefsAction;		
+	}
+	
+	public Object clone() {
+		RollForwardSessionForm form = new RollForwardSessionForm();
+		copyTo(form);
+		return form;
+	}
 }

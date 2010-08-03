@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,14 +35,20 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.SessionRollForward;
+import org.unitime.timetable.util.queue.QueueItem;
+import org.unitime.timetable.util.queue.QueueProcessor;
 
 
 /** 
@@ -76,62 +85,27 @@ public class RollForwardSessionAction extends Action {
 		User user = Web.getUser(request.getSession());
         // Get operation
         String op = request.getParameter("op");		  
-        
-        SessionRollForward sessionRollForward = new SessionRollForward();
-        			               
-   
+           
         if (op != null && op.equals(rsc.getMessage("button.rollForward"))) {
             ActionMessages errors = rollForwardSessionForm.validate(mapping, request);
-
-            if(errors.size() == 0 && rollForwardSessionForm.getRollForwardDatePatterns().booleanValue()){
-	        	sessionRollForward.rollDatePatternsForward(errors, rollForwardSessionForm);
-	        }
-            if(errors.size() == 0 && rollForwardSessionForm.getRollForwardTimePatterns().booleanValue()){
-	        	sessionRollForward.rollTimePatternsForward(errors, rollForwardSessionForm);
-	        }
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardDepartments().booleanValue()){
-	        	sessionRollForward.rollDepartmentsForward(errors, rollForwardSessionForm);	
-	        }
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardManagers().booleanValue()){
-        		sessionRollForward.rollManagersForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardRoomData().booleanValue()){
-        		sessionRollForward.rollBuildingAndRoomDataForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardSubjectAreas().booleanValue()){
-        		sessionRollForward.rollSubjectAreasForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardInstructorData().booleanValue()){
-        		sessionRollForward.rollInstructorDataForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardCourseOfferings().booleanValue()){
-        		sessionRollForward.rollCourseOfferingsForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardClassInstructors().booleanValue()){
-        		sessionRollForward.rollClassInstructorsForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getAddNewCourseOfferings().booleanValue()){
-        		sessionRollForward.addNewCourseOfferings(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardExamConfiguration().booleanValue()){
-        		sessionRollForward.rollExamConfigurationDataForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardMidtermExams().booleanValue()){
-        		sessionRollForward.rollMidtermExamsForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardFinalExams().booleanValue()){
-        		sessionRollForward.rollFinalExamsForward(errors, rollForwardSessionForm);
-        	}
-        	if (errors.isEmpty() && rollForwardSessionForm.getRollForwardStudents().booleanValue()) {
-        	    sessionRollForward.rollStudentsForward(errors, rollForwardSessionForm);
-        	}
-
-            if (errors.size() != 0) {
+            if (errors.isEmpty()) {
+            	QueueProcessor.getInstance().add(new RollForwardQueueItem(
+            			Session.getCurrentAcadSession(user), TimetableManager.getManager(user), (RollForwardSessionForm)rollForwardSessionForm.clone()));
+            } else {
                 saveErrors(request, errors);
             }
+        }
 
-        }            
+		if (request.getParameter("remove") != null) {
+			QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
+	    }
+		WebTable table = getQueueTable(request, TimetableManager.getManager(user).getUniqueId(), rollForwardSessionForm);
+	    if (table != null) {
+	    	request.setAttribute("table", table.printTable(WebTable.getOrder(request.getSession(),"rollForwardSession.ord")));
+	    }
+	    
 		rollForwardSessionForm.setAdmin(user.isAdmin());
+		
 		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
 		if (rollForwardSessionForm.getSubpartLocationPrefsAction() == null){
@@ -141,9 +115,203 @@ public class RollForwardSessionAction extends Action {
 			rollForwardSessionForm.setSubpartTimePrefsAction(SessionRollForward.ROLL_PREFS_ACTION);			
 		}
 		if (rollForwardSessionForm.getClassPrefsAction() == null){
-			rollForwardSessionForm.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);			
+			rollForwardSessionForm.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);
 		}
+
   		return mapping.findForward("displayRollForwardSessionForm");
+	}
+	
+	private WebTable getQueueTable(HttpServletRequest request, Long managerId, RollForwardSessionForm form) {
+        WebTable.setOrder(request.getSession(),"rollForwardSession.ord",request.getParameter("ord"),1);
+		String log = request.getParameter("log");
+		DateFormat df = new SimpleDateFormat("h:mma");
+		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Roll Forward");
+		if (queue.isEmpty()) return null;
+		WebTable table = new WebTable(9, "Roll forward in progress", "rollForwardSession.do?ord=%%",
+				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
+				new String[] { "left", "left", "right", "left", "left", "left", "left", "left", "center"},
+				new boolean[] { true, true, true, true, true, true, true, true, true});
+		Date now = new Date();
+		long timeToShow = 1000 * 60 * 60;
+		for (QueueItem item: queue) {
+			if (item.finished() != null && now.getTime() - item.finished().getTime() > timeToShow) continue;
+			String name = item.name();
+			if (name.length() > 60) name = name.substring(0, 57) + "...";
+			String delete = null;
+			if (managerId.equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
+				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this data exchange?')) document.location='rollForwardSession.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
+			}
+			WebTableLine line = table.addLine("onClick=\"document.location='rollForwardSession.do?log=" + item.getId() + "';\"",
+					new String[] {
+						name + (delete == null ? "": " " + delete),
+						item.status(),
+						(item.progress() <= 0.0 || item.progress() >= 1.0 ? "" : String.valueOf(Math.round(100 * item.progress())) + "%"),
+						item.getOwner().getName(),
+						item.getSession().getLabel(),
+						df.format(item.created()),
+						item.started() == null ? "" : df.format(item.started()),
+						item.finished() == null ? "" : df.format(item.finished()),
+						item.output() == null ? "" : "<A href='temp/"+item.output().getName()+"'>"+item.output().getName().substring(item.output().getName().lastIndexOf('.') + 1).toUpperCase()+"</A>"
+					},
+					new Comparable[] {
+						item.getId(),
+						item.status(),
+						item.progress(),
+						item.getOwner().getName(),
+						item.getSession(),
+						item.created().getTime(),
+						item.started() == null ? Long.MAX_VALUE : item.started().getTime(),
+						item.finished() == null ? Long.MAX_VALUE : item.finished().getTime(),
+						null
+					});
+			if (log != null && log.equals(item.getId().toString())) {
+				request.setAttribute("logname", name);
+				request.setAttribute("logid", item.getId().toString());
+				request.setAttribute("log", item.log());
+				((RollForwardQueueItem)item).getForm().copyTo(form);
+				saveErrors(request, ((RollForwardQueueItem)item).getErrors());
+				line.setBgColor("rgb(168,187,225)");
+			}
+			if (log == null && item.started() != null && item.finished() == null && managerId.equals(item.getOwnerId())) {
+				request.setAttribute("logname", name);
+				request.setAttribute("logid", item.getId().toString());
+				request.setAttribute("log", item.log());
+				((RollForwardQueueItem)item).getForm().copyTo(form);
+				saveErrors(request, ((RollForwardQueueItem)item).getErrors());
+				line.setBgColor("rgb(168,187,225)");
+			}
+		}
+		return table;
+	}
+	
+	private class RollForwardQueueItem extends QueueItem {
+		private RollForwardSessionForm iForm;
+		private int iProgress = 0;
+		private ActionMessages iErrors = new ActionMessages();
+		
+		public RollForwardQueueItem(Session session, TimetableManager owner, RollForwardSessionForm form) {
+			super(session, owner);
+			iForm = form;
+		}
+		
+		public ActionMessages getErrors() {
+			return iErrors;
+		}
+		
+		public RollForwardSessionForm getForm() {
+			return iForm;
+		}
+		
+		@Override
+		protected void execute() throws Exception {
+	        SessionRollForward sessionRollForward = new SessionRollForward();
+	        if (iErrors.isEmpty() && iForm.getRollForwardDatePatterns()) {
+				setStatus("Date patterns ...");
+	        	sessionRollForward.rollDatePatternsForward(iErrors, iForm);
+	        }
+	        iProgress++;
+            if (iErrors.isEmpty() && iForm.getRollForwardTimePatterns()) {
+				setStatus("Time patterns ...");
+	        	sessionRollForward.rollTimePatternsForward(iErrors, iForm);
+	        }
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardDepartments()) {
+				setStatus("Departments ...");
+	        	sessionRollForward.rollDepartmentsForward(iErrors, iForm);	
+	        }
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardManagers()) {
+				setStatus("Managers ...");
+        		sessionRollForward.rollManagersForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardRoomData()) {
+				setStatus("Rooms ...");
+        		sessionRollForward.rollBuildingAndRoomDataForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardSubjectAreas()) {
+				setStatus("Subjects ...");
+        		sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardInstructorData()) {
+				setStatus("Instructors ...");
+        		sessionRollForward.rollInstructorDataForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardCourseOfferings()) {
+				setStatus("Courses ...");
+        		sessionRollForward.rollCourseOfferingsForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardClassInstructors()) {
+				setStatus("Class instructors ...");
+        		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getAddNewCourseOfferings()) {
+				setStatus("New courses ...");
+        		sessionRollForward.addNewCourseOfferings(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardExamConfiguration()) {
+				setStatus("Exam config ...");
+        		sessionRollForward.rollExamConfigurationDataForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardMidtermExams()) {
+				setStatus("Midterm exams ...");
+        		sessionRollForward.rollMidtermExamsForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardFinalExams()) {
+				setStatus("Final exams ...");
+        		sessionRollForward.rollFinalExamsForward(iErrors, iForm);
+        	}
+	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardStudents()) {
+				setStatus("Students ...");
+        	    sessionRollForward.rollStudentsForward(iErrors, iForm);
+        	}
+	        iProgress++;
+	        if (!iErrors.isEmpty()) {
+	        	setError(new Exception(((ActionMessage)iErrors.get().next()).getValues()[0].toString()));
+	        }
+		}
+
+		@Override
+		public String name() {
+			List<String> names = new ArrayList<String>();
+			if (iForm.getRollForwardDatePatterns()) names.add("date patterns");
+            if (iForm.getRollForwardTimePatterns()) names.add("time patterns");
+        	if (iForm.getRollForwardDepartments()) names.add("departments");
+        	if (iForm.getRollForwardManagers()) names.add("managers");
+        	if (iForm.getRollForwardRoomData()) names.add("roons");
+        	if (iForm.getRollForwardSubjectAreas()) names.add("subjects");
+        	if (iForm.getRollForwardInstructorData()) names.add("instructors");
+        	if (iForm.getRollForwardCourseOfferings()) names.add("courses");
+        	if (iForm.getRollForwardClassInstructors()) names.add("class instructors");
+        	if (iForm.getAddNewCourseOfferings()) names.add("new courses");
+        	if (iForm.getRollForwardExamConfiguration()) names.add("exam config");
+        	if (iForm.getRollForwardMidtermExams()) names.add("midter exams");
+        	if (iForm.getRollForwardFinalExams()) names.add("final exams");
+        	if (iForm.getRollForwardStudents()) names.add("students");
+        	String name = names.toString().replace("[", "").replace("]", "");
+        	if (name.length() > 50) name = name.substring(0, 47) + "...";
+        	return name;
+		}
+
+		@Override
+		public double progress() {
+			return 100 * iProgress / 14;
+		}
+
+		@Override
+		public String type() {
+			return "Roll Forward";
+		}
+		
 	}
 	
 	protected void setToFromSessionsInForm(RollForwardSessionForm rollForwardSessionForm){
