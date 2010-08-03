@@ -55,7 +55,6 @@
 					new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true });
 					
 			webTable.enableHR("#EFEFEF");
-	        webTable.setRowStyle("white-space: nowrap");
 					
 		%>
 
@@ -78,17 +77,17 @@
 							"onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"",
 							new String[] {
 								s.getIsDefault() ? "<img src='images/tick.gif'> " : "&nbsp; ", 
-								s.getLabel() + "&nbsp;",
-								s.academicInitiativeDisplayString() + "&nbsp;",
-								df.format(s.getSessionBeginDateTime()) + "&nbsp;",
-								df.format(s.getClassesEndDateTime()) + "&nbsp;",
-								df.format(s.getSessionEndDateTime()) + "&nbsp;",
-								(s.getExamBeginDate()==null?"N/A":df.format(s.getExamBeginDate())) + "&nbsp;",
+								s.getAcademicTerm() + " " + s.getSessionStartYear(),
+								s.academicInitiativeDisplayString(),
+								df.format(s.getSessionBeginDateTime()).replace(" ", "&nbsp;"),
+								df.format(s.getClassesEndDateTime()).replace(" ", "&nbsp;"),
+								df.format(s.getSessionEndDateTime()).replace(" ", "&nbsp;"),
+								(s.getExamBeginDate()==null?"N/A":df.format(s.getExamBeginDate()).replace(" ", "&nbsp;")),
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
-								s.statusDisplayString() + "&nbsp;",
+								s.statusDisplayString(),
 								df5.format(s.getSubjectAreas().size()),
-								(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate())) + "&nbsp;",
-								(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate())) + "&nbsp;",
+								(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate()).replace(" ", "&nbsp;")),
+								(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate()).replace(" ", "&nbsp;")),
 								roomTypes },
 							new Comparable[] {
 								s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
