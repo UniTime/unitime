@@ -1,6 +1,6 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
@@ -34,7 +35,7 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 /**
  * Application Initialization Servlet
  * @version 1.0
- * @author Heston Fernandes
+ * @author Heston Fernandes, Tomas Muller
  */
 
 public class InitServlet extends HttpServlet implements Servlet {
@@ -43,38 +44,42 @@ public class InitServlet extends HttpServlet implements Servlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 3258415014804142137L;
-	 
+
+	private static Exception sInitializationException = null;
+	
 	/**
 	* Initializes the application
 	*/
 	public void init() throws ServletException {
 
-		logMessage("******* Initializing Timetabling Application : START *******");
+		Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+				" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " is starting up *******");
 
 		super.init();
         
 		try {
-            
-            logMessage(" - Initializing Debugger ... ");
+			
+			Debug.info(" - Initializing Logging ... ");
             Debug.init(ApplicationProperties.getProperties());
             
-			logMessage(" - Initializing Hibernate ... ");							
+			Debug.info(" - Initializing Hibernate ... ");							
 			_RootDAO.initialize();
 			
-			logMessage(" - Initializing Solver Register ... ");							
+			Debug.info(" - Initializing Solver Register ... ");							
 			SolverRegisterService.startService();
 			SolverRegisterService.addShutdownHook();
 			
 			if (RoomAvailability.getInstance()!=null) {
-			    logMessage(" - Initializing Room Availability Service ... ");
+			    Debug.info(" - Initializing Room Availability Service ... ");
 			    RoomAvailability.getInstance().startService();
 			}
 			
-			logMessage("******* Timetabling Application : Initializing DONE *******");
-		} 
-		catch (Exception e) {
-			logError("Servlet Initialization Failed : " + e.getMessage());
-            e.printStackTrace();
+			Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+					" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " initialized successfully *******");
+
+		} catch (Exception e) {
+			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
+			sInitializationException = e;
 		}
 	}
 
@@ -84,11 +89,12 @@ public class InitServlet extends HttpServlet implements Servlet {
 	public void destroy() {
 		try {
 		
-			logMessage("******* Shutting down Timetabling Application *******");
+			Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+					" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " is going down *******");
 		
 			super.destroy();
 		
-			logMessage(" - Stopping Solver Register ... ");							
+			Debug.info(" - Stopping Solver Register ... ");							
 			SolverRegisterService.stopService();
 			try {
 				SolverRegisterService.removeShutdownHook();
@@ -99,19 +105,20 @@ public class InitServlet extends HttpServlet implements Servlet {
 			ApplicationProperties.stopListener();
 			
 	         if (RoomAvailability.getInstance()!=null) {
-	             logMessage(" - Stopping Room Availability Service ... ");
+	             Debug.info(" - Stopping Room Availability Service ... ");
 	             RoomAvailability.getInstance().stopService();
 	         }
 	         
 	         QueueProcessor.stopProcessor();
 			
-			logMessage("******* Timetabling Application : Shut down DONE *******");
+				Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+						" shut down successfully *******");
 		} catch (Exception e) {
-			Debug.error(e);
+			Debug.error("UniTime Shutdown Failed : " + e.getMessage(), e);
 			if (e instanceof RuntimeException)
 				throw (RuntimeException)e;
 			else
-				throw new RuntimeException("Shut down failed", e);
+				throw new RuntimeException("UniTime Shutdown Failed : " + e.getMessage(), e);
 		}
 	}
 
@@ -120,23 +127,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 	 * @return String containing servlet info 
 	 */
 	public String getServletInfo() {
-
-		return "Timetabling Initialization Servlet";
-
+		return "UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") + " Initialization Servlet";
 	}
-
-	/*
-	 * Writes message to log
-	 */
-	private static void logMessage(String message) {
-		Debug.info(message);
-	}
-
-	/*
-	 * Write error to log
-	 */
-	private static void logError(String message) {
-		Debug.error(message);
-		System.err.println(message);
-	}
+	
+	public static Exception getInitializationException() { return sInitializationException; }
 }
