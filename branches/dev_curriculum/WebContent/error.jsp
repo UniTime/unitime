@@ -16,11 +16,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
 <%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.commons.web.Web"%>
 <%@ page import="org.unitime.commons.Debug"%>
-<%@ page isErrorPage="true"%>
 <%@ page import="org.unitime.commons.Email" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
