@@ -19,7 +19,7 @@
 --%>
 <%@page import="org.unitime.timetable.InitServlet"%>
 <%@page import="org.unitime.timetable.util.Constants"%>
-<<% if (InitServlet.getInitializationException() != null) { %>
+<% if (InitServlet.getInitializationException() != null) { %>
 	<table align="center" class="unitime-Footer">
 		<tr>
 			<td align="center" style="color:red;">
