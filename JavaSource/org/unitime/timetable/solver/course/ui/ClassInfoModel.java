@@ -946,21 +946,23 @@ public class ClassInfoModel implements Serializable {
                             room,
                             bounds[0], bounds[1], 
                             RoomAvailabilityInterface.sClassType);
-            		Collection<TimeBlock> timesToCheck = null;
-            		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
-            			timesToCheck = new Vector();
-            			for (TimeBlock time: times) {
-            				if (time.getEndTime().compareTo(today) > 0) 
-            					timesToCheck.add(time);
-            			}
-            		} else {
-            			timesToCheck = times;
-            		}
-            		TimeBlock time = period.overlaps(timesToCheck);
-            		if (time!=null) {
-            			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
-        				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
-        				continue rooms;
+            		if (times != null && !times.isEmpty()) {
+                		Collection<TimeBlock> timesToCheck = null;
+                		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+                			timesToCheck = new Vector();
+                			for (TimeBlock time: times) {
+                				if (time.getEndTime().compareTo(today) > 0) 
+                					timesToCheck.add(time);
+                			}
+                		} else {
+                			timesToCheck = times;
+                		}
+                		TimeBlock time = period.overlaps(timesToCheck);
+                		if (time!=null) {
+                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
+            				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
+            				continue rooms;
+                		}
             		}
                 }
                 
