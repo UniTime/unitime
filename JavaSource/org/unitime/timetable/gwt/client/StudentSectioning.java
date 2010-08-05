@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.widgets.UserAuthentication;
 import org.unitime.timetable.gwt.widgets.UserAuthentication.UserAuthenticatedEvent;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -47,6 +48,7 @@ public class StudentSectioning extends Composite {
 		titlePanel.getCellFormatter().setWidth(0, 2, "33%");
 		titlePanel.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		titlePanel.getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		titlePanel.getCellFormatter().getElement(0, 2).getStyle().setPaddingLeft(10, Unit.PX);
 		titlePanel.setHTML(0, 0, "&nbsp;");
 		
 		final UserAuthentication userAuthentication = new UserAuthentication(true);

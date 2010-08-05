@@ -229,6 +229,7 @@ h1 {
 	text-align: right;
 	margin-top: -4px;
 	cursor: pointer;
+	white-space: nowrap;
 }
 
 .unitime-ErrorHint{
