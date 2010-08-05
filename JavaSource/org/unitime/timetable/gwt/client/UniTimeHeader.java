@@ -32,6 +32,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -146,49 +147,50 @@ public class UniTimeHeader extends Composite {
 			@Override
 			public void onSuccess(HashMap<String, String> result) {
 				iSolverInfo.clear();
-				iSolverInfo.setHint(result);
-				if (result == null) {
-					Timer t = new Timer() {
-						@Override
-						public void run() {
-							reloadSolverInfo();
-						}
-					};
-					t.schedule(1000);
-					return;
-				}
-				HTML userLabel = new HTML(result.get("1Solver"), false);
-				userLabel.setStyleName("unitime-SessionSelector");
-				iSolverInfo.add(userLabel);
-				HTML hint = new HTML(result.get("0Type"), false);
-				hint.setStyleName("unitime-Hint");
-				iSolverInfo.add(hint);
-				final String type = result.get("0Type");
-				ClickHandler c = new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						if (type.equals("Course Timetabling Solver"))
-							open(GWT.getHostPageBaseURL() + "solver.do");
-						else if (type.equals("Examinations Solver"))
-							open(GWT.getHostPageBaseURL() + "examSolver.do");
-						else
-							open(GWT.getHostPageBaseURL() + "studentSolver.do");
+				boolean hasSolver = false;
+				try {
+					iSolverInfo.setHint(result);
+					if (result != null) {
+						HTML userLabel = new HTML(result.get("1Solver"), false);
+						userLabel.setStyleName("unitime-SessionSelector");
+						iSolverInfo.add(userLabel);
+						HTML hint = new HTML(result.get("0Type"), false);
+						hint.setStyleName("unitime-Hint");
+						iSolverInfo.add(hint);
+						final String type = result.get("0Type");
+						ClickHandler c = new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								if (type.equals("Course Timetabling Solver"))
+									open(GWT.getHostPageBaseURL() + "solver.do");
+								else if (type.equals("Examinations Solver"))
+									open(GWT.getHostPageBaseURL() + "examSolver.do");
+								else
+									open(GWT.getHostPageBaseURL() + "studentSolver.do");
+							}
+						};
+						userLabel.addClickHandler(c);
+						hint.addClickHandler(c);
+						hasSolver = true;
 					}
-				};
-				userLabel.addClickHandler(c);
-				hint.addClickHandler(c);
+				} catch (Exception e) {}
 				Timer t = new Timer() {
 					@Override
 					public void run() {
 						reloadSolverInfo();
 					}
 				};
-				t.schedule(1000);
+				t.schedule(hasSolver ? 1000 : 60000);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
-				iSolverInfo.clear();
-				iSolverInfo.setHint(null);
+				Timer t = new Timer() {
+					@Override
+					public void run() {
+						reloadSolverInfo();
+					}
+				};
+				t.schedule(5000);
 			}
 		});
 	}
@@ -197,6 +199,7 @@ public class UniTimeHeader extends Composite {
 		private PopupPanel iHintPanel = null;
 		private Timer iShowHint, iHideHint = null;
 		private HTML iHint = null;
+		private int iX, iY;
 		
 		public VerticalPanelWithHint() {
 			super();
@@ -210,7 +213,13 @@ public class UniTimeHeader extends Composite {
 			iShowHint = new Timer() {
 				@Override
 				public void run() {
-					iHintPanel.show();
+					iHintPanel.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+						@Override
+						public void setPosition(int offsetWidth, int offsetHeight) {
+							int maxX = Window.getScrollLeft() + Window.getClientWidth() - offsetWidth - 10;
+							iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
+						}
+					});
 				}
 			};
 			iHideHint = new Timer() {
@@ -225,17 +234,15 @@ public class UniTimeHeader extends Composite {
 			String html = "";
 			if (hint != null && !hint.isEmpty()) {
 				html += "<table cellspacing=\"0\" cellpadding=\"3\">";
-				try {
-					TreeSet<String> keys = new TreeSet<String>(hint.keySet());
-					for (String key: keys) {
-						String val = hint.get(key);
-						if (val.isEmpty()) continue;
-						String style = "";
-						if (key.startsWith("A")) 
-							style = "border-top: 1px dashed #AB8B00;";
-						html += "<tr><td style=\"" + style + "\">" + key.substring(1) + ":</td><td style=\"" + style + "\">" + val + "</td></tr>";
-					}
-				} catch (Exception e) {}
+				TreeSet<String> keys = new TreeSet<String>(hint.keySet());
+				for (String key: keys) {
+					String val = hint.get(key);
+					if (val.isEmpty()) continue;
+					String style = "";
+					if (key.startsWith("A")) 
+						style = "border-top: 1px dashed #AB8B00;";
+					html += "<tr><td style=\"" + style + "\">" + key.substring(1) + ":</td><td style=\"" + style + "\">" + val + "</td></tr>";
+				}
 				html += "</table>";
 			}
 			iHint.setHTML(html);
@@ -243,16 +250,16 @@ public class UniTimeHeader extends Composite {
 		
 		public void onBrowserEvent(Event event) {
 			if (iHint.getText().isEmpty()) return;
-			int x = 10 + event.getClientX() + getElement().getOwnerDocument().getScrollLeft();
-			int y = 10 + event.getClientY() + getElement().getOwnerDocument().getScrollTop();
+			iX = 10 + event.getClientX() + getElement().getOwnerDocument().getScrollLeft();
+			iY = 10 + event.getClientY() + getElement().getOwnerDocument().getScrollTop();
 			
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEMOVE:
 				if (iHintPanel.isShowing()) {
-					iHintPanel.setPopupPosition(x, y);
+					int maxX = Window.getScrollLeft() + Window.getClientWidth() - iHintPanel.getOffsetWidth() - 10;
+					iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
 				} else {
 					iShowHint.cancel();
-					iHintPanel.setPopupPosition(x, y);
 					iShowHint.schedule(1000);
 				}
 				break;
