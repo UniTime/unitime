@@ -304,7 +304,10 @@
 		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="dialog"/>
 		<item name="Contact Us" page="inquiry.do">
 			<condition>
-				<hasProperty name="tmtbl.inquiry.email"/>
+				<or>
+					<hasProperty name="tmtbl.inquiry.email"/>
+					<hasProperty name="unitime.email.inquiry"/>
+				</or>
 			</condition>
 		</item>
 	</menu>
