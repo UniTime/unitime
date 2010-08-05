@@ -224,13 +224,18 @@ public class UniTimeHeader extends Composite {
 		public void setHint(HashMap<String,String> hint) {
 			String html = "";
 			if (hint != null && !hint.isEmpty()) {
-				html += "<table>";
-				TreeSet<String> keys = new TreeSet<String>(hint.keySet());
-				for (String key: keys) {
-					String val = hint.get(key);
-					if (val.isEmpty()) continue;
-					html += "<tr><td>" + key.substring(1) + ":</td><td>" + val + "</td></tr>";
-				}
+				html += "<table cellspacing=\"0\" cellpadding=\"3\">";
+				try {
+					TreeSet<String> keys = new TreeSet<String>(hint.keySet());
+					for (String key: keys) {
+						String val = hint.get(key);
+						if (val.isEmpty()) continue;
+						String style = "";
+						if (key.startsWith("A")) 
+							style = "border-top: 1px dashed #AB8B00;";
+						html += "<tr><td style=\"" + style + "\">" + key.substring(1) + ":</td><td style=\"" + style + "\">" + val + "</td></tr>";
+					}
+				} catch (Exception e) {}
 				html += "</table>";
 			}
 			iHint.setHTML(html);
