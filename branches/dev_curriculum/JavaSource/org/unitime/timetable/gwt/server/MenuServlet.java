@@ -423,7 +423,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				StudentSolverProxy studentSolver = (solver==null && examSolver==null?WebSolver.getStudentSolverNoSessionCheck(getThreadLocalRequest().getSession()):null); 
 				
 				
-				Map progress = (studentSolver!=null?studentSolver.getProgress():examSolver!=null?examSolver.getProgress():solver.getProgress());
+				Map progress = (studentSolver!=null?studentSolver.getProgress():examSolver!=null?examSolver.getProgress():solver!=null?solver.getProgress():null);
 				if (progress == null) return null;
 				
 				DataProperties properties = (studentSolver!=null?studentSolver.getProperties():examSolver!=null?examSolver.getProperties():solver.getProperties());
@@ -493,6 +493,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			}
 			return ret;
 		} catch (Exception e) {
+			sLog.warn("Unable to get solver info: " + e.getMessage());
 			if (e instanceof MenuException) throw (MenuException)e;
 			throw new MenuException(e.getMessage());
 		}
