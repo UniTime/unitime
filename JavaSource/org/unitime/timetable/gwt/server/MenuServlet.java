@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.shared.MenuException;
 import org.unitime.timetable.gwt.shared.MenuInterface;
@@ -460,6 +462,29 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 					ret.put("3Progress", (progressCur<progressMax?progressCur:progressMax) + " of " + progressMax + " (" + Web.format(progressPercent) + "%)");
 				ret.put("7Version", version);
 				ret.put("6Session", SessionDAO.getInstance().get(properties.getPropertyLong("General.SessionId",null)).getLabel());
+				
+				Hashtable info = null;
+				
+				if (solver != null) {
+					info = solver.bestSolutionInfo();
+					if (info == null) info = solver.currentSolutionInfo();
+				} else if (examSolver != null) {
+					info = examSolver.bestSolutionInfo();
+					if (info == null) info = examSolver.currentSolutionInfo();
+				} else if (studentSolver != null) {
+					info = studentSolver.bestSolutionInfo();
+					if (info == null) info = studentSolver.currentSolutionInfo();
+				}
+				
+				if (info != null) {
+					TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+					keys.addAll(info.keySet());
+					int idx = 0;
+					for (String key: keys) {
+						ret.put((char)('A' + idx) + key, (String)info.get(key));
+						idx++;
+					}
+				}
 		 		
 			} finally {
 				hibSession.close();
