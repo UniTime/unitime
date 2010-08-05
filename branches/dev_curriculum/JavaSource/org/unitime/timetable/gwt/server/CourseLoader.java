@@ -135,19 +135,22 @@ public class CourseLoader {
 			}
 			for (InstructionalOffering offering: offerings)
 				loadOffering(offering);
-			List<org.unitime.timetable.model.Student> students = hibSession.createQuery(
-                    "select distinct s from Student s " +
-                    "left join fetch s.courseDemands as cd " +
-                    "left join fetch cd.courseRequests as cr " +
-                    "left join fetch s.classEnrollments as e " +
-                    "where s.session.uniqueId=:sessionId").
-                    setLong("sessionId",iAcademicSession.getUniqueId()).list();
-            for (org.unitime.timetable.model.Student student: students) {
-            	Student s = loadStudent(student);
-            	iModel.addStudent(s);
-            	assignStudent(s, student, true);
-            }
-            
+			
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
+				List<org.unitime.timetable.model.Student> students = hibSession.createQuery(
+	                    "select distinct s from Student s " +
+	                    "left join fetch s.courseDemands as cd " +
+	                    "left join fetch cd.courseRequests as cr " +
+	                    "left join fetch s.classEnrollments as e " +
+	                    "where s.session.uniqueId=:sessionId").
+	                    setLong("sessionId",iAcademicSession.getUniqueId()).list();
+	            for (org.unitime.timetable.model.Student student: students) {
+	            	Student s = loadStudent(student);
+	            	iModel.addStudent(s);
+	            	assignStudent(s, student, true);
+	            }
+			}
+			
         	List<SectioningInfo> infos = hibSession.createQuery(
 			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
 			.setLong("sessionId", iAcademicSession.getUniqueId())
