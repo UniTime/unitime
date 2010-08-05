@@ -287,6 +287,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				return manager.canSeeExams(session, user);
 			} else if ("canTimetableExams".equals(cond)) {
 				return manager.canTimetableExams(session, user);
+			} else if ("canAudit".equals(cond)) {
+				return manager.canAudit(session, user);
 			}
 		}
 		sLog.warn("Unknown condition " + cond + ".");
