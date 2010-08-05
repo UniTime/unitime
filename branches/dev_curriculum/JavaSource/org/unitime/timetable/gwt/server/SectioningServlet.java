@@ -99,19 +99,28 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
 				if (nrSolutions == 0) continue;
 				final Long sessionId = session.getUniqueId();
-				Thread t = new Thread(new Runnable() {
-					public void run() {
-						try {
-							SectioningServer.createInstance(sessionId);
-						} catch (Exception e) {
-							sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
-									" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false"))) {
+					Thread t = new Thread(new Runnable() {
+						public void run() {
+							try {
+								SectioningServer.createInstance(sessionId);
+							} catch (Exception e) {
+								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
+										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+							}
 						}
+					});
+					t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
+					t.setDaemon(true);
+					t.start();
+				} else {
+					try {
+						SectioningServer.createInstance(sessionId);
+					} catch (Exception e) {
+						sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
+								" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 					}
-				});
-				t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
-				t.setDaemon(true);
-				t.start();
+				}
 			}
 		} catch (Exception e) {
 			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
