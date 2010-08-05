@@ -115,7 +115,7 @@
     	<table class="unitime-Footer" style="max-width: 800px;">
     		<tr>
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
-    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime.org</a></td>
+    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
     			<td width="33%" align="right" nowrap="nowrap">
     			</td>
     		</tr>
