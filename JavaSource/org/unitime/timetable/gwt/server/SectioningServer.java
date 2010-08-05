@@ -118,7 +118,7 @@ public class SectioningServer {
 	}
 	
 	private SectioningServer(Long sessionId) throws SectioningException {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			if (session == null)
