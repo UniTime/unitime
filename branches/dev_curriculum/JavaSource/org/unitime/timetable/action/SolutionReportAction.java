@@ -586,7 +586,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?"":"<font color='"+PreferenceLevel.prolog2color(g.getPreference())+"'>")+
         				PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName()+
         				(noHtml?"":"</font>"),
-        				String.valueOf(Math.round(g.getDistance()*10.0))+"m",
+        				String.valueOf(Math.round(g.getDistance()))+"m",
         				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
         				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
         				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
@@ -799,7 +799,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?g.getClazz().getClazz().getName():g.getClazz().getClazz().toHtml(true, true)),
         				(noHtml?g.getClazz().getTimeNoHtml():g.getClazz().getTimeHtml()),
         				(noHtml?g.getClazz().getRoomNoHtml():g.getClazz().getRoomHtml()),
-        				(Math.round(10.0*g.distance)>0?Math.round(10.0*g.distance)+"m":""),
+        				(Math.round(g.distance)>0?Math.round(g.distance)+"m":""),
         				disp(g.affectedStudents, noHtml),
         				disp(g.affectedStudentsByTime, noHtml),
         				disp(g.affectedStudentsByRoom, noHtml),
