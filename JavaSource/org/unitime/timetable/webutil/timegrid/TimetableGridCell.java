@@ -100,7 +100,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 				iNrMeetings,
 				iDatePatternName,
 				iWeekCode,
-				null);
+				iInstructor);
 	}
 	
 	public String getName() { return iName; }
