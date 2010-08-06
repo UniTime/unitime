@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -73,7 +74,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private Hashtable iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
-    public static long sInactiveTimeToPassivate = 1800000;
 
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
@@ -590,7 +590,8 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-        if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
     

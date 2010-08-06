@@ -41,6 +41,7 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -92,7 +93,6 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     private Hashtable iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
-    public static long sInactiveTimeToPassivate = 1800000;
 
     
     public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
@@ -1170,7 +1170,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-        if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
     
