@@ -129,7 +129,6 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	private Hashtable iBestSolutionInfoBeforePassivation = null;
 	private File iPassivationFolder = null;
 	private String iPassivationPuid = null;
-	public static long sInactiveTimeToPassivate = 1800000;
 
 	public TimetableSolver(DataProperties properties) {
 		super(properties);
@@ -1326,7 +1325,8 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	}
 
 	public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
 		return passivate(folder, puid);
 	}
 	
