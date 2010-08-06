@@ -3032,7 +3032,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
 		}
 
-		new EnrollmentCheck(getModel()).checkStudentEnrollments(iProgress);
+		if (getModel().getProperties().getPropertyBoolean("General.EnrollmentCheck", true))
+			new EnrollmentCheck(getModel()).checkStudentEnrollments(iProgress);
 		
 		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && !getModel().assignedVariables().isEmpty() && !iLoadStudentEnrlsFromSolution)
 			getModel().switchStudents();
