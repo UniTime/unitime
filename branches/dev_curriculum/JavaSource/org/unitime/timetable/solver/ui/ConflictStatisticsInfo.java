@@ -663,7 +663,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+variable.getId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"window.open('suggestions.do?id="+variable.getId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -682,7 +682,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";	
+    		onClick = "onclick=\"window.open('suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&op=Try&reset=1','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -742,7 +742,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		name += " "+assignment.getInstructorName();
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"window.open('suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&op=Try&reset=1','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     
