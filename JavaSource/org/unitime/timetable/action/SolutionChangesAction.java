@@ -189,7 +189,7 @@ public class SolutionChangesAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    if (simple)
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
             	    		new String[] {
             	    			className,
             	    			dates,
@@ -205,7 +205,7 @@ public class SolutionChangesAction extends Action {
             	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
             	    		new String[] {
         	    				className,
         	    				dates,

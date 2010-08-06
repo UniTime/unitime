@@ -186,7 +186,7 @@ public class AssignmentHistoryAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    if (simple)
-            	    webTable.addLine((hasBefore?"onClick=\"window.open('suggestions.do?hist="+idx+"&op=ShowHistory','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((hasBefore?"onClick=\"window.open('suggestions.do?hist="+idx+"&op=ShowHistory','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
             	    		new String[] {
             	    			sDF.format(record.getTimeStamp()),
             	    			ClassAssignmentDetails.dispNumber(aSg.getValue()-bSg.getValue()),
@@ -206,7 +206,7 @@ public class AssignmentHistoryAction extends Action {
             	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine((hasBefore?"onClick=\"window.open('suggestions.do?hist="+idx+"&op=ShowHistory','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((hasBefore?"onClick=\"window.open('suggestions.do?hist="+idx+"&op=ShowHistory','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
             	    		new String[] {
             	    			sDF.format(record.getTimeStamp()),
             	    			ClassAssignmentDetails.dispNumber(aSg.getValue()-bSg.getValue()),

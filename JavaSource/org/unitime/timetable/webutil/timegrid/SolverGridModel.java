@@ -268,7 +268,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		int nrMeetings = placement.getTimeLocation().getNrMeetings();
 		String shortComment = null;
 		String shortCommentNoColor = null;
-		String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+		String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
 		String background = TimetableGridCell.sBgColorNeutral;
 		
 		if (bgMode==sBgModeNotAvailable)
