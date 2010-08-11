@@ -936,9 +936,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     public int examOffset() {
-    	int offset = 0;
-    	int prntOff = getPrintOffset()==null?0:getPrintOffset().intValue();	  	
-    	return(offset);
+    	return (getPrintOffset() == null ? 0 : getPrintOffset());
     }
     
     public ExamEvent generateEvent(ExamEvent event, boolean createNoRoomMeetings) {
