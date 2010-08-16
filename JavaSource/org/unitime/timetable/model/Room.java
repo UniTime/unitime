@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.criterion.Restrictions;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseRoom;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
@@ -144,7 +145,17 @@ public class Room extends BaseRoom {
 		RoomDAO rDao = new RoomDAO();
 		String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId ";
 		query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId)";
-		query += " and er.classification in ('classroom', 'classLab')";
+		String classifications = ApplicationProperties.getProperty("unitime.external.room.update.classifications");
+		if (classifications != null) {
+			String classificationsQuery = "";
+			for (String c: classifications.split(",")) {
+				if (c.trim().isEmpty()) continue;
+				if (!classificationsQuery.isEmpty()) classificationsQuery += ", ";
+				classificationsQuery += "'" + c.trim() + "'";
+			}
+			if (!classificationsQuery.isEmpty())
+				query += " and er.classification in (" + classificationsQuery + ")";
+		}
 		List l = erDao.getQuery(query).setLong("sessionId", session.getUniqueId()).list();
 		if (l != null){
 			ExternalRoom er = null;
@@ -187,6 +198,10 @@ public class Room extends BaseRoom {
 						grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
 						if (grf != null){
 							r.addTofeatures(grf);
+						} else {
+							grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(erf.getName());
+							if (grf != null)
+								r.addTofeatures(grf);
 						}
 					}
 				}
