@@ -171,6 +171,7 @@ public class QueueProcessor extends Thread {
 			sInstance.interrupt();
 			sInstance.join();
 		} catch (InterruptedException e) {
+		} catch (NullPointerException e) {
 		}
 	}
 
