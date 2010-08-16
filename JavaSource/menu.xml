@@ -222,7 +222,7 @@
 			<item name="Academic Sessions" page="sessionList.do"/>
 			<item name="Managers" page="timetableManagerList.do"/>
 			<item name="Departments" page="departmentList.do"/>
-			<item name="Subject Areas" page="ubjectList.do"/>
+			<item name="Subject Areas" page="subjectList.do"/>
 			<item name="Buildings" page="buildingList.do"/>
 			<separator/>
 			<item name="Date Patterns" page="datePatternEdit.do"/>
