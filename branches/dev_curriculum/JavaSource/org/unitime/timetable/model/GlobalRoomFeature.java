@@ -83,7 +83,19 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 		return(null);
 	}
     
-    public String htmlLabel() {
+	public static GlobalRoomFeature findGlobalRoomFeatureForAbbv(String label){
+		GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
+		List features = grfDao.getSession().createCriteria(GlobalRoomFeature.class)
+			.add(Restrictions.eq("abbv", label))
+			.setCacheable(true).list();
+
+		if (features.size() == 1){
+			return((GlobalRoomFeature) features.get(0));
+		}
+		return(null);
+	}
+
+	public String htmlLabel() {
         return "<span "+
             "title='"+getLabel()+" (global)'>"+
             getLabel() +
