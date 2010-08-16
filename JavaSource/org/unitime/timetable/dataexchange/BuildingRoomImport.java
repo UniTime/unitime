@@ -103,8 +103,8 @@ public class BuildingRoomImport extends BaseImport {
 	private void importRoom(Element element, ExternalBuilding building) throws Exception {
 		ExternalRoom room = new ExternalRoom();
 		room.setExternalUniqueId(element.attributeValue("externalId"));
-		room.setCoordinateX(element.attributeValue("locationX") == null ? null : Double.valueOf(element.attributeValue("locationX")));
-		room.setCoordinateY(element.attributeValue("locationY") == null ? null : Double.valueOf(element.attributeValue("locationY")));
+		room.setCoordinateX(element.attributeValue("locationX") == null ? building.getCoordinateX() : Double.valueOf(element.attributeValue("locationX")));
+		room.setCoordinateY(element.attributeValue("locationY") == null ? building.getCoordinateY() : Double.valueOf(element.attributeValue("locationY")));
 		room.setRoomNumber(element.attributeValue("roomNumber"));
 		room.setClassification(element.attributeValue("roomClassification"));
 		room.setCapacity(Integer.decode(element.attributeValue("capacity")));
@@ -117,6 +117,7 @@ public class BuildingRoomImport extends BaseImport {
 		room.setIsInstructional(Boolean.valueOf(element.attributeValue("instructional")));
 		room.setRoomType(RoomType.findByReference(element.attributeValue("scheduledRoomType")));
 		room.setBuilding(building);
+		room.setDisplayName(element.attributeValue("displayName"));
 		building.addTorooms(room);
 		getHibSession().save(room);
 		if(element.element("roomDepartments") != null) {

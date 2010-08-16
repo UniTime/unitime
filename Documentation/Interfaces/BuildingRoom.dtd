@@ -40,8 +40,8 @@
 <!ATTLIST room displayName CDATA #IMPLIED >
 <!ATTLIST room externalId CDATA #IMPLIED >
 <!ATTLIST room instructional ( false | False | true | True ) #REQUIRED >
-<!ATTLIST room locationX CDATA #REQUIRED >
-<!ATTLIST room locationY CDATA #REQUIRED >
+<!ATTLIST room locationX CDATA #IMPLIED >
+<!ATTLIST room locationY CDATA #IMPLIED >
 <!ATTLIST room roomClassification CDATA #REQUIRED >
 <!ATTLIST room roomNumber CDATA #REQUIRED >
 <!ATTLIST room scheduledRoomType ( computingLab | departmental | genClassroom ) #IMPLIED >
