@@ -20,8 +20,11 @@
 package org.unitime.commons.hibernate.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
@@ -29,6 +32,9 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -41,45 +47,86 @@ import org.xml.sax.InputSource;
  * @author Tomas Muller
  *
  */
-public class CreateBaseModelFromXml {
+public class CreateBaseModelFromXml extends Task {
 	private Hashtable<String, String> iParent = new Hashtable<String, String>();
 	private Hashtable<String, String[]> iIds = new Hashtable<String, String[]>();
 	private Hashtable<String, TreeSet<String>> iClassProperties = new Hashtable<String, TreeSet<String>>();
 	
+	private SAXReader iSAXReader = null;
+	private String iSource = null;
+	private String iConfig = "hibernate.cfg.xml";
+	
 	public CreateBaseModelFromXml() throws DocumentException {
+		iSAXReader = new SAXReader();
+		iSAXReader.setEntityResolver(iEntityResolver);
 	}
 	
 	private EntityResolver iEntityResolver = new EntityResolver() {
 	    public InputSource resolveEntity(String publicId, String systemId) {
 	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
-	            return new InputSource(getClass().getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+	        	InputStream stream = null;
+	        	if (iSource == null) {
+		            stream = getClass().getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd");
+	        	} else {
+	        		try {
+	        			stream = new FileInputStream(iSource + File.separator + "hibernate-mapping-3.0.dtd");
+	        		} catch (FileNotFoundException e) {}
+	        	}
+	        	return (stream == null ? null : new InputSource(stream));
 	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
-	            return new InputSource(getClass().getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+	        	InputStream stream = null;
+	        	if (iSource == null) {
+		            stream = getClass().getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd");
+	        	} else {
+	        		try {
+	        			stream = new FileInputStream(iSource + File.separator + "hibernate-configuration-3.0.dtd");
+	        		} catch (FileNotFoundException e) {}
+	        	}
+	        	return (stream == null ? null : new InputSource(stream));
 	        }
 	        return null;
 	    }
 	};
 	
+	public void setSource(String source) {
+		iSource = source;
+	}
+	
+	public void setConfig(String config) {
+		iConfig = config;
+	}
+	
+	protected Document read(String resource) throws IOException, DocumentException {
+		if (iSource == null) {
+			return iSAXReader.read(getClass().getClassLoader().getResourceAsStream(resource));
+		} else {
+			return iSAXReader.read(new File(iSource + File.separator + resource));
+		}
+	}
+	
 	public void convert() throws IOException, DocumentException {
-		System.out.println("Config: " + getClass().getClassLoader().getResource("hibernate.cfg.xml"));
-		File workDir = new File(getClass().getClassLoader().getResource("hibernate.cfg.xml").getFile());
-		while (workDir.getParentFile() != null && !"WebContent".equals(workDir.getName()))
-			workDir = workDir.getParentFile();
-		workDir = new File(workDir.getParentFile(), "JavaSource");
-		workDir.mkdirs();
-		System.out.println("Working directory: " + workDir);
-		System.out.println("Reading hibernate.cfg.xml ...");
-		SAXReader saxReader = new SAXReader();
-		saxReader.setEntityResolver(iEntityResolver);
-		Document document = saxReader.read(getClass().getClassLoader().getResourceAsStream("hibernate.cfg.xml"));
+		info("Config: " + (iSource == null ? getClass().getClassLoader().getResource(iConfig) : iSource + File.separator + iConfig));
+		File workDir = null;
+		if (iSource == null) {
+			workDir = new File(getClass().getClassLoader().getResource(iConfig).getFile());
+			while (workDir.getParentFile() != null && !"WebContent".equals(workDir.getName()))
+				workDir = workDir.getParentFile();
+			workDir = new File(workDir.getParentFile(), "JavaSource");
+			workDir.mkdirs();
+		} else {
+			workDir = new File(iSource);
+		}
+		info("Working directory: " + workDir);
+		info("Reading hibernate.cfg.xml ...");
+		Document document = read(iConfig);
 		Element root = document.getRootElement();
 		Element sessionFactoryElement = root.element("session-factory");
 		for (Iterator<Element> i = sessionFactoryElement.elementIterator("mapping"); i.hasNext(); ) {
 			Element m = i.next();
 			String resource = m.attributeValue("resource");
 			if (resource == null) continue;
-			System.out.println("Pre-processing " + resource + " ...");
-			Document resDoc = saxReader.read(getClass().getClassLoader().getResourceAsStream(resource));
+			info("Pre-processing " + resource + " ...");
+			Document resDoc = read(resource);
 			Element resRoot = resDoc.getRootElement();
 			String pkg = resRoot.attributeValue("package");
 			for (Iterator<Element> j = resRoot.elementIterator("class");j.hasNext(); ) {
@@ -91,8 +138,8 @@ public class CreateBaseModelFromXml {
 			Element m = i.next();
 			String resource = m.attributeValue("resource");
 			if (resource == null) continue;
-			System.out.println("Processing " + resource + " ...");
-			Document resDoc = saxReader.read(getClass().getClassLoader().getResourceAsStream(resource));
+			info("Processing " + resource + " ...");
+			Document resDoc = read(resource);
 			Element resRoot = resDoc.getRootElement();
 			String pkg = resRoot.attributeValue("package");
 			for (Iterator<Element> j = resRoot.elementIterator("class");j.hasNext(); ) {
@@ -100,7 +147,7 @@ public class CreateBaseModelFromXml {
 				importClass(classEl, pkg, workDir, null, null, null, null);
 			}
 		}
-		System.out.println("All done.");
+		info("All done.");
 	}
 	
 	private void preprocess(Element classEl, String ext, String pkg) throws IOException {
@@ -162,7 +209,7 @@ public class CreateBaseModelFromXml {
 		if ("Double".equals(type)) return false;
 		if ("Date".equals(type)) return false;
 		if ("XmlBlobType".equals(type)) return false;
-		System.err.println("Unknown type "+type);
+		warn("Unknown type "+type);
 		return false;
 	}
 	
@@ -208,7 +255,7 @@ public class CreateBaseModelFromXml {
 			//imports.add(className);
 			className = className.substring(className.lastIndexOf('.')+1);
 		}
-		System.out.println("  "+className+" ...");
+		info("  "+className+" ...");
 		
 		Vector<String[]> manyToOnes = new Vector<String[]>();
 		TreeSet<String> properties = new TreeSet<String>();
@@ -731,6 +778,30 @@ public class CreateBaseModelFromXml {
 		}
 	}
 	
+	public void execute() throws BuildException {
+		try {
+			convert();
+		} catch (Exception e) {
+			throw new BuildException(e);
+		}
+	}
+	
+	public void info(String message) {
+		try {
+			log(message);
+		} catch (Exception e) {
+			System.out.println(message);
+		}
+	}
+	
+	public void warn(String message) {
+		try {
+			log(message, Project.MSG_WARN);
+		} catch (Exception e) {
+			System.out.println(message);
+		}
+	}
+
 	public static void main(String[] args) {
 		try {
 			new CreateBaseModelFromXml().convert();

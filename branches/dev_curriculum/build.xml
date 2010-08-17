@@ -467,6 +467,27 @@
 		</java>
 	</target>
 
+	<target name="create-model" depends="init">
+        <path id="build.classpath">
+            <fileset dir="${lib.dir}">
+            	<include name="*.jar"/>
+            </fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+        </path>
+		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/commons/hibernate/util/CreateBaseModelFromXml.java" debug="true">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+		</javac>
+		<taskdef name="create-model" classname="org.unitime.commons.hibernate.util.CreateBaseModelFromXml">
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</taskdef>
+		<create-model config="hibernate.cfg.xml" source="${src.dir}"/>
+        <delete dir="${build.dir}" failonerror="false"/>
+	</target>
+
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
 </project>
