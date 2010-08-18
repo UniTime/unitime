@@ -142,6 +142,8 @@ public class StudentSectioningImport extends BaseImport {
         Student student = new Student();
         student.setSession(session);
         student.setExternalUniqueId(studentId);
+        student.setFreeTimeCategory(new Integer(0));
+        student.setSchedulePreference(new Integer(0));
         updateStudent(student, demographicsElement);
         return student;
     }
@@ -323,8 +325,8 @@ public class StudentSectioningImport extends BaseImport {
                 demand.setStudent(student);
                 demand.setWaitlist(new Boolean("true".equals(waitList)));
                 demand.setTimestamp(new Date());
+                demand.setCourseRequests(new HashSet<CourseRequest>());
                 debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
-                getHibSession().save(demand);
                 String subjectArea = requestElement.attributeValue("subjectArea");
                 String courseNbr = requestElement.attributeValue("courseNumber");
                 Integer credit = Integer.valueOf(requestElement.attributeValue("credit","0"));
@@ -339,7 +341,7 @@ public class StudentSectioningImport extends BaseImport {
                 request.setCredit(credit);
                 request.setOrder(new Integer(ord));
                 request.setCourseDemand(demand);
-                getHibSession().save(request);
+                demand.getCourseRequests().add(request);
                 debug("    "+courseOffering.getCourseName());
                 for (Iterator j=requestElement.elementIterator("alternative");j.hasNext();) {
                     Element altElement = (Element)j.next();
@@ -357,9 +359,11 @@ public class StudentSectioningImport extends BaseImport {
                     altRequest.setCredit(altCredit);
                     altRequest.setOrder(new Integer(ord));
                     altRequest.setCourseDemand(demand);
-                    getHibSession().save(altRequest);
+                    demand.getCourseRequests().add(altRequest);
                     debug("    "+altCourseOffering.getCourseName());
                 }
+                getHibSession().save(demand);
+                student.getCourseDemands().add(demand);
             } else if (requestElement.getName().equals("freeTime")) {
                 String days = requestElement.attributeValue("days");
                 String startTime = requestElement.attributeValue("startTime");
@@ -382,6 +386,7 @@ public class StudentSectioningImport extends BaseImport {
                 demand.setTimestamp(new Date());
                 demand.setFreeTime(ft);
                 getHibSession().save(demand);
+                student.getCourseDemands().add(demand);
                 debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
                 debug("    free "+time.getLongName());
             } else warn("Request element "+requestElement.getName()+" not recognized.");
