@@ -1024,11 +1024,6 @@
 		<put name="checkRole" value="false" />
   	</definition> 	
   	
-  	<definition	name="curriculumListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Curricula"/>
-		<put name="body" value="/user/curriculumList.jsp" />
-  	</definition>
-
 	<definition	name="classInfoTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Class Assignment"/>
 		<put name="body" value="/tt/info.jsp" />
