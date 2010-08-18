@@ -29,6 +29,26 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Exams</name>
+			<description>
+				<line>Fixed a bug that was introduced in October 2009 -- exam print offset got completely ignored.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Student enrollment import: when classes have no external ids, allow the given external id (in the XML file) to match on the class name.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.270</version>
+	<release-date>Saturday, 24 Jul 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>PDF Exam reports</name>
 			<description>
 				<line>Reports Queue
