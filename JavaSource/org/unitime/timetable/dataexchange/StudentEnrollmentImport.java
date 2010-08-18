@@ -189,10 +189,13 @@ public class StudentEnrollmentImport extends BaseImport {
 	private void loadClasses(Long sessionId) throws Exception {
  		for (Iterator<?> it = Class_.findAll(sessionId).iterator(); it.hasNext();) {
 			Class_ c = (Class_) it.next();
-			if (c.getExternalUniqueId() != null){
+			if (c.getExternalUniqueId() != null && !c.getExternalUniqueId().isEmpty()) {
 				classes.put(c.getExternalUniqueId(), c);
 				controllingCourses.put(c.getExternalUniqueId(), c.getSchedulingSubpart().getControllingCourseOffering());
-			} 
+			} else {
+				classes.put(c.getClassLabel(), c);
+				controllingCourses.put(c.getClassLabel(), c.getSchedulingSubpart().getControllingCourseOffering());
+			}
 		}
 	}
 
