@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.commons.hibernate.util;
+package org.unitime.commons.ant;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -104,6 +104,7 @@ public class CreateBaseModelFromXml extends Task {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void convert() throws IOException, DocumentException {
 		info("Config: " + (iSource == null ? getClass().getClassLoader().getResource(iConfig) : iSource + File.separator + iConfig));
 		File workDir = null;
@@ -150,6 +151,7 @@ public class CreateBaseModelFromXml extends Task {
 		info("All done.");
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void preprocess(Element classEl, String ext, String pkg) throws IOException {
 		String className = fixType(classEl.attributeValue("name"), pkg);
 		if (className.indexOf('.') >= 0) className = className.substring(className.lastIndexOf('.')+1);
@@ -167,7 +169,9 @@ public class CreateBaseModelFromXml extends Task {
 			preprocess(i.next(), className, pkg);
 		}
 	}	
-		
+
+	/*
+	@SuppressWarnings("unchecked")
 	private String param(Element el, String name) {
 		if (el==null) return null;
 		for (Iterator<Element> i = el.elementIterator("param"); i.hasNext();) {
@@ -176,6 +180,7 @@ public class CreateBaseModelFromXml extends Task {
 		}
 		return null;
 	}
+	*/
 	
 	private String fixType(String type, String pkg) {
 		if (type == null) return null;
@@ -190,6 +195,7 @@ public class CreateBaseModelFromXml extends Task {
 		if (type.equals("java.sql.Date")) return "java.util.Date";
 		if (type.equalsIgnoreCase("java.sql.TimeStamp")) return "java.util.Date";
 		if (type.endsWith(".XmlBlobType")) return "org.dom4j.Document";
+		if (type.endsWith(".XmlClobType")) return "org.dom4j.Document";
 		if (type.startsWith("java.")) return type;
 		if (type.indexOf('.') < 0) type = pkg+"."+type;
 		return type;
@@ -200,6 +206,7 @@ public class CreateBaseModelFromXml extends Task {
 		return name.substring(0,1).toUpperCase() + name.substring(1);
 	}
 	
+	/*
 	private boolean hasLength(String type) {
 		if ("Boolean".equals(type)) return false;
 		if ("Long".equals(type)) return false;
@@ -209,9 +216,11 @@ public class CreateBaseModelFromXml extends Task {
 		if ("Double".equals(type)) return false;
 		if ("Date".equals(type)) return false;
 		if ("XmlBlobType".equals(type)) return false;
+		if ("XmlClobType".equals(type)) return false;
 		warn("Unknown type "+type);
 		return false;
 	}
+	*/
 	
 	private File fileFromPackage(File outputFolder, String pkg) {
 		File ret = new File(outputFolder, pkg.replace('.', File.separatorChar));
@@ -241,8 +250,10 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println("*/");
 	}
 
+	@SuppressWarnings("unchecked")
 	private void importClass(Element classEl, String pkg, File outputFolder, String ext, String idClass, String idName, String idType) throws IOException {
 		String className = fixType(classEl.attributeValue("name"), pkg);
+		@SuppressWarnings("unused")
 		String table = classEl.attributeValue("table");
 		StringWriter attributes = new StringWriter();
 		PrintWriter pwa = new PrintWriter(attributes);
@@ -261,11 +272,13 @@ public class CreateBaseModelFromXml extends Task {
 		TreeSet<String> properties = new TreeSet<String>();
 		Vector<String[]> compositeId = new Vector<String[]>();
 		
+		/*
 		Element discriminator = classEl.element("discriminator");
 		String discriminatorColumn = null;
 		if (discriminator!=null) {
 			discriminatorColumn = discriminator.attributeValue("column").toLowerCase();
 		}
+		*/
 		
 		boolean hasProperty = false;
 		for (Iterator<Element> i = classEl.elementIterator("id"); i.hasNext();) {
@@ -298,7 +311,7 @@ public class CreateBaseModelFromXml extends Task {
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				String column = el.attributeValue("column").toLowerCase();
+				// String column = el.attributeValue("column").toLowerCase();
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 				if ("default".equals(attribute)) attribute = "defaultValue";
 				pwa.println("	private "+type+" i"+name+";");
@@ -317,9 +330,9 @@ public class CreateBaseModelFromXml extends Task {
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				boolean notNul = "true".equals(el.attributeValue("not-null"));
-				int length = Integer.parseInt(el.attributeValue("length","0"));
-				String column = el.attributeValue("column");
+				// boolean notNul = "true".equals(el.attributeValue("not-null"));
+				// int length = Integer.parseInt(el.attributeValue("length","0"));
+				// String column = el.attributeValue("column");
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 				if ("default".equals(attribute)) attribute = "defaultValue";
 				compositeId.add(new String[] {type, name});
@@ -339,8 +352,8 @@ public class CreateBaseModelFromXml extends Task {
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
 			String name = fixName(el.attributeValue("name"));
-			boolean notNul = "true".equals(el.attributeValue("not-null"));
-			int length = Integer.parseInt(el.attributeValue("length","0"));
+			// boolean notNul = "true".equals(el.attributeValue("not-null"));
+			// int length = Integer.parseInt(el.attributeValue("length","0"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
@@ -374,10 +387,10 @@ public class CreateBaseModelFromXml extends Task {
 				imports.add(type);
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
-			boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			boolean eager = "false".equals(el.attributeValue("lazy","true"));
+			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
+			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
 			String name = fixName(el.attributeValue("name"));
-			boolean notNul = "true".equals(el.attributeValue("not-null"));
+			// boolean notNul = "true".equals(el.attributeValue("not-null"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			if (column!=null) {
@@ -400,22 +413,21 @@ public class CreateBaseModelFromXml extends Task {
 			Element el = i.next();
 			String type = null;
 			String name = fixName(el.attributeValue("name"));
-			//if ("SubjectArea".equals(className) && "InstructionalOfferings".equals(name)) continue;
-			boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			boolean eager = "false".equals(el.attributeValue("lazy","true"));
-			String cascade = el.attributeValue("cascade");
+			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
+			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
+			// String cascade = el.attributeValue("cascade");
 			pwb.println();
 			if (el.element("many-to-many")!=null) {
-				String column = el.element("key").attributeValue("column").toLowerCase();
-				String icolumn = el.element("many-to-many").attributeValue("column").toLowerCase();
-				String m2mtable = el.attributeValue("table").toLowerCase();
+				// String column = el.element("key").attributeValue("column").toLowerCase();
+				// String icolumn = el.element("many-to-many").attributeValue("column").toLowerCase();
+				// String m2mtable = el.attributeValue("table").toLowerCase();
 				type = fixType(el.element("many-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 			} else if (el.element("one-to-many")!=null) {
-				String column = el.element("key").attributeValue("column").toLowerCase();
+				// String column = el.element("key").attributeValue("column").toLowerCase();
 				type = fixType(el.element("one-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
@@ -431,7 +443,7 @@ public class CreateBaseModelFromXml extends Task {
 			pwb.println("	public Set<"+type+"> get"+name+"() { return i"+name+"; }");
 			pwb.println("	public void set"+name+"(Set<"+type+"> "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			pwb.println("	public void addTo"+name.substring(0,1).toLowerCase()+name.substring(1)+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
-			pwb.println("		if (i"+name+" == null) i"+name+" = new HashSet();");
+			pwb.println("		if (i"+name+" == null) i"+name+" = new HashSet<"+type+">();");
 			pwb.println("		i"+name+".add("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
 			pwb.println("	}");
 		}
@@ -489,7 +501,6 @@ public class CreateBaseModelFromXml extends Task {
 		}
 		if (idName!=null) {
 			if (idClass==null) idClass = className;
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
 			pw.println();
 			pw.println("	public boolean equals(Object o) {");
 			pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
@@ -517,7 +528,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
 			pw.println("		"+className+" "+x+" = ("+className+")o;");
 			for (String[] typeName: compositeId) {
-				String type = typeName[0], name = typeName[1];
+				String name = typeName[1];
 				pw.println("		if (get"+name+"() == null || "+x+".get"+name+"() == null || !get"+name+"().equals("+x+".get"+name+"())) return false;");
 			}
 			pw.println("		return true;");
@@ -526,7 +537,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("	public int hashCode() {");
 			String xor = "", isNull = "";
 			for (String[] typeName: compositeId) {
-				String type = typeName[0], name = typeName[1];
+				String name = typeName[1];
 				if (!xor.isEmpty()) { xor += " ^ "; isNull += " || "; }
 				xor += "get"+name+"().hashCode()";
 				isNull += "get"+name+"() == null";
@@ -538,7 +549,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("	public String toString() {");
 			String names = "";
 			for (String[] typeName: compositeId) {
-				String type = typeName[0], name = typeName[1];
+				String name = typeName[1];
 				if (!names.isEmpty()) names += " + \", \" + ";
 				names += "get"+name+"()";
 			}
@@ -585,29 +596,32 @@ public class CreateBaseModelFromXml extends Task {
 		license(pw);
 		pw.println("package "+pkg+".base;");
 		pw.println();
-		if (!abs || !manyToOnes.isEmpty()) {
+		if (idType == null)
+			pw.println("import java.io.Serializable;");
+		if (!manyToOnes.isEmpty())
 			pw.println("import java.util.List;");
+		if (idType == null || !manyToOnes.isEmpty())
 			pw.println();
-		}
-		pw.println("import org.hibernate.Hibernate;");
-		pw.println("import org.hibernate.criterion.Order;");
-		pw.println();
+		// pw.println("import org.hibernate.Hibernate;");
+		// pw.println("import org.hibernate.criterion.Order;");
+		// pw.println();
 		pw.println("import "+pkg+"."+className+";");
 		pw.println("import "+pkg+".dao._RootDAO;");
 		pw.println("import "+pkg+".dao."+className+"DAO;");
 		pw.println();
-		pw.println("public abstract class Base"+className+"DAO"+" extends _RootDAO {");
+		pw.println("public abstract class Base"+className+"DAO"+" extends _RootDAO<"+className+","+(idType==null?"Serializable":idType)+"> {");
 		pw.println();
 		pw.println("	private static "+className+"DAO sInstance;");
 		pw.println();
-		pw.println("	public static "+className+"DAO getInstance () {");
+		pw.println("	public static "+className+"DAO getInstance() {");
 		pw.println("		if (sInstance == null) sInstance = new "+className+"DAO();");
 		pw.println("		return sInstance;");
 		pw.println("	}");
 		pw.println();
-		pw.println("	public Class getReferenceClass () {");
+		pw.println("	public Class<"+className+"> getReferenceClass() {");
 		pw.println("		return "+className+".class;");
 		pw.println("	}");
+		/*
 		pw.println();
 		pw.println("	public Order getDefaultOrder () {");
 		pw.println("		return null;");
@@ -730,10 +744,25 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println("	}");
 		if (!abs) {
 			pw.println();
+			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findAll(org.hibernate.Session hibSession) {");
 			pw.println("		return hibSession.createQuery(\"from "+className+"\").list();");
 			pw.println("	}");
 		}
+		*/
+		/*
+		if (idType != null && idName != null) {
+			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
+			pw.println();
+			pw.println("	public void delete("+idType+" "+x+") {");
+			pw.println("		delete(load("+x+"));");
+			pw.println("	}");
+			pw.println();
+			pw.println("	public void delete("+idType+" "+x+", org.hibernate.Session hibSession) {");
+			pw.println("		delete(load("+x+", hibSession), hibSession);");
+			pw.println("	}");
+		}
+		*/
 		for (String[] attr: manyToOnes) {
 			String type = attr[0];
 			String name = attr[1];
@@ -752,6 +781,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("	}");
 			*/
 			pw.println();
+			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+iType+" "+x+"Id) {");
 			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").set"+iType+"(\""+x+"Id\", "+x+"Id).list();");
 			pw.println("	}");

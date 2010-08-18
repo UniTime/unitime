@@ -1,6 +1,6 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,11 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -34,27 +34,23 @@ import org.hibernate.SessionFactory;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
+public abstract class _BaseRootDAO<T, K extends Serializable> {
 
-
-public abstract class _BaseRootDAO {
-
-	protected static Map sessionFactoryMap;
-	protected static SessionFactory sessionFactory;
-	protected static ThreadLocal mappedSessions;
-	protected static ThreadLocal sessions;
-	protected static Configuration configuration;
+	protected static Map<String, SessionFactory> sSessionFactoryMap;
+	protected static SessionFactory sSessionFactory;
+	protected static ThreadLocal<HashMap<String,Session>> sMappedSessions;
+	protected static ThreadLocal<Session> sSessions;
+	protected static Configuration sConfiguration;
 	
 
 	/**
 	 * Configure the session factory by reading hibernate config file
 	 */
 	public static void initialize () {
-		org.unitime.timetable.model.dao._RootDAO.initialize(
-			(String) null);
+		initialize(null);
 	}
 	
 	/**
@@ -62,18 +58,15 @@ public abstract class _BaseRootDAO {
 	 * @param configFileName the name of the configuration file
 	 */
 	public static void initialize (String configFileName) {
-		org.unitime.timetable.model.dao._RootDAO.initialize(
-			configFileName,
-			org.unitime.timetable.model.dao._RootDAO.getNewConfiguration(
-				null));
+		initialize(configFileName, getNewConfiguration(null));
 	}
 
 	public static void initialize (String configFileName, Configuration configuration) {
-		if (configFileName==null && sessionFactory!=null) return;
-        if (sessionFactoryMap!=null && sessionFactoryMap.get(configFileName)!=null) return;
+		if (configFileName == null && sSessionFactory != null) return;
+        if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
-        org.unitime.timetable.model.dao._RootDAO.setSessionFactory(configuration.buildSessionFactory());
-        org.unitime.timetable.model.dao._RootDAO.configuration = configuration;
+        setSessionFactory(configuration.buildSessionFactory());
+        sConfiguration = configuration;
         DatabaseUpdate.update();
 	}
 
@@ -81,23 +74,19 @@ public abstract class _BaseRootDAO {
 	 * Set the session factory
 	 */
 	protected static void setSessionFactory (SessionFactory sessionFactory) {
-		setSessionFactory(
-			(String) null,
-			sessionFactory);
+		setSessionFactory(null, sessionFactory);
 	}
 
 	/**
 	 * Set the session factory
 	 */
-	protected static void setSessionFactory (String configFileName, SessionFactory sf) {
-		if (null == configFileName) {
-			sessionFactory = sf;
-		}
-		else {
-			if (null == sessionFactoryMap) sessionFactoryMap = new HashMap();
-			sessionFactoryMap.put(
-				configFileName,
-				sessionFactory);
+	protected static void setSessionFactory (String configFileName, SessionFactory sessionFactory) {
+		if (configFileName == null) {
+			sSessionFactory = sessionFactory;
+		} else {
+			if (sSessionFactoryMap == null)
+				sSessionFactoryMap = new HashMap<String, SessionFactory>();
+			sSessionFactoryMap.put(configFileName, sessionFactory);
 		}
 	}
 
@@ -107,26 +96,25 @@ public abstract class _BaseRootDAO {
 	 * from the JNDI tree.
 	 */
 	protected SessionFactory getSessionFactory() {
-		return getSessionFactory(
-		getConfigurationFileName());
+		return getSessionFactory(getConfigurationFileName());
 	}
 
 	protected SessionFactory getSessionFactory(String configFile) {
-		if (null == configFile) {
-			if (null == sessionFactory)
+		if (configFile == null) {
+			if (sSessionFactory == null)
 				throw new RuntimeException("The session factory has not been initialized (or an error occured during initialization)");
 			else
-				return sessionFactory;
+				return sSessionFactory;
 		}
 		else {
-			if (null == sessionFactoryMap)
+			if (sSessionFactoryMap == null)
 				throw new RuntimeException("The session factory for '" + configFile + "' has not been initialized (or an error occured during initialization)");
 			else {
-				SessionFactory sf = (SessionFactory) sessionFactoryMap.get(configFile);
-				if (null == sf)
+				SessionFactory sessionFactory = (SessionFactory) sSessionFactoryMap.get(configFile);
+				if (sessionFactory == null)
 					throw new RuntimeException("The session factory for '" + configFile + "' has not been initialized (or an error occured during initialization)");
 				else
-					return sf;
+					return sessionFactory;
 			}
 		}
 	}
@@ -136,9 +124,7 @@ public abstract class _BaseRootDAO {
 	 * @return the active Session
 	 */
 	public Session getSession() {
-		return getSession(
-			getConfigurationFileName(),
-			false);
+		return getSession(getConfigurationFileName(), false);
 	}
 
 	/**
@@ -146,9 +132,7 @@ public abstract class _BaseRootDAO {
 	 * @return the active Session
 	 */
 	public Session createNewSession() {
-		return getSession(
-			getConfigurationFileName(),
-			true);
+		return getSession(getConfigurationFileName(), true);
 	}
 
 	/**
@@ -159,26 +143,26 @@ public abstract class _BaseRootDAO {
 	private Session getSession(String configFile, boolean createNew) {
 		if (createNew) {
 			return getSessionFactory(configFile).openSession();
-		}
-		else {
-			if (null == configFile) {
-				if (null == sessions) sessions = new ThreadLocal();
-				Session session = (Session) sessions.get();
-				if (null == session || !session.isOpen()) {
+		} else {
+			if (configFile == null) {
+				if (sSessions == null)
+					sSessions = new ThreadLocal<Session>();
+				Session session = sSessions.get();
+				if (session == null || !session.isOpen()) {
 					session = getSessionFactory(null).openSession();
-					sessions.set(session);
+					sSessions.set(session);
 				}
 				return session;
 			}
 			else {
-				if (null == mappedSessions) mappedSessions = new ThreadLocal();
-				java.util.HashMap map = (java.util.HashMap) mappedSessions.get();
-				if (null == map) {
-					map = new HashMap(1);
-					mappedSessions.set(map);
+				if (sMappedSessions == null) sMappedSessions = new ThreadLocal<HashMap<String,Session>>();
+				HashMap<String,Session> map = sMappedSessions.get();
+				if (map == null) {
+					map = new HashMap<String,Session>();
+					sMappedSessions.set(map);
 				}
-				Session session = (Session) map.get(configFile);
-				if (null == session || !session.isOpen()) {
+				Session session = map.get(configFile);
+				if (session == null || !session.isOpen()) {
 					session = getSessionFactory(configFile).openSession();
 					map.put(configFile, session);
 				}
@@ -199,17 +183,14 @@ public abstract class _BaseRootDAO {
 	 */
 	private Session getCurrentThreadSession(String configFile) {
 		if (configFile == null) {
-			if (sessions != null) {
-				Session session = (Session) sessions.get();
+			if (sSessions != null) {
+				Session session = sSessions.get();
 				if (session != null) return session;
 			}
 		} else {
-			if (mappedSessions != null) {
-				java.util.HashMap map = (java.util.HashMap) mappedSessions.get();
-				if (map != null) {
-					Session session = (Session) map.get(configFile);
-					return session;
-				}
+			if (sMappedSessions != null) {
+				HashMap<String, Session> map = sMappedSessions.get();
+				if (map != null) return map.get(configFile);
 			}
 		}
 		return null;
@@ -218,26 +199,22 @@ public abstract class _BaseRootDAO {
 	/**
 	 * Close all sessions for the current thread
 	 */
-	public static void closeCurrentThreadSessions () {
-		if (null != sessions) {
-			Session session = (Session) sessions.get();
-			if (null != session && session.isOpen()) {
+	public static void closeCurrentThreadSessions() {
+		if (sSessions != null) {
+			Session session = sSessions.get();
+			if (session != null && session.isOpen()) {
 				session.close();
 			}
 		}
-		if (null != mappedSessions) {
-			java.util.HashMap map = (java.util.HashMap) mappedSessions.get();
-			if (null != map) {
+		if (sMappedSessions != null) {
+			HashMap<String,Session> map = sMappedSessions.get();
+			if (map != null) {
 				HibernateException thrownException = null;
-				Session session = null;
-				for (Iterator i=map.values().iterator(); i.hasNext(); ) {
-					session = (Session) i.next();
+				for (Session session: map.values()) {
 					try {
-						if (null != session && session.isOpen()) {
+						if (null != session && session.isOpen())
 							session.close();
-						}
-					}
-					catch (HibernateException e) {
+					} catch (HibernateException e) {
 						thrownException = e;
 					}
 				}
@@ -247,13 +224,6 @@ public abstract class _BaseRootDAO {
 		}
 	}
 
-	/**
-	 * Close the session
-	 */
-	public void closeSession (Session session) {
-		// TODO - further research required; assumes servlet filter does closing
-		// if (null != session) session.close();
-	}
 
 	/**
 	 * Begin the transaction related to the session
@@ -272,7 +242,7 @@ public abstract class _BaseRootDAO {
 	/**
 	 * Return a new Configuration to use
 	 */
-	 public static Configuration getNewConfiguration (String configFileName) {
+	 public static Configuration getNewConfiguration(String configFileName) {
 	 	return new Configuration();
 	 }
 	
@@ -280,15 +250,14 @@ public abstract class _BaseRootDAO {
 	 * @return Returns the configuration.
 	 */
 	public static Configuration getConfiguration() {
-		return configuration;
+		return sConfiguration;
 	}	 	 
-	
 	 
 	
 	/**
 	 * Return the name of the configuration file to be used with this DAO or null if default
 	 */
-	public String getConfigurationFileName () {
+	public String getConfigurationFileName() {
 		return null;
 	}
 
@@ -297,64 +266,84 @@ public abstract class _BaseRootDAO {
 	 * implementation of this DAO.
 	 * @return the reference Class
 	 */
-	protected abstract Class getReferenceClass();
+	protected abstract Class<T> getReferenceClass();
 
 	/**
 	 * Used by the base DAO classes but here for your modification
 	 * Get object matching the given key and return it.
 	 */
-	protected Object get(Class refClass, Serializable key) {
-		Session s = null;
-		try {
-			s = getSession();
-			return get(refClass, key, s);
-		} finally {
-			closeSession(s);
-		}
+	protected T get(Class<T> refClass, K key) {
+		return get(refClass, key, getSession());
+	}
+	
+	/**
+	 * Get object matching the given key and return it.
+	 */
+	public T get(K key) {
+		return get(getReferenceClass(), key);
 	}
 
 	/**
 	 * Used by the base DAO classes but here for your modification
 	 * Get object matching the given key and return it.
 	 */
-	protected Object get(Class refClass, Serializable key, Session s) {
-		return s.get(refClass, key);
+	@SuppressWarnings("unchecked")
+	protected T get(Class<T> refClass, K key, Session s) {
+		return (T)s.get(refClass, key);
+	}
+	
+	/**
+	 * Get object matching the given key and return it.
+	 */
+	public T get(K key, Session s) {
+		return get(getReferenceClass(), key, s);
 	}
 
 	/**
 	 * Used by the base DAO classes but here for your modification
 	 * Load object matching the given key and return it.
 	 */
-	protected Object load(Class refClass, Serializable key) {
-		Session s = null;
-		try {
-			s = getSession();
-			return load(refClass, key, s);
-		} finally {
-			closeSession(s);
-		}
+	protected T load(Class<T> refClass, K key) {
+		return load(refClass, key, getSession());
+	}
+	
+	/**
+	 * Load object matching the given key and return it.
+	 */
+	public T load(K key) {
+		return load(getReferenceClass(), key);
 	}
 
 	/**
 	 * Used by the base DAO classes but here for your modification
 	 * Load object matching the given key and return it.
 	 */
-	protected Object load(Class refClass, Serializable key, Session s) {
-		return s.load(refClass, key);
+	@SuppressWarnings("unchecked")
+	protected T load(Class<T> refClass, K key, Session s) {
+		return (T)s.load(refClass, key);
+	}
+	
+	/**
+	 * Load object matching the given key and return it.
+	 */
+	public T load(K key, Session s) {
+		return load(getReferenceClass(), key, s);
+	}
+	
+	/**
+	 * Load and initialize object matching the given key and return it.
+	 */
+	public T loadInitialize(K key, Session s) {
+		T obj = load(key, s);
+		if (!Hibernate.isInitialized(obj)) Hibernate.initialize(obj);
+		return obj;
 	}
 
 	/**
 	 * Return all objects related to the implementation of this DAO with no filter.
 	 */
-	public java.util.List findAll () {
-		Session s = null;
-		try {
-			s = getSession();
-    		return findAll(s);
-		}
-		finally {
-			closeSession(s);
-		}
+	public List<T> findAll () {
+		return findAll(getSession());
 	}
 
 	/**
@@ -362,204 +351,33 @@ public abstract class _BaseRootDAO {
 	 * Use the session given.
 	 * @param s the Session
 	 */
-	public java.util.List findAll (Session s) {
+	public List<T> findAll (Session s) {
    		return findAll(s, getDefaultOrder());
 	}
 
 	/**
 	 * Return all objects related to the implementation of this DAO with no filter.
+	 * The results are ordered by the order specified
+	 * Use the session given.
 	 */
-	public java.util.List findAll (Order defaultOrder) {
-		Session s = null;
-		try {
-			s = getSession();
-			return findAll(s, defaultOrder);
-		}
-		finally {
-			closeSession(s);
-		}
+	public List<T> findAll (Order... orders) {
+		return findAll(getSession(), orders);
 	}
+
 
 	/**
 	 * Return all objects related to the implementation of this DAO with no filter.
 	 * Use the session given.
-	 * @param s the Session
 	 */
-	public java.util.List findAll (Session s, Order defaultOrder) {
+	@SuppressWarnings("unchecked")
+	public List<T> findAll (Session s, Order... orders) {
 		Criteria crit = s.createCriteria(getReferenceClass());
-		if (null != defaultOrder) crit.addOrder(defaultOrder);
-		return crit.list();
-	}
-
-	/**
-	 * Return all objects related to the implementation of this DAO with a filter.
-	 * Use the session given.
-	 * @param propName the name of the property to use for filtering
-	 * @param filter the value of the filter
-	 */
-	protected java.util.List findFiltered (String propName, Object filter) {
-		return findFiltered(propName, filter, getDefaultOrder());
-	}
-
-	/**
-	 * Return all objects related to the implementation of this DAO with a filter.
-	 * Use the session given.
-	 * @param propName the name of the property to use for filtering
-	 * @param filter the value of the filter
-	 * @param orderProperty the name of the property used for ordering
-	 */
-	protected java.util.List findFiltered (String propName, Object filter, Order order) {
-		Session s = null;
-		try {
-			s = getSession();
-			return findFiltered(s, propName, filter, getDefaultOrder());
-		}
-		finally {
-			closeSession(s);
-		}
-	}
-	
-	/**
-	 * Return all objects related to the implementation of this DAO with a filter.
-	 * Use the session given.
-	 * @param s the Session
-	 * @param propName the name of the property to use for filtering
-	 * @param filter the value of the filter
-	 * @param orderProperty the name of the property used for ordering
-	 */
-	protected java.util.List findFiltered (Session s, String propName, Object filter, Order order) {
-		Criteria crit = s.createCriteria(getReferenceClass());
-		crit.add(Restrictions.eq(propName, filter));
-		if (null != order) crit.addOrder(order);
-		return crit.list();
-	}
-	
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * @param name the name of a query defined externally 
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getNamedQuery(name, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the session given.
-	 * @param name the name of a query defined externally 
-	 * @param s the Session
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Session s) {
-		Query q = s.getNamedQuery(name);
-		return q;
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * @param name the name of a query defined externally 
-	 * @param param the first parameter to set
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Serializable param) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getNamedQuery(name, param, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the session given.
-	 * @param name the name of a query defined externally 
-	 * @param param the first parameter to set
-	 * @param s the Session
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Serializable param, Session s) {
-		Query q = s.getNamedQuery(name);
-		q.setParameter(0, param);
-		return q;
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given.
-	 * @param name the name of a query defined externally 
-	 * @param params the parameter array
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Serializable[] params) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getNamedQuery(name, params, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given and the Session given.
-	 * @param name the name of a query defined externally 
-	 * @param params the parameter array
-	 * @s the Session
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Serializable[] params, Session s) {
-		Query q = s.getNamedQuery(name);
-		if (null != params) {
-			for (int i = 0; i < params.length; i++) {
-				q.setParameter(i, params[i]);
+		if (orders != null) {
+			for (Order order: orders) {
+				crit.addOrder(order);
 			}
 		}
-		return q;
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given.
-	 * @param name the name of a query defined externally 
-	 * @param params the parameter Map
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Map params) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getNamedQuery(name, params, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given and the Session given.
-	 * @param name the name of a query defined externally 
-	 * @param params the parameter Map
-	 * @s the Session
-	 * @return Query
-	 */
-	protected Query getNamedQuery(String name, Map params, Session s) {
-		Query q = s.getNamedQuery(name);
-		if (null != params) {
-			for (Iterator i=params.entrySet().iterator(); i.hasNext(); ) {
-				Map.Entry entry = (Map.Entry) i.next();
-				q.setParameter((String) entry.getKey(), entry.getValue());
-			}
-		}
-		return q;
+		return (List<T>)crit.list();
 	}
 
 	/**
@@ -568,123 +386,16 @@ public abstract class _BaseRootDAO {
 	 * @return a distinct list of instances (or arrays of instances)
 	 */
 	public Query getQuery(String queryStr) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getQuery(queryStr, s);
-		} finally {
-			closeSession(s);
-		}
+		return getQuery(queryStr, getSession());
 	}
 
 	/**
 	 * Execute a query but use the session given instead of creating a new one.
 	 * @param queryStr a query expressed in Hibernate's query language
-	 * @s the Session to use
+	 * @param s the Session to use
 	 */
 	public Query getQuery(String queryStr, Session s) {
 		return s.createQuery(queryStr);
-	}
-
-
-
-	/**
-	 * Execute a query. 
-	 * @param query a query expressed in Hibernate's query language
-	 * @param queryStr the name of a query defined externally 
-	 * @param param the first parameter to set
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Serializable param) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getQuery(queryStr, param, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Execute a query but use the session given instead of creating a new one.
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param param the first parameter to set
-	 * @s the Session to use
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Serializable param, Session s) {
-		Query q = getQuery(queryStr, s);
-		q.setParameter(0, param);
-		return q;
-	}
-
-	/**
-	 * Execute a query. 
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param params the parameter array
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Serializable[] params) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getQuery(queryStr, params, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Execute a query but use the session given instead of creating a new one.
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param params the parameter array
-	 * @s the Session
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Serializable[] params, Session s) {
-		Query q = getQuery(queryStr, s);
-		if (null != params) {
-			for (int i = 0; i < params.length; i++) {
-				q.setParameter(i, params[i]);
-			}
-		}
-		return q;
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given.
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param params the parameter Map
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Map params) {
-		Session s = null;
-		try {
-			s = getSession();
-			return getQuery(queryStr, params, s);
-		} finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Obtain an instance of Query for a named query string defined in the mapping file.
-	 * Use the parameters given and the Session given.
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param params the parameter Map
-	 * @s the Session
-	 * @return Query
-	 */
-	protected Query getQuery(String queryStr, Map params, Session s) {
-		Query q = getQuery(queryStr, s);
-		if (null != params) {
-			for (Iterator i=params.entrySet().iterator(); i.hasNext(); ) {
-				Map.Entry entry = (Map.Entry) i.next();
-				q.setParameter((String) entry.getKey(), entry.getValue());
-			}
-		}
-		return q;
 	}
 
 	protected Order getDefaultOrder () {
@@ -692,44 +403,38 @@ public abstract class _BaseRootDAO {
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Persist the given transient instance, first assigning a generated identifier. 
 	 * (Or using the current value of the identifier property if the assigned generator is used.) 
 	 */
-	protected Serializable save(Object obj) {
+	public K save(T obj) {
 		Transaction t = null;
 		Session s = null;
 		try {
 			s = getSession();
 			t = beginTransaction(s);
-			Serializable rtn = save(obj, s);
+			K rtn = save(obj, s);
 			commitTransaction(t);
 			return rtn;
-		}
-		catch (HibernateException e) {
+		} catch (HibernateException e) {
 			if (null != t) t.rollback();
             throw e;
 		}
-		finally {
-			closeSession(s);
-		}
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Persist the given transient instance, first assigning a generated identifier. 
 	 * (Or using the current value of the identifier property if the assigned generator is used.) 
 	 */
-	protected Serializable save(Object obj, Session s) {
-		return s.save(obj);
+	@SuppressWarnings("unchecked")
+	public K save(T obj, Session s) {
+		return (K)s.save(obj);
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Either save() or update() the given instance, depending upon the value of its
 	 * identifier property.
 	 */
-	protected void saveOrUpdate(Object obj) {
+	public void saveOrUpdate(T obj) {
 		Transaction t = null;
 		Session s = null;
 		try {
@@ -742,27 +447,22 @@ public abstract class _BaseRootDAO {
 			if (null != t) t.rollback();
             throw e;
 		}
-		finally {
-			closeSession(s);
-		}
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Either save() or update() the given instance, depending upon the value of its
 	 * identifier property.
 	 */
-	protected void saveOrUpdate(Object obj, Session s) {
+	public void saveOrUpdate(T obj, Session s) {
 		s.saveOrUpdate(obj);
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * @param obj a transient instance containing updated state
 	 */
-	protected void update(Object obj) {
+	public void update(T obj) {
 		Transaction t = null;
 		Session s = null;
 		try {
@@ -775,122 +475,23 @@ public abstract class _BaseRootDAO {
 			if (null != t) t.rollback();
             throw e;
 		}
-		finally {
-			closeSession(s);
-		}
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * @param obj a transient instance containing updated state
 	 * @param s the Session
 	 */
-	protected void update(Object obj, Session s) {
+	public void update(T obj, Session s) {
 		s.update(obj);
 	}
 
 	/**
-	 * Delete all objects returned by the query. Return the number of objects deleted.
-	 */
-	protected int delete(String delStmt) {
-		Transaction t = null;
-		Session s = null;
-		try {
-			s = getSession();
-			t = beginTransaction(s);
-			int rtn = delete(delStmt, s);
-			commitTransaction(t);
-			return rtn;
-		}
-		catch (HibernateException e) {
-			if (null != t) t.rollback();
-            throw e;
-		}
-		finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Delete all objects returned by the query. Return the number of objects deleted.
-	 */
-	protected int  delete(String delStmt, Session s) {
-		return delete (delStmt, null, s);
-	}
-
-	/**
-	 * Delete all objects returned by the query.
-	 */
-	protected int delete(String delStmt, Object parameterValue) {
-		Transaction t = null;
-		Session s = null;
-		try {
-			s = getSession();
-			t = beginTransaction(s);
-			int rtn = delete (delStmt, null, s);
-			commitTransaction(t);
-			return rtn;
-		}
-		catch (HibernateException e) {
-			if (null != t) t.rollback();
-            throw e;
-		}
-		finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Delete all objects returned by the query.
-	 */
-	protected int delete(String delStmt, Object value, Session s) {
-		Query query = s.createQuery (delStmt);
-		if (null != value)
-			query.setParameter(0, value);
-		return delete (query, s);
-	}
-
-	/**
-	 * Delete all objects returned by the query
-	 */
-	protected int delete (Query query) {
-		Transaction t = null;
-		Session s = null;
-		try {
-			s = getSession();
-			t = beginTransaction(s);
-			int rtn = delete (query, s);
-			commitTransaction(t);
-			return rtn;
-		}
-		catch (HibernateException e) {
-			if (null != t) t.rollback();
-            throw e;
-		}
-		finally {
-			closeSession(s);
-		}
-	}
-
-	/**
-	 * Delete all objects returned by the query
-	 */
-	protected int delete (Query query, Session s) {
-		List list = query.list();
-		for (Iterator i=list.iterator(); i.hasNext(); ) {
-			delete(i.next(), s);
-		}
-		return list.size();
-	}
-
-	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 */
-	protected void delete(Object obj) {
+	public void delete(T obj) {
 		Transaction t = null;
 		Session s = null;
 		try {
@@ -903,28 +504,37 @@ public abstract class _BaseRootDAO {
 			if (null != t) t.rollback();
             throw e;
 		}
-		finally {
-			closeSession(s);
-		}
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 */
-	protected void delete(Object obj, Session s) {
+	public void delete(T obj, Session s) {
 		s.delete(obj);
 	}
 
 	/**
-	 * Used by the base DAO classes but here for your modification
+	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
+	 * Session or a transient instance with an identifier associated with existing persistent state. 
+	 */
+	public void delete(K key) {
+		delete(load(key));
+	}
+
+	/**
+	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
+	 * Session or a transient instance with an identifier associated with existing persistent state. 
+	 */
+	public void delete(K key, Session s) {
+		s.delete(load(key, s));
+	}
+
+	/**
 	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
 	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
 	 */
-	protected void refresh(Object obj, Session s) {
+	public void refresh(T obj, Session s) {
 		s.refresh(obj);
 	}
-
-
 }

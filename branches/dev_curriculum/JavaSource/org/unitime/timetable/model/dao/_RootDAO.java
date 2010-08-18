@@ -19,59 +19,12 @@
 */
 package org.unitime.timetable.model.dao;
 
-import java.util.Iterator;
-
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Order;
+import java.io.Serializable;
 
 
-public class _RootDAO extends org.unitime.timetable.model.base._BaseRootDAO {
+public class _RootDAO<T, K extends Serializable> extends org.unitime.timetable.model.base._BaseRootDAO<T, K> {
 
-/*
-	If you are using lazy loading, uncomment this
-	Somewhere, you should call RootDAO.closeCurrentThreadSessions();
-*/
-	public void closeSession (Session session) {
-		// do nothing here because the session will be closed later
-	}
-
-/*	
-	If you are pulling the SessionFactory from a JNDI tree, uncomment this
-	protected SessionFactory getSessionFactory(String configFile) {
-		// If you have a single session factory, ignore the configFile parameter
-		// Otherwise, you can set a meta attribute under the class node called "config-file" which
-		// will be passed in here so you can tell what session factory an individual mapping file
-		// belongs to
-		return (SessionFactory) new InitialContext().lookup("java:/{SessionFactoryName}");
-	}
-*/
-
-	public Class getReferenceClass () {
+	public Class<T> getReferenceClass () {
 		return null;
 	}
-	/**
-	 * Return all objects related to the implementation of this DAO with no filter.
-	 * The results are ordered by the order specified in orderList
-	 * Use the session given.
-	 * @param orderList Collection of Order objects 
-	 */
-	public java.util.List findAll (java.util.Collection orderList) {
-		Session s = null;
-		try {
-			s = getSession();
-			Criteria crit = s.createCriteria(getReferenceClass());
-			if (null != orderList) {
-			    Iterator iter = orderList.iterator();
-			    while (iter.hasNext())
-			        crit.addOrder( (Order) iter.next() );			    
-			}
-			return crit.list();
-		}
-		finally {
-			closeSession(s);
-		}
-	}
-
-
 }
