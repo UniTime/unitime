@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 
-public abstract class BaseSolverParameterDefDAO extends _RootDAO {
+public abstract class BaseSolverParameterDefDAO extends _RootDAO<SolverParameterDef,Long> {
 
 	private static SolverParameterDefDAO sInstance;
 
-	public static SolverParameterDefDAO getInstance () {
+	public static SolverParameterDefDAO getInstance() {
 		if (sInstance == null) sInstance = new SolverParameterDefDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolverParameterDef> getReferenceClass() {
 		return SolverParameterDef.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolverParameterDef get(Long uniqueId) {
-		return (SolverParameterDef) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolverParameterDef get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverParameterDef) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverParameterDef load(Long uniqueId) {
-		return (SolverParameterDef) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolverParameterDef load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverParameterDef) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverParameterDef loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolverParameterDef solverParameterDef = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solverParameterDef)) Hibernate.initialize(solverParameterDef);
-		return solverParameterDef;
-	}
-
-	public void save(SolverParameterDef solverParameterDef) {
-		save((Object) solverParameterDef);
-	}
-
-	public void save(SolverParameterDef solverParameterDef, org.hibernate.Session hibSession) {
-		save((Object) solverParameterDef, hibSession);
-	}
-
-	public void saveOrUpdate(SolverParameterDef solverParameterDef) {
-		saveOrUpdate((Object) solverParameterDef);
-	}
-
-	public void saveOrUpdate(SolverParameterDef solverParameterDef, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solverParameterDef, hibSession);
-	}
-
-
-	public void update(SolverParameterDef solverParameterDef) {
-		update((Object) solverParameterDef);
-	}
-
-	public void update(SolverParameterDef solverParameterDef, org.hibernate.Session hibSession) {
-		update((Object) solverParameterDef, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolverParameterDef solverParameterDef) {
-		delete((Object) solverParameterDef);
-	}
-
-	public void delete(SolverParameterDef solverParameterDef, org.hibernate.Session hibSession) {
-		delete((Object) solverParameterDef, hibSession);
-	}
-
-	public void refresh(SolverParameterDef solverParameterDef, org.hibernate.Session hibSession) {
-		refresh((Object) solverParameterDef, hibSession);
-	}
-
-	public List<SolverParameterDef> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SolverParameterDef").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SolverParameterDef> findByGroup(org.hibernate.Session hibSession, Long groupId) {
 		return hibSession.createQuery("from SolverParameterDef x where x.group.uniqueId = :groupId").setLong("groupId", groupId).list();
 	}

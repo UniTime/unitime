@@ -117,35 +117,35 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
-		if (iSubjectAreas == null) iSubjectAreas = new HashSet();
+		if (iSubjectAreas == null) iSubjectAreas = new HashSet<SubjectArea>();
 		iSubjectAreas.add(subjectArea);
 	}
 
 	public Set<Building> getBuildings() { return iBuildings; }
 	public void setBuildings(Set<Building> buildings) { iBuildings = buildings; }
 	public void addTobuildings(Building building) {
-		if (iBuildings == null) iBuildings = new HashSet();
+		if (iBuildings == null) iBuildings = new HashSet<Building>();
 		iBuildings.add(building);
 	}
 
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
-		if (iDepartments == null) iDepartments = new HashSet();
+		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
 	}
 
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
-		if (iRooms == null) iRooms = new HashSet();
+		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
 	}
 
 	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
 	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
 	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
-		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet();
+		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet<InstructionalOffering>();
 		iInstructionalOfferings.add(instructionalOffering);
 	}
 

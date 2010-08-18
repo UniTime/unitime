@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 
-public abstract class BaseExternalRoomFeatureDAO extends _RootDAO {
+public abstract class BaseExternalRoomFeatureDAO extends _RootDAO<ExternalRoomFeature,Long> {
 
 	private static ExternalRoomFeatureDAO sInstance;
 
-	public static ExternalRoomFeatureDAO getInstance () {
+	public static ExternalRoomFeatureDAO getInstance() {
 		if (sInstance == null) sInstance = new ExternalRoomFeatureDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ExternalRoomFeature> getReferenceClass() {
 		return ExternalRoomFeature.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ExternalRoomFeature get(Long uniqueId) {
-		return (ExternalRoomFeature) get(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoomFeature get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoomFeature) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoomFeature load(Long uniqueId) {
-		return (ExternalRoomFeature) load(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoomFeature load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoomFeature) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoomFeature loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ExternalRoomFeature externalRoomFeature = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(externalRoomFeature)) Hibernate.initialize(externalRoomFeature);
-		return externalRoomFeature;
-	}
-
-	public void save(ExternalRoomFeature externalRoomFeature) {
-		save((Object) externalRoomFeature);
-	}
-
-	public void save(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
-		save((Object) externalRoomFeature, hibSession);
-	}
-
-	public void saveOrUpdate(ExternalRoomFeature externalRoomFeature) {
-		saveOrUpdate((Object) externalRoomFeature);
-	}
-
-	public void saveOrUpdate(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) externalRoomFeature, hibSession);
-	}
-
-
-	public void update(ExternalRoomFeature externalRoomFeature) {
-		update((Object) externalRoomFeature);
-	}
-
-	public void update(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
-		update((Object) externalRoomFeature, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ExternalRoomFeature externalRoomFeature) {
-		delete((Object) externalRoomFeature);
-	}
-
-	public void delete(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
-		delete((Object) externalRoomFeature, hibSession);
-	}
-
-	public void refresh(ExternalRoomFeature externalRoomFeature, org.hibernate.Session hibSession) {
-		refresh((Object) externalRoomFeature, hibSession);
-	}
-
-	public List<ExternalRoomFeature> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ExternalRoomFeature").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ExternalRoomFeature> findByRoom(org.hibernate.Session hibSession, Long roomId) {
 		return hibSession.createQuery("from ExternalRoomFeature x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
 	}

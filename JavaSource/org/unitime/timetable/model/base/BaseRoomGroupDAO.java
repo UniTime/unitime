@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 
-public abstract class BaseRoomGroupDAO extends _RootDAO {
+public abstract class BaseRoomGroupDAO extends _RootDAO<RoomGroup,Long> {
 
 	private static RoomGroupDAO sInstance;
 
-	public static RoomGroupDAO getInstance () {
+	public static RoomGroupDAO getInstance() {
 		if (sInstance == null) sInstance = new RoomGroupDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RoomGroup> getReferenceClass() {
 		return RoomGroup.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RoomGroup get(Long uniqueId) {
-		return (RoomGroup) get(getReferenceClass(), uniqueId);
-	}
-
-	public RoomGroup get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomGroup) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomGroup load(Long uniqueId) {
-		return (RoomGroup) load(getReferenceClass(), uniqueId);
-	}
-
-	public RoomGroup load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomGroup) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomGroup loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		RoomGroup roomGroup = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(roomGroup)) Hibernate.initialize(roomGroup);
-		return roomGroup;
-	}
-
-	public void save(RoomGroup roomGroup) {
-		save((Object) roomGroup);
-	}
-
-	public void save(RoomGroup roomGroup, org.hibernate.Session hibSession) {
-		save((Object) roomGroup, hibSession);
-	}
-
-	public void saveOrUpdate(RoomGroup roomGroup) {
-		saveOrUpdate((Object) roomGroup);
-	}
-
-	public void saveOrUpdate(RoomGroup roomGroup, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) roomGroup, hibSession);
-	}
-
-
-	public void update(RoomGroup roomGroup) {
-		update((Object) roomGroup);
-	}
-
-	public void update(RoomGroup roomGroup, org.hibernate.Session hibSession) {
-		update((Object) roomGroup, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(RoomGroup roomGroup) {
-		delete((Object) roomGroup);
-	}
-
-	public void delete(RoomGroup roomGroup, org.hibernate.Session hibSession) {
-		delete((Object) roomGroup, hibSession);
-	}
-
-	public void refresh(RoomGroup roomGroup, org.hibernate.Session hibSession) {
-		refresh((Object) roomGroup, hibSession);
-	}
-
-	public List<RoomGroup> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from RoomGroup").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<RoomGroup> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from RoomGroup x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<RoomGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from RoomGroup x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}

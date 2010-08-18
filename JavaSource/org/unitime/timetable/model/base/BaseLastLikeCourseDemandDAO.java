@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 
-public abstract class BaseLastLikeCourseDemandDAO extends _RootDAO {
+public abstract class BaseLastLikeCourseDemandDAO extends _RootDAO<LastLikeCourseDemand,Long> {
 
 	private static LastLikeCourseDemandDAO sInstance;
 
-	public static LastLikeCourseDemandDAO getInstance () {
+	public static LastLikeCourseDemandDAO getInstance() {
 		if (sInstance == null) sInstance = new LastLikeCourseDemandDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<LastLikeCourseDemand> getReferenceClass() {
 		return LastLikeCourseDemand.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public LastLikeCourseDemand get(Long uniqueId) {
-		return (LastLikeCourseDemand) get(getReferenceClass(), uniqueId);
-	}
-
-	public LastLikeCourseDemand get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (LastLikeCourseDemand) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public LastLikeCourseDemand load(Long uniqueId) {
-		return (LastLikeCourseDemand) load(getReferenceClass(), uniqueId);
-	}
-
-	public LastLikeCourseDemand load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (LastLikeCourseDemand) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public LastLikeCourseDemand loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		LastLikeCourseDemand lastLikeCourseDemand = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(lastLikeCourseDemand)) Hibernate.initialize(lastLikeCourseDemand);
-		return lastLikeCourseDemand;
-	}
-
-	public void save(LastLikeCourseDemand lastLikeCourseDemand) {
-		save((Object) lastLikeCourseDemand);
-	}
-
-	public void save(LastLikeCourseDemand lastLikeCourseDemand, org.hibernate.Session hibSession) {
-		save((Object) lastLikeCourseDemand, hibSession);
-	}
-
-	public void saveOrUpdate(LastLikeCourseDemand lastLikeCourseDemand) {
-		saveOrUpdate((Object) lastLikeCourseDemand);
-	}
-
-	public void saveOrUpdate(LastLikeCourseDemand lastLikeCourseDemand, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) lastLikeCourseDemand, hibSession);
-	}
-
-
-	public void update(LastLikeCourseDemand lastLikeCourseDemand) {
-		update((Object) lastLikeCourseDemand);
-	}
-
-	public void update(LastLikeCourseDemand lastLikeCourseDemand, org.hibernate.Session hibSession) {
-		update((Object) lastLikeCourseDemand, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(LastLikeCourseDemand lastLikeCourseDemand) {
-		delete((Object) lastLikeCourseDemand);
-	}
-
-	public void delete(LastLikeCourseDemand lastLikeCourseDemand, org.hibernate.Session hibSession) {
-		delete((Object) lastLikeCourseDemand, hibSession);
-	}
-
-	public void refresh(LastLikeCourseDemand lastLikeCourseDemand, org.hibernate.Session hibSession) {
-		refresh((Object) lastLikeCourseDemand, hibSession);
-	}
-
-	public List<LastLikeCourseDemand> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from LastLikeCourseDemand").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<LastLikeCourseDemand> findByStudent(org.hibernate.Session hibSession, Long studentId) {
 		return hibSession.createQuery("from LastLikeCourseDemand x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<LastLikeCourseDemand> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
 		return hibSession.createQuery("from LastLikeCourseDemand x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
 	}

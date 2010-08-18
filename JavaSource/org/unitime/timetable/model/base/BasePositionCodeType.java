@@ -57,7 +57,7 @@ public abstract class BasePositionCodeType implements Serializable {
 	public Set<Staff> getStaff() { return iStaff; }
 	public void setStaff(Set<Staff> staff) { iStaff = staff; }
 	public void addTostaff(Staff staff) {
-		if (iStaff == null) iStaff = new HashSet();
+		if (iStaff == null) iStaff = new HashSet<Staff>();
 		iStaff.add(staff);
 	}
 

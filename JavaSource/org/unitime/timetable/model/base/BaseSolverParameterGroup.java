@@ -72,7 +72,7 @@ public abstract class BaseSolverParameterGroup implements Serializable {
 	public Set<SolverParameterDef> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameterDef> parameters) { iParameters = parameters; }
 	public void addToparameters(SolverParameterDef solverParameterDef) {
-		if (iParameters == null) iParameters = new HashSet();
+		if (iParameters == null) iParameters = new HashSet<SolverParameterDef>();
 		iParameters.add(solverParameterDef);
 	}
 

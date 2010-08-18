@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 
-public abstract class BaseSolutionDAO extends _RootDAO {
+public abstract class BaseSolutionDAO extends _RootDAO<Solution,Long> {
 
 	private static SolutionDAO sInstance;
 
-	public static SolutionDAO getInstance () {
+	public static SolutionDAO getInstance() {
 		if (sInstance == null) sInstance = new SolutionDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Solution> getReferenceClass() {
 		return Solution.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Solution get(Long uniqueId) {
-		return (Solution) get(getReferenceClass(), uniqueId);
-	}
-
-	public Solution get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Solution) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Solution load(Long uniqueId) {
-		return (Solution) load(getReferenceClass(), uniqueId);
-	}
-
-	public Solution load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Solution) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Solution loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Solution solution = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solution)) Hibernate.initialize(solution);
-		return solution;
-	}
-
-	public void save(Solution solution) {
-		save((Object) solution);
-	}
-
-	public void save(Solution solution, org.hibernate.Session hibSession) {
-		save((Object) solution, hibSession);
-	}
-
-	public void saveOrUpdate(Solution solution) {
-		saveOrUpdate((Object) solution);
-	}
-
-	public void saveOrUpdate(Solution solution, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solution, hibSession);
-	}
-
-
-	public void update(Solution solution) {
-		update((Object) solution);
-	}
-
-	public void update(Solution solution, org.hibernate.Session hibSession) {
-		update((Object) solution, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Solution solution) {
-		delete((Object) solution);
-	}
-
-	public void delete(Solution solution, org.hibernate.Session hibSession) {
-		delete((Object) solution, hibSession);
-	}
-
-	public void refresh(Solution solution, org.hibernate.Session hibSession) {
-		refresh((Object) solution, hibSession);
-	}
-
-	public List<Solution> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Solution").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Solution> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
 		return hibSession.createQuery("from Solution x where x.owner.uniqueId = :ownerId").setLong("ownerId", ownerId).list();
 	}

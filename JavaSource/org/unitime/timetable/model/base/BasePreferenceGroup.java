@@ -54,14 +54,14 @@ public abstract class BasePreferenceGroup implements Serializable {
 	public Set<Preference> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<Preference> preferences) { iPreferences = preferences; }
 	public void addTopreferences(Preference preference) {
-		if (iPreferences == null) iPreferences = new HashSet();
+		if (iPreferences == null) iPreferences = new HashSet<Preference>();
 		iPreferences.add(preference);
 	}
 
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
 	public void addTodistributionObjects(DistributionObject distributionObject) {
-		if (iDistributionObjects == null) iDistributionObjects = new HashSet();
+		if (iDistributionObjects == null) iDistributionObjects = new HashSet<DistributionObject>();
 		iDistributionObjects.add(distributionObject);
 	}
 

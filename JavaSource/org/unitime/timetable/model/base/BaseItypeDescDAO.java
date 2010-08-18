@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
-public abstract class BaseItypeDescDAO extends _RootDAO {
+public abstract class BaseItypeDescDAO extends _RootDAO<ItypeDesc,Integer> {
 
 	private static ItypeDescDAO sInstance;
 
-	public static ItypeDescDAO getInstance () {
+	public static ItypeDescDAO getInstance() {
 		if (sInstance == null) sInstance = new ItypeDescDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ItypeDesc> getReferenceClass() {
 		return ItypeDesc.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ItypeDesc get(Integer itype) {
-		return (ItypeDesc) get(getReferenceClass(), itype);
-	}
-
-	public ItypeDesc get(Integer itype, org.hibernate.Session hibSession) {
-		return (ItypeDesc) get(getReferenceClass(), itype, hibSession);
-	}
-
-	public ItypeDesc load(Integer itype) {
-		return (ItypeDesc) load(getReferenceClass(), itype);
-	}
-
-	public ItypeDesc load(Integer itype, org.hibernate.Session hibSession) {
-		return (ItypeDesc) load(getReferenceClass(), itype, hibSession);
-	}
-
-	public ItypeDesc loadInitialize(Integer itype, org.hibernate.Session hibSession) {
-		ItypeDesc itypeDesc = load(itype, hibSession);
-		if (!Hibernate.isInitialized(itypeDesc)) Hibernate.initialize(itypeDesc);
-		return itypeDesc;
-	}
-
-	public void save(ItypeDesc itypeDesc) {
-		save((Object) itypeDesc);
-	}
-
-	public void save(ItypeDesc itypeDesc, org.hibernate.Session hibSession) {
-		save((Object) itypeDesc, hibSession);
-	}
-
-	public void saveOrUpdate(ItypeDesc itypeDesc) {
-		saveOrUpdate((Object) itypeDesc);
-	}
-
-	public void saveOrUpdate(ItypeDesc itypeDesc, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) itypeDesc, hibSession);
-	}
-
-
-	public void update(ItypeDesc itypeDesc) {
-		update((Object) itypeDesc);
-	}
-
-	public void update(ItypeDesc itypeDesc, org.hibernate.Session hibSession) {
-		update((Object) itypeDesc, hibSession);
-	}
-
-	public void delete(Integer itype) {
-		delete(load(itype));
-	}
-
-	public void delete(Integer itype, org.hibernate.Session hibSession) {
-		delete(load(itype, hibSession), hibSession);
-	}
-
-	public void delete(ItypeDesc itypeDesc) {
-		delete((Object) itypeDesc);
-	}
-
-	public void delete(ItypeDesc itypeDesc, org.hibernate.Session hibSession) {
-		delete((Object) itypeDesc, hibSession);
-	}
-
-	public void refresh(ItypeDesc itypeDesc, org.hibernate.Session hibSession) {
-		refresh((Object) itypeDesc, hibSession);
-	}
-
-	public List<ItypeDesc> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ItypeDesc").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ItypeDesc> findByParent(org.hibernate.Session hibSession, Integer parentId) {
 		return hibSession.createQuery("from ItypeDesc x where x.parent.itype = :parentId").setInteger("parentId", parentId).list();
 	}

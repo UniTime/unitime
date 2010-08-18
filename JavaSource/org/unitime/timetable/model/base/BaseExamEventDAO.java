@@ -21,97 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 
-public abstract class BaseExamEventDAO extends _RootDAO {
+public abstract class BaseExamEventDAO extends _RootDAO<ExamEvent,Long> {
 
 	private static ExamEventDAO sInstance;
 
-	public static ExamEventDAO getInstance () {
+	public static ExamEventDAO getInstance() {
 		if (sInstance == null) sInstance = new ExamEventDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ExamEvent> getReferenceClass() {
 		return ExamEvent.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ExamEvent get(Long uniqueId) {
-		return (ExamEvent) get(getReferenceClass(), uniqueId);
-	}
-
-	public ExamEvent get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExamEvent) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExamEvent load(Long uniqueId) {
-		return (ExamEvent) load(getReferenceClass(), uniqueId);
-	}
-
-	public ExamEvent load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExamEvent) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExamEvent loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ExamEvent examEvent = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(examEvent)) Hibernate.initialize(examEvent);
-		return examEvent;
-	}
-
-	public void save(ExamEvent examEvent) {
-		save((Object) examEvent);
-	}
-
-	public void save(ExamEvent examEvent, org.hibernate.Session hibSession) {
-		save((Object) examEvent, hibSession);
-	}
-
-	public void saveOrUpdate(ExamEvent examEvent) {
-		saveOrUpdate((Object) examEvent);
-	}
-
-	public void saveOrUpdate(ExamEvent examEvent, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) examEvent, hibSession);
-	}
-
-
-	public void update(ExamEvent examEvent) {
-		update((Object) examEvent);
-	}
-
-	public void update(ExamEvent examEvent, org.hibernate.Session hibSession) {
-		update((Object) examEvent, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ExamEvent examEvent) {
-		delete((Object) examEvent);
-	}
-
-	public void delete(ExamEvent examEvent, org.hibernate.Session hibSession) {
-		delete((Object) examEvent, hibSession);
-	}
-
-	public void refresh(ExamEvent examEvent, org.hibernate.Session hibSession) {
-		refresh((Object) examEvent, hibSession);
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ExamEvent> findByExam(org.hibernate.Session hibSession, Long examId) {
 		return hibSession.createQuery("from ExamEvent x where x.exam.uniqueId = :examId").setLong("examId", examId).list();
 	}

@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
 
-public abstract class BaseExternalRoomDepartmentDAO extends _RootDAO {
+public abstract class BaseExternalRoomDepartmentDAO extends _RootDAO<ExternalRoomDepartment,Long> {
 
 	private static ExternalRoomDepartmentDAO sInstance;
 
-	public static ExternalRoomDepartmentDAO getInstance () {
+	public static ExternalRoomDepartmentDAO getInstance() {
 		if (sInstance == null) sInstance = new ExternalRoomDepartmentDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ExternalRoomDepartment> getReferenceClass() {
 		return ExternalRoomDepartment.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ExternalRoomDepartment get(Long uniqueId) {
-		return (ExternalRoomDepartment) get(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoomDepartment get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoomDepartment) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoomDepartment load(Long uniqueId) {
-		return (ExternalRoomDepartment) load(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoomDepartment load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoomDepartment) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoomDepartment loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ExternalRoomDepartment externalRoomDepartment = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(externalRoomDepartment)) Hibernate.initialize(externalRoomDepartment);
-		return externalRoomDepartment;
-	}
-
-	public void save(ExternalRoomDepartment externalRoomDepartment) {
-		save((Object) externalRoomDepartment);
-	}
-
-	public void save(ExternalRoomDepartment externalRoomDepartment, org.hibernate.Session hibSession) {
-		save((Object) externalRoomDepartment, hibSession);
-	}
-
-	public void saveOrUpdate(ExternalRoomDepartment externalRoomDepartment) {
-		saveOrUpdate((Object) externalRoomDepartment);
-	}
-
-	public void saveOrUpdate(ExternalRoomDepartment externalRoomDepartment, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) externalRoomDepartment, hibSession);
-	}
-
-
-	public void update(ExternalRoomDepartment externalRoomDepartment) {
-		update((Object) externalRoomDepartment);
-	}
-
-	public void update(ExternalRoomDepartment externalRoomDepartment, org.hibernate.Session hibSession) {
-		update((Object) externalRoomDepartment, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ExternalRoomDepartment externalRoomDepartment) {
-		delete((Object) externalRoomDepartment);
-	}
-
-	public void delete(ExternalRoomDepartment externalRoomDepartment, org.hibernate.Session hibSession) {
-		delete((Object) externalRoomDepartment, hibSession);
-	}
-
-	public void refresh(ExternalRoomDepartment externalRoomDepartment, org.hibernate.Session hibSession) {
-		refresh((Object) externalRoomDepartment, hibSession);
-	}
-
-	public List<ExternalRoomDepartment> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ExternalRoomDepartment").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ExternalRoomDepartment> findByRoom(org.hibernate.Session hibSession, Long roomId) {
 		return hibSession.createQuery("from ExternalRoomDepartment x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
 	}

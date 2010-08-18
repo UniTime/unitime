@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 
-public abstract class BaseSectioningInfoDAO extends _RootDAO {
+public abstract class BaseSectioningInfoDAO extends _RootDAO<SectioningInfo,Long> {
 
 	private static SectioningInfoDAO sInstance;
 
-	public static SectioningInfoDAO getInstance () {
+	public static SectioningInfoDAO getInstance() {
 		if (sInstance == null) sInstance = new SectioningInfoDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SectioningInfo> getReferenceClass() {
 		return SectioningInfo.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SectioningInfo get(Long uniqueId) {
-		return (SectioningInfo) get(getReferenceClass(), uniqueId);
-	}
-
-	public SectioningInfo get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SectioningInfo) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SectioningInfo load(Long uniqueId) {
-		return (SectioningInfo) load(getReferenceClass(), uniqueId);
-	}
-
-	public SectioningInfo load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SectioningInfo) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SectioningInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SectioningInfo sectioningInfo = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(sectioningInfo)) Hibernate.initialize(sectioningInfo);
-		return sectioningInfo;
-	}
-
-	public void save(SectioningInfo sectioningInfo) {
-		save((Object) sectioningInfo);
-	}
-
-	public void save(SectioningInfo sectioningInfo, org.hibernate.Session hibSession) {
-		save((Object) sectioningInfo, hibSession);
-	}
-
-	public void saveOrUpdate(SectioningInfo sectioningInfo) {
-		saveOrUpdate((Object) sectioningInfo);
-	}
-
-	public void saveOrUpdate(SectioningInfo sectioningInfo, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) sectioningInfo, hibSession);
-	}
-
-
-	public void update(SectioningInfo sectioningInfo) {
-		update((Object) sectioningInfo);
-	}
-
-	public void update(SectioningInfo sectioningInfo, org.hibernate.Session hibSession) {
-		update((Object) sectioningInfo, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SectioningInfo sectioningInfo) {
-		delete((Object) sectioningInfo);
-	}
-
-	public void delete(SectioningInfo sectioningInfo, org.hibernate.Session hibSession) {
-		delete((Object) sectioningInfo, hibSession);
-	}
-
-	public void refresh(SectioningInfo sectioningInfo, org.hibernate.Session hibSession) {
-		refresh((Object) sectioningInfo, hibSession);
-	}
-
-	public List<SectioningInfo> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SectioningInfo").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SectioningInfo> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
 		return hibSession.createQuery("from SectioningInfo x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
 	}

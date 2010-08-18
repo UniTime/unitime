@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 
-public abstract class BaseSolverParameterGroupDAO extends _RootDAO {
+public abstract class BaseSolverParameterGroupDAO extends _RootDAO<SolverParameterGroup,Long> {
 
 	private static SolverParameterGroupDAO sInstance;
 
-	public static SolverParameterGroupDAO getInstance () {
+	public static SolverParameterGroupDAO getInstance() {
 		if (sInstance == null) sInstance = new SolverParameterGroupDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolverParameterGroup> getReferenceClass() {
 		return SolverParameterGroup.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolverParameterGroup get(Long uniqueId) {
-		return (SolverParameterGroup) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolverParameterGroup get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverParameterGroup) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverParameterGroup load(Long uniqueId) {
-		return (SolverParameterGroup) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolverParameterGroup load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverParameterGroup) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverParameterGroup loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolverParameterGroup solverParameterGroup = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solverParameterGroup)) Hibernate.initialize(solverParameterGroup);
-		return solverParameterGroup;
-	}
-
-	public void save(SolverParameterGroup solverParameterGroup) {
-		save((Object) solverParameterGroup);
-	}
-
-	public void save(SolverParameterGroup solverParameterGroup, org.hibernate.Session hibSession) {
-		save((Object) solverParameterGroup, hibSession);
-	}
-
-	public void saveOrUpdate(SolverParameterGroup solverParameterGroup) {
-		saveOrUpdate((Object) solverParameterGroup);
-	}
-
-	public void saveOrUpdate(SolverParameterGroup solverParameterGroup, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solverParameterGroup, hibSession);
-	}
-
-
-	public void update(SolverParameterGroup solverParameterGroup) {
-		update((Object) solverParameterGroup);
-	}
-
-	public void update(SolverParameterGroup solverParameterGroup, org.hibernate.Session hibSession) {
-		update((Object) solverParameterGroup, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolverParameterGroup solverParameterGroup) {
-		delete((Object) solverParameterGroup);
-	}
-
-	public void delete(SolverParameterGroup solverParameterGroup, org.hibernate.Session hibSession) {
-		delete((Object) solverParameterGroup, hibSession);
-	}
-
-	public void refresh(SolverParameterGroup solverParameterGroup, org.hibernate.Session hibSession) {
-		refresh((Object) solverParameterGroup, hibSession);
-	}
-
-	public List<SolverParameterGroup> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SolverParameterGroup").list();
 	}
 }

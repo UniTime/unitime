@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.WaitListDAO;
 
-public abstract class BaseWaitListDAO extends _RootDAO {
+public abstract class BaseWaitListDAO extends _RootDAO<WaitList,Long> {
 
 	private static WaitListDAO sInstance;
 
-	public static WaitListDAO getInstance () {
+	public static WaitListDAO getInstance() {
 		if (sInstance == null) sInstance = new WaitListDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<WaitList> getReferenceClass() {
 		return WaitList.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public WaitList get(Long uniqueId) {
-		return (WaitList) get(getReferenceClass(), uniqueId);
-	}
-
-	public WaitList get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (WaitList) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public WaitList load(Long uniqueId) {
-		return (WaitList) load(getReferenceClass(), uniqueId);
-	}
-
-	public WaitList load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (WaitList) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public WaitList loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		WaitList waitList = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(waitList)) Hibernate.initialize(waitList);
-		return waitList;
-	}
-
-	public void save(WaitList waitList) {
-		save((Object) waitList);
-	}
-
-	public void save(WaitList waitList, org.hibernate.Session hibSession) {
-		save((Object) waitList, hibSession);
-	}
-
-	public void saveOrUpdate(WaitList waitList) {
-		saveOrUpdate((Object) waitList);
-	}
-
-	public void saveOrUpdate(WaitList waitList, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) waitList, hibSession);
-	}
-
-
-	public void update(WaitList waitList) {
-		update((Object) waitList);
-	}
-
-	public void update(WaitList waitList, org.hibernate.Session hibSession) {
-		update((Object) waitList, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(WaitList waitList) {
-		delete((Object) waitList);
-	}
-
-	public void delete(WaitList waitList, org.hibernate.Session hibSession) {
-		delete((Object) waitList, hibSession);
-	}
-
-	public void refresh(WaitList waitList, org.hibernate.Session hibSession) {
-		refresh((Object) waitList, hibSession);
-	}
-
-	public List<WaitList> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from WaitList").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<WaitList> findByStudent(org.hibernate.Session hibSession, Long studentId) {
 		return hibSession.createQuery("from WaitList x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<WaitList> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
 		return hibSession.createQuery("from WaitList x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
 	}

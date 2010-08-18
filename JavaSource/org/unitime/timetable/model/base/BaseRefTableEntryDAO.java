@@ -19,94 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RefTableEntryDAO;
 
-public abstract class BaseRefTableEntryDAO extends _RootDAO {
+public abstract class BaseRefTableEntryDAO extends _RootDAO<RefTableEntry,Long> {
 
 	private static RefTableEntryDAO sInstance;
 
-	public static RefTableEntryDAO getInstance () {
+	public static RefTableEntryDAO getInstance() {
 		if (sInstance == null) sInstance = new RefTableEntryDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RefTableEntry> getReferenceClass() {
 		return RefTableEntry.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RefTableEntry get(Long uniqueId) {
-		return (RefTableEntry) get(getReferenceClass(), uniqueId);
-	}
-
-	public RefTableEntry get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RefTableEntry) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RefTableEntry load(Long uniqueId) {
-		return (RefTableEntry) load(getReferenceClass(), uniqueId);
-	}
-
-	public RefTableEntry load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RefTableEntry) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RefTableEntry loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		RefTableEntry refTableEntry = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(refTableEntry)) Hibernate.initialize(refTableEntry);
-		return refTableEntry;
-	}
-
-	public void save(RefTableEntry refTableEntry) {
-		save((Object) refTableEntry);
-	}
-
-	public void save(RefTableEntry refTableEntry, org.hibernate.Session hibSession) {
-		save((Object) refTableEntry, hibSession);
-	}
-
-	public void saveOrUpdate(RefTableEntry refTableEntry) {
-		saveOrUpdate((Object) refTableEntry);
-	}
-
-	public void saveOrUpdate(RefTableEntry refTableEntry, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) refTableEntry, hibSession);
-	}
-
-
-	public void update(RefTableEntry refTableEntry) {
-		update((Object) refTableEntry);
-	}
-
-	public void update(RefTableEntry refTableEntry, org.hibernate.Session hibSession) {
-		update((Object) refTableEntry, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(RefTableEntry refTableEntry) {
-		delete((Object) refTableEntry);
-	}
-
-	public void delete(RefTableEntry refTableEntry, org.hibernate.Session hibSession) {
-		delete((Object) refTableEntry, hibSession);
-	}
-
-	public void refresh(RefTableEntry refTableEntry, org.hibernate.Session hibSession) {
-		refresh((Object) refTableEntry, hibSession);
 	}
 }

@@ -110,21 +110,21 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
 	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
 	public void addTochildSubparts(SchedulingSubpart schedulingSubpart) {
-		if (iChildSubparts == null) iChildSubparts = new HashSet();
+		if (iChildSubparts == null) iChildSubparts = new HashSet<SchedulingSubpart>();
 		iChildSubparts.add(schedulingSubpart);
 	}
 
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToclasses(Class_ class_) {
-		if (iClasses == null) iClasses = new HashSet();
+		if (iClasses == null) iClasses = new HashSet<Class_>();
 		iClasses.add(class_);
 	}
 
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
-		if (iCreditConfigs == null) iCreditConfigs = new HashSet();
+		if (iCreditConfigs == null) iCreditConfigs = new HashSet<CourseCreditUnitConfig>();
 		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 

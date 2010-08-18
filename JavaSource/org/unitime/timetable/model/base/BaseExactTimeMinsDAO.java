@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 
-public abstract class BaseExactTimeMinsDAO extends _RootDAO {
+public abstract class BaseExactTimeMinsDAO extends _RootDAO<ExactTimeMins,Long> {
 
 	private static ExactTimeMinsDAO sInstance;
 
-	public static ExactTimeMinsDAO getInstance () {
+	public static ExactTimeMinsDAO getInstance() {
 		if (sInstance == null) sInstance = new ExactTimeMinsDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ExactTimeMins> getReferenceClass() {
 		return ExactTimeMins.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ExactTimeMins get(Long uniqueId) {
-		return (ExactTimeMins) get(getReferenceClass(), uniqueId);
-	}
-
-	public ExactTimeMins get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExactTimeMins) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExactTimeMins load(Long uniqueId) {
-		return (ExactTimeMins) load(getReferenceClass(), uniqueId);
-	}
-
-	public ExactTimeMins load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExactTimeMins) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExactTimeMins loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ExactTimeMins exactTimeMins = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(exactTimeMins)) Hibernate.initialize(exactTimeMins);
-		return exactTimeMins;
-	}
-
-	public void save(ExactTimeMins exactTimeMins) {
-		save((Object) exactTimeMins);
-	}
-
-	public void save(ExactTimeMins exactTimeMins, org.hibernate.Session hibSession) {
-		save((Object) exactTimeMins, hibSession);
-	}
-
-	public void saveOrUpdate(ExactTimeMins exactTimeMins) {
-		saveOrUpdate((Object) exactTimeMins);
-	}
-
-	public void saveOrUpdate(ExactTimeMins exactTimeMins, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) exactTimeMins, hibSession);
-	}
-
-
-	public void update(ExactTimeMins exactTimeMins) {
-		update((Object) exactTimeMins);
-	}
-
-	public void update(ExactTimeMins exactTimeMins, org.hibernate.Session hibSession) {
-		update((Object) exactTimeMins, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ExactTimeMins exactTimeMins) {
-		delete((Object) exactTimeMins);
-	}
-
-	public void delete(ExactTimeMins exactTimeMins, org.hibernate.Session hibSession) {
-		delete((Object) exactTimeMins, hibSession);
-	}
-
-	public void refresh(ExactTimeMins exactTimeMins, org.hibernate.Session hibSession) {
-		refresh((Object) exactTimeMins, hibSession);
-	}
-
-	public List<ExactTimeMins> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ExactTimeMins").list();
 	}
 }

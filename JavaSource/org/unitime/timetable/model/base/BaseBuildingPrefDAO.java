@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.BuildingPrefDAO;
 
-public abstract class BaseBuildingPrefDAO extends _RootDAO {
+public abstract class BaseBuildingPrefDAO extends _RootDAO<BuildingPref,Long> {
 
 	private static BuildingPrefDAO sInstance;
 
-	public static BuildingPrefDAO getInstance () {
+	public static BuildingPrefDAO getInstance() {
 		if (sInstance == null) sInstance = new BuildingPrefDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<BuildingPref> getReferenceClass() {
 		return BuildingPref.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public BuildingPref get(Long uniqueId) {
-		return (BuildingPref) get(getReferenceClass(), uniqueId);
-	}
-
-	public BuildingPref get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (BuildingPref) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public BuildingPref load(Long uniqueId) {
-		return (BuildingPref) load(getReferenceClass(), uniqueId);
-	}
-
-	public BuildingPref load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (BuildingPref) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public BuildingPref loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		BuildingPref buildingPref = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(buildingPref)) Hibernate.initialize(buildingPref);
-		return buildingPref;
-	}
-
-	public void save(BuildingPref buildingPref) {
-		save((Object) buildingPref);
-	}
-
-	public void save(BuildingPref buildingPref, org.hibernate.Session hibSession) {
-		save((Object) buildingPref, hibSession);
-	}
-
-	public void saveOrUpdate(BuildingPref buildingPref) {
-		saveOrUpdate((Object) buildingPref);
-	}
-
-	public void saveOrUpdate(BuildingPref buildingPref, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) buildingPref, hibSession);
-	}
-
-
-	public void update(BuildingPref buildingPref) {
-		update((Object) buildingPref);
-	}
-
-	public void update(BuildingPref buildingPref, org.hibernate.Session hibSession) {
-		update((Object) buildingPref, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(BuildingPref buildingPref) {
-		delete((Object) buildingPref);
-	}
-
-	public void delete(BuildingPref buildingPref, org.hibernate.Session hibSession) {
-		delete((Object) buildingPref, hibSession);
-	}
-
-	public void refresh(BuildingPref buildingPref, org.hibernate.Session hibSession) {
-		refresh((Object) buildingPref, hibSession);
-	}
-
-	public List<BuildingPref> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from BuildingPref").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<BuildingPref> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
 		return hibSession.createQuery("from BuildingPref x where x.building.uniqueId = :buildingId").setLong("buildingId", buildingId).list();
 	}

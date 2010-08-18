@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 
-public abstract class BaseSolverPredefinedSettingDAO extends _RootDAO {
+public abstract class BaseSolverPredefinedSettingDAO extends _RootDAO<SolverPredefinedSetting,Long> {
 
 	private static SolverPredefinedSettingDAO sInstance;
 
-	public static SolverPredefinedSettingDAO getInstance () {
+	public static SolverPredefinedSettingDAO getInstance() {
 		if (sInstance == null) sInstance = new SolverPredefinedSettingDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolverPredefinedSetting> getReferenceClass() {
 		return SolverPredefinedSetting.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolverPredefinedSetting get(Long uniqueId) {
-		return (SolverPredefinedSetting) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolverPredefinedSetting get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverPredefinedSetting) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverPredefinedSetting load(Long uniqueId) {
-		return (SolverPredefinedSetting) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolverPredefinedSetting load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverPredefinedSetting) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverPredefinedSetting loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolverPredefinedSetting solverPredefinedSetting = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solverPredefinedSetting)) Hibernate.initialize(solverPredefinedSetting);
-		return solverPredefinedSetting;
-	}
-
-	public void save(SolverPredefinedSetting solverPredefinedSetting) {
-		save((Object) solverPredefinedSetting);
-	}
-
-	public void save(SolverPredefinedSetting solverPredefinedSetting, org.hibernate.Session hibSession) {
-		save((Object) solverPredefinedSetting, hibSession);
-	}
-
-	public void saveOrUpdate(SolverPredefinedSetting solverPredefinedSetting) {
-		saveOrUpdate((Object) solverPredefinedSetting);
-	}
-
-	public void saveOrUpdate(SolverPredefinedSetting solverPredefinedSetting, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solverPredefinedSetting, hibSession);
-	}
-
-
-	public void update(SolverPredefinedSetting solverPredefinedSetting) {
-		update((Object) solverPredefinedSetting);
-	}
-
-	public void update(SolverPredefinedSetting solverPredefinedSetting, org.hibernate.Session hibSession) {
-		update((Object) solverPredefinedSetting, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolverPredefinedSetting solverPredefinedSetting) {
-		delete((Object) solverPredefinedSetting);
-	}
-
-	public void delete(SolverPredefinedSetting solverPredefinedSetting, org.hibernate.Session hibSession) {
-		delete((Object) solverPredefinedSetting, hibSession);
-	}
-
-	public void refresh(SolverPredefinedSetting solverPredefinedSetting, org.hibernate.Session hibSession) {
-		refresh((Object) solverPredefinedSetting, hibSession);
-	}
-
-	public List<SolverPredefinedSetting> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SolverPredefinedSetting").list();
 	}
 }

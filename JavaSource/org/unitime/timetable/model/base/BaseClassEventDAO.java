@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 
-public abstract class BaseClassEventDAO extends _RootDAO {
+public abstract class BaseClassEventDAO extends _RootDAO<ClassEvent,Long> {
 
 	private static ClassEventDAO sInstance;
 
-	public static ClassEventDAO getInstance () {
+	public static ClassEventDAO getInstance() {
 		if (sInstance == null) sInstance = new ClassEventDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ClassEvent> getReferenceClass() {
 		return ClassEvent.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ClassEvent get(Long uniqueId) {
-		return (ClassEvent) get(getReferenceClass(), uniqueId);
-	}
-
-	public ClassEvent get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ClassEvent) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ClassEvent load(Long uniqueId) {
-		return (ClassEvent) load(getReferenceClass(), uniqueId);
-	}
-
-	public ClassEvent load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ClassEvent) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ClassEvent loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ClassEvent classEvent = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(classEvent)) Hibernate.initialize(classEvent);
-		return classEvent;
-	}
-
-	public void save(ClassEvent classEvent) {
-		save((Object) classEvent);
-	}
-
-	public void save(ClassEvent classEvent, org.hibernate.Session hibSession) {
-		save((Object) classEvent, hibSession);
-	}
-
-	public void saveOrUpdate(ClassEvent classEvent) {
-		saveOrUpdate((Object) classEvent);
-	}
-
-	public void saveOrUpdate(ClassEvent classEvent, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) classEvent, hibSession);
-	}
-
-
-	public void update(ClassEvent classEvent) {
-		update((Object) classEvent);
-	}
-
-	public void update(ClassEvent classEvent, org.hibernate.Session hibSession) {
-		update((Object) classEvent, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ClassEvent classEvent) {
-		delete((Object) classEvent);
-	}
-
-	public void delete(ClassEvent classEvent, org.hibernate.Session hibSession) {
-		delete((Object) classEvent, hibSession);
-	}
-
-	public void refresh(ClassEvent classEvent, org.hibernate.Session hibSession) {
-		refresh((Object) classEvent, hibSession);
-	}
-
-	public List<ClassEvent> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ClassEvent").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ClassEvent> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
 		return hibSession.createQuery("from ClassEvent x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
 	}

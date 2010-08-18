@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.StudentGroupReservationDAO;
 
-public abstract class BaseStudentGroupReservationDAO extends _RootDAO {
+public abstract class BaseStudentGroupReservationDAO extends _RootDAO<StudentGroupReservation,Long> {
 
 	private static StudentGroupReservationDAO sInstance;
 
-	public static StudentGroupReservationDAO getInstance () {
+	public static StudentGroupReservationDAO getInstance() {
 		if (sInstance == null) sInstance = new StudentGroupReservationDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<StudentGroupReservation> getReferenceClass() {
 		return StudentGroupReservation.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public StudentGroupReservation get(Long uniqueId) {
-		return (StudentGroupReservation) get(getReferenceClass(), uniqueId);
-	}
-
-	public StudentGroupReservation get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (StudentGroupReservation) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public StudentGroupReservation load(Long uniqueId) {
-		return (StudentGroupReservation) load(getReferenceClass(), uniqueId);
-	}
-
-	public StudentGroupReservation load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (StudentGroupReservation) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public StudentGroupReservation loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		StudentGroupReservation studentGroupReservation = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(studentGroupReservation)) Hibernate.initialize(studentGroupReservation);
-		return studentGroupReservation;
-	}
-
-	public void save(StudentGroupReservation studentGroupReservation) {
-		save((Object) studentGroupReservation);
-	}
-
-	public void save(StudentGroupReservation studentGroupReservation, org.hibernate.Session hibSession) {
-		save((Object) studentGroupReservation, hibSession);
-	}
-
-	public void saveOrUpdate(StudentGroupReservation studentGroupReservation) {
-		saveOrUpdate((Object) studentGroupReservation);
-	}
-
-	public void saveOrUpdate(StudentGroupReservation studentGroupReservation, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) studentGroupReservation, hibSession);
-	}
-
-
-	public void update(StudentGroupReservation studentGroupReservation) {
-		update((Object) studentGroupReservation);
-	}
-
-	public void update(StudentGroupReservation studentGroupReservation, org.hibernate.Session hibSession) {
-		update((Object) studentGroupReservation, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(StudentGroupReservation studentGroupReservation) {
-		delete((Object) studentGroupReservation);
-	}
-
-	public void delete(StudentGroupReservation studentGroupReservation, org.hibernate.Session hibSession) {
-		delete((Object) studentGroupReservation, hibSession);
-	}
-
-	public void refresh(StudentGroupReservation studentGroupReservation, org.hibernate.Session hibSession) {
-		refresh((Object) studentGroupReservation, hibSession);
-	}
-
-	public List<StudentGroupReservation> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from StudentGroupReservation").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<StudentGroupReservation> findByStudentGroup(org.hibernate.Session hibSession, Long studentGroupId) {
 		return hibSession.createQuery("from StudentGroupReservation x where x.studentGroup.uniqueId = :studentGroupId").setLong("studentGroupId", studentGroupId).list();
 	}

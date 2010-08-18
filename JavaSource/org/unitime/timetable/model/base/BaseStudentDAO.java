@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 
-public abstract class BaseStudentDAO extends _RootDAO {
+public abstract class BaseStudentDAO extends _RootDAO<Student,Long> {
 
 	private static StudentDAO sInstance;
 
-	public static StudentDAO getInstance () {
+	public static StudentDAO getInstance() {
 		if (sInstance == null) sInstance = new StudentDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Student> getReferenceClass() {
 		return Student.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Student get(Long uniqueId) {
-		return (Student) get(getReferenceClass(), uniqueId);
-	}
-
-	public Student get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Student) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Student load(Long uniqueId) {
-		return (Student) load(getReferenceClass(), uniqueId);
-	}
-
-	public Student load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Student) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Student loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Student student = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(student)) Hibernate.initialize(student);
-		return student;
-	}
-
-	public void save(Student student) {
-		save((Object) student);
-	}
-
-	public void save(Student student, org.hibernate.Session hibSession) {
-		save((Object) student, hibSession);
-	}
-
-	public void saveOrUpdate(Student student) {
-		saveOrUpdate((Object) student);
-	}
-
-	public void saveOrUpdate(Student student, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) student, hibSession);
-	}
-
-
-	public void update(Student student) {
-		update((Object) student);
-	}
-
-	public void update(Student student, org.hibernate.Session hibSession) {
-		update((Object) student, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Student student) {
-		delete((Object) student);
-	}
-
-	public void delete(Student student, org.hibernate.Session hibSession) {
-		delete((Object) student, hibSession);
-	}
-
-	public void refresh(Student student, org.hibernate.Session hibSession) {
-		refresh((Object) student, hibSession);
-	}
-
-	public List<Student> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Student").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Student> findByStatus(org.hibernate.Session hibSession, Long statusId) {
 		return hibSession.createQuery("from Student x where x.status.uniqueId = :statusId").setLong("statusId", statusId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Student> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from Student x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}

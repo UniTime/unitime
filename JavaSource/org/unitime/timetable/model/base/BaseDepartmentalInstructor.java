@@ -105,28 +105,28 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
 	public void addToclasses(ClassInstructor classInstructor) {
-		if (iClasses == null) iClasses = new HashSet();
+		if (iClasses == null) iClasses = new HashSet<ClassInstructor>();
 		iClasses.add(classInstructor);
 	}
 
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToexams(Exam exam) {
-		if (iExams == null) iExams = new HashSet();
+		if (iExams == null) iExams = new HashSet<Exam>();
 		iExams.add(exam);
 	}
 
 	public Set<Designator> getDesignatorSubjectAreas() { return iDesignatorSubjectAreas; }
 	public void setDesignatorSubjectAreas(Set<Designator> designatorSubjectAreas) { iDesignatorSubjectAreas = designatorSubjectAreas; }
 	public void addTodesignatorSubjectAreas(Designator designator) {
-		if (iDesignatorSubjectAreas == null) iDesignatorSubjectAreas = new HashSet();
+		if (iDesignatorSubjectAreas == null) iDesignatorSubjectAreas = new HashSet<Designator>();
 		iDesignatorSubjectAreas.add(designator);
 	}
 
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
-		if (iAssignments == null) iAssignments = new HashSet();
+		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
 	}
 

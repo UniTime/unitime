@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
-public abstract class BaseSubjectAreaDAO extends _RootDAO {
+public abstract class BaseSubjectAreaDAO extends _RootDAO<SubjectArea,Long> {
 
 	private static SubjectAreaDAO sInstance;
 
-	public static SubjectAreaDAO getInstance () {
+	public static SubjectAreaDAO getInstance() {
 		if (sInstance == null) sInstance = new SubjectAreaDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SubjectArea> getReferenceClass() {
 		return SubjectArea.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SubjectArea get(Long uniqueId) {
-		return (SubjectArea) get(getReferenceClass(), uniqueId);
-	}
-
-	public SubjectArea get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SubjectArea) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SubjectArea load(Long uniqueId) {
-		return (SubjectArea) load(getReferenceClass(), uniqueId);
-	}
-
-	public SubjectArea load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SubjectArea) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SubjectArea loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SubjectArea subjectArea = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(subjectArea)) Hibernate.initialize(subjectArea);
-		return subjectArea;
-	}
-
-	public void save(SubjectArea subjectArea) {
-		save((Object) subjectArea);
-	}
-
-	public void save(SubjectArea subjectArea, org.hibernate.Session hibSession) {
-		save((Object) subjectArea, hibSession);
-	}
-
-	public void saveOrUpdate(SubjectArea subjectArea) {
-		saveOrUpdate((Object) subjectArea);
-	}
-
-	public void saveOrUpdate(SubjectArea subjectArea, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) subjectArea, hibSession);
-	}
-
-
-	public void update(SubjectArea subjectArea) {
-		update((Object) subjectArea);
-	}
-
-	public void update(SubjectArea subjectArea, org.hibernate.Session hibSession) {
-		update((Object) subjectArea, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SubjectArea subjectArea) {
-		delete((Object) subjectArea);
-	}
-
-	public void delete(SubjectArea subjectArea, org.hibernate.Session hibSession) {
-		delete((Object) subjectArea, hibSession);
-	}
-
-	public void refresh(SubjectArea subjectArea, org.hibernate.Session hibSession) {
-		refresh((Object) subjectArea, hibSession);
-	}
-
-	public List<SubjectArea> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SubjectArea").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SubjectArea> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from SubjectArea x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<SubjectArea> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from SubjectArea x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}

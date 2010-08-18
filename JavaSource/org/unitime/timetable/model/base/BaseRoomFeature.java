@@ -62,7 +62,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
-		if (iRooms == null) iRooms = new HashSet();
+		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
 	}
 

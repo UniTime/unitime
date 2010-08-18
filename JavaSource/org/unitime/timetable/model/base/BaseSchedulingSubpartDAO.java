@@ -21,113 +21,39 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 
-public abstract class BaseSchedulingSubpartDAO extends _RootDAO {
+public abstract class BaseSchedulingSubpartDAO extends _RootDAO<SchedulingSubpart,Long> {
 
 	private static SchedulingSubpartDAO sInstance;
 
-	public static SchedulingSubpartDAO getInstance () {
+	public static SchedulingSubpartDAO getInstance() {
 		if (sInstance == null) sInstance = new SchedulingSubpartDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SchedulingSubpart> getReferenceClass() {
 		return SchedulingSubpart.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SchedulingSubpart get(Long uniqueId) {
-		return (SchedulingSubpart) get(getReferenceClass(), uniqueId);
-	}
-
-	public SchedulingSubpart get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SchedulingSubpart) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SchedulingSubpart load(Long uniqueId) {
-		return (SchedulingSubpart) load(getReferenceClass(), uniqueId);
-	}
-
-	public SchedulingSubpart load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SchedulingSubpart) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SchedulingSubpart loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SchedulingSubpart schedulingSubpart = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(schedulingSubpart)) Hibernate.initialize(schedulingSubpart);
-		return schedulingSubpart;
-	}
-
-	public void save(SchedulingSubpart schedulingSubpart) {
-		save((Object) schedulingSubpart);
-	}
-
-	public void save(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
-		save((Object) schedulingSubpart, hibSession);
-	}
-
-	public void saveOrUpdate(SchedulingSubpart schedulingSubpart) {
-		saveOrUpdate((Object) schedulingSubpart);
-	}
-
-	public void saveOrUpdate(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) schedulingSubpart, hibSession);
-	}
-
-
-	public void update(SchedulingSubpart schedulingSubpart) {
-		update((Object) schedulingSubpart);
-	}
-
-	public void update(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
-		update((Object) schedulingSubpart, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SchedulingSubpart schedulingSubpart) {
-		delete((Object) schedulingSubpart);
-	}
-
-	public void delete(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
-		delete((Object) schedulingSubpart, hibSession);
-	}
-
-	public void refresh(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
-		refresh((Object) schedulingSubpart, hibSession);
-	}
-
-	public List<SchedulingSubpart> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SchedulingSubpart").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
 		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setInteger("itypeId", itypeId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByParentSubpart(org.hibernate.Session hibSession, Long parentSubpartId) {
 		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setLong("parentSubpartId", parentSubpartId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
 		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setLong("instrOfferingConfigId", instrOfferingConfigId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
 		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
 	}

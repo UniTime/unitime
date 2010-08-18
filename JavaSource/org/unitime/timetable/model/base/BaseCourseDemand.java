@@ -87,14 +87,14 @@ public abstract class BaseCourseDemand implements Serializable {
 	public Set<CourseRequest> getCourseRequests() { return iCourseRequests; }
 	public void setCourseRequests(Set<CourseRequest> courseRequests) { iCourseRequests = courseRequests; }
 	public void addTocourseRequests(CourseRequest courseRequest) {
-		if (iCourseRequests == null) iCourseRequests = new HashSet();
+		if (iCourseRequests == null) iCourseRequests = new HashSet<CourseRequest>();
 		iCourseRequests.add(courseRequest);
 	}
 
 	public Set<StudentEnrollmentMessage> getEnrollmentMessages() { return iEnrollmentMessages; }
 	public void setEnrollmentMessages(Set<StudentEnrollmentMessage> enrollmentMessages) { iEnrollmentMessages = enrollmentMessages; }
 	public void addToenrollmentMessages(StudentEnrollmentMessage studentEnrollmentMessage) {
-		if (iEnrollmentMessages == null) iEnrollmentMessages = new HashSet();
+		if (iEnrollmentMessages == null) iEnrollmentMessages = new HashSet<StudentEnrollmentMessage>();
 		iEnrollmentMessages.add(studentEnrollmentMessage);
 	}
 

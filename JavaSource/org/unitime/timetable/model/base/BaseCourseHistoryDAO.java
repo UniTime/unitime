@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CourseHistory;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CourseHistoryDAO;
 
-public abstract class BaseCourseHistoryDAO extends _RootDAO {
+public abstract class BaseCourseHistoryDAO extends _RootDAO<CourseHistory,Long> {
 
 	private static CourseHistoryDAO sInstance;
 
-	public static CourseHistoryDAO getInstance () {
+	public static CourseHistoryDAO getInstance() {
 		if (sInstance == null) sInstance = new CourseHistoryDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CourseHistory> getReferenceClass() {
 		return CourseHistory.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CourseHistory get(Long uniqueId) {
-		return (CourseHistory) get(getReferenceClass(), uniqueId);
-	}
-
-	public CourseHistory get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseHistory) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseHistory load(Long uniqueId) {
-		return (CourseHistory) load(getReferenceClass(), uniqueId);
-	}
-
-	public CourseHistory load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseHistory) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseHistory loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CourseHistory courseHistory = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(courseHistory)) Hibernate.initialize(courseHistory);
-		return courseHistory;
-	}
-
-	public void save(CourseHistory courseHistory) {
-		save((Object) courseHistory);
-	}
-
-	public void save(CourseHistory courseHistory, org.hibernate.Session hibSession) {
-		save((Object) courseHistory, hibSession);
-	}
-
-	public void saveOrUpdate(CourseHistory courseHistory) {
-		saveOrUpdate((Object) courseHistory);
-	}
-
-	public void saveOrUpdate(CourseHistory courseHistory, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) courseHistory, hibSession);
-	}
-
-
-	public void update(CourseHistory courseHistory) {
-		update((Object) courseHistory);
-	}
-
-	public void update(CourseHistory courseHistory, org.hibernate.Session hibSession) {
-		update((Object) courseHistory, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CourseHistory courseHistory) {
-		delete((Object) courseHistory);
-	}
-
-	public void delete(CourseHistory courseHistory, org.hibernate.Session hibSession) {
-		delete((Object) courseHistory, hibSession);
-	}
-
-	public void refresh(CourseHistory courseHistory, org.hibernate.Session hibSession) {
-		refresh((Object) courseHistory, hibSession);
-	}
-
-	public List<CourseHistory> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from CourseHistory").list();
 	}
 }

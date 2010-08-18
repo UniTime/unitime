@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 
-public abstract class BaseOfferingConsentTypeDAO extends _RootDAO {
+public abstract class BaseOfferingConsentTypeDAO extends _RootDAO<OfferingConsentType,Long> {
 
 	private static OfferingConsentTypeDAO sInstance;
 
-	public static OfferingConsentTypeDAO getInstance () {
+	public static OfferingConsentTypeDAO getInstance() {
 		if (sInstance == null) sInstance = new OfferingConsentTypeDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<OfferingConsentType> getReferenceClass() {
 		return OfferingConsentType.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public OfferingConsentType get(Long uniqueId) {
-		return (OfferingConsentType) get(getReferenceClass(), uniqueId);
-	}
-
-	public OfferingConsentType get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (OfferingConsentType) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public OfferingConsentType load(Long uniqueId) {
-		return (OfferingConsentType) load(getReferenceClass(), uniqueId);
-	}
-
-	public OfferingConsentType load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (OfferingConsentType) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public OfferingConsentType loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		OfferingConsentType offeringConsentType = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(offeringConsentType)) Hibernate.initialize(offeringConsentType);
-		return offeringConsentType;
-	}
-
-	public void save(OfferingConsentType offeringConsentType) {
-		save((Object) offeringConsentType);
-	}
-
-	public void save(OfferingConsentType offeringConsentType, org.hibernate.Session hibSession) {
-		save((Object) offeringConsentType, hibSession);
-	}
-
-	public void saveOrUpdate(OfferingConsentType offeringConsentType) {
-		saveOrUpdate((Object) offeringConsentType);
-	}
-
-	public void saveOrUpdate(OfferingConsentType offeringConsentType, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) offeringConsentType, hibSession);
-	}
-
-
-	public void update(OfferingConsentType offeringConsentType) {
-		update((Object) offeringConsentType);
-	}
-
-	public void update(OfferingConsentType offeringConsentType, org.hibernate.Session hibSession) {
-		update((Object) offeringConsentType, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(OfferingConsentType offeringConsentType) {
-		delete((Object) offeringConsentType);
-	}
-
-	public void delete(OfferingConsentType offeringConsentType, org.hibernate.Session hibSession) {
-		delete((Object) offeringConsentType, hibSession);
-	}
-
-	public void refresh(OfferingConsentType offeringConsentType, org.hibernate.Session hibSession) {
-		refresh((Object) offeringConsentType, hibSession);
-	}
-
-	public List<OfferingConsentType> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from OfferingConsentType").list();
 	}
 }

@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
 
-public abstract class BaseExternalRoomDAO extends _RootDAO {
+public abstract class BaseExternalRoomDAO extends _RootDAO<ExternalRoom,Long> {
 
 	private static ExternalRoomDAO sInstance;
 
-	public static ExternalRoomDAO getInstance () {
+	public static ExternalRoomDAO getInstance() {
 		if (sInstance == null) sInstance = new ExternalRoomDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ExternalRoom> getReferenceClass() {
 		return ExternalRoom.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ExternalRoom get(Long uniqueId) {
-		return (ExternalRoom) get(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoom get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoom) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoom load(Long uniqueId) {
-		return (ExternalRoom) load(getReferenceClass(), uniqueId);
-	}
-
-	public ExternalRoom load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ExternalRoom) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ExternalRoom loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ExternalRoom externalRoom = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(externalRoom)) Hibernate.initialize(externalRoom);
-		return externalRoom;
-	}
-
-	public void save(ExternalRoom externalRoom) {
-		save((Object) externalRoom);
-	}
-
-	public void save(ExternalRoom externalRoom, org.hibernate.Session hibSession) {
-		save((Object) externalRoom, hibSession);
-	}
-
-	public void saveOrUpdate(ExternalRoom externalRoom) {
-		saveOrUpdate((Object) externalRoom);
-	}
-
-	public void saveOrUpdate(ExternalRoom externalRoom, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) externalRoom, hibSession);
-	}
-
-
-	public void update(ExternalRoom externalRoom) {
-		update((Object) externalRoom);
-	}
-
-	public void update(ExternalRoom externalRoom, org.hibernate.Session hibSession) {
-		update((Object) externalRoom, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ExternalRoom externalRoom) {
-		delete((Object) externalRoom);
-	}
-
-	public void delete(ExternalRoom externalRoom, org.hibernate.Session hibSession) {
-		delete((Object) externalRoom, hibSession);
-	}
-
-	public void refresh(ExternalRoom externalRoom, org.hibernate.Session hibSession) {
-		refresh((Object) externalRoom, hibSession);
-	}
-
-	public List<ExternalRoom> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ExternalRoom").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ExternalRoom> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
 		return hibSession.createQuery("from ExternalRoom x where x.roomType.uniqueId = :roomTypeId").setLong("roomTypeId", roomTypeId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<ExternalRoom> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
 		return hibSession.createQuery("from ExternalRoom x where x.building.uniqueId = :buildingId").setLong("buildingId", buildingId).list();
 	}

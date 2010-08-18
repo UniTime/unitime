@@ -122,35 +122,35 @@ public abstract class BaseLocation implements Serializable {
 	public Set<RoomFeature> getFeatures() { return iFeatures; }
 	public void setFeatures(Set<RoomFeature> features) { iFeatures = features; }
 	public void addTofeatures(RoomFeature roomFeature) {
-		if (iFeatures == null) iFeatures = new HashSet();
+		if (iFeatures == null) iFeatures = new HashSet<RoomFeature>();
 		iFeatures.add(roomFeature);
 	}
 
 	public Set<ExamLocationPref> getExamPreferences() { return iExamPreferences; }
 	public void setExamPreferences(Set<ExamLocationPref> examPreferences) { iExamPreferences = examPreferences; }
 	public void addToexamPreferences(ExamLocationPref examLocationPref) {
-		if (iExamPreferences == null) iExamPreferences = new HashSet();
+		if (iExamPreferences == null) iExamPreferences = new HashSet<ExamLocationPref>();
 		iExamPreferences.add(examLocationPref);
 	}
 
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
-		if (iAssignments == null) iAssignments = new HashSet();
+		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
 	}
 
 	public Set<RoomGroup> getRoomGroups() { return iRoomGroups; }
 	public void setRoomGroups(Set<RoomGroup> roomGroups) { iRoomGroups = roomGroups; }
 	public void addToroomGroups(RoomGroup roomGroup) {
-		if (iRoomGroups == null) iRoomGroups = new HashSet();
+		if (iRoomGroups == null) iRoomGroups = new HashSet<RoomGroup>();
 		iRoomGroups.add(roomGroup);
 	}
 
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
 	public void addToroomDepts(RoomDept roomDept) {
-		if (iRoomDepts == null) iRoomDepts = new HashSet();
+		if (iRoomDepts == null) iRoomDepts = new HashSet<RoomDept>();
 		iRoomDepts.add(roomDept);
 	}
 

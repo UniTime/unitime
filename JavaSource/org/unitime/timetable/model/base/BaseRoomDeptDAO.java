@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 
-public abstract class BaseRoomDeptDAO extends _RootDAO {
+public abstract class BaseRoomDeptDAO extends _RootDAO<RoomDept,Long> {
 
 	private static RoomDeptDAO sInstance;
 
-	public static RoomDeptDAO getInstance () {
+	public static RoomDeptDAO getInstance() {
 		if (sInstance == null) sInstance = new RoomDeptDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RoomDept> getReferenceClass() {
 		return RoomDept.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RoomDept get(Long uniqueId) {
-		return (RoomDept) get(getReferenceClass(), uniqueId);
-	}
-
-	public RoomDept get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomDept) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomDept load(Long uniqueId) {
-		return (RoomDept) load(getReferenceClass(), uniqueId);
-	}
-
-	public RoomDept load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomDept) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomDept loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		RoomDept roomDept = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(roomDept)) Hibernate.initialize(roomDept);
-		return roomDept;
-	}
-
-	public void save(RoomDept roomDept) {
-		save((Object) roomDept);
-	}
-
-	public void save(RoomDept roomDept, org.hibernate.Session hibSession) {
-		save((Object) roomDept, hibSession);
-	}
-
-	public void saveOrUpdate(RoomDept roomDept) {
-		saveOrUpdate((Object) roomDept);
-	}
-
-	public void saveOrUpdate(RoomDept roomDept, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) roomDept, hibSession);
-	}
-
-
-	public void update(RoomDept roomDept) {
-		update((Object) roomDept);
-	}
-
-	public void update(RoomDept roomDept, org.hibernate.Session hibSession) {
-		update((Object) roomDept, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(RoomDept roomDept) {
-		delete((Object) roomDept);
-	}
-
-	public void delete(RoomDept roomDept, org.hibernate.Session hibSession) {
-		delete((Object) roomDept, hibSession);
-	}
-
-	public void refresh(RoomDept roomDept, org.hibernate.Session hibSession) {
-		refresh((Object) roomDept, hibSession);
-	}
-
-	public List<RoomDept> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from RoomDept").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<RoomDept> findByRoom(org.hibernate.Session hibSession, Long roomId) {
 		return hibSession.createQuery("from RoomDept x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<RoomDept> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from RoomDept x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}

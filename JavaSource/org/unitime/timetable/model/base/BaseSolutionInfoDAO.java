@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolutionInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolutionInfoDAO;
 
-public abstract class BaseSolutionInfoDAO extends _RootDAO {
+public abstract class BaseSolutionInfoDAO extends _RootDAO<SolutionInfo,Long> {
 
 	private static SolutionInfoDAO sInstance;
 
-	public static SolutionInfoDAO getInstance () {
+	public static SolutionInfoDAO getInstance() {
 		if (sInstance == null) sInstance = new SolutionInfoDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolutionInfo> getReferenceClass() {
 		return SolutionInfo.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolutionInfo get(Long uniqueId) {
-		return (SolutionInfo) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolutionInfo get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolutionInfo) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolutionInfo load(Long uniqueId) {
-		return (SolutionInfo) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolutionInfo load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolutionInfo) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolutionInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolutionInfo solutionInfo = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solutionInfo)) Hibernate.initialize(solutionInfo);
-		return solutionInfo;
-	}
-
-	public void save(SolutionInfo solutionInfo) {
-		save((Object) solutionInfo);
-	}
-
-	public void save(SolutionInfo solutionInfo, org.hibernate.Session hibSession) {
-		save((Object) solutionInfo, hibSession);
-	}
-
-	public void saveOrUpdate(SolutionInfo solutionInfo) {
-		saveOrUpdate((Object) solutionInfo);
-	}
-
-	public void saveOrUpdate(SolutionInfo solutionInfo, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solutionInfo, hibSession);
-	}
-
-
-	public void update(SolutionInfo solutionInfo) {
-		update((Object) solutionInfo);
-	}
-
-	public void update(SolutionInfo solutionInfo, org.hibernate.Session hibSession) {
-		update((Object) solutionInfo, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolutionInfo solutionInfo) {
-		delete((Object) solutionInfo);
-	}
-
-	public void delete(SolutionInfo solutionInfo, org.hibernate.Session hibSession) {
-		delete((Object) solutionInfo, hibSession);
-	}
-
-	public void refresh(SolutionInfo solutionInfo, org.hibernate.Session hibSession) {
-		refresh((Object) solutionInfo, hibSession);
-	}
-
-	public List<SolutionInfo> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SolutionInfo").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SolutionInfo> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
 		return hibSession.createQuery("from SolutionInfo x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
 	}

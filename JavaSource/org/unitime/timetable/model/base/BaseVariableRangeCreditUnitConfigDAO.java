@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.VariableRangeCreditUnitConfigDAO;
 
-public abstract class BaseVariableRangeCreditUnitConfigDAO extends _RootDAO {
+public abstract class BaseVariableRangeCreditUnitConfigDAO extends _RootDAO<VariableRangeCreditUnitConfig,Long> {
 
 	private static VariableRangeCreditUnitConfigDAO sInstance;
 
-	public static VariableRangeCreditUnitConfigDAO getInstance () {
+	public static VariableRangeCreditUnitConfigDAO getInstance() {
 		if (sInstance == null) sInstance = new VariableRangeCreditUnitConfigDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<VariableRangeCreditUnitConfig> getReferenceClass() {
 		return VariableRangeCreditUnitConfig.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public VariableRangeCreditUnitConfig get(Long uniqueId) {
-		return (VariableRangeCreditUnitConfig) get(getReferenceClass(), uniqueId);
-	}
-
-	public VariableRangeCreditUnitConfig get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (VariableRangeCreditUnitConfig) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public VariableRangeCreditUnitConfig load(Long uniqueId) {
-		return (VariableRangeCreditUnitConfig) load(getReferenceClass(), uniqueId);
-	}
-
-	public VariableRangeCreditUnitConfig load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (VariableRangeCreditUnitConfig) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public VariableRangeCreditUnitConfig loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		VariableRangeCreditUnitConfig variableRangeCreditUnitConfig = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(variableRangeCreditUnitConfig)) Hibernate.initialize(variableRangeCreditUnitConfig);
-		return variableRangeCreditUnitConfig;
-	}
-
-	public void save(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig) {
-		save((Object) variableRangeCreditUnitConfig);
-	}
-
-	public void save(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig, org.hibernate.Session hibSession) {
-		save((Object) variableRangeCreditUnitConfig, hibSession);
-	}
-
-	public void saveOrUpdate(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig) {
-		saveOrUpdate((Object) variableRangeCreditUnitConfig);
-	}
-
-	public void saveOrUpdate(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) variableRangeCreditUnitConfig, hibSession);
-	}
-
-
-	public void update(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig) {
-		update((Object) variableRangeCreditUnitConfig);
-	}
-
-	public void update(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig, org.hibernate.Session hibSession) {
-		update((Object) variableRangeCreditUnitConfig, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig) {
-		delete((Object) variableRangeCreditUnitConfig);
-	}
-
-	public void delete(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig, org.hibernate.Session hibSession) {
-		delete((Object) variableRangeCreditUnitConfig, hibSession);
-	}
-
-	public void refresh(VariableRangeCreditUnitConfig variableRangeCreditUnitConfig, org.hibernate.Session hibSession) {
-		refresh((Object) variableRangeCreditUnitConfig, hibSession);
-	}
-
-	public List<VariableRangeCreditUnitConfig> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from VariableRangeCreditUnitConfig").list();
 	}
 }

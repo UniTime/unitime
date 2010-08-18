@@ -54,7 +54,7 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 	public Set<RelatedCourseInfo> getRelatedCourses() { return iRelatedCourses; }
 	public void setRelatedCourses(Set<RelatedCourseInfo> relatedCourses) { iRelatedCourses = relatedCourses; }
 	public void addTorelatedCourses(RelatedCourseInfo relatedCourseInfo) {
-		if (iRelatedCourses == null) iRelatedCourses = new HashSet();
+		if (iRelatedCourses == null) iRelatedCourses = new HashSet<RelatedCourseInfo>();
 		iRelatedCourses.add(relatedCourseInfo);
 	}
 

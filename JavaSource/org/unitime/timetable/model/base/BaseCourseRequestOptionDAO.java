@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CourseRequestOptionDAO;
 
-public abstract class BaseCourseRequestOptionDAO extends _RootDAO {
+public abstract class BaseCourseRequestOptionDAO extends _RootDAO<CourseRequestOption,Long> {
 
 	private static CourseRequestOptionDAO sInstance;
 
-	public static CourseRequestOptionDAO getInstance () {
+	public static CourseRequestOptionDAO getInstance() {
 		if (sInstance == null) sInstance = new CourseRequestOptionDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CourseRequestOption> getReferenceClass() {
 		return CourseRequestOption.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CourseRequestOption get(Long uniqueId) {
-		return (CourseRequestOption) get(getReferenceClass(), uniqueId);
-	}
-
-	public CourseRequestOption get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseRequestOption) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseRequestOption load(Long uniqueId) {
-		return (CourseRequestOption) load(getReferenceClass(), uniqueId);
-	}
-
-	public CourseRequestOption load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseRequestOption) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseRequestOption loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CourseRequestOption courseRequestOption = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(courseRequestOption)) Hibernate.initialize(courseRequestOption);
-		return courseRequestOption;
-	}
-
-	public void save(CourseRequestOption courseRequestOption) {
-		save((Object) courseRequestOption);
-	}
-
-	public void save(CourseRequestOption courseRequestOption, org.hibernate.Session hibSession) {
-		save((Object) courseRequestOption, hibSession);
-	}
-
-	public void saveOrUpdate(CourseRequestOption courseRequestOption) {
-		saveOrUpdate((Object) courseRequestOption);
-	}
-
-	public void saveOrUpdate(CourseRequestOption courseRequestOption, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) courseRequestOption, hibSession);
-	}
-
-
-	public void update(CourseRequestOption courseRequestOption) {
-		update((Object) courseRequestOption);
-	}
-
-	public void update(CourseRequestOption courseRequestOption, org.hibernate.Session hibSession) {
-		update((Object) courseRequestOption, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CourseRequestOption courseRequestOption) {
-		delete((Object) courseRequestOption);
-	}
-
-	public void delete(CourseRequestOption courseRequestOption, org.hibernate.Session hibSession) {
-		delete((Object) courseRequestOption, hibSession);
-	}
-
-	public void refresh(CourseRequestOption courseRequestOption, org.hibernate.Session hibSession) {
-		refresh((Object) courseRequestOption, hibSession);
-	}
-
-	public List<CourseRequestOption> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from CourseRequestOption").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<CourseRequestOption> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
 		return hibSession.createQuery("from CourseRequestOption x where x.courseRequest.uniqueId = :courseRequestId").setLong("courseRequestId", courseRequestId).list();
 	}

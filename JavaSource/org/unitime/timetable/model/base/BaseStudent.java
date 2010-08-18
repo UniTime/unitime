@@ -119,63 +119,63 @@ public abstract class BaseStudent implements Serializable {
 	public Set<AcademicAreaClassification> getAcademicAreaClassifications() { return iAcademicAreaClassifications; }
 	public void setAcademicAreaClassifications(Set<AcademicAreaClassification> academicAreaClassifications) { iAcademicAreaClassifications = academicAreaClassifications; }
 	public void addToacademicAreaClassifications(AcademicAreaClassification academicAreaClassification) {
-		if (iAcademicAreaClassifications == null) iAcademicAreaClassifications = new HashSet();
+		if (iAcademicAreaClassifications == null) iAcademicAreaClassifications = new HashSet<AcademicAreaClassification>();
 		iAcademicAreaClassifications.add(academicAreaClassification);
 	}
 
 	public Set<PosMajor> getPosMajors() { return iPosMajors; }
 	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
 	public void addToposMajors(PosMajor posMajor) {
-		if (iPosMajors == null) iPosMajors = new HashSet();
+		if (iPosMajors == null) iPosMajors = new HashSet<PosMajor>();
 		iPosMajors.add(posMajor);
 	}
 
 	public Set<PosMinor> getPosMinors() { return iPosMinors; }
 	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
 	public void addToposMinors(PosMinor posMinor) {
-		if (iPosMinors == null) iPosMinors = new HashSet();
+		if (iPosMinors == null) iPosMinors = new HashSet<PosMinor>();
 		iPosMinors.add(posMinor);
 	}
 
 	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }
 	public void setAccomodations(Set<StudentAccomodation> accomodations) { iAccomodations = accomodations; }
 	public void addToaccomodations(StudentAccomodation studentAccomodation) {
-		if (iAccomodations == null) iAccomodations = new HashSet();
+		if (iAccomodations == null) iAccomodations = new HashSet<StudentAccomodation>();
 		iAccomodations.add(studentAccomodation);
 	}
 
 	public Set<StudentGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<StudentGroup> groups) { iGroups = groups; }
 	public void addTogroups(StudentGroup studentGroup) {
-		if (iGroups == null) iGroups = new HashSet();
+		if (iGroups == null) iGroups = new HashSet<StudentGroup>();
 		iGroups.add(studentGroup);
 	}
 
 	public Set<WaitList> getWaitlists() { return iWaitlists; }
 	public void setWaitlists(Set<WaitList> waitlists) { iWaitlists = waitlists; }
 	public void addTowaitlists(WaitList waitList) {
-		if (iWaitlists == null) iWaitlists = new HashSet();
+		if (iWaitlists == null) iWaitlists = new HashSet<WaitList>();
 		iWaitlists.add(waitList);
 	}
 
 	public Set<CourseDemand> getCourseDemands() { return iCourseDemands; }
 	public void setCourseDemands(Set<CourseDemand> courseDemands) { iCourseDemands = courseDemands; }
 	public void addTocourseDemands(CourseDemand courseDemand) {
-		if (iCourseDemands == null) iCourseDemands = new HashSet();
+		if (iCourseDemands == null) iCourseDemands = new HashSet<CourseDemand>();
 		iCourseDemands.add(courseDemand);
 	}
 
 	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
 	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
 	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
-		if (iClassEnrollments == null) iClassEnrollments = new HashSet();
+		if (iClassEnrollments == null) iClassEnrollments = new HashSet<StudentClassEnrollment>();
 		iClassEnrollments.add(studentClassEnrollment);
 	}
 
 	public Set<LastLikeCourseDemand> getLastLikeCourseDemands() { return iLastLikeCourseDemands; }
 	public void setLastLikeCourseDemands(Set<LastLikeCourseDemand> lastLikeCourseDemands) { iLastLikeCourseDemands = lastLikeCourseDemands; }
 	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
-		if (iLastLikeCourseDemands == null) iLastLikeCourseDemands = new HashSet();
+		if (iLastLikeCourseDemands == null) iLastLikeCourseDemands = new HashSet<LastLikeCourseDemand>();
 		iLastLikeCourseDemands.add(lastLikeCourseDemand);
 	}
 

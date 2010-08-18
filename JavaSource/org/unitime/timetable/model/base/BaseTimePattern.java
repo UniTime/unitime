@@ -97,21 +97,21 @@ public abstract class BaseTimePattern implements Serializable {
 	public Set<TimePatternTime> getTimes() { return iTimes; }
 	public void setTimes(Set<TimePatternTime> times) { iTimes = times; }
 	public void addTotimes(TimePatternTime timePatternTime) {
-		if (iTimes == null) iTimes = new HashSet();
+		if (iTimes == null) iTimes = new HashSet<TimePatternTime>();
 		iTimes.add(timePatternTime);
 	}
 
 	public Set<TimePatternDays> getDays() { return iDays; }
 	public void setDays(Set<TimePatternDays> days) { iDays = days; }
 	public void addTodays(TimePatternDays timePatternDays) {
-		if (iDays == null) iDays = new HashSet();
+		if (iDays == null) iDays = new HashSet<TimePatternDays>();
 		iDays.add(timePatternDays);
 	}
 
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
-		if (iDepartments == null) iDepartments = new HashSet();
+		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
 	}
 

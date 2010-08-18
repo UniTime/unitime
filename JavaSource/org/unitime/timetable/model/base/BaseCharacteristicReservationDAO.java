@@ -19,94 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CharacteristicReservation;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CharacteristicReservationDAO;
 
-public abstract class BaseCharacteristicReservationDAO extends _RootDAO {
+public abstract class BaseCharacteristicReservationDAO extends _RootDAO<CharacteristicReservation,Long> {
 
 	private static CharacteristicReservationDAO sInstance;
 
-	public static CharacteristicReservationDAO getInstance () {
+	public static CharacteristicReservationDAO getInstance() {
 		if (sInstance == null) sInstance = new CharacteristicReservationDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CharacteristicReservation> getReferenceClass() {
 		return CharacteristicReservation.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CharacteristicReservation get(Long uniqueId) {
-		return (CharacteristicReservation) get(getReferenceClass(), uniqueId);
-	}
-
-	public CharacteristicReservation get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CharacteristicReservation) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CharacteristicReservation load(Long uniqueId) {
-		return (CharacteristicReservation) load(getReferenceClass(), uniqueId);
-	}
-
-	public CharacteristicReservation load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CharacteristicReservation) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CharacteristicReservation loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CharacteristicReservation characteristicReservation = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(characteristicReservation)) Hibernate.initialize(characteristicReservation);
-		return characteristicReservation;
-	}
-
-	public void save(CharacteristicReservation characteristicReservation) {
-		save((Object) characteristicReservation);
-	}
-
-	public void save(CharacteristicReservation characteristicReservation, org.hibernate.Session hibSession) {
-		save((Object) characteristicReservation, hibSession);
-	}
-
-	public void saveOrUpdate(CharacteristicReservation characteristicReservation) {
-		saveOrUpdate((Object) characteristicReservation);
-	}
-
-	public void saveOrUpdate(CharacteristicReservation characteristicReservation, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) characteristicReservation, hibSession);
-	}
-
-
-	public void update(CharacteristicReservation characteristicReservation) {
-		update((Object) characteristicReservation);
-	}
-
-	public void update(CharacteristicReservation characteristicReservation, org.hibernate.Session hibSession) {
-		update((Object) characteristicReservation, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CharacteristicReservation characteristicReservation) {
-		delete((Object) characteristicReservation);
-	}
-
-	public void delete(CharacteristicReservation characteristicReservation, org.hibernate.Session hibSession) {
-		delete((Object) characteristicReservation, hibSession);
-	}
-
-	public void refresh(CharacteristicReservation characteristicReservation, org.hibernate.Session hibSession) {
-		refresh((Object) characteristicReservation, hibSession);
 	}
 }

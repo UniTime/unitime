@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ConstraintInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ConstraintInfoDAO;
 
-public abstract class BaseConstraintInfoDAO extends _RootDAO {
+public abstract class BaseConstraintInfoDAO extends _RootDAO<ConstraintInfo,Long> {
 
 	private static ConstraintInfoDAO sInstance;
 
-	public static ConstraintInfoDAO getInstance () {
+	public static ConstraintInfoDAO getInstance() {
 		if (sInstance == null) sInstance = new ConstraintInfoDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ConstraintInfo> getReferenceClass() {
 		return ConstraintInfo.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ConstraintInfo get(Long uniqueId) {
-		return (ConstraintInfo) get(getReferenceClass(), uniqueId);
-	}
-
-	public ConstraintInfo get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ConstraintInfo) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ConstraintInfo load(Long uniqueId) {
-		return (ConstraintInfo) load(getReferenceClass(), uniqueId);
-	}
-
-	public ConstraintInfo load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ConstraintInfo) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ConstraintInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ConstraintInfo constraintInfo = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(constraintInfo)) Hibernate.initialize(constraintInfo);
-		return constraintInfo;
-	}
-
-	public void save(ConstraintInfo constraintInfo) {
-		save((Object) constraintInfo);
-	}
-
-	public void save(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
-		save((Object) constraintInfo, hibSession);
-	}
-
-	public void saveOrUpdate(ConstraintInfo constraintInfo) {
-		saveOrUpdate((Object) constraintInfo);
-	}
-
-	public void saveOrUpdate(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) constraintInfo, hibSession);
-	}
-
-
-	public void update(ConstraintInfo constraintInfo) {
-		update((Object) constraintInfo);
-	}
-
-	public void update(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
-		update((Object) constraintInfo, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ConstraintInfo constraintInfo) {
-		delete((Object) constraintInfo);
-	}
-
-	public void delete(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
-		delete((Object) constraintInfo, hibSession);
-	}
-
-	public void refresh(ConstraintInfo constraintInfo, org.hibernate.Session hibSession) {
-		refresh((Object) constraintInfo, hibSession);
-	}
-
-	public List<ConstraintInfo> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ConstraintInfo").list();
 	}
 }

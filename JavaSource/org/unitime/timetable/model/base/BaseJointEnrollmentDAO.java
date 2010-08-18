@@ -21,109 +21,34 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.JointEnrollmentDAO;
 
-public abstract class BaseJointEnrollmentDAO extends _RootDAO {
+public abstract class BaseJointEnrollmentDAO extends _RootDAO<JointEnrollment,Long> {
 
 	private static JointEnrollmentDAO sInstance;
 
-	public static JointEnrollmentDAO getInstance () {
+	public static JointEnrollmentDAO getInstance() {
 		if (sInstance == null) sInstance = new JointEnrollmentDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<JointEnrollment> getReferenceClass() {
 		return JointEnrollment.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public JointEnrollment get(Long uniqueId) {
-		return (JointEnrollment) get(getReferenceClass(), uniqueId);
-	}
-
-	public JointEnrollment get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (JointEnrollment) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public JointEnrollment load(Long uniqueId) {
-		return (JointEnrollment) load(getReferenceClass(), uniqueId);
-	}
-
-	public JointEnrollment load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (JointEnrollment) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public JointEnrollment loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		JointEnrollment jointEnrollment = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(jointEnrollment)) Hibernate.initialize(jointEnrollment);
-		return jointEnrollment;
-	}
-
-	public void save(JointEnrollment jointEnrollment) {
-		save((Object) jointEnrollment);
-	}
-
-	public void save(JointEnrollment jointEnrollment, org.hibernate.Session hibSession) {
-		save((Object) jointEnrollment, hibSession);
-	}
-
-	public void saveOrUpdate(JointEnrollment jointEnrollment) {
-		saveOrUpdate((Object) jointEnrollment);
-	}
-
-	public void saveOrUpdate(JointEnrollment jointEnrollment, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) jointEnrollment, hibSession);
-	}
-
-
-	public void update(JointEnrollment jointEnrollment) {
-		update((Object) jointEnrollment);
-	}
-
-	public void update(JointEnrollment jointEnrollment, org.hibernate.Session hibSession) {
-		update((Object) jointEnrollment, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(JointEnrollment jointEnrollment) {
-		delete((Object) jointEnrollment);
-	}
-
-	public void delete(JointEnrollment jointEnrollment, org.hibernate.Session hibSession) {
-		delete((Object) jointEnrollment, hibSession);
-	}
-
-	public void refresh(JointEnrollment jointEnrollment, org.hibernate.Session hibSession) {
-		refresh((Object) jointEnrollment, hibSession);
-	}
-
-	public List<JointEnrollment> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from JointEnrollment").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
 		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass1(org.hibernate.Session hibSession, Long class1Id) {
 		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id").setLong("class1Id", class1Id).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass2(org.hibernate.Session hibSession, Long class2Id) {
 		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id").setLong("class2Id", class2Id).list();
 	}

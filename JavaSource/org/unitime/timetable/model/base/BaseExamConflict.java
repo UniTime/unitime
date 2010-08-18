@@ -74,21 +74,21 @@ public abstract class BaseExamConflict implements Serializable {
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToexams(Exam exam) {
-		if (iExams == null) iExams = new HashSet();
+		if (iExams == null) iExams = new HashSet<Exam>();
 		iExams.add(exam);
 	}
 
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
-		if (iStudents == null) iStudents = new HashSet();
+		if (iStudents == null) iStudents = new HashSet<Student>();
 		iStudents.add(student);
 	}
 
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
-		if (iInstructors == null) iInstructors = new HashSet();
+		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
 	}
 

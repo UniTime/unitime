@@ -85,21 +85,21 @@ public abstract class BaseEvent implements Serializable {
 	public Set<EventContact> getAdditionalContacts() { return iAdditionalContacts; }
 	public void setAdditionalContacts(Set<EventContact> additionalContacts) { iAdditionalContacts = additionalContacts; }
 	public void addToadditionalContacts(EventContact eventContact) {
-		if (iAdditionalContacts == null) iAdditionalContacts = new HashSet();
+		if (iAdditionalContacts == null) iAdditionalContacts = new HashSet<EventContact>();
 		iAdditionalContacts.add(eventContact);
 	}
 
 	public Set<EventNote> getNotes() { return iNotes; }
 	public void setNotes(Set<EventNote> notes) { iNotes = notes; }
 	public void addTonotes(EventNote eventNote) {
-		if (iNotes == null) iNotes = new HashSet();
+		if (iNotes == null) iNotes = new HashSet<EventNote>();
 		iNotes.add(eventNote);
 	}
 
 	public Set<Meeting> getMeetings() { return iMeetings; }
 	public void setMeetings(Set<Meeting> meetings) { iMeetings = meetings; }
 	public void addTomeetings(Meeting meeting) {
-		if (iMeetings == null) iMeetings = new HashSet();
+		if (iMeetings == null) iMeetings = new HashSet<Meeting>();
 		iMeetings.add(meeting);
 	}
 

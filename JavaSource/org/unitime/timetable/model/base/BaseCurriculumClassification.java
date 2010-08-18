@@ -77,7 +77,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	public Set<CurriculumCourse> getCourses() { return iCourses; }
 	public void setCourses(Set<CurriculumCourse> courses) { iCourses = courses; }
 	public void addTocourses(CurriculumCourse curriculumCourse) {
-		if (iCourses == null) iCourses = new HashSet();
+		if (iCourses == null) iCourses = new HashSet<CurriculumCourse>();
 		iCourses.add(curriculumCourse);
 	}
 

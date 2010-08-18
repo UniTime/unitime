@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 
-public abstract class BaseRoomFeatureDAO extends _RootDAO {
+public abstract class BaseRoomFeatureDAO extends _RootDAO<RoomFeature,Long> {
 
 	private static RoomFeatureDAO sInstance;
 
-	public static RoomFeatureDAO getInstance () {
+	public static RoomFeatureDAO getInstance() {
 		if (sInstance == null) sInstance = new RoomFeatureDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RoomFeature> getReferenceClass() {
 		return RoomFeature.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RoomFeature get(Long uniqueId) {
-		return (RoomFeature) get(getReferenceClass(), uniqueId);
-	}
-
-	public RoomFeature get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomFeature) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomFeature load(Long uniqueId) {
-		return (RoomFeature) load(getReferenceClass(), uniqueId);
-	}
-
-	public RoomFeature load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RoomFeature) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RoomFeature loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		RoomFeature roomFeature = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(roomFeature)) Hibernate.initialize(roomFeature);
-		return roomFeature;
-	}
-
-	public void save(RoomFeature roomFeature) {
-		save((Object) roomFeature);
-	}
-
-	public void save(RoomFeature roomFeature, org.hibernate.Session hibSession) {
-		save((Object) roomFeature, hibSession);
-	}
-
-	public void saveOrUpdate(RoomFeature roomFeature) {
-		saveOrUpdate((Object) roomFeature);
-	}
-
-	public void saveOrUpdate(RoomFeature roomFeature, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) roomFeature, hibSession);
-	}
-
-
-	public void update(RoomFeature roomFeature) {
-		update((Object) roomFeature);
-	}
-
-	public void update(RoomFeature roomFeature, org.hibernate.Session hibSession) {
-		update((Object) roomFeature, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(RoomFeature roomFeature) {
-		delete((Object) roomFeature);
-	}
-
-	public void delete(RoomFeature roomFeature, org.hibernate.Session hibSession) {
-		delete((Object) roomFeature, hibSession);
-	}
-
-	public void refresh(RoomFeature roomFeature, org.hibernate.Session hibSession) {
-		refresh((Object) roomFeature, hibSession);
-	}
-
-	public List<RoomFeature> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from RoomFeature").list();
 	}
 }

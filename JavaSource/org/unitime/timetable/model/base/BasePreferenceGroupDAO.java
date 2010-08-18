@@ -19,94 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.PreferenceGroupDAO;
 
-public abstract class BasePreferenceGroupDAO extends _RootDAO {
+public abstract class BasePreferenceGroupDAO extends _RootDAO<PreferenceGroup,Long> {
 
 	private static PreferenceGroupDAO sInstance;
 
-	public static PreferenceGroupDAO getInstance () {
+	public static PreferenceGroupDAO getInstance() {
 		if (sInstance == null) sInstance = new PreferenceGroupDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<PreferenceGroup> getReferenceClass() {
 		return PreferenceGroup.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public PreferenceGroup get(Long uniqueId) {
-		return (PreferenceGroup) get(getReferenceClass(), uniqueId);
-	}
-
-	public PreferenceGroup get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (PreferenceGroup) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public PreferenceGroup load(Long uniqueId) {
-		return (PreferenceGroup) load(getReferenceClass(), uniqueId);
-	}
-
-	public PreferenceGroup load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (PreferenceGroup) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public PreferenceGroup loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		PreferenceGroup preferenceGroup = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(preferenceGroup)) Hibernate.initialize(preferenceGroup);
-		return preferenceGroup;
-	}
-
-	public void save(PreferenceGroup preferenceGroup) {
-		save((Object) preferenceGroup);
-	}
-
-	public void save(PreferenceGroup preferenceGroup, org.hibernate.Session hibSession) {
-		save((Object) preferenceGroup, hibSession);
-	}
-
-	public void saveOrUpdate(PreferenceGroup preferenceGroup) {
-		saveOrUpdate((Object) preferenceGroup);
-	}
-
-	public void saveOrUpdate(PreferenceGroup preferenceGroup, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) preferenceGroup, hibSession);
-	}
-
-
-	public void update(PreferenceGroup preferenceGroup) {
-		update((Object) preferenceGroup);
-	}
-
-	public void update(PreferenceGroup preferenceGroup, org.hibernate.Session hibSession) {
-		update((Object) preferenceGroup, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(PreferenceGroup preferenceGroup) {
-		delete((Object) preferenceGroup);
-	}
-
-	public void delete(PreferenceGroup preferenceGroup, org.hibernate.Session hibSession) {
-		delete((Object) preferenceGroup, hibSession);
-	}
-
-	public void refresh(PreferenceGroup preferenceGroup, org.hibernate.Session hibSession) {
-		refresh((Object) preferenceGroup, hibSession);
 	}
 }

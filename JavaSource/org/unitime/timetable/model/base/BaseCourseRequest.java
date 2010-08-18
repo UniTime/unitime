@@ -82,21 +82,21 @@ public abstract class BaseCourseRequest implements Serializable {
 	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
 	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
 	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
-		if (iClassEnrollments == null) iClassEnrollments = new HashSet();
+		if (iClassEnrollments == null) iClassEnrollments = new HashSet<StudentClassEnrollment>();
 		iClassEnrollments.add(studentClassEnrollment);
 	}
 
 	public Set<CourseRequestOption> getCourseRequestOptions() { return iCourseRequestOptions; }
 	public void setCourseRequestOptions(Set<CourseRequestOption> courseRequestOptions) { iCourseRequestOptions = courseRequestOptions; }
 	public void addTocourseRequestOptions(CourseRequestOption courseRequestOption) {
-		if (iCourseRequestOptions == null) iCourseRequestOptions = new HashSet();
+		if (iCourseRequestOptions == null) iCourseRequestOptions = new HashSet<CourseRequestOption>();
 		iCourseRequestOptions.add(courseRequestOption);
 	}
 
 	public Set<ClassWaitList> getClassWaitLists() { return iClassWaitLists; }
 	public void setClassWaitLists(Set<ClassWaitList> classWaitLists) { iClassWaitLists = classWaitLists; }
 	public void addToclassWaitLists(ClassWaitList classWaitList) {
-		if (iClassWaitLists == null) iClassWaitLists = new HashSet();
+		if (iClassWaitLists == null) iClassWaitLists = new HashSet<ClassWaitList>();
 		iClassWaitLists.add(classWaitList);
 	}
 

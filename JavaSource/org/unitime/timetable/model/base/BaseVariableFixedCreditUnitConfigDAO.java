@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.VariableFixedCreditUnitConfigDAO;
 
-public abstract class BaseVariableFixedCreditUnitConfigDAO extends _RootDAO {
+public abstract class BaseVariableFixedCreditUnitConfigDAO extends _RootDAO<VariableFixedCreditUnitConfig,Long> {
 
 	private static VariableFixedCreditUnitConfigDAO sInstance;
 
-	public static VariableFixedCreditUnitConfigDAO getInstance () {
+	public static VariableFixedCreditUnitConfigDAO getInstance() {
 		if (sInstance == null) sInstance = new VariableFixedCreditUnitConfigDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<VariableFixedCreditUnitConfig> getReferenceClass() {
 		return VariableFixedCreditUnitConfig.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public VariableFixedCreditUnitConfig get(Long uniqueId) {
-		return (VariableFixedCreditUnitConfig) get(getReferenceClass(), uniqueId);
-	}
-
-	public VariableFixedCreditUnitConfig get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (VariableFixedCreditUnitConfig) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public VariableFixedCreditUnitConfig load(Long uniqueId) {
-		return (VariableFixedCreditUnitConfig) load(getReferenceClass(), uniqueId);
-	}
-
-	public VariableFixedCreditUnitConfig load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (VariableFixedCreditUnitConfig) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public VariableFixedCreditUnitConfig loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		VariableFixedCreditUnitConfig variableFixedCreditUnitConfig = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(variableFixedCreditUnitConfig)) Hibernate.initialize(variableFixedCreditUnitConfig);
-		return variableFixedCreditUnitConfig;
-	}
-
-	public void save(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
-		save((Object) variableFixedCreditUnitConfig);
-	}
-
-	public void save(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
-		save((Object) variableFixedCreditUnitConfig, hibSession);
-	}
-
-	public void saveOrUpdate(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
-		saveOrUpdate((Object) variableFixedCreditUnitConfig);
-	}
-
-	public void saveOrUpdate(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) variableFixedCreditUnitConfig, hibSession);
-	}
-
-
-	public void update(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
-		update((Object) variableFixedCreditUnitConfig);
-	}
-
-	public void update(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
-		update((Object) variableFixedCreditUnitConfig, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
-		delete((Object) variableFixedCreditUnitConfig);
-	}
-
-	public void delete(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
-		delete((Object) variableFixedCreditUnitConfig, hibSession);
-	}
-
-	public void refresh(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
-		refresh((Object) variableFixedCreditUnitConfig, hibSession);
-	}
-
-	public List<VariableFixedCreditUnitConfig> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from VariableFixedCreditUnitConfig").list();
 	}
 }
