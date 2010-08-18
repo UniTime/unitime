@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-public abstract class BaseSessionDAO extends _RootDAO {
+public abstract class BaseSessionDAO extends _RootDAO<Session,Long> {
 
 	private static SessionDAO sInstance;
 
-	public static SessionDAO getInstance () {
+	public static SessionDAO getInstance() {
 		if (sInstance == null) sInstance = new SessionDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Session> getReferenceClass() {
 		return Session.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Session get(Long uniqueId) {
-		return (Session) get(getReferenceClass(), uniqueId);
-	}
-
-	public Session get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Session) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Session load(Long uniqueId) {
-		return (Session) load(getReferenceClass(), uniqueId);
-	}
-
-	public Session load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Session) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Session loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Session session = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(session)) Hibernate.initialize(session);
-		return session;
-	}
-
-	public void save(Session session) {
-		save((Object) session);
-	}
-
-	public void save(Session session, org.hibernate.Session hibSession) {
-		save((Object) session, hibSession);
-	}
-
-	public void saveOrUpdate(Session session) {
-		saveOrUpdate((Object) session);
-	}
-
-	public void saveOrUpdate(Session session, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) session, hibSession);
-	}
-
-
-	public void update(Session session) {
-		update((Object) session);
-	}
-
-	public void update(Session session, org.hibernate.Session hibSession) {
-		update((Object) session, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Session session) {
-		delete((Object) session);
-	}
-
-	public void delete(Session session, org.hibernate.Session hibSession) {
-		delete((Object) session, hibSession);
-	}
-
-	public void refresh(Session session, org.hibernate.Session hibSession) {
-		refresh((Object) session, hibSession);
-	}
-
-	public List<Session> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Session").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Session> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
 		return hibSession.createQuery("from Session x where x.statusType.uniqueId = :statusTypeId").setLong("statusTypeId", statusTypeId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Session> findByDefaultDatePattern(org.hibernate.Session hibSession, Long defaultDatePatternId) {
 		return hibSession.createQuery("from Session x where x.defaultDatePattern.uniqueId = :defaultDatePatternId").setLong("defaultDatePatternId", defaultDatePatternId).list();
 	}

@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 
-public abstract class BaseDistributionTypeDAO extends _RootDAO {
+public abstract class BaseDistributionTypeDAO extends _RootDAO<DistributionType,Long> {
 
 	private static DistributionTypeDAO sInstance;
 
-	public static DistributionTypeDAO getInstance () {
+	public static DistributionTypeDAO getInstance() {
 		if (sInstance == null) sInstance = new DistributionTypeDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<DistributionType> getReferenceClass() {
 		return DistributionType.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public DistributionType get(Long uniqueId) {
-		return (DistributionType) get(getReferenceClass(), uniqueId);
-	}
-
-	public DistributionType get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DistributionType) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DistributionType load(Long uniqueId) {
-		return (DistributionType) load(getReferenceClass(), uniqueId);
-	}
-
-	public DistributionType load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DistributionType) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DistributionType loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		DistributionType distributionType = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(distributionType)) Hibernate.initialize(distributionType);
-		return distributionType;
-	}
-
-	public void save(DistributionType distributionType) {
-		save((Object) distributionType);
-	}
-
-	public void save(DistributionType distributionType, org.hibernate.Session hibSession) {
-		save((Object) distributionType, hibSession);
-	}
-
-	public void saveOrUpdate(DistributionType distributionType) {
-		saveOrUpdate((Object) distributionType);
-	}
-
-	public void saveOrUpdate(DistributionType distributionType, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) distributionType, hibSession);
-	}
-
-
-	public void update(DistributionType distributionType) {
-		update((Object) distributionType);
-	}
-
-	public void update(DistributionType distributionType, org.hibernate.Session hibSession) {
-		update((Object) distributionType, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(DistributionType distributionType) {
-		delete((Object) distributionType);
-	}
-
-	public void delete(DistributionType distributionType, org.hibernate.Session hibSession) {
-		delete((Object) distributionType, hibSession);
-	}
-
-	public void refresh(DistributionType distributionType, org.hibernate.Session hibSession) {
-		refresh((Object) distributionType, hibSession);
-	}
-
-	public List<DistributionType> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from DistributionType").list();
 	}
 }

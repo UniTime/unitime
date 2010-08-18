@@ -93,28 +93,28 @@ public abstract class BaseAssignment implements Serializable {
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
-		if (iInstructors == null) iInstructors = new HashSet();
+		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
 	}
 
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
-		if (iRooms == null) iRooms = new HashSet();
+		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
 	}
 
 	public Set<AssignmentInfo> getAssignmentInfo() { return iAssignmentInfo; }
 	public void setAssignmentInfo(Set<AssignmentInfo> assignmentInfo) { iAssignmentInfo = assignmentInfo; }
 	public void addToassignmentInfo(AssignmentInfo assignmentInfo) {
-		if (iAssignmentInfo == null) iAssignmentInfo = new HashSet();
+		if (iAssignmentInfo == null) iAssignmentInfo = new HashSet<AssignmentInfo>();
 		iAssignmentInfo.add(assignmentInfo);
 	}
 
 	public Set<ConstraintInfo> getConstraintInfo() { return iConstraintInfo; }
 	public void setConstraintInfo(Set<ConstraintInfo> constraintInfo) { iConstraintInfo = constraintInfo; }
 	public void addToconstraintInfo(ConstraintInfo constraintInfo) {
-		if (iConstraintInfo == null) iConstraintInfo = new HashSet();
+		if (iConstraintInfo == null) iConstraintInfo = new HashSet<ConstraintInfo>();
 		iConstraintInfo.add(constraintInfo);
 	}
 

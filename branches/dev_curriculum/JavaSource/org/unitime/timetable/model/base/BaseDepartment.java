@@ -131,42 +131,42 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
-		if (iSubjectAreas == null) iSubjectAreas = new HashSet();
+		if (iSubjectAreas == null) iSubjectAreas = new HashSet<SubjectArea>();
 		iSubjectAreas.add(subjectArea);
 	}
 
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
 	public void addToroomDepts(RoomDept roomDept) {
-		if (iRoomDepts == null) iRoomDepts = new HashSet();
+		if (iRoomDepts == null) iRoomDepts = new HashSet<RoomDept>();
 		iRoomDepts.add(roomDept);
 	}
 
 	public Set<DatePattern> getDatePatterns() { return iDatePatterns; }
 	public void setDatePatterns(Set<DatePattern> datePatterns) { iDatePatterns = datePatterns; }
 	public void addTodatePatterns(DatePattern datePattern) {
-		if (iDatePatterns == null) iDatePatterns = new HashSet();
+		if (iDatePatterns == null) iDatePatterns = new HashSet<DatePattern>();
 		iDatePatterns.add(datePattern);
 	}
 
 	public Set<TimePattern> getTimePatterns() { return iTimePatterns; }
 	public void setTimePatterns(Set<TimePattern> timePatterns) { iTimePatterns = timePatterns; }
 	public void addTotimePatterns(TimePattern timePattern) {
-		if (iTimePatterns == null) iTimePatterns = new HashSet();
+		if (iTimePatterns == null) iTimePatterns = new HashSet<TimePattern>();
 		iTimePatterns.add(timePattern);
 	}
 
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addTotimetableManagers(TimetableManager timetableManager) {
-		if (iTimetableManagers == null) iTimetableManagers = new HashSet();
+		if (iTimetableManagers == null) iTimetableManagers = new HashSet<TimetableManager>();
 		iTimetableManagers.add(timetableManager);
 	}
 
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
-		if (iInstructors == null) iInstructors = new HashSet();
+		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
 	}
 

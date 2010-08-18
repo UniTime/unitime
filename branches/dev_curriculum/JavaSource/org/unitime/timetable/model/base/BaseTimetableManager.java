@@ -83,28 +83,28 @@ public abstract class BaseTimetableManager implements Serializable {
 	public Set<ManagerSettings> getSettings() { return iSettings; }
 	public void setSettings(Set<ManagerSettings> settings) { iSettings = settings; }
 	public void addTosettings(ManagerSettings managerSettings) {
-		if (iSettings == null) iSettings = new HashSet();
+		if (iSettings == null) iSettings = new HashSet<ManagerSettings>();
 		iSettings.add(managerSettings);
 	}
 
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
-		if (iDepartments == null) iDepartments = new HashSet();
+		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
 	}
 
 	public Set<ManagerRole> getManagerRoles() { return iManagerRoles; }
 	public void setManagerRoles(Set<ManagerRole> managerRoles) { iManagerRoles = managerRoles; }
 	public void addTomanagerRoles(ManagerRole managerRole) {
-		if (iManagerRoles == null) iManagerRoles = new HashSet();
+		if (iManagerRoles == null) iManagerRoles = new HashSet<ManagerRole>();
 		iManagerRoles.add(managerRole);
 	}
 
 	public Set<SolverGroup> getSolverGroups() { return iSolverGroups; }
 	public void setSolverGroups(Set<SolverGroup> solverGroups) { iSolverGroups = solverGroups; }
 	public void addTosolverGroups(SolverGroup solverGroup) {
-		if (iSolverGroups == null) iSolverGroups = new HashSet();
+		if (iSolverGroups == null) iSolverGroups = new HashSet<SolverGroup>();
 		iSolverGroups.add(solverGroup);
 	}
 

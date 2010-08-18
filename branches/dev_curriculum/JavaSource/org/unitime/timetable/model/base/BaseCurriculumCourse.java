@@ -72,7 +72,7 @@ public abstract class BaseCurriculumCourse implements Serializable {
 	public Set<CurriculumCourseGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<CurriculumCourseGroup> groups) { iGroups = groups; }
 	public void addTogroups(CurriculumCourseGroup curriculumCourseGroup) {
-		if (iGroups == null) iGroups = new HashSet();
+		if (iGroups == null) iGroups = new HashSet<CurriculumCourseGroup>();
 		iGroups.add(curriculumCourseGroup);
 	}
 

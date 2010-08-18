@@ -19,93 +19,22 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
+import java.io.Serializable;
 
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RoomTypeOptionDAO;
 
-public abstract class BaseRoomTypeOptionDAO extends _RootDAO {
+public abstract class BaseRoomTypeOptionDAO extends _RootDAO<RoomTypeOption,Serializable> {
 
 	private static RoomTypeOptionDAO sInstance;
 
-	public static RoomTypeOptionDAO getInstance () {
+	public static RoomTypeOptionDAO getInstance() {
 		if (sInstance == null) sInstance = new RoomTypeOptionDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RoomTypeOption> getReferenceClass() {
 		return RoomTypeOption.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RoomTypeOption get(RoomTypeOption key) {
-		return (RoomTypeOption) get(getReferenceClass(), key);
-	}
-
-	public RoomTypeOption get(RoomTypeOption key, org.hibernate.Session hibSession) {
-		return (RoomTypeOption) get(getReferenceClass(), key, hibSession);
-	}
-
-	public RoomTypeOption load(RoomTypeOption key) {
-		return (RoomTypeOption) load(getReferenceClass(), key);
-	}
-
-	public RoomTypeOption load(RoomTypeOption key, org.hibernate.Session hibSession) {
-		return (RoomTypeOption) load(getReferenceClass(), key, hibSession);
-	}
-
-	public RoomTypeOption loadInitialize(RoomTypeOption key, org.hibernate.Session hibSession) {
-		RoomTypeOption roomTypeOption = load(key, hibSession);
-		if (!Hibernate.isInitialized(roomTypeOption)) Hibernate.initialize(roomTypeOption);
-		return roomTypeOption;
-	}
-
-	public void save(RoomTypeOption roomTypeOption) {
-		save((Object) roomTypeOption);
-	}
-
-	public void save(RoomTypeOption roomTypeOption, org.hibernate.Session hibSession) {
-		save((Object) roomTypeOption, hibSession);
-	}
-
-	public void saveOrUpdate(RoomTypeOption roomTypeOption) {
-		saveOrUpdate((Object) roomTypeOption);
-	}
-
-	public void saveOrUpdate(RoomTypeOption roomTypeOption, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) roomTypeOption, hibSession);
-	}
-
-
-	public void update(RoomTypeOption roomTypeOption) {
-		update((Object) roomTypeOption);
-	}
-
-	public void update(RoomTypeOption roomTypeOption, org.hibernate.Session hibSession) {
-		update((Object) roomTypeOption, hibSession);
-	}
-
-
-	public void delete(RoomTypeOption roomTypeOption) {
-		delete((Object) roomTypeOption);
-	}
-
-	public void delete(RoomTypeOption roomTypeOption, org.hibernate.Session hibSession) {
-		delete((Object) roomTypeOption, hibSession);
-	}
-
-	public void refresh(RoomTypeOption roomTypeOption, org.hibernate.Session hibSession) {
-		refresh((Object) roomTypeOption, hibSession);
-	}
-
-	public List<RoomTypeOption> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from RoomTypeOption").list();
 	}
 }

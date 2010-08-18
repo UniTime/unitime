@@ -133,14 +133,14 @@ public abstract class BaseCourseOffering implements Serializable {
 	public Set<CourseOfferingReservation> getCourseReservations() { return iCourseReservations; }
 	public void setCourseReservations(Set<CourseOfferingReservation> courseReservations) { iCourseReservations = courseReservations; }
 	public void addTocourseReservations(CourseOfferingReservation courseOfferingReservation) {
-		if (iCourseReservations == null) iCourseReservations = new HashSet();
+		if (iCourseReservations == null) iCourseReservations = new HashSet<CourseOfferingReservation>();
 		iCourseReservations.add(courseOfferingReservation);
 	}
 
 	public Set<AcadAreaReservation> getAcadAreaReservations() { return iAcadAreaReservations; }
 	public void setAcadAreaReservations(Set<AcadAreaReservation> acadAreaReservations) { iAcadAreaReservations = acadAreaReservations; }
 	public void addToacadAreaReservations(AcadAreaReservation acadAreaReservation) {
-		if (iAcadAreaReservations == null) iAcadAreaReservations = new HashSet();
+		if (iAcadAreaReservations == null) iAcadAreaReservations = new HashSet<AcadAreaReservation>();
 		iAcadAreaReservations.add(acadAreaReservation);
 	}
 

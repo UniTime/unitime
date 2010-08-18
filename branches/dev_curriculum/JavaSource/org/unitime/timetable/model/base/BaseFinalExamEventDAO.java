@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.FinalExamEventDAO;
 
-public abstract class BaseFinalExamEventDAO extends _RootDAO {
+public abstract class BaseFinalExamEventDAO extends _RootDAO<FinalExamEvent,Long> {
 
 	private static FinalExamEventDAO sInstance;
 
-	public static FinalExamEventDAO getInstance () {
+	public static FinalExamEventDAO getInstance() {
 		if (sInstance == null) sInstance = new FinalExamEventDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<FinalExamEvent> getReferenceClass() {
 		return FinalExamEvent.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public FinalExamEvent get(Long uniqueId) {
-		return (FinalExamEvent) get(getReferenceClass(), uniqueId);
-	}
-
-	public FinalExamEvent get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (FinalExamEvent) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public FinalExamEvent load(Long uniqueId) {
-		return (FinalExamEvent) load(getReferenceClass(), uniqueId);
-	}
-
-	public FinalExamEvent load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (FinalExamEvent) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public FinalExamEvent loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		FinalExamEvent finalExamEvent = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(finalExamEvent)) Hibernate.initialize(finalExamEvent);
-		return finalExamEvent;
-	}
-
-	public void save(FinalExamEvent finalExamEvent) {
-		save((Object) finalExamEvent);
-	}
-
-	public void save(FinalExamEvent finalExamEvent, org.hibernate.Session hibSession) {
-		save((Object) finalExamEvent, hibSession);
-	}
-
-	public void saveOrUpdate(FinalExamEvent finalExamEvent) {
-		saveOrUpdate((Object) finalExamEvent);
-	}
-
-	public void saveOrUpdate(FinalExamEvent finalExamEvent, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) finalExamEvent, hibSession);
-	}
-
-
-	public void update(FinalExamEvent finalExamEvent) {
-		update((Object) finalExamEvent);
-	}
-
-	public void update(FinalExamEvent finalExamEvent, org.hibernate.Session hibSession) {
-		update((Object) finalExamEvent, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(FinalExamEvent finalExamEvent) {
-		delete((Object) finalExamEvent);
-	}
-
-	public void delete(FinalExamEvent finalExamEvent, org.hibernate.Session hibSession) {
-		delete((Object) finalExamEvent, hibSession);
-	}
-
-	public void refresh(FinalExamEvent finalExamEvent, org.hibernate.Session hibSession) {
-		refresh((Object) finalExamEvent, hibSession);
-	}
-
-	public List<FinalExamEvent> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from FinalExamEvent").list();
 	}
 }

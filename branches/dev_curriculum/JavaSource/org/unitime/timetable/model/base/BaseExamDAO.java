@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 
-public abstract class BaseExamDAO extends _RootDAO {
+public abstract class BaseExamDAO extends _RootDAO<Exam,Long> {
 
 	private static ExamDAO sInstance;
 
-	public static ExamDAO getInstance () {
+	public static ExamDAO getInstance() {
 		if (sInstance == null) sInstance = new ExamDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Exam> getReferenceClass() {
 		return Exam.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Exam get(Long uniqueId) {
-		return (Exam) get(getReferenceClass(), uniqueId);
-	}
-
-	public Exam get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Exam) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Exam load(Long uniqueId) {
-		return (Exam) load(getReferenceClass(), uniqueId);
-	}
-
-	public Exam load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Exam) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Exam loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Exam exam = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(exam)) Hibernate.initialize(exam);
-		return exam;
-	}
-
-	public void save(Exam exam) {
-		save((Object) exam);
-	}
-
-	public void save(Exam exam, org.hibernate.Session hibSession) {
-		save((Object) exam, hibSession);
-	}
-
-	public void saveOrUpdate(Exam exam) {
-		saveOrUpdate((Object) exam);
-	}
-
-	public void saveOrUpdate(Exam exam, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) exam, hibSession);
-	}
-
-
-	public void update(Exam exam) {
-		update((Object) exam);
-	}
-
-	public void update(Exam exam, org.hibernate.Session hibSession) {
-		update((Object) exam, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Exam exam) {
-		delete((Object) exam);
-	}
-
-	public void delete(Exam exam, org.hibernate.Session hibSession) {
-		delete((Object) exam, hibSession);
-	}
-
-	public void refresh(Exam exam, org.hibernate.Session hibSession) {
-		refresh((Object) exam, hibSession);
-	}
-
-	public List<Exam> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Exam").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Exam> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from Exam x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Exam> findByAssignedPeriod(org.hibernate.Session hibSession, Long assignedPeriodId) {
 		return hibSession.createQuery("from Exam x where x.assignedPeriod.uniqueId = :assignedPeriodId").setLong("assignedPeriodId", assignedPeriodId).list();
 	}

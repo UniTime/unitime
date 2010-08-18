@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 
-public abstract class BaseNonUniversityLocationDAO extends _RootDAO {
+public abstract class BaseNonUniversityLocationDAO extends _RootDAO<NonUniversityLocation,Long> {
 
 	private static NonUniversityLocationDAO sInstance;
 
-	public static NonUniversityLocationDAO getInstance () {
+	public static NonUniversityLocationDAO getInstance() {
 		if (sInstance == null) sInstance = new NonUniversityLocationDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<NonUniversityLocation> getReferenceClass() {
 		return NonUniversityLocation.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public NonUniversityLocation get(Long uniqueId) {
-		return (NonUniversityLocation) get(getReferenceClass(), uniqueId);
-	}
-
-	public NonUniversityLocation get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (NonUniversityLocation) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public NonUniversityLocation load(Long uniqueId) {
-		return (NonUniversityLocation) load(getReferenceClass(), uniqueId);
-	}
-
-	public NonUniversityLocation load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (NonUniversityLocation) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public NonUniversityLocation loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		NonUniversityLocation nonUniversityLocation = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(nonUniversityLocation)) Hibernate.initialize(nonUniversityLocation);
-		return nonUniversityLocation;
-	}
-
-	public void save(NonUniversityLocation nonUniversityLocation) {
-		save((Object) nonUniversityLocation);
-	}
-
-	public void save(NonUniversityLocation nonUniversityLocation, org.hibernate.Session hibSession) {
-		save((Object) nonUniversityLocation, hibSession);
-	}
-
-	public void saveOrUpdate(NonUniversityLocation nonUniversityLocation) {
-		saveOrUpdate((Object) nonUniversityLocation);
-	}
-
-	public void saveOrUpdate(NonUniversityLocation nonUniversityLocation, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) nonUniversityLocation, hibSession);
-	}
-
-
-	public void update(NonUniversityLocation nonUniversityLocation) {
-		update((Object) nonUniversityLocation);
-	}
-
-	public void update(NonUniversityLocation nonUniversityLocation, org.hibernate.Session hibSession) {
-		update((Object) nonUniversityLocation, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(NonUniversityLocation nonUniversityLocation) {
-		delete((Object) nonUniversityLocation);
-	}
-
-	public void delete(NonUniversityLocation nonUniversityLocation, org.hibernate.Session hibSession) {
-		delete((Object) nonUniversityLocation, hibSession);
-	}
-
-	public void refresh(NonUniversityLocation nonUniversityLocation, org.hibernate.Session hibSession) {
-		refresh((Object) nonUniversityLocation, hibSession);
-	}
-
-	public List<NonUniversityLocation> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from NonUniversityLocation").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<NonUniversityLocation> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
 		return hibSession.createQuery("from NonUniversityLocation x where x.roomType.uniqueId = :roomTypeId").setLong("roomTypeId", roomTypeId).list();
 	}

@@ -71,21 +71,21 @@ public abstract class BaseSolverGroup implements Serializable {
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addTotimetableManagers(TimetableManager timetableManager) {
-		if (iTimetableManagers == null) iTimetableManagers = new HashSet();
+		if (iTimetableManagers == null) iTimetableManagers = new HashSet<TimetableManager>();
 		iTimetableManagers.add(timetableManager);
 	}
 
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
-		if (iDepartments == null) iDepartments = new HashSet();
+		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
 	}
 
 	public Set<Solution> getSolutions() { return iSolutions; }
 	public void setSolutions(Set<Solution> solutions) { iSolutions = solutions; }
 	public void addTosolutions(Solution solution) {
-		if (iSolutions == null) iSolutions = new HashSet();
+		if (iSolutions == null) iSolutions = new HashSet<Solution>();
 		iSolutions.add(solution);
 	}
 

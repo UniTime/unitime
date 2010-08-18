@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 
-public abstract class BaseCurriculumDAO extends _RootDAO {
+public abstract class BaseCurriculumDAO extends _RootDAO<Curriculum,Long> {
 
 	private static CurriculumDAO sInstance;
 
-	public static CurriculumDAO getInstance () {
+	public static CurriculumDAO getInstance() {
 		if (sInstance == null) sInstance = new CurriculumDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Curriculum> getReferenceClass() {
 		return Curriculum.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Curriculum get(Long uniqueId) {
-		return (Curriculum) get(getReferenceClass(), uniqueId);
-	}
-
-	public Curriculum get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Curriculum) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Curriculum load(Long uniqueId) {
-		return (Curriculum) load(getReferenceClass(), uniqueId);
-	}
-
-	public Curriculum load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Curriculum) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Curriculum loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Curriculum curriculum = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(curriculum)) Hibernate.initialize(curriculum);
-		return curriculum;
-	}
-
-	public void save(Curriculum curriculum) {
-		save((Object) curriculum);
-	}
-
-	public void save(Curriculum curriculum, org.hibernate.Session hibSession) {
-		save((Object) curriculum, hibSession);
-	}
-
-	public void saveOrUpdate(Curriculum curriculum) {
-		saveOrUpdate((Object) curriculum);
-	}
-
-	public void saveOrUpdate(Curriculum curriculum, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) curriculum, hibSession);
-	}
-
-
-	public void update(Curriculum curriculum) {
-		update((Object) curriculum);
-	}
-
-	public void update(Curriculum curriculum, org.hibernate.Session hibSession) {
-		update((Object) curriculum, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Curriculum curriculum) {
-		delete((Object) curriculum);
-	}
-
-	public void delete(Curriculum curriculum, org.hibernate.Session hibSession) {
-		delete((Object) curriculum, hibSession);
-	}
-
-	public void refresh(Curriculum curriculum, org.hibernate.Session hibSession) {
-		refresh((Object) curriculum, hibSession);
-	}
-
-	public List<Curriculum> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Curriculum").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Curriculum> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
 		return hibSession.createQuery("from Curriculum x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Curriculum> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from Curriculum x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}

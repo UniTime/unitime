@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ManagerRoleDAO;
 
-public abstract class BaseManagerRoleDAO extends _RootDAO {
+public abstract class BaseManagerRoleDAO extends _RootDAO<ManagerRole,Long> {
 
 	private static ManagerRoleDAO sInstance;
 
-	public static ManagerRoleDAO getInstance () {
+	public static ManagerRoleDAO getInstance() {
 		if (sInstance == null) sInstance = new ManagerRoleDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ManagerRole> getReferenceClass() {
 		return ManagerRole.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ManagerRole get(Long uniqueId) {
-		return (ManagerRole) get(getReferenceClass(), uniqueId);
-	}
-
-	public ManagerRole get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ManagerRole) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ManagerRole load(Long uniqueId) {
-		return (ManagerRole) load(getReferenceClass(), uniqueId);
-	}
-
-	public ManagerRole load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ManagerRole) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ManagerRole loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ManagerRole managerRole = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(managerRole)) Hibernate.initialize(managerRole);
-		return managerRole;
-	}
-
-	public void save(ManagerRole managerRole) {
-		save((Object) managerRole);
-	}
-
-	public void save(ManagerRole managerRole, org.hibernate.Session hibSession) {
-		save((Object) managerRole, hibSession);
-	}
-
-	public void saveOrUpdate(ManagerRole managerRole) {
-		saveOrUpdate((Object) managerRole);
-	}
-
-	public void saveOrUpdate(ManagerRole managerRole, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) managerRole, hibSession);
-	}
-
-
-	public void update(ManagerRole managerRole) {
-		update((Object) managerRole);
-	}
-
-	public void update(ManagerRole managerRole, org.hibernate.Session hibSession) {
-		update((Object) managerRole, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ManagerRole managerRole) {
-		delete((Object) managerRole);
-	}
-
-	public void delete(ManagerRole managerRole, org.hibernate.Session hibSession) {
-		delete((Object) managerRole, hibSession);
-	}
-
-	public void refresh(ManagerRole managerRole, org.hibernate.Session hibSession) {
-		refresh((Object) managerRole, hibSession);
-	}
-
-	public List<ManagerRole> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ManagerRole").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ManagerRole> findByRole(org.hibernate.Session hibSession, Long roleId) {
 		return hibSession.createQuery("from ManagerRole x where x.role.roleId = :roleId").setLong("roleId", roleId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<ManagerRole> findByTimetableManager(org.hibernate.Session hibSession, Long timetableManagerId) {
 		return hibSession.createQuery("from ManagerRole x where x.timetableManager.uniqueId = :timetableManagerId").setLong("timetableManagerId", timetableManagerId).list();
 	}

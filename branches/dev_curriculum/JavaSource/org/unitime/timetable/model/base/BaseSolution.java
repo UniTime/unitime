@@ -102,35 +102,35 @@ public abstract class BaseSolution implements Serializable {
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(SolverParameter solverParameter) {
-		if (iParameters == null) iParameters = new HashSet();
+		if (iParameters == null) iParameters = new HashSet<SolverParameter>();
 		iParameters.add(solverParameter);
 	}
 
 	public Set<SolutionInfo> getSolutionInfo() { return iSolutionInfo; }
 	public void setSolutionInfo(Set<SolutionInfo> solutionInfo) { iSolutionInfo = solutionInfo; }
 	public void addTosolutionInfo(SolutionInfo solutionInfo) {
-		if (iSolutionInfo == null) iSolutionInfo = new HashSet();
+		if (iSolutionInfo == null) iSolutionInfo = new HashSet<SolutionInfo>();
 		iSolutionInfo.add(solutionInfo);
 	}
 
 	public Set<StudentEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addTostudentEnrollments(StudentEnrollment studentEnrollment) {
-		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet();
+		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet<StudentEnrollment>();
 		iStudentEnrollments.add(studentEnrollment);
 	}
 
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
-		if (iAssignments == null) iAssignments = new HashSet();
+		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
 	}
 
 	public Set<JointEnrollment> getJointEnrollments() { return iJointEnrollments; }
 	public void setJointEnrollments(Set<JointEnrollment> jointEnrollments) { iJointEnrollments = jointEnrollments; }
 	public void addTojointEnrollments(JointEnrollment jointEnrollment) {
-		if (iJointEnrollments == null) iJointEnrollments = new HashSet();
+		if (iJointEnrollments == null) iJointEnrollments = new HashSet<JointEnrollment>();
 		iJointEnrollments.add(jointEnrollment);
 	}
 

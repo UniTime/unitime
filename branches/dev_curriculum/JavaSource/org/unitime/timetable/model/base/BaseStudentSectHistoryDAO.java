@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.StudentSectHistory;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.StudentSectHistoryDAO;
 
-public abstract class BaseStudentSectHistoryDAO extends _RootDAO {
+public abstract class BaseStudentSectHistoryDAO extends _RootDAO<StudentSectHistory,Long> {
 
 	private static StudentSectHistoryDAO sInstance;
 
-	public static StudentSectHistoryDAO getInstance () {
+	public static StudentSectHistoryDAO getInstance() {
 		if (sInstance == null) sInstance = new StudentSectHistoryDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<StudentSectHistory> getReferenceClass() {
 		return StudentSectHistory.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public StudentSectHistory get(Long uniqueId) {
-		return (StudentSectHistory) get(getReferenceClass(), uniqueId);
-	}
-
-	public StudentSectHistory get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (StudentSectHistory) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public StudentSectHistory load(Long uniqueId) {
-		return (StudentSectHistory) load(getReferenceClass(), uniqueId);
-	}
-
-	public StudentSectHistory load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (StudentSectHistory) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public StudentSectHistory loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		StudentSectHistory studentSectHistory = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(studentSectHistory)) Hibernate.initialize(studentSectHistory);
-		return studentSectHistory;
-	}
-
-	public void save(StudentSectHistory studentSectHistory) {
-		save((Object) studentSectHistory);
-	}
-
-	public void save(StudentSectHistory studentSectHistory, org.hibernate.Session hibSession) {
-		save((Object) studentSectHistory, hibSession);
-	}
-
-	public void saveOrUpdate(StudentSectHistory studentSectHistory) {
-		saveOrUpdate((Object) studentSectHistory);
-	}
-
-	public void saveOrUpdate(StudentSectHistory studentSectHistory, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) studentSectHistory, hibSession);
-	}
-
-
-	public void update(StudentSectHistory studentSectHistory) {
-		update((Object) studentSectHistory);
-	}
-
-	public void update(StudentSectHistory studentSectHistory, org.hibernate.Session hibSession) {
-		update((Object) studentSectHistory, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(StudentSectHistory studentSectHistory) {
-		delete((Object) studentSectHistory);
-	}
-
-	public void delete(StudentSectHistory studentSectHistory, org.hibernate.Session hibSession) {
-		delete((Object) studentSectHistory, hibSession);
-	}
-
-	public void refresh(StudentSectHistory studentSectHistory, org.hibernate.Session hibSession) {
-		refresh((Object) studentSectHistory, hibSession);
-	}
-
-	public List<StudentSectHistory> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from StudentSectHistory").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<StudentSectHistory> findByStudent(org.hibernate.Session hibSession, Long studentId) {
 		return hibSession.createQuery("from StudentSectHistory x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
 	}

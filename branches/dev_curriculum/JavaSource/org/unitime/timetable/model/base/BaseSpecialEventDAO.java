@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SpecialEventDAO;
 
-public abstract class BaseSpecialEventDAO extends _RootDAO {
+public abstract class BaseSpecialEventDAO extends _RootDAO<SpecialEvent,Long> {
 
 	private static SpecialEventDAO sInstance;
 
-	public static SpecialEventDAO getInstance () {
+	public static SpecialEventDAO getInstance() {
 		if (sInstance == null) sInstance = new SpecialEventDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SpecialEvent> getReferenceClass() {
 		return SpecialEvent.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SpecialEvent get(Long uniqueId) {
-		return (SpecialEvent) get(getReferenceClass(), uniqueId);
-	}
-
-	public SpecialEvent get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SpecialEvent) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SpecialEvent load(Long uniqueId) {
-		return (SpecialEvent) load(getReferenceClass(), uniqueId);
-	}
-
-	public SpecialEvent load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SpecialEvent) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SpecialEvent loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SpecialEvent specialEvent = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(specialEvent)) Hibernate.initialize(specialEvent);
-		return specialEvent;
-	}
-
-	public void save(SpecialEvent specialEvent) {
-		save((Object) specialEvent);
-	}
-
-	public void save(SpecialEvent specialEvent, org.hibernate.Session hibSession) {
-		save((Object) specialEvent, hibSession);
-	}
-
-	public void saveOrUpdate(SpecialEvent specialEvent) {
-		saveOrUpdate((Object) specialEvent);
-	}
-
-	public void saveOrUpdate(SpecialEvent specialEvent, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) specialEvent, hibSession);
-	}
-
-
-	public void update(SpecialEvent specialEvent) {
-		update((Object) specialEvent);
-	}
-
-	public void update(SpecialEvent specialEvent, org.hibernate.Session hibSession) {
-		update((Object) specialEvent, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SpecialEvent specialEvent) {
-		delete((Object) specialEvent);
-	}
-
-	public void delete(SpecialEvent specialEvent, org.hibernate.Session hibSession) {
-		delete((Object) specialEvent, hibSession);
-	}
-
-	public void refresh(SpecialEvent specialEvent, org.hibernate.Session hibSession) {
-		refresh((Object) specialEvent, hibSession);
-	}
-
-	public List<SpecialEvent> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SpecialEvent").list();
 	}
 }

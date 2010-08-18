@@ -98,21 +98,21 @@ public abstract class BaseSubjectArea implements Serializable {
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
 	public void addTocourseOfferings(CourseOffering courseOffering) {
-		if (iCourseOfferings == null) iCourseOfferings = new HashSet();
+		if (iCourseOfferings == null) iCourseOfferings = new HashSet<CourseOffering>();
 		iCourseOfferings.add(courseOffering);
 	}
 
 	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
 	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
 	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
-		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet();
+		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet<InstructionalOffering>();
 		iInstructionalOfferings.add(instructionalOffering);
 	}
 
 	public Set<Designator> getDesignatorInstructors() { return iDesignatorInstructors; }
 	public void setDesignatorInstructors(Set<Designator> designatorInstructors) { iDesignatorInstructors = designatorInstructors; }
 	public void addTodesignatorInstructors(Designator designator) {
-		if (iDesignatorInstructors == null) iDesignatorInstructors = new HashSet();
+		if (iDesignatorInstructors == null) iDesignatorInstructors = new HashSet<Designator>();
 		iDesignatorInstructors.add(designator);
 	}
 

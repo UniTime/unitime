@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.History;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.HistoryDAO;
 
-public abstract class BaseHistoryDAO extends _RootDAO {
+public abstract class BaseHistoryDAO extends _RootDAO<History,Long> {
 
 	private static HistoryDAO sInstance;
 
-	public static HistoryDAO getInstance () {
+	public static HistoryDAO getInstance() {
 		if (sInstance == null) sInstance = new HistoryDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<History> getReferenceClass() {
 		return History.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public History get(Long uniqueId) {
-		return (History) get(getReferenceClass(), uniqueId);
-	}
-
-	public History get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (History) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public History load(Long uniqueId) {
-		return (History) load(getReferenceClass(), uniqueId);
-	}
-
-	public History load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (History) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public History loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		History history = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(history)) Hibernate.initialize(history);
-		return history;
-	}
-
-	public void save(History history) {
-		save((Object) history);
-	}
-
-	public void save(History history, org.hibernate.Session hibSession) {
-		save((Object) history, hibSession);
-	}
-
-	public void saveOrUpdate(History history) {
-		saveOrUpdate((Object) history);
-	}
-
-	public void saveOrUpdate(History history, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) history, hibSession);
-	}
-
-
-	public void update(History history) {
-		update((Object) history);
-	}
-
-	public void update(History history, org.hibernate.Session hibSession) {
-		update((Object) history, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(History history) {
-		delete((Object) history);
-	}
-
-	public void delete(History history, org.hibernate.Session hibSession) {
-		delete((Object) history, hibSession);
-	}
-
-	public void refresh(History history, org.hibernate.Session hibSession) {
-		refresh((Object) history, hibSession);
-	}
-
-	public List<History> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from History").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<History> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from History x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}

@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.DemandOfferingTypeDAO;
 
-public abstract class BaseDemandOfferingTypeDAO extends _RootDAO {
+public abstract class BaseDemandOfferingTypeDAO extends _RootDAO<DemandOfferingType,Long> {
 
 	private static DemandOfferingTypeDAO sInstance;
 
-	public static DemandOfferingTypeDAO getInstance () {
+	public static DemandOfferingTypeDAO getInstance() {
 		if (sInstance == null) sInstance = new DemandOfferingTypeDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<DemandOfferingType> getReferenceClass() {
 		return DemandOfferingType.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public DemandOfferingType get(Long uniqueId) {
-		return (DemandOfferingType) get(getReferenceClass(), uniqueId);
-	}
-
-	public DemandOfferingType get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DemandOfferingType) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DemandOfferingType load(Long uniqueId) {
-		return (DemandOfferingType) load(getReferenceClass(), uniqueId);
-	}
-
-	public DemandOfferingType load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DemandOfferingType) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DemandOfferingType loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		DemandOfferingType demandOfferingType = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(demandOfferingType)) Hibernate.initialize(demandOfferingType);
-		return demandOfferingType;
-	}
-
-	public void save(DemandOfferingType demandOfferingType) {
-		save((Object) demandOfferingType);
-	}
-
-	public void save(DemandOfferingType demandOfferingType, org.hibernate.Session hibSession) {
-		save((Object) demandOfferingType, hibSession);
-	}
-
-	public void saveOrUpdate(DemandOfferingType demandOfferingType) {
-		saveOrUpdate((Object) demandOfferingType);
-	}
-
-	public void saveOrUpdate(DemandOfferingType demandOfferingType, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) demandOfferingType, hibSession);
-	}
-
-
-	public void update(DemandOfferingType demandOfferingType) {
-		update((Object) demandOfferingType);
-	}
-
-	public void update(DemandOfferingType demandOfferingType, org.hibernate.Session hibSession) {
-		update((Object) demandOfferingType, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(DemandOfferingType demandOfferingType) {
-		delete((Object) demandOfferingType);
-	}
-
-	public void delete(DemandOfferingType demandOfferingType, org.hibernate.Session hibSession) {
-		delete((Object) demandOfferingType, hibSession);
-	}
-
-	public void refresh(DemandOfferingType demandOfferingType, org.hibernate.Session hibSession) {
-		refresh((Object) demandOfferingType, hibSession);
-	}
-
-	public List<DemandOfferingType> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from DemandOfferingType").list();
 	}
 }

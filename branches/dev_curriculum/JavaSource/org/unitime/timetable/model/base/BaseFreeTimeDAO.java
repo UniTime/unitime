@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.FreeTimeDAO;
 
-public abstract class BaseFreeTimeDAO extends _RootDAO {
+public abstract class BaseFreeTimeDAO extends _RootDAO<FreeTime,Long> {
 
 	private static FreeTimeDAO sInstance;
 
-	public static FreeTimeDAO getInstance () {
+	public static FreeTimeDAO getInstance() {
 		if (sInstance == null) sInstance = new FreeTimeDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<FreeTime> getReferenceClass() {
 		return FreeTime.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public FreeTime get(Long uniqueId) {
-		return (FreeTime) get(getReferenceClass(), uniqueId);
-	}
-
-	public FreeTime get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (FreeTime) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public FreeTime load(Long uniqueId) {
-		return (FreeTime) load(getReferenceClass(), uniqueId);
-	}
-
-	public FreeTime load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (FreeTime) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public FreeTime loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		FreeTime freeTime = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(freeTime)) Hibernate.initialize(freeTime);
-		return freeTime;
-	}
-
-	public void save(FreeTime freeTime) {
-		save((Object) freeTime);
-	}
-
-	public void save(FreeTime freeTime, org.hibernate.Session hibSession) {
-		save((Object) freeTime, hibSession);
-	}
-
-	public void saveOrUpdate(FreeTime freeTime) {
-		saveOrUpdate((Object) freeTime);
-	}
-
-	public void saveOrUpdate(FreeTime freeTime, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) freeTime, hibSession);
-	}
-
-
-	public void update(FreeTime freeTime) {
-		update((Object) freeTime);
-	}
-
-	public void update(FreeTime freeTime, org.hibernate.Session hibSession) {
-		update((Object) freeTime, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(FreeTime freeTime) {
-		delete((Object) freeTime);
-	}
-
-	public void delete(FreeTime freeTime, org.hibernate.Session hibSession) {
-		delete((Object) freeTime, hibSession);
-	}
-
-	public void refresh(FreeTime freeTime, org.hibernate.Session hibSession) {
-		refresh((Object) freeTime, hibSession);
-	}
-
-	public List<FreeTime> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from FreeTime").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<FreeTime> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from FreeTime x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}

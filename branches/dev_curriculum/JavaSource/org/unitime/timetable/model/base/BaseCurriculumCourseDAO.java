@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CurriculumCourseDAO;
 
-public abstract class BaseCurriculumCourseDAO extends _RootDAO {
+public abstract class BaseCurriculumCourseDAO extends _RootDAO<CurriculumCourse,Long> {
 
 	private static CurriculumCourseDAO sInstance;
 
-	public static CurriculumCourseDAO getInstance () {
+	public static CurriculumCourseDAO getInstance() {
 		if (sInstance == null) sInstance = new CurriculumCourseDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CurriculumCourse> getReferenceClass() {
 		return CurriculumCourse.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CurriculumCourse get(Long uniqueId) {
-		return (CurriculumCourse) get(getReferenceClass(), uniqueId);
-	}
-
-	public CurriculumCourse get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CurriculumCourse) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CurriculumCourse load(Long uniqueId) {
-		return (CurriculumCourse) load(getReferenceClass(), uniqueId);
-	}
-
-	public CurriculumCourse load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CurriculumCourse) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CurriculumCourse loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CurriculumCourse curriculumCourse = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(curriculumCourse)) Hibernate.initialize(curriculumCourse);
-		return curriculumCourse;
-	}
-
-	public void save(CurriculumCourse curriculumCourse) {
-		save((Object) curriculumCourse);
-	}
-
-	public void save(CurriculumCourse curriculumCourse, org.hibernate.Session hibSession) {
-		save((Object) curriculumCourse, hibSession);
-	}
-
-	public void saveOrUpdate(CurriculumCourse curriculumCourse) {
-		saveOrUpdate((Object) curriculumCourse);
-	}
-
-	public void saveOrUpdate(CurriculumCourse curriculumCourse, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) curriculumCourse, hibSession);
-	}
-
-
-	public void update(CurriculumCourse curriculumCourse) {
-		update((Object) curriculumCourse);
-	}
-
-	public void update(CurriculumCourse curriculumCourse, org.hibernate.Session hibSession) {
-		update((Object) curriculumCourse, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CurriculumCourse curriculumCourse) {
-		delete((Object) curriculumCourse);
-	}
-
-	public void delete(CurriculumCourse curriculumCourse, org.hibernate.Session hibSession) {
-		delete((Object) curriculumCourse, hibSession);
-	}
-
-	public void refresh(CurriculumCourse curriculumCourse, org.hibernate.Session hibSession) {
-		refresh((Object) curriculumCourse, hibSession);
-	}
-
-	public List<CurriculumCourse> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from CurriculumCourse").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<CurriculumCourse> findByClassification(org.hibernate.Session hibSession, Long classificationId) {
 		return hibSession.createQuery("from CurriculumCourse x where x.classification.uniqueId = :classificationId").setLong("classificationId", classificationId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CurriculumCourse> findByCourse(org.hibernate.Session hibSession, Long courseId) {
 		return hibSession.createQuery("from CurriculumCourse x where x.course.uniqueId = :courseId").setLong("courseId", courseId).list();
 	}

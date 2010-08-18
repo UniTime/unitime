@@ -134,7 +134,7 @@ public abstract class BaseCourseCatalog implements Serializable {
 	public Set<CourseSubpartCredit> getSubparts() { return iSubparts; }
 	public void setSubparts(Set<CourseSubpartCredit> subparts) { iSubparts = subparts; }
 	public void addTosubparts(CourseSubpartCredit courseSubpartCredit) {
-		if (iSubparts == null) iSubparts = new HashSet();
+		if (iSubparts == null) iSubparts = new HashSet<CourseSubpartCredit>();
 		iSubparts.add(courseSubpartCredit);
 	}
 

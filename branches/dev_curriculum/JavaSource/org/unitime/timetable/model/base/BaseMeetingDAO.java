@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 
-public abstract class BaseMeetingDAO extends _RootDAO {
+public abstract class BaseMeetingDAO extends _RootDAO<Meeting,Long> {
 
 	private static MeetingDAO sInstance;
 
-	public static MeetingDAO getInstance () {
+	public static MeetingDAO getInstance() {
 		if (sInstance == null) sInstance = new MeetingDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Meeting> getReferenceClass() {
 		return Meeting.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Meeting get(Long uniqueId) {
-		return (Meeting) get(getReferenceClass(), uniqueId);
-	}
-
-	public Meeting get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Meeting) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Meeting load(Long uniqueId) {
-		return (Meeting) load(getReferenceClass(), uniqueId);
-	}
-
-	public Meeting load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Meeting) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Meeting loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Meeting meeting = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(meeting)) Hibernate.initialize(meeting);
-		return meeting;
-	}
-
-	public void save(Meeting meeting) {
-		save((Object) meeting);
-	}
-
-	public void save(Meeting meeting, org.hibernate.Session hibSession) {
-		save((Object) meeting, hibSession);
-	}
-
-	public void saveOrUpdate(Meeting meeting) {
-		saveOrUpdate((Object) meeting);
-	}
-
-	public void saveOrUpdate(Meeting meeting, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) meeting, hibSession);
-	}
-
-
-	public void update(Meeting meeting) {
-		update((Object) meeting);
-	}
-
-	public void update(Meeting meeting, org.hibernate.Session hibSession) {
-		update((Object) meeting, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Meeting meeting) {
-		delete((Object) meeting);
-	}
-
-	public void delete(Meeting meeting, org.hibernate.Session hibSession) {
-		delete((Object) meeting, hibSession);
-	}
-
-	public void refresh(Meeting meeting, org.hibernate.Session hibSession) {
-		refresh((Object) meeting, hibSession);
-	}
-
-	public List<Meeting> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Meeting").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Meeting> findByEvent(org.hibernate.Session hibSession, Long eventId) {
 		return hibSession.createQuery("from Meeting x where x.event.uniqueId = :eventId").setLong("eventId", eventId).list();
 	}

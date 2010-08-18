@@ -119,28 +119,28 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	public Set<ExamOwner> getOwners() { return iOwners; }
 	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }
 	public void addToowners(ExamOwner examOwner) {
-		if (iOwners == null) iOwners = new HashSet();
+		if (iOwners == null) iOwners = new HashSet<ExamOwner>();
 		iOwners.add(examOwner);
 	}
 
 	public Set<Location> getAssignedRooms() { return iAssignedRooms; }
 	public void setAssignedRooms(Set<Location> assignedRooms) { iAssignedRooms = assignedRooms; }
 	public void addToassignedRooms(Location location) {
-		if (iAssignedRooms == null) iAssignedRooms = new HashSet();
+		if (iAssignedRooms == null) iAssignedRooms = new HashSet<Location>();
 		iAssignedRooms.add(location);
 	}
 
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
-		if (iInstructors == null) iInstructors = new HashSet();
+		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
 	}
 
 	public Set<ExamConflict> getConflicts() { return iConflicts; }
 	public void setConflicts(Set<ExamConflict> conflicts) { iConflicts = conflicts; }
 	public void addToconflicts(ExamConflict examConflict) {
-		if (iConflicts == null) iConflicts = new HashSet();
+		if (iConflicts == null) iConflicts = new HashSet<ExamConflict>();
 		iConflicts.add(examConflict);
 	}
 

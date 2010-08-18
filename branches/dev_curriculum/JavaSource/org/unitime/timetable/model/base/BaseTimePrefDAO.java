@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.TimePrefDAO;
 
-public abstract class BaseTimePrefDAO extends _RootDAO {
+public abstract class BaseTimePrefDAO extends _RootDAO<TimePref,Long> {
 
 	private static TimePrefDAO sInstance;
 
-	public static TimePrefDAO getInstance () {
+	public static TimePrefDAO getInstance() {
 		if (sInstance == null) sInstance = new TimePrefDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<TimePref> getReferenceClass() {
 		return TimePref.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public TimePref get(Long uniqueId) {
-		return (TimePref) get(getReferenceClass(), uniqueId);
-	}
-
-	public TimePref get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (TimePref) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public TimePref load(Long uniqueId) {
-		return (TimePref) load(getReferenceClass(), uniqueId);
-	}
-
-	public TimePref load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (TimePref) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public TimePref loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		TimePref timePref = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(timePref)) Hibernate.initialize(timePref);
-		return timePref;
-	}
-
-	public void save(TimePref timePref) {
-		save((Object) timePref);
-	}
-
-	public void save(TimePref timePref, org.hibernate.Session hibSession) {
-		save((Object) timePref, hibSession);
-	}
-
-	public void saveOrUpdate(TimePref timePref) {
-		saveOrUpdate((Object) timePref);
-	}
-
-	public void saveOrUpdate(TimePref timePref, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) timePref, hibSession);
-	}
-
-
-	public void update(TimePref timePref) {
-		update((Object) timePref);
-	}
-
-	public void update(TimePref timePref, org.hibernate.Session hibSession) {
-		update((Object) timePref, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(TimePref timePref) {
-		delete((Object) timePref);
-	}
-
-	public void delete(TimePref timePref, org.hibernate.Session hibSession) {
-		delete((Object) timePref, hibSession);
-	}
-
-	public void refresh(TimePref timePref, org.hibernate.Session hibSession) {
-		refresh((Object) timePref, hibSession);
-	}
-
-	public List<TimePref> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from TimePref").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<TimePref> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
 		return hibSession.createQuery("from TimePref x where x.timePattern.uniqueId = :timePatternId").setLong("timePatternId", timePatternId).list();
 	}

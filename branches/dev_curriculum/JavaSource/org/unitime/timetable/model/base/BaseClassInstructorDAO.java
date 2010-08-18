@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ClassInstructorDAO;
 
-public abstract class BaseClassInstructorDAO extends _RootDAO {
+public abstract class BaseClassInstructorDAO extends _RootDAO<ClassInstructor,Long> {
 
 	private static ClassInstructorDAO sInstance;
 
-	public static ClassInstructorDAO getInstance () {
+	public static ClassInstructorDAO getInstance() {
 		if (sInstance == null) sInstance = new ClassInstructorDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ClassInstructor> getReferenceClass() {
 		return ClassInstructor.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ClassInstructor get(Long uniqueId) {
-		return (ClassInstructor) get(getReferenceClass(), uniqueId);
-	}
-
-	public ClassInstructor get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ClassInstructor) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ClassInstructor load(Long uniqueId) {
-		return (ClassInstructor) load(getReferenceClass(), uniqueId);
-	}
-
-	public ClassInstructor load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ClassInstructor) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ClassInstructor loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ClassInstructor classInstructor = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(classInstructor)) Hibernate.initialize(classInstructor);
-		return classInstructor;
-	}
-
-	public void save(ClassInstructor classInstructor) {
-		save((Object) classInstructor);
-	}
-
-	public void save(ClassInstructor classInstructor, org.hibernate.Session hibSession) {
-		save((Object) classInstructor, hibSession);
-	}
-
-	public void saveOrUpdate(ClassInstructor classInstructor) {
-		saveOrUpdate((Object) classInstructor);
-	}
-
-	public void saveOrUpdate(ClassInstructor classInstructor, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) classInstructor, hibSession);
-	}
-
-
-	public void update(ClassInstructor classInstructor) {
-		update((Object) classInstructor);
-	}
-
-	public void update(ClassInstructor classInstructor, org.hibernate.Session hibSession) {
-		update((Object) classInstructor, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ClassInstructor classInstructor) {
-		delete((Object) classInstructor);
-	}
-
-	public void delete(ClassInstructor classInstructor, org.hibernate.Session hibSession) {
-		delete((Object) classInstructor, hibSession);
-	}
-
-	public void refresh(ClassInstructor classInstructor, org.hibernate.Session hibSession) {
-		refresh((Object) classInstructor, hibSession);
-	}
-
-	public List<ClassInstructor> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ClassInstructor").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByClassInstructing(org.hibernate.Session hibSession, Long classInstructingId) {
 		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId").setLong("classInstructingId", classInstructingId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByInstructor(org.hibernate.Session hibSession, Long instructorId) {
 		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId").setLong("instructorId", instructorId).list();
 	}

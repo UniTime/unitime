@@ -21,105 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.RelatedCourseInfoDAO;
 
-public abstract class BaseRelatedCourseInfoDAO extends _RootDAO {
+public abstract class BaseRelatedCourseInfoDAO extends _RootDAO<RelatedCourseInfo,Long> {
 
 	private static RelatedCourseInfoDAO sInstance;
 
-	public static RelatedCourseInfoDAO getInstance () {
+	public static RelatedCourseInfoDAO getInstance() {
 		if (sInstance == null) sInstance = new RelatedCourseInfoDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<RelatedCourseInfo> getReferenceClass() {
 		return RelatedCourseInfo.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public RelatedCourseInfo get(Long uniqueId) {
-		return (RelatedCourseInfo) get(getReferenceClass(), uniqueId);
-	}
-
-	public RelatedCourseInfo get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RelatedCourseInfo) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RelatedCourseInfo load(Long uniqueId) {
-		return (RelatedCourseInfo) load(getReferenceClass(), uniqueId);
-	}
-
-	public RelatedCourseInfo load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (RelatedCourseInfo) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public RelatedCourseInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		RelatedCourseInfo relatedCourseInfo = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(relatedCourseInfo)) Hibernate.initialize(relatedCourseInfo);
-		return relatedCourseInfo;
-	}
-
-	public void save(RelatedCourseInfo relatedCourseInfo) {
-		save((Object) relatedCourseInfo);
-	}
-
-	public void save(RelatedCourseInfo relatedCourseInfo, org.hibernate.Session hibSession) {
-		save((Object) relatedCourseInfo, hibSession);
-	}
-
-	public void saveOrUpdate(RelatedCourseInfo relatedCourseInfo) {
-		saveOrUpdate((Object) relatedCourseInfo);
-	}
-
-	public void saveOrUpdate(RelatedCourseInfo relatedCourseInfo, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) relatedCourseInfo, hibSession);
-	}
-
-
-	public void update(RelatedCourseInfo relatedCourseInfo) {
-		update((Object) relatedCourseInfo);
-	}
-
-	public void update(RelatedCourseInfo relatedCourseInfo, org.hibernate.Session hibSession) {
-		update((Object) relatedCourseInfo, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(RelatedCourseInfo relatedCourseInfo) {
-		delete((Object) relatedCourseInfo);
-	}
-
-	public void delete(RelatedCourseInfo relatedCourseInfo, org.hibernate.Session hibSession) {
-		delete((Object) relatedCourseInfo, hibSession);
-	}
-
-	public void refresh(RelatedCourseInfo relatedCourseInfo, org.hibernate.Session hibSession) {
-		refresh((Object) relatedCourseInfo, hibSession);
-	}
-
-	public List<RelatedCourseInfo> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from RelatedCourseInfo").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<RelatedCourseInfo> findByEvent(org.hibernate.Session hibSession, Long eventId) {
 		return hibSession.createQuery("from RelatedCourseInfo x where x.event.uniqueId = :eventId").setLong("eventId", eventId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<RelatedCourseInfo> findByCourse(org.hibernate.Session hibSession, Long courseId) {
 		return hibSession.createQuery("from RelatedCourseInfo x where x.course.uniqueId = :courseId").setLong("courseId", courseId).list();
 	}

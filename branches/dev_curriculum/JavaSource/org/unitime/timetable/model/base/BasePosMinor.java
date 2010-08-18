@@ -72,7 +72,7 @@ public abstract class BasePosMinor implements Serializable {
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
 	public void addToacademicAreas(AcademicArea academicArea) {
-		if (iAcademicAreas == null) iAcademicAreas = new HashSet();
+		if (iAcademicAreas == null) iAcademicAreas = new HashSet<AcademicArea>();
 		iAcademicAreas.add(academicArea);
 	}
 

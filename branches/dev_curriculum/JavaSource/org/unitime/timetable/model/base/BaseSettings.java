@@ -72,7 +72,7 @@ public abstract class BaseSettings implements Serializable {
 	public Set<ManagerSettings> getManagerSettings() { return iManagerSettings; }
 	public void setManagerSettings(Set<ManagerSettings> managerSettings) { iManagerSettings = managerSettings; }
 	public void addTomanagerSettings(ManagerSettings managerSettings) {
-		if (iManagerSettings == null) iManagerSettings = new HashSet();
+		if (iManagerSettings == null) iManagerSettings = new HashSet<ManagerSettings>();
 		iManagerSettings.add(managerSettings);
 	}
 

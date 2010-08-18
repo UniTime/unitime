@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.MidtermExamEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.MidtermExamEventDAO;
 
-public abstract class BaseMidtermExamEventDAO extends _RootDAO {
+public abstract class BaseMidtermExamEventDAO extends _RootDAO<MidtermExamEvent,Long> {
 
 	private static MidtermExamEventDAO sInstance;
 
-	public static MidtermExamEventDAO getInstance () {
+	public static MidtermExamEventDAO getInstance() {
 		if (sInstance == null) sInstance = new MidtermExamEventDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<MidtermExamEvent> getReferenceClass() {
 		return MidtermExamEvent.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public MidtermExamEvent get(Long uniqueId) {
-		return (MidtermExamEvent) get(getReferenceClass(), uniqueId);
-	}
-
-	public MidtermExamEvent get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (MidtermExamEvent) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public MidtermExamEvent load(Long uniqueId) {
-		return (MidtermExamEvent) load(getReferenceClass(), uniqueId);
-	}
-
-	public MidtermExamEvent load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (MidtermExamEvent) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public MidtermExamEvent loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		MidtermExamEvent midtermExamEvent = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(midtermExamEvent)) Hibernate.initialize(midtermExamEvent);
-		return midtermExamEvent;
-	}
-
-	public void save(MidtermExamEvent midtermExamEvent) {
-		save((Object) midtermExamEvent);
-	}
-
-	public void save(MidtermExamEvent midtermExamEvent, org.hibernate.Session hibSession) {
-		save((Object) midtermExamEvent, hibSession);
-	}
-
-	public void saveOrUpdate(MidtermExamEvent midtermExamEvent) {
-		saveOrUpdate((Object) midtermExamEvent);
-	}
-
-	public void saveOrUpdate(MidtermExamEvent midtermExamEvent, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) midtermExamEvent, hibSession);
-	}
-
-
-	public void update(MidtermExamEvent midtermExamEvent) {
-		update((Object) midtermExamEvent);
-	}
-
-	public void update(MidtermExamEvent midtermExamEvent, org.hibernate.Session hibSession) {
-		update((Object) midtermExamEvent, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(MidtermExamEvent midtermExamEvent) {
-		delete((Object) midtermExamEvent);
-	}
-
-	public void delete(MidtermExamEvent midtermExamEvent, org.hibernate.Session hibSession) {
-		delete((Object) midtermExamEvent, hibSession);
-	}
-
-	public void refresh(MidtermExamEvent midtermExamEvent, org.hibernate.Session hibSession) {
-		refresh((Object) midtermExamEvent, hibSession);
-	}
-
-	public List<MidtermExamEvent> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from MidtermExamEvent").list();
 	}
 }

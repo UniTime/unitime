@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SubjectHistory;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SubjectHistoryDAO;
 
-public abstract class BaseSubjectHistoryDAO extends _RootDAO {
+public abstract class BaseSubjectHistoryDAO extends _RootDAO<SubjectHistory,Long> {
 
 	private static SubjectHistoryDAO sInstance;
 
-	public static SubjectHistoryDAO getInstance () {
+	public static SubjectHistoryDAO getInstance() {
 		if (sInstance == null) sInstance = new SubjectHistoryDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SubjectHistory> getReferenceClass() {
 		return SubjectHistory.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SubjectHistory get(Long uniqueId) {
-		return (SubjectHistory) get(getReferenceClass(), uniqueId);
-	}
-
-	public SubjectHistory get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SubjectHistory) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SubjectHistory load(Long uniqueId) {
-		return (SubjectHistory) load(getReferenceClass(), uniqueId);
-	}
-
-	public SubjectHistory load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SubjectHistory) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SubjectHistory loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SubjectHistory subjectHistory = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(subjectHistory)) Hibernate.initialize(subjectHistory);
-		return subjectHistory;
-	}
-
-	public void save(SubjectHistory subjectHistory) {
-		save((Object) subjectHistory);
-	}
-
-	public void save(SubjectHistory subjectHistory, org.hibernate.Session hibSession) {
-		save((Object) subjectHistory, hibSession);
-	}
-
-	public void saveOrUpdate(SubjectHistory subjectHistory) {
-		saveOrUpdate((Object) subjectHistory);
-	}
-
-	public void saveOrUpdate(SubjectHistory subjectHistory, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) subjectHistory, hibSession);
-	}
-
-
-	public void update(SubjectHistory subjectHistory) {
-		update((Object) subjectHistory);
-	}
-
-	public void update(SubjectHistory subjectHistory, org.hibernate.Session hibSession) {
-		update((Object) subjectHistory, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SubjectHistory subjectHistory) {
-		delete((Object) subjectHistory);
-	}
-
-	public void delete(SubjectHistory subjectHistory, org.hibernate.Session hibSession) {
-		delete((Object) subjectHistory, hibSession);
-	}
-
-	public void refresh(SubjectHistory subjectHistory, org.hibernate.Session hibSession) {
-		refresh((Object) subjectHistory, hibSession);
-	}
-
-	public List<SubjectHistory> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SubjectHistory").list();
 	}
 }

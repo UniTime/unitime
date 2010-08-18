@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 
-public abstract class BasePosMinorDAO extends _RootDAO {
+public abstract class BasePosMinorDAO extends _RootDAO<PosMinor,Long> {
 
 	private static PosMinorDAO sInstance;
 
-	public static PosMinorDAO getInstance () {
+	public static PosMinorDAO getInstance() {
 		if (sInstance == null) sInstance = new PosMinorDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<PosMinor> getReferenceClass() {
 		return PosMinor.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public PosMinor get(Long uniqueId) {
-		return (PosMinor) get(getReferenceClass(), uniqueId);
-	}
-
-	public PosMinor get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (PosMinor) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public PosMinor load(Long uniqueId) {
-		return (PosMinor) load(getReferenceClass(), uniqueId);
-	}
-
-	public PosMinor load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (PosMinor) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public PosMinor loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		PosMinor posMinor = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(posMinor)) Hibernate.initialize(posMinor);
-		return posMinor;
-	}
-
-	public void save(PosMinor posMinor) {
-		save((Object) posMinor);
-	}
-
-	public void save(PosMinor posMinor, org.hibernate.Session hibSession) {
-		save((Object) posMinor, hibSession);
-	}
-
-	public void saveOrUpdate(PosMinor posMinor) {
-		saveOrUpdate((Object) posMinor);
-	}
-
-	public void saveOrUpdate(PosMinor posMinor, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) posMinor, hibSession);
-	}
-
-
-	public void update(PosMinor posMinor) {
-		update((Object) posMinor);
-	}
-
-	public void update(PosMinor posMinor, org.hibernate.Session hibSession) {
-		update((Object) posMinor, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(PosMinor posMinor) {
-		delete((Object) posMinor);
-	}
-
-	public void delete(PosMinor posMinor, org.hibernate.Session hibSession) {
-		delete((Object) posMinor, hibSession);
-	}
-
-	public void refresh(PosMinor posMinor, org.hibernate.Session hibSession) {
-		refresh((Object) posMinor, hibSession);
-	}
-
-	public List<PosMinor> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from PosMinor").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<PosMinor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from PosMinor x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}

@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 
-public abstract class BaseInstrOfferingConfigDAO extends _RootDAO {
+public abstract class BaseInstrOfferingConfigDAO extends _RootDAO<InstrOfferingConfig,Long> {
 
 	private static InstrOfferingConfigDAO sInstance;
 
-	public static InstrOfferingConfigDAO getInstance () {
+	public static InstrOfferingConfigDAO getInstance() {
 		if (sInstance == null) sInstance = new InstrOfferingConfigDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<InstrOfferingConfig> getReferenceClass() {
 		return InstrOfferingConfig.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public InstrOfferingConfig get(Long uniqueId) {
-		return (InstrOfferingConfig) get(getReferenceClass(), uniqueId);
-	}
-
-	public InstrOfferingConfig get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (InstrOfferingConfig) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public InstrOfferingConfig load(Long uniqueId) {
-		return (InstrOfferingConfig) load(getReferenceClass(), uniqueId);
-	}
-
-	public InstrOfferingConfig load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (InstrOfferingConfig) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public InstrOfferingConfig loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		InstrOfferingConfig instrOfferingConfig = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(instrOfferingConfig)) Hibernate.initialize(instrOfferingConfig);
-		return instrOfferingConfig;
-	}
-
-	public void save(InstrOfferingConfig instrOfferingConfig) {
-		save((Object) instrOfferingConfig);
-	}
-
-	public void save(InstrOfferingConfig instrOfferingConfig, org.hibernate.Session hibSession) {
-		save((Object) instrOfferingConfig, hibSession);
-	}
-
-	public void saveOrUpdate(InstrOfferingConfig instrOfferingConfig) {
-		saveOrUpdate((Object) instrOfferingConfig);
-	}
-
-	public void saveOrUpdate(InstrOfferingConfig instrOfferingConfig, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) instrOfferingConfig, hibSession);
-	}
-
-
-	public void update(InstrOfferingConfig instrOfferingConfig) {
-		update((Object) instrOfferingConfig);
-	}
-
-	public void update(InstrOfferingConfig instrOfferingConfig, org.hibernate.Session hibSession) {
-		update((Object) instrOfferingConfig, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(InstrOfferingConfig instrOfferingConfig) {
-		delete((Object) instrOfferingConfig);
-	}
-
-	public void delete(InstrOfferingConfig instrOfferingConfig, org.hibernate.Session hibSession) {
-		delete((Object) instrOfferingConfig, hibSession);
-	}
-
-	public void refresh(InstrOfferingConfig instrOfferingConfig, org.hibernate.Session hibSession) {
-		refresh((Object) instrOfferingConfig, hibSession);
-	}
-
-	public List<InstrOfferingConfig> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from InstrOfferingConfig").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<InstrOfferingConfig> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
 		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
 	}

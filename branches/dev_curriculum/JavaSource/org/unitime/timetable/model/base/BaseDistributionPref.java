@@ -63,7 +63,7 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
 	public void addTodistributionObjects(DistributionObject distributionObject) {
-		if (iDistributionObjects == null) iDistributionObjects = new HashSet();
+		if (iDistributionObjects == null) iDistributionObjects = new HashSet<DistributionObject>();
 		iDistributionObjects.add(distributionObject);
 	}
 

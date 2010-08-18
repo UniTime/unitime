@@ -47,7 +47,7 @@ public abstract class BaseConstraintInfo extends SolverInfo implements Serializa
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
-		if (iAssignments == null) iAssignments = new HashSet();
+		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
 	}
 

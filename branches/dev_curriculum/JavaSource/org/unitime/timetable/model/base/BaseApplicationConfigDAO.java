@@ -19,106 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
 
-public abstract class BaseApplicationConfigDAO extends _RootDAO {
+public abstract class BaseApplicationConfigDAO extends _RootDAO<ApplicationConfig,String> {
 
 	private static ApplicationConfigDAO sInstance;
 
-	public static ApplicationConfigDAO getInstance () {
+	public static ApplicationConfigDAO getInstance() {
 		if (sInstance == null) sInstance = new ApplicationConfigDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ApplicationConfig> getReferenceClass() {
 		return ApplicationConfig.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ApplicationConfig get(String key) {
-		return (ApplicationConfig) get(getReferenceClass(), key);
-	}
-
-	public ApplicationConfig get(String key, org.hibernate.Session hibSession) {
-		return (ApplicationConfig) get(getReferenceClass(), key, hibSession);
-	}
-
-	public ApplicationConfig load(String key) {
-		return (ApplicationConfig) load(getReferenceClass(), key);
-	}
-
-	public ApplicationConfig load(String key, org.hibernate.Session hibSession) {
-		return (ApplicationConfig) load(getReferenceClass(), key, hibSession);
-	}
-
-	public ApplicationConfig loadInitialize(String key, org.hibernate.Session hibSession) {
-		ApplicationConfig applicationConfig = load(key, hibSession);
-		if (!Hibernate.isInitialized(applicationConfig)) Hibernate.initialize(applicationConfig);
-		return applicationConfig;
-	}
-
-	public void save(ApplicationConfig applicationConfig) {
-		save((Object) applicationConfig);
-	}
-
-	public void save(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
-		save((Object) applicationConfig, hibSession);
-	}
-
-	public void saveOrUpdate(ApplicationConfig applicationConfig) {
-		saveOrUpdate((Object) applicationConfig);
-	}
-
-	public void saveOrUpdate(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) applicationConfig, hibSession);
-	}
-
-
-	public void update(ApplicationConfig applicationConfig) {
-		update((Object) applicationConfig);
-	}
-
-	public void update(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
-		update((Object) applicationConfig, hibSession);
-	}
-
-	public void delete(Object key) {
-		if (key instanceof String)
-			delete((Object) load((String)key));
-		else
-		super.delete(key);
-	}
-
-	public void delete(Object key, org.hibernate.Session hibSession) {
-		if (key instanceof String)
-			delete((Object) load((String)key, hibSession), hibSession);
-		else
-			super.delete(key, hibSession);
-	}
-
-	public void delete(ApplicationConfig applicationConfig) {
-		delete((Object) applicationConfig);
-	}
-
-	public void delete(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
-		delete((Object) applicationConfig, hibSession);
-	}
-
-	public void refresh(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
-		refresh((Object) applicationConfig, hibSession);
-	}
-
-	public List<ApplicationConfig> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ApplicationConfig").list();
 	}
 }

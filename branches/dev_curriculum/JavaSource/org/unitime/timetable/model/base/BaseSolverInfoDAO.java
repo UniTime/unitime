@@ -21,97 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverInfoDAO;
 
-public abstract class BaseSolverInfoDAO extends _RootDAO {
+public abstract class BaseSolverInfoDAO extends _RootDAO<SolverInfo,Long> {
 
 	private static SolverInfoDAO sInstance;
 
-	public static SolverInfoDAO getInstance () {
+	public static SolverInfoDAO getInstance() {
 		if (sInstance == null) sInstance = new SolverInfoDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolverInfo> getReferenceClass() {
 		return SolverInfo.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolverInfo get(Long uniqueId) {
-		return (SolverInfo) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolverInfo get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverInfo) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverInfo load(Long uniqueId) {
-		return (SolverInfo) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolverInfo load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverInfo) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverInfo loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolverInfo solverInfo = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solverInfo)) Hibernate.initialize(solverInfo);
-		return solverInfo;
-	}
-
-	public void save(SolverInfo solverInfo) {
-		save((Object) solverInfo);
-	}
-
-	public void save(SolverInfo solverInfo, org.hibernate.Session hibSession) {
-		save((Object) solverInfo, hibSession);
-	}
-
-	public void saveOrUpdate(SolverInfo solverInfo) {
-		saveOrUpdate((Object) solverInfo);
-	}
-
-	public void saveOrUpdate(SolverInfo solverInfo, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solverInfo, hibSession);
-	}
-
-
-	public void update(SolverInfo solverInfo) {
-		update((Object) solverInfo);
-	}
-
-	public void update(SolverInfo solverInfo, org.hibernate.Session hibSession) {
-		update((Object) solverInfo, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolverInfo solverInfo) {
-		delete((Object) solverInfo);
-	}
-
-	public void delete(SolverInfo solverInfo, org.hibernate.Session hibSession) {
-		delete((Object) solverInfo, hibSession);
-	}
-
-	public void refresh(SolverInfo solverInfo, org.hibernate.Session hibSession) {
-		refresh((Object) solverInfo, hibSession);
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<SolverInfo> findByDefinition(org.hibernate.Session hibSession, Long definitionId) {
 		return hibSession.createQuery("from SolverInfo x where x.definition.uniqueId = :definitionId").setLong("definitionId", definitionId).list();
 	}

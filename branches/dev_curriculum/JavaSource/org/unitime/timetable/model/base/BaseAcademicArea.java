@@ -79,14 +79,14 @@ public abstract class BaseAcademicArea implements Serializable {
 	public Set<PosMajor> getPosMajors() { return iPosMajors; }
 	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
 	public void addToposMajors(PosMajor posMajor) {
-		if (iPosMajors == null) iPosMajors = new HashSet();
+		if (iPosMajors == null) iPosMajors = new HashSet<PosMajor>();
 		iPosMajors.add(posMajor);
 	}
 
 	public Set<PosMinor> getPosMinors() { return iPosMinors; }
 	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
 	public void addToposMinors(PosMinor posMinor) {
-		if (iPosMinors == null) iPosMinors = new HashSet();
+		if (iPosMinors == null) iPosMinors = new HashSet<PosMinor>();
 		iPosMinors.add(posMinor);
 	}
 

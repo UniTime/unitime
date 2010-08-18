@@ -83,7 +83,7 @@ public abstract class BaseDatePattern implements Serializable {
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
-		if (iDepartments == null) iDepartments = new HashSet();
+		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
 	}
 

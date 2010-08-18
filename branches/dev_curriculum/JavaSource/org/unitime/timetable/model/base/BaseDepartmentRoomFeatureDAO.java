@@ -21,101 +21,24 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 
-public abstract class BaseDepartmentRoomFeatureDAO extends _RootDAO {
+public abstract class BaseDepartmentRoomFeatureDAO extends _RootDAO<DepartmentRoomFeature,Long> {
 
 	private static DepartmentRoomFeatureDAO sInstance;
 
-	public static DepartmentRoomFeatureDAO getInstance () {
+	public static DepartmentRoomFeatureDAO getInstance() {
 		if (sInstance == null) sInstance = new DepartmentRoomFeatureDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<DepartmentRoomFeature> getReferenceClass() {
 		return DepartmentRoomFeature.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public DepartmentRoomFeature get(Long uniqueId) {
-		return (DepartmentRoomFeature) get(getReferenceClass(), uniqueId);
-	}
-
-	public DepartmentRoomFeature get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DepartmentRoomFeature) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DepartmentRoomFeature load(Long uniqueId) {
-		return (DepartmentRoomFeature) load(getReferenceClass(), uniqueId);
-	}
-
-	public DepartmentRoomFeature load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (DepartmentRoomFeature) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public DepartmentRoomFeature loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		DepartmentRoomFeature departmentRoomFeature = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(departmentRoomFeature)) Hibernate.initialize(departmentRoomFeature);
-		return departmentRoomFeature;
-	}
-
-	public void save(DepartmentRoomFeature departmentRoomFeature) {
-		save((Object) departmentRoomFeature);
-	}
-
-	public void save(DepartmentRoomFeature departmentRoomFeature, org.hibernate.Session hibSession) {
-		save((Object) departmentRoomFeature, hibSession);
-	}
-
-	public void saveOrUpdate(DepartmentRoomFeature departmentRoomFeature) {
-		saveOrUpdate((Object) departmentRoomFeature);
-	}
-
-	public void saveOrUpdate(DepartmentRoomFeature departmentRoomFeature, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) departmentRoomFeature, hibSession);
-	}
-
-
-	public void update(DepartmentRoomFeature departmentRoomFeature) {
-		update((Object) departmentRoomFeature);
-	}
-
-	public void update(DepartmentRoomFeature departmentRoomFeature, org.hibernate.Session hibSession) {
-		update((Object) departmentRoomFeature, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(DepartmentRoomFeature departmentRoomFeature) {
-		delete((Object) departmentRoomFeature);
-	}
-
-	public void delete(DepartmentRoomFeature departmentRoomFeature, org.hibernate.Session hibSession) {
-		delete((Object) departmentRoomFeature, hibSession);
-	}
-
-	public void refresh(DepartmentRoomFeature departmentRoomFeature, org.hibernate.Session hibSession) {
-		refresh((Object) departmentRoomFeature, hibSession);
-	}
-
-	public List<DepartmentRoomFeature> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from DepartmentRoomFeature").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<DepartmentRoomFeature> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from DepartmentRoomFeature x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}

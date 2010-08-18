@@ -82,7 +82,7 @@ public abstract class BaseExternalBuilding implements Serializable {
 	public Set<ExternalRoom> getRooms() { return iRooms; }
 	public void setRooms(Set<ExternalRoom> rooms) { iRooms = rooms; }
 	public void addTorooms(ExternalRoom externalRoom) {
-		if (iRooms == null) iRooms = new HashSet();
+		if (iRooms == null) iRooms = new HashSet<ExternalRoom>();
 		iRooms.add(externalRoom);
 	}
 

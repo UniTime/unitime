@@ -21,113 +21,39 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 
-public abstract class BaseClass_DAO extends _RootDAO {
+public abstract class BaseClass_DAO extends _RootDAO<Class_,Long> {
 
 	private static Class_DAO sInstance;
 
-	public static Class_DAO getInstance () {
+	public static Class_DAO getInstance() {
 		if (sInstance == null) sInstance = new Class_DAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<Class_> getReferenceClass() {
 		return Class_.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public Class_ get(Long uniqueId) {
-		return (Class_) get(getReferenceClass(), uniqueId);
-	}
-
-	public Class_ get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Class_) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Class_ load(Long uniqueId) {
-		return (Class_) load(getReferenceClass(), uniqueId);
-	}
-
-	public Class_ load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (Class_) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public Class_ loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		Class_ class_ = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(class_)) Hibernate.initialize(class_);
-		return class_;
-	}
-
-	public void save(Class_ class_) {
-		save((Object) class_);
-	}
-
-	public void save(Class_ class_, org.hibernate.Session hibSession) {
-		save((Object) class_, hibSession);
-	}
-
-	public void saveOrUpdate(Class_ class_) {
-		saveOrUpdate((Object) class_);
-	}
-
-	public void saveOrUpdate(Class_ class_, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) class_, hibSession);
-	}
-
-
-	public void update(Class_ class_) {
-		update((Object) class_);
-	}
-
-	public void update(Class_ class_, org.hibernate.Session hibSession) {
-		update((Object) class_, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(Class_ class_) {
-		delete((Object) class_);
-	}
-
-	public void delete(Class_ class_, org.hibernate.Session hibSession) {
-		delete((Object) class_, hibSession);
-	}
-
-	public void refresh(Class_ class_, org.hibernate.Session hibSession) {
-		refresh((Object) class_, hibSession);
-	}
-
-	public List<Class_> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from Class_").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<Class_> findByManagingDept(org.hibernate.Session hibSession, Long managingDeptId) {
 		return hibSession.createQuery("from Class_ x where x.managingDept.uniqueId = :managingDeptId").setLong("managingDeptId", managingDeptId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Class_> findBySchedulingSubpart(org.hibernate.Session hibSession, Long schedulingSubpartId) {
 		return hibSession.createQuery("from Class_ x where x.schedulingSubpart.uniqueId = :schedulingSubpartId").setLong("schedulingSubpartId", schedulingSubpartId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Class_> findByParentClass(org.hibernate.Session hibSession, Long parentClassId) {
 		return hibSession.createQuery("from Class_ x where x.parentClass.uniqueId = :parentClassId").setLong("parentClassId", parentClassId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Class_> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
 		return hibSession.createQuery("from Class_ x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
 	}

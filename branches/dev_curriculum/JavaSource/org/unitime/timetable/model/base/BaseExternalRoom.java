@@ -110,14 +110,14 @@ public abstract class BaseExternalRoom implements Serializable {
 	public Set<ExternalRoomDepartment> getRoomDepartments() { return iRoomDepartments; }
 	public void setRoomDepartments(Set<ExternalRoomDepartment> roomDepartments) { iRoomDepartments = roomDepartments; }
 	public void addToroomDepartments(ExternalRoomDepartment externalRoomDepartment) {
-		if (iRoomDepartments == null) iRoomDepartments = new HashSet();
+		if (iRoomDepartments == null) iRoomDepartments = new HashSet<ExternalRoomDepartment>();
 		iRoomDepartments.add(externalRoomDepartment);
 	}
 
 	public Set<ExternalRoomFeature> getRoomFeatures() { return iRoomFeatures; }
 	public void setRoomFeatures(Set<ExternalRoomFeature> roomFeatures) { iRoomFeatures = roomFeatures; }
 	public void addToroomFeatures(ExternalRoomFeature externalRoomFeature) {
-		if (iRoomFeatures == null) iRoomFeatures = new HashSet();
+		if (iRoomFeatures == null) iRoomFeatures = new HashSet<ExternalRoomFeature>();
 		iRoomFeatures.add(externalRoomFeature);
 	}
 

@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.ReservationType;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ReservationTypeDAO;
 
-public abstract class BaseReservationTypeDAO extends _RootDAO {
+public abstract class BaseReservationTypeDAO extends _RootDAO<ReservationType,Long> {
 
 	private static ReservationTypeDAO sInstance;
 
-	public static ReservationTypeDAO getInstance () {
+	public static ReservationTypeDAO getInstance() {
 		if (sInstance == null) sInstance = new ReservationTypeDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<ReservationType> getReferenceClass() {
 		return ReservationType.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public ReservationType get(Long uniqueId) {
-		return (ReservationType) get(getReferenceClass(), uniqueId);
-	}
-
-	public ReservationType get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ReservationType) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ReservationType load(Long uniqueId) {
-		return (ReservationType) load(getReferenceClass(), uniqueId);
-	}
-
-	public ReservationType load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (ReservationType) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public ReservationType loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		ReservationType reservationType = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(reservationType)) Hibernate.initialize(reservationType);
-		return reservationType;
-	}
-
-	public void save(ReservationType reservationType) {
-		save((Object) reservationType);
-	}
-
-	public void save(ReservationType reservationType, org.hibernate.Session hibSession) {
-		save((Object) reservationType, hibSession);
-	}
-
-	public void saveOrUpdate(ReservationType reservationType) {
-		saveOrUpdate((Object) reservationType);
-	}
-
-	public void saveOrUpdate(ReservationType reservationType, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) reservationType, hibSession);
-	}
-
-
-	public void update(ReservationType reservationType) {
-		update((Object) reservationType);
-	}
-
-	public void update(ReservationType reservationType, org.hibernate.Session hibSession) {
-		update((Object) reservationType, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(ReservationType reservationType) {
-		delete((Object) reservationType);
-	}
-
-	public void delete(ReservationType reservationType, org.hibernate.Session hibSession) {
-		delete((Object) reservationType, hibSession);
-	}
-
-	public void refresh(ReservationType reservationType, org.hibernate.Session hibSession) {
-		refresh((Object) reservationType, hibSession);
-	}
-
-	public List<ReservationType> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from ReservationType").list();
 	}
 }

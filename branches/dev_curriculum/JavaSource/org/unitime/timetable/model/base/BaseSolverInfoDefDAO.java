@@ -19,100 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.SolverInfoDef;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SolverInfoDefDAO;
 
-public abstract class BaseSolverInfoDefDAO extends _RootDAO {
+public abstract class BaseSolverInfoDefDAO extends _RootDAO<SolverInfoDef,Long> {
 
 	private static SolverInfoDefDAO sInstance;
 
-	public static SolverInfoDefDAO getInstance () {
+	public static SolverInfoDefDAO getInstance() {
 		if (sInstance == null) sInstance = new SolverInfoDefDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<SolverInfoDef> getReferenceClass() {
 		return SolverInfoDef.class;
-	}
-
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public SolverInfoDef get(Long uniqueId) {
-		return (SolverInfoDef) get(getReferenceClass(), uniqueId);
-	}
-
-	public SolverInfoDef get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverInfoDef) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverInfoDef load(Long uniqueId) {
-		return (SolverInfoDef) load(getReferenceClass(), uniqueId);
-	}
-
-	public SolverInfoDef load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (SolverInfoDef) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public SolverInfoDef loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		SolverInfoDef solverInfoDef = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(solverInfoDef)) Hibernate.initialize(solverInfoDef);
-		return solverInfoDef;
-	}
-
-	public void save(SolverInfoDef solverInfoDef) {
-		save((Object) solverInfoDef);
-	}
-
-	public void save(SolverInfoDef solverInfoDef, org.hibernate.Session hibSession) {
-		save((Object) solverInfoDef, hibSession);
-	}
-
-	public void saveOrUpdate(SolverInfoDef solverInfoDef) {
-		saveOrUpdate((Object) solverInfoDef);
-	}
-
-	public void saveOrUpdate(SolverInfoDef solverInfoDef, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) solverInfoDef, hibSession);
-	}
-
-
-	public void update(SolverInfoDef solverInfoDef) {
-		update((Object) solverInfoDef);
-	}
-
-	public void update(SolverInfoDef solverInfoDef, org.hibernate.Session hibSession) {
-		update((Object) solverInfoDef, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(SolverInfoDef solverInfoDef) {
-		delete((Object) solverInfoDef);
-	}
-
-	public void delete(SolverInfoDef solverInfoDef, org.hibernate.Session hibSession) {
-		delete((Object) solverInfoDef, hibSession);
-	}
-
-	public void refresh(SolverInfoDef solverInfoDef, org.hibernate.Session hibSession) {
-		refresh((Object) solverInfoDef, hibSession);
-	}
-
-	public List<SolverInfoDef> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from SolverInfoDef").list();
 	}
 }

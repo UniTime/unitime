@@ -21,113 +21,39 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
-public abstract class BaseCourseOfferingDAO extends _RootDAO {
+public abstract class BaseCourseOfferingDAO extends _RootDAO<CourseOffering,Long> {
 
 	private static CourseOfferingDAO sInstance;
 
-	public static CourseOfferingDAO getInstance () {
+	public static CourseOfferingDAO getInstance() {
 		if (sInstance == null) sInstance = new CourseOfferingDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CourseOffering> getReferenceClass() {
 		return CourseOffering.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CourseOffering get(Long uniqueId) {
-		return (CourseOffering) get(getReferenceClass(), uniqueId);
-	}
-
-	public CourseOffering get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseOffering) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseOffering load(Long uniqueId) {
-		return (CourseOffering) load(getReferenceClass(), uniqueId);
-	}
-
-	public CourseOffering load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CourseOffering) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CourseOffering loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CourseOffering courseOffering = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(courseOffering)) Hibernate.initialize(courseOffering);
-		return courseOffering;
-	}
-
-	public void save(CourseOffering courseOffering) {
-		save((Object) courseOffering);
-	}
-
-	public void save(CourseOffering courseOffering, org.hibernate.Session hibSession) {
-		save((Object) courseOffering, hibSession);
-	}
-
-	public void saveOrUpdate(CourseOffering courseOffering) {
-		saveOrUpdate((Object) courseOffering);
-	}
-
-	public void saveOrUpdate(CourseOffering courseOffering, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) courseOffering, hibSession);
-	}
-
-
-	public void update(CourseOffering courseOffering) {
-		update((Object) courseOffering);
-	}
-
-	public void update(CourseOffering courseOffering, org.hibernate.Session hibSession) {
-		update((Object) courseOffering, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CourseOffering courseOffering) {
-		delete((Object) courseOffering);
-	}
-
-	public void delete(CourseOffering courseOffering, org.hibernate.Session hibSession) {
-		delete((Object) courseOffering, hibSession);
-	}
-
-	public void refresh(CourseOffering courseOffering, org.hibernate.Session hibSession) {
-		refresh((Object) courseOffering, hibSession);
-	}
-
-	public List<CourseOffering> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from CourseOffering").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
 		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
 		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOffering(org.hibernate.Session hibSession, Long demandOfferingId) {
 		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId").setLong("demandOfferingId", demandOfferingId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOfferingType(org.hibernate.Session hibSession, Long demandOfferingTypeId) {
 		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId").setLong("demandOfferingTypeId", demandOfferingTypeId).list();
 	}

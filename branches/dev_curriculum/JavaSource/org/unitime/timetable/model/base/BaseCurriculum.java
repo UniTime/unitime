@@ -74,14 +74,14 @@ public abstract class BaseCurriculum implements Serializable {
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
 	public void addTomajors(PosMajor posMajor) {
-		if (iMajors == null) iMajors = new HashSet();
+		if (iMajors == null) iMajors = new HashSet<PosMajor>();
 		iMajors.add(posMajor);
 	}
 
 	public Set<CurriculumClassification> getClassifications() { return iClassifications; }
 	public void setClassifications(Set<CurriculumClassification> classifications) { iClassifications = classifications; }
 	public void addToclassifications(CurriculumClassification curriculumClassification) {
-		if (iClassifications == null) iClassifications = new HashSet();
+		if (iClassifications == null) iClassifications = new HashSet<CurriculumClassification>();
 		iClassifications.add(curriculumClassification);
 	}
 

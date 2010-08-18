@@ -21,109 +21,34 @@ package org.unitime.timetable.model.base;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
-import org.hibernate.criterion.Order;
-
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CurriculumProjectionRuleDAO;
 
-public abstract class BaseCurriculumProjectionRuleDAO extends _RootDAO {
+public abstract class BaseCurriculumProjectionRuleDAO extends _RootDAO<CurriculumProjectionRule,Long> {
 
 	private static CurriculumProjectionRuleDAO sInstance;
 
-	public static CurriculumProjectionRuleDAO getInstance () {
+	public static CurriculumProjectionRuleDAO getInstance() {
 		if (sInstance == null) sInstance = new CurriculumProjectionRuleDAO();
 		return sInstance;
 	}
 
-	public Class getReferenceClass () {
+	public Class<CurriculumProjectionRule> getReferenceClass() {
 		return CurriculumProjectionRule.class;
 	}
 
-	public Order getDefaultOrder () {
-		return null;
-	}
-
-	public CurriculumProjectionRule get(Long uniqueId) {
-		return (CurriculumProjectionRule) get(getReferenceClass(), uniqueId);
-	}
-
-	public CurriculumProjectionRule get(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CurriculumProjectionRule) get(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CurriculumProjectionRule load(Long uniqueId) {
-		return (CurriculumProjectionRule) load(getReferenceClass(), uniqueId);
-	}
-
-	public CurriculumProjectionRule load(Long uniqueId, org.hibernate.Session hibSession) {
-		return (CurriculumProjectionRule) load(getReferenceClass(), uniqueId, hibSession);
-	}
-
-	public CurriculumProjectionRule loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
-		CurriculumProjectionRule curriculumProjectionRule = load(uniqueId, hibSession);
-		if (!Hibernate.isInitialized(curriculumProjectionRule)) Hibernate.initialize(curriculumProjectionRule);
-		return curriculumProjectionRule;
-	}
-
-	public void save(CurriculumProjectionRule curriculumProjectionRule) {
-		save((Object) curriculumProjectionRule);
-	}
-
-	public void save(CurriculumProjectionRule curriculumProjectionRule, org.hibernate.Session hibSession) {
-		save((Object) curriculumProjectionRule, hibSession);
-	}
-
-	public void saveOrUpdate(CurriculumProjectionRule curriculumProjectionRule) {
-		saveOrUpdate((Object) curriculumProjectionRule);
-	}
-
-	public void saveOrUpdate(CurriculumProjectionRule curriculumProjectionRule, org.hibernate.Session hibSession) {
-		saveOrUpdate((Object) curriculumProjectionRule, hibSession);
-	}
-
-
-	public void update(CurriculumProjectionRule curriculumProjectionRule) {
-		update((Object) curriculumProjectionRule);
-	}
-
-	public void update(CurriculumProjectionRule curriculumProjectionRule, org.hibernate.Session hibSession) {
-		update((Object) curriculumProjectionRule, hibSession);
-	}
-
-	public void delete(Long uniqueId) {
-		delete(load(uniqueId));
-	}
-
-	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
-		delete(load(uniqueId, hibSession), hibSession);
-	}
-
-	public void delete(CurriculumProjectionRule curriculumProjectionRule) {
-		delete((Object) curriculumProjectionRule);
-	}
-
-	public void delete(CurriculumProjectionRule curriculumProjectionRule, org.hibernate.Session hibSession) {
-		delete((Object) curriculumProjectionRule, hibSession);
-	}
-
-	public void refresh(CurriculumProjectionRule curriculumProjectionRule, org.hibernate.Session hibSession) {
-		refresh((Object) curriculumProjectionRule, hibSession);
-	}
-
-	public List<CurriculumProjectionRule> findAll(org.hibernate.Session hibSession) {
-		return hibSession.createQuery("from CurriculumProjectionRule").list();
-	}
-
+	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
 		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByMajor(org.hibernate.Session hibSession, Long majorId) {
 		return hibSession.createQuery("from CurriculumProjectionRule x where x.major.uniqueId = :majorId").setLong("majorId", majorId).list();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
 		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicClassification.uniqueId = :academicClassificationId").setLong("academicClassificationId", academicClassificationId).list();
 	}
