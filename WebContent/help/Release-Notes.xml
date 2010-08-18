@@ -86,6 +86,7 @@
 				<line>Unified sending of emails</line>
 				<line>Replaced Hibernate Synchronizer with a home-made class</line>
 				<line>Code cleanup</line>
+				<line>Queue for roll-forward and data exchange</line>
 			</description>
 		</item>
 		<item>
@@ -93,6 +94,7 @@
 			<description>
 				<line>All recent fixes of UniTime 3.1 are included (see below)</line>
 				<line>Personal Schedule -- fixed the ability to change sessions for an administrator looking up a student's schedule</line>
+				<line>Fixed a problem in people lookup (single quotation marks were not escaped)</line>
 			</description>
 		</item>
 	</category>
@@ -125,6 +127,7 @@
 				<line>Student Enrollment Import
 					<line>Update class / course enrollments by default.</line>
 					<line>Fixed the queries that do the update to work on MySQL as well.</line>
+					<line>When classes have no external ids, allow the given external id (in the XML file) to match on the class name.</line>
 				</line>
 			</description>
 		</item>
@@ -134,6 +137,7 @@
 				<line>When a manager of a class is changed, not only delete all related class assignments (class belongs to a different problem), but also delete the related class event.
 					<line>This (class having an event associated but no committed assignment) was causing a problem on the Class Assignment page.</line>
 				</line>
+				<line>Fixed a bug that was introduced in October 2009 -- exam print offset got completely ignored.</line>
 			</description>
 		</item>
 	</category>
