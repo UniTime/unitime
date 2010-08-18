@@ -48,8 +48,6 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 
 public class ClassInstructorAssignmentForm extends ActionForm {
 
-    private static String disabledColor = "gray";
-
 	private String op;
     private Integer subjectAreaId;
 	private Long instrOfferingId;

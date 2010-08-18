@@ -45,7 +45,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
@@ -74,7 +73,6 @@ public class CurriculumEdit extends Composite {
 	private HTML iCurriculumMajorsHTML = null, iCurriculumMajorsPrint = null;
 	private ListBox iCurriculumArea = null, iCurriculumDept = null, iCurriculumMajors = null;
 	private CurriculaClassifications iCurriculumClasfTable = null;
-	private CheckBox iCurriculaPercent = null;
 	private boolean iDefaultAbbv = false, iDefaultName = false;
 
 	private List<AcademicAreaInterface> iAreas = new ArrayList<AcademicAreaInterface>();

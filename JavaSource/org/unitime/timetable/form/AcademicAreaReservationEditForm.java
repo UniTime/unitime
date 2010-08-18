@@ -43,7 +43,8 @@ public class AcademicAreaReservationEditForm extends AcademicAreaPosReservationF
 
     // --------------------------------------------------------- Instance Variables
     
-    private List academicAreaId;
+	private static final long serialVersionUID = 2304336193270176751L;
+	private List academicAreaId;
 
     // --------------------------------------------------------- Methods
 

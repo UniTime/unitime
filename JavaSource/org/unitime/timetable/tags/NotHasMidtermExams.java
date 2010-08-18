@@ -23,8 +23,9 @@ package org.unitime.timetable.tags;
  * @author Tomas Muller
  */
 public class NotHasMidtermExams extends HasMidtermExams {
-    
-    public boolean includeContent() {
+	private static final long serialVersionUID = -4036131865648594129L;
+
+	public boolean includeContent() {
         return !super.includeContent();
     }
 }

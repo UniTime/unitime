@@ -44,6 +44,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 public class SolverSettingsForm extends ActionForm {
+	private static final long serialVersionUID = -9205033432561871308L;
 	private String op;
 	private Long uniqueId;
 	private String name;

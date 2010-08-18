@@ -36,9 +36,7 @@ import org.apache.struts.action.ActionMapping;
  */
 public abstract class RefTableEntryListForm extends ActionForm {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = 5632195965988404841L;
 
 	// --------------------------------------------------------- Instance Variables
 	private Collection refTableEntries;

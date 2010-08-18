@@ -85,6 +85,7 @@ import org.unitime.timetable.webutil.WebTextValidation;
 
 public class EventAddForm extends ActionForm {
 
+	private static final long serialVersionUID = 3856342639803518366L;
 	private String iOp;
 	private String iEventType;
 	private Long iSessionId;
@@ -398,7 +399,6 @@ public class EventAddForm extends ActionForm {
 	
 	public Vector<ComboBoxLookup> getAcademicSessions() {
 		Vector<ComboBoxLookup> aSessions = new Vector();
-		Date today = new Date();
 		for (Iterator i=Session.getAllSessions().iterator();i.hasNext();) {
 			Session session = (Session)i.next();
 			//if (!session.getStatusType().canOwnerView()) continue;
@@ -926,7 +926,6 @@ public class EventAddForm extends ActionForm {
 	public boolean isHasOutsideLocations() {
 	    if (getSessionId()==null) return false;
 	    Session s = Session.getSessionById(iSessionId);
-	    boolean hasRoomType = false;
         for (RoomType roomType : RoomType.findAll(false)) {
             if ((iAdmin || roomType.getOption(s).canScheduleEvents()) && roomType.countManagableRooms(iSessionId)>0) return true;
         }

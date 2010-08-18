@@ -411,7 +411,6 @@ public class DistributionPref extends BaseDistributionPref {
     	if (d.effectiveStatusType().canManagerEdit()) {
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-       			PreferenceGroup pg = distrObj.getPrefGroup();
        			if (distrObj.getPrefGroup() instanceof Class_) {
        				Class_ clazz = (Class_)distrObj.getPrefGroup();
        				if (!manager.getDepartments().contains(clazz.getManagingDept())) return false;
@@ -446,7 +445,6 @@ public class DistributionPref extends BaseDistributionPref {
     	if (!department.isExternalManager().booleanValue() && department.effectiveStatusType().canOwnerView()) {
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-        		PreferenceGroup pg = distrObj.getPrefGroup();
         		if (distrObj.getPrefGroup() instanceof Class_) {
         			Class_ clazz = (Class_)distrObj.getPrefGroup();
         			if (clazz.getManagingDept().effectiveStatusType().canOwnerEdit() && department.getUniqueId().equals(clazz.getControllingDept().getUniqueId())) return true;
@@ -464,7 +462,6 @@ public class DistributionPref extends BaseDistributionPref {
         	//else -> class manager of all classes / subparts
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-       			PreferenceGroup pg = distrObj.getPrefGroup();
        			if (distrObj.getPrefGroup() instanceof Class_) {
        				Class_ clazz = (Class_)distrObj.getPrefGroup();
        				if (!department.getUniqueId().equals(clazz.getManagingDept().getUniqueId())) return false;

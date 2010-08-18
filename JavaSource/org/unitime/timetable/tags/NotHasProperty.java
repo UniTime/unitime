@@ -29,6 +29,7 @@ import org.unitime.timetable.model.ManagerSettings;
  * @author Tomas Muller
  */
 public class NotHasProperty extends TagSupport {
+	private static final long serialVersionUID = -2188052467367119211L;
 	private String iName;
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }

@@ -29,7 +29,8 @@ import org.apache.struts.action.ActionMapping;
  * @author Tomas Muller
  */
 public class LastChangesForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = 3633681949556250656L;
+	private String iOp;
     private int iN;
     private Long iDepartmentId, iSubjAreaId, iManagerId;
 

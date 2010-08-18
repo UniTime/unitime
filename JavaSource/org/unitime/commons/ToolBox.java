@@ -275,58 +275,6 @@ public class ToolBox {
 		return false;
 	}
 
-	/** This class is used by getCaller method, it reads i-th line of output stream.
-	 */
-	private static class LineOutputStream extends java.io.OutputStream {
-
-		/** buffer */
-		StringBuffer iBuffer = null;
-
-		/** line to be read */
-		int iLine = 0;
-
-		/** line counter */
-		int iCurLine = 0;
-
-		/** It create an instance of LineOutputStream.
-		 * @param line line to be read
-		 */
-		public LineOutputStream(int line) {
-			super();
-			iLine = line;
-			iBuffer = new StringBuffer();
-		}
-
-		/** Writes a byte to stream
-		 * @param b a byte
-		 */
-		public void write(int b) throws java.io.IOException {
-
-			if (b == '\n') {
-				iCurLine++;
-				return;
-			}
-			if (iLine == iCurLine) {
-				iBuffer.append((char) b);
-			}
-		}
-
-		/** Closes the stream
-		 */
-		public void close() throws java.io.IOException {
-			super.close();
-		}
-
-		/** Returns read line
-		 * @param read line
-		 */
-		public String toString() {
-
-			return iBuffer.toString().trim();
-		}
-	}
-
-
 	/**
 	 * This function constructs the absolute path to the target folder
 	 * by traversing up from the App URL till the target folder

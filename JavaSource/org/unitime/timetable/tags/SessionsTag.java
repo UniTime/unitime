@@ -42,6 +42,8 @@ import org.unitime.timetable.listeners.SessionListener;
  */
 public class SessionsTag extends TagSupport {
 
+	private static final long serialVersionUID = 1332135385302161770L;
+
 	/**
 	 * Default method to handle start of tag.
 	 */

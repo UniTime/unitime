@@ -59,7 +59,6 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
@@ -71,7 +70,6 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	
 	/** Pdf document objects **/
     private Document pdfDoc = null;
-    private PdfWriter pdfWriter = null;
 
     /** Colors to indicate and increase/decrease in actual reserved from requested **/
     private final String colorIncrease = "339933";
@@ -137,7 +135,7 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	        pdfDoc.setPageSize(PageSize.LETTER);
 	        
 	        // Create writer instance
-	        pdfWriter = PdfEventHandler.initFooter(pdfDoc, out);
+	        PdfEventHandler.initFooter(pdfDoc, out);
 	        
 	        // Set metadata
 	        pdfDoc.addTitle("Reservations");

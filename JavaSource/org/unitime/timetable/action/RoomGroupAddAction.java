@@ -46,7 +46,6 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
@@ -135,7 +134,6 @@ public class RoomGroupAddAction extends Action {
 		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 		
 		//create new roomGroup
-		LocationDAO rdao = new LocationDAO();
 		RoomGroupDAO rgdao = new RoomGroupDAO();
 		RoomGroup rg = new RoomGroup();
 		
@@ -148,11 +146,6 @@ public class RoomGroupAddAction extends Action {
 		
 		rg.setDefaultGroup(Boolean.valueOf(roomGroupEditForm.isDeft()));
 
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-		
-        TimetableManager owner = tdao.get(new Long(mgrId));  
-    	Set depts = owner.departmentsForSession(sessionId);
         if (!roomGroupEditForm.isGlobal()) {
             Department d = Department.findByDeptCode(roomGroupEditForm.getDeptCode(), sessionId);
             rg.setDepartment(d);

@@ -53,7 +53,8 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class LastChange extends BodyTagSupport {
-    private String iPackage = "org.unitime.timetable.model";
+	private static final long serialVersionUID = -983949265164022751L;
+	private String iPackage = "org.unitime.timetable.model";
     private String iType = null;
     private String iId = null;
     private String iSource = null;

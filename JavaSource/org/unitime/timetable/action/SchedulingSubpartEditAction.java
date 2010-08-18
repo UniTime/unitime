@@ -97,7 +97,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         					: request.getParameter("ssuid");
 
         String reloadCause = request.getParameter("reloadCause");
-        String deleteType = request.getParameter("deleteType");
         String op = frm.getOp();
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 

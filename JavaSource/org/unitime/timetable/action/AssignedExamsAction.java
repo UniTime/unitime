@@ -122,7 +122,6 @@ public class AssignedExamsAction extends Action {
                 int btb = exam.getNrBackToBackConflicts();
                 int dbtb = exam.getNrDistanceBackToBackConflicts();
                 String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":btb+(dbtb>0?" (d:"+dbtb+")":""));
-                String dbtbStr = (dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+dbtb+"</font>":String.valueOf(dbtb));
                 
         	    table.addLine(
         	            "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus(); \"",

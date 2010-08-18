@@ -29,7 +29,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.ToolBox;
 import org.unitime.timetable.gwt.widgets.WebTable.RowDoubleClickEvent;
 
@@ -124,12 +123,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	
 	private static int sLastSelectedCourseDetailsTab = 0;
 	
-	private List<CurriculumInterface.AcademicClassificationInterface> iClassifications;
 	private List<CourseFinderDialogHandler> iCourseFinderDialogHandlers = new ArrayList<CourseFinderDialogHandler>();
 		
-	public CurriculaCourseSelectionBox(String name, List<CurriculumInterface.AcademicClassificationInterface> classifications) {
-		
-		iClassifications = classifications;
+	public CurriculaCourseSelectionBox(String name) {
 		
 		SuggestOracle courseOfferingOracle = new SuggestOracle() {
 			public void requestSuggestions(Request request, Callback callback) {

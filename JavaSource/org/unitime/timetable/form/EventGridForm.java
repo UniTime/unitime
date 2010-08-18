@@ -31,11 +31,10 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.SessionDAO;
 
 public class EventGridForm extends EventAddForm {
-    private String iMode = null;
+	private static final long serialVersionUID = 1354167745113361938L;
+	private String iMode = null;
     public static String sModeAll = "All Events";
     public static String sModeApproved = "All Approved Events";
     public static String sModeWaiting = "All Events Awaiting Approval";
@@ -63,8 +62,6 @@ public class EventGridForm extends EventAddForm {
     
     public boolean isHasOutsideLocations() {
         if (getSessionId()==null) return false;
-        Session session = new SessionDAO().get(getSessionId());
-        boolean hasRoomType = false;
         for (RoomType roomType : RoomType.findAll(false)) {
             if (roomType.countManagableRooms(getSessionId())>0) return true;
         }

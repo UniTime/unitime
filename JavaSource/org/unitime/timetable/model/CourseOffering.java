@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,7 +47,6 @@ import org.unitime.timetable.util.ComboBoxLookup;
 
 public class CourseOffering extends BaseCourseOffering implements Comparable {
 	private static final long serialVersionUID = 1L;
-	private String courseName;
 	
 	/** Request attribute name for list of course offerings */
     public static final String CRS_OFFERING_LIST_ATTR_NAME = "crsOfferingList";
@@ -172,9 +169,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 */
 	public static synchronized CourseOffering addNew(String subjAreaId, String courseNbr) throws Exception {
 	    
-	    Statement stmt = null;
-	    ResultSet rs = null;
-
 	    CourseOffering co = null; 
 	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	    Session hibSession = idao.getSession();

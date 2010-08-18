@@ -53,7 +53,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	
 	private String sortBy;
 	private String filterAssignedRoom;
-	private String filterInstructor;
 	private String filterManager;
 	private String filterIType;
 	private boolean filterAssignedTimeMon;
@@ -151,7 +150,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		subjectAreaIds = new String[0];
 
 		sortBy = ClassListForm.sSortByName;
-		filterInstructor = "";
 		filterManager = "";
 		filterAssignedRoom = "";
 		filterIType = "";

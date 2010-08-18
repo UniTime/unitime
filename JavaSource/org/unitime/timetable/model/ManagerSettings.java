@@ -47,7 +47,6 @@ public class ManagerSettings extends BaseManagerSettings {
 
 	
 	public static String getValue(HttpSession session, String name, String defaultValue) {
-		org.unitime.commons.User user = Web.getUser(session);
 		return getValue(Web.getUser(session), name, defaultValue);
 	}
 	

@@ -32,6 +32,7 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
  * @author Tomas Muller
  */
 public class SolutionChangesForm extends ActionForm {
+	private static final long serialVersionUID = 7768482825453181893L;
 	private String iOp = null;
 	private static String[] sReferences = {"Best Solution", "Initial Solution", "Selected Solution"};
 	public static int sReferenceBest = 0;

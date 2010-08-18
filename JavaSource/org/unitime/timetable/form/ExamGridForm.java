@@ -26,7 +26,8 @@ import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 public class ExamGridForm extends ActionForm {
-    private Long iSessionId;
+	private static final long serialVersionUID = 1429431006186003906L;
+	private Long iSessionId;
     private TreeSet[] iPeriods;
     private int iSessionBeginWeek;
     private Date iSessionBeginDate;

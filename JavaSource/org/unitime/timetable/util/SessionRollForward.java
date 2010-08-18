@@ -90,7 +90,6 @@ import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -170,8 +169,6 @@ public class SessionRollForward {
 		RoomGroup fromRoomGroup = null;
 		RoomGroup toRoomGroup = null;
 		RoomGroupDAO rgDao = new RoomGroupDAO();
-		RoomDAO rDao = new RoomDAO();
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
 		Collection fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
 		try {
 			if (fromRoomGroups != null && !fromRoomGroups.isEmpty()){
@@ -197,8 +194,6 @@ public class SessionRollForward {
 		DepartmentRoomFeature fromRoomFeature = null;
 		DepartmentRoomFeature toRoomFeature = null;
 		RoomFeatureDAO rfDao = new RoomFeatureDAO();
-		RoomDAO rDao = new RoomDAO();
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
 		Collection fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
 		try{
 			if (fromRoomFeatures != null && !fromRoomFeatures.isEmpty()){
@@ -296,11 +291,9 @@ public class SessionRollForward {
 		Room fromRoom = null;
 		Room toRoom = null;
 		RoomDAO rDao = new RoomDAO();
-		RoomDeptDAO rdDao = new RoomDeptDAO();
 		DepartmentDAO dDao = new DepartmentDAO();
 		Building toBuilding = null;
 		RoomDept fromRoomDept = null;
-		RoomDept toRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
 		HashMap roomFeatureCache = new HashMap();
@@ -486,11 +479,8 @@ public class SessionRollForward {
 		NonUniversityLocation fromNonUniversityLocation = null;
 		NonUniversityLocation toNonUniversityLocation = null;
 		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
-		RoomDeptDAO rdDao = new RoomDeptDAO();
 		DepartmentDAO dDao = new DepartmentDAO();
-		Building toBuilding = null;
 		RoomDept fromRoomDept = null;
-		RoomDept toRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
 		HashMap roomFeatureCache = new HashMap();
@@ -984,7 +974,6 @@ public class SessionRollForward {
 				&& !fromPrefGroup.getBuildingPreferences().isEmpty() 
 				&& !(fromPrefGroup instanceof Class_)
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
-			BuildingPref fromBuildingPref = null;
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
 			if (!isExamPref && locations == null){
 				return;
@@ -1439,7 +1428,6 @@ public class SessionRollForward {
 		Room fromRoom = null;
 		Room toRoom = null;
 		ExamLocationPref fromPref = null;
-		ExamLocationPref toPref = null;
 		ExamPeriod toPeriod = null;
 		for (Iterator rIt = rooms.iterator(); rIt.hasNext();){
 			fromRoom = (Room) rIt.next();
@@ -1961,6 +1949,7 @@ public class SessionRollForward {
 		}
 	}
 
+	/*
 	private void cloneCourses(String[] courses, String courseToCloneFrom, RollForwardSessionForm rollForwardSessionForm){
 		Session session = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
@@ -2004,6 +1993,7 @@ public class SessionRollForward {
 		}
 
 	}
+	*/
 
 	public void rollStudentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
         Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());

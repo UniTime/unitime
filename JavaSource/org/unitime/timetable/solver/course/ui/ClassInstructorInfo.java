@@ -6,7 +6,8 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.dao.ClassInstructorDAO;
 
 public class ClassInstructorInfo implements Serializable, Comparable<ClassInstructorInfo> {
-    protected Long iId;
+	private static final long serialVersionUID = 8576391767085203451L;
+	protected Long iId;
     protected String iExternalUniqueId = null;
     protected String iName = null;
     protected boolean iIsLead = false;

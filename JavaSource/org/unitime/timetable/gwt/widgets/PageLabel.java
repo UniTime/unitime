@@ -24,9 +24,7 @@ import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.FrameElement;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -116,14 +114,6 @@ public class PageLabel extends Composite {
 			}
 		});
 		
-	}
-	
-	private boolean hasTag(Element parent, String name, String id) {
-		NodeList<Element> elements = parent.getElementsByTagName(name);
-		for (int i = 0; i < elements.getLength(); i++) {
-			if (id.equals(elements.getItem(i).getId())) return true;
-		}
-		return false;
 	}
 	
 	public void insert(final RootPanel panel) {

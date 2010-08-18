@@ -44,7 +44,8 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
  * @author Tomas Muller
  */
 public class DatePatternEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = -929558620061783652L;
+	private String iOp;
     private String iName;
     private Long iUniqueId;
     private String iType;

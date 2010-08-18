@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -370,7 +369,6 @@ public class PreferencesAction extends Action {
         frm2.setCourseNbr(co.getCourseNbr());
         frm2.setCtrlInstrOfferingId(io.getCtrlCourseId().toString());
         frm2.setIsControl(co.isIsControl());
-        frm2.setInstructionalOffering(io);
 
         request.setAttribute("subjectAreaId", frm2.getSubjectAreaId());
         request.setAttribute("instructionalOfferingListForm", frm2);            
@@ -754,10 +752,8 @@ public class PreferencesAction extends Action {
             int idx,
             boolean timeVertical, Set parentTimePrefs) throws Exception {
         
-        HttpSession httpSession = request.getSession();
 		TimePatternDAO timePatternDao = new TimePatternDAO();
 		TimePattern timePattern = (tpat.equals("-1")?null:timePatternDao.get(new Long(tpat)));
-		Hashtable timeReq = new Hashtable();
 
 		// Generate grid prefs
 		RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(owner.canUseHardTimePreferences(Web.getUser(request.getSession()))));

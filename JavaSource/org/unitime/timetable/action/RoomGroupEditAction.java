@@ -54,11 +54,9 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -153,13 +151,7 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 	 */
 	private Collection getRoomFeatures(User user, RoomGroup rg) throws Exception {
 		
-		Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getSessionId();
-		
 		ArrayList roomFeatures = new ArrayList();
-
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
 
 		org.hibernate.Session hibSession = null;
 		try {
@@ -389,17 +381,11 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		String[] selectedAssigned = roomGroupEditForm.getAssignedSelected();
 		String[] selectedNotAssigned = roomGroupEditForm.getNotAssignedSelected();
 		Collection assignedRooms = getAssignedRooms(user, rg);
-		Collection notAssignedRooms = getAvailableRooms(user, rg);
 		String s1 = null;
-		String s2 = null;
 		if (selectedAssigned.length != 0)
 			s1 = Constants.arrayToStr(selectedAssigned,"",",");
 		else
 			s1 = new String();
-		if (selectedNotAssigned.length != 0)
-			s2 = Constants.arrayToStr(selectedNotAssigned,"",",");
-		else 
-			s2 = new String();
 		
 		org.hibernate.Session hibSession = rgdao.getSession();
 		
@@ -434,7 +420,6 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 			
 			//move room from notAssignedRooms to assignedRooms
 			if (selectedNotAssigned.length != 0) {
-				Collection rooms = rg.getRooms();
 				Set m = new HashSet();
 				
 				//add roomGroup to room

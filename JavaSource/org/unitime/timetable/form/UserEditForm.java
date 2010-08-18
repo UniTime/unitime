@@ -34,6 +34,7 @@ import org.unitime.timetable.model.User;
  * 
  */
 public class UserEditForm extends ActionForm {
+	private static final long serialVersionUID = 8703608968811726905L;
 	private String iOp = null;
     private String iExternalId = null;
     private String iName = null;

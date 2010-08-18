@@ -42,7 +42,8 @@ import org.unitime.timetable.model.dao.BuildingDAO;
  * 
  */
 public class BuildingEditForm extends ActionForm {
-    private Long iUniqueId = null;
+	private static final long serialVersionUID = -4104780400760573687L;
+	private Long iUniqueId = null;
 	private String iOp = null;
     private String iExternalId = null;
     private String iName = null;

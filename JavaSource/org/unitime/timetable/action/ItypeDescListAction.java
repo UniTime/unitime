@@ -72,8 +72,6 @@ public class ItypeDescListAction extends Action {
 	            throw new Exception ("Access Denied.");
 	        }
 
-	        org.hibernate.Session hibSession = null;
-
 			// Create new table
 		    PdfWebTable webTable = new PdfWebTable( 6,
 		    	    null,

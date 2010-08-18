@@ -30,7 +30,8 @@ import org.unitime.timetable.webutil.JavascriptFunctions;
  * @author Tomas Muller
  */
 public class Confirm extends BodyTagSupport {
-    private String iName = null;
+	private static final long serialVersionUID = -7277573383061072409L;
+	private String iName = null;
 
     public String getName() { return iName; }
     public void setName(String name) { iName = name; }

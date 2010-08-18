@@ -19,10 +19,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class PdfLegacyReport {
     protected int iNrChars = 133;
     protected int iNrLines = 50;
-    private File iFile = null;
     private FileOutputStream iOut = null;
     private Document iDoc = null;
-    private PdfWriter iWriter = null;
     private StringBuffer iBuffer = new StringBuffer();
     private PrintWriter iPrint = null;
     private String iTitle, iTitle2, iSubject;
@@ -35,14 +33,12 @@ public class PdfLegacyReport {
     private String iFooter = null;
     
     private boolean iEmpty = true;
-    private int iMode = 0;
     
     public static final int sModeNormal = 0;
     public static final int sModeLedger = 1;
     public static final int sModeText   = 2;
     
     public PdfLegacyReport(int mode, File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
-        iFile = file;
         iTitle = title;
         iTitle2 = title2;
         iSubject = subject;
@@ -60,7 +56,7 @@ public class PdfLegacyReport {
             iNrLines = (mode==sModeLedger?116:50);
             iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
-            iWriter = PdfWriter.getInstance(iDoc, iOut);
+            PdfWriter.getInstance(iDoc, iOut);
 
             iDoc.addTitle(iTitle);
             iDoc.addAuthor("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");

@@ -512,7 +512,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
      */
 	public static boolean isInteger(String str) {
 		try {
-			int i = Integer.parseInt(str);
+			Integer.parseInt(str);
 		} catch (Exception e) {
 			return false;			
 		}
@@ -526,7 +526,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	 */
 	public static boolean isNumber(String str) {
 		try {
-			double i = Double.parseDouble(str);
+			Double.parseDouble(str);
 		} catch (Exception e) {
 			return false;			
 		}

@@ -54,7 +54,6 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
@@ -72,7 +71,6 @@ public class ExamDetailAction extends PreferencesAction {
             
             HttpSession httpSession = request.getSession();
             User user = Web.getUser(httpSession);
-            Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
             MessageResources rsc = getResources(request);
             ActionMessages errors = new ActionMessages();
             

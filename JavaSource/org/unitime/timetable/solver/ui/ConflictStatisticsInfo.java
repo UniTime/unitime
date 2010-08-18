@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +29,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +57,6 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  * @author Tomas Muller
  */
 public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	private static final long serialVersionUID = 7L;
 	public static int sVersion = 7; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;

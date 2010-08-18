@@ -31,6 +31,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 public class BackButton extends BodyTagSupport {
+	private static final long serialVersionUID = 8565058511853635478L;
 	String iTitle = "Return to %%";
 	String iName = "Back";
 	String iAccessKey = null;

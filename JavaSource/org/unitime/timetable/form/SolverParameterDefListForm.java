@@ -32,6 +32,8 @@ import org.apache.struts.action.ActionMapping;
  */
 public class SolverParameterDefListForm extends ActionForm {
 
+	private static final long serialVersionUID = 4159291816177340774L;
+
 	// --------------------------------------------------------- Instance Variables
 
 	/** solverParamDefs property */

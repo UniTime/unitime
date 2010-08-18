@@ -30,7 +30,8 @@ import org.unitime.timetable.ApplicationProperties;
  * @author Tomas Muller
  */
 public class WikiHelp extends BodyTagSupport {
-    private String iWikiUrl = null;
+	private static final long serialVersionUID = -8159352006636444479L;
+	private String iWikiUrl = null;
     private boolean iEnabled = false;
     
     public WikiHelp() {

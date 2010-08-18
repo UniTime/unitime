@@ -90,8 +90,6 @@ public class InstructorInfoEditAction extends InstructorAction {
 		
 		InstructorEditForm frm = (InstructorEditForm) form;
 				
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
         MessageResources rsc = getResources(request);
         ActionMessages errors = new ActionMessages();
         

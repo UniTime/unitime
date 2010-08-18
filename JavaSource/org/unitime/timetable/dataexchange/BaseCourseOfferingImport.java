@@ -678,22 +678,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		
 	}
 
-	private CourseOffering findCourseOfferingWithUniqueId(Long uniqueId, InstructionalOffering instructionalOffering){
-		CourseOffering courseOffering = null;
-		boolean found = false;
-		if (instructionalOffering.getCourseOfferings() != null) {
-			for (Iterator<?> it = instructionalOffering.getCourseOfferings().iterator(); it.hasNext() && !found;){
-				courseOffering = (CourseOffering) it.next();
-				if(courseOffering.getUniqueId().equals(uniqueId))
-					found = true;
-			}
-		}
-		if (found)
-			return(courseOffering);
-		else
-			return(null);
-	}
-	
 	protected ArrayList<ImportCourseOffering> getCourses(Element element) throws Exception {
 		ArrayList<ImportCourseOffering> courses = new ArrayList<ImportCourseOffering>();
 		String elementName = "course";

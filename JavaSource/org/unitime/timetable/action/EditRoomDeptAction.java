@@ -163,9 +163,6 @@ public class EditRoomDeptAction extends Action {
 		//get roomSharingTable and user preference on location
 		User user = Web.getUser(webSession);
 		Session s = Session.getCurrentAcadSession(user);
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
 
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
         RequiredTimeTable rtt = location.getRoomSharingTable(s, user, editRoomDeptForm.getDepartmentIds());

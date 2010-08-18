@@ -32,9 +32,8 @@ import org.unitime.timetable.model.RefTableEntry;
 */
 public abstract class RefTableEntryEditForm extends ActionForm {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = 3604015148650913385L;
+
 	// --------------------------------------------------------- Instance Variables
 	RefTableEntry refTableEntry;
 	// --------------------------------------------------------- Methods

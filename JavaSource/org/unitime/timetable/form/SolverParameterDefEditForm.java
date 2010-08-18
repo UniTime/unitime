@@ -28,6 +28,8 @@ import org.unitime.timetable.model.SolverParameterDef;
  */
 public class SolverParameterDefEditForm extends ActionForm {
 
+	private static final long serialVersionUID = 7546894309851294183L;
+
 	// --------------------------------------------------------- Instance Variables
 
 	/** solverParameterDef property */

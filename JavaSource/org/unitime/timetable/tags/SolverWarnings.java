@@ -49,7 +49,8 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class SolverWarnings extends TagSupport {
-	
+	private static final long serialVersionUID = 7947787141769725429L;
+
 	public static String getSolverWarning(HttpSession session, Long[] solverGroupIds) {
 		try {
 			User user = Web.getUser(session);

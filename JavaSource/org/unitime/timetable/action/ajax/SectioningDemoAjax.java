@@ -22,7 +22,6 @@ package org.unitime.timetable.action.ajax;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -48,8 +47,6 @@ public class SectioningDemoAjax extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
         response.addHeader("Content-Type", "text/xml");
-        
-        String word = request.getParameter("word");
         
         ServletOutputStream out = response.getOutputStream();
         
@@ -103,7 +100,6 @@ public class SectioningDemoAjax extends Action {
         TimePattern tp = new TimePatternDAO().get(Long.valueOf(timePatternId));
         if (tp==null) return;
         TimePatternModel m = tp.getTimePatternModel();
-        Vector ret = new Vector();
         for (int i=0;i<m.getNrTimes();i++)
             print(out, String.valueOf(i), m.getStartTime(i)+" - "+m.getEndTime(i));
     }
@@ -113,7 +109,6 @@ public class SectioningDemoAjax extends Action {
         TimePattern tp = new TimePatternDAO().get(Long.valueOf(timePatternId));
         if (tp==null) return;
         TimePatternModel m = tp.getTimePatternModel();
-        Vector ret = new Vector();
         for (int i=0;i<m.getNrDays();i++)
             print(out, String.valueOf(i), m.getDayHeader(i));
     }

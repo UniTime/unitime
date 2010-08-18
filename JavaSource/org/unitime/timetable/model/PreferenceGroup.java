@@ -21,9 +21,6 @@ package org.unitime.timetable.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -253,29 +250,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
     }
 
-    /*
-    public Set effectivePreferences(){
-    	return(this.getPreferences());
-    }
-    */
-    
-    private HashMap timePrefHash(Collection timePrefList){
-    	HashMap hm = new HashMap();
-    	Iterator it = timePrefList.iterator();
-    	TimePref t = null;
-    	while (it.hasNext()){
-    		t = (TimePref) it.next();
-    		if (hm.containsKey(t.getTimePattern())){
-    			((ArrayList) hm.get(t.getTimePattern())).add(t);
-    		} else {
-    			ArrayList a = new ArrayList();
-    			a.add(t);
-    			hm.put(t.getTimePattern(),a);
-    		}
-    	}
-    	return(hm);
-    }
-    
     protected abstract boolean canUserEdit(User user);
     
     protected abstract boolean canUserView(User user);

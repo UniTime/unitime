@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -246,7 +245,6 @@ public class ListSolutionsAction extends Action {
         if ("Load".equals(op) || "Load Empty Solution".equals(op)) {
         	SolverProxy solver = WebSolver.getSolver(request.getSession());
         	if (solver!=null && solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-            ActionMessages errors = myForm.validate(mapping, request);
         	Long sessionId = null;
         	Long settingsId = null;
         	Long[] ownerId = null;
@@ -387,11 +385,8 @@ public class ListSolutionsAction extends Action {
         return mapping.findForward("showSolutions");
 	}
 	
-	private static Hashtable sNames = new Hashtable();
-	
     private void getSolutions(HttpServletRequest request, boolean listAll, boolean committedOnly, ListSolutionsForm myForm) throws Exception {
-    	Transaction tx = null;
-		try {
+    	try {
 			WebTable.setOrder(request.getSession(),"listSolutions.ord",request.getParameter("ord"),1);
 			
 			WebTable webTable = new WebTable( 16,

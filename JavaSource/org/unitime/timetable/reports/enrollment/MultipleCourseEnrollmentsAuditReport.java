@@ -49,7 +49,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 
 	@Override
 	public void printReport() throws DocumentException {
-        int n = iNrLines - 3;
         setHeader(buildHeaderString());
         List results = getAuditResults(getSubjectAreas());
         Vector<String> lines = new Vector<String>();
@@ -163,7 +162,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	}
 
 	private class MultipleCourseEnrollmentsAuditResult extends EnrollmentAuditResult {
-		private String itype;
 		private Long studentUniqueId;
 		private Long subpartId;
 		private java.util.Vector<String> classes = new java.util.Vector<String>();
@@ -172,7 +170,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		public MultipleCourseEnrollmentsAuditResult(Object[] result) {
 			super(result);
 			if (result[7] != null) this.studentUniqueId = new Long(result[7].toString());
-			if (result[8] != null) this.itype = result[8].toString();
 			if (result[9] != null) this.subpartId = new Long(result[9].toString());
 			findClasses();
 		}
@@ -193,9 +190,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 				classes.add(className);
 			}
 			
-		}
-		public String itypeString(){
-			return(itype);
 		}
 		
 		public String classesListStr(){

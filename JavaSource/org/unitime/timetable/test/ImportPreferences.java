@@ -718,7 +718,6 @@ public class ImportPreferences {
 				cfg.getControllingCourseOffering().getCourseNbr(),
 				element.attributeValue("itype"), -1, element.attributeValue("suffix"));
 		SchedulingSubpart subpart = (SchedulingSubpart)iAllSubparts.get(subpartHash);
-		boolean flush = false;
 		if (subpart==null) {
 			subpart = new SchedulingSubpart();
 			subpart.setItype(

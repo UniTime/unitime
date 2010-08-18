@@ -29,14 +29,12 @@ import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.widgets.ClassificationsEdit;
 import org.unitime.timetable.gwt.widgets.CurriculaTable;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit;
 import org.unitime.timetable.gwt.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.widgets.PageLabel;
-import org.unitime.timetable.gwt.widgets.WebTable;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit.EditFinishedEvent;
 
 import com.google.gwt.core.client.GWT;
@@ -84,10 +82,6 @@ public class Curricula extends Composite {
 	private HorizontalPanel iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
-	
-	private AsyncCallback<List<CurriculumClassificationInterface>> iLoadClassifications;
-	
-	private WebTable.Row iLastCourse;
 	
 	private CurriculumEdit iCurriculumPanel = null;
 	private ClassificationsEdit iClassificationsEdit = null;

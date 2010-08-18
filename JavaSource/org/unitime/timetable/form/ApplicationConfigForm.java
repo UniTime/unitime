@@ -37,7 +37,9 @@ public class ApplicationConfigForm extends ActionForm {
 
     // --------------------------------------------------------- Instance Variables
 
-    private String op;
+	private static final long serialVersionUID = 4677371360700536609L;
+
+	private String op;
 
     /** key property */
     private String key;

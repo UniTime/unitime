@@ -227,7 +227,6 @@ public class LookupTables {
     }
 
     public static void setupDatePatterns(HttpServletRequest request, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
-    	User user = Web.getUser(request.getSession());
     	Vector list = new Vector();
     	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
@@ -250,7 +249,6 @@ public class LookupTables {
      * @param currentDatePattern
      */
     public static void setupDatePatterns(HttpServletRequest request, org.unitime.timetable.model.Session acadSession, boolean includeExtended, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
-    	User user = Web.getUser(request.getSession());
     	Vector list = new Vector();
     	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {

@@ -30,7 +30,9 @@ import org.unitime.timetable.model.Session;
  * @author Tomas Muller
  */
 public class HasMidtermExams extends TagSupport {
-    public boolean includeContent() {
+	private static final long serialVersionUID = 7288871888129560846L;
+
+	public boolean includeContent() {
         try {
             return Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(pageContext.getSession())).getUniqueId());
         } catch (Exception e) {}

@@ -34,7 +34,8 @@ import org.unitime.timetable.model.dao.Class_DAO;
  * @author Tomas Muller
  */
 public class ClassInfo implements Serializable, Comparable<ClassInfo> {
-    protected String iClassName = null;
+	private static final long serialVersionUID = 7324981486913342471L;
+	protected String iClassName = null;
     protected String iClassTitle = null;
     protected Long iClassId = null;
     protected transient Class_ iClass = null;

@@ -32,6 +32,7 @@ import org.unitime.timetable.model.RoomType;
  * @author Tomas Muller
  */
 public class SolutionReportForm extends ActionForm {
+	private static final long serialVersionUID = 4059377130848038647L;
 	private String iOp = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {

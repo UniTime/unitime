@@ -46,7 +46,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
@@ -67,8 +66,6 @@ public class EnrollmentAuditPdfReportAction extends Action {
             throw new Exception ("Access Denied.");
         }
         
-        TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
-
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if ("Generate".equals(op)) myForm.save(request.getSession());

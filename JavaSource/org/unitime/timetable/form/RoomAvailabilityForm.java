@@ -31,7 +31,8 @@ import org.apache.struts.action.ActionMessage;
  * @author Tomas Muller
  */
 public class RoomAvailabilityForm extends ExamReportForm {
-    private String iFilter = null;
+	private static final long serialVersionUID = -7604226806875981047L;
+	private String iFilter = null;
     private boolean iIncludeExams = false;
     private boolean iCompare = false;
 

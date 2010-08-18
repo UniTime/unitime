@@ -127,7 +127,6 @@ public class ServerClassLoader extends ClassLoader {
 
 	public static class MyURLConnection extends URLConnection {
 		private ByteArrayInputStream iInput = null;
-		private byte[] iData;
 		
 		protected MyURLConnection(byte[] data, URL url) {
 			super(url);

@@ -56,7 +56,6 @@ import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.StaffComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -95,8 +94,6 @@ public class InstructorListUpdateAction extends Action {
 		}
 		
 		InstructorListUpdateForm frm = (InstructorListUpdateForm) form;
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);		
 		MessageResources rsc = getResources(request);
 		String op = frm.getOp();
 		
@@ -209,7 +206,6 @@ public class InstructorListUpdateAction extends Action {
 		}
 		
 		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-		StaffDAO sdao = new StaffDAO();
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
 		HashSet<Class_> updatedClasses = new HashSet<Class_>(); 

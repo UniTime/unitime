@@ -53,7 +53,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * @author Tomas Muller
  */
 public class SolverGroupEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = 150007237399797836L;
+	private String iOp;
     private Long iUniqueId;
     private String iName;
     private String iAbbv;

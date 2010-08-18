@@ -37,7 +37,8 @@ import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
  * @author Tomas Muller
  */
 public class ExactTimeEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = -7288169370839578510L;
+	private String iOp;
     private Vector iExactTimeMins = new Vector();
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {

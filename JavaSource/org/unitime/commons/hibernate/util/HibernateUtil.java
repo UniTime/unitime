@@ -96,21 +96,6 @@ public class HibernateUtil {
         }
 	}
     
-    private static String getProperty(org.w3c.dom.Document document, String name, String defaultValue) {
-        org.w3c.dom.Element hibConfiguration = (org.w3c.dom.Element)document.getElementsByTagName("hibernate-configuration").item(0);
-        org.w3c.dom.Element sessionFactoryConfig = (org.w3c.dom.Element)hibConfiguration.getElementsByTagName("session-factory").item(0);
-        NodeList properties = sessionFactoryConfig.getElementsByTagName("property");
-        for (int i=0;i<properties.getLength();i++) {
-            org.w3c.dom.Element property = (org.w3c.dom.Element)properties.item(i);
-            if (name.equals(property.getAttribute("name"))) {
-                Text text = (Text)property.getFirstChild();
-                if (text==null || text.getData()==null) return defaultValue;
-                return text.getData();
-            }
-        }
-        return defaultValue;
-    }
-
     public static void configureHibernate(String connectionUrl) throws Exception {
         Properties properties = ApplicationProperties.getProperties();
         properties.setProperty("connection.url", connectionUrl);
@@ -248,8 +233,8 @@ public class HibernateUtil {
         sLog.debug("  -- session factory created");
         (new _BaseRootDAO() {
     		void setSF(SessionFactory fact, Configuration cfg) {
-    			_BaseRootDAO.sessionFactory = fact;
-    			_BaseRootDAO.configuration = cfg;
+    			_BaseRootDAO.sSessionFactory = fact;
+    			_BaseRootDAO.sConfiguration = cfg;
     		}
     		protected Class getReferenceClass() { return null; }
     	}).setSF(sSessionFactory, cfg);

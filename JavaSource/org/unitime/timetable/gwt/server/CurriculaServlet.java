@@ -93,6 +93,7 @@ import org.unitime.timetable.util.Constants;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class CurriculaServlet extends RemoteServiceServlet implements CurriculaService {
+	private static final long serialVersionUID = 4873723219428043859L;
 	private static Logger sLog = Logger.getLogger(CurriculaServlet.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 
@@ -109,8 +110,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			try {
-				Long sessionId = getAcademicSessionId();
-				
 				List<Curriculum> curricula = findAllCurricula(hibSession);
 				for (Curriculum c: curricula) {
 					if (q.match(new CurriculaMatcher(c))) {
@@ -165,7 +164,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
-				Long sessionId = getAcademicSessionId();
 				for (Long curriculumId: curriculumIds) {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (c == null) throw new CurriculaException("curriculum " + curriculumId + " does not exist anymore, please refresh your data");
@@ -258,7 +256,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
-				Long sessionId = getAcademicSessionId();
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 				if (c == null) throw new CurriculaException("curriculum " + curriculumId + " does not exist");
 				Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
@@ -420,7 +417,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				Hashtable<String, CourseOffering> courses = new Hashtable<String, CourseOffering>();
 				if (curriculum.hasCourses())
@@ -641,7 +637,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				int ord = 0;
 				for (CurriculumInterface curriculum: curricula) {
@@ -709,7 +704,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				if (curriculumId == null) 
 					throw new CurriculaException("Unsaved curriculum cannot be deleted.");
@@ -749,7 +743,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				for (Long curriculumId: curriculumIds) {
 					if (curriculumId == null) 
@@ -792,7 +785,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				Curriculum mergedCurriculum = new Curriculum();
 				mergedCurriculum.setMajors(new HashSet());
@@ -1006,8 +998,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			HashMap<String, CurriculumStudentsInterface[]> results = new HashMap<String, CurriculumStudentsInterface[]>();
 			try {
-				Long sessionId = getAcademicSessionId();
-
 				Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, acadAreaId);
 
 				AcademicArea acadArea = AcademicAreaDAO.getInstance().get(acadAreaId, hibSession);
@@ -1400,8 +1390,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
-				Long sessionId = getAcademicSessionId();
-				
 				CourseOffering courseOffering = getCourse(hibSession, courseName);
 				if (courseOffering == null) throw new CurriculaException("course " + courseName + " does not exist");
 				
@@ -1430,8 +1418,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
-				Long sessionId = getAcademicSessionId();
-				
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
 				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
 				
@@ -1500,7 +1486,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Long s0 = System.currentTimeMillis();
 			TreeSet<MajorInterface> results = new TreeSet<MajorInterface>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			Long sessionId = getAcademicSessionId();
 			try {
 				AcademicArea area = AcademicAreaDAO.getInstance().get(academicAreaId, hibSession);
 				if (area == null) return results;
@@ -1664,7 +1649,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			sLog.info("retrieveCourseDetails(course='" + course + "')");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			Long sessionId = getAcademicSessionId();
 			try {
 				CourseOffering courseOffering = getCourse(hibSession, course);
 				if (courseOffering == null) throw new CurriculaException("course " + course + " does not exist");
@@ -2291,7 +2275,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
-				Long sessionId = getAcademicSessionId();
 				
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
 				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
@@ -2702,10 +2685,10 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				major2course2ll = new Hashtable<String, Hashtable<Long,Integer>>();
 				clasfMajor2course2ll.put(clasfCode, major2course2ll);
 			}
-			Hashtable<Long, Integer> course2enrl = major2course2ll.get(clasfCode);
+			Hashtable<Long, Integer> course2enrl = major2course2ll.get(majorCode);
 			if (course2enrl == null) {
 				course2enrl = new Hashtable<Long, Integer>();
-				major2course2ll.put(clasfCode, course2enrl);
+				major2course2ll.put(majorCode, course2enrl);
 			}
 			course2enrl.put(courseId, enrl);
 		}

@@ -31,6 +31,7 @@ import org.unitime.timetable.model.UserData;
  * @author Tomas Muller
  */
 public class ExamCbsForm extends ActionForm {
+	private static final long serialVersionUID = -8811101882445836746L;
 	public static double sDefaultLimit = 25.0;
 	public static int sDefaultType = 0;
 	private String iOp = null;

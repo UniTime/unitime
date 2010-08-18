@@ -484,7 +484,6 @@ public class ClassificationsEdit extends Composite {
 		
 		private HTML iHint = null;
 		private PopupPanel iHintPanel = null;
-		private boolean iCellEditable = true;
 		
 		private List<MySumCell> iSums = new ArrayList<MySumCell>();
 
@@ -816,8 +815,6 @@ public class ClassificationsEdit extends Composite {
 		    
 		    MyRow r = getMyRow(row);
 		    if (r == null) return;
-
-			String style = getRowFormatter().getStyleName(row);
 
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:

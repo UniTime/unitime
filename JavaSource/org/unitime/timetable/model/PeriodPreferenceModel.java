@@ -230,7 +230,6 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public String[] getPreferenceNames() {
         Vector prefs = PreferenceLevel.getPreferenceLevelList(false);
         ArrayList<String> ret = new ArrayList<String>();
-        int idx=0;
         for (Enumeration e=prefs.elements();e.hasMoreElements();) {
             PreferenceLevel pref = (PreferenceLevel)e.nextElement();
             if (!iAllowRequired && PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;

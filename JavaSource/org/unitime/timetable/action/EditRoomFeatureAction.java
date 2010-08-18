@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -215,7 +214,6 @@ public class EditRoomFeatureAction extends Action {
 		Long id = Long.valueOf(request.getParameter("id"));
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
-		Collection features = location.getFeatures();
 		RoomFeatureDAO rfdao = new RoomFeatureDAO();
 		Set rfs = new HashSet();
 		

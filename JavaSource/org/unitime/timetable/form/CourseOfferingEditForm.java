@@ -45,7 +45,8 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
  */
 public class CourseOfferingEditForm extends ActionForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = 5719027599139781262L;
+	// --------------------------------------------------------- Instance Variables
     private String op;
     private Long subjectAreaId;
     private Long courseOfferingId;

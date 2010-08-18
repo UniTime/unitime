@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.shared;
 
 public class MenuException extends RuntimeException {
 	
+	private static final long serialVersionUID = -2768727468340429993L;
+
 	public MenuException() {
 		super();
 	}

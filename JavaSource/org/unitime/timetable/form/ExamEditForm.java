@@ -55,7 +55,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 public class ExamEditForm extends PreferencesForm {
-    private String examId;
+	private static final long serialVersionUID = -5083087578026654516L;
+	private String examId;
     private String label;
     private String name;
     private String note;
@@ -69,12 +70,10 @@ public class ExamEditForm extends PreferencesForm {
     
     private List instructors;
     
-    private List objectType;
     private List subjectArea;
     private List courseNbr;
     private List itype;
     private List classNumber;
-    private List messages;
     private Collection subjectAreas;
     
     private Integer examType;

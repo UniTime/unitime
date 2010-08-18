@@ -82,11 +82,8 @@ public class PdfWorksheet {
     private boolean iUseCommitedAssignments = true;
     private static int sNrChars = 133;
     private static int sNrLines = 50;
-    private File iFolder = null;
-    private File iFile = null;
     private FileOutputStream iOut = null;
     private Document iDoc = null;
-    private PdfWriter iWriter = null;
     private SubjectArea iSubjectArea = null;
     private String iCourseNumber = null;
     private int iPageNo = 0;
@@ -98,13 +95,12 @@ public class PdfWorksheet {
         iUseCommitedAssignments = "true".equals(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.useCommitedAssignments","true"));
         iSubjectArea = sa;
         iCourseNumber = courseNumber;
-        iFile = file;
         if (iCourseNumber!=null && (iCourseNumber.trim().length()==0 || "*".equals(iCourseNumber.trim().length())))
             iCourseNumber = null;
         iDoc = new Document(PageSize.LETTER.rotate());
 
         iOut = new FileOutputStream(file);
-        iWriter = PdfWriter.getInstance(iDoc, iOut);
+        PdfWriter.getInstance(iDoc, iOut);
 
         iDoc.addTitle(sa.getSubjectAreaAbbreviation()+(iCourseNumber==null?"":" "+iCourseNumber)+" Worksheet");
         iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER+", www.unitime.org"));
@@ -305,10 +301,8 @@ public class PdfWorksheet {
     }
     
     protected void print(CourseOffering co) throws DocumentException {
-        //System.out.println("  Printing "+co.getCourseName()+" ...");
         if (iLineNo+5>=sNrLines) newPage();
         iCourseOffering = co;
-        String session = lpad(co.getSubjectArea().getSession().getAcademicTerm()+" "+co.getSubjectArea().getSession().getAcademicYear(),17);
         int courseLimit = -1;
         InstructionalOffering offering = co.getInstructionalOffering();
         for (Iterator i=offering.getCourseReservations().iterator();i.hasNext();) {
@@ -436,7 +430,6 @@ public class PdfWorksheet {
                 boolean same = false;
                 for (Iterator k=classes.iterator();k.hasNext();) {
                     Class_ clazz = (Class_)k.next();
-                    Assignment assgn = (Assignment)clazz.getCommittedAssignment();
                     String[] time = time(clazz);
                     String[] rooms = room(clazz);
                     String[] instr = instructor(clazz);
@@ -524,19 +517,7 @@ public class PdfWorksheet {
         if (s.length()>len) return s.substring(0,len);
         return rpad(s,' ',len);
     }
-    
-    private String mpad(String s, char ch, int len) {
-        if (s==null) s="";
-        if (s.length()>len) return s.substring(0,len);
-        while (s.length()<len) 
-            if (s.length()%2==0) s = s + ch; else s = ch + s;
-        return s;
-    }
 
-    private String mpad(String s, int len) {
-        return mpad(s,' ',len);
-    }
-    
     private String mpad(String s1, String s2, char ch, int len) {
         String m = "";
         while ((s1+m+s2).length()<len) m += ch;

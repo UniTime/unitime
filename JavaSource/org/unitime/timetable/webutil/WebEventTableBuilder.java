@@ -104,10 +104,6 @@ public class WebEventTableBuilder {
     	return(cell);
      }
     
-    private TableCell initCell(boolean isEditable, String onClick){
-        return (initCell(isEditable, onClick, 1, false));
-    }
-
     private TableCell initCell(boolean isEditable, String onClick, int cols){
         return (initCell(isEditable, onClick, cols, false));
     }
@@ -304,12 +300,6 @@ public class WebEventTableBuilder {
     	return(cell);
     }
     
-    private TableCell buildEmptyEventInfo() {
-    	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent("&nbsp;");
-    	return(cell);
-    }
-    
     private TableCell buildEmptyMeetingInfo() {
     	TableCell cell = this.initCell(true, null, 1, true);
     	cell.addContent("&nbsp;");
@@ -380,7 +370,6 @@ public class WebEventTableBuilder {
         row.setOnMouseOut(this.getRowMouseOut(oddRowBGColor));
         row.setOnClick(subjectOnClickAction(e.getUniqueId()));
         
-        TableCell cell = null;
         row.addContent(buildEventName(e));
         row.addContent(buildEventEnrollment(e));
         row.addContent(buildEventCapacity(e));
@@ -447,7 +436,6 @@ public class WebEventTableBuilder {
         row.addContent(dateCell);
         row.addContent(buildTime(m));
         row.addContent(buildLocation(m));
-        String bgColor = null;
         if (mainContact)
             row.addContent(mm.getMeetings().size()==1?buildApproved(m):buildApproved(mm));
         if (mm.isPast()) {

@@ -46,7 +46,8 @@ import org.unitime.timetable.model.dao.ExamOwnerDAO;
  * @author Tomas Muller
  */
 public class ExamInfo implements Serializable, Comparable<ExamInfo> {
-    protected String iExamLabel = null;
+	private static final long serialVersionUID = -4407299089673481581L;
+	protected String iExamLabel = null;
     protected Long iExamId = null;
     protected transient Exam iExam = null;
     protected int iExamType;
@@ -294,7 +295,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public class ExamSectionInfo implements Serializable, Comparable<ExamSectionInfo> {
-        protected Long iId;
+		private static final long serialVersionUID = 6052996415395186994L;
+		protected Long iId;
         protected String iName;
         protected int iNrStudents = -1;
         protected transient ExamOwner iOwner = null;
@@ -400,7 +402,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public class ExamInstructorInfo implements Serializable, Comparable<ExamInstructorInfo> {
-        protected Long iId;
+		private static final long serialVersionUID = -6843290015053081071L;
+		protected Long iId;
         protected String iExternalUniqueId = null;
         protected String iName = null;
         protected transient DepartmentalInstructor iInstructor;

@@ -30,7 +30,6 @@ import javax.servlet.ServletResponse;
 
 public class EncodingFilter implements Filter {
 	private String iEncoding;
-	private FilterConfig filterConfig;
 
 	/**
 	* @see javax.servlet.Filter#init(javax.servlet.FilterConfig)

@@ -269,7 +269,6 @@ public class AssignmentHistoryAction extends Action {
         			null ));
         try {
         	int idx = 0;
-        	boolean hasBefore = false;
         	for (Enumeration e=history.elements();e.hasMoreElements();idx++) {
         		AssignmentRecord record = (AssignmentRecord)e.nextElement();
         		StringBuffer classes = new StringBuffer();
@@ -282,8 +281,6 @@ public class AssignmentHistoryAction extends Action {
         	    boolean first = true;
         	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
         	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
-        	    	if (assignment.getBefore()!=null)
-        	    		hasBefore=true;
         	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
         	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
         	    	if (!first) {

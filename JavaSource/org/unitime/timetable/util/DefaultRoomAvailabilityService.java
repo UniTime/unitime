@@ -10,8 +10,6 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.Location;
@@ -20,7 +18,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface {
-    private static Log sLog = LogFactory.getLog(DefaultRoomAvailabilityService.class);
     private Vector<CacheElement> iCache = new Vector<CacheElement>();
     
     public String getTimeStamp(Date startTime, Date endTime, String excludeType) {
@@ -199,7 +196,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     }
     
     public static class MeetingTimeBlock implements TimeBlock, Comparable<TimeBlock> {
-        Long iMeetingId;
+		private static final long serialVersionUID = -5557707709984628517L;
+		Long iMeetingId;
         String iEventName, iEventType;
         Date iStart, iEnd;
         public MeetingTimeBlock(Meeting m) {

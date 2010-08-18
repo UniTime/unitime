@@ -59,7 +59,6 @@ import net.sf.cpsolver.ifs.util.Callback;
  * @author Tomas Muller
  */
 public class SolverRegisterService extends Thread {
-    private static java.text.SimpleDateFormat sDateFormat = new java.text.SimpleDateFormat("yyMMdd_HHmmss",java.util.Locale.US);
 	static Log sLog = LogFactory.getLog(SolverRegisterService.class);
 	private static SolverRegisterService sInstance = null;
 	private ServerSocket iServerSocket = null;

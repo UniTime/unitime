@@ -395,35 +395,6 @@ public class RoomFeatureListAction extends Action {
 			request.removeAttribute("roomFeaturesDepartment");
 	}
 	
-	/**
-	 * 
-	 * @param request
-	 * @param roomFeatureEditForm
-	 * @throws Exception 
-	 */
-	private String getDeptCode(HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));  
-		Set departments = new TreeSet(manager.departmentsForSession(sessionId));
-        
-        //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	return d.getDeptCode();
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	String code = webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString();
-        	return code;
-		} else {
-			return null;
-		}
-	}
-	
-
 	public static void buildPdfFeatureTable(HttpServletRequest request, RoomFeatureListForm roomFeatureListForm) throws Exception {
     	FileOutputStream out = null;
     	try {
@@ -533,8 +504,6 @@ public class RoomFeatureListAction extends Action {
     			DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
     			Department rfOwner = Department.findByDeptCode(drf.getDeptCode(), sessionId);
 
-    			boolean isOwner = isAdmin || owner.getDepartments().contains(rfOwner);
-    			boolean isEditable = rfOwner.isEditableBy(user);
     			String ownerName = "@@ITALIC Not defined";
     			if (rfOwner != null) {
     				ownerName = rfOwner.getShortLabel();

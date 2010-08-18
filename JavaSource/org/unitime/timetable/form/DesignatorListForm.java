@@ -39,7 +39,8 @@ import org.unitime.timetable.util.Constants;
  */
 public class DesignatorListForm extends ActionForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = -9141780290199232001L;
+	// --------------------------------------------------------- Instance Variables
 	private String subjectAreaId;
 	private Collection subjectAreas;
 	private String op;

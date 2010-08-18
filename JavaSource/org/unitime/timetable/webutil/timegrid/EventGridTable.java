@@ -273,17 +273,16 @@ public class EventGridTable {
                 "m.locationPermanentId = :locationId and "+
                 "m.startPeriod < :endSlot and :startSlot < m.stopPeriod and "+
                 "m.meetingDate in (";
-            int idx = 0;
-            for (Date date : iDates) {
+            for (int idx = 0; idx < iDates.size(); idx++) {
                 if (idx>0) q+=",";
-                q+=":d"+(idx++);
+                q+=":d"+idx;
             }
             q += ")";
             Query query = MeetingDAO.getInstance().getSession().createQuery(q);
             query.setLong("locationId", iLocation.getPermanentId());
             query.setInteger("startSlot", iStartSlot);
             query.setInteger("endSlot", iEndSlot);
-            idx = 0;
+            int idx = 0;
             for (Date date : iDates) {
                 query.setDate("d"+(idx++), date);
             }
@@ -294,7 +293,6 @@ public class EventGridTable {
             for (int row = 0; row<iTable.length; row++) {
                 Calendar date = Calendar.getInstance(Locale.US);
                 date.setTime(iDates.elementAt(row));
-                boolean cellEdit = allowPast || !date.before(now);
                 for (int col = 0; col<iTable[row].length; col++) {
                     iTable[row][col] = new TableCell();
                     int stopTime = (iStartSlot + (1+col)*iStep)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
@@ -397,7 +395,6 @@ public class EventGridTable {
         private Meeting iMeeting;
         private int iStart = -1, iLength = 0, iCol = -1;
         private int iPrinted = 0;
-        private boolean iEdit = false;
         
         public MeetingCell(Meeting meeting) {
             iMeeting = meeting;

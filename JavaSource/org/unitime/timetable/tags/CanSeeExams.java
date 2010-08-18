@@ -31,8 +31,9 @@ import org.unitime.timetable.model.TimetableManager;
  * @author Tomas Muller
  */
 public class CanSeeExams extends TagSupport {
-	
-    public int doStartTag() {
+	private static final long serialVersionUID = -660964063270276723L;
+
+	public int doStartTag() {
         try {
             User user = Web.getUser(pageContext.getSession());
             TimetableManager manager = TimetableManager.getManager(user);

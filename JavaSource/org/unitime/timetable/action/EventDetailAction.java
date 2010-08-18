@@ -19,11 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -374,7 +372,6 @@ public class EventDetailAction extends Action {
 								(ec.getEmailAddress()==null?"":ec.getEmailAddress()),
 								(ec.getPhone()==null?"":ec.getPhone()));
 					}
-					SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 					if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
 					    myForm.setCanDelete(true);
 					    myForm.setCanEdit(true);

@@ -131,12 +131,6 @@ public class InstructorListAction extends Action {
 		}
 
 		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		
-		if (!user.isAdmin()) {
-			TimetableManager mgr = TimetableManager.getManager(user);
-			Set mgrDepts = mgr.departmentsForSession(sessionId);
-		}
 		
 		if (Web.hasRole(httpSession, Roles.getAdminRoles())) {
 			instructorSearchForm.setAdmin("Y");

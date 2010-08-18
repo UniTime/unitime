@@ -402,8 +402,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         }
     }
     
-    public static class EventTimeBlock implements TimeBlock{
-        private String iEventName, iEventType;
+    public static class EventTimeBlock implements TimeBlock {
+		private static final long serialVersionUID = -2466335111767360325L;
+		private String iEventName, iEventType;
         private Date iStartTime, iEndTime;
         
         public EventTimeBlock(Element eventElement, SimpleDateFormat dateFormat, SimpleDateFormat timeFormat) throws ParseException {

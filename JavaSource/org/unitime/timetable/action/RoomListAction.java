@@ -44,7 +44,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
@@ -239,7 +238,6 @@ public class RoomListAction extends Action {
 	 */
 	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
 		
-		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		HttpSession httpSession = request.getSession();
 		
@@ -259,7 +257,6 @@ public class RoomListAction extends Action {
 	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 			Set ownerDepts = owner.departmentsForSession(sessionId);
-			Set externalDepartments = Department.findAllExternal(sessionId);
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				if (isAdmin) {
@@ -780,14 +777,12 @@ public class RoomListAction extends Action {
 			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
 			Set deptRoomFeatures = new TreeSet();
-			int colspan=0;
 			
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			TimetableManagerDAO tdao = new TimetableManagerDAO();
 	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 			Set ownerDepts = owner.departmentsForSession(sessionId);
-			Set externalDepartments = Department.findAllExternal(sessionId);
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				if (isAdmin) {
@@ -897,7 +892,6 @@ public class RoomListAction extends Action {
 				alignment1[i] = fixedHeading1[i][1];
 				sorted1[i] = (Boolean.valueOf(fixedHeading1[i][2])).booleanValue();
 			}
-			colspan = fixedHeading1.length;
 			
 			if (!featuresOneColumn) {
 				int i = fixedHeading1.length;
@@ -920,7 +914,6 @@ public class RoomListAction extends Action {
 					sorted1[i] = true;
 					i++;
 				}
-			    colspan = i;
 			}			
 			
 			//build headings for non-univ locations

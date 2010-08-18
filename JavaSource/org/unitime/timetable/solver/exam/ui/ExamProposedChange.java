@@ -14,7 +14,8 @@ import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 
 public class ExamProposedChange implements Serializable, Comparable<ExamProposedChange> {
-    private Vector<ExamAssignmentInfo> iAssignments = null;
+	private static final long serialVersionUID = -5497603865422857068L;
+	private Vector<ExamAssignmentInfo> iAssignments = null;
     private Vector<ExamAssignment> iConflicts = null;
     private Hashtable<Long,ExamAssignment> iInitials = null;
     private Long iSelectedExamId = null; 

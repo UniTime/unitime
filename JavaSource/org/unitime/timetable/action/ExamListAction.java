@@ -256,7 +256,6 @@ public class ExamListAction extends Action {
                     if (roomPref.length()>0) roomPref+=nl;
                     roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
-                boolean prefPrinted = false;
                 if (Exam.sExamTypeMidterm==exam.getExamType()) {
                     MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     epx.load(exam);

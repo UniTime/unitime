@@ -130,10 +130,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
                 // Check top level subparts
                 if (!this.getUnlimited().booleanValue()) {
 	                int numClasses = sic.getNumClasses();
-	                int numRooms = sic.getNumRooms();
-	                int minLimitPerClass = sic.getMinLimitPerClass();
 	                int maxLimitPerClass = sic.getMaxLimitPerClass();
-	                float roomRatio = sic.getRoomRatio();
 	
 	                if (numClasses == 1 && maxLimitPerClass!=this.limit) {
 	                    sic.setHasError(true);

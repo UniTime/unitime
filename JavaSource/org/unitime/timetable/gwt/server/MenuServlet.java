@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.server;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,8 +69,8 @@ import org.unitime.timetable.util.RoomAvailability;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MenuServlet extends RemoteServiceServlet implements MenuService {
+	private static final long serialVersionUID = 9021169012914612488L;
 	private static Logger sLog = Logger.getLogger(MenuServlet.class);
-	private static DecimalFormat sDF = new DecimalFormat("0.0");
     private static Element iRoot = null;
 
 	public void init() throws ServletException {
@@ -327,7 +326,6 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				if (user.getUser() == null) 
 					return null;
 				
-		 		String loginName = user.getUser().getLogin();
 		 		String userName = Constants.toInitialCase(user.getUser().getName(), "-".toCharArray());
 
 				ret.put("0Name", userName);

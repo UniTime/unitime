@@ -18,7 +18,6 @@ import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -402,7 +401,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
-            ExamPeriod period = exam.getPeriod();
             iCoursePrinted = false;
                 if (iDirect) for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                     if (!conflict.getStudents().contains(instructor.getId())) continue;
@@ -560,7 +558,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
-            ExamPeriod period = exam.getPeriod();
             iCoursePrinted = false;
             Vector<Long> students = new Vector<Long>(section.getStudentIds());
             Collections.sort(students,new Comparator<Long>() {

@@ -35,6 +35,7 @@ import org.unitime.timetable.webutil.timegrid.TimetableGridTable;
  * @author Tomas Muller
  */
 public class TimetableForm extends ActionForm {
+	private static final long serialVersionUID = -783119205646238864L;
 	private String iOp = null;
 	private String iResource = null;
 	private String iDay = null;

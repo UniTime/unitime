@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -105,13 +104,7 @@ public class EditRoomPrefAction extends Action {
 			//the following call cannot be used since doit is has the same value as for return to room list (Back)
 			//return mapping.findForward("showRoomDetail");
 		}
-		
-		//delete room preference
-		if(doit != null && doit.equals(rsc.getMessage("button.deleteRoomPref"))) {
-			doDelete(editRoomPrefForm,request);
-			return mapping.findForward("showRoomDetail");
-		}
-		
+				
 		//update location
 		if(doit != null && doit.equals(rsc.getMessage("button.update"))) {
 			//Validate input prefs
@@ -149,7 +142,6 @@ public class EditRoomPrefAction extends Action {
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
         TimetableManager owner = tdao.get(new Long(mgrId));
 		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-        ArrayList availableRoomPrefs = new ArrayList();
         Set departments = new TreeSet();
 		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
 			departments = Department.findAllBeingUsed(sessionId);
@@ -170,7 +162,6 @@ public class EditRoomPrefAction extends Action {
         list.addAll(availableDepts);
 		editRoomPrefForm.setDepts(list);
         
-        Set rps = new HashSet();
         ArrayList depts = new ArrayList();
         String[] selectedPrefs = new String[availableDepts.size()];
         int i = 0;
@@ -200,7 +191,6 @@ public class EditRoomPrefAction extends Action {
 		
         //set availabe room preferences
     	Vector prefs = new Vector();
-    	boolean containsPref = false; 
     	for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
     		PreferenceLevel pref = (PreferenceLevel)e.nextElement();
     		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))
@@ -262,68 +252,5 @@ public class EditRoomPrefAction extends Action {
 		}
         
 	}
- 
-	/**
-	 * 
-	 * @param editRoomPrefForm
-	 * @param request
-	 */
-	private void doDelete(EditRoomPrefForm editRoomPrefForm, HttpServletRequest request) {
-		//get location information
-		Long id = Long.valueOf(request.getParameter("id"));
-		LocationDAO ldao = new LocationDAO();
-		Location location = ldao.get(id);
-		
-		//update user preference information
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-
-        //FIXME: needs to be changed to department based
-        /*
-        //commented out since currently doDelete function is not used
-        if (owner instanceof ScheduleDeputy) {
-        	ScheduleDeputy sd = (ScheduleDeputy) owner;	
-        	Set prefs = sd.getPreferences();   
-        	for (Iterator iter = prefs.iterator(); iter.hasNext();) {
-	           	RoomPref rp = (RoomPref)iter.next();
-	           	if (rp.getRoom().equals(location)) {
-	           		iter.remove();
-	            }
-	        }
-        	sd.setPreferences(prefs);
-        	tdao.saveOrUpdate(sd);
-            
-        } else if (owner instanceof ScheduleDeputyAssistant) {
-        	ScheduleDeputyAssistant sda = (ScheduleDeputyAssistant) owner;
-        	Set prefs = sda.getPreferences();   
-        	for (Iterator iter = prefs.iterator(); iter.hasNext();) {
-	           	RoomPref rp = (RoomPref)iter.next();
-	           	if (rp.getRoom().equals(location)) {
-	           		iter.remove();
-	            }
-	        }
-        	sda.setPreferences(prefs);
-        	tdao.saveOrUpdate(sda);
-        	
-        } else if (owner instanceof UserRoles) {
-        	UserRoles userRole =(UserRoles) owner;
-        	Set prefs = userRole.getPreferences();   
-        	for (Iterator iter = prefs.iterator(); iter.hasNext();) {
-	           	RoomPref rp = (RoomPref)iter.next();
-	           	if (rp.getRoom().equals(location)) {
-	           		iter.remove();
-	            }
-	        }
-        	userRole.setPreferences(prefs);
-        	tdao.saveOrUpdate(userRole);
-        	
-        } else {	
-        }
-        */
-	}
-	
 }
 

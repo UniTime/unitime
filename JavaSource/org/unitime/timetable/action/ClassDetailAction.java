@@ -195,10 +195,6 @@ public class ClassDetailAction extends PreferencesAction {
         	initPrefs(user, frm, c, null, false);
 		    timePatterns = c.effectiveTimePatterns();
 
-	        // Dist Prefs are not editable by Sched Dpty Asst
-	        String currentRole = user.getCurrentRole();
-	        boolean editable = true;
-
 		    // Display distribution Prefs
 	        DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
 	        String html = tbl.getDistPrefsTableForClass(request, c, true);

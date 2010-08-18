@@ -37,9 +37,11 @@ import org.apache.struts.action.ActionMessage;
  */
 public class ManagerSettingsForm extends ActionForm {
 
+	private static final long serialVersionUID = -5955499033542263250L;
+
     // --------------------------------------------------------- Instance Variables
 
-    private String op;
+	private String op;
 
     /** keyId  property */
     private Long keyId;

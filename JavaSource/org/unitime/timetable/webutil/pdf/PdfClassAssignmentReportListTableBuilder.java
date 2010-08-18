@@ -28,7 +28,6 @@ import java.util.Iterator;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Class_;
@@ -113,7 +112,6 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 			iDocument.open();
 
 			Class_ c = null;
-            TableStream table = null;
             int ct = 0;
             Iterator it = classes.iterator();
             SubjectArea subjectArea = null;

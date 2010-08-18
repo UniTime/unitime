@@ -150,7 +150,6 @@ public class AssignedClassesAction extends Action {
         
         try {
         	int idx = 0;
-        	boolean hasBefore = false;
         	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();idx++) {
         		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         		AssignmentPreferenceInfo ci = ca.getInfo(); 
@@ -259,7 +258,6 @@ public class AssignedClassesAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         try {
         	int idx = 0;
-        	boolean hasBefore = false;
         	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();idx++) {
         		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         		AssignmentPreferenceInfo ci = ca.getInfo(); 

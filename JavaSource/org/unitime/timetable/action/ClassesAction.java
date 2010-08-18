@@ -61,7 +61,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -320,9 +319,7 @@ public class ClassesAction extends Action {
                     new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
-        ClassComparator classCmp = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
         for (Class_ clazz: classes) {
             for (CourseOffering co : (Collection<CourseOffering>)clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
                 if (!match(form, co)) continue;

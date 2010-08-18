@@ -36,8 +36,6 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseReservationEditForm;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
@@ -88,7 +86,6 @@ public class CourseReservationEditAction extends ReservationAction {
         super.execute(mapping, form, request, response);
         
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());        
         CourseReservationEditForm frm = (CourseReservationEditForm) form;
 	    ActionMessages errors = null;
         String op = frm.getOp();
@@ -212,7 +209,6 @@ public class CourseReservationEditAction extends ReservationAction {
         Long owner = frm.getOwnerId();
         String ownerType = frm.getOwnerType();
         List resvIds = frm.getReservationId();
-        List resvTypes = frm.getReservationType();
         List resvPriorities = frm.getPriority();
         List reservedSpaces = frm.getReserved();
         List priorEnrollments = frm.getPriorEnrollment();
@@ -256,7 +252,6 @@ public class CourseReservationEditAction extends ReservationAction {
             for (int i=0; i<resvIds.size(); i++) {
                 
                 String resvId = (String) resvIds.get(i);
-                String resvType = (String) resvTypes.get(i);
                 String resvPriority = (String) resvPriorities.get(i);
                 String reservedSpace = (String) reservedSpaces.get(i);
                 String priorEnrollment = (String) priorEnrollments.get(i);

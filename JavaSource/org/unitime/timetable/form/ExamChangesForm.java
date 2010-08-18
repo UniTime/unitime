@@ -7,7 +7,8 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.UserData;
 
 public class ExamChangesForm extends ExamReportForm {
-    private String iChage = sChangeInitial;
+	private static final long serialVersionUID = 4093360180461644275L;
+	private String iChage = sChangeInitial;
     public static final String sChangeInitial = "Initial";
     public static final String sChangeBest = "Best";
     public static final String sChangeSaved = "Saved";

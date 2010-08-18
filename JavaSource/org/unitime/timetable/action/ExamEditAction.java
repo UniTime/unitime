@@ -83,7 +83,6 @@ public class ExamEditAction extends PreferencesAction {
             
             HttpSession httpSession = request.getSession();
             User user = Web.getUser(httpSession);
-            Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
             MessageResources rsc = getResources(request);
             ActionMessages errors = new ActionMessages();
             
@@ -189,7 +188,6 @@ public class ExamEditAction extends PreferencesAction {
             frm.setLabel(frm.getClone() || exam==null?"New Examination":exam.getLabel());
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
-                List lst = frm.getInstructors();
                 for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                     frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
                 }

@@ -64,6 +64,8 @@ public class CourseTimetableExport extends CourseOfferingExport {
         if (clazz.isDisplayInstructor())
             for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {
                 ClassInstructor instructor = (ClassInstructor)i.next(); 
+                if (instructor.getInstructor().getExternalUniqueId()!=null)
+                    exportInstructor(classElement.addElement("instructor"), instructor, session);
             }
     }
 

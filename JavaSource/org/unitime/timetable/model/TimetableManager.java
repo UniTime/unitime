@@ -339,11 +339,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         
         TimetableManagerDAO tdao = new TimetableManagerDAO();
         
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("lastName"));
-        orderList.addElement(Order.asc("firstName"));
-        
-        List l = tdao.findAll(orderList);
+        List l = tdao.findAll(Order.asc("lastName"), Order.asc("firstName"));
         if (l!=null)
             return new Vector(l);
         

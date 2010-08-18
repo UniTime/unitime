@@ -55,7 +55,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 public class TimePatternEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = 2957933039987971879L;
+	private String iOp;
     private Long iUniqueId;
     private String iType;
     private String iNrMtgs;

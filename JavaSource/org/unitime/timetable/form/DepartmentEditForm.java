@@ -37,6 +37,7 @@ import org.unitime.timetable.util.ReferenceList;
 
 
 public class DepartmentEditForm extends ActionForm {
+	private static final long serialVersionUID = -6614766002463228171L;
 	public Long iId = null;
 	public String iName = null;
 	public String iDeptCode = null;

@@ -47,7 +47,6 @@ import org.unitime.timetable.util.DateUtils;
 
 public class DatePattern extends BaseDatePattern implements Comparable {
 	private static final long serialVersionUID = 1L;
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 
     public static final int sTypeStandard = 0;
     public static final int sTypeAlternate = 1;
@@ -333,13 +332,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		int endMonth = getSession().getEndMonth() + 3;
 		int dayOfYear = 0;
 		int year = getSession().getSessionStartYear();
-		Set classes = null;
 		Set usage = (uniqueId!=null?getUsage(uniqueId):null);
 		StringBuffer sb = new StringBuffer("[");
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				dayOfYear++;
@@ -496,15 +493,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		for (int i=0;i<getPattern().length();i++)
 			if ('1'==getPattern().charAt(i)) size++;
 		return size;
-	}
-	
-	private int first() {
-		if (getPattern()==null) return 0;
-		for (int i=0;i<getPattern().length();i++)
-			if ('1'==getPattern().charAt(i)) {
-				return i-getOffset().intValue();
-			}
-		return 0;
 	}
 	
 	public int compareTo(Object o) {

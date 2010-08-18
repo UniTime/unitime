@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 
 import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
@@ -43,7 +42,6 @@ public class StudentConflictsReport implements Serializable {
 			if (jenrl.isInConflict())
 				iGroups.add(new JenrlInfo(solver, jenrl));
 		}
-		Hashtable ret = new Hashtable();
 		for (Lecture lecture: model.assignedVariables()) {
 			iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
 		}

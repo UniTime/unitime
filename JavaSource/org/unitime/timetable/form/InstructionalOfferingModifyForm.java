@@ -680,11 +680,6 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		getSubtotalIndexes().add(subtotalIndex);
     		cnt++;
     	}
-		i=0;
-    	for (Iterator it = this.getSubpartIds().iterator(); it.hasNext();){
-    		Long subpartId = Long.valueOf((String) it.next());
-    		i++;
-    	}
 
     }
 

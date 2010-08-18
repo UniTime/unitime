@@ -26,6 +26,7 @@ package org.unitime.timetable.util;
  */
 public class MessageResourcesFactory extends
 		org.apache.struts.util.MessageResourcesFactory {
+	private static final long serialVersionUID = -3170113345618008226L;
 
 	@Override
 	public MessageResources createResources(String config) {

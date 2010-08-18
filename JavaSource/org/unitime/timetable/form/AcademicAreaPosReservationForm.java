@@ -40,7 +40,11 @@ public class AcademicAreaPosReservationForm extends CharacteristicReservationFor
     
     // --------------------------------------------------------- Instance Variables
     
-    private List academicClassificationId;    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2482481549947035012L;
+	private List academicClassificationId;    
 
     // --------------------------------------------------------- Methods
 

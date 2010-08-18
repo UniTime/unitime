@@ -47,7 +47,8 @@ import org.unitime.timetable.util.IdValue;
 
 
 public class ExamDistributionPrefsForm extends ActionForm {
-    private String op;
+	private static final long serialVersionUID = -822886662425670241L;
+	private String op;
     private String distPrefId;
     private String distType;
     private String prefLevel;

@@ -63,8 +63,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	private String buttonAction;
 
-	private InstructionalOffering instructionalOffering;
-
 	private String subjectAreaAbbv;
 
 	private Boolean isControl;
@@ -117,14 +115,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private String sortBy;
 		
-	/**
-	 * @param instructionalOffering
-	 *            The instructionalOffering to set.
-	 */
-	public void setInstructionalOffering(InstructionalOffering instructionalOffering) {
-		this.instructionalOffering = instructionalOffering;
-	}
-
 	/**
 	 * @return Returns the controlCourseOfferings.
 	 */
@@ -531,7 +521,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         courseNbr=null;
         showNotOffered=null;
         buttonAction=null;
-        instructionalOffering=null;
         subjectAreaAbbv=null;
         isControl=null;
         ctrlInstrOfferingId=null;

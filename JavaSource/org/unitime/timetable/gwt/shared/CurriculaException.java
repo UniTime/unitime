@@ -20,7 +20,8 @@
 package org.unitime.timetable.gwt.shared;
 
 public class CurriculaException extends RuntimeException {
-	
+	private static final long serialVersionUID = 2144948330211931475L;
+
 	public CurriculaException() {
 		super();
 	}

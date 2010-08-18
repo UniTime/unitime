@@ -22,7 +22,6 @@ package org.unitime.timetable.webutil;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -88,7 +87,6 @@ public class InstructorListBuilder {
 		else {
 			String instructorNameFormat =  Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
 			String instructorSortOrder = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_SORT);
-			NumberFormat percentFormatter = NumberFormat.getPercentInstance();
 			
 			for (Iterator iter = list.iterator(); iter.hasNext();) {
 				DepartmentalInstructor di = (DepartmentalInstructor) iter.next(); 
@@ -252,7 +250,6 @@ public class InstructorListBuilder {
 				for (Iterator i=exams.iterator();i.hasNext();) {
 				    Exam exam = (Exam)i.next();
                     String examName = exam.getLabel();
-                    String title = examName;
                     if (exam.getExamType()==Exam.sExamTypeMidterm) {
                         examsStr += "<span title='"+examName+" Midterm Examination'>"+examName+"</span>";
                     } else {
@@ -319,7 +316,6 @@ public class InstructorListBuilder {
 
 		String instructorNameFormat =  Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
 		String instructorSortOrder = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_SORT);
-		NumberFormat percentFormatter = NumberFormat.getPercentInstance();
 		
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			DepartmentalInstructor di = (DepartmentalInstructor) iter.next(); 
@@ -456,7 +452,6 @@ public class InstructorListBuilder {
             for (Iterator i=exams.iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 String examName = exam.getLabel();
-                String title = examName;
                 if (exam.getExamType()==Exam.sExamTypeMidterm) {
                     examsStr += examName;
                 } else {

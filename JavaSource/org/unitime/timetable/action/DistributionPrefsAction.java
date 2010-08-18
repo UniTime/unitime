@@ -636,7 +636,6 @@ public class DistributionPrefsAction extends Action {
         HttpSession httpSession = request.getSession();
         String distPrefId = frm.getDistPrefId();
         List saList = frm.getSubjectArea();
-        List cnList = frm.getCourseNbr();
         List suList = frm.getItype();
         List clList = frm.getClassNumber();            
         
@@ -673,7 +672,7 @@ public class DistributionPrefsAction extends Action {
             dp.setGrouping(new Integer(frm.getGroupingInt()));
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
-        	Department owningDept = null; boolean sameOwningDept = true;
+        	Department owningDept = null;
         	User user = Web.getUser(httpSession);
         	Session session = Session.getCurrentAcadSession(user);
         	String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
@@ -714,7 +713,6 @@ public class DistributionPrefsAction extends Action {
     	        			if (!currentMgr.getDepartments().contains(owningDept) && currentMgr.getDepartments().contains(clazz.getManagingDept()))
     	        				owningDept = clazz.getManagingDept();
     	        		}
-    	        		sameOwningDept = false;
     	        	}
 	            	
                     relatedInstructionalOfferings.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering());

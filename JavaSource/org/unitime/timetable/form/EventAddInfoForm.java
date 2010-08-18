@@ -20,14 +20,12 @@
 
 package org.unitime.timetable.form;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -82,12 +80,11 @@ import org.unitime.timetable.webutil.WebTextValidation;
 
 public class EventAddInfoForm extends ActionForm {
 
+	private static final long serialVersionUID = -4484465349988824413L;
 	private TreeSet<DateLocation> iDateLocations = new TreeSet();
 	private int iStartTime;
 	private int iStopTime;
 	private String iOp;
-	private String iStartTimeString;
-	private String iStopTimeString;
 	private String iEventName;
 	private ContactBean iMainContact;
 	private String iAdditionalEmails;
@@ -202,8 +199,6 @@ public class EventAddInfoForm extends ActionForm {
 		iStartTime = 90;
 		iStopTime = 210;
 		iOp = null;
-		iStartTimeString = null;
-		iStopTimeString = null;
 		iEventName = null;
 		iMainContact = null;
 		iAdditionalEmails = "";
@@ -230,7 +225,6 @@ public class EventAddInfoForm extends ActionForm {
 	
 	public void load(HttpServletRequest request) {
 		HttpSession session = request.getSession();
-		User user = Web.getUser(request.getSession());
 		iDateLocations = (TreeSet<DateLocation>) session.getAttribute("Event.DateLocations");
 		iStartTime = (Integer) session.getAttribute("Event.StartTime");
 		iStopTime = (Integer) session.getAttribute("Event.StopTime");
@@ -253,7 +247,6 @@ public class EventAddInfoForm extends ActionForm {
 			iClassNumber = (List) session.getAttribute("Event.ClassNumber");
 			iAttendanceRequired = (Boolean) session.getAttribute("Event.AttendanceRequired");
 		}
-		TimetableManager tm = TimetableManager.getManager(user);
 		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
 		iEventId = (Long) (session.getAttribute("Event.EventId"));
 		if (iIsAddMeetings) {
@@ -297,7 +290,6 @@ public class EventAddInfoForm extends ActionForm {
 	
 	public void submit(HttpServletRequest request) {
 
-		HttpSession session = request.getSession();
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -409,8 +401,6 @@ public class EventAddInfoForm extends ActionForm {
 	}
 	
 	public void update (HttpServletRequest request) {
-
-		HttpSession session = request.getSession();
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -553,7 +543,6 @@ public class EventAddInfoForm extends ActionForm {
 	public void setIsAddMeetings(boolean isAdd) {iIsAddMeetings = isAdd;}
 
 	public void loadExistingMeetings() {
-		SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 		for (Iterator i=new TreeSet(iEvent.getMeetings()).iterator();i.hasNext();) {
 			Meeting meeting = (Meeting)i.next();
 			MeetingBean mb = new MeetingBean(meeting);

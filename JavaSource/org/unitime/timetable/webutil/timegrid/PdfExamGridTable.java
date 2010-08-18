@@ -24,11 +24,8 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfExamGridTable extends ExamGridTable {
-    private ExamGridForm iTable = null;
-    private PdfWriter iWriter = null;
     private Document iDocument = null;
     private PdfPTable iPdfTable = null;
 
@@ -46,7 +43,7 @@ public class PdfExamGridTable extends ExamGridTable {
                 new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)), 30, 30, 30, 30));
 
             out = new FileOutputStream(file);
-            iWriter = PdfEventHandler.initFooter(iDocument, out);
+            PdfEventHandler.initFooter(iDocument, out);
             iDocument.open();
             
             printTable();
@@ -62,7 +59,6 @@ public class PdfExamGridTable extends ExamGridTable {
     }
     
     public int getNrColumns() {
-        boolean vertical = isVertical();
         if (iForm.getDispMode()==sDispModeInRowHorizontal) {
             return 1 + days().size() * slots().size();
         } else if (iForm.getDispMode()==sDispModeInRowVertical) {
@@ -210,7 +206,6 @@ public class PdfExamGridTable extends ExamGridTable {
     public void printCell(ExamGridModel model, int day, int slot, int idx, int maxIdx, boolean head, boolean vertical, boolean in, boolean eod, boolean eol) {
         ExamPeriod period = getPeriod(day, slot);
         ExamGridCell cell = model.getAssignment(period,idx);
-        String style = "Timetable"+(head || (!in && !vertical) ? "Head":"")+"Cell" + (!head && in && vertical?"In":"") + (vertical?"Vertical":"") + (eol?"EOL":eod?"EOD":"");
         PdfPCell c = createCell();
         c.setBorderWidthTop(head || (!in && !vertical) ? 1 : 0);
         c.setBorderWidthRight(eod || eol ? 1 : 0);
@@ -272,8 +267,6 @@ public class PdfExamGridTable extends ExamGridTable {
                     int maxIdx = getMaxIdx(day, slot);
                     for (int idx=0;idx<=maxIdx;idx++) {
                         printRowHeaderCell(getDayName(day)+"<br>"+getSlotName(slot), idx, maxIdx, vertical, head && slot==slots.first(), globalMaxIdx==0);
-                        boolean eod = (slot==slots.last());
-                        boolean eol = (eod && day==days.last());
                         for (ExamGridModel model : models()) {
                             printCell(model,
                                     day,

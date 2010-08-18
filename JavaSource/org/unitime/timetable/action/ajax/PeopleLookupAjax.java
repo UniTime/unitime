@@ -235,18 +235,6 @@ public class PeopleLookupAjax extends Action {
             iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
             //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }
-        private Person(String id, String cname, String email, String phone, String dept, String pos, String source) {
-            iId = id; iSource = source;
-            iLName = cname;
-            if (iLName!=null && iLName.indexOf(' ')>0) {
-                iFName = iLName.substring(0, iLName.indexOf(' ')); iLName = iLName.substring(iLName.indexOf(' ')+1);
-            }
-            if (iLName!=null && iLName.indexOf(' ')>0) {
-                iMName = iLName.substring(0, iLName.lastIndexOf(' ')); iLName = iLName.substring(iLName.lastIndexOf(' ')+1);
-            }
-            iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
-            //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
-        }
         public Person(Staff staff) {
             this(translate(staff.getExternalUniqueId(), Source.Staff), 
                  staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),

@@ -670,9 +670,6 @@ public class ClassEditForm extends PreferencesForm {
      * @param deleteId
      */
     public void removeInstructor(int deleteId) {
-        
-        String id = this.instructors.get(deleteId).toString();
-        
         // Remove from lists
         this.instructors.remove(deleteId);
         this.instrPctShare.remove(deleteId);

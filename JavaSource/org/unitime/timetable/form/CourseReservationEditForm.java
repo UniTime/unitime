@@ -44,7 +44,8 @@ public class CourseReservationEditForm extends CharacteristicReservationForm {
 
     // --------------------------------------------------------- Instance Variables
     
-    private List courseOfferingId;
+	private static final long serialVersionUID = -5735656156412336196L;
+	private List courseOfferingId;
     private String reservationTypeLabel;
     
     // --------------------------------------------------------- Methods

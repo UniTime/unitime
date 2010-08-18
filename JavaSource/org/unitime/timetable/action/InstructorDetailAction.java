@@ -92,7 +92,6 @@ public class InstructorDetailAction extends PreferencesAction {
 		ActionForm form,
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
-		InstructorEditForm instructorEditForm = (InstructorEditForm) form;
 		try {
 			
 	        // Set common lookup tables
@@ -100,7 +99,6 @@ public class InstructorDetailAction extends PreferencesAction {
 
 			HttpSession httpSession = request.getSession();  
 			User user = Web.getUser(httpSession);
-			Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 			InstructorEditForm frm = (InstructorEditForm) form;
 	        MessageResources rsc = getResources(request);
 	        ActionMessages errors = new ActionMessages();
@@ -113,7 +111,6 @@ public class InstructorDetailAction extends PreferencesAction {
 									: request.getParameter("instructorId");		        
 		        
 	        String op = frm.getOp();
-	        String deleteType = request.getParameter("deleteType");
 	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 	        
 	        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)

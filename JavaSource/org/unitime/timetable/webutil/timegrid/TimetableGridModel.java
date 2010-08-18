@@ -74,7 +74,6 @@ public abstract class TimetableGridModel implements Serializable {
 	
 	
 	private int iResourceType;
-	private int iBgMode;
 	private long iResourceId;
 	
 	public TimetableGridModel() {

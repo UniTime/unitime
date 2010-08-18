@@ -25,8 +25,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -59,7 +57,6 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class ExamDatabaseSaver extends ExamSaver {
-    private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
     private int iExamType;
     private Progress iProgress = null;

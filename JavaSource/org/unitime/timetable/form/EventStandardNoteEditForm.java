@@ -35,6 +35,7 @@ import org.unitime.timetable.model.dao.StandardEventNoteDAO;
  */
 public class EventStandardNoteEditForm extends ActionForm {
 
+	private static final long serialVersionUID = 4715197445617849102L;
 	private String iScreen = "edit";
 	private String iNote;
 	private String iReference;

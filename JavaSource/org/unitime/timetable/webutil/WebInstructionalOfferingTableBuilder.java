@@ -360,10 +360,6 @@ public class WebInstructionalOfferingTableBuilder {
     	return(cell);
      }
     
-    private TableCell initCell(boolean isEditable, String onClick){
-        return (initCell(isEditable, onClick, 1, false));
-    }
-
     private TableCell initCell(boolean isEditable, String onClick, int cols){
         return (initCell(isEditable, onClick, cols, false));
     }
@@ -939,7 +935,6 @@ public class WebInstructionalOfferingTableBuilder {
 		Set s = io.getCourseOfferings();
 		boolean hasNote = false;
 		for (Iterator i=s.iterator(); i.hasNext(); ) {
-			String crsNote = null;
 			CourseOffering coI = (CourseOffering) i.next();
 			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
 				hasNote = true;

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
@@ -84,7 +83,6 @@ public class UniTimeSideBar extends Composite {
 	private DisclosurePanel iDisclosurePanel;
 	private MyStackPanel iStackPanel;
 	private Tree iTree;
-	private Set<String> iOpennedNodes = new TreeSet<String>();
 	
 	private int iTop = 0;
 	

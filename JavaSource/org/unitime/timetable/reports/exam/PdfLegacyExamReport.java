@@ -18,8 +18,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.mail.internet.InternetAddress;
-
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
@@ -30,7 +28,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -487,10 +484,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public static void sendEmails(String prefix, Hashtable<String,File> output, Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject, Hashtable<ExamInstructorInfo,File> ireports, Hashtable<Student,File> sreports) {
-        String managerExternalId = System.getProperty("sender");
-        TimetableManager mgr = (managerExternalId==null?null:TimetableManager.findByExternalId(managerExternalId));
-        InternetAddress from = null;
-        
         sLog.info("Sending email(s)...");
         if (!outputPerSubject.isEmpty() && "true".equals(System.getProperty("email.deputies","false"))) {
                 Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
@@ -857,7 +850,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         if (assgn && eventConf && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(examType==Exam.sExamTypeFinal?"final":"midterm"),"true"))) {
             sLog.info("  Loading overlapping class meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
@@ -865,8 +858,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                ClassEvent event = (ClassEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);
@@ -875,7 +867,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
             sLog.info("  Loading overlapping course meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
@@ -883,8 +875,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                CourseEvent event = (CourseEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);

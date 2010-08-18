@@ -86,7 +86,7 @@ public class SessionEditForm extends ActionForm {
 			errors.add("academicYear", new ActionMessage("errors.required", "Academic Year"));
 		else {
 			try {
-				int year = Integer.parseInt(academicYear); 
+				Integer.parseInt(academicYear); 
 			}
 			catch (Exception e) {
 				errors.add("academicYear", new ActionMessage("errors.numeric", "Academic Year"));

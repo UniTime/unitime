@@ -51,7 +51,6 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         Hashtable<Integer,String> times = new Hashtable();
         Hashtable<Integer,String> fixedTimes = new Hashtable();
         Hashtable<Integer,String> days = new Hashtable();
-        TreeSet weeks = new TreeSet();
         for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             times.put(period.getStartSlot(), period.getStartTimeLabel());

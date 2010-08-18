@@ -533,15 +533,14 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 				iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
-				int clasfIdx = 0;
-				for (AcademicClassificationInterface clasf: iClassifications) {
+				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = totalThisArea[clasfIdx][0];
 					int last = totalThisArea[clasfIdx][1];
 					int enrl = totalThisArea[clasfIdx][2];
 					int proj = totalThisArea[clasfIdx][3];
 					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
-					col++; clasfIdx++;
+					col++;
 				}
 				final int finalRow = row;
 				final int lastAreas = lastArea.size();
@@ -678,15 +677,14 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 			iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
-			int clasfIdx = 0;
-			for (AcademicClassificationInterface clasf: iClassifications) {
+			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalThisArea[clasfIdx][0];
 				int last = totalThisArea[clasfIdx][1];
 				int enrl = totalThisArea[clasfIdx][2];
 				int proj = totalThisArea[clasfIdx][3];
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
-				col++; clasfIdx++;
+				col++;
 			}
 			final int finalRow = row;
 			final int lastAreas = lastArea.size();
@@ -731,8 +729,7 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				iCurricula.getCellFormatter().setVisible(row, col, false);
 				col++;
-				int clasfIdx = 0;
-				for (AcademicClassificationInterface clasf: iClassifications) {
+				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = 0, last = 0, enrl = 0, proj = 0;;
 					for (CourseInterface course: other.getCourses()) {
 						CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
@@ -757,7 +754,6 @@ public class CourseCurriculaTable extends Composite {
 					iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 					iCurricula.getCellFormatter().setVisible(row, col, false);
 					col++;
-					clasfIdx++;
 				}
 				iRowTypes.add(sRowTypeOtherArea);
 				final int finalRow = row;
@@ -800,8 +796,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setWidget(row, col, new HTML("<i>Other Students</i>", false));
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			col++;
-			int clasfIdx = 0;
-			for (AcademicClassificationInterface clasf: iClassifications) {
+			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalOther[clasfIdx][0];
 				int last = totalOther[clasfIdx][1];
 				int enrl = totalOther[clasfIdx][2];
@@ -809,7 +804,7 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
-				col++; clasfIdx++;
+				col++;
 			}
 			final int finalRow = row;
 			final int lastAreas = otherCurricula.size();
@@ -881,8 +876,7 @@ public class CourseCurriculaTable extends Composite {
 		iCurricula.setWidget(row, col++, new MyLabel(tx[0], tx[2], tx[1], tx[3]));
 		for (int c = 0; c < 2; c++)
 			iCurricula.getCellFormatter().setStyleName(row, c, "unitime-TotalRow");
-		int clasfIdx = 0;
-		for (AcademicClassificationInterface clasf: iClassifications) {
+		for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 			int exp = total[clasfIdx][0];
 			int last = total[clasfIdx][1];
 			int enrl = total[clasfIdx][2];
@@ -890,7 +884,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
-			col++; clasfIdx++;
+			col++;
 		}
 		
 		// Hide all lines if requested

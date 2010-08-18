@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -59,7 +58,6 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                 ExamSectionInfo section = j.next();
                 ExamAssignmentInfo exam = section.getExamAssignmentInfo();
                 if (exam==null || exam.getPeriod()==null) continue;
-                ExamPeriod period = exam.getPeriod();
                 iCoursePrinted = false;
                 for (ExamInstructorInfo instructor : exam.getInstructors()) {
                     iStudentPrinted = false;

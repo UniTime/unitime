@@ -27,8 +27,10 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
  * @author Tomas Muller
  */
 public class SectionHeader extends BodyTagSupport {
-	private int iState = 0;
+
+	private static final long serialVersionUID = 7960410331965348148L;
 	private String iTitle = null;
+
 	public String getTitle() { return iTitle; }
 	public void setTitle(String title) { iTitle = title; }
 	

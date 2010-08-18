@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -45,8 +44,9 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
-    private int iStartSlot;
+	private static final long serialVersionUID = -342155197631035341L;
+
+	private int iStartSlot;
     
     private int iPreference;
     
@@ -270,7 +270,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
 
     public class DummyTimeBlock implements TimeBlock {
-    	private Date iD1, iD2;
+		private static final long serialVersionUID = -3806087343289917036L;
+		private Date iD1, iD2;
     	private DummyTimeBlock(Date d, int breakTimeStart, int breakTimeStop) {
     		Calendar c = Calendar.getInstance(Locale.US);
     		c.setTime(d);

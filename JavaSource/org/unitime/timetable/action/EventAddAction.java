@@ -82,7 +82,6 @@ public class EventAddAction extends Action {
 
 //Operations
 		String iOp = myForm.getOp();
-		String id = request.getParameter("id");
 
 		if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 			iOp = request.getParameter("op2");

@@ -205,14 +205,12 @@ public class MidtermPeriodPreferenceModel {
 	
 	private String getBorderArray(Integer start) {
         StringBuffer border = new StringBuffer("[");
-        boolean earlyProh = true, lateProh = true;
         for (int m=getStartMonth();m<=getEndMonth();m++) {
             if (m!=getStartMonth()) border.append(","); 
             border.append("["); 
             int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
             for (int d=1;d<=daysOfMonth;d++) {
                 if (d>1) border.append(","); 
-                Integer date = getDateOffset(d, m);
                 border.append(getBorder(d,m,start));
             }
             border.append("]");

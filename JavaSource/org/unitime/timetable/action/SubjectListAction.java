@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
 
@@ -99,7 +98,6 @@ public class SubjectListAction extends Action {
                     new boolean[] {true, true, true, true, true, true, false} );
             for (Iterator i=subjectListForm.getSubjects().iterator();i.hasNext();) {
                 SubjectArea s = (SubjectArea) i.next();
-                DecimalFormat df5 = new DecimalFormat("####0");
                 Department d = s.getDepartment();
                 String sdName = "";
                 for (Iterator it = s.getManagers().iterator(); it.hasNext();) {

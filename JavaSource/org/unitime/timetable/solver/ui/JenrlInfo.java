@@ -177,21 +177,16 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		if (!hasCurricula()) return "";
 		int top = 0;
 		double cover = 0.0;
-		double last = 0.0;
 		double total = 0.0;
-		double first = 0.0;
 		for (CurriculumInfo i: iCurriculum2nrStudents) {
 			total += i.getNrStudents();
 		}
 		String ret = "";
 		for (CurriculumInfo i: iCurriculum2nrStudents) {
 			double fraction = i.getNrStudents() / total;
-			// if (top == 0 || (top < 4 && cover < 0.75 && last <= 2 * fraction && first <= 5 * fraction)) {
 			if (top < 3) {
-				if (top == 0) first = fraction;
 				top++;
 				cover += fraction;
-				last = fraction;
 				if (!ret.isEmpty()) ret += ", ";
 				ret += sDF.format(100.0 * fraction) + "% " + i.getName();
 				if (fraction == 1.0) return i.getName();

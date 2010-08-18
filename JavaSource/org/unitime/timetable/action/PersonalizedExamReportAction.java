@@ -513,7 +513,6 @@ public class PersonalizedExamReportAction extends Action {
     
     protected long getMeetingComparable(ExamSectionInfo section) {
         if (section.getOwner().getOwnerObject() instanceof Class_) {
-            SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             Assignment assignment = clazz.getCommittedAssignment();
             TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
@@ -564,7 +563,6 @@ public class PersonalizedExamReportAction extends Action {
     }
     
     public PdfWebTable getSessions(boolean html, HashSet<Session> sessions, String name, Long sessionId) {
-        String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 5,
                 "Available Academic Sessions for "+name,
                 "personalSchedule.do?o0=%%",
@@ -594,7 +592,6 @@ public class PersonalizedExamReportAction extends Action {
     }
     
     public PdfWebTable getStudentExamSchedule(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
-        String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 5,
                 student.getSession().getLabel()+" Examination Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o1=%%&uid="+student.getExternalUniqueId(),

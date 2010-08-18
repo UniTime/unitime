@@ -70,7 +70,6 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
-import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -556,7 +555,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 				try {
 					rtt.getModel().setDefaultSelection(getDefaultTimeGridSize());
 					if (rtt.getModel().isExactTime()) {
-						StringBuffer sb = new StringBuffer();
 						addText(cell, rtt.exactTime(false), false, false, Element.ALIGN_LEFT, color, true);
 					} else {
 						java.awt.Image awtImage = rtt.createBufferedImage(getTimeVertival());
@@ -885,10 +883,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
-    		AssignmentPreferenceInfo info = null;
     		try {
     			a = classAssignment.getAssignment(aClass);
-    			info = classAssignment.getAssignmentInfo(aClass);
     		} catch (Exception e) {
     			Debug.error(e);
     		}
@@ -916,10 +912,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
-    		AssignmentPreferenceInfo info = null;
     		try {
     			a= classAssignment.getAssignment(aClass);
-    			info = classAssignment.getAssignmentInfo(aClass);
     		} catch (Exception e) {
     			Debug.error(e);
     		}

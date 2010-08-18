@@ -41,9 +41,11 @@ import org.unitime.timetable.util.Constants;
  */
 public class ReservationListForm extends ActionForm {
 
+	private static final long serialVersionUID = 7678017577857354414L;
+
     // --------------------------------------------------------- Instance Variables
 
-    private String op;
+	private String op;
 	private String subjectAreaId;
 	private String courseNbr;
 	private Collection subjectAreas;

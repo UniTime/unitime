@@ -46,7 +46,6 @@ import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.ExamDistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -62,7 +61,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -360,11 +358,8 @@ public class ExamDistributionPrefsAction extends Action {
             dp.setGrouping(-1);
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
-        	Department owningDept = null; boolean sameOwningDept = true;
         	User user = Web.getUser(httpSession);
         	Session session = Session.getCurrentAcadSession(user);
-        	String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        	TimetableManager currentMgr = new TimetableManagerDAO().get(new Long(ownerId), hibSession);
         	
         	dp.setOwner(session);
         

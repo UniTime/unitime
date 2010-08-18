@@ -646,6 +646,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private class RollForwardSchedSubpart{
 		private SchedulingSubpart fromParentSubpart;
 		private SchedulingSubpart toParentSubpart;
@@ -729,6 +730,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private class RollForwardClass {
 		private Class_ fromParentClass;
 		private Class_ toParentClass;

@@ -36,6 +36,7 @@ import org.unitime.timetable.model.dao.PreferenceLevelDAO;
  * @author Tomas Muller
  */
 public class PreferenceLegend extends TagSupport {
+	private static final long serialVersionUID = -8994474921509928721L;
 	private boolean iNotAvailable = false;
 	private boolean iPrefs = true;
 	private boolean iDpBackgrounds = false;
@@ -84,9 +85,7 @@ public class PreferenceLegend extends TagSupport {
         if (isPrefs()) {
             for (Iterator i=prefLevels.iterator();i.hasNext();) {
                 PreferenceLevel pl = (PreferenceLevel)i.next();
-                String color = pl.prefcolor();
                 html.append(
-            	//"<td width='20' height='20' style='border:rgb(0,0,0) 1px solid;background-color:" + color + "'>&nbsp;</td>"
 				"<td style='font-size: 80%;'>"+
 				"<img border='0' align='absmiddle' src='"+imgFolder+"pref"+pl.getUniqueId()+".png'>"+
 				"&nbsp;" + pl.getPrefName() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+

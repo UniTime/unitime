@@ -12,7 +12,8 @@ import net.sf.cpsolver.exam.model.ExamRoom;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
-    private Long iId = null;
+	private static final long serialVersionUID = -5882156641099610154L;
+	private Long iId = null;
     private String iName = null;
     private int iPreference = 0;
     private int iCapacity, iExamCapacity = 0;

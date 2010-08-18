@@ -41,9 +41,11 @@ import org.unitime.timetable.util.DynamicList;
  */
 public class PosReservationEditForm extends AcademicAreaPosReservationForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = -1989844870801186293L;
+
+	// --------------------------------------------------------- Instance Variables
     
-    private List posMajorId;
+	private List posMajorId;
 
     // --------------------------------------------------------- Methods
 

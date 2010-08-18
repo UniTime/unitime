@@ -106,7 +106,6 @@ public class DataImportAction extends Action {
             QueueProcessor.getInstance().add(new ImportQueItem(Session.getCurrentAcadSession(user), manager, myForm, request));
         }
         
-        File xmlFile = null; String xmlName = null;
         if ("Export".equals(op)) {
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size() > 0) {

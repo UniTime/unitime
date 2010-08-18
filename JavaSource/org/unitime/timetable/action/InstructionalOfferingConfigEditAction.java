@@ -65,7 +65,6 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -397,7 +396,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if(co==null)
             throw new Exception ("Course Offering not found for id: " + courseOfferingId);
 
-	    Session s = co.getSubjectArea().getSession();
 	    InstructionalOffering io = co.getInstructionalOffering();
 
 	    // Set values
@@ -1183,10 +1181,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
             RoomGroup rg,
             HashMap notDeletedSubparts ) throws Exception {
 
-        User user = Web.getUser(request.getSession());
-
-        ItypeDesc itype = sic.getItype();
-
         // Set attributes
         String subpartId = request.getParameter("subpartId" + sic.getId());
         String minLimitPerClass = request.getParameter("mnlpc" + sic.getId());
@@ -1222,7 +1216,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		int mnlpc = sic.getMinLimitPerClass();
 		int mxlpc = sic.getMaxLimitPerClass();
         int mpw = sic.getMinPerWeek();
-        int nc = sic.getNumClasses();
         int nr = sic.getNumRooms();
         float rr = sic.getRoomRatio();
         long md = sic.getManagingDeptId();
@@ -1231,7 +1224,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if (ioc.isUnlimitedEnrollment().booleanValue()) {
     		mnlpc = 0;
     		mxlpc = 0;
-            nc = 1;
             nr = 0;
             rr = 0;
         }
@@ -1241,7 +1233,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         SchedulingSubpart subpart = null;
-        Set childSubparts = null;
 
         // Subpart does not exist
         if (sid<0) {
@@ -1255,7 +1246,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
             subpart.setParentSubpart(parent);
             subpart.setAutoSpreadInTime(new Boolean(true));
             subpart.setStudentAllowOverlap(new Boolean(false));
-            childSubparts = new HashSet();
             ioc.addToschedulingSubparts(subpart);
 
             if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue() && rg!=null) {
@@ -1293,7 +1283,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 SchedulingSubpart tmpSubpart = (SchedulingSubpart) i.next();
                 if (tmpSubpart.getUniqueId().longValue()==sid) {
                     subpart = tmpSubpart;
-                    childSubparts = tmpSubpart.getChildSubparts();
                     break;
                 }
             }
@@ -1581,7 +1570,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         long sid = sic.getSubpartId();
 		int mnlpc = sic.getMinLimitPerClass();
 		int mxlpc = sic.getMaxLimitPerClass();
-        int mpw = sic.getMinPerWeek();
         int nc = sic.getNumClasses();
         int nr = sic.getNumRooms();
         float rr = sic.getRoomRatio();
@@ -1600,7 +1588,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
        SchedulingSubpart subpart = null;
-        Set childSubparts = null;
 
         // Subpart does not exist
         if (sid<0) {
@@ -1612,7 +1599,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
             SchedulingSubpart tmpSubpart = (SchedulingSubpart) i.next();
             if (tmpSubpart.getUniqueId().longValue()==sid) {
                 subpart = tmpSubpart;
-                childSubparts = tmpSubpart.getChildSubparts();
                 break;
             }
         }
@@ -1625,7 +1611,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         Set classes = subpart.getClasses();
         int numCls = classes.size();
         boolean readOnly = false;
-        boolean readOnlyParent = false;
 
         //if (!subpart.isEditableBy(Web.getUser(request.getSession())) || subpart.hasMixedManagedClasses()) {
         if (db) {
@@ -1783,8 +1768,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	    		                cpClasses.put(c.getParentClass().getUniqueId(), new Integer(classCount.intValue()+1));
 	    	            }
 	    	        }
-	    	        int cpNumClasses = cpClasses.size();
-	    	        int peerNumClasses = parent.getClasses().size();
                     int diff = (numCls - nc) / cpClasses.size();
                     Debug.debug("Deleting " + diff +  " classes per current parent");
 
@@ -1792,7 +1775,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
                     Set parentClassKeys = cpClasses.keySet();
                     for (Iterator ci=parentClassKeys.iterator(); ci.hasNext(); ) {
                         Long parentClassId = (Long) ci.next();
-                        int parentClassCount = ((Integer)cpClasses.get(parentClassId)).intValue();
                         Debug.debug("Deleting " + diff + " classes for parent class: " + parentClassId.toString());
 
                         uids.clear();

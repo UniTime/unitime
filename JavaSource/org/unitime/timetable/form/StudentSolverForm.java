@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -53,13 +52,13 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
  * @author Tomas Muller
  */
 public class StudentSolverForm extends ActionForm {
+	private static final long serialVersionUID = 3831509516652149101L;
 	private String iOp = null;
 	private Long iSetting = null;
 	private Vector iSettings = new Vector();
@@ -103,7 +102,6 @@ public class StudentSolverForm extends ActionForm {
 			Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
 			iCanDo = manager.canSectionStudents(acadSession, user);
 		} catch (Exception e){}
-		Long managerId = (user==null?null:Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
 		StudentSolverProxy solver = WebSolver.getStudentSolver(request.getSession());
 		Transaction tx = null;
 		iParams.clear(); iDefaults.clear(); iParamValues.clear();
@@ -112,9 +110,6 @@ public class StudentSolverForm extends ActionForm {
 			org.hibernate.Session hibSession = dao.getSession();
     		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
     			tx = hibSession.beginTransaction();
-    		
-    		Session session = Session.getCurrentAcadSession(user);
-    		Long sessionId = session.getUniqueId();
 			
 			List defaultsList = hibSession.createCriteria(SolverParameterDef.class).setCacheable(true).list();
 			
@@ -283,24 +278,6 @@ public class StudentSolverForm extends ActionForm {
 		StringTokenizer stk = new StringTokenizer(type,",");
 		while (stk.hasMoreTokens()) options.add(stk.nextToken());
 		return options;
-	}
-
-	public static class LongIdValue implements Serializable, Comparable {
-		private Long iId;
-		private String iValue;
-		private String iType;
-		public LongIdValue(Long id, String value) {
-			this(id,value,null);
-		}
-		public LongIdValue(Long id, String value, String type) {
-			iId = id; iValue = value; iType = type;
-		}
-		public Long getId() { return iId; }
-		public String getValue() { return iValue; }
-		public String getType() { return iType;}
-		public int compareTo(Object o) {
-			return getValue().compareTo(((LongIdValue)o).getValue());
-		}
 	}
 
 	public Collection getHosts() {

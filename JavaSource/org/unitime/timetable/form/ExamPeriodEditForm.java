@@ -828,7 +828,6 @@ public class ExamPeriodEditForm extends ActionForm {
 	public void setDays(HttpServletRequest request) {
 		int startMonth = iSession.getStartMonth();
 		int endMonth = iSession.getEndMonth();
-		int firstOne = 0, lastOne = 0;
 		iDays = new TreeSet<Integer>();
 		for (int m=startMonth;m<=endMonth;m++) {
 		    int yr = DateUtils.calculateActualYear(m, iSession.getSessionStartYear());

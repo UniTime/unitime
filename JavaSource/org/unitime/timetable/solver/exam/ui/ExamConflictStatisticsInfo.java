@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.servlet.jsp.JspWriter;
@@ -46,7 +45,6 @@ import net.sf.cpsolver.ifs.model.Constraint;
  * @author Tomas Muller
  */
 public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	private static final long serialVersionUID = 7L;
 	public static int sVersion = 7; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;

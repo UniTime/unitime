@@ -121,7 +121,6 @@ public class CsvClassAssignmentExport {
 
     public static CSVFile exportCsv2(User user, Collection classes, ClassAssignmentProxy proxy) {
         CSVFile file = new CSVFile();
-        String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         file.setSeparator(",");
         file.setQuotationMark("\"");
         file.setHeader(new CSVField[] {
@@ -210,7 +209,7 @@ public class CsvClassAssignmentExport {
                 if (placement.isMultiRoom()) {
                     for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();) {
                         RoomLocation r = e.next();
-                        String room = (placement.getRoomLocation()==null?"":placement.getRoomLocation().getName());
+                        String room = r.getName();
                         bldgSb.append(room.substring(0,room.lastIndexOf(' ')));
                         roomSb.append(room.substring(room.lastIndexOf(' ')+1));
                         if (e.hasNext()) {

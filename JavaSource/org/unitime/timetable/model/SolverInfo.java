@@ -61,7 +61,6 @@ public class SolverInfo extends BaseSolverInfo {
 		return getInfo(TimetableInfoUtil.getInstance());
 	}
 	
-	private transient TimetableInfo iInfo = null;
 	public TimetableInfo getInfo(TimetableInfoFileProxy proxy) throws Exception {
 		TimetableInfo info = getCached(getUniqueId());
 		if (info!=null) return info;

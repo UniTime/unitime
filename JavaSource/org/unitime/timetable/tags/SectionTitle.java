@@ -28,6 +28,8 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
  */
 public class SectionTitle  extends BodyTagSupport {
 	
+	private static final long serialVersionUID = 2869346521706583988L;
+
 	public int doStartTag() throws JspException {
 		return EVAL_BODY_BUFFERED;
 	}

@@ -29,6 +29,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 public class HasBack extends TagSupport {
+	private static final long serialVersionUID = -2959958703282887969L;
 	int iBack = 2;
 	public int getBack() { return iBack; }
 	public void setBack(int back) { iBack = back; }

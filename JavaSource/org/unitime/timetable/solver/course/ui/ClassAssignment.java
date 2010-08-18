@@ -34,6 +34,7 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
  * @author Tomas Muller
  */
 public class ClassAssignment extends ClassInfo implements Serializable {
+	private static final long serialVersionUID = -5426079388298794551L;
 	protected Vector<ClassRoomInfo> iRooms = new Vector<ClassRoomInfo>();
 	protected ClassTimeInfo iTime = null;
 	

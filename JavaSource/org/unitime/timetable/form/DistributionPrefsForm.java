@@ -48,7 +48,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class DistributionPrefsForm extends ActionForm {
 
-    // --------------------------------------------------------- Class Variables
+	private static final long serialVersionUID = 6316876654471770646L;
+	// --------------------------------------------------------- Class Variables
     public static final String SUBJ_AREA_ATTR_LIST = "subjectAreaList";
     public static final String CRS_NUM_ATTR_LIST = "courseNbrList";
     public static final String ITYPE_ATTR_LIST = "itypeList";

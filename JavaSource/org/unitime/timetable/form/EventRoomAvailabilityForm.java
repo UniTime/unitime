@@ -50,7 +50,7 @@ import org.unitime.timetable.util.Constants;
  * @author Zuzana Mullerova
  */
 public class EventRoomAvailabilityForm extends EventAddForm {
-	
+	private static final long serialVersionUID = -956757598845929764L;
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
 	private Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> iOverlappingMeetings; // meetings that are in conflict with desired times/dates	
@@ -278,6 +278,7 @@ public class EventRoomAvailabilityForm extends EventAddForm {
 	
 	// a class for storing selected date/location combinations
 	public static class DateLocation implements Serializable, Comparable<DateLocation> {
+		private static final long serialVersionUID = 1866259259759963493L;
 		private Date iDate;
 		private Long iLocation; //permanentId
 		private Long iLocUniqueId;

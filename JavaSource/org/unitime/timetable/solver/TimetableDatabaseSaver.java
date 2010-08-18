@@ -337,7 +337,6 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); int batchIdx = 0;
     		
     		iProgress.setPhase("Saving assignments ...", getModel().variables().size());
-    		HashSet assignments = new HashSet();
     		for (Lecture lecture: getModel().variables()) {
     			Placement placement = lecture.getAssignment();
     			if (placement!=null) {
