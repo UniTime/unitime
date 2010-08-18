@@ -186,7 +186,6 @@ public class Class_ extends BaseClass_ {
     	Set<Preference> ret = new TreeSet<Preference>();
 
     	TimePref tp = null;
-    	boolean hasTimePref = false;
     	for (Iterator<Preference> i=instrPrefs1.iterator();i.hasNext();) {
     		Preference p1 = i.next();
     		if (p1 instanceof TimePref) {

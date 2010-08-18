@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -16,7 +15,6 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -202,8 +200,6 @@ public class StudentExamReport extends PdfLegacyExamReport {
         println("Name:  "+name);
         if (student.getEmail()!=null)
             println("Email:       "+student.getEmail());
-        Date lastChange = null;
-        String changeObject = null;
         if (iClassSchedule) {
         	StudentClassComparator scc = new StudentClassComparator(student);
             TreeSet<Class_> allClasses = new TreeSet(scc);
@@ -346,7 +342,6 @@ public class StudentExamReport extends PdfLegacyExamReport {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
-            ExamPeriod period = exam.getPeriod();
             iCoursePrinted = false;
                 if (iDirect) for (DirectConflict conflict : exam.getDirectConflicts()) {
                     if (!conflict.getStudents().contains(student.getUniqueId())) continue;

@@ -219,9 +219,6 @@ public class EditRoomAction extends Action {
 	}
 	
     public static void setupDepartments(HttpServletRequest request, Location location) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-
     	Collection availableDepts = new Vector();
 
         for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
@@ -276,7 +273,6 @@ public class EditRoomAction extends Action {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
 		Session session = Session.getCurrentAcadSession(user);
-		Long sessionId = session.getSessionId();
         
         Long id = Long.valueOf(editRoomForm.getId());
 		LocationDAO ldao = new LocationDAO();

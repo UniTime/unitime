@@ -61,8 +61,6 @@ public class SchedulingSubpartTableBuilder {
         HttpSession webSession = request.getSession();
         User user = Web.getUser(webSession);
 
-        String createClassBtn = "";
-        
         // Check if variable limits is selected 
 		boolean varLimits = false;
 		if (request.getParameter("varLimits")!=null)

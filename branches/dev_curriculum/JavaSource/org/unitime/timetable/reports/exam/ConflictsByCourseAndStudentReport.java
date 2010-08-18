@@ -11,7 +11,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -72,7 +71,6 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                 ExamSectionInfo section = j.next();
                 ExamAssignmentInfo exam = section.getExamAssignmentInfo();
                 if (exam==null || exam.getPeriod()==null) continue;
-                ExamPeriod period = exam.getPeriod();
                 iCoursePrinted = false;
                 Vector<Long> students = new Vector<Long>(section.getStudentIds());
                 Collections.sort(students,new Comparator<Long>() {

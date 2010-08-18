@@ -162,7 +162,6 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     public static TimePattern findByName(HttpServletRequest request, String name) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
-    	boolean includeExtended = user.isAdmin();
     	return findByName(session, name);
     }
     

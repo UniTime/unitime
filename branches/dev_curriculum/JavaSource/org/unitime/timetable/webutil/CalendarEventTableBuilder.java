@@ -73,8 +73,6 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         List events = loadEvents(form);
         if (events.isEmpty()) return null;
         
-        boolean mainContact = form.isAdmin() || form.isEventManager();
-        
         PrintWriter out = null;
         try {
             File file = ApplicationProperties.getTempFile("events", "ics");
@@ -120,8 +118,6 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         List meetings = loadMeetings(form);
         
         if (meetings.isEmpty()) return null;
-        
-        boolean mainContact = form.isAdmin() || form.isEventManager();
         
         PrintWriter out = null;
         try {

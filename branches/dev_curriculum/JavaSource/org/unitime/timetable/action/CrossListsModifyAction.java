@@ -32,7 +32,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -102,7 +101,6 @@ public class CrossListsModifyAction extends Action {
             throw new Exception ("Access Denied.");
         }
         
-        HttpSession httpSession = request.getSession();
         MessageResources rsc = getResources(request);
         User user = Web.getUser(request.getSession());        
         CrossListsModifyForm frm = (CrossListsModifyForm) form;

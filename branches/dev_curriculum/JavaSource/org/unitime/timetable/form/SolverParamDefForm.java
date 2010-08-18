@@ -33,6 +33,7 @@ import org.unitime.timetable.model.SolverParameterGroup;
  * @author Tomas Muller
  */
 public class SolverParamDefForm extends ActionForm {
+	private static final long serialVersionUID = -1210805253091416573L;
 	private Long uniqueId;
 	private String type;
 	private String description;

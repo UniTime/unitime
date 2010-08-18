@@ -52,7 +52,8 @@ import org.unitime.timetable.reports.exam.StudentExamReport;
  * @author Tomas Muller
  */
 public class ExamPdfReportForm extends ExamReportForm {
-    protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
+	private static final long serialVersionUID = 4349609058043519671L;
+	protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
     private String[] iReports = null; 
     private String iMode = null;
     private boolean iAll = false;

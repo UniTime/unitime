@@ -177,10 +177,8 @@ public class PreferenceLevel extends BasePreferenceLevel {
             return prefLevelsList;
         
         PreferenceLevelDAO pdao = new PreferenceLevelDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("prefId"));
 
-        List l = pdao.findAll(orderList);
+        List l = pdao.findAll(Order.asc("prefId"));
         prefLevelsList = new Vector(l);
         return prefLevelsList;
     }

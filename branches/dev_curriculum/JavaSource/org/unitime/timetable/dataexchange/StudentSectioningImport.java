@@ -281,10 +281,8 @@ public class StudentSectioningImport extends BaseImport {
             }
         }
         int startSlot = (((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
-        int breakTime = 0;
         int nrSlots = 0;
         if (length!=null) {
-            breakTime = Integer.parseInt(length) - ((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) + ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100);
             nrSlots = Integer.parseInt(length) / Constants.SLOT_LENGTH_MIN; 
         } else {
             nrSlots = ((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) - ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) / Constants.SLOT_LENGTH_MIN;

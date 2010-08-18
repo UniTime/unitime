@@ -30,6 +30,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 public class MarkBack extends TagSupport {
+	private static final long serialVersionUID = 6247051046382946227L;
 	boolean iBack = true;
 	boolean iClear = false;
 	String iUri = null;

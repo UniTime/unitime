@@ -48,7 +48,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class ExamAssignment extends ExamInfo implements Serializable {
-    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
+	private static final long serialVersionUID = -5726339642542287195L;
+	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
     private static DecimalFormat s2Z = new DecimalFormat("00");
     protected Long iPeriodId = null;
     protected TreeSet<ExamRoomInfo> iRooms = null;
@@ -222,7 +223,6 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public String getPeriodAbbreviation() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
-        int end = start + getLength();
         return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start);
     }
 

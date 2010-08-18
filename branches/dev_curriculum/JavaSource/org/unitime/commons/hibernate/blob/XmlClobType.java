@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -21,17 +21,16 @@ package org.unitime.commons.hibernate.blob;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,20 +47,16 @@ import org.hibernate.usertype.UserType;
 /**
  * @author Tomas Muller
  */
-public class XmlBlobType implements UserType {
-	protected static Log sLog = LogFactory.getLog(XmlBlobType.class);
+public class XmlClobType implements UserType {
+	protected static Log sLog = LogFactory.getLog(XmlClobType.class);
 	
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws SQLException {
-        Blob blob = rs.getBlob(names[0]);
-        if (blob==null) return null;
+        Clob clob = rs.getClob(names[0]);
+        if (clob==null) return null;
 		try {
 			SAXReader reader = new SAXReader();
-			GZIPInputStream gzipInput = new GZIPInputStream(blob.getBinaryStream());
-			Document document = reader.read(gzipInput);
-			gzipInput.close();
+			Document document = reader.read(clob.getCharacterStream());
 			return document;
-		} catch (IOException e) {
-			throw new HibernateException(e.getMessage(),e);
 		} catch (DocumentException e) {
 			throw new HibernateException(e.getMessage(),e);
 		}
@@ -73,10 +68,10 @@ public class XmlBlobType implements UserType {
         } else {
             try {
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                XMLWriter writer = new XMLWriter(new GZIPOutputStream(bytes),OutputFormat.createCompactFormat());
+                XMLWriter writer = new XMLWriter(bytes,OutputFormat.createCompactFormat());
                 writer.write((Document)value);
                 writer.flush(); writer.close();
-                ps.setBinaryStream(index, new ByteArrayInputStream(bytes.toByteArray(),0,bytes.size()), bytes.size());
+                ps.setCharacterStream(index, new CharArrayReader(bytes.toString().toCharArray(),0,bytes.size()), bytes.size());
             } catch (IOException e) {
                 throw new HibernateException(e.getMessage(),e);
             }
@@ -91,7 +86,7 @@ public class XmlBlobType implements UserType {
         return false;
     }
     public int[] sqlTypes() {
-        return new int[] { Types.BLOB };
+        return new int[] { Types.CLOB };
     }
     public Class returnedClass() {
         return Document.class;
@@ -127,7 +122,7 @@ public class XmlBlobType implements UserType {
     	try {
             if (value==null) return null;
     		ByteArrayOutputStream out = new ByteArrayOutputStream(); 
-    		XMLWriter writer = new XMLWriter(new GZIPOutputStream(out),OutputFormat.createCompactFormat());
+    		XMLWriter writer = new XMLWriter(out,OutputFormat.createCompactFormat());
     		writer.write((Document)value);
     		writer.flush(); writer.close();
     		return out.toByteArray();
@@ -142,14 +137,14 @@ public class XmlBlobType implements UserType {
             if (cached==null) return null;
     		ByteArrayInputStream in = new ByteArrayInputStream((byte[])cached); 
 			SAXReader reader = new SAXReader();
-			GZIPInputStream gzipInput = new GZIPInputStream(in);
-			Document document = reader.read(gzipInput);
-			gzipInput.close();
+//			GZIPInputStream gzipInput = new GZIPInputStream(in);
+			Document document = reader.read(in);
+//			gzipInput.close();
     		return document;
 		} catch (DocumentException e) {
 			throw new HibernateException(e.getMessage(),e);
-    	} catch (IOException e) {
-    		throw new HibernateException(e.getMessage(),e);
+//    	} catch (IOException e) {
+//    		throw new HibernateException(e.getMessage(),e);
     	}
     }
     public Object replace(Object original, Object target, Object owner) throws HibernateException {

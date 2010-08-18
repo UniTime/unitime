@@ -64,10 +64,8 @@ public class OfferingConsentType extends BaseOfferingConsentType {
             return consentTypeList;
         
         OfferingConsentTypeDAO cdao = new OfferingConsentTypeDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("label"));
 
-        List l = cdao.findAll(orderList);
+        List l = cdao.findAll(Order.asc("label"));
         consentTypeList = new Vector(l);
         return consentTypeList;
     }

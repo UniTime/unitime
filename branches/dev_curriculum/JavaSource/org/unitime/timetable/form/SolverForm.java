@@ -66,6 +66,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class SolverForm extends ActionForm {
+	private static final long serialVersionUID = -7743850979346061916L;
 	private String iOp = null;
 	private Long iSetting = null;
 	private Vector iSettings = new Vector();
@@ -370,6 +371,7 @@ public class SolverForm extends ActionForm {
 	public Vector getOwners() { return iOwners; }
 
 	public static class LongIdValue implements Serializable, Comparable {
+		private static final long serialVersionUID = -3711635295687957578L;
 		private Long iId;
 		private String iValue;
 		private String iType;

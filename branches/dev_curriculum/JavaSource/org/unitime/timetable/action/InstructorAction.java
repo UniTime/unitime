@@ -35,7 +35,6 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
@@ -210,8 +209,6 @@ public class InstructorAction extends Action {
 			tx = hibSession.beginTransaction();
 			
 			HttpSession httpSession = request.getSession();
-			User user = Web.getUser(httpSession);	
-			Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 			
 			DepartmentalInstructor inst = null;
 			String instrId = frm.getInstructorId();

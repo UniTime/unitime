@@ -98,7 +98,6 @@ public class RoomDeptListAction extends Action {
 	private void buildDeptTable(HttpServletRequest request, RoomDeptListForm roomDeptListForm) throws Exception {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 		
 		WebTable.setOrder(request.getSession(),"roomDeptList.ord",request.getParameter("ord"),1);
 		
@@ -106,9 +105,7 @@ public class RoomDeptListAction extends Action {
 				"Dept", "Department Abbreviation", "Room", "Capacity", "Room Availability &amp; Sharing"},
 				new String[] { "left", "left", "left", "right", "left" }, new boolean[] {true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap");
-		org.hibernate.Session hibSession = null;
 		
-		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 		String timeGridSize = RequiredTimeTable.getTimeGridSize(user);
 		
 		//get depts owned by user

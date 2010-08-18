@@ -36,8 +36,6 @@ public class ServerThread extends Thread {
 	private int iServerPort, iPort;
 	private Properties iProperties;
 	private Class iRemoteSolverClass = null;
-	private String iKeyStore = null;
-	private String iKeyStorePasswd = null;
 	
 	public String getServerHost() { return iServerHost; }
 	public int getServerPort() { return iServerPort; }

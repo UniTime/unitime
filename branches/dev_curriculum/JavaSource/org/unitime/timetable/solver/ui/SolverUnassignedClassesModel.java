@@ -29,6 +29,8 @@ import net.sf.cpsolver.coursett.model.Lecture;
  */
 public class SolverUnassignedClassesModel extends UnassignedClassesModel {
 	
+	private static final long serialVersionUID = -6094708695678612559L;
+
 	public SolverUnassignedClassesModel(TimetableSolver solver) {
 		super();
 		for (Lecture lecture: solver.currentSolution().getModel().unassignedVariables()) {

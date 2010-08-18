@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.interactive;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -60,7 +59,6 @@ import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
@@ -71,7 +69,6 @@ import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
@@ -81,8 +78,6 @@ import net.sf.cpsolver.ifs.solver.Solver;
  */
 public class ClassAssignmentDetails implements Serializable, Comparable {
 	private static final long serialVersionUID = 1L;
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	public static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	public static DecimalFormat sJenrDF = new DecimalFormat("0",new java.text.DecimalFormatSymbols(Locale.US));
 	private ClassInfo iClass = null;
@@ -100,7 +95,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	private Vector iStudentConflicts = new Vector();
 	private Vector iGroupConstraintInfos = new Vector();
 	private Vector iBtbInstructorInfos = new Vector();
-	private int iYear = -1;
 	
 	public ClassInfo getClazz() { return iClass; }
 	public TimeInfo getTime() { return iTime; }
@@ -160,7 +154,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solver solver, Lecture lecture, Placement placement, boolean includeConstraints) {
-		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),SolverGridModel.hardConflicts2pref(lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
 		if (placement!=null) {
 			if (placement.isMultiRoom()) {
@@ -250,10 +243,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solution solution, Assignment assignment, boolean includeConstraints, Session hibSession, String instructorNameFormat) throws Exception {
-		//TODO: checked OK, tested OK
-		iYear = solution.getSession().getSessionStartYear();
-		int sessionStartDay = DateUtils.getDayOfYear(solution.getSession().getSessionBeginDateTime());
-		int sessionEndDay = DateUtils.getDayOfYear(solution.getSession().getSessionEndDateTime());
 		if (assignment!=null) {
 			iAssignmentInfo = (AssignmentPreferenceInfo)assignment.getAssignmentInfo("AssignmentInfo");
 			if (iAssignmentInfo==null) iAssignmentInfo = new AssignmentPreferenceInfo();

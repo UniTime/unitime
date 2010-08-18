@@ -43,6 +43,7 @@ import org.unitime.timetable.util.ComboBoxLookup;
  * @author Tomas Muller
  */
 public class ExamReportForm extends ActionForm {
+	private static final long serialVersionUID = -8009733200124355056L;
 	private String iOp = null;
 	private boolean iShowSections = false;
 	private Long iSubjectArea = null;

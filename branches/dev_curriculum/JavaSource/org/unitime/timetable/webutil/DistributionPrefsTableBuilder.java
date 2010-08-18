@@ -454,9 +454,6 @@ public class DistributionPrefsTableBuilder {
              
         	String distType = dp.getDistributionType().getLabel();
             String prefLevel = dp.getPrefLevel().getPrefName();
-            String prefColor = dp.getPrefLevel().prefcolor();
-        	if (PreferenceLevel.sNeutral.equals(dp.getPrefLevel().getPrefProlog()))
-        		prefColor = "gray";
             String onClick = null;
             
             tbl.addLine(

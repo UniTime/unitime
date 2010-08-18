@@ -48,7 +48,8 @@ public class CrossListsModifyForm extends ActionForm {
 
     // --------------------------------------------------------- Instance Variables
 
-    private String op;   
+	private static final long serialVersionUID = 3638385556572422628L;
+	private String op;   
     private Long subjectAreaId;
     private Long instrOfferingId;
     private Long addCourseOfferingId;
@@ -118,7 +119,7 @@ public class CrossListsModifyForm extends ActionForm {
 	            for (int i=0; i<courseOfferingIds.size(); i++) {
 	                try {
 		                String limit = (String) limits.get(i);
-	                    int iLimit = Integer.parseInt(limit); 
+	                    Integer.parseInt(limit); 
 	                }
 	                catch (Exception e) {
 	    	            errors.add("limit", new ActionMessage("errors.required", "Reserved Space"));

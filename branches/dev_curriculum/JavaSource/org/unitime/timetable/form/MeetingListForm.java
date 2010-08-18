@@ -32,7 +32,8 @@ import org.unitime.timetable.webutil.WebTextValidation;
  * @author Tomas Muller
  */
 public class MeetingListForm extends EventListForm {
-    private String iOrderBy = null;
+	private static final long serialVersionUID = -3703482482732848853L;
+	private String iOrderBy = null;
     private String iLocation = null;
     public static final String sOrderByName = "Event Name";
     public static final String sOrderByLocation = "Location";

@@ -35,7 +35,6 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseOfferingEditForm;
@@ -91,7 +90,6 @@ public class CourseOfferingEditAction extends Action {
         MessageResources rsc = getResources(request);
         ActionMessages errors = new ActionMessages();
         CourseOfferingEditForm frm = (CourseOfferingEditForm) form;
-        User user = Web.getUser(httpSession);
 
         // Read Parameters
         String op = (request.getParameter("op")==null)
@@ -352,9 +350,6 @@ public class CourseOfferingEditAction extends Action {
             HttpServletRequest request,
             CourseOfferingEditForm frm,
             String crsOfferingId) throws Exception {
-
-        HttpSession httpSession = request.getSession();
-        User user = Web.getUser(httpSession);
 
         // Load Course Offering
         Long courseOfferingId = new Long(crsOfferingId);

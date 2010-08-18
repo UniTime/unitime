@@ -28,8 +28,9 @@ import org.unitime.timetable.model.Session;
  * @author Tomas Muller
  */
 public class HasFinalExams extends HasMidtermExams {
+	private static final long serialVersionUID = -2181817157444320749L;
 
-    public boolean includeContent() {
+	public boolean includeContent() {
         try {
             return Exam.hasFinalExams(Session.getCurrentAcadSession(Web.getUser(pageContext.getSession())).getUniqueId());
         } catch (Exception e) {}

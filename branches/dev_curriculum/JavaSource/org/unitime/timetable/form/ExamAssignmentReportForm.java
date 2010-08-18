@@ -30,7 +30,8 @@ import org.apache.struts.action.ActionMapping;
  * @author Tomas Muller
  */
 public class ExamAssignmentReportForm extends ExamReportForm {
-    private String iReport = null; 
+	private static final long serialVersionUID = -1263238076223090733L;
+	private String iReport = null; 
     public static final String sExamAssignmentReport = "Exam Assignment Report";
     public static final String sRoomAssignmentReport = "Room Assignment Report";
     public static final String sStatistics = "Statistics";

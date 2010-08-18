@@ -66,8 +66,6 @@ public class Session extends BaseSession implements Comparable {
 
 	private static final long serialVersionUID = 3691040980400813366L;
 
-	static String mappingTable = "timetable.ll_course_mapping";
-
 	/*
 	 * @return all sessions
 	 */
@@ -445,37 +443,6 @@ public class Session extends BaseSession implements Comparable {
 
 	public String loadInstrAndCrsOffering() throws Exception {
 		return ("done");
-	}
-
-	private String getInsertCrsOffering(String llMsf, int control)
-			throws Exception {
-		String sql = "INSERT INTO timetable.course_offering "
-				+ "(UNIQUEID, SUBJECT_AREA_ID, COURSE_NBR, PERM_ID, INSTR_OFFR_ID, IS_CONTROL, PROJ_DEMAND) "
-				+ "	SELECT "
-				+ "    	   timetable.crs_offr_seq.nextval, "
-				+ "	       subject_id, course_nbr, perm_id, "
-				+ "    	   timetable.instr_offr_seq.currval, "
-				+ control
-				+ ", proj_demand"
-				+ "   FROM ( "
-				+ "	SELECT "
-				+ "	       llcm.course_nbr, llcm.perm_id,"
-				+ "    	   nvl(SUM(crscurr.requests), 0) proj_demand, llcm.subject_id "
-				+ "  	  FROM "
-				+ mappingTable
-				+ " llcm, "
-				+ llMsf
-				+ ".crscurr, "
-				+ mappingTable
-				+ " llcm_related"
-				+ "  	 WHERE llcm.course=?"
-				+ "      AND llcm_related.subject_id  = llcm.subject_id AND llcm_related.course_nbr = llcm.course_nbr"
-				+ "  	   AND llcm_related.course = crscurr.course(+)"
-				+ "  	 GROUP BY llcm.course_nbr, llcm.perm_id, llcm.subject_id ) xx "
-				+ " where not exists (select 1 from timetable.course_offering yy where xx.subject_id = yy.subject_area_id and xx.course_nbr = yy.course_nbr)";
-
-		return sql;
-
 	}
 
 	public Long getSessionId() {

@@ -196,12 +196,6 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 			initPrefs(user, frm, ss, null, false);
 	        timePatterns = ss.getTimePatterns();
 
-	        // Dist Prefs are not editable by Sched Dpty Asst
-	        String currentRole = user.getCurrentRole();
-	        boolean editable = true;
-	       // if(currentRole.equals(Roles.SCHED_DEPUTY_ASST_ROLE))
-	       //     editable = false;
-
 		    // Display distribution Prefs
 	        DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
 	        String html = tbl.getDistPrefsTableForSchedulingSubpart(request, ss, true);

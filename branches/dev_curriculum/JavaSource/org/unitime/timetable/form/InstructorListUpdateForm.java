@@ -29,8 +29,6 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Staff;
@@ -97,8 +95,6 @@ public class InstructorListUpdateForm extends ActionForm {
 	 */
 	private void setDeptName(HttpServletRequest request){
 		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		
 		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);

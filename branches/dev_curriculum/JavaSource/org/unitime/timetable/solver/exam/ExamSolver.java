@@ -899,7 +899,6 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 }
                 placement.variable().assign(0, placement);
             }
-            Vector<ExamAssignmentInfo> newAssignments = new Vector<ExamAssignmentInfo>();
             change.getAssignments().clear();
             change.getConflicts().clear();
             for (ExamPlacement assignment : assign)

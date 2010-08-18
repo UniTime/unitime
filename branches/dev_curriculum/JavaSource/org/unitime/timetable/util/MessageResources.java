@@ -42,6 +42,7 @@ import org.unitime.timetable.listeners.SessionListener;
  * @author Heston Fernandes
  */
 public class MessageResources extends org.apache.struts.util.MessageResources {
+	private static final long serialVersionUID = -3234198544455822319L;
 
 	private static PropertiesConfiguration resource;
 	private static String resourceFile;

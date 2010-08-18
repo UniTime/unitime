@@ -330,7 +330,6 @@ public class RoomGroupListAction extends Action {
 			}
 
 			StringBuffer assignedRoom = new StringBuffer();
-			StringBuffer availableRoom = new StringBuffer();
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
@@ -526,16 +525,12 @@ public class RoomGroupListAction extends Action {
     			
     			Department rgOwningDept = rg.getDepartment();
 
-    			//boolean isOwner = isAdmin || rgOwningDept.equals(manager);
-    			boolean isOwner = isAdmin || manager.getDepartments().contains(rgOwningDept);
-    			boolean isEditable = rgOwningDept.isEditableBy(user);
     			String ownerName = "@@ITALIC Not defined";
     			if (rgOwningDept != null) {
     				ownerName = rgOwningDept.getShortLabel();
     			}
 
     			StringBuffer assignedRoom = new StringBuffer();
-    			StringBuffer availableRoom = new StringBuffer();
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();

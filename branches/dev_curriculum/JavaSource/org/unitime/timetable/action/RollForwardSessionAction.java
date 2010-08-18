@@ -81,7 +81,6 @@ public class RollForwardSessionAction extends Action {
         MessageResources rsc = getResources(request);
         
         RollForwardSessionForm rollForwardSessionForm = (RollForwardSessionForm) form;
-		HttpSession httpSession = request.getSession();
 		User user = Web.getUser(request.getSession());
         // Get operation
         String op = request.getParameter("op");		  

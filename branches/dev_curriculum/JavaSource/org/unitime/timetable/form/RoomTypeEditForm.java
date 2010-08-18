@@ -33,7 +33,8 @@ import org.unitime.timetable.model.dao.RoomTypeDAO;
  * @author Tomas Muller
  */
 public class RoomTypeEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = 3139971302727896389L;
+	private String iOp;
     private Long iUniqueId;
     private String iReference;
     private String iLabel;

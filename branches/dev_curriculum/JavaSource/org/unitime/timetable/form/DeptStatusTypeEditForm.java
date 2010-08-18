@@ -39,7 +39,8 @@ import org.unitime.timetable.util.IdValue;
  * @author Tomas Muller
  */
 public class DeptStatusTypeEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = -684686223274367430L;
+	private String iOp;
     private Long iUniqueId;
     private String iReference;
     private String iLabel;

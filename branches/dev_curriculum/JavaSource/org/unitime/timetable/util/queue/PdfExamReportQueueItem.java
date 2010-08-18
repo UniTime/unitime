@@ -37,7 +37,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
@@ -98,8 +97,8 @@ public class PdfExamReportQueueItem extends QueueItem {
 
 	@Override
 	public void execute() {
-        Logger repLog = Logger.getLogger("org.unitime.timetable.reports.exam");
         /*
+        Logger repLog = Logger.getLogger("org.unitime.timetable.reports.exam");
         Appender myAppender = new AppenderSkeleton() {
 			
 			@Override
@@ -173,17 +172,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (class)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                            "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                            "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                             "Exam x inner join x.owners o, "+
                             "StudentClassEnrollment e inner join e.clazz c "+
                             "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
                             "o.ownerId=c.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                                 Object[] o = (Object[])i.next();
-                                Long examId = (Long)o[0];
-                                Long ownerId = (Long)o[1];
-                                Long studentId = (Long)o[2];
-                                Long courseId = (Long)o[3];
+                                Long ownerId = (Long)o[0];
+                                Long studentId = (Long)o[1];
+                                Long courseId = (Long)o[2];
                                 Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                                 if (course2students == null) {
                                 	course2students = new Hashtable<Long, Set<Long>>();
@@ -199,7 +197,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (config)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.clazz c " +
                                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -207,10 +205,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
                                     "o.ownerId=ioc.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -226,17 +223,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (course)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering co " +
                                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
                                     "o.ownerId=co.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -252,17 +248,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (offering)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
                                     "o.ownerId=io.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -379,7 +374,6 @@ public class PdfExamReportQueueItem extends QueueItem {
                 }
             }
         	iProgress = 0.9;
-            TimetableManager mgr = getOwner();
             byte[] buffer = new byte[32*1024];
             int len = 0;
             if (output.isEmpty())

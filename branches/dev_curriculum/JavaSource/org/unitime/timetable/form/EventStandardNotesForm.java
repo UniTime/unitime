@@ -34,6 +34,7 @@ import org.unitime.timetable.model.StandardEventNote;
  */
 public class EventStandardNotesForm extends ActionForm {
 
+	private static final long serialVersionUID = 4764358302157565376L;
 	private String iOp;
 	
 	public ActionErrors validate(

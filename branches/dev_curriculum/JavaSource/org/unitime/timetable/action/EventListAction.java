@@ -52,7 +52,6 @@ public class EventListAction extends Action {
 		EventListForm myForm = (EventListForm)form;
 		
         User user = Web.getUser(request.getSession()); 
-        TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
         if (user==null || !TimetableManager.canSeeEvents(user)) 
         	throw new Exception ("Access Denied.");
 

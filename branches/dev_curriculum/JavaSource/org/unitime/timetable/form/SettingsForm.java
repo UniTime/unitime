@@ -36,10 +36,11 @@ import org.unitime.timetable.model.Settings;
  * @struts:form name="settingsForm"
  */
 public class SettingsForm extends ActionForm {
+	private static final long serialVersionUID = -7290264236456861985L;
 
     // --------------------------------------------------------- Instance Variables
 
-    private String op;
+	private String op;
 
     /** uniqueId  property */
     private Long uniqueId;

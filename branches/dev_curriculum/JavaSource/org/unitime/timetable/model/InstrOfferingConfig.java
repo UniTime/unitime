@@ -116,7 +116,6 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 
         Set s = subpart.getChildSubparts();
         Iterator iter = s.iterator();
-        Vector v = new Vector();
         while(iter.hasNext()) {
             SchedulingSubpart child = (SchedulingSubpart) iter.next();
             SimpleItypeConfig childSic = toSimpleItypeConfig(user, config, child);

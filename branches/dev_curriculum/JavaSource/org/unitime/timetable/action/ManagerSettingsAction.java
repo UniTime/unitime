@@ -235,7 +235,6 @@ public class ManagerSettingsAction extends Action {
 			    Long uniqueId = s.getUniqueId();
 			    String key = s.getDescription();
 			    String defaultValue = s.getDefaultValue();
-			    String allowedValues = s.getAllowedValues();
 			    
 			    String[] data = Settings.getSettingValue(user.getRole(), uSettings, uniqueId, defaultValue);
 			    String onClick = "onClick=\"document.location='managerSettings.do?op=Edit&kid="

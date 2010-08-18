@@ -57,10 +57,8 @@ public class CourseCreditUnitType extends BaseCourseCreditUnitType {
 		}
 		
 		CourseCreditUnitTypeDAO cctDao = new CourseCreditUnitTypeDAO();
-		Vector orderList = new Vector();
-        orderList.addElement(Order.asc("label"));
         
-        List l = cctDao.findAll(orderList);
+        List l = cctDao.findAll(Order.asc("label"));
         courseCreditUnitTypeList = new Vector(l);
         return(courseCreditUnitTypeList);
 	}

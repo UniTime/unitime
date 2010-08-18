@@ -130,7 +130,6 @@ public class StudentSolverAction extends Action {
                 return mapping.findForward("showSolver");
             }
             Long settingsId = myForm.getSetting();
-        	Long[] ownerId = null;
         	Hashtable extra = new Hashtable(myForm.getParameterValues());
     	    if (solver == null) {
         		solver = WebSolver.createStudentSolver(acadSession.getUniqueId(),request.getSession(),settingsId,extra,start,myForm.getHost());

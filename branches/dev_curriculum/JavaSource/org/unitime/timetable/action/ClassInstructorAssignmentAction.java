@@ -47,7 +47,6 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
@@ -78,7 +77,6 @@ public class ClassInstructorAssignmentAction extends Action {
 
         MessageResources rsc = getResources(request);
         User user = Web.getUser(request.getSession());
-        TimetableManager tm = TimetableManager.getManager(user);
         ClassInstructorAssignmentForm frm = (ClassInstructorAssignmentForm) form;
 
         // Get operation
@@ -290,11 +288,4 @@ public class ClassInstructorAssignmentAction extends Action {
 	    	}
     	}
     }
-
-    private void doUpdate(
-    		HttpServletRequest request,
-    		ClassInstructorAssignmentForm frm,
-    		User user) {
-	}
-
 }

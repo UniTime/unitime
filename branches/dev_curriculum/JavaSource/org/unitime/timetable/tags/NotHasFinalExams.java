@@ -23,8 +23,9 @@ package org.unitime.timetable.tags;
  * @author Tomas Muller
  */
 public class NotHasFinalExams extends HasFinalExams {
-	
-    public boolean includeContent() {
+	private static final long serialVersionUID = -2174357305005491725L;
+
+	public boolean includeContent() {
         return !super.includeContent();
     }
 }

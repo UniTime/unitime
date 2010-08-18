@@ -31,6 +31,7 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
  * @author Tomas Muller
  */
 public class SuggestionsForm extends ActionForm {
+	private static final long serialVersionUID = 3222409910704167703L;
 	private String iOp = null;
 	private String iFilter = null;
 	private boolean iShowFilter = false;

@@ -36,7 +36,8 @@ import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
  * @author Tomas Muller
  */
 public class ExamInfoForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = 424087977258798931L;
+	private String iOp;
     private ExamInfoModel iModel;
     private String iMessage;
 

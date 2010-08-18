@@ -212,7 +212,6 @@ public class ApplicationConfigAction extends Action {
     private void getApplicationConfigList(HttpServletRequest request) throws Exception {
         WebTable.setOrder(request.getSession(),"applicationConfig.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
-        MessageResources rsc = getResources(request);
 
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,

@@ -110,10 +110,8 @@ public class Roles extends BaseRoles {
         
 
         RolesDAO rdao = new RolesDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("abbv"));
 
-        List l = rdao.findAll(orderList);
+        List l = rdao.findAll(Order.asc("abbv"));
         rolesList = new Vector(l);
         return rolesList;
     }

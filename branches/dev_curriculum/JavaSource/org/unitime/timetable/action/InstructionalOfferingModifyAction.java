@@ -711,7 +711,6 @@ public class InstructionalOfferingModifyAction extends Action {
 		Department managingDept = null;
 		DatePatternDAO dpdao = new DatePatternDAO();
 		DatePattern dp = null;
-		PreferenceLevel prefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired);
 
 		Iterator it1 = frm.getClassIds().listIterator();
 		Iterator it2 = frm.getMinClassLimits().listIterator();

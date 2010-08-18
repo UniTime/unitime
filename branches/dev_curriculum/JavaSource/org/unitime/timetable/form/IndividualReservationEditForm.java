@@ -42,9 +42,11 @@ import org.unitime.timetable.util.DynamicList;
  */
 public class IndividualReservationEditForm extends ReservationForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = 5291078414876018827L;
+
+	// --------------------------------------------------------- Instance Variables
     
-    private List puid;
+	private List puid;
     private List studentName;
     private List overLimit;
     private List expirationDate;

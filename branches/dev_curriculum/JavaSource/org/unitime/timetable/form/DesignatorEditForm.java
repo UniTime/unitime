@@ -41,7 +41,8 @@ import org.unitime.timetable.model.dao.DesignatorDAO;
  */
 public class DesignatorEditForm extends ActionForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = 2778373661037990914L;
+	// --------------------------------------------------------- Instance Variables
     private Long uniqueId;
     private Long subjectAreaId;
     private String subjectAreaAbbv;

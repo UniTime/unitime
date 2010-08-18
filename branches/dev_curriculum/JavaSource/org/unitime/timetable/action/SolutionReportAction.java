@@ -774,12 +774,6 @@ public class SolutionReportAction extends Action {
 		//return String.valueOf(value);
 	}
 	
-	private String disp(double value, boolean noHtml) {
-		if (value==0) return "";
-		return (noHtml?ClassAssignmentDetails.dispNumberNoHtml(value):ClassAssignmentDetails.dispNumber(value));
-		//return sDoubleFormat.format(value);
-	}
-
 	public PdfWebTable getPerturbationReportTable(HttpServletRequest request, PerturbationReport report, boolean noHtml) {
 		WebTable.setOrder(request.getSession(),"solutionReports.pert.ord",request.getParameter("pert_ord"),1);
 		PdfWebTable webTable = new PdfWebTable( 24,

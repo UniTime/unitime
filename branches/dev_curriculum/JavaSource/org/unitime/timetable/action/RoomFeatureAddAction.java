@@ -50,7 +50,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -147,7 +146,6 @@ public class RoomFeatureAddAction extends Action {
 		//if roomFeature is global
 		if (roomFeatureEditForm.isGlobal()) {
 			GlobalRoomFeatureDAO gdao = new GlobalRoomFeatureDAO();
-			LocationDAO ldao = new LocationDAO();
 			org.hibernate.Session hibSession = gdao.getSession();
 			Transaction tx = null;
 		
@@ -179,7 +177,6 @@ public class RoomFeatureAddAction extends Action {
 		    }
 		} else {
 			DepartmentRoomFeatureDAO ddao = new DepartmentRoomFeatureDAO();
-			LocationDAO ldao = new LocationDAO();
 			org.hibernate.Session hibSession = ddao.getSession();
 			Transaction tx = null;
 		
@@ -187,9 +184,6 @@ public class RoomFeatureAddAction extends Action {
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManagerDAO tdao = new TimetableManagerDAO();
-	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        rf.setDepartment(Department.findByDeptCode(roomFeatureEditForm.getDeptCode(),sessionId));	
 
 			try {
@@ -243,7 +237,6 @@ public class RoomFeatureAddAction extends Action {
 		roomFeatureEditForm.setDeptCode(null);
 		
         ArrayList list = new ArrayList();
-        int i = 0;
         for (Iterator iter = departments.iterator(); iter.hasNext();) {
         	Department dept = (Department) iter.next();
         	if (!dept.isEditableBy(user)) continue;

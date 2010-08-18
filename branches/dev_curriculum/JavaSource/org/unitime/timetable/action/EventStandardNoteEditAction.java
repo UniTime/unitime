@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -46,7 +45,6 @@ public class EventStandardNoteEditAction extends Action {
 			HttpServletResponse response) throws Exception {
 
 		EventStandardNoteEditForm myForm = (EventStandardNoteEditForm) form;
-		HttpSession session = request.getSession();
 		String op = myForm.getOp();
 		
 		if ("Back".equals(op)) {

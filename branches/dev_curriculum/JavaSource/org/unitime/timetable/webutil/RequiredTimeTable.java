@@ -20,12 +20,10 @@
 package org.unitime.timetable.webutil;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.Vector;
 
 import javax.servlet.ServletRequest;
 
@@ -43,8 +41,6 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class RequiredTimeTable {
-    private static java.text.SimpleDateFormat sTimeFormat = new java.text.SimpleDateFormat("h:mm");
-    
     public static String getTimeGridSize(User user) {
     	return Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_SIZE);
     }
@@ -353,20 +349,6 @@ public class RequiredTimeTable {
     
     public RequiredTimeTableModel getModel() { return iModel; }
 
-    /** Draw vertical dotted line */
-    private static void drawVline(
-        int x, int y1, int y2, int dy1, int dy2, Graphics2D g) {
-        for (int v = y1; v <= y2; v += (dy1 + dy2))
-            g.drawLine(x, v, x, Math.min(y2, v + dy1));
-    }
-
-    /** Draw horizontal dotted line */
-    private static void drawHline(
-        int x1, int x2, int y, int dx1, int dx2, Graphics2D g) {
-        for (int h = x1; h <= x2; h += (dx1 + dx2))
-            g.drawLine(h, y, Math.min(x2, h + dx1), y);
-    }
-
     /** put pixel */
     private void putPixel(WritableRaster raster, int x, int y, Color color) {
         //Debug.log("setPixel("+x+","+y+","+color+")");
@@ -403,10 +385,6 @@ public class RequiredTimeTable {
     	int minTime=limit[0], maxTime=limit[1], minDay=limit[2], maxDay=limit[3];
         int lineWidth = 1;
         int cellWidth = 5;
-        Vector slotsToHighlight = null;
-        Vector slotsToHighlightRed = null;
-        long slotNum = 0;
-        long slotNumRed = 0;
         int cellsAcross;
         int cellsDown;
         int cellX = 0;

@@ -36,7 +36,8 @@ import org.unitime.timetable.solver.course.ui.ClassInfoModel;
  * @author Tomas Muller
  */
 public class ClassInfoForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = -9085986972061220089L;
+	private String iOp;
     private ClassInfoModel iModel;
     private String iMessage;
 

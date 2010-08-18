@@ -175,10 +175,6 @@ public class RoomDetailAction extends Action {
         rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(user));
         roomDetailForm.setSharingTable(rtt.print(false, timeVertical));
 			
-        //get department
-        Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		String deptCode = (String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
-		
 		//get room preferences
 		Vector depts = new Vector();
 		roomDetailForm.setEditable(user.isAdmin() || (Roles.EXAM_MGR_ROLE.equals(user.getRole()) && s.getStatusType().canExamTimetable()));

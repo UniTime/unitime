@@ -66,7 +66,8 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller
  */
 public class ExamInfoModel implements Serializable {
-    private static Log sLog = LogFactory.getLog(ExamInfoModel.class);
+	private static final long serialVersionUID = 6594424808143469141L;
+	private static Log sLog = LogFactory.getLog(ExamInfoModel.class);
     private transient ExamSolverProxy iSolver = null;
     private ExamInfo iExam = null;
     private ExamInfoForm iForm = null;

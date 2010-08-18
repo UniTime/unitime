@@ -35,8 +35,6 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.AcademicAreaReservationEditForm;
 import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
@@ -78,7 +76,6 @@ public class AcademicAreaReservationEditAction extends ReservationAction {
         super.execute(mapping, form, request, response);
         
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());        
         AcademicAreaReservationEditForm frm = (AcademicAreaReservationEditForm) form;
 	    ActionMessages errors = null;
         String op = frm.getOp();

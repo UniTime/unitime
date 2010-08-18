@@ -11,7 +11,6 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 
 public class StudentImport extends BaseImport {
@@ -127,7 +126,6 @@ public class StudentImport extends BaseImport {
 
 	private void loadAcadAreaClassifications(Element element, Student student, Session session) throws Exception {
 
-		AcademicAreaDAO acadAreaDAO = new AcademicAreaDAO();
 		AcademicClassificationDAO acadClassDAO = new AcademicClassificationDAO();
 
 		if(element.element("studentAcadAreaClass") == null) return;

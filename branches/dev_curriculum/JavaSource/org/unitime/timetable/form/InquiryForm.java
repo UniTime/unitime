@@ -39,6 +39,8 @@ import org.unitime.timetable.util.IdValue;
  * @author Tomas Muller
  */
 public class InquiryForm extends ActionForm {
+	private static final long serialVersionUID = -2461671741219768003L;
+
 	private String iOp;
 
 	private String iSubject;

@@ -162,7 +162,6 @@ public class SessionEditAction extends LookupDispatchAction {
         
         Session current = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
         
-		SessionEditForm sessionEditForm = (SessionEditForm) form;		
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
 		
         if (current!=null && id.equals(current.getUniqueId())) {
@@ -172,7 +171,6 @@ public class SessionEditAction extends LookupDispatchAction {
             return mapping.findForward("showEdit");
         }
 
-        Session sessn = Session.getSessionById(id);
 		Session.deleteSessionById(id);
 		return mapping.findForward("showSessionList");
 	}
@@ -189,7 +187,6 @@ public class SessionEditAction extends LookupDispatchAction {
 		  throw new Exception ("Access Denied.");
 		}
 
-		SessionEditForm sessionEditForm = (SessionEditForm) form;
 		return mapping.findForward("showAdd");
 	}
 	
@@ -299,7 +296,6 @@ public class SessionEditAction extends LookupDispatchAction {
 		
 		if (errors.size()==0) {			
 			setSessionData(request, sessionEditForm, sessn);
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());		
 		}
 		else

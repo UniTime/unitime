@@ -65,7 +65,8 @@ import net.sf.cpsolver.exam.model.ExamStudent;
  * @author Tomas Muller
  */
 public class ExamAssignmentInfo extends ExamAssignment implements Serializable  {
-    private TreeSet<DirectConflict> iDirects = new TreeSet();
+	private static final long serialVersionUID = 6610082675208799753L;
+	private TreeSet<DirectConflict> iDirects = new TreeSet();
     private TreeSet<BackToBackConflict> iBackToBacks = new TreeSet();
     private TreeSet<MoreThanTwoADayConflict> iMoreThanTwoADays = new TreeSet();
     private TreeSet<DirectConflict> iInstructorDirects = new TreeSet();
@@ -1043,7 +1044,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     
     public static class DirectConflict implements Serializable, Comparable<DirectConflict> {
-        protected ExamAssignment iOtherExam = null;
+		private static final long serialVersionUID = 1300925620564937810L;
+		protected ExamAssignment iOtherExam = null;
         protected int iNrStudents = 1;
         protected Vector<Long> iStudents = new Vector();
         protected String iOtherEventName = null;
@@ -1187,7 +1189,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public static class BackToBackConflict implements Serializable, Comparable<BackToBackConflict> {
-        protected ExamAssignment iOtherExam;
+		private static final long serialVersionUID = 4953777429653205613L;
+		protected ExamAssignment iOtherExam;
         protected int iNrStudents = 1;
         protected boolean iIsDistance = false; 
         protected Vector<Long> iStudents = new Vector();
@@ -1265,7 +1268,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
 
     public static class MoreThanTwoADayConflict implements Serializable, Comparable<MoreThanTwoADayConflict> {
-        protected TreeSet<ExamAssignment> iOtherExams;
+		private static final long serialVersionUID = -8320516715119699996L;
+		protected TreeSet<ExamAssignment> iOtherExams;
         protected int iNrStudents = 1;
         protected Vector<Long> iStudents = new Vector();
         
@@ -1365,7 +1369,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public static class DistributionConflict implements Serializable, Comparable<DistributionConflict> {
-        protected TreeSet<ExamInfo> iOtherExams;
+		private static final long serialVersionUID = -1985853750381140103L;
+		protected TreeSet<ExamInfo> iOtherExams;
         protected String iPreference;
         protected Long iId;
         protected String iType;
@@ -1503,7 +1508,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Parameters(Long sessionId, int examType) {
             iPeriods = ExamPeriod.findAll(sessionId, examType); 
             
-            boolean btbDayBreak = false;
             SolverParameterDef btbDistDef = SolverParameterDef.findByName("Exams.BackToBackDistance");
             if (btbDistDef!=null && btbDistDef.getDefault()!=null)
                 iBtbDistance = Integer.parseInt(btbDistDef.getDefault());

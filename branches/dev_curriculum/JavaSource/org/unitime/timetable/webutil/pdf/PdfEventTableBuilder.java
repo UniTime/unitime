@@ -255,12 +255,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         addText(cell, e.getSponsoringOrganization()==null?"":e.getSponsoringOrganization().getName());
     	return cell;
     }
-
-    private PdfPCell pdfBuildEventType(Event e) {
-        PdfPCell cell = createCell();
-    	addText(cell, e.getEventTypeLabel());
-    	return cell;
-    }
     
     private PdfPCell pdfBuildEventTypeAbbv(Event e) {
         PdfPCell cell = createCell();
@@ -275,11 +269,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     	                (e.getMainContact().getLastName()==null?"":(e.getMainContact().getLastName()+", "))+
     	    			(e.getMainContact().getFirstName()==null?"":e.getMainContact().getFirstName()));
     	return cell;
-    }
-    
-    private PdfPCell pdfBuildEmptyEventInfo() {
-        PdfPCell cell = createCell();
-        return cell;
     }
     
     private PdfPCell pdfBuildEmptyMeetingInfo() {
@@ -406,7 +395,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         iPdfTable.addCell(cell);
         iPdfTable.addCell(pdfBuildTime(m));
         iPdfTable.addCell(pdfBuildLocation(m));
-        String bgColor = null;
         if (mainContact)
             iPdfTable.addCell(mm.getMeetings().size()==1?pdfBuildApproved(m):pdfBuildApproved(mm));
         iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE;

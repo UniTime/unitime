@@ -24,6 +24,7 @@ import org.unitime.timetable.util.Constants;
 
 public class EventDetailForm extends ActionForm {
 
+	private static final long serialVersionUID = 3920377791042035L;
 	private String iId;
 	private String iOp;
 	private String iEventName;
@@ -75,7 +76,7 @@ public class EventDetailForm extends ActionForm {
 
 		if (iId != null){
 			try {
-				long id = Long.parseLong(iId);
+				Long.parseLong(iId);
 			} catch (NumberFormatException nfe) {
 				iId = "0";
 				iOp = null;

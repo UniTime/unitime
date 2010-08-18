@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -184,12 +183,8 @@ public class RoleListAction extends Action {
     private ManagerRole setUpRoles (HttpServletRequest request, User user) throws Exception {
         
         ManagerRole defaultRole = null;
- 	    Vector roleSessions = (Vector) user.getAttribute(Roles.USER_ROLES_ATTR_NAME);
  	    
- 	    roleSessions = new Vector();
- 	   
  	    TimetableManager tm = TimetableManager.getManager(user);
- 	    Set sList = new TreeSet(Session.getAllSessions());
  	    
         WebTable table = new WebTable(4,"Select "+(tm.getManagerRoles().size()>1?"User Role &amp; ":"")+"Academic Session",
                 new String[] { "User Role", "Academic Session", "Academic Initiative", "Academic Session Status" },

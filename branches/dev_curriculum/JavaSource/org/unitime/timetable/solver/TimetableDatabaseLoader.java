@@ -119,7 +119,6 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCours
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -167,10 +166,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private Progress iProgress = null;
     
-    private int iStartDay = 0;
-    private int iEndDay = 0;
-    
-    //private Set iAvailableRooms = new HashSet();
     private boolean iLoadStudentEnrlsFromSolution = false;
     private boolean iFixMinPerWeek = false;
     private boolean iAssignSingleton = true;
@@ -837,7 +832,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     	iProgress.trace("time is not required :-(");
                     	continue;
                     }
-                    Iterator startSlotsIterator = pattern.getStartSlots(day,time).iterator();
                     TimeLocation  loc = new TimeLocation(
                             pattern.getDayCode(day),
                             pattern.getStartSlot(time),
@@ -875,8 +869,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		iProgress.trace("adding prohibited pattern "+model.getName());
                 for (int time=0;time<model.getNrTimes(); time++) {
                     for (int day=0;day<model.getNrDays(); day++) {
-                        PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited);
-                        Iterator startSlotsIterator = model.getStartSlots(day,time).iterator();
                         TimeLocation  loc = new TimeLocation(
                                 model.getDayCode(day),
                                 model.getStartSlot(time),
@@ -1213,23 +1205,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return ic;
     }
     
-    private void loadInstructorAvailability(DepartmentalInstructor instructor, InstructorConstraint ic, org.hibernate.Session hibSession) {
-    	if (instructor.getExternalUniqueId()==null || instructor.getExternalUniqueId().length()==0) return;
-    	Query q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a " +
-    			"where i.externalUniqueId=:puid and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
-    	q.setString("puid", instructor.getExternalUniqueId());
-		q.setLong("sessionId",iSessionId.longValue());
-		for (Iterator i=q.iterate();i.hasNext();) {
-			Assignment a = (Assignment)i.next();
-			Placement p = a.getPlacement();
-			ic.setNotAvailable(p);
-			if (!iLectures.containsKey(a.getClassId())) {
-				iLectures.put(a.getClassId(), p.variable());
-				getModel().addVariable(p.variable());
-			}
-		}
-    }
-    
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession, String puids) {
     	Query q = hibSession.createQuery("select distinct i.externalUniqueId, a from DepartmentalInstructor i inner join i.assignments as a " +
     			"where i.externalUniqueId in ("+puids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
@@ -1266,22 +1241,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (puids.length()>0) loadInstructorAvailabilities(hibSession, puids.toString());
     	iProgress.incProgress();
-    }
-    
-    private void loadRoomAvailability(Location location, RoomConstraint rc, org.hibernate.Session hibSession) {
-		Query q = hibSession.createQuery("select distinct a from Location r inner join r.assignments as a "+
-			"where r.uniqueId=:roomId and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
-		q.setInteger("roomId",location.getUniqueId().intValue());
-		q.setLong("sessionId",iSessionId.longValue());
-		for (Iterator i=q.iterate();i.hasNext();) {
-			Assignment a = (Assignment)i.next();
-			Placement p = a.getPlacement();
-			rc.setNotAvailable(p);
-			if (!iLectures.containsKey(a.getClassId())) {
-				iLectures.put(a.getClassId(), p.variable());
-				getModel().addVariable(p.variable());
-			}
-		}
     }
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession, String roomids) {
@@ -1705,13 +1664,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.trace("Added constraint "+clc.getName()+" between "+clc.variables());
        		getModel().addConstraint(clc);
         }
-    }
-    
-    private Lecture getEnrollment(Student student, List<Lecture> lectures) {
-		for (Lecture lecture: lectures) {
-			if (student.getLectures().contains(lecture)) return lecture;
-		}
-    	return null;
     }
     
     public void load() {
@@ -2180,8 +2132,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
 		getModel().getProperties().setProperty("Data.Term",iSession.getAcademicYearTerm());
 		getModel().getProperties().setProperty("Data.Initiative",iSession.getAcademicInitiative());
-		iStartDay = DateUtils.getDayOfYear(iSession.getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(iSession.getSessionEndDateTime());
 		getModel().setYear(iSession.getSessionStartYear());
 		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
@@ -2383,7 +2333,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
     	iProgress.setPhase("Posting class limit constraints ...", iOfferings.size());
     	for (Map.Entry<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> entry: iOfferings.entrySet()) {
-    		InstructionalOffering offering = entry.getKey();
     		Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = entry.getValue();
     		for (Map.Entry<InstrOfferingConfig, Set<SchedulingSubpart>> subpartEntry: topSubparts.entrySet()) {
     			InstrOfferingConfig config = subpartEntry.getKey();
@@ -2713,7 +2662,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				.list();
             		}
             		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
-            		Hashtable subpart2students = new Hashtable();
                 	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
                 		Object o[] = (Object[])i1.next();
                 		Long studentId = (Long)o[0];

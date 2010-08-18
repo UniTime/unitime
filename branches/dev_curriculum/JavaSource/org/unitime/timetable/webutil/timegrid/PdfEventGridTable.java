@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.TreeSet;
@@ -29,10 +28,8 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfEventGridTable extends EventGridTable {
-    private PdfWriter iWriter = null;
     private Document iDocument = null;
     
     private static BaseColor sBorderColor = new BaseColor(100,100,100);
@@ -51,7 +48,7 @@ public class PdfEventGridTable extends EventGridTable {
             iDocument = new Document(new Rectangle(1100f, 750f), 30,30,30,30);
             
             out = new FileOutputStream(file);
-            iWriter = PdfEventHandler.initFooter(iDocument, out);
+            PdfEventHandler.initFooter(iDocument, out);
             iDocument.open();
             
             printTable();
@@ -85,7 +82,6 @@ public class PdfEventGridTable extends EventGridTable {
     public void printTable() throws IOException, DocumentException {
         DateFormat df1 = new SimpleDateFormat("EEEE");
         DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
-        DateFormat df3 = new SimpleDateFormat("MM/dd");
 
         if (iDates.size()>1) {
             for (TableModel m : iModel) {
@@ -201,7 +197,6 @@ public class PdfEventGridTable extends EventGridTable {
             for (TableModel m : iModel)
                 table.addColumn(m.getColSpan(date), m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+" seats)\n" + m.getLocation().getRoomTypeLabel(), split);
             table.newLine();
-            HashSet<Meeting> rendered = new HashSet();
             int lastCol = (iEndSlot-iStartSlot)/iStep;
             TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
             for (int col = 0; col<lastCol; col++) {

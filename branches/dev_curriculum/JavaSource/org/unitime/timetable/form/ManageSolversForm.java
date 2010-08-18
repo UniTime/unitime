@@ -29,6 +29,7 @@ import org.apache.struts.action.ActionMapping;
  * @author Tomas Muller
  */
 public class ManageSolversForm extends ActionForm {
+	private static final long serialVersionUID = -217856860452046695L;
 	private String iOp = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {

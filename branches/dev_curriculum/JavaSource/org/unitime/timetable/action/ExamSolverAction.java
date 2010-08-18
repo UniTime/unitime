@@ -134,7 +134,6 @@ public class ExamSolverAction extends Action {
                 return mapping.findForward("showSolver");
             }
             Long settingsId = myForm.getSetting();
-        	Long[] ownerId = null;
         	Hashtable extra = new Hashtable(myForm.getParameterValues());
         	extra.put("Exam.Type", myForm.getExamType());
         	request.getSession().setAttribute("Exam.Type", myForm.getExamType());

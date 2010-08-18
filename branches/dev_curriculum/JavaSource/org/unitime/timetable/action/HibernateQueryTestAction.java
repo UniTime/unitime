@@ -229,7 +229,6 @@ public class HibernateQueryTestAction extends Action {
                         header(s,idx++,null);
                     } else {
                         header(s,idx++,meta.getIdentifierPropertyName());
-                        Object[] val = meta.getPropertyValues(x[i], EntityMode.POJO);
                         for (int j=0;j<meta.getPropertyNames().length;j++) {
                             if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
                                 header(s,idx++,meta.getPropertyNames()[j]);
@@ -242,7 +241,6 @@ public class HibernateQueryTestAction extends Action {
             if (meta==null) {
                 header(s,idx++,null);
             } else {
-                Object[] val = meta.getPropertyValues(o, EntityMode.POJO);
                 header(s,idx++,meta.getIdentifierPropertyName());
                 for (int i=0;i<meta.getPropertyNames().length;i++) {
                     if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))

@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -209,7 +208,6 @@ public class EditRoomGroupAction extends Action {
 		Long id = Long.valueOf(request.getParameter("id"));
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
-		Collection groups = location.getRoomGroups();
 		RoomGroupDAO rgdao = new RoomGroupDAO();
 		Set rgs = new HashSet();
 		

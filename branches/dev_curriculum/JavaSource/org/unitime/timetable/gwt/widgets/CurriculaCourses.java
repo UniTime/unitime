@@ -134,7 +134,6 @@ public class CurriculaCourses extends Composite {
 					td = DOM.getParent(td);
 				}
 				Element tr = DOM.getParent(td);
-				int col = DOM.getChildIndex(tr, td);
 			    Element body = DOM.getParent(tr);
 			    int row = DOM.getChildIndex(body, tr);
 			    if (evt.getCourse().isEmpty()) {
@@ -797,7 +796,7 @@ public class CurriculaCourses extends Composite {
 					}
 				}
 				
-				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString(), iClassifications.getClassifications());
+				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString());
 				cx.setCourse(course.getCourseName(), false);
 				cx.setWidth("100px");
 				cx.addCourseFinderDialogHandler(fx);
@@ -805,8 +804,7 @@ public class CurriculaCourses extends Composite {
 				if (!iEditable) cx.setEnabled(false);
 				iTable.setWidget(row, 1, cx);
 				
-				col = 0;
-				for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
+				for (col = 0; col < iClassifications.getClassifications().size(); col++) {
 					CurriculumCourseInterface cci = course.getCurriculumCourse(col);
 					MyTextBox ex = new MyTextBox(col, cci == null ? null : cci.getShare());
 					if (!iEditable) ex.setEnabled(false);
@@ -814,7 +812,6 @@ public class CurriculaCourses extends Composite {
 					MyLabel note = new MyLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike(), cci == null ? null : cci.getProjection());
 					iTable.setWidget(row, 3 + 2 * col, note);
 					iTable.getFlexCellFormatter().setHorizontalAlignment(row, 3 + 2 * col, HasHorizontalAlignment.ALIGN_RIGHT);
-					col++;
 				}
 			}
 		}
@@ -871,7 +868,7 @@ public class CurriculaCourses extends Composite {
 		iTable.setWidget(row, 0, hp);
 		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 0, false);
 
-		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null, iClassifications.getClassifications());
+		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null);
 		cx.setWidth("100px");
 		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
 		cx.addCourseFinderDialogHandler(new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
@@ -884,8 +881,7 @@ public class CurriculaCourses extends Composite {
 		iTable.setWidget(row, 1, cx);
 		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 1, false);
 		
-		int col = 0;
-		for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
+		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 			MyTextBox ex = new MyTextBox(col, null);
 			if (!iEditable) ex.setEnabled(false);
 			iTable.setWidget(row, 2 + 2 * col, ex);
@@ -900,7 +896,6 @@ public class CurriculaCourses extends Composite {
 				iTable.getCellFormatter().setVisible(row, 2 + 2 * col, false);
 				iTable.getCellFormatter().setVisible(row, 3 + 2 * col, false);
 			}
-			col++;
 		}
 		iTable.getRowFormatter().addStyleName(row, "unitime-NoPrint");
 	}
@@ -954,7 +949,6 @@ public class CurriculaCourses extends Composite {
 		}
 		if (column == 1)
 			return ((CurriculaCourseSelectionBox)iTable.getWidget(r0 + 1, 1)).getCourse().compareTo(((CurriculaCourseSelectionBox)iTable.getWidget(r1 + 1, 1)).getCourse());
-		int col = (column - 2) / 2;
 		if (column % 2 == 0) {
 			Float s0 = ((MyTextBox)iTable.getWidget(r0 + 1, column)).getShare();
 			Float s1 = ((MyTextBox)iTable.getWidget(r1 + 1, column)).getShare();
@@ -1068,6 +1062,7 @@ public class CurriculaCourses extends Composite {
 			if (total[i] != null) totalLastLike += total[i].getLastLike();
 		}
 		TreeSet<Map.Entry<String, CurriculumStudentsInterface[]>> include = new TreeSet<Map.Entry<String,CurriculumStudentsInterface[]>>(new Comparator<Map.Entry<String,CurriculumStudentsInterface[]>>() {
+			/*
 			private int highestClassification(CurriculumStudentsInterface[] a) {
 				int best = a.length;
 				int bestVal = -1;
@@ -1082,6 +1077,7 @@ public class CurriculaCourses extends Composite {
 				}
 				return best;
 			}
+			*/
 			private int firstClassification(CurriculumStudentsInterface[] a) {
 				for (int i = 0; i < a.length; i++) {
 					if (a[i] == null) continue;
@@ -1191,8 +1187,6 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
-	private boolean getPercent() { return CurriculumCookie.getInstance().getCurriculaCoursesPercent(); }
-	
 	private void setMode(Mode mode) {
 		CurriculumCookie.getInstance().setCurriculaCoursesMode(mode);
 		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
@@ -1205,8 +1199,6 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
-	private Mode getMode() { return CurriculumCookie.getInstance().getCurriculaCoursesMode(); }
-
 	public void setVisible(int col, boolean visible) {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
 			String courseName = (row == 0 ? null : ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse());
@@ -1477,7 +1469,6 @@ public class CurriculaCourses extends Composite {
 			if (!isSelected(row)) continue;
 			nothing = false;
 			HorizontalPanel p = (HorizontalPanel)iTable.getWidget(row, 0);
-			Group found = null;
 			for (int i = 0; i < p.getWidgetCount(); i++) {
 				Group x = (Group)p.getWidget(i);
 				if (x.equals(g)) continue rows;
@@ -1503,7 +1494,6 @@ public class CurriculaCourses extends Composite {
 			if (!isSelected(row)) continue;
 			setSelected(row, false);
 			HorizontalPanel p = (HorizontalPanel)iTable.getWidget(row, 0);
-			Group found = null;
 			for (int i = 0; i < p.getWidgetCount(); i++) {
 				Group x = (Group)p.getWidget(i);
 				if (x.equals(g)) {

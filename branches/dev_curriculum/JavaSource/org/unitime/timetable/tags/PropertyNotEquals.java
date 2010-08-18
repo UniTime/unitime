@@ -27,6 +27,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  */
 public class PropertyNotEquals extends PropertyEquals {
 	
+	private static final long serialVersionUID = 9199601881914077244L;
+
 	public int doStartTag() {
         try {
             String value = getProperty();

@@ -33,6 +33,7 @@ import org.unitime.timetable.solver.ui.LogInfo;
  * @author Tomas Muller
  */
 public class ExamSolverLogForm extends ActionForm {
+	private static final long serialVersionUID = -2461992974709948396L;
 	public static String[] sLevels = new String[] {
 		"Trace",
 		"Debug",

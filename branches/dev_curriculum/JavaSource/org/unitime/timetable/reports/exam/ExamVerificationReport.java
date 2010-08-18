@@ -48,7 +48,6 @@ import com.itextpdf.text.DocumentException;
 
 public class ExamVerificationReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ExamVerificationReport.class);
-    private CourseOffering iCourseOffering = null;
     private boolean iSkipHoles = true;
     private boolean iHasAssignment = false;
     
@@ -189,13 +188,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         if (classes.size()==1) return formatSection(classes.firstElement());
         return formatSection(classes.firstElement())+" - "+formatSection(classes.lastElement());
     }
-    
-    private boolean sameExams(TreeSet<ExamAssignmentInfo> x1, TreeSet<ExamAssignmentInfo> x2) {
-        if (x1.equals(x2)) return true;
-        if (x1.size()!=x2.size()) return false;
-        return false;
-    }
-    
+        
     public String getMessage(Class_ clazz, boolean hasCourseExam, boolean hasSectionExam, Hashtable<Long,ClassEvent> class2event) {
         TreeSet<ExamAssignmentInfo> exams = getExams(clazz);
         if (!exams.isEmpty()) return "";

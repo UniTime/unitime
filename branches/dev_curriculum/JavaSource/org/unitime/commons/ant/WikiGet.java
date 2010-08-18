@@ -187,8 +187,6 @@ public class WikiGet extends Task {
     }
     
     private class PageParser implements Parser {
-        private boolean iContent = false;
-        private String iTitle = null;
         private URL iURL = null;
         
         public PageParser(URL url) {

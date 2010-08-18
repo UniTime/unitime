@@ -31,6 +31,7 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
  * @author Tomas Muller
  */
 public class AssignedClassesForm extends ActionForm {
+	private static final long serialVersionUID = -4385746441859816963L;
 	private String iOp = null;
 	private boolean iSimpleMode = false;
 

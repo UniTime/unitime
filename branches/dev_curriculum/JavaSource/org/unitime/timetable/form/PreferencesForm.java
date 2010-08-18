@@ -47,9 +47,11 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class PreferencesForm extends ActionForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = -3578647598790726006L;
+
+	// --------------------------------------------------------- Instance Variables
     
-    protected String op;
+	protected String op;
     protected List timePatterns;
     protected List roomGroups;
     protected List roomGroupLevels;

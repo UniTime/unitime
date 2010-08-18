@@ -21,7 +21,6 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -190,7 +189,6 @@ public class EditRoomPrefForm extends ActionForm {
 		try {
 			sessionId = Session.getCurrentAcadSession(user).getUniqueId();
 		
-	        ArrayList availableRoomPrefs = new ArrayList();
 	        Set departments = new TreeSet();
 			if (user.getRole().equals(Roles.ADMIN_ROLE)) {
 				departments = Department.findAllBeingUsed(sessionId);
@@ -211,7 +209,6 @@ public class EditRoomPrefForm extends ActionForm {
 	        list.addAll(availableDepts);
 	        depts = list;
 	        
-	        Set rps = new HashSet();
 	        ArrayList depts = new ArrayList();
 	        String[] selectedPrefs = new String[availableDepts.size()];
 	        int i = 0;
@@ -241,7 +238,6 @@ public class EditRoomPrefForm extends ActionForm {
 			
 	        //set availabe room preferences
 	    	Vector prefs = new Vector();
-	    	boolean containsPref = false; 
 	    	for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
 	    		PreferenceLevel pref = (PreferenceLevel)e.nextElement();
 	    		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))

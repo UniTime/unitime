@@ -34,7 +34,6 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
@@ -43,7 +42,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -80,9 +78,6 @@ public class ExamPeriodEditAction extends Action {
 	            myForm.load(null, request);
 	            myForm.setOp("List");
 	        }
-	        
-	    	User user = Web.getUser(request.getSession());
-	    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 
 	        // Reset Form
 	        if ("Back".equals(op)) {
@@ -226,16 +221,12 @@ public class ExamPeriodEditAction extends Action {
 		    webTable.addLine(null, new String[] {"No examination periods defined for this session."}, null, null );			    
 		}
 		
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd/yyyy");
         SimpleDateFormat stf = new SimpleDateFormat("hh:mm aa");
 
         for (Iterator i=periods.iterator();i.hasNext();) {
         	ExamPeriod ep = (ExamPeriod)i.next();
         	String onClick = "onClick=\"document.location='examPeriodEdit.do?op=Edit&id=" + ep.getUniqueId() + "';\"";
-        	String deptStr = "";
-        	String deptCmp = "";
         	webTable.addLine(onClick, new String[] {
         			Exam.sExamTypes[ep.getExamType()],
         	        "<a name='"+ep.getUniqueId()+"'>"+sdf.format(ep.getStartDate())+"</a>",

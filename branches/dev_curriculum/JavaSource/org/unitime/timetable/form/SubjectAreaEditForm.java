@@ -41,11 +41,8 @@ import org.unitime.timetable.util.Constants;
  * @struts.form name="subjectAreaEditForm"
  */
 public class SubjectAreaEditForm extends ActionForm {
-	/*
-	 * Generated fields
-	 */
+	private static final long serialVersionUID = -8093172074512485680L;
 
-	/** op property */
 	private Long uniqueId;
 	private String op;
 	private String abbv;

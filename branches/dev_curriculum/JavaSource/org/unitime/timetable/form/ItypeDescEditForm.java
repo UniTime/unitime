@@ -26,7 +26,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
@@ -37,7 +36,8 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  * 
  */
 public class ItypeDescEditForm extends ActionForm {
-    private Integer iUniqueId = null;
+	private static final long serialVersionUID = -238147307633027599L;
+	private Integer iUniqueId = null;
     private String iId = null;
 	private String iOp = null;
     private String iReference = null;
@@ -52,8 +52,6 @@ public class ItypeDescEditForm extends ActionForm {
         ActionErrors errors = new ActionErrors();
         
         try {
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-            
             if (iAbbreviation==null || iAbbreviation.trim().length()==0)
                 errors.add("abbreviation", new ActionMessage("errors.required", ""));
             

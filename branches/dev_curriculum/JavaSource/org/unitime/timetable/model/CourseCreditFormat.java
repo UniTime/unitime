@@ -57,10 +57,8 @@ public class CourseCreditFormat extends BaseCourseCreditFormat {
 		}
 		
 		CourseCreditFormatDAO ccfDao = new CourseCreditFormatDAO();
-		Vector orderList = new Vector();
-        orderList.addElement(Order.asc("label"));
-        
-        List l = ccfDao.findAll(orderList);
+		
+        List l = ccfDao.findAll(Order.asc("label"));
 		courseCreditFormatList = new Vector(l);
         return(courseCreditFormatList);
 	}

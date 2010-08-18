@@ -221,8 +221,6 @@ public class ExamDistributionPrefsTableBuilder {
     }
 
     public File toPdfTable(HttpServletRequest request, Collection distPrefs, int examType) {
-        String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
-        
         WebTable.setOrder(request.getSession(),"examDistPrefsTable.ord",request.getParameter("order"),4);
         
         PdfWebTable tbl = new PdfWebTable(4, 
@@ -263,8 +261,6 @@ public class ExamDistributionPrefsTableBuilder {
 
             String distType = dp.getDistributionType().getLabel();
             String prefLevel = dp.getPrefLevel().getPrefName();
-            
-            boolean back = dp.getUniqueId().toString().equals(backId);
             
             tbl.addLine(
                     null, 

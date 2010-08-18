@@ -558,7 +558,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	}
         	
         	TimetableManager mgr = TimetableManager.findByExternalId(puid);
-        	Session session = owner.getSession();
         	
         	mail += "Manager info -------------- \r\n";
         	mail += "Name: "+mgr.getName()+"\r\n";
@@ -1292,11 +1291,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         
         HashSet subparts2fix = new HashSet();
     	
-    	HashSet classes2update = new HashSet();
     	for (Iterator i=classes.iterator();i.hasNext();) {
     		Class_ clazz = (Class_)i.next();
     		
-    		int divNum = Integer.parseInt(clazz.getClassSuffix().substring(0,3));
     		clazz.setClassSuffix(null);
             
             subparts2fix.add(clazz.getSchedulingSubpart());

@@ -26,7 +26,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class PropertyEquals extends NotHasProperty {
-    private String iValue;
+	private static final long serialVersionUID = -9084334811286877624L;
+	private String iValue;
     public String getValue() { return iValue; }
     public void setValue(String value) { iValue = value; }
 	

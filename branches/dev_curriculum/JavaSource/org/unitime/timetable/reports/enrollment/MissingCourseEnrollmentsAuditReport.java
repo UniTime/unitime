@@ -48,7 +48,6 @@ public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepor
 
 	@Override
 	public void printReport() throws DocumentException {
-        int n = iNrLines - 3;
         setHeader(buildHeaderString());
         List results = getAuditResults(getSubjectAreas());
         Vector<String> lines = new Vector<String>();

@@ -592,19 +592,7 @@ public class StatsProvider {
     	cell.addContent("</font>");
     	return(cell);
      }
-    
-    /**
-     * Generate table cell (nowrap=false, align=left and valign=top)
-     * @param content Content of cell
-     * @param rowSpan Row Span
-     * @param colSpan Column Span
-     * @return TableHeaderCell Object
-     */
-    private TableCell cell(String content, int rowSpan, int colSpan){
-    	TableCell cell = cell(content, rowSpan, colSpan, false, "left", "top");
-    	return(cell);
-    }
-    
+        
     /**
      * Generate table cell (align=left and valign=top)
      * @param content Content of cell

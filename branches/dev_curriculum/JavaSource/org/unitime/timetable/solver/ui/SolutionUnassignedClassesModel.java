@@ -33,6 +33,8 @@ import org.unitime.timetable.model.Solution;
  */
 public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 	
+	private static final long serialVersionUID = 8222974077941239586L;
+
 	public SolutionUnassignedClassesModel(Collection solutions, org.hibernate.Session hibSession, String instructorFormat) {
 		super();
 		for (Iterator i=solutions.iterator();i.hasNext();) {

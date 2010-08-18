@@ -5,7 +5,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 public class ExamSuggestionsInfo implements Serializable {
-    private Vector<ExamProposedChange> iSuggestions = null;
+	private static final long serialVersionUID = 4755443302436317912L;
+	private Vector<ExamProposedChange> iSuggestions = null;
     private String iMessage;
     private boolean iTimeoutReached;
     

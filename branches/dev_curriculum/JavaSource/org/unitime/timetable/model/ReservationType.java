@@ -74,10 +74,8 @@ public class ReservationType extends BaseReservationType {
             return resvTypeList;
         
         ReservationTypeDAO rdao = new ReservationTypeDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("label"));
 
-        List l = rdao.findAll(orderList);
+        List l = rdao.findAll(Order.asc("label"));
         resvTypeList = new Vector(l);
         return resvTypeList;
     }

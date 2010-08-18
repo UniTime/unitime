@@ -304,7 +304,6 @@ public class FixCourseTimetablingInconsistencies {
             	pattern.clear();
                 for (int t = 0; t < pattern.getNrTimes(); t++) {
                     for (int d = 0; d < pattern.getNrDays(); d++) {
-                        String pref = pattern.getPreference(d,t);
                         if (pattern.getDayCode(d) == assignment.getDays() && pattern.getStartSlot(t) == assignment.getStartSlot()) {
                         	sLog.warn("Clazz " + clazz.getClassLabel() + " requires a different time " + 
                         			pattern.getDayHeader(d) + " " + pattern.getTimeHeaderShort(t) + " than assigned " + time.getName());

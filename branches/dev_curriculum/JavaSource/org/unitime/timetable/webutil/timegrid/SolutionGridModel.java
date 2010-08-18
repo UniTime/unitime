@@ -46,16 +46,14 @@ import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
 
 
 /**
  * @author Tomas Muller
  */
 public class SolutionGridModel extends TimetableGridModel {
+	private static final long serialVersionUID = -3207641071203870684L;
 	private transient Long iRoomId = null;
-    private transient int iStartDay = 0;
-    private transient int iEndDay = 0;
     
 	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode) {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
@@ -77,8 +75,6 @@ public class SolutionGridModel extends TimetableGridModel {
 				deptIds.add(d.getUniqueId());
 			}
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
 		q.setInteger("resourceId", room.getUniqueId().intValue());
 		q.setCacheable(true);
@@ -140,8 +136,6 @@ public class SolutionGridModel extends TimetableGridModel {
 			if (ownerIds.length()>0) ownerIds += ",";
 			ownerIds += solution.getOwner().getUniqueId();
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		List commitedAssignments = null;
 		
 		if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
@@ -202,8 +196,6 @@ public class SolutionGridModel extends TimetableGridModel {
 			if (ownerIds.length()>0) ownerIds += ",";
 			ownerIds += solution.getOwner().getUniqueId();
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and d.uniqueId=:resourceId and " +
 				"o.isControl=true");

@@ -50,6 +50,7 @@ import org.unitime.timetable.webutil.WebTextValidation;
  * @author Zuzana Mullerova
  */
 public class EventListForm extends ActionForm {
+	private static final long serialVersionUID = -5206194674045902244L;
 	private String iOp;
 	private String iEventNameSubstring;
 	private String iEventMainContactSubstring;

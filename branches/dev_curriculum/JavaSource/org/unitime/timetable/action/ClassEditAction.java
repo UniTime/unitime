@@ -107,7 +107,6 @@ public class ClassEditAction extends PreferencesAction {
 								: request.getParameter("cid");
 
         String reloadCause = request.getParameter("reloadCause");
-        String deleteType = request.getParameter("deleteType");
         String op = frm.getOp();
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
         	op = request.getParameter("op2");

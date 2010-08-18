@@ -374,7 +374,8 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		Criteria crit = s.createCriteria(getReferenceClass());
 		if (orders != null) {
 			for (Order order: orders) {
-				crit.addOrder(order);
+				if (order != null)
+					crit.addOrder(order);
 			}
 		}
 		return (List<T>)crit.list();

@@ -33,8 +33,6 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.StudentGroupReservationEditForm;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.dao.ReservationTypeDAO;
@@ -74,7 +72,6 @@ public class StudentGroupReservationEditAction extends ReservationAction {
             super.execute(mapping, form, request, response);
             
             MessageResources rsc = getResources(request);
-            User user = Web.getUser(request.getSession());        
             StudentGroupReservationEditForm frm = (StudentGroupReservationEditForm) form;
     	    ActionMessages errors = null;
             String op = frm.getOp();

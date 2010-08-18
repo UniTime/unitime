@@ -31,6 +31,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 public class GwtBack extends BodyTagSupport {
+	private static final long serialVersionUID = 2328664801804591253L;
 	int iBack = 2;
 	
 	public int getBack() { return iBack; }
@@ -42,7 +43,6 @@ public class GwtBack extends BodyTagSupport {
 	
 	public int doEndTag() throws JspException {
 		try {
-			String id = (getBodyContent()==null?null:getBodyContent().getString());
 			pageContext.getOut().print(
 					BackTracker.getGwtBack((HttpServletRequest)pageContext.getRequest(),getBack())
 					);

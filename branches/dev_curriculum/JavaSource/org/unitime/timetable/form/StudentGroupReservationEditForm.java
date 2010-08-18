@@ -41,9 +41,11 @@ import org.unitime.timetable.util.DynamicList;
  */
 public class StudentGroupReservationEditForm extends CharacteristicReservationForm {
 
-    // --------------------------------------------------------- Instance Variables
+	private static final long serialVersionUID = 6580680514337481241L;
+
+	// --------------------------------------------------------- Instance Variables
     
-    private List studentGroupId;
+	private List studentGroupId;
 
     // --------------------------------------------------------- Methods
 

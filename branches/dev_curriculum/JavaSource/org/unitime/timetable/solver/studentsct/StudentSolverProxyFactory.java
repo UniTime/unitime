@@ -30,16 +30,11 @@ import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
  */
 public class StudentSolverProxyFactory implements InvocationHandler {
 	private RemoteSolverServerProxy iProxy; 
-	private RemoteStudentSolverProxy iStudentSolverProxy;
 	private String iPuid = null;
 	
 	private StudentSolverProxyFactory(RemoteSolverServerProxy proxy, String puid) {
 		iProxy = proxy;
 		iPuid = puid;
-	}
-	
-	public void setStudentSolverProxy(RemoteStudentSolverProxy proxy) {
-	    iStudentSolverProxy = proxy;
 	}
 	
 	public static StudentSolverProxy create(RemoteSolverServerProxy proxy, String puid) {
@@ -49,7 +44,6 @@ public class StudentSolverProxyFactory implements InvocationHandler {
 				new Class[] {RemoteStudentSolverProxy.class},
 				handler
 				);
-		handler.setStudentSolverProxy(px);
 		return px;
 	}
 	

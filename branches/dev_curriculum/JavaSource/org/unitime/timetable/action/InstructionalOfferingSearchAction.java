@@ -293,8 +293,6 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
         User user = Web.getUser(httpSession);
         Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
         
-        boolean singleCourseSelection = (form.getCourseNbr()!=null && form.getCourseNbr().length()>0);
-        
         boolean fetchStructure = true;
         boolean fetchCredits = false;//singleCourseSelection || form.getCredit().booleanValue();
         boolean fetchInstructors = false;//singleCourseSelection || form.getInstructor().booleanValue();

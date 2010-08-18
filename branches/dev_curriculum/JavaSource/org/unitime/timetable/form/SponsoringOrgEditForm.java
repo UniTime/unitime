@@ -35,6 +35,8 @@ import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
  */
 public class SponsoringOrgEditForm extends ActionForm {
 
+	private static final long serialVersionUID = 5587107210035732698L;
+
 	private String iScreen = "edit";
 	private String iOrgName;
 	private String iOrgEmail;

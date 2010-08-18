@@ -34,6 +34,8 @@ import org.unitime.timetable.model.SponsoringOrganization;
  */
 public class SponsoringOrgListForm extends ActionForm {
 
+	private static final long serialVersionUID = 2371430972689067425L;
+
 	private String iOp;
 	
 	public ActionErrors validate(

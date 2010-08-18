@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionMapping;
  * 
  */
 public class UnassignedForm extends ActionForm {
+	private static final long serialVersionUID = -3419420049976489695L;
 	private String iOp = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {

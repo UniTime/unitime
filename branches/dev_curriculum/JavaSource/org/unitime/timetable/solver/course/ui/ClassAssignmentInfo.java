@@ -37,6 +37,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
  * @author Tomas Muller
  */
 public class ClassAssignmentInfo extends ClassAssignment implements Serializable {
+	private static final long serialVersionUID = -4277344877497509285L;
 	private TreeSet<StudentConflict> iStudentConflicts = new TreeSet();
 	
 	public ClassAssignmentInfo(Assignment assignment) {
@@ -114,6 +115,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 	}
 	
 	public class StudentConflict implements Serializable, Comparable<StudentConflict> {
+		private static final long serialVersionUID = -4480647127446582658L;
 		private ClassAssignment iOtherClass = null;
 		private Set<Long> iConflictingStudents = null;
 		

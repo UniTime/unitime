@@ -20,7 +20,6 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.BitSet;
 
 import org.unitime.commons.NaturalOrderComparator;
@@ -31,7 +30,6 @@ import org.unitime.timetable.model.PreferenceLevel;
  * @author Tomas Muller
  */
 public class TimetableGridCell implements Serializable, Comparable {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 	private static final long serialVersionUID = 2L;
 	private String iName;
 	private String iShortComment;

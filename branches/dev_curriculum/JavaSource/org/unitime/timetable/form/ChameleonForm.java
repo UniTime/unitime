@@ -33,10 +33,11 @@ import org.apache.struts.action.ActionMapping;
  * @struts:form name="chameleonForm"
  */
 public class ChameleonForm extends ActionForm {
+	private static final long serialVersionUID = -2016021904772358915L;
 
     // --------------------------------------------------------- Instance Variables
 
-    private String puid;
+	private String puid;
     private String op;
     
     // --------------------------------------------------------- Methods

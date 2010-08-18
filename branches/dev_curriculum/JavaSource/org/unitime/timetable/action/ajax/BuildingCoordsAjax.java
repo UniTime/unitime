@@ -44,8 +44,6 @@ public class BuildingCoordsAjax extends Action {
         
         response.addHeader("Content-Type", "text/xml");
         
-        String word = request.getParameter("word");
-        
         ServletOutputStream out = response.getOutputStream();
         
         out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");

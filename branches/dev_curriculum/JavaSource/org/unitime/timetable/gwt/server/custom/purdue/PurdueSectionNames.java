@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.server.custom.purdue;
 
-import java.util.Hashtable;
-
 import org.unitime.timetable.gwt.server.AcademicSessionInfo;
 import org.unitime.timetable.gwt.server.custom.CustomSectionNames;
 import org.unitime.timetable.model.Class_;
@@ -28,7 +26,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
 public class PurdueSectionNames implements CustomSectionNames {
-	private Hashtable<Long, Hashtable<String, String>> iNames = new Hashtable<Long, Hashtable<String,String>>();
 
 	public String getClassSuffix(Long sessionId, Long courseId, Long classId) {
 		Class_ clazz = Class_DAO.getInstance().get(classId);

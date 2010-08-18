@@ -60,7 +60,6 @@ import org.unitime.timetable.util.Constants;
  */
 public class WebClassListTableBuilder extends
 		WebInstructionalOfferingTableBuilder {
-	private static String formName = "classListForm";
     public static String STUDENT_SCHEDULE_NOTE = "Student Schedule Note";
     protected String getSchedulePrintNoteLabel(){
     	return STUDENT_SCHEDULE_NOTE;

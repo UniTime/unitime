@@ -34,7 +34,6 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
@@ -96,9 +95,7 @@ public class InstructionalOfferingDetailAction extends Action {
         
         HttpSession httpSession = request.getSession();
         MessageResources rsc = getResources(request);
-        ActionMessages errors = new ActionMessages();
         InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) form;
-        User user = Web.getUser(httpSession);
         
         // Read Parameters
         String op = (request.getParameter("op")==null) 

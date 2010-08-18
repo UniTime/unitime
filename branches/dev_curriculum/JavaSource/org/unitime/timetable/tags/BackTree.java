@@ -31,7 +31,8 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 public class BackTree extends TagSupport {
-	
+	private static final long serialVersionUID = 8379761508090477729L;
+
 	public int doStartTag() throws JspException {
 		try {
 			pageContext.getOut().print(

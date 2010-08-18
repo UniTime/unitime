@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
@@ -67,9 +66,6 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	/** Request attribute name for instructor departments  **/
     public static String INSTRDEPT_LIST_ATTR_NAME = "instructorDeptList";
 	
-    /** Instructor List **/
-    private static Vector instructorDeptList = null;
-    
 	/** Name Format */
 	public static final String sNameFormatLastFist = "last-first";
 	public static final String sNameFormatFirstLast = "first-last";

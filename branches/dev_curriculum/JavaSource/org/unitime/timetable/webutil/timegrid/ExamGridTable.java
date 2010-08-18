@@ -551,8 +551,6 @@ public class ExamGridTable {
                     printRowHeaderCell(out, getDayName(day)+"<br>"+getSlotName(slot), maxIdx, vertical, head && slot==slots.first(), globalMaxIdx==0);
                     for (int idx=0;idx<=maxIdx;idx++) {
                         if (idx>0) out.println("</tr><tr valign='top'>");
-                        boolean eod = (slot==slots.last());
-                        boolean eol = (eod && day==days.last());
                         for (ExamGridModel model : models()) {
                             printCell(out,
                                     model,

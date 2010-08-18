@@ -63,7 +63,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 public class Exams extends BodyTagSupport {
-    private String iType = null;
+	private static final long serialVersionUID = -666904499562226756L;
+	private String iType = null;
     private boolean iAdd = true;
     private String iId = null;
     

@@ -124,10 +124,8 @@ public class PositionType extends BasePositionType implements Comparable{
             return posTypeList;
         
         PositionTypeDAO pdao = new PositionTypeDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("label"));
 
-        List l = pdao.findAll(orderList);
+        List l = pdao.findAll(Order.asc("label"));
         posTypeList = new Vector(l);
         return posTypeList;
     }

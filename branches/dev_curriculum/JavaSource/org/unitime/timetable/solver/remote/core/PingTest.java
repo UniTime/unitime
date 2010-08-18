@@ -28,7 +28,6 @@ import java.net.Socket;
  */
 public class PingTest {
 	private static int sPort = 1205;
-	private static int sPacketSize = 10;
 
 	public static class Listener extends Thread {
 		private ServerSocket iSocket = null;
@@ -110,7 +109,7 @@ public class PingTest {
 				for (int i=0;i<25;i++) {
 					long t0 = System.currentTimeMillis();
 					RemoteIo.writeObject(socket,"ping");
-					Object response = RemoteIo.readObject(socket);
+					RemoteIo.readObject(socket);
 					long t1 = System.currentTimeMillis();
 					System.out.println("Ping received in "+(t1-t0)+" ms.");
 					sleep(250);

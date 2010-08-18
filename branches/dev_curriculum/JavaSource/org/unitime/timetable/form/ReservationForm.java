@@ -46,7 +46,9 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class ReservationForm extends ActionForm {
 
-    public final int RESV_ROWS_ADDED = 1;   
+	private static final long serialVersionUID = 7595942422717942120L;
+
+	public final int RESV_ROWS_ADDED = 1;   
     
     // --------------------------------------------------------- Instance Variables
     

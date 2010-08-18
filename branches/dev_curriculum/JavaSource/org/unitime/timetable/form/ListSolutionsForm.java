@@ -53,6 +53,7 @@ import net.sf.cpsolver.ifs.util.Progress;
  * @author Tomas Muller
  */
 public class ListSolutionsForm extends ActionForm {
+	private static final long serialVersionUID = 632293328433911455L;
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
 	private Vector iMessages = new Vector();
 	private String iOp = null;

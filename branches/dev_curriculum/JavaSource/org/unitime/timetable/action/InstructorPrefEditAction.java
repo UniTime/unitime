@@ -91,7 +91,6 @@ public class InstructorPrefEditAction extends PreferencesAction {
             String instructorId = request.getParameter("instructorId");
             String op = frm.getOp();            
             String reloadCause = request.getParameter("reloadCause");
-            String deleteType = request.getParameter("deleteType");
             boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
             
             // Read subpart id from form

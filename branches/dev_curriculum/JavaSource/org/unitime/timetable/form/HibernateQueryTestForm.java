@@ -35,9 +35,11 @@ import org.apache.struts.action.ActionMessage;
  */
 public class HibernateQueryTestForm extends ActionForm {
 
+	private static final long serialVersionUID = 5970479864977610427L;
+
     // --------------------------------------------------------- Instance Variables
 
-    /** query property */
+	/** query property */
     private String query;
 
     /** listSize property */

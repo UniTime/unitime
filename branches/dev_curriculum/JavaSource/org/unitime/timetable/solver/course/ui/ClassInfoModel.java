@@ -85,13 +85,13 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller
  */
 public class ClassInfoModel implements Serializable {
-    private static Log sLog = LogFactory.getLog(ClassInfoModel.class);
+	private static final long serialVersionUID = 1373805772613891251L;
+	private static Log sLog = LogFactory.getLog(ClassInfoModel.class);
     private ClassInfo iClass = null;
     private ClassInfoForm iForm = null;
     private ClassProposedChange iChange = null;
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
-    private int iTimesTableOrd = 0;
     private String iManagerExternalId = null;
     private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
     private boolean iUnassignConflictingAssignments = false;
@@ -338,8 +338,6 @@ public class ClassInfoModel implements Serializable {
     }
     
     public void apply(HttpServletRequest request, ClassInfoForm form) {
-        if (request.getParameter("pord")!=null)
-            iTimesTableOrd = Integer.parseInt(request.getParameter("pord"));
         iForm = form;
     }
     
@@ -349,7 +347,6 @@ public class ClassInfoModel implements Serializable {
         
     public String getTimesTable() {
     	try {
-            ClassAssignmentInfo current = getClassAssignment();
     		String ret = "";
             ret += "<script language='javascript'>";
             ret += "function timeOver(source, id) { ";
@@ -534,7 +531,6 @@ public class ClassInfoModel implements Serializable {
                 for (int time=0;time<pattern.getNrTimes(); time++) {
                 	times: for (int day=0;day<pattern.getNrDays(); day++) {
                         String pref = pattern.getPreference(day,time);
-                        Iterator startSlotsIterator = pattern.getStartSlots(day,time).iterator();
                         if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
                             pref = PreferenceLevel.sProhibited;
                         }

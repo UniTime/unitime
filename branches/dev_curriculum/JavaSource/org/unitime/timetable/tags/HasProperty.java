@@ -29,6 +29,7 @@ import org.unitime.timetable.model.ManagerSettings;
  * @author Tomas Muller
  */
 public class HasProperty extends BodyTagSupport {
+	private static final long serialVersionUID = 5400060812896606098L;
 	private String iName;
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }

@@ -43,8 +43,6 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private long lastStudentId = -1;
-	private int iGenMoveLastIndexIn = 0;
-	private int iGenMoveLastIndexOut = 0;
 	protected ProjectedStudentCourseDemands iFallback;
 
 	public CurriculaCourseDemands(DataProperties properties) {

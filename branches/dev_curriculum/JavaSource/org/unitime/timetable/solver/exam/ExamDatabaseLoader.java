@@ -265,7 +265,6 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             
             int minSize = 0;
-            List<ExamOwner> owners = new ArrayList<ExamOwner>();
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
                 ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
@@ -489,7 +488,6 @@ public class ExamDatabaseLoader extends ExamLoader {
             
             if (!add) continue;
             
-            boolean canBeUsed = false;
             boolean hasStrongDisc = false, allStrongDisc = true;
             for (ExamPeriod period: getModel().getPeriods()) {
                 if (roomEx.isAvailable(period))

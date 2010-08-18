@@ -933,8 +933,6 @@ public class CurriculumProjectionRules extends Composite {
 				iFrontLabel.setHTML(String.valueOf(lastLike) + "&nbsp;&rarr;&nbsp;");
 			}
 		}
-		
-		public List<MyCell> getCell() { return iCells; }
 	}
 	
 	private class MyRow {
@@ -1092,8 +1090,6 @@ public class CurriculumProjectionRules extends Composite {
 		    if (row == 0) return;
 		    
 		    MyRow r = getMyRow(row);
-
-			String style = getRowFormatter().getStyleName(row);
 
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:

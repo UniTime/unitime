@@ -31,6 +31,8 @@ import org.apache.struts.action.ActionForm;
 
 public abstract class RefTableEntryAddForm extends ActionForm {
 
+	private static final long serialVersionUID = -6654932547373433298L;
+
 	// --------------------------------------------------------- Instance Variables
 
 	/** reference property */

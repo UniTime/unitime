@@ -205,7 +205,7 @@ public class ReservationListAction extends Action {
     		ActionMessages errors) throws Exception {
     	
         try {
-              boolean result = new PdfReservationsTableBuilder().pdfTableForSubjectArea(     
+              new PdfReservationsTableBuilder().pdfTableForSubjectArea(     
             		request,   
       				Web.getUser(request.getSession()),
 			        frm.getSubjectAreaId(), 
@@ -234,7 +234,6 @@ public class ReservationListAction extends Action {
      */
     private void doSearch(ReservationListForm frm, HttpServletRequest request, ActionMessages errors) throws Exception {
 
-        HttpSession httpSession = request.getSession();
         User user = Web.getUser(request.getSession());        
 
         String html = new ReservationsTableBuilder().htmlTableForSubjectArea(
