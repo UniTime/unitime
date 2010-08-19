@@ -374,7 +374,6 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        classLoader.loadClass("net.sf.cpsolver.coursett.TimetableXMLSaver");
 	        classLoader.loadClass("org.dom4j.DocumentHelper");
 	        classLoader.loadClass("org.unitime.commons.ToolBox");
-	        classLoader.loadClass("org.unitime.commons.ToolBox$LineOutputStream");
 	        classLoader.loadClass("org.dom4j.io.XMLWriter");
 	        classLoader.loadClass("org.hibernate.proxy.HibernateProxy"); 
 	        
