@@ -53,10 +53,6 @@
 	<html:hidden property="courseName"/>
 	<html:hidden property="ioNotOffered"/>
 	
-<% if (user==null
-		|| !user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-	<html:hidden property="courseNbr"/>
-<% } %>
 
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -109,15 +105,12 @@
 		</TR>
 		</logic:messagesPresent>
 
-<% if (user!=null
-		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 		<TR>
 			<TD>Course Number: </TD>
 			<TD>
-				<html:text property="courseNbr" size="4" maxlength="10" />
+				<html:text property="courseNbr" size="10" maxlength="10" />
 			</TD>
 		</TR>
-<% } %>
 		<TR>
 			<TD>Title: </TD>
 			<TD>
