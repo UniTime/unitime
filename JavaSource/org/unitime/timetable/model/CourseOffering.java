@@ -32,6 +32,7 @@ import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
@@ -43,6 +44,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
 
 
@@ -228,7 +230,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             co.setDemand(new Integer(0));
 		    co.setNbrExpectedStudents(new Integer(0));
 		    co.setIsControl(new Boolean(true));
-		    co.setPermId(null);
+		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString());
 		    
 		    HashSet s = new HashSet();
 		    s.add(co);
