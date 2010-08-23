@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.solver.curricula;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -32,17 +32,20 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.solver.curricula.students.CurModel;
+import org.unitime.timetable.solver.curricula.students.CurStudent;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.IdGenerator;
 import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class CurriculaCourseDemands implements StudentCourseDemands {
 	private static Log sLog = LogFactory.getLog(CurriculaCourseDemands.class);
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
-	private long lastStudentId = -1;
+	private IdGenerator lastStudentId = new IdGenerator();
 	protected ProjectedStudentCourseDemands iFallback;
 
 	public CurriculaCourseDemands(DataProperties properties) {
@@ -53,12 +56,26 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
-		iFallback.init(hibSession, progress, session);
-
-		List<Curriculum> curricula = hibSession.createQuery(
-				"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
-				.setLong("sessionId", session.getUniqueId()).list();
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
+		iFallback.init(hibSession, progress, session, offerings);
+		
+		List<Curriculum> curricula = null;
+		if (offerings != null && offerings.size() <= 1000) {
+			String courses = "";
+			for (InstructionalOffering offering: offerings)
+				for (CourseOffering course: offering.getCourseOfferings()) {
+					if (!courses.isEmpty()) courses += ",";
+					courses += course.getUniqueId();
+				}
+			curricula = hibSession.createQuery(
+					"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
+					"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+					.setLong("sessionId", session.getUniqueId()).list();
+		} else {
+			curricula = hibSession.createQuery(
+					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
+					.setLong("sessionId", session.getUniqueId()).list();
+		}
 
 		progress.setPhase("Loading curricula", curricula.size());
 		for (Curriculum curriculum: curricula) {
@@ -78,138 +95,64 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		
 		sLog.info("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
 		
-		// Makeup students
-		List<WeightedStudentId> students = new ArrayList<WeightedStudentId>();
-		for (int i = 0; i < clasf.getNrStudents(); i++) {
-			WeightedStudentId student  = new WeightedStudentId(lastStudentId--);
-			student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), null);
-			student.setCurriculum(clasf.getCurriculum().getAbbv());
-			students.add(new WeightedStudentId(lastStudentId--));
-		}
-		
-		// Generate buckets
-		List<Bucket> buckets = new ArrayList<Bucket>();
+		// Create model
+		CurModel m = new CurModel(clasf.getNrStudents(), lastStudentId);
 		for (CurriculumCourse course: clasf.getCourses()) {
 			int nrStudents = Math.round(clasf.getNrStudents() * course.getPercShare());
-			if (nrStudents <= 0) continue;
-			Bucket bucket = new Bucket(course);
-			if (nrStudents >= students.size()) {
-				bucket.getStudents().addAll(students);
-			} else {
-				bucket.getStudents().addAll(ToolBox.subSet(students, 0.0, nrStudents));
-			}
-			buckets.add(bucket);
+			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), nrStudents);
 		}
-		
-		//  Compute target share
-		computeTargetShare(clasf, buckets);
-		
-		List<Bucket> halfFullBuckets = new ArrayList<Bucket>();
-		for (Bucket bucket: buckets) {
-			if (bucket.getStudents().size() == 0) continue;
-			if (bucket.getStudents().size() == students.size()) continue;
-			halfFullBuckets.add(bucket);
-		}
-		
-		// Run simple local search
-		//TODO: Do something much more elaborate, e.g., try to move the worst student around
-		int value = value(buckets);
-		int idle = 0, it = 0;
-		sLog.info("  -- initial value: " + value);
-		while (!halfFullBuckets.isEmpty() && value > 0 && idle < 1000) {
-			Move move = generateMove(halfFullBuckets, students);
-			move.perform();
-			int newValue = value(buckets);
-			if (newValue < value) {
-				value = newValue;
-				idle = 0;
-			} else if (newValue == value) {
-			} else {
-				move.undo();
-			}
-			it++; idle++;
-		}
-		sLog.info("  -- final value: " + value);
+		computeTargetShare(clasf, m);
+		m.setStudentLimits();
+		try {
+			sLog.info("Model:\n" + m.save());
+		} catch (IOException e) {}
+
+		// Solve model
+		m.solve();
 		
 		// Save results
-		for (Bucket bucket: buckets) {
-			Set<WeightedStudentId> courseStudents = iDemands.get(bucket.getCourse().getCourse().getUniqueId());
+		for (CurriculumCourse course: clasf.getCourses()) {
+			Set<WeightedStudentId> courseStudents = iDemands.get(course.getCourse().getUniqueId());
 			if (courseStudents == null) {
 				courseStudents = new HashSet<WeightedStudentId>();
-				iDemands.put(bucket.getCourse().getCourse().getUniqueId(), courseStudents);
+				iDemands.put(course.getCourse().getUniqueId(), courseStudents);
 			}
-			courseStudents.addAll(bucket.getStudents());
-			for (WeightedStudentId student: bucket.getStudents()) {
+			for (CurStudent s: m.getCourse(course.getUniqueId()).getStudents()) {
+				WeightedStudentId student = new WeightedStudentId(s.getStudentId());
+				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), null);
+				student.setCurriculum(clasf.getCurriculum().getAbbv());
+				courseStudents.add(student);
 				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getStudentId());
 				if (courses == null) {
 					courses = new HashSet<WeightedCourseOffering>();
 					iStudentRequests.put(student.getStudentId(), courses);
 				}
-				courses.add(new WeightedCourseOffering(bucket.getCourse().getCourse(), student.getWeight()));
+				courses.add(new WeightedCourseOffering(course.getCourse(), student.getWeight()));
 			}
 		}
 	}
 	
-	protected void computeTargetShare(CurriculumClassification clasf, List<Bucket> buckets) {
-		for (Bucket c1: buckets) {
-			for (Bucket c2: buckets) {
-				if (c1.getCourse().getUniqueId() >= c2.getCourse().getUniqueId()) continue;
-				int share = Math.round(c1.getCourse().getPercShare() * c2.getCourse().getPercShare() * clasf.getNrStudents());
+	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
+		for (CurriculumCourse c1: clasf.getCourses()) {
+			int x1 = Math.round(clasf.getNrStudents() * c1.getPercShare());
+			for (CurriculumCourse c2: clasf.getCourses()) {
+				int x2 = Math.round(clasf.getNrStudents() * c2.getPercShare());
+				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
+				int share = Math.round(c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents());
 				CurriculumCourseGroup group = null;
-				groups: for (CurriculumCourseGroup g1: c1.getCourse().getGroups()) {
-					for (CurriculumCourseGroup g2: c2.getCourse().getGroups()) {
+				groups: for (CurriculumCourseGroup g1: c1.getGroups()) {
+					for (CurriculumCourseGroup g2: c2.getGroups()) {
 						if (g1.equals(g2)) { group = g1; break groups; }
 					}
 				}
 				if (group != null) {
-					share = (group.getType() == 0 ? 0 : Math.min(c1.getStudents().size(), c2.getStudents().size()));
+					share = (group.getType() == 0 ? 0 : Math.min(x1, x2));
 				}
-				c1.setTargetShare(c2, share);
-				c2.setTargetShare(c1, share);
+				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), share);
 			}
 		}
 	}
 	
-	protected int value(List<Bucket> buckets) {
-		int value = 0;
-		for (Bucket c1: buckets) {
-			for (Bucket c2: buckets) {
-				if (c1.getCourse().getUniqueId() >= c2.getCourse().getUniqueId()) continue;
-				int bucketValue = Math.abs(c1.share(c2) - c1.getTargetShare(c2));
-				value += bucketValue;
-			}
-		}
-		return value;
-	}
-	
-	protected Move generateMove(List<Bucket> adepts, List<WeightedStudentId> students) {
-		Bucket bucket = ToolBox.random(adepts);
-		WeightedStudentId studentIn = null, studentOut = null;
-		int idx = ToolBox.random(students.size());
-		if (bucket.getStudents().contains(students.get(idx))) {
-			studentOut = students.get(idx);
-		} else {
-			studentIn = students.get(idx);
-		}
-		idx = ToolBox.random(students.size());
-		while (true) {
-			WeightedStudentId student = students.get(idx);
-			idx = (idx + 1) % students.size();
-			if (bucket.getStudents().contains(student)) {
-				if (studentOut == null) {
-					studentOut = student;
-					break;
-				}
-			} else {
-				if (studentIn == null) {
-					studentIn = student;
-					break;
-				}
-			}
-		}
-		return new Swap(bucket, studentIn, studentOut);
-	}
-
 	public Set<WeightedStudentId> getDemands(CourseOffering course) {
 		if (iDemands.isEmpty()) return iFallback.getDemands(course);
 		return iDemands.get(course.getUniqueId());
@@ -218,59 +161,5 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
 		if (iStudentRequests.isEmpty()) return iFallback.getCourses(studentId);
 		return iStudentRequests.get(studentId);
-	}
-
-	protected class Bucket {
-		private CurriculumCourse iCourse;
-		private Set<WeightedStudentId> iStudents = new HashSet<WeightedStudentId>();
-		private Hashtable<Bucket, Integer> iTargetShare = new Hashtable<Bucket, Integer>();
-		
-		protected Bucket(CurriculumCourse course) {
-			iCourse = course;
-		}
-	
-		public Set<WeightedStudentId> getStudents() { return iStudents; }
-		public CurriculumCourse getCourse() { return iCourse; }
-		public int share(Bucket bucket) {
-			int share = 0;
-			for (WeightedStudentId s: getStudents())
-				if (bucket.getStudents().contains(s)) share++;
-			return share;
-		}
-		
-		public void setTargetShare(Bucket bucket, int targetShare) {
-			iTargetShare.put(bucket, targetShare);
-		}
-		
-		public int getTargetShare(Bucket bucket) {
-			Integer targetShare = iTargetShare.get(bucket);
-			return (targetShare == null ? 0 : targetShare);
-		}
-	}
-	
-	protected interface Move {
-		public void perform();
-		public void undo();
-	}
-	
-	protected class Swap implements Move {
-		private Bucket iBucket;
-		private WeightedStudentId iStudentIn, iStudentOut;
-		
-		protected Swap(Bucket bucket, WeightedStudentId studentIn, WeightedStudentId studentOut) {
-			iBucket = bucket;
-			iStudentIn = studentIn;
-			iStudentOut = studentOut;
-		}
-		
-		public void perform() {
-			iBucket.getStudents().add(iStudentIn);
-			iBucket.getStudents().remove(iStudentOut);
-		}
-		
-		public void undo() {
-			iBucket.getStudents().remove(iStudentIn);
-			iBucket.getStudents().add(iStudentOut);
-		}
 	}
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 
@@ -45,7 +46,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 	
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 	
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
 		iHibSession = hibSession;
 		iSessionId = session.getUniqueId();
 	}

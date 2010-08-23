@@ -25,6 +25,7 @@ import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -35,8 +36,9 @@ public interface StudentCourseDemands {
 	 * @param hibSession opened hibernate session
 	 * @param progress progress to print messages
 	 * @param session current academic session
+	 * @param offerings instructional offerings of the problem that is being loaded
 	 */
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session);
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings);
 	
 	/**
 	 * Called once for each course
@@ -116,6 +118,10 @@ public interface StudentCourseDemands {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof WeightedStudentId)) return false;
 			return getStudentId() == ((WeightedStudentId)o).getStudentId();
+		}
+		
+		public String toString() {
+			return String.valueOf(getStudentId());
 		}
 	}
 	

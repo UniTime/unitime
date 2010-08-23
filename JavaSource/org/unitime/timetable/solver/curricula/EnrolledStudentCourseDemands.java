@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -44,7 +45,7 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
 		iHibSession = hibSession;
 		if (iCacheAll)
 			for (Object[] o: (List<Object[]>)hibSession.createQuery("select e.courseOffering, e.student.uniqueId from StudentClassEnrollment e where " +
