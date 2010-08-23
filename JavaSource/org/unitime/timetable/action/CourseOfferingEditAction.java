@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -46,12 +47,14 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -205,6 +208,18 @@ public class CourseOfferingEditAction extends Action {
 
 	        CourseOffering co = cdao.get(crsId);
 
+	        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
+	        	LastLikeCourseDemand llcd = null;
+	        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString();
+	        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
+	        		llcd = (LastLikeCourseDemand)it.next();
+	        		if (llcd.getCoursePermId() == null){
+		        		llcd.setCoursePermId(permId);
+		        		hibSession.update(llcd);
+	        		}
+	        	}
+        		co.setPermId(permId);
+	        }
 	        co.setCourseNbr(crsNbr);
 	        co.setTitle(title);
 	        co.setScheduleBookNote(note);
