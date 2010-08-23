@@ -2402,7 +2402,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.incProgress();
     	}
 		
-		iStudentCourseDemands.init(hibSession, iProgress, iSession);
+		iStudentCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
     	iProgress.setPhase("Loading students ...",iOfferings.size());
     	for (InstructionalOffering offering: iOfferings.keySet()) {

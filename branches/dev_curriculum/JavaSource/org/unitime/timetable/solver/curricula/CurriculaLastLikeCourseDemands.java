@@ -19,11 +19,12 @@
 */
 package org.unitime.timetable.solver.curricula;
 
-import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.solver.curricula.students.CurModel;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -33,13 +34,15 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 		super(properties);
 	}
 		
-	protected void computeTargetShare(CurriculumClassification clasf, List<Bucket> buckets) {
-		for (Bucket c1: buckets) {
-			for (Bucket c2: buckets) {
-				if (c1.getCourse().getUniqueId() >= c2.getCourse().getUniqueId()) continue;
+	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
+		for (CurriculumCourse c1: clasf.getCourses()) {
+			int x1 = Math.round(clasf.getNrStudents() * c1.getPercShare());
+			for (CurriculumCourse c2: clasf.getCourses()) {
+				int x2 = Math.round(clasf.getNrStudents() * c2.getPercShare());
+				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
 				int share = 0;
-				Set<WeightedStudentId> s1 = iFallback.getDemands(c1.getCourse().getCourse());
-				Set<WeightedStudentId> s2 = iFallback.getDemands(c2.getCourse().getCourse());
+				Set<WeightedStudentId> s1 = iFallback.getDemands(c1.getCourse());
+				Set<WeightedStudentId> s2 = iFallback.getDemands(c2.getCourse());
 				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
 					int sharedStudents = 0, lastLike = 0;
 					for (WeightedStudentId s: s1) {
@@ -48,22 +51,21 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 							if (s2.contains(s)) sharedStudents++;
 						}
 					}
-					float requested = c1.getCourse().getPercShare() * clasf.getNrStudents();
+					float requested = c1.getPercShare() * clasf.getNrStudents();
 					share = Math.round((requested / lastLike) * sharedStudents); 
 				} else {
-					share = Math.round(c1.getCourse().getPercShare() * c2.getCourse().getPercShare() * clasf.getNrStudents());
+					share = Math.round(c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents());
 				}
 				CurriculumCourseGroup group = null;
-				groups: for (CurriculumCourseGroup g1: c1.getCourse().getGroups()) {
-					for (CurriculumCourseGroup g2: c2.getCourse().getGroups()) {
+				groups: for (CurriculumCourseGroup g1: c1.getGroups()) {
+					for (CurriculumCourseGroup g2: c2.getGroups()) {
 						if (g1.equals(g2)) { group = g1; break groups; }
 					}
 				}
 				if (group != null) {
-					share = (group.getType() == 0 ? 0 : Math.min(c1.getStudents().size(), c2.getStudents().size()));
+					share = (group.getType() == 0 ? 0 : Math.min(x1, x2));
 				}
-				c1.setTargetShare(c2, share);
-				c2.setTargetShare(c1, share);
+				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), share);
 			}
 		}
 	}

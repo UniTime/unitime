@@ -29,6 +29,7 @@ import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumProjectionRule;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 
@@ -40,8 +41,8 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 		super(properties);
 	}
 	
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session) {
-		super.init(hibSession, progress, session);
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
+		super.init(hibSession, progress, session, offerings);
 		iProgress = progress;
 		progress.setPhase("Loading curriculum projections", 1);
 		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
