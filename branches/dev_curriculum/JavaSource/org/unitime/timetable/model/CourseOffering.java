@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -173,9 +171,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 */
 	public static synchronized CourseOffering addNew(String subjAreaId, String courseNbr) throws Exception {
 	    
-	    Statement stmt = null;
-	    ResultSet rs = null;
-
 	    CourseOffering co = null; 
 	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	    Session hibSession = idao.getSession();
