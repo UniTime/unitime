@@ -212,15 +212,15 @@ public class CourseOfferingEditAction extends Action {
 
 	        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
 	        	LastLikeCourseDemand llcd = null;
+	        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString();
 	        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
 	        		llcd = (LastLikeCourseDemand)it.next();
-	        		co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString());
 	        		if (llcd.getCoursePermId() == null){
-		        		llcd = (LastLikeCourseDemand) it.next();
-		        		llcd.setCoursePermId(co.getPermId());
+		        		llcd.setCoursePermId(permId);
 		        		hibSession.update(llcd);
 	        		}
 	        	}
+        		co.setPermId(permId);
 	        }
 	        co.setCourseNbr(crsNbr);
 	        co.setTitle(title);
