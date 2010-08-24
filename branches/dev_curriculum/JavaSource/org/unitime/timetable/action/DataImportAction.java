@@ -319,7 +319,7 @@ public class DataImportAction extends Action {
             if (iForm.getEmail() && iForm.getAddress()!=null && iForm.getAddress().length()>0) {
                 try {
                 	Email mail = new Email();
-                	mail.setSubject("Data import finished.");
+                	mail.setSubject("Data export finished.");
                 	mail.setHTML(log()+"<br><br>"+
                             "This email was automatically generated at "+
                             iUrl+
