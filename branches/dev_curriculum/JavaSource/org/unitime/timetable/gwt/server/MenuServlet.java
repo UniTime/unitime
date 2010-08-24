@@ -452,6 +452,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 					runnerName = ownerName;
 				if (!ownerName.equals(runnerName))
 					ownerName = runnerName+" as "+ownerName;
+				if (ownerName.length() > 50)
+					ownerName = ownerName.substring(0,47) + "...";
 
 				ret.put("0Type",  (studentSolver!=null?"Student Sectioning Solver":examSolver!=null?"Examinations Solver":"Course Timetabling Solver"));
 				ret.put("4Owner", ownerName);
