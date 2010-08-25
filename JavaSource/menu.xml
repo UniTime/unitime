@@ -229,6 +229,11 @@
 			<item name="Time Patterns" page="timePatternEdit.do"/>
 			<item name="Exact Time" page="exactTimeEdit.do"/>
 			<separator/>
+			<item name="Academic Areas" page="admin&amp;type=area" type="gwt"/>
+			<item name="Academic Classifications" page="admin&amp;type=classification" type="gwt"/>
+			<item name="Majors" page="admin&amp;type=major" type="gwt"/>
+			<item name="Minors" page="admin&amp;type=minor" type="gwt"/>
+			<separator/>
 			<item name="Examination Periods" page="examPeriodEdit.do"/>
 			<item name="Data Exchange" page="dataImport.do"/>
 			<item name="Roll Forward Session" page="rollForwardSession.do"/>
