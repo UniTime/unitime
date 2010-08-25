@@ -25,8 +25,7 @@
 <hibernate-mapping package="org.unitime.timetable.model">
 	<class
 		name="AcademicClassification"
-		table="ACADEMIC_CLASSIFICATION"
-		mutable="false">
+		table="ACADEMIC_CLASSIFICATION">
 
  		<cache include="non-lazy" usage="nonstrict-read-write"/>
 

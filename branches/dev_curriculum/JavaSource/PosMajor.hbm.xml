@@ -25,8 +25,7 @@
 <hibernate-mapping package="org.unitime.timetable.model">
 	<class
 		name="PosMajor"
-		table="POS_MAJOR"
-		mutable="false">
+		table="POS_MAJOR">
 
  		<cache include="non-lazy" usage="nonstrict-read-write"/>
 
