@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class CurModel extends Model<CurVariable, CurValue> {
 	private static Log sLog = LogFactory.getLog(CurModel.class);
+	private static DecimalFormat sDF = new DecimalFormat("0.000");
 	private List<CurStudent> iStudents = new ArrayList<CurStudent>();
 	private Map<Long, CurCourse> iCourses = new Hashtable<Long, CurCourse>();
 	private List<CurCourse> iSwapableCourses = new ArrayList<CurCourse>();
@@ -55,6 +57,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	public CurModel(int nrStudents, IdGenerator gen) {
 		for (int i = 0; i < nrStudents; i++)
 			iStudents.add(new CurStudent(-gen.newId()));
+		iStudentLimit = new CurStudentLimit(0, nrStudents);
 	}
 	
 	public void addCourse(Long courseId, String courseName, int nrStudents) {
@@ -100,6 +103,43 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	
 	public List<CurCourse> getSwapCourses() {
 		return iSwapableCourses;
+	}
+	
+	@Override
+	public Hashtable<String, String> getInfo() {
+		Hashtable<String, String> ret = super.getInfo();
+		ret.put("Students", String.valueOf(getStudents().size()));
+		ret.put("Courses", String.valueOf(getCourses().size()));
+		double avgEnrollment = ((double)variables().size()) / getCourses().size();
+		double rmsEnrollment = 0.0;
+		for (CurCourse c1: getCourses())
+			rmsEnrollment += (c1.getNrStudents() - avgEnrollment) * (c1.getNrStudents() - avgEnrollment);
+		ret.put("Course size", sDF.format(avgEnrollment) + " ± " + sDF.format(Math.sqrt(rmsEnrollment / getCourses().size())));
+		int totalCourses = 0;
+		for (CurStudent student: getStudents())
+			totalCourses += student.getCourses().size();
+		double avgCourses = ((double)totalCourses) / getStudents().size();
+		double rmsCourses = 0.0;
+		for (CurStudent student: getStudents())
+			rmsCourses += (student.getCourses().size() - avgCourses) * (student.getCourses().size() - avgCourses);
+		ret.put("Courses per student", sDF.format(avgCourses) + " ± " + sDF.format(Math.sqrt(rmsCourses / getStudents().size())) +
+				" (limit: " + getStudentLimit().getMinLimit() + " .. " + getStudentLimit().getMaxLimit() + ")");
+		int totalShare = 0;
+		int totalError = 0;
+		double rmsError = 0.0;
+		int errors = 0;
+		for (CurCourse c1: getCourses())
+			for (CurCourse c2: getCourses())
+				if (c1.getCourseId() < c2.getCourseId()) {
+					int share = c1.share(c2);
+					int target = c1.getTargetShare(c2.getCourseId());
+					totalError += Math.abs(share - target);
+					rmsError += (share - target) * (share - target);
+					if (share != target) errors ++;
+					totalShare += share;
+				}
+		ret.put("Errors", totalError + " (" + sDF.format(100.0 * totalError / totalShare) + "% of total share, avg: " + sDF.format(((double)totalError) / errors) + ", rms: " + sDF.format(Math.sqrt(rmsError / errors)) + ")");
+		return ret;
 	}
 	
     public double getTotalValue() {
@@ -184,7 +224,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public void save(PrintWriter out) throws IOException {
-		out.println(String.valueOf(getStudents().size()));
+    	out.println(getStudents().size() + ", " + getCourses().size() + ", " + (getStudentLimit().getMaxLimit() < getStudents().size() || getStudentLimit().getMinLimit() > 0 ? "1" : "0"));
 		TreeSet<CurCourse> courses = new TreeSet<CurCourse>(new Comparator<CurCourse>() {
 			public int compare(CurCourse c1, CurCourse c2) {
 				int cmp = c1.getCourseName().compareTo(c2.getCourseName());
@@ -201,6 +241,15 @@ public class CurModel extends Model<CurVariable, CurValue> {
 				line += "," + lpad(String.valueOf(course.getTargetShare(other.getCourseId())), 4, ' ');
 			}
 			out.println(line);
+		}
+		for (CurStudent student: getStudents()) {
+			String line = "";
+			for (CurCourse course: student.getCourses()) {
+				if (!line.isEmpty()) line += ",";
+				line += lpad(course.getCourseId().toString(), 6, ' ');
+			}
+			if (!line.isEmpty())
+				out.println(line);
 		}
 		out.flush();
     }
@@ -227,10 +276,13 @@ public class CurModel extends Model<CurVariable, CurValue> {
     	try {
     		in = new BufferedReader(new FileReader(f));
     		String line = in.readLine();
-    		CurModel m = new CurModel(Integer.parseInt(line), new IdGenerator());
+    		String[] fields = line.split(",");
+    		CurModel m = new CurModel(Integer.parseInt(fields[0].trim()), new IdGenerator());
     		ArrayList<Long> courses = new ArrayList<Long>();
-    		while ((line = in.readLine()) != null) {
-    			String[] fields = line.split(",");
+    		int nrCourses = (fields.length < 2 ? Integer.MAX_VALUE : Integer.parseInt(fields[1].trim()));
+    		boolean setLimits = (fields.length >= 3 && Integer.parseInt(fields[2].trim()) == 1);
+    		while (courses.size() < nrCourses && (line = in.readLine()) != null) {
+    			fields = line.split(",");
     			int idx = 0;
     			Long courseId = Long.valueOf(fields[idx++].trim());
     			String courseName = fields[idx++].trim();
@@ -240,6 +292,19 @@ public class CurModel extends Model<CurVariable, CurValue> {
     				m.setTargetShare(course, courseId, Integer.parseInt(fields[idx++].trim()));
     			courses.add(courseId);
     		}
+    		int idx = 0;
+    		while (idx < m.getStudents().size() && (line = in.readLine()) != null) {
+    			CurStudent student = m.getStudents().get(idx++);
+    			fields = line.split(",");
+    			for (String courseId: fields) {
+    				CurCourse course = m.getCourse(Long.valueOf(courseId.trim()));
+    				CurVariable var = null;
+    				for (CurVariable v: course.variables())
+    					if (v.getAssignment() == null) { var = v; break; }
+    				var.assign(0, new CurValue(var, student));
+    			}
+    		}
+    		if (setLimits) m.setStudentLimits();
     		return m;
     	} finally {
     		in.close();
@@ -347,7 +412,6 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		}
 		sLog.info("  -- final value: " + getTotalValue());
     }
-
     
     public void solve() {
     	DataProperties cfg = new DataProperties();
@@ -364,6 +428,22 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		deluge(cfg); // or naive(cfg);
     }
     
+    public boolean equals(Object o) {
+    	if (o == null || !(o instanceof CurModel)) return false;
+    	CurModel m = (CurModel)o;
+    	if (getStudents().size() != m.getStudents().size()) return false;
+    	if (getStudentLimit().getMaxLimit() != m.getStudentLimit().getMaxLimit()) return false;
+    	if (getStudentLimit().getMinLimit() != m.getStudentLimit().getMinLimit()) return false;
+    	if (getCourses().size() != m.getCourses().size()) return false;
+    	for (CurCourse c1: getCourses()) {
+    		CurCourse x1 = m.getCourse(c1.getCourseId());
+    		if (x1 == null || x1.getNrStudents() != c1.getNrStudents()) return false;
+    		for (CurCourse c2: getCourses())
+    			if (c1.getCourseId() < c2.getCourseId() && c1.getTargetShare(c2.getCourseId()) != x1.getTargetShare(c2.getCourseId())) return false;
+    	}
+    	return true;
+    }
+    
     public static void main(String[] args) {
     	try {
     		/*
@@ -376,9 +456,9 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		sLog.info(m.save());
     		*/
     		
-    		CurModel m = CurModel.load("/Users/muller/test.cur");
-    		m.setStudentLimits();
-    		m.solve();
+    		CurModel m = CurModel.load("/Users/muller/test3.cur");
+    		// m.setStudentLimits();
+    		// m.solve();
 
     		sLog.info("Solution: " + ToolBox.dict2string(m.getInfo(), 2));
             
@@ -407,6 +487,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		for (CurStudent student: m.getStudents()) {
     			sLog.info(student.getStudentId() + ": " + student.getCourses().size() + "/" + student.getCourses());
     		}
+    		sLog.info("Solution: " + m.save());
     		    		
     	} catch (Exception e) {
     		e.printStackTrace();
