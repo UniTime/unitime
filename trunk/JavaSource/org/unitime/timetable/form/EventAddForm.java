@@ -830,13 +830,14 @@ public class EventAddForm extends ActionForm {
 			}
 		}
         if (iRoomGroups!=null && iRoomGroups.length>0) {
-            b+= " and (";
+            a+= ", RoomGroup g";
+            b+= " and ";       
+            b+= " g.uniqueId in ( ";
             for (int i=0;i<iRoomGroups.length;i++) {
-                if (i>0) b+=" or";
-                a+= ", RoomGroup g"+i;
-                b+= " (g"+i+".uniqueId="+iRoomGroups[i]+" and g"+i+" in elements(r.roomGroups))";
+                if (i>0) b+=" ,";
+                b+= iRoomGroups[i];
             }
-            b+=")";
+            b += " ) and g in elements(r.roomGroups) ";
         }
         if (iRoomTypes!=null && iRoomTypes.length>0) {
             b+= " and r.roomType.uniqueId in (";
