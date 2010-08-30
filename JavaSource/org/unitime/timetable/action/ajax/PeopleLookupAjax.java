@@ -198,9 +198,9 @@ public class PeopleLookupAjax extends Action {
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
                 String t = stk.nextToken();
                 if (filter.length()==0)
-                    filter = "(|(|(sn="+t+"*)(uid="+t+"))(givenName="+t+"*))";
+                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t);
                 else
-                    filter = "(&"+filter+"(|(|(sn="+t+"*)(uid="+t+"))(givenName="+t+"*)))";
+                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t)+")";
             }
             for (NamingEnumeration<SearchResult> e=ctx.search(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name",""),filter,ctls);e.hasMore();)
                 people.add(new Person(e.next().getAttributes()));
