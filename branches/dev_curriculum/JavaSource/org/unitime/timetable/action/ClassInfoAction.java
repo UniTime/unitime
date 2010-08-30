@@ -120,7 +120,7 @@ public class ClassInfoAction extends Action {
         
         if ("Assign".equals(op)) {
             synchronized (model) {
-                String message = model.assign();
+                String message = model.assign(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
                 if (message==null || message.trim().length()==0) {
                     myForm.setOp("Close");
                 } else {
