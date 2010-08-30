@@ -265,6 +265,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			return userInfo.getUser() != null && PersonalizedExamReportAction.hasPersonalReport(userInfo.getUser());
 		} else if ("isChameleon".equals(cond)) {
 			return getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1");
+		} else if ("isSectioningEnabled".equals(cond)) {
+			return SectioningServer.isEnabled();
 		} else {
 			User user = userInfo.getUser();
 			if (user == null) return false;
