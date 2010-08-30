@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -182,21 +184,9 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 		iExternalUid = null;
 		super.reset();
 	}
-
-	/**
-	 * Perform actual authentication the user
-	 */
-	public boolean doAuthenticate(HashMap userProps) throws Exception {
-        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider")==null) throw new Exception("Ldap provider is not set.");
-        String principal = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.principal");
-        if (principal==null) throw new Exception("Ldap principal is not set.");
-        String query = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.query");
-        if (query==null) throw new Exception("Ldap query is not set.");
-
-        String n = (String) userProps.get("username");
-		String p = (String) userProps.get("password");
-		
-		Hashtable env = new Hashtable();
+	
+	private static Hashtable<String,String> getEnv() {
+        Hashtable<String,String> env = new Hashtable();
         env.put(Context.INITIAL_CONTEXT_FACTORY, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ctxFactory","com.sun.jndi.ldap.LdapCtxFactory"));
         env.put(Context.PROVIDER_URL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider"));
         env.put(Context.REFERRAL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.referral","ignore"));
@@ -214,16 +204,38 @@ public class LdapAuthenticateModule extends AuthenticateModule {
         if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword")!=null)
             System.setProperty("javax.net.ssl.trustStorePassword", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword"));
         if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType")!=null)
-            System.setProperty("javax.net.ssl.trustStoreType", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType"));
+            System.setProperty("javax.net.ssl.trustStoreType", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType"));  
+        return env;
+	}
+	
+    public static DirContext getDirContext() throws NamingException {
+        return new InitialDirContext(getEnv());
+    }
+
+	/**
+	 * Perform actual authentication the user
+	 */
+	public boolean doAuthenticate(HashMap userProps) throws Exception {
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider")==null) throw new Exception("Ldap provider is not set.");
+        
+        String principal = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.principal");
+        if (principal==null) throw new Exception("Ldap principal is not set.");
+        
+        String query = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.query");
+        if (query==null) throw new Exception("Ldap query is not set.");
+
+        String n = (String) userProps.get("username");
+		String p = (String) userProps.get("password");
+		
+		Hashtable<String, String> env = getEnv();
         env.put(Context.SECURITY_PRINCIPAL, principal.replaceAll("%", n));
-        //if (isDebug()) System.out.println("env:"+ToolBox.dict2string(env, 2));
         env.put(Context.SECURITY_CREDENTIALS, p);
 		InitialDirContext cx = new InitialDirContext(env);
-		//if (isDebug()) System.out.println("cx:"+cx);
+
 		String idAttributeName = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.externalId","uid");
 		Attributes attributes = cx.getAttributes(query.replaceAll("%", n),new String[] {idAttributeName});
-		//if (isDebug()) System.out.println("attr:"+attributes);
-        Attribute idAttribute = attributes.get(idAttributeName);
+		
+		Attribute idAttribute = attributes.get(idAttributeName);
         if (idAttribute!=null) {
             if (isDebug()) System.out.println("Ldap authentication passed ... ");
             setAuthSucceeded(true);
