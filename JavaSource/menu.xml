@@ -106,7 +106,11 @@
 			<item name="Solver Log" page="studentSolverLog.do"/>
 		</menu>
 		<separator/>
-		<item name="Scheduling Assistant" page="sectioning" type="gwt"/>
+		<item name="Scheduling Assistant" page="sectioning" type="gwt">
+			<condition>
+				<isSectioningEnabled/>
+			</condition>
+		</item>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
 	</menu>
 	<menu name="Examinations">
@@ -202,6 +206,21 @@
 		<item name="Add Event" page="eventAdd.do"/>
 		<item name="Room Availability" page="eventGrid.do"/>
 	</menu>
+	<item name="Scheduling Assistant" page="sectioning" type="gwt">
+		<condition>
+			<and>
+				<or>
+					<not>
+						<isAuthenticated/>
+					</not>
+					<not>
+						<hasRole/>
+					</not>
+				</or>
+				<isSectioningEnabled/>
+			</and>
+		</condition>
+	</item>
 	<item name="Personal Schedule" page="personalSchedule.do">
 		<condition>
 			<or>
