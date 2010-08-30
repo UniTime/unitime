@@ -135,8 +135,8 @@ public class ToolBox {
     		content += "<div class=\"unitime-PrintedComponent\">" + DOM.toString(w.getElement()) + "</div>";
     	String html = "<html><header>" +
     		"<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" +
-    		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime4/gwt/standard/standard.css\">" +
-    		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime4.css\">" +
+    		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime/gwt/standard/standard.css\">" +
+    		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime.css\">" +
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
     	    "<title>UniTime 3.2 | University Timetabling Application</title>" +
     		"</header><body>" + 
