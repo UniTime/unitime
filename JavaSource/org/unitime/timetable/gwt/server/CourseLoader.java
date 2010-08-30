@@ -482,7 +482,7 @@ public class CourseLoader {
 		}
     }
 
-    private String datePatternName(TimeLocation time) {
+    public String datePatternName(TimeLocation time) {
     	if (time.getWeekCode().isEmpty()) return time.getDatePatternName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	cal.setTime(iAcademicSession.getDatePatternFirstDate());

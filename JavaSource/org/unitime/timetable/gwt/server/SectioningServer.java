@@ -65,8 +65,13 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 
 public class SectioningServer {
 	private static Logger sLog = Logger.getLogger(SectioningServer.class);
@@ -122,8 +127,10 @@ public class SectioningServer {
 		if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false")))
 			return !sInstances.isEmpty();
 		
-		// otherwise, look for a session that has sectioning enabled
+		// quick check for existing instances
 		if (!sInstances.isEmpty()) return true;
+		
+		// otherwise, look for a session that has sectioning enabled
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
 		for (Iterator<Session> i = SessionDAO.getInstance().findAll().iterator(); i.hasNext(); ) {
@@ -174,7 +181,7 @@ public class SectioningServer {
 	public AcademicSessionInfo getAcademicSession() { return iAcademicSession; }
 
 	public CourseInfo getCourseInfo(String course) {
-		synchronized (iCourseForId) {
+		synchronized (iCourseTable) {
 			if (course.indexOf('-') >= 0) {
 				String courseName = course.substring(0, course.indexOf('-')).trim();
 				String title = course.substring(course.indexOf('-') + 1).trim();
@@ -192,32 +199,38 @@ public class SectioningServer {
 	}
 
 	public CourseInfo getCourseInfo(Long courseId) {
-		synchronized (iCourseForId) {
+		synchronized (iCourseTable) {
 			return iCourseForId.get(courseId);
 		}
 	}
 	
 	public Student getStudent(Long studentId) {
-		return iStudentTable.get(studentId);
+		synchronized (iCourseTable) {
+			return iStudentTable.get(studentId);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void reloadStudent(org.unitime.timetable.model.Student s) {
-		Student student = iStudentTable.get(s.getUniqueId());
-		if (student != null) {
-			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-				Request r = (Request)e.next();
-				if (r.getAssignment() != null) r.unassign(0);
+		synchronized (iCourseTable) {
+			Student student = iStudentTable.get(s.getUniqueId());
+			if (student != null) {
+				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+					Request r = (Request)e.next();
+					if (r.getAssignment() != null) r.unassign(0);
+				}
+				iModel.removeStudent(student);
 			}
-			iModel.removeStudent(student);
+			student = iLoader.loadStudent(s);
+			iModel.addStudent(student);
+			iLoader.assignStudent(student, s, false);
 		}
-		student = iLoader.loadStudent(s);
-		iModel.addStudent(student);
-		iLoader.assignStudent(student, s, false);
 	}
 
 	public Course getCourse(Long courseId) {
-		return iCourseTable.get(courseId);
+		synchronized (iCourseTable) {
+			return iCourseTable.get(courseId);
+		}
 	}
 
 	public CourseInfo getCourseInfo(String subject, String courseNbr) {
@@ -225,7 +238,7 @@ public class SectioningServer {
 	}
 
 	public Collection<CourseInfo> findCourses(String query, Integer limit) {
-		synchronized (iCourseForId) {
+		synchronized (iCourseTable) {
 			List<CourseInfo> ret = new ArrayList<CourseInfo>();
 			String queryInLowerCase = query.toLowerCase();
 			for (CourseInfo c : iCourses) {
@@ -419,21 +432,23 @@ public class SectioningServer {
 	
 	@SuppressWarnings("unchecked")
 	public Set<Long> getSavedClasses(Long studentId) {
-		if (studentId == null) return null;
-		Student student = (Student)iStudentTable.get(studentId);
-		if (student == null) return null;
-		Set<Long> ret = new HashSet<Long>();
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); ) {
-			Request r = (Request)e.next();
-			if (!(r instanceof CourseRequest) || r.getInitialAssignment() == null) continue;
-			for (Iterator<Section> i = ((Enrollment)r.getInitialAssignment()).getSections().iterator(); i.hasNext();)
-				ret.add(i.next().getId());
+		synchronized (iCourseTable) {
+			if (studentId == null) return null;
+			Student student = (Student)iStudentTable.get(studentId);
+			if (student == null) return null;
+			Set<Long> ret = new HashSet<Long>();
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); ) {
+				Request r = (Request)e.next();
+				if (!(r instanceof CourseRequest) || r.getInitialAssignment() == null) continue;
+				for (Iterator<Section> i = ((Enrollment)r.getInitialAssignment()).getSections().iterator(); i.hasNext();)
+					ret.add(i.next().getId());
+			}
+			return ret;
 		}
-		return ret;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public ClassAssignmentInterface convert(Enrollment[] enrollments,
+	private ClassAssignmentInterface convert(Enrollment[] enrollments,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes,
 			boolean computeOverlaps,
 			DistanceConflict dc, Set<Long> savedClasses) throws SectioningException {
@@ -676,7 +691,7 @@ public class SectioningServer {
     }
 	
     @SuppressWarnings("unchecked")
-	public ClassAssignmentInterface convert(StudentSectioningModel model, Student student, BranchBoundNeighbour neighbour,
+	private ClassAssignmentInterface convert(StudentSectioningModel model, Student student, BranchBoundNeighbour neighbour,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes, Set<Long> savedClasses) throws SectioningException {
         Enrollment [] enrollments = neighbour.getAssignment();
         if (enrollments == null || enrollments.length == 0)
@@ -697,210 +712,217 @@ public class SectioningServer {
 
     @SuppressWarnings("unchecked")
 	public ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
-		long t0 = System.currentTimeMillis();
-		StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
-		model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
-		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
-		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
-		for (CourseRequestInterface.Request c: request.getCourses())
-			addRequest(model, student, c, false, false);
-		if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
-		for (CourseRequestInterface.Request c: request.getAlternatives())
-			addRequest(model, student, c, true, false);
-		model.addStudent(student);
-		
-		long t1 = System.currentTimeMillis();
-		
-		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
-		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
-		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
+		synchronized (iCourseTable) {
+			long t0 = System.currentTimeMillis();
+			StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
+			model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+			model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
+			model.addGlobalConstraint(new SectionLimit(model.getProperties()));
+			Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
+			for (CourseRequestInterface.Request c: request.getCourses())
+				addRequest(model, student, c, false, false);
+			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
+			for (CourseRequestInterface.Request c: request.getAlternatives())
+				addRequest(model, student, c, true, false);
+			model.addStudent(student);
+			
+			long t1 = System.currentTimeMillis();
+			
+			Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
+			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
+			HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				HashSet<Section> preferredSections = new HashSet<Section>();
-				HashSet<Section> requiredSections = new HashSet<Section>();
-				a: for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
-					if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
-						Section section = cr.getSection(a.getClassId());
-						if (section == null || section.getLimit() == 0) {
-//							messages.addMessage((a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
-							continue a;
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					HashSet<Section> preferredSections = new HashSet<Section>();
+					HashSet<Section> requiredSections = new HashSet<Section>();
+					a: for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
+						if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+							Section section = cr.getSection(a.getClassId());
+							if (section == null || section.getLimit() == 0) {
+								continue a;
+							}
+							if (a.isPinned()) 
+								requiredSections.add(section);
+							preferredSections.add(section);
 						}
-						if (a.isPinned()) 
-							requiredSections.add(section);
-						preferredSections.add(section);
+					}
+					preferredSectionsForCourse.put(cr, preferredSections);
+					requiredSectionsForCourse.put(cr, requiredSections);
+				} else {
+					FreeTimeRequest ft = (FreeTimeRequest)r;
+					for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
+						if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+							ft.getTime().getStartSlot() == a.getStart() &&
+							ft.getTime().getLength() == a.getLength() && 
+							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
+							requiredFreeTimes.add(ft);
 					}
 				}
-				preferredSectionsForCourse.put(cr, preferredSections);
-				requiredSectionsForCourse.put(cr, requiredSections);
-			} else {
-				FreeTimeRequest ft = (FreeTimeRequest)r;
-				for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
-					if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
-						ft.getTime().getStartSlot() == a.getStart() &&
-						ft.getTime().getLength() == a.getLength() && 
-						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
-						requiredFreeTimes.add(ft);
-				}
 			}
+			
+	        Solution solution = new Solution(model,0,0);
+	        
+	        Solver solver = new Solver(model.getProperties());
+	        solver.setInitalSolution(solution);
+	        solver.initSolver();
+	        
+			long t2 = System.currentTimeMillis();
+
+	        SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
+	        onlineSelection.init(solver);
+
+	        BranchBoundSelection.Selection selection = onlineSelection.getSelection(student); 
+	        BranchBoundNeighbour neighbour = selection.select();
+	        
+			long t3 = System.currentTimeMillis();
+
+			if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
+	        
+			ClassAssignmentInterface ret = convert(model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, getSavedClasses(request.getStudentId()));
+
+			long t4 = System.currentTimeMillis();
+			sLog.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
+
+			return ret;
 		}
-		
-        Solution solution = new Solution(model,0,0);
-        
-        Solver solver = new Solver(model.getProperties());
-        solver.setInitalSolution(solution);
-        solver.initSolver();
-        
-		long t2 = System.currentTimeMillis();
-
-        SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
-        onlineSelection.init(solver);
-
-        BranchBoundSelection.Selection selection = onlineSelection.getSelection(student); 
-        BranchBoundNeighbour neighbour = selection.select();
-        
-		long t3 = System.currentTimeMillis();
-
-		if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
-        
-		ClassAssignmentInterface ret = convert(model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, getSavedClasses(request.getStudentId()));
-
-		long t4 = System.currentTimeMillis();
-		sLog.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
-
-		return ret;
 }
 	
 	@SuppressWarnings("unchecked")
 	public List<Section> getSections(CourseInfo courseInfo) throws SectioningException {
-		ArrayList<Section> sections = new ArrayList<Section>();
-		Course course = iCourseTable.get(courseInfo.getUniqueId());
-		if (course == null) return sections;
-		for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
-			Config cfg = e.next();
-			for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
-				Subpart subpart = f.next();
-				for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
-					Section section = g.next();
-					sections.add(section);
+		synchronized (iCourseTable) {
+			ArrayList<Section> sections = new ArrayList<Section>();
+			Course course = iCourseTable.get(courseInfo.getUniqueId());
+			if (course == null) return sections;
+			for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
+				Config cfg = e.next();
+				for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
+					Subpart subpart = f.next();
+					for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
+						Section section = g.next();
+						sections.add(section);
+					}
 				}
 			}
+			return sections;
 		}
-		return sections;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Section> getSections(String courseName) throws SectioningException {
-		ArrayList<Section> sections = new ArrayList<Section>();
-		Course course = iCourseTable.get(courseName);
-		if (course == null) return sections;
-		for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
-			Config cfg = e.next();
-			for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
-				Subpart subpart = f.next();
-				for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
-					Section section = g.next();
-					sections.add(section);
+		synchronized (iCourseTable) {
+			ArrayList<Section> sections = new ArrayList<Section>();
+			Course course = iCourseTable.get(courseName);
+			if (course == null) return sections;
+			for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
+				Config cfg = e.next();
+				for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
+					Subpart subpart = f.next();
+					for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
+						Section section = g.next();
+						sections.add(section);
+					}
 				}
 			}
+			return sections;
 		}
-		return sections;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment) throws SectioningException {
-		long t0 = System.currentTimeMillis();
+		synchronized (iCourseTable) {
+			long t0 = System.currentTimeMillis();
 
-		StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
-		model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
-		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
-		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
-		for (CourseRequestInterface.Request c: request.getCourses())
-			addRequest(model, student, c, false, true);
-		if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
-		for (CourseRequestInterface.Request c: request.getAlternatives())
-			addRequest(model, student, c, true, true);
-		model.addStudent(student);
-		model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
-		
-		long t1 = System.currentTimeMillis();
+			StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
+			model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+			model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
+			model.addGlobalConstraint(new SectionLimit(model.getProperties()));
+			Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
+			for (CourseRequestInterface.Request c: request.getCourses())
+				addRequest(model, student, c, false, true);
+			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
+			for (CourseRequestInterface.Request c: request.getAlternatives())
+				addRequest(model, student, c, true, true);
+			model.addStudent(student);
+			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			
+			long t1 = System.currentTimeMillis();
 
-		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
-		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
-		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
-        ArrayList<ClassAssignmentInterface> ret = new ArrayList<ClassAssignmentInterface>();
-        ClassAssignmentInterface messages = new ClassAssignmentInterface();
-        ret.add(messages);
+			Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
+			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
+			HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
+	        ArrayList<ClassAssignmentInterface> ret = new ArrayList<ClassAssignmentInterface>();
+	        ClassAssignmentInterface messages = new ClassAssignmentInterface();
+	        ret.add(messages);
 
-		Request selectedRequest = null;
-		Section selectedSection = null;
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				if (!selectedAssignment.isFreeTime() && cr.getCourse(selectedAssignment.getCourseId()) != null) {
-					selectedRequest = r;
-					if (selectedAssignment.getClassId() != null) {
-						Section section = cr.getSection(selectedAssignment.getClassId());
-						if (section != null) selectedSection = section;
-					}
-				}
-				HashSet<Section> preferredSections = new HashSet<Section>();
-				HashSet<Section> requiredSections = new HashSet<Section>();
-				a: for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
-					if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
-						Section section = cr.getSection(a.getClassId());
-						if (section == null || section.getLimit() == 0) {
-							messages.addMessage((a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
-							continue a;
+			Request selectedRequest = null;
+			Section selectedSection = null;
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					if (!selectedAssignment.isFreeTime() && cr.getCourse(selectedAssignment.getCourseId()) != null) {
+						selectedRequest = r;
+						if (selectedAssignment.getClassId() != null) {
+							Section section = cr.getSection(selectedAssignment.getClassId());
+							if (section != null) selectedSection = section;
 						}
-						if (a.isPinned()) 
-							requiredSections.add(section);
-						preferredSections.add(section);
 					}
-				}
-				preferredSectionsForCourse.put(cr, preferredSections);
-				requiredSectionsForCourse.put(cr, requiredSections);
-			} else {
-				FreeTimeRequest ft = (FreeTimeRequest)r;
-				if (selectedAssignment.isFreeTime() && ft.getTime() != null &&
-					ft.getTime().getStartSlot() == selectedAssignment.getStart() &&
-					ft.getTime().getLength() == selectedAssignment.getLength() && 
-					ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(selectedAssignment.getDays())))
-					selectedRequest = r;
-				for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
-					if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
-						ft.getTime().getStartSlot() == a.getStart() &&
-						ft.getTime().getLength() == a.getLength() && 
-						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
-						requiredFreeTimes.add(ft);
+					HashSet<Section> preferredSections = new HashSet<Section>();
+					HashSet<Section> requiredSections = new HashSet<Section>();
+					a: for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
+						if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+							Section section = cr.getSection(a.getClassId());
+							if (section == null || section.getLimit() == 0) {
+								messages.addMessage((a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
+								continue a;
+							}
+							if (a.isPinned()) 
+								requiredSections.add(section);
+							preferredSections.add(section);
+						}
+					}
+					preferredSectionsForCourse.put(cr, preferredSections);
+					requiredSectionsForCourse.put(cr, requiredSections);
+				} else {
+					FreeTimeRequest ft = (FreeTimeRequest)r;
+					if (selectedAssignment.isFreeTime() && ft.getTime() != null &&
+						ft.getTime().getStartSlot() == selectedAssignment.getStart() &&
+						ft.getTime().getLength() == selectedAssignment.getLength() && 
+						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(selectedAssignment.getDays())))
+						selectedRequest = r;
+					for (ClassAssignmentInterface.ClassAssignment a: currentAssignment) {
+						if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+							ft.getTime().getStartSlot() == a.getStart() &&
+							ft.getTime().getLength() == a.getLength() && 
+							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
+							requiredFreeTimes.add(ft);
+					}
 				}
 			}
+			
+	        new Solution(model);
+	        
+			long t2 = System.currentTimeMillis();
+	        
+	        SuggestionsBranchAndBound suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse, selectedRequest, selectedSection);
+	        TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
+	        
+			long t3 = System.currentTimeMillis();
+			sLog.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
+
+			Set<Long> savedClasses = getSavedClasses(request.getStudentId());
+			for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
+	        	ret.add(convert(suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, false, model.getDistanceConflict(), savedClasses));
+	        }
+	        
+			long t4 = System.currentTimeMillis();
+			sLog.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
+
+	        return ret;
 		}
-		
-        new Solution(model);
-        
-		long t2 = System.currentTimeMillis();
-        
-        SuggestionsBranchAndBound suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse, selectedRequest, selectedSection);
-        TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
-        
-		long t3 = System.currentTimeMillis();
-		sLog.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
-
-		Set<Long> savedClasses = getSavedClasses(request.getStudentId());
-		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-        	ret.add(convert(suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, false, model.getDistanceConflict(), savedClasses));
-        }
-        
-		long t4 = System.currentTimeMillis();
-		sLog.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
-
-        return ret;
 	}
 	
 	public class EnrollmentSectionComparator implements Comparator<Section> {
@@ -923,6 +945,142 @@ public class SectioningServer {
 	}
 	
 	public Section getSection(Long classId) {
-		return iClassTable.get(classId);
+		synchronized (iCourseTable) {
+			return iClassTable.get(classId);
+		}
+	}
+	
+	protected void studentChanged(Collection<Long> studentIds) {
+		synchronized (iCourseTable) {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+			try {
+				for (Long studentId: studentIds) {
+					// Unload student
+					Student student = iStudentTable.get(studentId);
+					if (student != null) {
+						iStudentTable.remove(studentId);
+						for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+							Request r = (Request)e.next();
+							if (r.getAssignment() != null) r.unassign(0);
+						}
+						iModel.removeStudent(student);
+					}
+					
+					// Load student
+					org.unitime.timetable.model.Student s = StudentDAO.getInstance().get(studentId, hibSession);
+					if (s != null) {
+						student = iLoader.loadStudent(s);
+						iModel.addStudent(student);
+						iLoader.assignStudent(student, s, false);
+					}
+				}
+			} finally {
+				hibSession.close();
+			}
+		}
+	}
+	
+	protected void classChanged(Collection<Long> classIds) {
+		synchronized (iCourseTable) {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+			try {
+				for (Long classId: classIds) {
+					Section section = iClassTable.get(classId);
+					Class_ clazz = Class_DAO.getInstance().get(classId, hibSession);
+					if (section != null && clazz != null) {
+						// class updated
+						sLog.info("Reloading " + clazz.getClassLabel());
+	                    org.unitime.timetable.model.Assignment a = clazz.getCommittedAssignment();
+	                    Placement p = (a == null ? null : a.getPlacement());
+	                    if (p != null && p.getTimeLocation() != null) {
+	                    	p.getTimeLocation().setDatePattern(
+	                    			p.getTimeLocation().getDatePatternId(),
+	                    			iLoader.datePatternName(p.getTimeLocation()),
+	                    			p.getTimeLocation().getWeekCode());
+	                    }
+	                    section.setPlacement(p);
+						sLog.info("  -- placement: " + p);
+
+	                    int minLimit = clazz.getExpectedCapacity();
+	                	int maxLimit = clazz.getMaxExpectedCapacity();
+	                	int limit = maxLimit;
+	                	if (minLimit < maxLimit && p != null) {
+	                		int roomLimit = Math.round((clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()) * p.getRoomSize());
+	                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+	                	}
+	                    if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+	                    section.setLimit(limit);
+						sLog.info("  -- limit: " + limit);
+
+	                    String instructorIds = "";
+	                    String instructorNames = "";
+	                    for (Iterator<ClassInstructor> k = clazz.getClassInstructors().iterator(); k.hasNext(); ) {
+	                    	ClassInstructor ci = k.next();
+	                    	if (!ci.isLead()) continue;
+	                    	if (!instructorIds.isEmpty()) {
+	                    		instructorIds += ":"; instructorNames += ":";
+	                    	}
+	                    	instructorIds += ci.getInstructor().getUniqueId().toString();
+	                    	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+	                    }
+	                    section.getChoice().setInstructor(instructorIds, instructorNames);
+						sLog.info("  -- instructor: " + instructorNames);
+
+	                    section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() : clazz.getExternalUniqueId());
+					} else if (section != null && clazz == null) {
+						// class deleted -> unassign all enrollments, delete section
+						sLog.info("Removing " + section.getLongName());
+						
+						iClassTable.remove(classId);
+						for (Enrollment enrollment: section.getEnrollments())
+							enrollment.getRequest().unassign(0);
+						Subpart subpart = section.getSubpart();
+						subpart.getSections().remove(section);
+						if (subpart.getSections().isEmpty()) {
+							Config config = subpart.getConfig();
+							config.getSubparts().remove(subpart);
+							if (config.getSubparts().isEmpty())
+								config.getOffering().getConfigs().remove(config);
+						}
+					} else {
+						// class added
+						//TODO: Adding classes is not supported at the moment
+						sLog.warn("Adding " + clazz.getClassLabel() + " not implemented");
+					}
+				}
+			} finally {
+				hibSession.close();
+			}
+		}
+	}
+	
+	public static void studentChanged(Long academicSessionId, Collection<Long> studentIds) {
+		SectioningServer server = getInstance(academicSessionId);
+		if (server != null) server.studentChanged(studentIds);
+	}
+	
+	public static void studentChanged(Long academicSessionId, Long... studentIds) {
+		SectioningServer server = getInstance(academicSessionId);
+		if (server != null) {
+			List<Long> list = new ArrayList<Long>();
+			for (Long studentId: studentIds)
+				list.add(studentId);
+			server.studentChanged(list);
+		}
+	}
+
+	public static void classChanged(Long academicSessionId, Collection<Long> classIds) {
+		SectioningServer server = getInstance(academicSessionId);
+		if (server != null) server.classChanged(classIds);
+	}
+
+	public static void classChanged(Long academicSessionId, Long... classIds) {
+		SectioningServer server = getInstance(academicSessionId);
+		if (server != null) {
+			List<Long> list = new ArrayList<Long>();
+			for (Long classId: classIds)
+				list.add(classId);
+			server.classChanged(list);
+		}
 	}
 }
