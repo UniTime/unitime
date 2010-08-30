@@ -378,6 +378,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 					crit.addOrder(order);
 			}
 		}
+		crit.setCacheable(true);
 		return (List<T>)crit.list();
 	}
 
