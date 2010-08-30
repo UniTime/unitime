@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.LazyInitializationException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInfoForm;
+import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -207,13 +209,15 @@ public class ClassInfoModel implements Serializable {
         }
     }
     
-    public String assign() {
+    public String assign(Long sessionId) {
         if (iChange==null) return "Nothing to assign.";
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
+        List<Long> classIds = new ArrayList<Long>();
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
+                classIds.add(assignment.getClassId());
         		String m = assignment.getClazz(hibSession).unassignCommited(iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
             } catch (Exception e) {
@@ -222,13 +226,16 @@ public class ClassInfoModel implements Serializable {
         }
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
+                classIds.add(assignment.getClassId());
                 String m = assignment.getClazz(hibSession).assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
             }
         }
-        // TODO: Update student sectioning information
+        
+        SectioningServer.classChanged(sessionId, classIds);
+        
         return message;
     }
     
