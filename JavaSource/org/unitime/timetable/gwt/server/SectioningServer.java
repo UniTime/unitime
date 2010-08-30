@@ -117,6 +117,29 @@ public class SectioningServer {
         sUpdateLimitsUsingSectionLimitProvider = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider.updateLimits", "false"));
 	}
 	
+	public static boolean isEnabled() {
+		// if autostart is enabled, just check whether there are some instances already loaded in
+		if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false")))
+			return !sInstances.isEmpty();
+		
+		// otherwise, look for a session that has sectioning enabled
+		if (!sInstances.isEmpty()) return true;
+		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
+		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		for (Iterator<Session> i = SessionDAO.getInstance().findAll().iterator(); i.hasNext(); ) {
+			final Session session = i.next();
+			
+			if (year != null && !year.equals(session.getAcademicYear())) continue;
+			if (term != null && !term.equals(session.getAcademicTerm())) continue;
+
+			if (year == null && term == null &&
+					!session.getStatusType().canNoRoleReportClass()) continue;
+
+			return true;
+		}
+		return false;
+	}
+	
 	private SectioningServer(Long sessionId) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
