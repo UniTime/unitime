@@ -19,13 +19,12 @@
 */
 package org.unitime.commons;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 
 
 /**
@@ -216,27 +215,21 @@ public class User {
     }
     
     public static boolean canIdentify() {
-        return "true".equals(ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.enabled","false"));
+        return "true".equals(ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled","false"));
     }
 	
     public static User identify(String externalId) {
         if (externalId==null || externalId.trim().length()==0) return null;
         if (canIdentify()) {
             try {
-                HashMap attributes = new HashMap();
-                attributes.put(ExternalUidLookup.SEARCH_ID, externalId);
-                
                 String className = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.class");
                 ExternalUidLookup lookup = (ExternalUidLookup)(Class.forName(className).newInstance());
-                Map results = lookup.doLookup(attributes);
+                UserInfo results = lookup.doLookup(externalId);
                 if (results==null) return null;
                 User user = new User();
-                user.setId((String)results.get(ExternalUidLookup.EXTERNAL_ID));
-                user.setLogin((String)results.get(ExternalUidLookup.USERNAME));
-                user.setName(
-                        (String)results.get(ExternalUidLookup.FIRST_NAME)+" "+
-                        (String)results.get(ExternalUidLookup.MIDDLE_NAME)+" "+
-                        (String)results.get(ExternalUidLookup.LAST_NAME));
+                user.setId(results.getExternalId());
+                user.setLogin(results.getUserName());
+                user.setName(results.getName());
                 return user;
             } catch (Exception e) {
                 Debug.error(e);
