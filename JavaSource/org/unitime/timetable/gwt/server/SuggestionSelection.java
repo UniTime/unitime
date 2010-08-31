@@ -140,7 +140,7 @@ public class SuggestionSelection extends BranchBoundSelection {
         	return
         		iOnlinePenaltyWeight * penalty + 
         		iDistConfWeight * getNrDistanceConflicts(i) +
-        		- preferredFraction * iPreferenceWeight +
+        		(1.0 - preferredFraction) * iPreferenceWeight +
         		noTime * iNoTimeWeight;
         }
         
