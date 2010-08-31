@@ -36,8 +36,10 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
 public class SuggestionSelection extends BranchBoundSelection {
-	protected double iPreferenceWeight = 10.0;
+	protected double iPreferenceWeight = 1000.0;
 	protected double iNoTimeWeight = 1.0;
+	protected double iNotAssignedWeight = 100.0;
+	protected double iOnlinePenaltyWeight = 10.0;
 	protected Hashtable<CourseRequest, Set<Section>> iPreferredSections, iRequiredSections;
 	protected Set<FreeTimeRequest> iRequiredFreeTimes;
 	
@@ -46,6 +48,9 @@ public class SuggestionSelection extends BranchBoundSelection {
     	super(properties);
     	iPreferenceWeight = properties.getPropertyDouble("Suggestions.PreferredSectionWeight", iPreferenceWeight);
     	iNoTimeWeight = properties.getPropertyDouble("Suggestions.NoTimeWeight", iNoTimeWeight);
+    	iNotAssignedWeight = properties.getPropertyDouble("Suggestions.NotAssignedWeight", iNotAssignedWeight);
+    	iOnlinePenaltyWeight = properties.getPropertyDouble("Suggestions.OnlinePenaltyWeight", iOnlinePenaltyWeight);
+        iDistConfWeight = properties.getPropertyDouble("Suggestions.DistanceConflictWeight", 25.0);
     	iPreferredSections = preferredSections;
     	iRequiredSections = requiredSections;
     	iMinimizePenalty = true;
@@ -91,29 +96,51 @@ public class SuggestionSelection extends BranchBoundSelection {
         	return bestTime;
         }
         
+        @Override
+        public double getPenalty() {
+            double bestPenalty = 0;
+            for (int i = 0; i < iAssignment.length; i++)
+                if (iAssignment[i] != null)
+                    bestPenalty += getAssignmentPenalty(i);
+                else
+                	bestPenalty += iNotAssignedWeight / (1 + iStudent.getRequests().get(i).getPriority());
+            return bestPenalty;
+        }
+        
         @SuppressWarnings("unchecked")
     	protected double getAssignmentPenalty(int i) {
-        	double preferredFraction = 1.0;
+        	double preferredFraction = 0.0;
         	int hasTime = 0;
         	double noTime = 0;
+        	int penalty = 0;
         	if (iAssignment[i].getAssignments() != null && iAssignment[i].isCourseRequest()) {
         		CourseRequest cr = (CourseRequest)iAssignment[i].getRequest();
             	int nrPreferred = 0;
+            	int nrSelected = 0;
             	Set<Section> preferredSections = iPreferredSections.get(cr);
             	if (preferredSections != null)
                 	for (Iterator<Section> j = iAssignment[i].getSections().iterator(); j.hasNext();) {
                 		Section section = j.next();
                 		if (preferredSections.contains(section)) nrPreferred++;
                 	}
-            	preferredFraction = 1.0 - ((double)nrPreferred) / iAssignment[i].getAssignments().size();
+            	if (!cr.getSelectedChoices().isEmpty()) {
+                	for (Iterator<Section> j = iAssignment[i].getSections().iterator(); j.hasNext();) {
+                		Section section = j.next();
+                		if (cr.getSelectedChoices().contains(section.getChoice())) nrSelected++;
+                	}
+            	}
+            	preferredFraction = (0.67 * nrPreferred + 0.33 * nrSelected) / iAssignment[i].getAssignments().size();
             	for (Iterator<Section> j = iAssignment[i].getSections().iterator(); j.hasNext();) {
             		Section section = j.next();
             		if (section.getTime() != null) hasTime++;
+            		if (section.getPenalty() > 0.0) penalty++;
             	}
             	noTime = bestTime(iAssignment[i].getRequest()) - (((double)hasTime) / iAssignment[i].getAssignments().size());
             }
-        	return iAssignment[i].getPenalty() + iDistConfWeight * getNrDistanceConflicts(i) +
-        		preferredFraction * iPreferenceWeight +
+        	return
+        		iOnlinePenaltyWeight * penalty + 
+        		iDistConfWeight * getNrDistanceConflicts(i) +
+        		- preferredFraction * iPreferenceWeight +
         		noTime * iNoTimeWeight;
         }
         
