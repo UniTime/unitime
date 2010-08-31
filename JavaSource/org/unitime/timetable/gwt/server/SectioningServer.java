@@ -747,6 +747,7 @@ public class SectioningServer {
 							if (a.isPinned()) 
 								requiredSections.add(section);
 							preferredSections.add(section);
+							cr.getSelectedChoices().add(section.getChoice());
 						}
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
@@ -882,6 +883,7 @@ public class SectioningServer {
 							if (a.isPinned()) 
 								requiredSections.add(section);
 							preferredSections.add(section);
+							cr.getSelectedChoices().add(section.getChoice());
 						}
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
