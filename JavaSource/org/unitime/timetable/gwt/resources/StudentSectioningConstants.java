@@ -95,4 +95,10 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(false)
 	boolean printReportShowUserName();
+	
+	@DefaultIntValue(12)
+	int numberOfCourses();
+	
+	@DefaultIntValue(3)
+	int numberOfAlternatives();
 }

@@ -85,14 +85,17 @@ public class CourseRequestsTable extends Composite {
 		iCourses = new ArrayList<CourseSelectionBox[]>();
 		iAlternatives = new ArrayList<CourseSelectionBox[]>();
 
-		for (int i=0; i<9; i++) {
+		for (int i=0; i<CONSTANTS.numberOfCourses(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsPriority(i+1));
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
 					new CourseSelectionBox(iSessionProvider, "c"+i, true, true),
 					new CourseSelectionBox(iSessionProvider, "c"+i+"a", false, false),
 					new CourseSelectionBox(iSessionProvider, "c"+i+"b", false, false)
 			};
-			c[0].setAccessKey((char)((int)'1'+i));
+			if (i < 9)
+				c[0].setAccessKey((char)((int)'1'+i));
+			else if (i == 9)
+				c[0].setAccessKey('0');
 			if (i>0) {
 				final CourseSelectionBox[] x = iCourses.get(i - 1);
 				for (int j=0; j<3; j++) {
@@ -128,7 +131,7 @@ public class CourseRequestsTable extends Composite {
 				});
 				iGrid.setWidget(idx, 4, up);
 			}
-			if (i<=8) {
+			if (i<=CONSTANTS.numberOfCourses()) {
 				final Image down = new Image(RESOURCES.down());
 				down.addMouseOverHandler(new MouseOverHandler() {
 					public void onMouseOver(MouseOverEvent event) {
@@ -171,7 +174,7 @@ public class CourseRequestsTable extends Composite {
 		iCourses.get(1)[0].setHint(MESSAGES.courseRequestsHint1());
 		iCourses.get(3)[0].setHint(MESSAGES.courseRequestsHint3());
 		iCourses.get(4)[0].setHint(MESSAGES.courseRequestsHint4());
-		iCourses.get(8)[0].setHint(MESSAGES.courseRequestsHint8());
+		iCourses.get(CONSTANTS.numberOfCourses()-1)[0].setHint(MESSAGES.courseRequestsHint8());
 
 		iTip = new Label(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		ToolBox.disableTextSelectInternal(iTip.getElement());
@@ -191,7 +194,7 @@ public class CourseRequestsTable extends Composite {
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-MainTableHeader");
 		iGrid.setText(idx++, 0, MESSAGES.courseRequestsAlternatives());
 
-		for (int i=0; i<3; i++) {
+		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
 					new CourseSelectionBox(iSessionProvider, "a"+i, true, false),
@@ -200,7 +203,7 @@ public class CourseRequestsTable extends Composite {
 			};
 			c[0].setAccessKey((char)((int)'a'+i));
 			if (i>=0) {
-				final CourseSelectionBox[] x = (i==0 ? iCourses.get(8) : iAlternatives.get(i - 1));
+				final CourseSelectionBox[] x = (i==0 ? iCourses.get(CONSTANTS.numberOfCourses() - 1) : iAlternatives.get(i - 1));
 				for (int j=0; j<3; j++) {
 					c[j].setPrev(x[j]);
 					x[j].setNext(c[j]);
@@ -234,7 +237,7 @@ public class CourseRequestsTable extends Composite {
 				});
 				iGrid.setWidget(idx, 4, up);
 			}
-			if (i<2) {
+			if (i<CONSTANTS.numberOfAlternatives() - 1) {
 				final Image down = new Image(RESOURCES.down());
 				down.addMouseOverHandler(new MouseOverHandler() {
 					public void onMouseOver(MouseOverEvent event) {
