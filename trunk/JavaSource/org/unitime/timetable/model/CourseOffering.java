@@ -522,42 +522,14 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
         Transaction trans = null;
         try {
      	trans = hibSession.beginTransaction();
-     	List<Long> courseIds = (List<Long>)hibSession.createQuery(
-     			"select crs.uniqueId from CourseOffering crs inner join crs.instructionalOffering as io " +
-                " where io.session.uniqueId = :sessionId)").
-                setLong("sessionId", acadSession.getUniqueId().longValue()).list();
-     	int count = 0;
-     	String ids = "";
-     	for (Long id: courseIds) {
-     		if (count > 0) ids += ",";
-     		ids += id;
-     		if (count == 1000) {
-     			hibSession.createQuery("update CourseOffering  c " +
-     	         		"set c.enrollment=(select count(distinct d.student) " +
-     	                 " from StudentClassEnrollment d " +
-     	                 " where d.courseOffering.uniqueId =c.uniqueId) " + 
-     	                 " where c.uniqueId in (" + ids + ")").executeUpdate();
-     			count = 0; ids = "";
-     		}
-     	}
-     	if (count > 0) {
- 			hibSession.createQuery("update CourseOffering  c " +
- 	         		"set c.enrollment=(select count(distinct d.student) " +
- 	                 " from StudentClassEnrollment d " +
- 	                 " where d.courseOffering.uniqueId =c.uniqueId) " + 
- 	                 " where c.uniqueId in (" + ids + ")").executeUpdate();
-     	}
-     	/*
-     	// This does not work on MySQL (You can't specify target table 'COURSE_OFFERING' for update in FROM clause)
-         hibSession.createQuery("update CourseOffering  c " +
+
+     	hibSession.createQuery("update CourseOffering  c " +
          		"set c.enrollment=(select count(distinct d.student) " +
                  " from StudentClassEnrollment d " +
                  " where d.courseOffering.uniqueId =c.uniqueId) " + 
-                 " where c.uniqueId in (select crs.uniqueId " + 
-                 " from CourseOffering crs inner join crs.instructionalOffering as io " +
-                 " where io.session.uniqueId = :sessionId)").
+                 " where c.subjectArea.uniqueId in (select sa.uniqueId " + 
+                 " from SubjectArea sa where sa.session.uniqueId = :sessionId)").
                  setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
-         */
          trans.commit();
         } catch (Exception e) {
      	   if (trans != null){
