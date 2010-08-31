@@ -117,9 +117,9 @@ public class StudentEnrollmentImport extends BaseImport {
 		            student.setClassEnrollments(new HashSet<StudentClassEnrollment>());
             	}
             	
-            	Hashtable<String, StudentClassEnrollment> enrollments = new Hashtable<String, StudentClassEnrollment>();
+            	Hashtable<Long, StudentClassEnrollment> enrollments = new Hashtable<Long, StudentClassEnrollment>();
             	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
-            		enrollments.put(enrollment.getClazz().getExternalUniqueId() == null || enrollment.getClazz().getExternalUniqueId().isEmpty() ? enrollment.getClazz().getClassLabel() : enrollment.getClazz().getExternalUniqueId(), enrollment);
+            		enrollments.put(enrollment.getClazz().getUniqueId(), enrollment);
             	}
             	
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
@@ -132,7 +132,7 @@ public class StudentEnrollmentImport extends BaseImport {
             			continue;
             		}
             		
-            		StudentClassEnrollment enrollment = enrollments.remove(classExternalId);
+            		StudentClassEnrollment enrollment = enrollments.remove(clazz.getUniqueId());
             		if (enrollment != null) continue; // enrollment already exists
             		
             		enrollment = new StudentClassEnrollment();
