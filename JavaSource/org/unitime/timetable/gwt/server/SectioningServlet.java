@@ -28,8 +28,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -319,18 +317,6 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		CourseInfo c = SectioningServer.getInstance(sessionId).getCourseInfo(course);
 		if (c == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST, course);
 		return c.getDetails();
-	}
-	
-	public Collection<String[]> retrieveApplicationProperties(String startsWith) throws SectioningException {
-		ArrayList<String[]> ret = new ArrayList<String[]>();
-		Properties p = ApplicationProperties.getProperties();
-		for (Map.Entry<Object, Object> entry: p.entrySet()) {
-			String key = (String)entry.getKey();
-			String value = (String)entry.getValue();
-			if (startsWith==null || key.startsWith(startsWith))
-				ret.add(new String[] {key, value});
-		}
-		return ret;
 	}
 	
 	public Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException {

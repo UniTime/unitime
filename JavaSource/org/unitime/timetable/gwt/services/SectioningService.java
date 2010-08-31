@@ -35,7 +35,6 @@ public interface SectioningService extends RemoteService {
 	Collection<String[]> listAcademicSessions() throws SectioningException;
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws IllegalArgumentException;
-	Collection<String[]> retrieveApplicationProperties(String startsWith) throws SectioningException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException;
 	Collection<String> checkCourses(CourseRequestInterface request) throws SectioningException;
 	ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException;
