@@ -33,7 +33,6 @@ public interface SectioningServiceAsync {
 	void listAcademicSessions(AsyncCallback<Collection<String[]>> callback) throws SectioningException;
 	void retrieveCourseDetails(Long sessionId, String course, AsyncCallback<String> callback) throws SectioningException;
 	void listClasses(Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws IllegalArgumentException;
-	void retrieveApplicationProperties(String startsWith, AsyncCallback<Collection<String[]>> callback) throws SectioningException;
 	void retrieveCourseOfferingId(Long sessionId, String course, AsyncCallback<Long> callback) throws SectioningException;
 	void section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException;
 	void checkCourses(CourseRequestInterface request, AsyncCallback<Collection<String>> callback) throws SectioningException;
