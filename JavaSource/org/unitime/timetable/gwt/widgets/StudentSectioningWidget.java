@@ -533,7 +533,7 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(null),
 								new WebTable.Cell(course.getSubject()),
 								new WebTable.Cell(course.getCourseNbr()),
-								new WebTable.Cell(unassignedMessage, 11, null));
+								new WebTable.Cell(unassignedMessage, 12, null));
 						row.setId(course.getCourseId().toString());
 						iLastResult.add(course.addClassAssignment());
 					}
