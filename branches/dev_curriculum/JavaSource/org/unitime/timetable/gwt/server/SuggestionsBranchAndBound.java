@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -128,6 +129,17 @@ public class SuggestionsBranchAndBound {
             iTimeoutReached = true;
         int nrUnassigned = requests2resolve.size() - idx;
         if (nrUnassigned==0) {
+        	List<FreeTimeRequest> okFreeTimes = new ArrayList<FreeTimeRequest>();
+        	for (Request r: iStudent.getRequests()) {
+        		if (r.getAssignment() == null && r instanceof FreeTimeRequest) {
+        			FreeTimeRequest ft = (FreeTimeRequest)r;
+            		Enrollment enrollment = ft.createEnrollment();
+            		if (iModel.conflictValues(enrollment).isEmpty()) {
+            			ft.assign(0, enrollment);
+            			okFreeTimes.add(ft);
+            		}
+        		}
+        	}
     		Suggestion s = new Suggestion(requests2resolve);
     		if (iSuggestions.size() >= iMaxSuggestions && iSuggestions.last().compareTo(s) <= 0) return;
     		for (Iterator<Suggestion> i = iSuggestions.iterator(); i.hasNext();) {
@@ -140,6 +152,8 @@ public class SuggestionsBranchAndBound {
     		s.init();
 			iSuggestions.add(s);
 			if (iSuggestions.size() > iMaxSuggestions) iSuggestions.remove(iSuggestions.last());
+			for (FreeTimeRequest ft: okFreeTimes)
+				ft.unassign(0);
         	return;
         }
         if (!canContinue(requests2resolve, idx, depth)) return;
