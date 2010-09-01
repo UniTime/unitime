@@ -41,9 +41,6 @@ public abstract class AuthenticateModule implements LoginModule {
 	private Map sharedState;
 	private Map options;
 	
-	// Config option
-	private boolean debug;
-	
 	// Flags
 	private boolean authSucceeded;
 	private boolean commitSucceeded;
@@ -78,12 +75,6 @@ public abstract class AuthenticateModule implements LoginModule {
 		setUser(null);
 		setAuthSucceeded(false);
 		setCommitSucceeded(false);
-		setDebug(false);
-		
-		// Check if debug option is set in jaas config
-		String d = (String)options.get("debug");
-		if (d!=null && d.equalsIgnoreCase("true"))
-			setDebug(true);
 	}
 	
 	/**
@@ -115,13 +106,6 @@ public abstract class AuthenticateModule implements LoginModule {
 	}
 	public void setCommitSucceeded(boolean commitSucceeded) {
 		this.commitSucceeded = commitSucceeded;
-	}
-	
-	public boolean isDebug() {
-		return debug;
-	}
-	public void setDebug(boolean debug) {
-		this.debug = debug;
 	}
 	
 	public Map getOptions() {

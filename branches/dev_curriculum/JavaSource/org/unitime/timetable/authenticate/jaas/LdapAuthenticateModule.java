@@ -39,6 +39,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
+import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
@@ -48,6 +49,7 @@ import org.unitime.timetable.model.TimetableManager;
  * @author Tomas Muller
  */
 public class LdapAuthenticateModule extends AuthenticateModule {
+	private static Logger sLog = Logger.getLogger(LdapAuthenticateModule.class);
 	private String iExternalUid;
 	
 	/**
@@ -99,13 +101,13 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 
             // Check at least one role is found
             if (p.getRoles().isEmpty() && !"true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false"))) {
-                if (isDebug()) System.out.println("Role not found. Access Denied to User: " + getUser());
+                sLog.debug("Role not found. Access Denied to User: " + getUser());
                 throw new LoginException ("Role not found. Access Denied to User: " + getUser());
             }
         
             // Create user principal
-            if (isDebug()) System.out.println("User Roles: " + p.getRoles());
-            if (isDebug()) System.out.println("User Depts: " + p.getDepartments());
+            sLog.debug("User Roles: " + p.getRoles());
+            sLog.debug("User Depts: " + p.getDepartments());
 
 
             // Add user object to subjects public credentials
@@ -135,7 +137,7 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 		// Skip this module when LDAP provider is not set
 		if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider") == null) return false;
 
-		if (isDebug()) System.out.println("Performing ldap authentication ... ");
+		sLog.debug("Performing ldap authentication ... ");
 
 		// Get callback parameters
 		if (getCallbackHandler() == null)
@@ -158,12 +160,12 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 			if (doAuthenticate(userProps)) return true;
 			
 			// Authentication failed
-			if (isDebug()) System.out.println("Ldap authentication failed ... ");
+			sLog.debug("Ldap authentication failed ... ");
 			setAuthSucceeded(false);
 			return false;
 		} 
 		catch (Exception ex) {
-			if (isDebug()) System.out.println("Ldap authentication failed ... " + ex.getMessage());
+			sLog.debug("Ldap authentication failed ... " + ex.getMessage(), ex);
 			setAuthSucceeded(false);
 			return false;
 		}
@@ -237,7 +239,7 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 		
 		Attribute idAttribute = attributes.get(idAttributeName);
         if (idAttribute!=null) {
-            if (isDebug()) System.out.println("Ldap authentication passed ... ");
+            sLog.debug("Ldap authentication passed ... ");
             setAuthSucceeded(true);
             iExternalUid = (String)idAttribute.get();
             try {
