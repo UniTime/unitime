@@ -36,10 +36,12 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
 public class SuggestionSelection extends BranchBoundSelection {
-	protected double iPreferenceWeight = 1000.0;
+	protected double iPreferenceWeight = 100000.0;
 	protected double iNoTimeWeight = 1.0;
-	protected double iNotAssignedWeight = 100.0;
+	protected double iNotAssignedWeight = 10000.0;
 	protected double iOnlinePenaltyWeight = 10.0;
+	protected double iOverlappingFreeTimeWeight = 10.0;
+	protected double iPriorotyFactor = 0.90;
 	protected Hashtable<CourseRequest, Set<Section>> iPreferredSections, iRequiredSections;
 	protected Set<FreeTimeRequest> iRequiredFreeTimes;
 	
@@ -51,6 +53,8 @@ public class SuggestionSelection extends BranchBoundSelection {
     	iNotAssignedWeight = properties.getPropertyDouble("Suggestions.NotAssignedWeight", iNotAssignedWeight);
     	iOnlinePenaltyWeight = properties.getPropertyDouble("Suggestions.OnlinePenaltyWeight", iOnlinePenaltyWeight);
         iDistConfWeight = properties.getPropertyDouble("Suggestions.DistanceConflictWeight", 25.0);
+        iOverlappingFreeTimeWeight = properties.getPropertyDouble("Suggestions.OverlappingFreeTimeWeight", iOverlappingFreeTimeWeight);
+        iPriorotyFactor = properties.getPropertyDouble("Suggestions.PriorityFactor", iPriorotyFactor);
     	iPreferredSections = preferredSections;
     	iRequiredSections = requiredSections;
     	iMinimizePenalty = true;
@@ -103,7 +107,7 @@ public class SuggestionSelection extends BranchBoundSelection {
                 if (iAssignment[i] != null)
                     bestPenalty += getAssignmentPenalty(i);
                 else
-                	bestPenalty += iNotAssignedWeight / (1 + iStudent.getRequests().get(i).getPriority());
+                	bestPenalty += iNotAssignedWeight * Math.pow(iPriorotyFactor, iStudent.getRequests().get(i).getPriority());
             return bestPenalty;
         }
         
@@ -113,6 +117,7 @@ public class SuggestionSelection extends BranchBoundSelection {
         	int hasTime = 0;
         	double noTime = 0;
         	int penalty = 0;
+        	int freeTimeOverlap = 0;
         	if (iAssignment[i].getAssignments() != null && iAssignment[i].isCourseRequest()) {
         		CourseRequest cr = (CourseRequest)iAssignment[i].getRequest();
             	int nrPreferred = 0;
@@ -136,12 +141,14 @@ public class SuggestionSelection extends BranchBoundSelection {
             		if (section.getPenalty() > 0.0) penalty++;
             	}
             	noTime = bestTime(iAssignment[i].getRequest()) - (((double)hasTime) / iAssignment[i].getAssignments().size());
+            	freeTimeOverlap = iStudent.countFreeTimeOverlaps(iAssignment[i]);
             }
         	return
         		iOnlinePenaltyWeight * penalty + 
         		iDistConfWeight * getNrDistanceConflicts(i) +
         		(1.0 - preferredFraction) * iPreferenceWeight +
-        		noTime * iNoTimeWeight;
+        		noTime * iNoTimeWeight +
+        		freeTimeOverlap * iOverlappingFreeTimeWeight;
         }
         
         public boolean isAllowed(int idx, Enrollment enrollment) {
