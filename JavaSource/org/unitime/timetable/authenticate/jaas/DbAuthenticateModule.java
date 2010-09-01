@@ -33,6 +33,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
+import org.apache.log4j.Logger;
 import org.unitime.commons.Base64;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Department;
@@ -47,8 +48,9 @@ import org.unitime.timetable.model.dao.UserDAO;
  * Options: debug=true/false
  * @author Heston Fernandes
  */
-public class DbAuthenticateModule 
-	extends AuthenticateModule {
+public class DbAuthenticateModule extends AuthenticateModule {
+	private static Logger sLog = Logger.getLogger(DbAuthenticateModule.class);
+
 
     // --------------------------------------------------------- Instance Variables
 
@@ -114,13 +116,13 @@ public class DbAuthenticateModule
 
             // Check at least one role is found
             if (p.getRoles().isEmpty() && !"true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false"))) {
-                if (isDebug()) System.out.println("Role not found. Access Denied to User: " + getUser());
+            	sLog.debug("Role not found. Access Denied to User: " + getUser());
                 throw new LoginException ("Role not found. Access Denied to User: " + getUser());
             }
 		
             // Create user principal
-            if (isDebug()) System.out.println("User Roles: " + p.getRoles());
-            if (isDebug()) System.out.println("User Depts: " + p.getDepartments());
+            sLog.debug("User Roles: " + p.getRoles());
+            sLog.debug("User Depts: " + p.getDepartments());
 
 
 			// Add user object to subjects public credentials
@@ -152,7 +154,7 @@ public class DbAuthenticateModule
 	 */
 	public boolean login() throws LoginException {
 
-		if (isDebug()) System.out.println("Performing db authentication ... ");
+		sLog.debug("Performing db authentication ... ");
 
 		// Get callback parameters
 		if (getCallbackHandler() == null)
@@ -176,12 +178,12 @@ public class DbAuthenticateModule
 				return true;
 			
 			// Authentication failed
-			if (isDebug()) System.out.println("Db authentication failed ... ");
+			sLog.debug("Db authentication failed ... ");
 			setAuthSucceeded(false);
 			return false;
 		} 
 		catch (Exception ex) {
-			if (isDebug()) System.out.println("Db authentication failed ... " + ex.getMessage());
+			sLog.debug("Db authentication failed ... " + ex.getMessage(), ex);
 			setAuthSucceeded(false);
 			return false;
 		}
@@ -218,7 +220,7 @@ public class DbAuthenticateModule
 			
 			// Authentication succeeded
 			if (checkPassword(p, pwd)) {
-				if (isDebug()) System.out.println("Db authentication passed ... ");
+				sLog.debug("Db authentication passed ... ");
 				setAuthSucceeded(true);
 				iExternalUid = u.getExternalUniqueId();
 				setUser(n);
