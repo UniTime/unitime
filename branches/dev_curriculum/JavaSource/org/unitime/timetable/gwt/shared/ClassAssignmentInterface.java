@@ -332,7 +332,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public void setSaved(boolean saved) { iSaved = saved; }
 		
 		public void setExpected(int expected) { iExpected = expected; }
-		public void setExpected(double expected) { iExpected = (int)Math.round(expected); }
+		public void setExpected(double expected) { iExpected = (int)Math.ceil(expected); }
 		public boolean hasExpected() { return iExpected != null; }
 		public int getExpected() { return (iExpected == null ? 0 : iExpected); }
 		public boolean isOfHighDemand() {
