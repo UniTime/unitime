@@ -523,7 +523,7 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getStartString()),
 								new WebTable.Cell(clazz.getEndString()),
 								new WebTable.Cell(clazz.getDatePattern()),
-								new WebTable.Cell(unassignedMessage, 4, null));
+								new WebTable.Cell(unassignedMessage, 5, null));
 						row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
 						break;
