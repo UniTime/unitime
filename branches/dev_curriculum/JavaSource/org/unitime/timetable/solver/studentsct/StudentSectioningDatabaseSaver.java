@@ -38,6 +38,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
@@ -97,13 +98,20 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             save(session, hibSession);
             
-            tx.commit();
+            tx.commit(); tx = null;
             
-            SectioningServer.allStudentsChanged(session.getUniqueId());
+            iProgress.setPhase("Notifying student sectioning server", 1);
+            if (RemoteSolverServer.getServerThread()!=null) {
+                RemoteSolverServer.query(new Object[]{"SectioningServer.allStudentsChanged", session.getUniqueId()});
+            } else {
+                SectioningServer.allStudentsChanged(session.getUniqueId());
+            }
+            iProgress.incProgress();
+            
         } catch (Exception e) {
             iProgress.fatal("Unable to save student schedule, reason: "+e.getMessage(),e);
             sLog.error(e.getMessage(),e);
-            tx.rollback();
+            if (tx != null) tx.rollback();
         } finally {
             // here we need to close the session since this code may run in a separate thread
             if (hibSession!=null && hibSession.isOpen()) hibSession.close();
@@ -151,11 +159,13 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
                         wl.setTimestamp(new Date());
                         wl.setType(new Integer(0));
+                        s.getWaitlists().add(wl);
                         hibSession.save(wl);
                     }
                 } else {
                     org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
                     if (cr==null) continue;
+                    cr.getClassEnrollments().clear();
                     for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
                         Section section = (Section)i.next();
                         StudentClassEnrollment sce = new StudentClassEnrollment();
@@ -164,11 +174,15 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         sce.setCourseRequest(cr);
                         sce.setCourseOffering(cr.getCourseOffering());
                         sce.setTimestamp(new Date());
+                        s.getClassEnrollments().add(sce);
+                        cr.getClassEnrollments().add(sce);
                         hibSession.save(sce);
                     }
+                    hibSession.saveOrUpdate(cr);
                 }
             }
         }
+        hibSession.saveOrUpdate(s);
     }    
     
     public void save(Session session, org.hibernate.Session hibSession) {
