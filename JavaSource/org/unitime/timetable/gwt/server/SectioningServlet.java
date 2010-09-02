@@ -60,8 +60,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -376,6 +378,12 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			if (userName == null || userName.isEmpty()) throw new SectioningException(SectioningExceptionType.LOGIN_NO_USERNAME);
 			
+			String studentId = null;
+			if (userName.indexOf('/') >= 0) {
+				studentId = userName.substring(userName.indexOf('/') + 1);
+				userName = userName.substring(0, userName.indexOf('/'));
+			}
+			
 			UserPasswordHandler handler = new UserPasswordHandler(userName,	password);
 			LoginContext lc = new LoginContext("Timetabling", new Subject(), handler, new LoginConfiguration());
 			lc.login();
@@ -392,6 +400,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					User user = (User) o;
 					
 					principal = new UniTimePrincipal(user.getId(), user.getName());
+					
+					if (studentId != null) {
+						if (!user.getRoles().contains(Roles.ADMIN_ROLE)) { principal = null; continue; }
+						org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
+						try {
+							List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", studentId).list();
+							if (student.isEmpty()) { principal = null; continue; };
+							for (Student s: student) {
+								principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
+								principal.setName(s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+							}
+						} finally {
+							hibSession.close();
+						}
+					}
 
 					break;
 				}
@@ -400,6 +423,11 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (principal == null) throw new SectioningException(SectioningExceptionType.LOGIN_FAILED);
 			getThreadLocalRequest().getSession().setAttribute("user", principal);
 			getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
+			
+			CourseRequestInterface req = getLastRequest();
+			if (req != null && req.getCourses().isEmpty())
+				setLastRequest(null);
+			
 			return principal.getName();
 		} catch (LoginException e) {
 			if ("Login Failure: all modules ignored".equals(e.getMessage())) {
@@ -424,8 +452,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (getThreadLocalRequest().getSession().isNew()) throw new SectioningException(SectioningExceptionType.USER_NOT_LOGGED_IN);
 		if (principal == null) {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user != null)
+			if (user != null) {
 				principal = new UniTimePrincipal(user.getId(), user.getName());
+				getThreadLocalRequest().getSession().setAttribute("user", principal);
+			}
 		}
 		if (principal == null) return "Guest";
 		return principal.getName();
@@ -459,7 +489,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public void setLastRequest(CourseRequestInterface request) {
-		getThreadLocalRequest().getSession().setAttribute("request", request);
+		if (request == null)
+			getThreadLocalRequest().getSession().removeAttribute("request");
+		else
+			getThreadLocalRequest().getSession().setAttribute("request", request);
 	}
 	
 	public String[] lastAcademicSession() throws SectioningException {

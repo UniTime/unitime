@@ -22,19 +22,37 @@ package org.unitime.timetable.gwt.server;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.List;
+
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.StudentDAO;
 
 public class UniTimePrincipal implements Principal, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String iExternalId;
 	private String iName;
-	private Long iManagerId = null;
 	private HashMap<Long, Long> iStudentId = new HashMap<Long, Long>();
 	
 	public UniTimePrincipal(String externalId, String name) {
 		if (externalId == null) throw new NullPointerException();
 		iExternalId = externalId;
 		iName = name;
+		
+		org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
+		try {
+			List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", externalId).list();
+			if (!student.isEmpty()) {
+				for (Student s: student) {
+					addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
+					iName = s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				}
+			}
+		} finally {
+			hibSession.close();
+		}
+
 	}
 	
 	public String getExternalId() { return iExternalId; }
@@ -42,10 +60,6 @@ public class UniTimePrincipal implements Principal, Serializable {
 	
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
-	
-	public boolean isManager() { return iManagerId != null; }
-	public Long getManagerId() { return iManagerId; }
-	public void setManagerId(Long managerId) { iManagerId = managerId; }
 	
 	public Long getStudentId(Long sessionId) { return iStudentId.get(sessionId); }
 	public void addStudentId(Long sessionId, Long studentId) { iStudentId.put(sessionId, studentId); }
