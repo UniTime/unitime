@@ -62,6 +62,7 @@ import org.dom4j.io.XMLWriter;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -657,6 +658,7 @@ public class StudentSectioningTest {
             tx.rollback();
             throw new RuntimeException(e);
         }
+        SectioningServer.studentChanged(s.getSession().getUniqueId(), s.getUniqueId());
         hibSession.refresh(s);
     }
     
