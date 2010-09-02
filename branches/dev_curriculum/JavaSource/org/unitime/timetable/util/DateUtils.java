@@ -116,7 +116,6 @@ public class DateUtils {
         int idx = cal.get(Calendar.DAY_OF_YEAR);
         if (month < 0 || month >= 12) {
         	int actualYear = calculateActualYear(month, year);
-            //TODO: checked OK, tested OK
         	if (month < 0){
         		while (actualYear < year){
         			cal.set(actualYear, 11, 31);

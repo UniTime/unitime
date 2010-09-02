@@ -104,7 +104,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		if (getPattern()==null || getOffset()==null) return null;
 		int startMonth = getSession().getStartMonth() - 3;
 		int endMonth = getSession().getEndMonth() + 3;
-		//TODO: checked OK, tested OK
 		int size = getSession().getDayOfYear(0,endMonth+1)-getSession().getDayOfYear(1,startMonth);
 		iCachedPatternBitSet = new BitSet(size);
 		int offset = getPatternOffset() - getSession().getDayOfYear(1,startMonth);
@@ -117,14 +116,12 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	
 	public boolean isOffered(int day, int month) {
 		if (getPattern()==null || getOffset()==null) return false;
-		// TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(day, month)-getPatternOffset();
 		if (idx<0 || idx>=getPattern().length()) return false;
 		return (getPattern().charAt(idx)=='1');
 	}
 	
 	public boolean isUsed(int day, int month, Set usage) {
-		//TODO: checked OK, tested OK
 		if (usage==null || getPattern()==null || getOffset()==null) return false;
 		return usage.contains(new Integer(getSession().getDayOfYear(day, month)));
 	}
@@ -137,7 +134,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				if (d>1) sb.append(",");
@@ -175,7 +171,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return sb.toString();
 	}
 	
-	//TODO: checked OK, tested OK
 	public HashMap getPatternDateStringHashMaps() {
 		Calendar startDate = Calendar.getInstance(Locale.US);
 		startDate.setTime(getStartDate());
@@ -369,7 +364,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         if (includeScript)
             sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
-		//TODO: checked OK, tested OK
 		sb.append(
 			"calGenerate("+getSession().getSessionStartYear()+","+
 				(getSession().getStartMonth() - 3) +","+
@@ -390,14 +384,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		int firstOne = 0, lastOne = 0;
 		int year = getSession().getSessionStartYear();
 		StringBuffer sb = null;
-		//TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(1,startMonth);
 		for (int m=startMonth;m<=endMonth;m++) {
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			int yr = DateUtils.calculateActualYear(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
-				//TODO: checked OK, tested OK
 				String offered = request.getParameter("cal_val_"+yr+"_"+((12+m)%12)+"_"+d);
 				if (offered!=null) {
 					if (sb!=null || !offered.equals("0")) {
