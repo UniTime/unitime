@@ -343,7 +343,7 @@ public class StudentSectioningWidget extends Composite {
 								WebTable.Row row = iAssignments.getRows()[idx];
 								WebTable.Cell c = (ca.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell(""));
 								c.setStyleName(row.getCell(row.getNrCells() - 1).getStyleName());
-								row.setCell(row.getNrCells() - 1, c);
+								row.setCell(row.getNrCells() - 2, c);
 								ArrayList<Meeting> meetings = iAssignmentGrid.getMeetings(idx);
 								if (meetings != null)
 									for (TimeGrid.Meeting m: meetings) m.setSaved(ca.isSaved());
