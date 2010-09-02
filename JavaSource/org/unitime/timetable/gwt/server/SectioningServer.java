@@ -952,6 +952,7 @@ public class SectioningServer {
 	
 	protected void studentChanged(Collection<Long> studentIds) {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
+		sLog.info(studentIds.size() + " student schedules changed.");
 		synchronized (iCourseTable) {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
@@ -982,6 +983,7 @@ public class SectioningServer {
 	}
 	
 	protected void classChanged(Collection<Long> classIds) {
+		sLog.info(classIds.size() + " class assignments changed.");
 		synchronized (iCourseTable) {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
@@ -1120,7 +1122,60 @@ public class SectioningServer {
 	public static void allStudentsChanged(Long academicSessionId) {
 		SectioningServer server = getInstance(academicSessionId);
 		if (server != null) {
+			sLog.info("All students changed for " + server.getAcademicSession());
 			server.allStudentsChanged();
 		}		
+	}
+
+	public static synchronized void sessionStatusChanged(Long academicSessionId, boolean reload, boolean async) {
+		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
+		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		try {
+			final Session session = SessionDAO.getInstance().get(academicSessionId, hibSession);
+			
+			if (session == null) {
+				sInstances.remove(academicSessionId);
+				return;
+			}
+			sLog.info("Session status changed for " + session.getLabel());
+			
+			boolean load = true;
+			if (year != null && !year.equals(session.getAcademicYear())) load = false;
+			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
+			if (year == null && term == null &&
+				!session.getStatusType().canNoRoleReportClass()) load = false;
+
+			if (!load) {
+				if (getInstance(academicSessionId) != null) {
+					sLog.info("Unloading " + getInstance(academicSessionId).getAcademicSession());
+				}
+				sInstances.remove(academicSessionId);
+				return;
+			}
+			
+			SectioningServer server = getInstance(academicSessionId);
+			if (server == null || reload) {
+				if (async) {
+					Thread t = new Thread(new Runnable() {
+						public void run() {
+							try {
+								SectioningServer.createInstance(session.getUniqueId());
+							} catch (Exception e) {
+								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
+										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+							}
+						}
+					});
+					t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
+					t.setDaemon(true);
+					t.start();
+				} else {
+					createInstance(academicSessionId);
+				}
+			}			
+		} finally {
+			hibSession.close();
+		}
 	}
 }
