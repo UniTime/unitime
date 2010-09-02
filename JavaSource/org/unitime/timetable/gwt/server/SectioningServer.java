@@ -951,6 +951,7 @@ public class SectioningServer {
 	}
 	
 	protected void studentChanged(Collection<Long> studentIds) {
+		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
 		synchronized (iCourseTable) {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
@@ -1082,5 +1083,44 @@ public class SectioningServer {
 				list.add(classId);
 			server.classChanged(list);
 		}
+	}
+	
+	protected void allStudentsChanged() {
+		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
+		synchronized (iCourseTable) {
+			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+			try {
+				for (Student student: iStudentTable.values()) {
+					for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+						Request r = (Request)e.next();
+						if (r.getAssignment() != null) r.unassign(0);
+					}
+					iModel.removeStudent(student);
+				}
+				iStudentTable.clear();
+
+				List<org.unitime.timetable.model.Student> students = hibSession.createQuery(
+	                    "select distinct s from Student s " +
+	                    "left join fetch s.courseDemands as cd " +
+	                    "left join fetch cd.courseRequests as cr " +
+	                    "left join fetch s.classEnrollments as e " +
+	                    "where s.session.uniqueId=:sessionId").
+	                    setLong("sessionId",iAcademicSession.getUniqueId()).list();
+	            for (org.unitime.timetable.model.Student student: students) {
+	            	Student s = iLoader.loadStudent(student);
+	            	iModel.addStudent(s);
+	            	iLoader.assignStudent(s, student, true);
+	            }
+			} finally {
+				hibSession.close();
+			}
+		}
+	}
+	
+	public static void allStudentsChanged(Long academicSessionId) {
+		SectioningServer server = getInstance(academicSessionId);
+		if (server != null) {
+			server.allStudentsChanged();
+		}		
 	}
 }
