@@ -38,6 +38,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
+import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Roles;
@@ -202,13 +203,14 @@ public class SessionEditAction extends LookupDispatchAction {
 		  throw new Exception ("Access Denied.");
 		}
         
+        SessionEditForm sessionEditForm = (SessionEditForm) form;
+
         Transaction tx = null;
         org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
         
         try {
             tx = hibSession.beginTransaction();
 
-            SessionEditForm sessionEditForm = (SessionEditForm) form;
             Session sessn = sessionEditForm.getSession();
             
             if (sessionEditForm.getSessionId()!=null && sessn.getSessionId().intValue()!=0) 
@@ -279,6 +281,9 @@ public class SessionEditAction extends LookupDispatchAction {
             if (tx!=null) tx.rollback();
             throw e;
         }
+        
+        if (sessionEditForm.getSessionId() != null)
+        	SectioningServer.sessionStatusChanged(sessionEditForm.getSessionId(), false, true);
         
 		return mapping.findForward("showSessionList");
 	}
