@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -97,6 +98,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             save(session, hibSession);
             
             tx.commit();
+            
+            SectioningServer.allStudentsChanged(session.getUniqueId());
         } catch (Exception e) {
             iProgress.fatal("Unable to save student schedule, reason: "+e.getMessage(),e);
             sLog.error(e.getMessage(),e);
