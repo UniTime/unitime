@@ -382,7 +382,6 @@ public class CourseOfferingExport extends BaseExport {
             int charPosition = 0;
             int dayOfWeek = startDate.get(Calendar.DAY_OF_WEEK);
 
-            //TODO: checked OK
             for (int m=startMonth;m<=endMonth;m++) {
                 int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
                 int d = (m==startMonth?startDate.get(Calendar.DAY_OF_MONTH):1);

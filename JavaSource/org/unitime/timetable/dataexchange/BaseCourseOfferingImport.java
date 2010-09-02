@@ -740,7 +740,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		
 		int year;
 		if (index2 == date.length()){
-			//TODO: checked OK, tested OK
 			year = session.getSessionStartYear();
 		} else {
 			year = Integer.parseInt(date.substring(index2+1, date.length()));
