@@ -151,31 +151,20 @@ public class TimetableGridTable {
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
-	public Vector getWeeks(HttpSession httpSession) throws Exception { 
+	public Vector getWeeks(HttpSession httpSession) throws Exception {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
         Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
 		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime())-(Session.sNrExcessDays/7);
-		int endWeek = DateUtils.getWeek(session.getSessionEndDateTime())+(Session.sNrExcessDays/7);
-		Calendar startCal = Calendar.getInstance(Locale.US);
-		startCal.setTime(session.getSessionBeginDateTime());
 		Calendar endCal = Calendar.getInstance(Locale.US);
 		endCal.setTime(session.getSessionEndDateTime());
-		if (endCal.get(Calendar.YEAR) > startCal.get(Calendar.YEAR)){
-			int startYear = startCal.get(Calendar.YEAR);
-			int endYear = endCal.get(Calendar.YEAR);
-			while (startYear < endYear){
-				Calendar cal = Calendar.getInstance(Locale.US);
-				cal.set(startYear, 11, 31);
-				int weekOffset = DateUtils.getWeek(cal.getTime());
-				endWeek += weekOffset;
-				startYear++;
-			}
+		endCal.add(Calendar.DAY_OF_YEAR, Session.sNrExcessDays);
+		int week = startWeek;
+		while (DateUtils.getStartDate(session.getSessionStartYear(),week).compareTo(endCal.getTime()) <= 0) {
+			weeks.addElement(new IdValue(new Long(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
+			week++;
 		}
-		for (int i=startWeek;i<=endWeek;i++) {
-			weeks.addElement(new IdValue(new Long(i),sDF.format(DateUtils.getStartDate(session.getSessionStartYear(),i))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(),i))));
-		}
-		if (iWeek<startWeek || iWeek>endWeek) iWeek = -100;
+		if (iWeek<startWeek || iWeek>=week) iWeek = -100;
 		return weeks;
 	}
 	
