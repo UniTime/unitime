@@ -27,6 +27,9 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -49,7 +52,12 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	protected ProjectedStudentCourseDemands iFallback;
 
 	public CurriculaCourseDemands(DataProperties properties) {
-		iFallback = new ProjectedStudentCourseDemands(properties);
+		if (properties != null)
+			iFallback = new ProjectedStudentCourseDemands(properties);
+	}
+	
+	public CurriculaCourseDemands() {
+		this(null);
 	}
 	
 	public boolean isMakingUpStudents() { return true; }
@@ -80,7 +88,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		progress.setPhase("Loading curricula", curricula.size());
 		for (Curriculum curriculum: curricula) {
 			for (CurriculumClassification clasf: curriculum.getClassifications()) {
-				init(clasf);
+				init(hibSession, clasf);
 			}
 			progress.incProgress();
 		}
@@ -90,11 +98,15 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		}
 	}
 	
-	private void init(CurriculumClassification clasf) {
+	protected String getCacheName() {
+		return "curriculum-demands";
+	}
+	
+	private void init(org.hibernate.Session hibSession, CurriculumClassification clasf) {
 		if (clasf.getNrStudents() <= 0) return;
 		
-		sLog.info("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
-		
+		sLog.debug("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
+				
 		// Create model
 		CurModel m = new CurModel(clasf.getNrStudents(), lastStudentId);
 		for (CurriculumCourse course: clasf.getCourses()) {
@@ -103,12 +115,35 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		}
 		computeTargetShare(clasf, m);
 		m.setStudentLimits();
-		try {
-			sLog.info("Model:\n" + m.save());
-		} catch (IOException e) {}
 
-		// Solve model
-		m.solve();
+		// Load model from cache (if exists)
+		CurModel cachedModel = null;
+		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
+		if (cache != null && cache.getName().equals(getCacheName())) {
+			cachedModel = CurModel.loadFromXml(cache, lastStudentId);
+			cachedModel.setStudentLimits();
+		}
+
+		// Check the cached model
+		if (cachedModel != null && cachedModel.isSameModel(m)) {
+			// Reust
+			sLog.debug("  using cached model...");
+			m = cachedModel;
+		} else {
+			// Print model
+			try {
+				sLog.debug("Model:\n" + m.save());
+			} catch (IOException e) {}
+
+			// Solve model
+			m.solve();
+			
+			// Save into the cache
+			Document doc = DocumentHelper.createDocument();
+			m.saveAsXml(doc.addElement(getCacheName()));
+			clasf.setStudents(doc);
+			hibSession.update(clasf);
+		}
 		
 		// Save results
 		for (CurriculumCourse course: clasf.getCourses()) {

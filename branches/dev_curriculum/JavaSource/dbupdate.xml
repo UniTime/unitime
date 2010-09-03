@@ -2806,4 +2806,12 @@
 			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Distance')
 		</plsql>
 	</update>
+	<update version="58" date="03-Sep-2010" comment="Curriculum student cache">
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf add students longtext binary null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf add students clob
+		</plsql>
+	</update>
 </dbupdate>

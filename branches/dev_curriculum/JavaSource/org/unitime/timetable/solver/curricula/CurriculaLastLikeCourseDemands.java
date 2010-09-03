@@ -33,6 +33,10 @@ public class CurriculaLastLikeCourseDemands extends CurriculaCourseDemands {
 	public CurriculaLastLikeCourseDemands(DataProperties properties) {
 		super(properties);
 	}
+	
+	protected String getCacheName() {
+		return "curriculum-lastlike-demands";
+	}
 		
 	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
 		for (CurriculumCourse c1: clasf.getCourses()) {

@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dom4j.Document;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -35,6 +36,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	private String iName;
 	private Integer iNrStudents;
 	private Integer iOrd;
+	private Document iStudents;
 
 	private Curriculum iCurriculum;
 	private AcademicClassification iAcademicClassification;
@@ -44,6 +46,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	public static String PROP_NAME = "name";
 	public static String PROP_NR_STUDENTS = "nrStudents";
 	public static String PROP_ORD = "ord";
+	public static String PROP_STUDENTS = "students";
 
 	public BaseCurriculumClassification() {
 		initialize();
@@ -67,6 +70,9 @@ public abstract class BaseCurriculumClassification implements Serializable {
 
 	public Integer getOrd() { return iOrd; }
 	public void setOrd(Integer ord) { iOrd = ord; }
+
+	public Document getStudents() { return iStudents; }
+	public void setStudents(Document students) { iStudents = students; }
 
 	public Curriculum getCurriculum() { return iCurriculum; }
 	public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
@@ -103,6 +109,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 			"\n	Name: " + getName() +
 			"\n	NrStudents: " + getNrStudents() +
 			"\n	Ord: " + getOrd() +
+			"\n	Students: " + getStudents() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

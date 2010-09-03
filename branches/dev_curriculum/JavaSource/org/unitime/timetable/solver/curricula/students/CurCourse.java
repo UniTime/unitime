@@ -136,7 +136,7 @@ public class CurCourse extends Constraint<CurVariable, CurValue> {
 		iStudents.add(value.getStudent());
 		value.getStudent().getCourses().add(this);
 		if (value.getStudent().getCourses().size() > ((CurModel)value.variable().getModel()).getStudentLimit().getMaxLimit())
-			throw new RuntimeException("Student max limit breached for " + value.getStudent() + ".");
+			throw new RuntimeException("Student max limit breached for " + value.getStudent() + " (" + value.getStudent().getCourses().size() + " > " + ((CurModel)value.variable().getModel()).getStudentLimit().getMaxLimit() + ".");
 	}
 
 	@Override
