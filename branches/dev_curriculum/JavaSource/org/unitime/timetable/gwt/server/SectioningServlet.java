@@ -67,6 +67,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -77,6 +78,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class SectioningServlet extends RemoteServiceServlet implements SectioningService {
 	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
+	private SectioningServerUpdater iUpdater;
 
 	public void init() throws ServletException {
 		System.out.println("Student Sectioning Service is starting up ...");
@@ -85,14 +87,13 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
 		try {
+			iUpdater = new SectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
 			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
 				final Session session = i.next();
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
-				
-				if (year == null && term == null &&
-					!session.getStatusType().canNoRoleReportClass()) continue;
+				if (!session.getStatusType().canNoRoleReportClass()) continue;
 
 				int nrSolutions = ((Number)hibSession.createQuery(
 						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
@@ -122,6 +123,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					}
 				}
 			}
+			iUpdater.start();
 		} catch (Exception e) {
 			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
 		} finally {
@@ -131,6 +133,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public void destroy() {
 		System.out.println("Student Sectioning Service is going down ...");
+		iUpdater.stopUpdating();
+		SectioningServer.unloadAll();
 	}
 	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException {

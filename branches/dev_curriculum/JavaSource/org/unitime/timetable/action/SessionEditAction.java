@@ -38,13 +38,13 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -276,15 +276,15 @@ public class SessionEditAction extends LookupDispatchAction {
                     null, 
                     null);
             
+            if (sessionEditForm.getSessionId() != null)
+            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionEditForm.getSessionId(), false);
+            
             tx.commit() ;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             throw e;
         }
-        
-        if (sessionEditForm.getSessionId() != null)
-        	SectioningServer.sessionStatusChanged(sessionEditForm.getSessionId(), false, true);
-        
+                
 		return mapping.findForward("showSessionList");
 	}
 

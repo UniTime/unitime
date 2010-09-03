@@ -42,7 +42,6 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -409,9 +408,6 @@ public class SolverRegisterService extends Thread {
                                 (String)cmd[3]);
                     }
                     return null;
-                }
-                if ("SectioningServer.allStudentsChanged".equals(cmd[0])) {
-                	SectioningServer.allStudentsChanged((Long)cmd[1]);
                 }
 			}
 			sLog.warn("Unknown command "+command);

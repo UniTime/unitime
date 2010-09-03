@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.dom4j.Element;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -35,6 +34,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.test.UpdateExamConflicts;
@@ -171,6 +171,9 @@ public class StudentEnrollmentImport extends BaseImport {
         		}
         		getHibSession().update(student);
  	        }
+ 	        
+ 	        if (!updatedStudents.isEmpty())
+ 	 	        StudentSectioningQueue.studentChanged(getHibSession(), session.getUniqueId(), updatedStudents);
             
             commitTransaction();
             
@@ -180,9 +183,6 @@ public class StudentEnrollmentImport extends BaseImport {
 			rollbackTransaction();
 			throw e;
 		}
-		
-		if (session != null && !updatedStudents.isEmpty())
-            SectioningServer.studentChanged(session.getUniqueId(), updatedStudents);
 		
         if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.finalExam.updateConflicts","false"))) {
             try {

@@ -2814,4 +2814,27 @@
 			alter table %SCHEMA%.curriculum_clasf add students clob
 		</plsql>
 	</update>
+	<update version="59" date="03-Sep-2010" comment="Sectioning queue">
+		<mysql>
+			create table %SCHEMA%.sectioning_queue (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				type bigint(10)  not null,
+				time_stamp datetime not null,
+				message longtext binary null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.sectioning_queue (
+				uniqueid number(20,0) constraint nn_sect_queue_uniqueid not null,
+				session_id number(20,0) constraint nn_sect_queue_session not null,
+				type number(10) constraint nn_sect_queue_type not null,
+				time_stamp timestamp constraint nn_sect_queue_ts not null,
+				message clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_queue add constraint pk_sect_queue primary key (uniqueid)</plsql>
+		<mysql>create index idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</mysql>
+		<plsql>create index %SCHEMA%idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</plsql>
+	</update>
 </dbupdate>
