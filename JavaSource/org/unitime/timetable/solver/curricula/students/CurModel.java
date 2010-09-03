@@ -30,12 +30,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Element;
 
 import net.sf.cpsolver.ifs.model.Model;
 import net.sf.cpsolver.ifs.model.Neighbour;
@@ -57,7 +59,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	public CurModel(int nrStudents, IdGenerator gen) {
 		for (int i = 0; i < nrStudents; i++)
 			iStudents.add(new CurStudent(-gen.newId()));
-		iStudentLimit = new CurStudentLimit(0, nrStudents);
+		iStudentLimit = new CurStudentLimit(0, Integer.MAX_VALUE);
 	}
 	
 	public void addCourse(Long courseId, String courseName, int nrStudents) {
@@ -80,7 +82,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		double avg = nrStudentCourses / getStudents().size();
 		int maxLimit = 1 + (int)Math.ceil(avg);
 		int minLimit = (int)Math.floor(avg) - 1;
-		sLog.info("Student course limit <" + minLimit + "," + maxLimit + ">");
+		sLog.debug("Student course limit <" + minLimit + "," + maxLimit + ">");
 		iStudentLimit = new CurStudentLimit(minLimit, maxLimit);
 		addGlobalConstraint(iStudentLimit);
 	}
@@ -191,7 +193,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			
 			@Override
 			public void bestSaved(Solution<CurVariable, CurValue> solution) {
-				sLog.info(solution.getModel().toString()+", i:" + solution.getIteration());
+				sLog.debug(solution.getModel().toString()+", i:" + solution.getIteration());
 			}
 			
 			@Override
@@ -212,10 +214,10 @@ public class CurModel extends Model<CurVariable, CurValue> {
         Solution<CurVariable, CurValue> solution = solver.lastSolution();
         solution.restoreBest();
 
-        sLog.info("Best solution found after " + solution.getBestTime() + " seconds ("
+        sLog.debug("Best solution found after " + solution.getBestTime() + " seconds ("
                 + solution.getBestIteration() + " iterations).");
-        sLog.info("Number of assigned variables is " + solution.getModel().assignedVariables().size());
-        sLog.info("Total value of the solution is " + solution.getModel().getTotalValue());
+        sLog.debug("Number of assigned variables is " + solution.getModel().assignedVariables().size());
+        sLog.debug("Total value of the solution is " + solution.getModel().getTotalValue());
     }
 
     private static String lpad(String s, int len, char ch) {
@@ -223,8 +225,68 @@ public class CurModel extends Model<CurVariable, CurValue> {
     	return s;
     }
     
+    public void saveAsXml(Element root) {
+    	List<Long> courses = new ArrayList<Long>();
+    	for (CurCourse course: getCourses()) {
+    		Element courseElement = root.addElement("course");
+    		courseElement.addAttribute("id", course.getCourseId().toString());
+    		courseElement.addAttribute("name", course.getCourseName());
+    		courseElement.addAttribute("limit", String.valueOf(course.getNrStudents()));
+    		if (!courses.isEmpty()) {
+        		String share = "";
+    			for (Long other: courses) {
+    				share += (share.isEmpty() ? "" : ",") + course.getTargetShare(other);
+    			}
+				courseElement.addAttribute("share", share);
+    		}
+			courses.add(course.getCourseId());
+    	}
+		for (CurStudent student: getStudents()) {
+			Element studentElement = root.addElement("student");
+			String courseIds = "";
+			for (CurCourse course: student.getCourses()) {
+				courseIds += (courseIds.isEmpty() ? "" : ",") + course.getCourseId();
+			}
+			studentElement.setText(courseIds);
+		}
+    }
+    
+    public static CurModel loadFromXml(Element root, IdGenerator idGen) {
+    	List<Element> students = root.elements("student");
+		CurModel m = new CurModel(students.size(), idGen);
+    	List<Long> courses = new ArrayList<Long>();
+		for (Iterator<Element> i = root.elementIterator("course"); i.hasNext();) {
+			Element courseElement = i.next();
+			Long courseId = Long.valueOf(courseElement.attributeValue("id"));
+			String courseName = courseElement.attributeValue("name");
+			int nrStudents = Integer.parseInt(courseElement.attributeValue("limit"));
+			m.addCourse(courseId, courseName, nrStudents);
+    		if (!courses.isEmpty()) {
+    			String share[] = courseElement.attributeValue("share").split(",");
+    			for (int j = 0; j < courses.size(); j++)
+    				m.setTargetShare(courseId, courses.get(j), Integer.parseInt(share[j]));
+    		}
+    		courses.add(courseId);
+		}
+		int idx = 0;
+		for (Element studentElement: students) {
+			CurStudent student = m.getStudents().get(idx++);
+			String courseIds = studentElement.getText();
+			if (courseIds != null && !courseIds.isEmpty()) {
+				for (String courseId: courseIds.split(",")) {
+					CurCourse course = m.getCourse(Long.valueOf(courseId));
+					CurVariable var = null;
+					for (CurVariable v: course.variables())
+						if (v.getAssignment() == null) { var = v; break; }
+					var.assign(0, new CurValue(var, student));
+				}
+			}
+		}
+		return m;
+    }
+    
     public void save(PrintWriter out) throws IOException {
-    	out.println(getStudents().size() + ", " + getCourses().size() + ", " + (getStudentLimit().getMaxLimit() < getStudents().size() || getStudentLimit().getMinLimit() > 0 ? "1" : "0"));
+    	out.println(getStudents().size() + ", " + getCourses().size() + ", " + (getStudentLimit().getMaxLimit() < getCourses().size() || getStudentLimit().getMinLimit() > 0 ? "1" : "0"));
 		TreeSet<CurCourse> courses = new TreeSet<CurCourse>(new Comparator<CurCourse>() {
 			public int compare(CurCourse c1, CurCourse c2) {
 				int cmp = c1.getCourseName().compareTo(c2.getCourseName());
@@ -313,7 +375,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     
     public void naive(DataProperties cfg) {
 		int idle = 0, it = 0;
-		sLog.info("  -- initial value: " + getTotalValue());
+		sLog.debug("  -- initial value: " + getTotalValue());
 		double best = getTotalValue();
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
@@ -329,18 +391,18 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			}
 			if (getTotalValue() < best) {
 				best = getTotalValue();
-				sLog.info("  -- best value: " + getTotalValue());
+				sLog.debug("  -- best value: " + getTotalValue());
 			}
 			it++; idle++;
 		}
-		sLog.info("  -- final value: " + getTotalValue());
+		sLog.debug("  -- final value: " + getTotalValue());
     }
     
     public void hc(DataProperties cfg) {
 		int it = 0, idle = 0;
 		double total = getTotalValue();
 		double best = total;
-		sLog.info("  -- initial value: " + total);
+		sLog.debug("  -- initial value: " + total);
 		CurHillClimber hc = new CurHillClimber(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
 		while (idle < 1000) {
@@ -351,18 +413,18 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			n.assign(it);
 			if (total < best) {
 				best = total;
-				sLog.info("  -- best value: " + getTotalValue());
+				sLog.debug("  -- best value: " + getTotalValue());
 			}
 			it++;
 		}
-		sLog.info("  -- final value: " + getTotalValue());
+		sLog.debug("  -- final value: " + getTotalValue());
     }
     
     public void deluge(DataProperties cfg) {
 		int it = 0;
 		double total = getTotalValue();
 		double bound = 1.25 * total;
-		sLog.info("  -- initial value: " + total);
+		sLog.debug("  -- initial value: " + total);
 		double best = getTotalValue();
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
@@ -374,7 +436,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 					n.assign(it);
 					if (total + value < best) {
 						best = total + value;
-						sLog.info("  -- best value: " + getTotalValue() + ", bound: " + bound);
+						sLog.debug("  -- best value: " + getTotalValue() + ", bound: " + bound);
 					}
 					total += value;
 				}
@@ -382,13 +444,13 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			bound *= 0.999999;
 			it++;
 		}
-		sLog.info("  -- final value: " + getTotalValue());
+		sLog.debug("  -- final value: " + getTotalValue());
     }
     
     public void fast(DataProperties cfg) {
 		int idle = 0, it = 0;
 		double total = getTotalValue();
-		sLog.info("  -- initial value: " + total);
+		sLog.debug("  -- initial value: " + total);
 		double best = total;
 		CurSimpleMove m = new CurSimpleMove(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
@@ -406,11 +468,11 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		}
 			if (total < best) {
 				best = total;
-				sLog.info("  -- best value: " + best);
+				sLog.debug("  -- best value: " + best);
 			}
 			it++; idle++;
 		}
-		sLog.info("  -- final value: " + getTotalValue());
+		sLog.debug("  -- final value: " + getTotalValue());
     }
     
     public void solve() {
@@ -423,12 +485,12 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		if (student == null) break;
     		student.variable().assign(solution.getIteration(), student);
     	}
-		sLog.info("  -- initial value: " + getTotalValue());
+		sLog.debug("  -- initial value: " + getTotalValue());
 		hc(cfg); // or fast(cfg);
 		deluge(cfg); // or naive(cfg);
     }
     
-    public boolean equals(Object o) {
+    public boolean isSameModel(Object o) {
     	if (o == null || !(o instanceof CurModel)) return false;
     	CurModel m = (CurModel)o;
     	if (getStudents().size() != m.getStudents().size()) return false;
@@ -457,7 +519,14 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		*/
     		
     		CurModel m = CurModel.load("/Users/muller/test3.cur");
-    		// m.setStudentLimits();
+    		
+    		/*
+            CurModel n = CurModel.loadFromXml((new SAXReader()).read("/Users/muller/test3.xml"), new IdGenerator());
+            n.setStudentLimits();
+            sLog.info("Same model: " + m.isSameModel(n) + ", " + n.isSameModel(m));
+    		*/
+
+            // m.setStudentLimits();
     		// m.solve();
 
     		sLog.info("Solution: " + ToolBox.dict2string(m.getInfo(), 2));
@@ -488,6 +557,17 @@ public class CurModel extends Model<CurVariable, CurValue> {
     			sLog.info(student.getStudentId() + ": " + student.getCourses().size() + "/" + student.getCourses());
     		}
     		sLog.info("Solution: " + m.save());
+    		
+    		/*
+			Document doc = DocumentHelper.createDocument();
+			m.saveAsXml(doc);
+			FileOutputStream fos = new FileOutputStream("/Users/muller/test3.xml");
+            (new XMLWriter(fos, OutputFormat.createPrettyPrint())).write(doc);
+            fos.flush();
+            fos.close();
+            */
+
+			// sLog.info("Solution as XML: " + doc.asXML());
     		    		
     	} catch (Exception e) {
     		e.printStackTrace();

@@ -146,6 +146,14 @@
 			type="java.lang.Integer"
 			not-null="true"
 		/>
+		
+		 <property 
+		     lazy="true"
+		     name="students"
+	    	 column="students"
+	    	 type="org.unitime.commons.hibernate.blob.XmlClobType"
+	    	 not-null="false"
+	   	/>
 
 		<set
 			name="courses"
