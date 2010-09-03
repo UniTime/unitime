@@ -193,5 +193,6 @@
 	<mapping resource="RoomTypeOption.hbm.xml" />
 	<mapping resource="SponsoringOrganization.hbm.xml" />
 	<mapping resource="Curriculum.hbm.xml" />
+	<mapping resource="StudentSectQueue.hbm.xml" />
 </session-factory>
 </hibernate-configuration>

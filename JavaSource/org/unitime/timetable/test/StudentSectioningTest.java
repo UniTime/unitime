@@ -62,7 +62,6 @@ import org.dom4j.io.XMLWriter;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -78,6 +77,7 @@ import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -652,13 +652,15 @@ public class StudentSectioningTest {
                 }
             }
             hibSession.saveOrUpdate(s);
+            
+ 	        StudentSectioningQueue.studentChanged(hibSession, s.getSession().getUniqueId(), s.getUniqueId());
+
             hibSession.flush();
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
             throw new RuntimeException(e);
         }
-        SectioningServer.studentChanged(s.getSession().getUniqueId(), s.getUniqueId());
         hibSession.refresh(s);
     }
     

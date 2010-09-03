@@ -54,7 +54,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.LazyInitializationException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInfoForm;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -74,6 +73,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
@@ -234,7 +234,8 @@ public class ClassInfoModel implements Serializable {
             }
         }
         
-        SectioningServer.classChanged(sessionId, classIds);
+        StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        hibSession.flush();
         
         return message;
     }

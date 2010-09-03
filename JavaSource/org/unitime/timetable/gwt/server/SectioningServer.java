@@ -69,6 +69,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -94,6 +95,7 @@ public class SectioningServer {
 	private Hashtable<Long, Student> iStudentTable = new Hashtable<Long, Student>();
 	
 	private CourseLoader iLoader = null;
+	private SectioningServerUpdater iUpdater = null;
 	
 	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
 	
@@ -155,7 +157,9 @@ public class SectioningServer {
 				throw new SectioningException(SectioningExceptionType.SESSION_NOT_EXIST, (sessionId == null ? "null" : sessionId.toString()));
 			iAcademicSession = new AcademicSessionInfo(session);
 			iLoader = new CourseLoader(iModel, iAcademicSession, iCourseTable, iClassTable, iStudentTable, iCourseForId, iCourseForName, iCourses);
+			iUpdater = new SectioningServerUpdater(iAcademicSession, StudentSectioningQueue.getLastTimeStamp(hibSession, sessionId));
 			iLoader.updateAll(hibSession);
+			iUpdater.start();
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, t);
@@ -254,21 +258,27 @@ public class SectioningServer {
 	}
 	
 	public static void createInstance(Long academicSessionId) {
-		SectioningServer s = new SectioningServer(academicSessionId);
-		sInstances.put(academicSessionId, s);
-		if (SectioningServer.sCustomSectionNames != null)
-			SectioningServer.sCustomSectionNames.update(s.getAcademicSession());
+		synchronized (sInstances) {
+			SectioningServer s = new SectioningServer(academicSessionId);
+			sInstances.put(academicSessionId, s);
+			if (SectioningServer.sCustomSectionNames != null)
+				SectioningServer.sCustomSectionNames.update(s.getAcademicSession());
+		}
 	}
 	
 	public static SectioningServer getInstance(final Long academicSessionId) throws SectioningException {
-		return sInstances.get(academicSessionId);
+		synchronized (sInstances) {
+			return sInstances.get(academicSessionId);
+		}
 	}
 	
 	public static TreeSet<AcademicSessionInfo> getAcademicSessions() {
-		TreeSet<AcademicSessionInfo> ret = new TreeSet<AcademicSessionInfo>();
-		for (SectioningServer s : sInstances.values())
-			ret.add(s.getAcademicSession());
-		return ret;
+		synchronized (sInstances) {
+			TreeSet<AcademicSessionInfo> ret = new TreeSet<AcademicSessionInfo>();
+			for (SectioningServer s : sInstances.values())
+				ret.add(s.getAcademicSession());
+			return ret;
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1057,36 +1067,6 @@ public class SectioningServer {
 		}
 	}
 	
-	public static void studentChanged(Long academicSessionId, Collection<Long> studentIds) {
-		SectioningServer server = getInstance(academicSessionId);
-		if (server != null) server.studentChanged(studentIds);
-	}
-	
-	public static void studentChanged(Long academicSessionId, Long... studentIds) {
-		SectioningServer server = getInstance(academicSessionId);
-		if (server != null) {
-			List<Long> list = new ArrayList<Long>();
-			for (Long studentId: studentIds)
-				list.add(studentId);
-			server.studentChanged(list);
-		}
-	}
-
-	public static void classChanged(Long academicSessionId, Collection<Long> classIds) {
-		SectioningServer server = getInstance(academicSessionId);
-		if (server != null) server.classChanged(classIds);
-	}
-
-	public static void classChanged(Long academicSessionId, Long... classIds) {
-		SectioningServer server = getInstance(academicSessionId);
-		if (server != null) {
-			List<Long> list = new ArrayList<Long>();
-			for (Long classId: classIds)
-				list.add(classId);
-			server.classChanged(list);
-		}
-	}
-	
 	protected void allStudentsChanged() {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
 		synchronized (iCourseTable) {
@@ -1119,63 +1099,18 @@ public class SectioningServer {
 		}
 	}
 	
-	public static void allStudentsChanged(Long academicSessionId) {
-		SectioningServer server = getInstance(academicSessionId);
-		if (server != null) {
-			sLog.info("All students changed for " + server.getAcademicSession());
-			server.allStudentsChanged();
-		}		
+	public void unload() {
+		synchronized (sInstances) {
+			iUpdater.stopUpdating();
+			sInstances.remove(getAcademicSessionId());
+		}
 	}
-
-	public static synchronized void sessionStatusChanged(Long academicSessionId, boolean reload, boolean async) {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
-		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-		try {
-			final Session session = SessionDAO.getInstance().get(academicSessionId, hibSession);
-			
-			if (session == null) {
-				sInstances.remove(academicSessionId);
-				return;
-			}
-			sLog.info("Session status changed for " + session.getLabel());
-			
-			boolean load = true;
-			if (year != null && !year.equals(session.getAcademicYear())) load = false;
-			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
-			if (year == null && term == null &&
-				!session.getStatusType().canNoRoleReportClass()) load = false;
-
-			if (!load) {
-				if (getInstance(academicSessionId) != null) {
-					sLog.info("Unloading " + getInstance(academicSessionId).getAcademicSession());
-				}
-				sInstances.remove(academicSessionId);
-				return;
-			}
-			
-			SectioningServer server = getInstance(academicSessionId);
-			if (server == null || reload) {
-				if (async) {
-					Thread t = new Thread(new Runnable() {
-						public void run() {
-							try {
-								SectioningServer.createInstance(session.getUniqueId());
-							} catch (Exception e) {
-								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
-										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
-							}
-						}
-					});
-					t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
-					t.setDaemon(true);
-					t.start();
-				} else {
-					createInstance(academicSessionId);
-				}
-			}			
-		} finally {
-			hibSession.close();
+	
+	public static void unloadAll() {
+		synchronized (sInstances) {
+			for (SectioningServer s: sInstances.values())
+				s.iUpdater.stopUpdating();
+			sInstances.clear();
 		}
 	}
 }

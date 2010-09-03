@@ -28,17 +28,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
@@ -98,15 +97,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             save(session, hibSession);
             
-            tx.commit(); tx = null;
+            StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
             
-            iProgress.setPhase("Notifying student sectioning server", 1);
-            if (RemoteSolverServer.getServerThread()!=null) {
-                RemoteSolverServer.query(new Object[]{"SectioningServer.allStudentsChanged", session.getUniqueId()});
-            } else {
-                SectioningServer.allStudentsChanged(session.getUniqueId());
-            }
-            iProgress.incProgress();
+            tx.commit(); tx = null;
             
         } catch (Exception e) {
             iProgress.fatal("Unable to save student schedule, reason: "+e.getMessage(),e);

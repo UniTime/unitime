@@ -27,13 +27,13 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
-import org.unitime.timetable.gwt.server.SectioningServer;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
@@ -81,8 +81,6 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
         if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
         
         save(session);
-        
-        SectioningServer.allStudentsChanged(session.getUniqueId());
     }
     
     public void flushIfNeeded(org.hibernate.Session hibSession) {
@@ -236,6 +234,8 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                     }
                 }
             }
+            
+            StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
             
             tx.commit();
         } catch (Exception e) {
