@@ -503,7 +503,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	
 	public String getHelpPage(String title) throws MenuException {
 		if ("true".equals(ApplicationProperties.getProperty("tmtbl.wiki.help", "true")) && ApplicationProperties.getProperty("tmtbl.wiki.url") != null) {
-			return ApplicationProperties.getProperty("tmtbl.wiki.url") + title.trim().replace(' ', '_');
+			return ApplicationProperties.getProperty("tmtbl.wiki.url") + title.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
 		} else {
 			throw new MenuException("help pages are disabled");
 		}
