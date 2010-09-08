@@ -268,16 +268,29 @@
 		</replace>
     </target>
 
-	<target name="wiki" depends="compile-java">
+	<target name="help" depends="init">
+		<!--
 		<taskdef name="wikiget" classname="org.unitime.commons.ant.WikiGet">
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
     	<delete dir="${dist.dir}/wiki" failonerror="false"/>
 		<wikiget url="http://wiki.unitime.org" output="${dist.dir}/wiki"/>
+		-->
+		<java failonerror="true" fork="true" classname="com.google.sites.liberation.export.Main">
+			<classpath>
+				<pathelement location="${3rd_party.dir}/google-sites-liberation-1.0.3.jar"/>
+			</classpath>
+			<arg value="-d"/>
+			<arg value="unitime.org"/>
+			<arg value="-w"/>
+			<arg value="help"/>
+			<arg value="-f"/>
+			<arg value="${dist.dir}/help"/>
+		</java>
 	</target>
 
-	<target name="build-dist" depends="compile-war,wiki">
+	<target name="build-dist" depends="compile-war,help">
 		<tar destfile="${dist.dir}/unitime-3.2_bld${build.number}.tar">
 			<tarfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
 			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
@@ -311,7 +324,7 @@
 				<include name="jsp-api.jar"/>
 				<include name="servlet-api.jar"/>
 			</tarfileset>
-			<tarfileset dir="${dist.dir}/wiki" prefix="doc/wiki"/>
+			<tarfileset dir="${dist.dir}/help" prefix="doc/help"/>
 			<!--
 			<tarfileset dir="${dist.dir}/doc" prefix="doc/api"/>
 			-->
@@ -351,7 +364,7 @@
 				<include name="jsp-api.jar"/>
 				<include name="servlet-api.jar"/>
 			</zipfileset>
-			<zipfileset dir="${dist.dir}/wiki" prefix="doc/wiki"/>
+			<zipfileset dir="${dist.dir}/help" prefix="doc/help"/>
 			<!--
 			<zipfileset dir="${dist.dir}/doc" prefix="doc/api"/>
 			-->
@@ -515,5 +528,5 @@
 	</target>
 
 	<target name="build" depends="load-properties,compile-war,done" />
-	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
+	<target name="dist" depends="load-properties,compile-war,help,build-dist,done" />
 </project>
