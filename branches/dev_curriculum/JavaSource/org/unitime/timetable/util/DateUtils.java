@@ -47,6 +47,10 @@ public class DateUtils {
 		    Calendar x = Calendar.getInstance(Locale.US);
 		    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
 		    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
+		} else if (c.get(Calendar.YEAR)>year) {
+		    Calendar x = Calendar.getInstance(Locale.US);
+		    x.set(year,11,31,0,0,0);
+		    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
 		}
 		return dayOfYear;
     }
