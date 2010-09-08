@@ -580,8 +580,8 @@ public class TimetableGridTable {
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
 		SolverProxy solver = WebSolver.getSolver(session);
-		//TODO: checked OK, tested OK
-		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getStartMonth())-1);
+		//TODO: checked OK, tested OK --- really ???? 
+		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1, acadSession.getStartMonth() - 3)-1);
 		if (solver!=null) {
 			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode());
 			Collections.sort(iModels,new TimetableGridModelComparator());
