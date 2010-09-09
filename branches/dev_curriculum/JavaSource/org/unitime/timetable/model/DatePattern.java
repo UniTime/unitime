@@ -102,8 +102,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public BitSet getPatternBitSet() {
 		if (iCachedPatternBitSet!=null) return iCachedPatternBitSet;
 		if (getPattern()==null || getOffset()==null) return null;
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int size = getSession().getDayOfYear(0,endMonth+1)-getSession().getDayOfYear(1,startMonth);
 		iCachedPatternBitSet = new BitSet(size);
 		int offset = getPatternOffset() - getSession().getDayOfYear(1,startMonth);
@@ -128,8 +128,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 
 	public String getPatternArray() {
 		StringBuffer sb = new StringBuffer("[");
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int year = getSession().getSessionStartYear();
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
@@ -323,8 +323,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public String getBorderArray(Long uniqueId) {
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int dayOfYear = 0;
 		int year = getSession().getSessionStartYear();
 		Set usage = (uniqueId!=null?getUsage(uniqueId):null);
@@ -358,7 +358,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     public String getPatternHtml(boolean editable, Long uniqueId) {
         return getPatternHtml(editable, uniqueId, true);
     }
-
+    
 	public String getPatternHtml(boolean editable, Long uniqueId, boolean includeScript) {
 		StringBuffer sb = new StringBuffer(); 
         if (includeScript)
@@ -366,8 +366,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		sb.append("<script language='JavaScript'>");
 		sb.append(
 			"calGenerate("+getSession().getSessionStartYear()+","+
-				(getSession().getStartMonth() - 3) +","+
-				(getSession().getEndMonth() + 3)+","+
+				(getSession().getPatternStartMonth()) +","+
+				(getSession().getPatternEndMonth())+","+
 				getPatternArray()+","+
 				"['1','0'],"+
 				"['Classes offered','Classes not offered'],"+
@@ -379,8 +379,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public void setPatternAndOffset(HttpServletRequest request) {
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int firstOne = 0, lastOne = 0;
 		int year = getSession().getSessionStartYear();
 		StringBuffer sb = null;

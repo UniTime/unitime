@@ -339,7 +339,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     	if (time == null || time.getWeekCode().isEmpty()) return null;
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	if (iSessionFirstDate == null)
-    		iSessionFirstDate = DateUtils.getDate(1, iSession.getStartMonth() - 3, iSession.getSessionStartYear());
+    		iSessionFirstDate = DateUtils.getDate(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear());
     	cal.setTime(iSessionFirstDate);
     	int idx = time.getWeekCode().nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);

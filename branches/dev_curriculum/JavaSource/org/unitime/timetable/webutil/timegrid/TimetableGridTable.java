@@ -155,10 +155,10 @@ public class TimetableGridTable {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
         Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
-		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime())-(Session.sNrExcessDays/7);
+		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime()) - (Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0"))/7);
 		Calendar endCal = Calendar.getInstance(Locale.US);
 		endCal.setTime(session.getSessionEndDateTime());
-		endCal.add(Calendar.DAY_OF_YEAR, Session.sNrExcessDays);
+		endCal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
 		int week = startWeek;
 		while (DateUtils.getStartDate(session.getSessionStartYear(),week).compareTo(endCal.getTime()) <= 0) {
 			weeks.addElement(new IdValue(new Long(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
@@ -580,7 +580,7 @@ public class TimetableGridTable {
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
 		SolverProxy solver = WebSolver.getSolver(session);
-		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getStartMonth()-3)-1);
+		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getPatternStartMonth())-1);
 		if (solver!=null) {
 			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode());
 			Collections.sort(iModels,new TimetableGridModelComparator());
