@@ -66,7 +66,7 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     	iDatePatternHtml +=
     		"<img style=\"cursor: pointer;\" src=\"scripts/jscalendar/calendar_1.gif\" border=\"0\" "+
     		"onclick=\"window.open('user/dispDatePattern.jsp?id="+clazz.effectiveDatePattern().getUniqueId()+"&class="+clazz.getUniqueId()+"',"+
-    		"'datepatt','width=800,height=410,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');\">";
+    		"'datepatt','width=1040,height=760,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');\">";
     	Class_ parent = clazz.getParentClass();
     	while (parent!=null) {
     		iParents.add(parent.getUniqueId());
