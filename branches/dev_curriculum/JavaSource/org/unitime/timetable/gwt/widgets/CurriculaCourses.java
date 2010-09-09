@@ -1309,8 +1309,10 @@ public class CurriculaCourses extends Composite {
 							iShare = null;
 						} else if (getText().endsWith("%")) {
 							iShare = Float.valueOf(getText().substring(0, getText().length() - 1)) / 100.0f;
+							if (iShare > 1.0f) iShare = 1.0f;
 						} else {
 							iShare = Float.valueOf(getText()) / iClassifications.getExpected(iColumn);
+							if (iShare > 1.0f) iShare = 1.0f;
 						}
 					} catch (Exception e) {
 						iShare = null;
