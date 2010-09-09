@@ -56,12 +56,12 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	}
 	
 	public static Date getDatePatternFirstDay(Session s) {
-		return DateUtils.getDate(1, s.getStartMonth() - 3, s.getSessionStartYear());
+		return DateUtils.getDate(1, s.getPatternStartMonth(), s.getSessionStartYear());
 	}
 	
 	public static BitSet getFreeTimeBitSet(Session session) {
-		int startMonth = session.getStartMonth() - 3;
-		int endMonth = session.getEndMonth() + 3;
+		int startMonth = session.getPatternStartMonth();
+		int endMonth = session.getPatternEndMonth();
 		int size = DateUtils.getDayOfYear(0, endMonth + 1, session.getSessionStartYear()) - DateUtils.getDayOfYear(1, startMonth, session.getSessionStartYear());
 		BitSet ret = new BitSet(size);
 		for (int i = 0; i < size; i++)
