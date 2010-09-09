@@ -1023,6 +1023,9 @@ public class CurriculaTable extends Composite {
 		iData.set(r1, c0);
 		fillRow(c0);
 		fillRow(c1);
+		String style = iTable.getRowFormatter().getStyleName(r0 + 1);
+		iTable.getRowFormatter().setStyleName(r0 + 1, iTable.getRowFormatter().getStyleName(r1 + 1));
+		iTable.getRowFormatter().setStyleName(r1 + 1, style);
 	}
 	
 	public class MyFlexTable extends FlexTable {
