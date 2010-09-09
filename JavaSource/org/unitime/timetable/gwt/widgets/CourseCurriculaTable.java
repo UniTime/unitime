@@ -83,6 +83,7 @@ public class CourseCurriculaTable extends Composite {
 	private TreeSet<CourseInterface> iCourses = new TreeSet<CourseInterface>();
 	private List<ChainedCommand> iRowClicks = new ArrayList<ChainedCommand>();
 	private List<Integer> iRowTypes = new ArrayList<Integer>();
+	private List<Long> iRowAreaId = new ArrayList<Long>();
 	
 	private Long iOfferingId = null;
 	private String iCourseName = null;
@@ -147,10 +148,7 @@ public class CourseCurriculaTable extends Composite {
 						for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 							int rowType = iRowTypes.get(row);
 							if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
-							int hc = getHeaderCols(row);
-							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
-							}
+							iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 						}
 						for (int col = 0; col < iClassifications.size()  + 2; col++) {
 							iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
@@ -319,10 +317,7 @@ public class CourseCurriculaTable extends Composite {
 							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 								int rowType = iRowTypes.get(row);
 								if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
-								int hc = getHeaderCols(row);
-								for (int col = 0; col < iClassifications.size()  + hc; col++) {
-									iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
-								}
+								iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 							}
 							for (int col = 0; col < iClassifications.size()  + 2; col++) {
 								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
@@ -336,8 +331,8 @@ public class CourseCurriculaTable extends Composite {
 					boolean canExpand = false, canCollapse = false;
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);
-						if (rowType == sRowTypeArea) {
-							if (iCurricula.getCellFormatter().isVisible(row, 0))
+						if (rowType == sRowTypeArea || rowType == sRowTypeOther) {
+							if (iCurricula.getRowFormatter().isVisible(row))
 								canExpand = true;
 							else 
 								canCollapse = true;
@@ -351,10 +346,7 @@ public class CourseCurriculaTable extends Composite {
 								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 									int rowType = iRowTypes.get(row);
 									boolean visible = (rowType != sRowTypeArea && rowType != sRowTypeOther);
-									int hc = getHeaderCols(row);
-									for (int col = 0; col < iClassifications.size()  + hc; col++) {
-										iCurricula.getCellFormatter().setVisible(row, col, visible && (col < hc || iUsed[col - hc]));
-									}
+									iCurricula.getRowFormatter().setVisible(row, visible);
 									iExpandedAreas.clear();
 									iExpandedAreas.addAll(iAllAreas);
 								}
@@ -371,10 +363,7 @@ public class CourseCurriculaTable extends Composite {
 								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 									int rowType = iRowTypes.get(row);
 									boolean visible = (rowType != sRowTypeCurriculum && rowType != sRowTypeOtherArea);
-									int hc = getHeaderCols(row);
-									for (int col = 0; col < iClassifications.size()  + hc; col++) {
-										iCurricula.getCellFormatter().setVisible(row, col, visible && (col < hc || iUsed[col - hc]));
-									}
+									iCurricula.getRowFormatter().setVisible(row, visible);
 									iExpandedAreas.clear();
 								}
 							}
@@ -502,6 +491,8 @@ public class CourseCurriculaTable extends Composite {
 		iRowClicks.add(null); // for header row
 		iRowTypes.clear();
 		iRowTypes.add(sRowTypeHeader);
+		iRowAreaId.clear();
+		iRowAreaId.add(-2l);
 		
 		int row = 0;
 		List<CurriculumInterface> otherCurricula = new ArrayList<CurriculumInterface>();
@@ -549,15 +540,9 @@ public class CourseCurriculaTable extends Composite {
 					@Override
 					public void execute(final ConditionalCommand next) {
 						iExpandedAreas.add(lastAreaId);
-						int hc = getHeaderCols(finalRow);
-						for (int col = 0; col < hc + iClassifications.size(); col++) {
-							iCurricula.getCellFormatter().setVisible(finalRow, col, false);
-						}
+						iCurricula.getRowFormatter().setVisible(finalRow, false);
 						for (int row = 1; row <= lastAreas; row++) {
-							hc = getHeaderCols(finalRow - row);
-							for (int col = 0; col < hc + iClassifications.size(); col++) {
-								iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
-							}
+							iCurricula.getRowFormatter().setVisible(finalRow - row, true);
 						}
 						if (next != null)
 							next.executeOnSuccess();
@@ -569,8 +554,7 @@ public class CourseCurriculaTable extends Composite {
 					}
 				});
 				iRowTypes.add(sRowTypeArea);
-				if (iExpandedAreas.contains(lastAreaId))
-					iRowClicks.get(row).execute(null);
+				iRowAreaId.add(lastAreaId);
 				lastArea.clear();
 				for (int i = 0; i <totalThisArea.length; i++)
 					totalThisArea[i] = new int[] {0, 0, 0, 0};
@@ -580,8 +564,6 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setText(row, col++, curriculum.getAbbv());
 			iCurricula.setText(row, col++, curriculum.getAcademicArea().getAbbv());
 			iCurricula.setText(row, col++, curriculum.getMajorCodes(", "));
-			for (int c = 0; c < 3; c++)
-				iCurricula.getCellFormatter().setVisible(row, c, false);
 			int clasfIdx = 0;
 			for (AcademicClassificationInterface clasf: iClassifications) {
 				CurriculumClassificationInterface f = null;
@@ -609,7 +591,6 @@ public class CourseCurriculaTable extends Composite {
 				totalThisArea[clasfIdx][3] += proj;
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
-				iCurricula.getCellFormatter().setVisible(row, col, false);
 				col++;
 				clasfIdx++;
 			}
@@ -642,24 +623,15 @@ public class CourseCurriculaTable extends Composite {
 					public void execute(final ConditionalCommand next) {
 						int row = finalRow;
 						while (row > 0 && iRowTypes.get(row) == sRowTypeCurriculum) {
-							int hc = getHeaderCols(row);
-							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, false);
-							}
+							iCurricula.getRowFormatter().setVisible(row, false);
 							row --;
 						}
 						row = finalRow + 1;
 						while (iRowTypes.get(row) == sRowTypeCurriculum) {
-							int hc = getHeaderCols(row);
-							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, false);
-							}
+							iCurricula.getRowFormatter().setVisible(row, false);
 							row ++;
 						}
-						int hc = getHeaderCols(row);
-						for (int col = 0; col < iClassifications.size()  + hc; col++) {
-							iCurricula.getCellFormatter().setVisible(row, col, (col < hc || iUsed[col - hc]));
-						}
+						iCurricula.getRowFormatter().setVisible(row, true);
 						iExpandedAreas.remove(lastAreaId);
 						if (next != null)
 							next.executeOnSuccess();
@@ -671,6 +643,7 @@ public class CourseCurriculaTable extends Composite {
 				});
 			}
 			iRowTypes.add(sRowTypeCurriculum);
+			iRowAreaId.add(curriculum.getAcademicArea().getId());
 		}
 		if (!lastArea.isEmpty()) {
 			col = 0; row++;
@@ -693,15 +666,9 @@ public class CourseCurriculaTable extends Composite {
 				@Override
 				public void execute(final ConditionalCommand next) {
 					iExpandedAreas.add(lastAreaId);
-					int hc = getHeaderCols(finalRow);
-					for (int col = 0; col < hc + iClassifications.size(); col++) {
-						iCurricula.getCellFormatter().setVisible(finalRow, col, false);
-					}
+					iCurricula.getRowFormatter().setVisible(finalRow, false);
 					for (int row = 1; row <= lastAreas; row++) {
-						hc = getHeaderCols(finalRow - row);
-						for (int col = 0; col < hc + iClassifications.size(); col++) {
-							iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
-						}
+						iCurricula.getRowFormatter().setVisible(finalRow - row, true);
 					}
 					if (next != null)
 						next.executeOnSuccess();
@@ -712,8 +679,7 @@ public class CourseCurriculaTable extends Composite {
 				}
 			});
 			iRowTypes.add(sRowTypeArea);
-			if (iExpandedAreas.contains(lastAreaId))
-				iRowClicks.get(row).execute(null);
+			iRowAreaId.add(lastAreaId);
 		}
 		
 		// Other line
@@ -727,7 +693,6 @@ public class CourseCurriculaTable extends Composite {
 				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 				iCurricula.setHTML(row, col, "<i>" + other.getAbbv() + " - " + other.getName() + "</i>");
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
-				iCurricula.getCellFormatter().setVisible(row, col, false);
 				col++;
 				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = 0, last = 0, enrl = 0, proj = 0;;
@@ -752,34 +717,25 @@ public class CourseCurriculaTable extends Composite {
 					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 					iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
-					iCurricula.getCellFormatter().setVisible(row, col, false);
 					col++;
 				}
 				iRowTypes.add(sRowTypeOtherArea);
+				iRowAreaId.add(-1l);
 				final int finalRow = row;
 				iRowClicks.add(new ChainedCommand() {
 					@Override
 					public void execute(final ConditionalCommand next) {
 						int row = finalRow;
 						while (row > 0 && iRowTypes.get(row) == sRowTypeOtherArea) {
-							int hc = getHeaderCols(row);
-							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, false);
-							}
+							iCurricula.getRowFormatter().setVisible(row, false);
 							row --;
 						}
 						row = finalRow + 1;
 						while (iRowTypes.get(row) == sRowTypeOtherArea) {
-							int hc = getHeaderCols(row);
-							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, false);
-							}
+							iCurricula.getRowFormatter().setVisible(row, false);
 							row ++;
 						}
-						int hc = getHeaderCols(row);
-						for (int col = 0; col < iClassifications.size()  + hc; col++) {
-							iCurricula.getCellFormatter().setVisible(row, col, (col < hc || iUsed[col - hc]));
-						}
+						iCurricula.getRowFormatter().setVisible(row, true);
 						iExpandedAreas.remove(-1l);
 						if (next != null)
 							next.executeOnSuccess();
@@ -813,15 +769,9 @@ public class CourseCurriculaTable extends Composite {
 				@Override
 				public void execute(final ConditionalCommand next) {
 					iExpandedAreas.add(-1l);
-					int hc = getHeaderCols(finalRow);
-					for (int col = 0; col < hc + iClassifications.size(); col++) {
-						iCurricula.getCellFormatter().setVisible(finalRow, col, false);
-					}
+					iCurricula.getRowFormatter().setVisible(finalRow, false);
 					for (int row = 1; row <= lastAreas; row++) {
-						hc = getHeaderCols(finalRow - row);
-						for (int col = 0; col < hc + iClassifications.size(); col++) {
-							iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
-						}
+						iCurricula.getRowFormatter().setVisible(finalRow - row, true);
 					}
 					if (next != null)
 						next.executeOnSuccess();
@@ -832,8 +782,7 @@ public class CourseCurriculaTable extends Composite {
 				}
 			});
 			iRowTypes.add(sRowTypeOther);
-			if (iExpandedAreas.contains(-1l))
-				iRowClicks.get(row).execute(null);
+			iRowAreaId.add(-1l);
 		}
 		
 		// Total line
@@ -848,10 +797,7 @@ public class CourseCurriculaTable extends Composite {
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);
 						if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
-						int hc = getHeaderCols(row);
-						for (int col = 0; col < iClassifications.size()  + hc; col++) {
-							iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
-						}
+						iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 					}
 					for (int col = 0; col < iClassifications.size()  + 2; col++) {
 						iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
@@ -866,6 +812,7 @@ public class CourseCurriculaTable extends Composite {
 			}
 		});
 		iRowTypes.add(sRowTypeTotal);
+		iRowAreaId.add(-3l);
 		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
 		iCurricula.setWidget(row, col++, new Label("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment", false));
 		int[] tx = new int[] {0, 0, 0, 0};
@@ -890,15 +837,21 @@ public class CourseCurriculaTable extends Composite {
 		// Hide all lines if requested
 		if (!CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
 			for (int r = 1; r < iCurricula.getRowCount() - 1; r++) {
-				int hc = getHeaderCols(r);
-				for (int c = 0; c < hc + iClassifications.size(); c++) {
-					iCurricula.getCellFormatter().setVisible(r, c, false);
-				}
+				iCurricula.getRowFormatter().setVisible(r, false);
 			}
 			int r = iCurricula.getRowCount() - 1;
 			int hc = getHeaderCols(r);
 			for (int c = 0; c < hc + iClassifications.size(); c++) {
 				iCurricula.getCellFormatter().setStyleName(r, c, null);
+			}
+		} else {
+			// else collapse all
+			for (int r = 1; r < iCurricula.getRowCount() - 1; r++) {
+				int rowType = iRowTypes.get(r);
+				boolean visible = (rowType != sRowTypeCurriculum && rowType != sRowTypeOtherArea);
+				if (iExpandedAreas.contains(iRowAreaId.get(r)))
+					visible = !visible;
+				iCurricula.getRowFormatter().setVisible(r, visible);
 			}
 		}
 
