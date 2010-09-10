@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -1132,9 +1133,9 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		}
 	}
 	
-	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Long roomType) {
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
 		synchronized (currentSolution()) {
-			return new RoomReport((TimetableModel)currentSolution().getModel(), startDay, endDay, nrWeeks, roomType);
+			return new RoomReport((TimetableModel)currentSolution().getModel(), sessionDays, startDayDayOfWeek, roomType);
 		}
 	}
 	public DeptBalancingReport getDeptBalancingReport() {

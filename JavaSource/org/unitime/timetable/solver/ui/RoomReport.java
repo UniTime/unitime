@@ -20,11 +20,14 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
+import java.util.BitSet;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
@@ -43,13 +46,31 @@ public class RoomReport implements Serializable {
 	public static int[] sGroupSizes = new int[] {0, 10, 20, 40, 60, 80, 100, 150, 200, 400, Integer.MAX_VALUE};
 	private static final long serialVersionUID = 1L;
 	private HashSet iGroups = new HashSet();
-	private int iStartDay, iEndDay, iNrWeeks;
     private Long iRoomType = null;
+    private BitSet iSessionDays = null;
+    private int iStartDayDayOfWeek = 0;
+    private double iNrWeeks = 0.0;
 
-	public RoomReport(TimetableModel model, int startDay, int endDay, int nrWeeks, Long roomType) {
-		iStartDay = startDay; iEndDay = endDay;
-		iNrWeeks = nrWeeks;
+	public RoomReport(TimetableModel model, BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+		iSessionDays = sessionDays;
+		iStartDayDayOfWeek = startDayDayOfWeek;
         iRoomType = roomType;
+        
+		// count number of weeks as a number of working days / 5
+        // (this is to avoid problems when the default date pattern does not contain Saturdays and/or Sundays)
+		int dow = iStartDayDayOfWeek;
+		int nrDays[] = new int[] {0, 0, 0, 0, 0, 0, 0};
+		for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
+			if (iSessionDays.get(day)) nrDays[dow]++;
+			dow = (dow + 1) % 7;
+		}
+		iNrWeeks = 0.2 * (
+				nrDays[Constants.DAY_MON] +
+				nrDays[Constants.DAY_TUE] +
+				nrDays[Constants.DAY_WED] +
+				nrDays[Constants.DAY_THU] +
+				nrDays[Constants.DAY_FRI] );
+		
 		for (int i=0;i<sGroupSizes.length-1;i++) {
 			iGroups.add(new RoomAllocationGroup(sGroupSizes[i],sGroupSizes[i+1]));
 		}
@@ -158,23 +179,19 @@ public class RoomReport implements Serializable {
             
 			boolean shouldUse = canUse && mustUseThisSizeOrBigger;
 			if (canUse) {
-				TimeLocation t = lecture.timeLocations().get(0);
-				iSlotsCanUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsCanUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesCanUse += lecture.getNrRooms();
 			}
 			if (mustUse) {
-				TimeLocation t = lecture.timeLocations().get(0);
-				iSlotsMustUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsMustUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesMustUse += lecture.getNrRooms();
 			}
 			if (mustUseThisSizeOrBigger) {
-				TimeLocation t = lecture.timeLocations().get(0);
-				iSlotsMustUseThisSizeOrBigger += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsMustUseThisSizeOrBigger += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesMustUseThisSizeOrBigger += lecture.getNrRooms();
 			}
 			if (shouldUse) {
-				TimeLocation t = lecture.timeLocations().get(0);
-				iSlotsShouldUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsShouldUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesShouldUse += lecture.getNrRooms();
 			}
 
@@ -198,13 +215,33 @@ public class RoomReport implements Serializable {
 				}
 				if (use>0) {
 					TimeLocation t = placement.getTimeLocation(); 
-					iSlotsUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*use*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+					iSlotsUse += getSlotsAWeek(t) * use;
 					iLecturesUse += use;
 				}
 			}
-			
 		}
 		
+		public double getSlotsAWeek(Collection<TimeLocation> times) {
+			if (times.isEmpty()) return 0;
+			double totalHoursAWeek = 0;
+			for (TimeLocation t: times)
+				totalHoursAWeek += getSlotsAWeek(t);
+			return ((double)totalHoursAWeek) / times.size();
+		}
+		
+		public double getSlotsAWeek(TimeLocation t) {
+			return getAverageDays(t) * t.getNrSlotsPerMeeting();
+		}
+		
+		public double getAverageDays(TimeLocation t) {
+			int nrDays = 0;
+			int dow = iStartDayDayOfWeek;
+			for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
+				if (iSessionDays.get(day) && t.getWeekCode().get(day) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0) nrDays++;
+				dow = (dow + 1) % 7;
+			}
+			return ((double)nrDays) / iNrWeeks;
+		}
 	}
 
 }

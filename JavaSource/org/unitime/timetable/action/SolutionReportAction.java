@@ -22,7 +22,7 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -87,34 +87,24 @@ public class SolutionReportAction extends Action {
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
 		Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-		Calendar sessionStart = Calendar.getInstance(Locale.US);
-		sessionStart.setTime(session.getSessionBeginDateTime());
-		while (sessionStart.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY)
-			sessionStart.add(Calendar.DAY_OF_YEAR, -1);
-		int startDay = session.getDayOfYear(sessionStart.get(Calendar.DAY_OF_MONTH), sessionStart.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth());
-		Calendar sessionEnd = Calendar.getInstance(Locale.US);
-		sessionEnd.setTime(session.getSessionEndDateTime());
-		sessionEnd.add(Calendar.WEEK_OF_YEAR, -1);
-		while (sessionEnd.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY)
-			sessionEnd.add(Calendar.DAY_OF_YEAR, 1);
-		int endDay = session.getDayOfYear(sessionEnd.get(Calendar.DAY_OF_MONTH), sessionEnd.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth());
-
+		BitSet sessionDays = session.getDefaultDatePattern().getPatternBitSet();
+		int startDayDayOfWeek = Constants.getDayOfWeek(session.getDefaultDatePattern().getStartDate());
+		
 		SolverProxy solver = WebSolver.getSolver(request.getSession());
         if (solver==null) {
         	request.setAttribute("SolutionReport.message","Neither a solver is started nor solution is loaded.");
         } else {
         	try {
                 for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
+                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
                     if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                         WebTable t = getRoomReportTable(request, roomReport, false, type.getUniqueId());
                         if (t!=null)
                             request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
                     }
                 }
-                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     WebTable t = getRoomReportTable(request, roomReport, false, null);
                     if (t!=null)
@@ -157,7 +147,7 @@ public class SolutionReportAction extends Action {
         		
                 boolean atLeastOneRoomReport = false;
                 for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
+                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
                     if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
                     if (table==null) continue;
@@ -170,7 +160,7 @@ public class SolutionReportAction extends Action {
                     doc.add(pdfTable);
                     atLeastOneRoomReport = true;
                 }
-                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
                     if (table!=null) {
