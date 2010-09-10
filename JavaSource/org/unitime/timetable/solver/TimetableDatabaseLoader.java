@@ -3053,8 +3053,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.SECOND, 59);
         roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
         iProgress.setPhase("Loading room availability...", iRooms.size());
-        int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth());
-        int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+1);
+        int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
+        int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
