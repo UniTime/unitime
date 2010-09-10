@@ -93,7 +93,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
-				if (!session.getStatusType().canNoRoleReportClass()) continue;
+				if (!session.getStatusType().canSectioningStudents()) continue;
 
 				int nrSolutions = ((Number)hibSession.createQuery(
 						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")

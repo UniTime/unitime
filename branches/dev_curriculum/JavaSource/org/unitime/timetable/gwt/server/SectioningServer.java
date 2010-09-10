@@ -141,8 +141,7 @@ public class SectioningServer {
 			if (year != null && !year.equals(session.getAcademicYear())) continue;
 			if (term != null && !term.equals(session.getAcademicTerm())) continue;
 
-			if (year == null && term == null &&
-					!session.getStatusType().canNoRoleReportClass()) continue;
+			if (!session.getStatusType().canSectioningStudents()) continue;
 
 			return true;
 		}

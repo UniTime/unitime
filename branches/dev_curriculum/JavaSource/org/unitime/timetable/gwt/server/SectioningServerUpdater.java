@@ -166,7 +166,7 @@ public class SectioningServerUpdater extends Thread {
 			boolean load = true;
 			if (year != null && !year.equals(session.getAcademicYear())) load = false;
 			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
-			if (!session.getStatusType().canNoRoleReportClass()) load = false;
+			if (!session.getStatusType().canSectioningStudents()) load = false;
 
 			if (!load) {
 				if (server != null) {

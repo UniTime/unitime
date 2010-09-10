@@ -299,6 +299,10 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                 }
             }
+            if (s.canSectioningStudents()) {
+                if (rights.length()>0) rights+="; ";
+                rights += "sectioning";
+            }
             if (s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "no-role";
