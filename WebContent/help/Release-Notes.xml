@@ -29,15 +29,34 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
-			<name>Exams</name>
-			<description>
-				<line>Fixed a bug that was introduced in October 2009 -- exam print offset got completely ignored.</line>
-			</description>
-		</item>
-		<item>
 			<name>Data Exchange</name>
 			<description>
 				<line>Student enrollment import: when classes have no external ids, allow the given external id (in the XML file) to match on the class name.</line>
+				<line>Student sectioning import: if a new student is created, set all required properties;
+					update both sides of the course request relations (student - demands - requested courses) to avoid Hibernate cache issues</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Offerings</name>
+			<description>
+				<line>Allow any user that can edit a course offering to change the course number for the course offering.
+					Previously on an administrator could change the course number for a course offering.</line>
+				<line>If the course number is changed for a course offering that does not have a permanent id,
+					then give the course offering a permanent id and add the permanent id to any last like demand data associated with the course offering.</line>
+			</description>
+		</item>
+		<item>
+			<name>Bug fixes</name>
+			<description>
+				<line>Fixes related to an old date patterns change (adding extra 3 months before and after the data pattern, from Jul)
+					<line>Exam print offset got completely ignored</line>
+					<line>Week filter on Timetable page fixed</line>
+					<line>Course timetabling solver -- room availability was incorrect (all meetings got shifted by these 3 months).</line>
+					<line>Room Allocation report (Solution Reports page) fixed.</line>
+				</line>
+				<line>Exam print offset got completely ignored (bug introduced by a change from October 28, 2009)</line>
+				<line>Add Event: Changed location search to use an in statement when searching for room groups rather than an or statement.  This makes the search more efficient.</line>
+				<line>Updated updateCourseOfferingEnrollmentForSession - previous change to fix this to work with MySQL broke it with Oracle.  The current change has been tested to work with both Oracle and MySQL.</line>
 			</description>
 		</item>
 	</category>
