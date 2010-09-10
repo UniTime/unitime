@@ -3015,14 +3015,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.SECOND, 59);
         roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
         iProgress.setPhase("Loading room availability...", iRooms.size());
-        //TODO: checked OK
-        int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth());
-        int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+1);
+        int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth()-3);
+        int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+3+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         long id = 0;
-        //TODO: change made needs to be checked
         int sessionYear = iSession.getSessionStartYear();
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
@@ -3038,7 +3036,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
                 if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
                 BitSet weekCode = new BitSet(size);
-                //TODO: checked OK
                 int offset = iSession.getDayOfYear(d,m) - firstDOY;
                 weekCode.set(offset);
                 switch (c.get(Calendar.DAY_OF_WEEK)) {
