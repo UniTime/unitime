@@ -93,13 +93,13 @@ public class SolutionReportAction extends Action {
 		sessionStart.setTime(session.getSessionBeginDateTime());
 		while (sessionStart.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY)
 			sessionStart.add(Calendar.DAY_OF_YEAR, -1);
-		int startDay = session.getDayOfYear(sessionStart.get(Calendar.DAY_OF_MONTH), sessionStart.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth());
+		int startDay = session.getDayOfYear(sessionStart.get(Calendar.DAY_OF_MONTH), sessionStart.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth() - 3);
 		Calendar sessionEnd = Calendar.getInstance(Locale.US);
 		sessionEnd.setTime(session.getSessionEndDateTime());
 		sessionEnd.add(Calendar.WEEK_OF_YEAR, -1);
 		while (sessionEnd.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY)
 			sessionEnd.add(Calendar.DAY_OF_YEAR, 1);
-		int endDay = session.getDayOfYear(sessionEnd.get(Calendar.DAY_OF_MONTH), sessionEnd.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth());
+		int endDay = session.getDayOfYear(sessionEnd.get(Calendar.DAY_OF_MONTH), sessionEnd.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth() - 3);
 
 		SolverProxy solver = WebSolver.getSolver(request.getSession());
         if (solver==null) {
