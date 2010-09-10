@@ -70,7 +70,7 @@ public class TimetableAction extends Action {
         	myForm.load(request.getSession());
         }
         
-		myForm.setLoaded(table.reload(request.getSession()));
+		myForm.setLoaded(table.reload(request));
 
         if ("Export PDF".equals(op)) {
         	File file = ApplicationProperties.getTempFile("timetable", "pdf");

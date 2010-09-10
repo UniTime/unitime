@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
@@ -39,6 +40,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -53,6 +55,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
@@ -574,8 +577,9 @@ public class TimetableGridTable {
 		return iDefaultDatePatternName;
 	}
 	
-	public boolean reload(HttpSession session) throws Exception {
+	public boolean reload(HttpServletRequest request) throws Exception {
 		if (iModels!=null) iModels.clear();
+		HttpSession session = request.getSession();
 		Session acadSession = Session.getCurrentAcadSession(Web.getUser(session));
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
@@ -597,6 +601,21 @@ public class TimetableGridTable {
 				tx = hibSession.beginTransaction();
 			
 			if (getResourceType()==TimetableGridModel.sResourceTypeRoom) {
+				if (RoomAvailability.getInstance() != null) {
+			        Calendar startDateCal = Calendar.getInstance(Locale.US);
+			        startDateCal.setTime(DateUtils.getDate(1, acadSession.getStartMonth(), acadSession.getSessionStartYear()));
+			        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+			        startDateCal.set(Calendar.MINUTE, 0);
+			        startDateCal.set(Calendar.SECOND, 0);
+			        Calendar endDateCal = Calendar.getInstance(Locale.US);
+			        endDateCal.setTime(DateUtils.getDate(0, acadSession.getEndMonth() + 1, acadSession.getSessionStartYear()));
+			        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+			        endDateCal.set(Calendar.MINUTE, 59);
+			        endDateCal.set(Calendar.SECOND, 59);
+			        RoomAvailability.getInstance().activate(acadSession, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType, false);
+		            RoomAvailability.setAvailabilityWarning(request, acadSession, true, true);
+				}
+				
 				Query q = hibSession.createQuery(
 						"select distinct r from "+
 						"Location as r inner join r.assignments as a where "+
