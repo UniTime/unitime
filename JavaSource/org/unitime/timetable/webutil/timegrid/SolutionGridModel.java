@@ -19,19 +19,26 @@
 */
 package org.unitime.timetable.webutil.timegrid;
 
+import java.text.SimpleDateFormat;
 import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -46,6 +53,8 @@ import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.RoomAvailability;
 
 
 /**
@@ -119,6 +128,84 @@ public class SolutionGridModel extends TimetableGridModel {
 							setAvailable(i,6*j+x,false);
 					}
 				}
+		}
+		if (RoomAvailability.getInstance() != null) {
+	        Calendar startDateCal = Calendar.getInstance(Locale.US);
+	        // Range can be limited to classes time using
+	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
+	        // endDateCal.setTime(room.getSession().getClassesEndDateTime());
+	        startDateCal.setTime(DateUtils.getDate(1, room.getSession().getStartMonth(), room.getSession().getSessionStartYear()));
+	        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+	        startDateCal.set(Calendar.MINUTE, 0);
+	        startDateCal.set(Calendar.SECOND, 0);
+	        Calendar endDateCal = Calendar.getInstance(Locale.US);
+	        endDateCal.setTime(DateUtils.getDate(0, room.getSession().getEndMonth() + 1, room.getSession().getSessionStartYear()));
+	        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+	        endDateCal.set(Calendar.MINUTE, 59);
+	        endDateCal.set(Calendar.SECOND, 59);
+			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(room, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
+			if (times != null) {
+				int sessionYear = room.getSession().getSessionStartYear();
+		        int firstDOY = room.getSession().getDayOfYear(1, room.getSession().getPatternStartMonth());
+		        int lastDOY = room.getSession().getDayOfYear(0, room.getSession().getPatternEndMonth()+1);
+		        Calendar c = Calendar.getInstance(Locale.US);
+		        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+				for (TimeBlock time: times) {
+					if (time.getEndTime().before(startDateCal.getTime()) || time.getStartTime().after(endDateCal.getTime())) continue;
+	                int dayCode = 0;
+	                c.setTime(time.getStartTime());
+	                int m = c.get(Calendar.MONTH);
+	                int d = c.get(Calendar.DAY_OF_MONTH);
+	                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+	                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
+	                BitSet weekCode = new BitSet(lastDOY - firstDOY);
+	                int offset = room.getSession().getDayOfYear(d,m) - firstDOY;
+	                weekCode.set(offset);
+	                switch (c.get(Calendar.DAY_OF_WEEK)) {
+	                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+	                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+	                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+	                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+	                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+	                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+	                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+	                }
+	                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                c.setTime(time.getEndTime());
+	                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                int length = endSlot - startSlot;
+	                if (length<=0) continue;
+	                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+	        		TimetableGridCell cell = null;
+	        		for (Enumeration<Integer> f=timeLocation.getStartSlots();f.hasMoreElements();) {
+	        			int slot = f.nextElement();
+	        			if (firstDay>=0 && !timeLocation.getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+	        			if (cell==null) {
+	        				cell =  new TimetableGridCell(
+	        						slot/Constants.SLOTS_PER_DAY,
+	        						slot%Constants.SLOTS_PER_DAY,
+	        						0, 
+	        						room.getUniqueId(),
+	        						room.getLabel(),
+	        						time.getEventName(), 
+	        						null,
+	        						null,
+	        						null, 
+	        						time.getEventName(), 
+	        						TimetableGridCell.sBgColorNotAvailable, 
+	        						length,
+	        						0, 
+	        						1,
+	        						df.format(time.getStartTime()),
+	        						weekCode,
+	        						null);
+	        			} else {
+	        				cell = cell.copyCell(slot/Constants.SLOTS_PER_DAY,cell.getMeetingNumber()+1);
+	        			}
+	        			addCell(slot,cell);
+	        		}
+				}
+			}
 		}
         setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
 	}
