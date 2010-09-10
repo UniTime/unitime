@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -101,7 +102,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getHostLabel();
 	public void dispose() throws Exception;
 	
-	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Long roomType) throws Exception;
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) throws Exception;
 	public DeptBalancingReport getDeptBalancingReport() throws Exception;
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() throws Exception;
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() throws Exception;
