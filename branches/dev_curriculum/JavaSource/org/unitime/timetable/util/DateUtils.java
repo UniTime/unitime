@@ -68,6 +68,7 @@ public class DateUtils {
 		c.set(year,1,1,0,0,0);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
+		c.add(Calendar.DAY_OF_YEAR, 1);
 		return c.getTime();
     }
     public static Date getEndDate(int year, int week) {
@@ -75,6 +76,7 @@ public class DateUtils {
 		c.set(year,1,1,0,0,0);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
+		c.add(Calendar.DAY_OF_YEAR, 1);
 		return c.getTime();
     }
     public static int getEndMonth(Date sessionEnd, int year, int excessDays) {
