@@ -45,6 +45,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public static final int sCanNoRoleReportExamFin = 4096;
 	public static final int sCanNoRoleReportExamMid = 8192;
 	public static final int sCanNoRoleReportClass   = 16384;
+	public static final int sCanSectioningStudents   = 32768;
 	
 	public static final int sApplySession    = 1;
 	public static final int sApplyDepartment = 2;
@@ -177,6 +178,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
         return can(sCanNoRoleReportClass);
     }
     
+    public boolean canSectioningStudents() {
+        return can(sCanSectioningStudents);
+    }
+
     public boolean canNoRoleReportExam() {
         return canNoRoleReportExamFinal() || canNoRoleReportExamMidterm();
     }

@@ -61,6 +61,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanNoRoleReportExamFin = false;
     private boolean iCanNoRoleReportExamMid = false;
     private boolean iCanNoRoleReportClass   = false;
+    private boolean iCanSectioningStudents = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -106,6 +107,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanNoRoleReportExamFin = false;
         iCanNoRoleReportExamMid = false;
         iCanNoRoleReportClass   = false;
+        iCanSectioningStudents = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -158,6 +160,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanNoRoleReportExamMid() { return iCanNoRoleReportExamMid; }
     public void setCanNoRoleReportClass(boolean canNoRoleReportClass) { iCanNoRoleReportClass = canNoRoleReportClass; }
     public boolean getCanNoRoleReportClass() { return iCanNoRoleReportClass; }
+    public void setCanSectioningStudents(boolean canSectioningStudents) { iCanSectioningStudents = canSectioningStudents; }
+    public boolean getCanSectioningStudents() { return iCanSectioningStudents; }
+
     public int getRights() {
         int rights = 0;
         if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
@@ -175,6 +180,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.sCanNoRoleReportExamFin;
         if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.sCanNoRoleReportExamMid;
         if (getCanNoRoleReportClass()) rights += DepartmentStatusType.sCanNoRoleReportClass;
+        if (getCanSectioningStudents()) rights += DepartmentStatusType.sCanSectioningStudents;
         return rights;
     }
     public void setRights(int rights) {
@@ -193,6 +199,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanNoRoleReportExamFin((rights&DepartmentStatusType.sCanNoRoleReportExamFin)==DepartmentStatusType.sCanNoRoleReportExamFin);
         setCanNoRoleReportExamMid((rights&DepartmentStatusType.sCanNoRoleReportExamMid)==DepartmentStatusType.sCanNoRoleReportExamMid);
         setCanNoRoleReportClass((rights&DepartmentStatusType.sCanNoRoleReportClass)==DepartmentStatusType.sCanNoRoleReportClass);
+        setCanSectioningStudents((rights&DepartmentStatusType.sCanSectioningStudents)==DepartmentStatusType.sCanSectioningStudents);
     }
 	
 	public void load(DepartmentStatusType s) {

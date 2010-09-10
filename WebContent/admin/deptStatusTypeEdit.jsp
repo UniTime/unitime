@@ -109,6 +109,10 @@
 		<TR><TD>Exam Timetable:</TD><TD><html:checkbox property="canExamTimetable"/></TD>
 			<TD><i>The examination timetabling manager can edit all examination data and create examination schedule.</i></TD></TR>
 		
+		<TR><TD colspan='3'><tt:section-title><br>Student Sectioning</tt:section-title></TD></TR>
+		<TR><TD nowrap>Enabled:</TD><TD><html:checkbox property="canSectioningStudents"/></TD>
+			<TD><i>Unauthenticated users and students are able to use the Student Scheduling Assistant.</i></TD></TR>
+
 		<TR><TD colspan='3'><tt:section-title><br>No-Role Reports</tt:section-title></TD></TR>
 		<TR><TD>Class Schedule:</TD><TD><html:checkbox property="canNoRoleReportClass"/></TD>
 			<TD><i>Class schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
