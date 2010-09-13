@@ -376,6 +376,8 @@ public class UniTimeSideBar extends Composite {
 
 			dialog.center();
 			iTimer.schedule(30000);
+		} else if ("download".equals(target)) {
+			ToolBox.open(url);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
