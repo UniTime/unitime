@@ -819,7 +819,7 @@ public class ClassificationsEdit extends Composite {
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
 				getRowFormatter().setStyleName(row, "unitime-TableRowHover");
-				getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().setBackgroundColor(null);
+				getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().clearBackgroundColor();
 				break;
 			case Event.ONMOUSEOUT:
 				getRowFormatter().setStyleName(row, null);	
@@ -832,24 +832,28 @@ public class ClassificationsEdit extends Composite {
 						col++;
 						if (col >= getCellCount(row)) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+			    	event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						col--;
 						if (col < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+			    	event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row--;
 						if (row <= 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+			    	event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+			    	event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
 					Updatable u = (Updatable)getWidget(row, col);

@@ -116,7 +116,13 @@ public class CurriculaClassifications extends Composite {
 					if (!expected.getText().isEmpty()) {
 						try {
 							exp = Integer.parseInt(expected.getText());
-						} catch (Exception e) { }
+							if (exp <= 0) {
+								exp = null;
+								expected.setText(null);
+							}
+						} catch (Exception e) {
+							expected.setText(null);
+						}
 					}
 					ExpectedChangedEvent e = new ExpectedChangedEvent(clasf, xcol, exp);
 					for (ExpectedChangedHandler h: iExpectedChangedHandlers)
@@ -189,7 +195,7 @@ public class CurriculaClassifications extends Composite {
 		public MyTextBox(boolean editable) {
 			super();
 			setWidth("60px");
-			setStyleName("gwt-SuggestBox");
+			setStyleName("unitime-TextBox");
 			setMaxLength(6);
 			setTextAlignment(TextBox.ALIGN_RIGHT);
 			if (!editable) {
@@ -200,10 +206,11 @@ public class CurriculaClassifications extends Composite {
 		}
 		
 		public void setEnabled(boolean enabled) {
-			super.setEnabled(enabled);
+			super.setReadOnly(!enabled);
+			//super.setEnabled(enabled);
 			if (enabled) {
-				getElement().getStyle().setBorderColor(null);
-				getElement().getStyle().setBackgroundColor(null);
+				getElement().getStyle().clearBorderColor();
+				getElement().getStyle().clearBackgroundColor();
 			} else {
 				getElement().getStyle().setBorderColor("transparent");
 				getElement().getStyle().setBackgroundColor("transparent");
@@ -390,24 +397,28 @@ public class CurriculaClassifications extends Composite {
 						col++;
 						if (col >= getCellCount(row)) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						col--;
 						if (col < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row--;
 						if (row < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				break;
 			}

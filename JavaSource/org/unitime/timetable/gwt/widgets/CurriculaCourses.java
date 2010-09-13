@@ -1310,9 +1310,11 @@ public class CurriculaCourses extends Composite {
 						} else if (getText().endsWith("%")) {
 							iShare = Float.valueOf(getText().substring(0, getText().length() - 1)) / 100.0f;
 							if (iShare > 1.0f) iShare = 1.0f;
+							if (iShare <= 0.0f) iShare = null;
 						} else {
 							iShare = Float.valueOf(getText()) / iClassifications.getExpected(iColumn);
 							if (iShare > 1.0f) iShare = 1.0f;
+							if (iShare <= 0.0f) iShare = null;
 						}
 					} catch (Exception e) {
 						iShare = null;
@@ -1358,10 +1360,10 @@ public class CurriculaCourses extends Composite {
 		}
 		
 		public void setEnabled(boolean enabled) {
-			super.setEnabled(enabled);
+			super.setReadOnly(!enabled);
 			if (enabled) {
-				getElement().getStyle().setBorderColor(null);
-				getElement().getStyle().setBackgroundColor(null);
+				getElement().getStyle().clearBorderColor();
+				getElement().getStyle().clearBackgroundColor();
 			} else {
 				getElement().getStyle().setBorderColor("transparent");
 				getElement().getStyle().setBackgroundColor("transparent");
@@ -1675,24 +1677,28 @@ public class CurriculaCourses extends Composite {
 						col++;
 						if (col >= getCellCount(row)) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						col--;
 						if (col < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row--;
 						if (row <= 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
 					do {

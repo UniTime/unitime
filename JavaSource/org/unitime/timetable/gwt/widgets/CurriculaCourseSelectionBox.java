@@ -527,13 +527,13 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	
 	public void setEnabled(boolean enabled) {
 		if (enabled) {
-			iTextField.setEnabled(true);
+			iTextField.setReadOnly(false);
 			iImage.setVisible(true);
 			iImage.setResource(RESOURCES.search_picker());
-			iTextField.getElement().getStyle().setBorderColor(null);
-			iTextField.getElement().getStyle().setBackgroundColor(null);
+			iTextField.getElement().getStyle().clearBorderColor();
+			iTextField.getElement().getStyle().clearBackgroundColor();
 		} else {
-			iTextField.setEnabled(false);
+			iTextField.setReadOnly(true);
 			iImage.setVisible(false);
 			iImage.setResource(RESOURCES.search_picker_Disabled());
 			iTextField.getElement().getStyle().setBorderColor("transparent");

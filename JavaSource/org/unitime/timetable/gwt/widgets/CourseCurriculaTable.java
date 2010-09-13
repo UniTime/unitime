@@ -991,12 +991,12 @@ public class CourseCurriculaTable extends Composite {
 		refresh();
 	}
 	
-	public class MyLabel extends Label {
+	public class MyLabel extends HTML {
 		private int iExp, iLast, iEnrl, iProj;
 		
 		public MyLabel(int exp, int enrl, int last, int proj) {
 			//super(exp > 0 || enrl > 0 || last > 0 ? ((exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-")) : "", false);
-			super("", false);
+			super("&nbsp;", false);
 			iExp = exp;
 			iLast = last;
 			iEnrl = enrl;
@@ -1005,54 +1005,54 @@ public class CourseCurriculaTable extends Composite {
 		}
 		
 		public void showExpected() {
-			setText(iExp > 0 ? String.valueOf(iExp) : "");
+			setHTML(iExp > 0 ? String.valueOf(iExp) : "&nbsp;");
 		}
 		
 		public void showEnrolled() {
-			setText(iEnrl > 0 ? String.valueOf(iEnrl) : "");
+			setHTML(iEnrl > 0 ? String.valueOf(iEnrl) : "&nbsp;");
 		}
 
 		public void showLastLike() {
-			setText(iLast > 0 ? String.valueOf(iLast) : "");
+			setHTML(iLast > 0 ? String.valueOf(iLast) : "&nbsp;");
 		}
 		
 		public void showProjected() {
-			setText(iProj > 0 ? String.valueOf(iProj) : "");
+			setHTML(iProj > 0 ? String.valueOf(iProj) : "&nbsp;");
 		}
 
 		public void showExpectedEnrolled() {
 			if (iExp > 0 || iEnrl > 0)
-				setText((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+				setHTML((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
 			else
-				setText("");
+				setHTML("&nbsp;");
 		}
 		
 		public void showExpectedLastLike() {
 			if (iExp > 0 || iLast > 0)
-				setText((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iLast > 0 ? String.valueOf(iLast) : "-"));
+				setHTML((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iLast > 0 ? String.valueOf(iLast) : "-"));
 			else
-				setText("");
+				setHTML("&nbsp;");
 		}
 
 		public void showExpectedProjected() {
 			if (iExp > 0 || iProj > 0)
-				setText((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iProj > 0 ? String.valueOf(iProj) : "-"));
+				setHTML((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iProj > 0 ? String.valueOf(iProj) : "-"));
 			else
-				setText("");
+				setHTML("&nbsp;");
 		}
 
 		public void showLastLikeEnrolled() {
 			if (iLast > 0 || iEnrl > 0)
-				setText((iLast > 0 ? String.valueOf(iLast) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+				setHTML((iLast > 0 ? String.valueOf(iLast) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
 			else
-				setText("");
+				setHTML("&nbsp;");
 		}
 		
 		public void showProjectedEnrolled() {
 			if (iProj > 0 || iEnrl > 0)
-				setText((iProj > 0 ? String.valueOf(iProj) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+				setHTML((iProj > 0 ? String.valueOf(iProj) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
 			else
-				setText("");
+				setHTML("&nbsp;");
 		}
 
 		public void refresh() {

@@ -478,7 +478,7 @@ public class WebTable extends Composite {
 		
 		public InstructorCell(ArrayList<String> names, ArrayList<String> emails, String separator) {
 			super(null, separator);
-			if (names != null) {
+			if (names != null && !names.isEmpty()) {
 				separator = separator.replace(" ", "&nbsp;");
 				for (int i = 0; i < names.size(); i++) {
 					String text = names.get(i) + (i + 1 < names.size() ? separator : "");
@@ -504,6 +504,8 @@ public class WebTable extends Composite {
 					} else
 						add(text);
 				}
+			} else {
+				add("&nbsp;");
 			}
 		}
 	}
