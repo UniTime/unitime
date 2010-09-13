@@ -88,6 +88,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 	public Object clone(){
 		DepartmentRoomFeature newFeature = new DepartmentRoomFeature();
 		newFeature.setLabel(getLabel());
+		newFeature.setAbbv(getAbbv());
 		newFeature.setDepartment(getDepartment());
 		return(newFeature);
 	}

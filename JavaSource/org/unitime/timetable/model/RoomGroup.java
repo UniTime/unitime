@@ -146,6 +146,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		newRoomGroup.setDescription(getDescription());
 		newRoomGroup.setGlobal(isGlobal());
 		newRoomGroup.setName(getName());
+		newRoomGroup.setAbbv(getAbbv());
 		newRoomGroup.setSession(getSession());
 		return(newRoomGroup);
 	}
