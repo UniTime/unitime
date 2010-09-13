@@ -216,7 +216,7 @@ public class User {
     }
     
     public static boolean canIdentify() {
-        return "true".equals(ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.enabled","false"));
+        return "true".equals(ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled","false"));
     }
 	
     public static User identify(String externalId) {
