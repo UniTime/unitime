@@ -2835,6 +2835,6 @@
 		</plsql>
 		<plsql>alter table %SCHEMA%.sectioning_queue add constraint pk_sect_queue primary key (uniqueid)</plsql>
 		<mysql>create index idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</mysql>
-		<plsql>create index %SCHEMA%idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</plsql>
+		<plsql>create index %SCHEMA%.idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</plsql>
 	</update>
 </dbupdate>
