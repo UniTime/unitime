@@ -514,11 +514,11 @@ public class CurriculumEdit extends Composite {
 		iCurriculumAbbv.setReadOnly(!iCurriculum.isEditable() || !detailsEditable);
 		iCurriculumName.setText(iCurriculum.getName());
 		iCurriculumName.setReadOnly(!iCurriculum.isEditable() || !detailsEditable);
-		iCurriculumArea.setSelectedIndex(-1);
+		iCurriculumArea.setSelectedIndex(0);
 		if (iCurriculum.getAcademicArea() != null) {
 			for (int i = 0; i < iAreas.size(); i++)
 				if (iAreas.get(i).getId().equals(iCurriculum.getAcademicArea().getId()))
-					iCurriculumArea.setSelectedIndex(i);
+					iCurriculumArea.setSelectedIndex(1 + i);
 		}
 		iCurriculumAreaLabel.setText(iCurriculum.getAcademicArea() == null ? "" : iCurriculum.getAcademicArea().getName());
 		if (iCurriculum.isEditable() && detailsEditable) {
@@ -528,11 +528,11 @@ public class CurriculumEdit extends Composite {
 			iCurriculumArea.setVisible(false);
 			iCurriculumAreaLabel.setVisible(true);
 		}
-		iCurriculumDept.setSelectedIndex(-1);
+		iCurriculumDept.setSelectedIndex(0);
 		if (iCurriculum.getDepartment() != null) {
 			for (int i = 0; i < iDepts.size(); i++)
 				if (iDepts.get(i).getId().equals(iCurriculum.getDepartment().getId()))
-					iCurriculumDept.setSelectedIndex(i);
+					iCurriculumDept.setSelectedIndex(1 + i);
 		}
 		iCurriculumDeptLabel.setText(iCurriculum.getDepartment() == null ? "" : iCurriculum.getDepartment().getLabel());
 		if (iCurriculum.isEditable() && detailsEditable) {
@@ -583,7 +583,7 @@ public class CurriculumEdit extends Composite {
 			ret = false;
 		}
 		
-		if (iCurriculumArea.getSelectedIndex() < 0) {
+		if (iCurriculumArea.getSelectedIndex() <= 0) {
 			iCurriculumAreaError.setText("An academic area must be selected.");
 			iCurriculumAreaError.setVisible(true);
 			ret = false;
@@ -608,13 +608,13 @@ public class CurriculumEdit extends Composite {
 				iCurriculum.addMajor(m);
 			}
 		
-		if (iCurriculumMajors.getItemCount() == 0 && iCurriculumArea.getSelectedIndex() >= 0 && !iAreaHasNoMajors) {
+		if (iCurriculumMajors.getItemCount() == 0 && iCurriculumArea.getSelectedIndex() > 0 && !iAreaHasNoMajors) {
 			iCurriculumAreaError.setText("Selected academic area has no majors without a curriculum.");
 			iCurriculumAreaError.setVisible(true);
 			ret = false;
 		}
 		
-		if (iCurriculumDept.getSelectedIndex() < 0) {
+		if (iCurriculumDept.getSelectedIndex() <= 0) {
 			iCurriculumDeptError.setText("A controlling department must be selected.");
 			iCurriculumDeptError.setVisible(true);
 			ret = false;
@@ -641,7 +641,7 @@ public class CurriculumEdit extends Composite {
 	}
 
 	private void loadMajors(final boolean loadEnrollments) {
-		if (iCurriculumArea.getSelectedIndex() >= 0) {
+		if (iCurriculumArea.getSelectedIndex() > 0) {
 			showLoading("Loading majors ...");
 			iService.loadMajors(iCurriculum.getId(), Long.valueOf(iCurriculumArea.getValue(iCurriculumArea.getSelectedIndex())),
 					new AsyncCallback<TreeSet<MajorInterface>>() {
@@ -802,6 +802,7 @@ public class CurriculumEdit extends Composite {
 	public void setupAreas(TreeSet<AcademicAreaInterface> result) {
 		iAreas.clear(); iAreas.addAll(result);
 		iCurriculumArea.clear();
+		iCurriculumArea.addItem("Select ...", "");
 		for (AcademicAreaInterface area: result) {
 			iCurriculumArea.addItem(area.getAbbv() + " - " + area.getName(), area.getId().toString());
 		}
@@ -810,6 +811,7 @@ public class CurriculumEdit extends Composite {
 	public void setupDepartments(TreeSet<DepartmentInterface> result) {
 		iDepts.clear(); iDepts.addAll(result);
 		iCurriculumDept.clear();
+		iCurriculumDept.addItem("Select ...", "");
 		for (DepartmentInterface dept: result) {
 			iCurriculumDept.addItem(dept.getLabel(), dept.getId().toString());
 		}
