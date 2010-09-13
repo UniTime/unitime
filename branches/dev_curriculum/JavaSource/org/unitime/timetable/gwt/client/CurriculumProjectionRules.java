@@ -761,10 +761,10 @@ public class CurriculumProjectionRules extends Composite {
 			setVisible(lastLike > 0);
 			if (iCellEditable != iEditable) {
 				iCellEditable = iEditable;
-				iTextBox.setEnabled(iCellEditable);
+				iTextBox.setReadOnly(!iCellEditable);
 				if (iCellEditable) {
-					iTextBox.getElement().getStyle().setBorderColor(null);
-					iTextBox.getElement().getStyle().setBackgroundColor(null);
+					iTextBox.getElement().getStyle().clearBorderColor();
+					iTextBox.getElement().getStyle().clearBackgroundColor();
 				} else {
 					iTextBox.getElement().getStyle().setBorderColor("transparent");
 					iTextBox.getElement().getStyle().setBackgroundColor("transparent");
@@ -916,10 +916,10 @@ public class CurriculumProjectionRules extends Composite {
 			setVisible(lastLike > 0);
 			if (iCellEditable != iEditable) {
 				iCellEditable = iEditable;
-				iTextBox.setEnabled(iCellEditable);
+				iTextBox.setReadOnly(!iCellEditable);
 				if (iCellEditable) {
-					iTextBox.getElement().getStyle().setBorderColor(null);
-					iTextBox.getElement().getStyle().setBackgroundColor(null);
+					iTextBox.getElement().getStyle().clearBorderColor();
+					iTextBox.getElement().getStyle().clearBackgroundColor();
 				} else {
 					iTextBox.getElement().getStyle().setBorderColor("transparent");
 					iTextBox.getElement().getStyle().setBackgroundColor("transparent");
@@ -1094,7 +1094,7 @@ public class CurriculumProjectionRules extends Composite {
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
 				getRowFormatter().setStyleName(row, "unitime-TableRowHover");
-				if (r != null) getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().setBackgroundColor(null);
+				if (r != null) getCellFormatter().getElement(row, DOM.getChildCount(tr) - 1).getStyle().clearBackgroundColor();
 				if (r == null || r.getChildren().isEmpty()) getRowFormatter().getElement(row).getStyle().setCursor(Cursor.AUTO);
 				break;
 			case Event.ONMOUSEOUT:
@@ -1134,24 +1134,28 @@ public class CurriculumProjectionRules extends Composite {
 						col++;
 						if (col >= getCellCount(row)) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						col--;
 						if (col < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row--;
 						if (row <= 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
 					if (r != null) {

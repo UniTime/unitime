@@ -236,10 +236,12 @@ public class CourseSelectionBox extends Composite implements Validator {
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_LEFT && event.isControlKeyDown() && iPrimary!=null) {
 					iSuggest.hideSuggestionList();
 					iPrimary.setFocus(true);
+			    	event.preventDefault();
 				}
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_RIGHT && event.isControlKeyDown() && iAlternative!=null && iAlternative.isEnabled()) {
 					iSuggest.hideSuggestionList();
 					iAlternative.setFocus(true);
+			    	event.preventDefault();
 				}
 			}
 		});

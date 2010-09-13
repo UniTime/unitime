@@ -449,24 +449,28 @@ public class SimpleEdit extends Composite {
 						col++;
 						if (col >= getCellCount(row)) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						col--;
 						if (col < 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row--;
 						if (row <= 0) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!focus(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
 					MyCell u = (MyCell)getWidget(row, col);

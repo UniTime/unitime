@@ -216,7 +216,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumMajors.setWidth("300px");
 		iCurriculumMajors.setStyleName("unitime-TextBox");
 		iCurriculumMajors.setVisibleItemCount(3);
-		iCurriculumMajors.setHeight("100%");
+		iCurriculumMajors.setHeight("100px");
 		iCurriculumMajors.addStyleName("unitime-NoPrint");
 		curriculumMajorsVP.add(iCurriculumMajors);
 		iCurriculumMajorsHTML = new HTML();
@@ -511,9 +511,9 @@ public class CurriculumEdit extends Composite {
 			iPrint[i].setVisible(detailsEditable);
 		}
 		iCurriculumAbbv.setText(iCurriculum.getAbbv());
-		iCurriculumAbbv.setEnabled(iCurriculum.isEditable() && detailsEditable);
+		iCurriculumAbbv.setReadOnly(!iCurriculum.isEditable() || !detailsEditable);
 		iCurriculumName.setText(iCurriculum.getName());
-		iCurriculumName.setEnabled(iCurriculum.isEditable() && detailsEditable);
+		iCurriculumName.setReadOnly(!iCurriculum.isEditable() || !detailsEditable);
 		iCurriculumArea.setSelectedIndex(-1);
 		if (iCurriculum.getAcademicArea() != null) {
 			for (int i = 0; i < iAreas.size(); i++)
@@ -754,10 +754,10 @@ public class CurriculumEdit extends Composite {
 		}
 		
 		public void setEnabled(boolean enabled) {
-			super.setEnabled(enabled);
+			super.setReadOnly(!enabled);
 			if (enabled) {
-				getElement().getStyle().setBorderColor(null);
-				getElement().getStyle().setBackgroundColor(null);
+				getElement().getStyle().clearBorderColor();
+				getElement().getStyle().clearBackgroundColor();
 			} else {
 				getElement().getStyle().setBorderColor("transparent");
 				getElement().getStyle().setBackgroundColor("transparent");
