@@ -33,7 +33,7 @@
 	           top.location.href = '<%=request.getContextPath()%>/loginRequired.jsp?message=<%=request.getParameter("message")%>'
            //-->
      </SCRIPT>
-
+     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 </HEAD>
 
 <BODY class="bodyMain">

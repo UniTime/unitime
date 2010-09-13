@@ -55,6 +55,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
 	<style type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime.css">

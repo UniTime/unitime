@@ -32,7 +32,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
-		<META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 		<TITLE>Timetabling - Logout</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
@@ -40,6 +39,7 @@
 				top.location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
+	    <meta http-equiv="X-UA-Compatible" content="chrome=1">
 	</HEAD>
 	<BODY onload="closeWin();">
 		<BLOCKQUOTE>

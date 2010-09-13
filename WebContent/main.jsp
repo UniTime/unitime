@@ -33,8 +33,36 @@
     </tt:hasProperty>
     <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
 </head>
 <BODY class="unitime-Body">
+
+  <!--[if IE]>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+    
+    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
+      <tr><td class="reqMsg" width='5'>&nbsp;</td>
+      	  <td class="reqMsg">
+      	  	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
+      </tr>
+    </table>
+    
+    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
+    
+    <script>
+     function ie_no_chrome() {
+       document.getElementById('__ie_no_chrome').style.display = 'block';
+     }
+     window.attachEvent("onload", function() {
+       CFInstall.check({
+         mode: "inline",
+         node: "__ie_chrome_plugin",
+         onmissing: ie_no_chrome
+       });
+     });
+    </script>
+  <![endif]-->
+
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     

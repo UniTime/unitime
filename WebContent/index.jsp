@@ -22,7 +22,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
-		<META http-equiv="Content-Type"	content="text/html; charset=ISO-8859-1">
 		<% if (!Web.isLoggedIn(session)) {%>
 		<META http-equiv="Refresh" content="1; url=login.do">	
 		<% } else { %>	
@@ -31,6 +30,7 @@
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
+	    <meta http-equiv="X-UA-Compatible" content="chrome=1">
 	</HEAD>
 	<BODY>
 		<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
