@@ -64,7 +64,7 @@ public class LoadingWidget extends Composite {
 				}
 			}
 		});
-		iWarning = new HTML("Oooops, the looding is taking too much time... Something probably went wrong. You may need to reload this page.", true);
+		iWarning = new HTML("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.", true);
 		iWarning.setWidth("400px");
 		iWarning.setStyleName("unitime-PopupWarning");
 		iMessage = new HTML("", true);
