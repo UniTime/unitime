@@ -43,6 +43,7 @@
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
 </HEAD>
 <BODY class="bodyMain">
 	<table align="center">
