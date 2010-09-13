@@ -252,7 +252,7 @@ public class Curricula extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCurriculaPanel.setVisible(false);
-				setPageName("New Curriculum");
+				setPageName("Add Curriculum");
 				iCurriculumPanel.addNew();
 				iCurriculumPanel.setVisible(true);
 			}
