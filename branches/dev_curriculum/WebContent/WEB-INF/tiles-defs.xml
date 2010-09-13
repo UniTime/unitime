@@ -38,7 +38,7 @@
   		name="pageLayoutDef"
   		id="timetable.pageLayout"
   		page="/layouts/pageLayout.jsp">
-		<put name="onLoadFunction" type="string" value="onLoad='doLoad()'" />
+		<put name="onLoadFunction" type="string" value="" />
 		<put name="title" type="string" value="University Timetabling Application" />
 		<put name="header" value="/header.jsp" />
 		<put name="body" value="" />
