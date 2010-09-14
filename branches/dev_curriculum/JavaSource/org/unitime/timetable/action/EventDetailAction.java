@@ -179,14 +179,55 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeApproval);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 		                    hibSession.saveOrUpdate(en);
 		                    event.getNotes().add(en);
 		                    hibSession.saveOrUpdate(event);                 
 		                    
-		                    new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+		                    new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
+
+		                    myForm.setSelectedMeetings(null);
+		                    myForm.setNewEventNote(null);
+						}
+	                    tx.commit();
+						if (!errors.isEmpty())
+						    saveErrors(request, errors);
+	                } catch (Exception e) {
+	                    if (tx!=null) tx.rollback();
+	                    throw e;
+	                }		                
+	
+				}
+				
+				if(iOp.equals("Inquire")) {
+					Long[] selectedMeetings = (myForm.getSelectedMeetings() == null ? null : myForm.getSelectedMeetings());
+	                org.hibernate.Session hibSession = new EventDAO().getSession();
+	                Transaction tx = null;
+	                try {
+	                    tx = hibSession.beginTransaction();
+	                    ActionMessages errors = new ActionMessages();
+	                    HashSet<Meeting> meetings = new HashSet();
+	                    if (selectedMeetings == null || selectedMeetings.length == 0) {
+	                    	meetings.addAll(event.getMeetings());
+	                    } else {
+							for (int i=0; i<selectedMeetings.length; i++)
+								meetings.add(MeetingDAO.getInstance().get(selectedMeetings[i]));
+	                    }
+						if (!meetings.isEmpty()) {
+		                    EventNote en = new EventNote();
+		                    en.setTimeStamp(new Date());
+		                    en.setNoteType(EventNote.sEventNoteTypeInquire);
+		                    en.setUser(uname);
+		                    en.setMeetingCollection(meetings);
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
+		                    en.setEvent(event);
+		                    hibSession.saveOrUpdate(en);
+		                    event.getNotes().add(en);
+		                    hibSession.saveOrUpdate(event);                 
 		                    
+		                    new EventEmail(event, EventEmail.sActionInquire, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
+
 		                    myForm.setSelectedMeetings(null);
 		                    myForm.setNewEventNote(null);
 						}
@@ -235,13 +276,13 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeRejection);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 		                    hibSession.saveOrUpdate(en);
 		                    event.getNotes().add(en);
 		                    hibSession.saveOrUpdate(event);     
 		                    
-		                    new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+		                    new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
 	
 		                    myForm.setSelectedMeetings(null);
 		                    myForm.setNewEventNote(null);
@@ -298,13 +339,13 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeDeletion);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 							hibSession.saveOrUpdate(en);
 							event.getNotes().add(en);
 							hibSession.saveOrUpdate(event);		
 							
-							new EventEmail(event, EventEmail.sActionDelete, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+							new EventEmail(event, EventEmail.sActionDelete, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
 	
 			                if (event.getMeetings().isEmpty()) {
 			                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";

@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.upload.FormFile;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Location;
@@ -51,6 +52,8 @@ public class EventDetailForm extends ActionForm {
 	private Boolean iCanApprove;
 	private Boolean iIsManager;
 	
+	private FormFile iAttachment;
+	
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -69,6 +72,7 @@ public class EventDetailForm extends ActionForm {
 				|| "Reject".equals(iOp) || "Delete".equals(iOp)
 			    || "view".equals(iOp) || "Cancel".equals(iOp)
 				|| "Update".equals(iOp) || "Submit".equals(iOp)
+				|| "Inquire".equals(iOp)
 				)){
 			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
 			iOp = null;
@@ -108,6 +112,7 @@ public class EventDetailForm extends ActionForm {
 		iAdditionalEmails = null;
 		iSelectedMeetings = null;
 		iIsManager = false;
+		iAttachment = null;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -201,7 +206,20 @@ public class EventDetailForm extends ActionForm {
     
 	public Meeting getSelectedMeeting() {
 		return (MeetingDAO.getInstance()).get(iSelected);
-	} 	
+	}
+	
+	public String getEventNoteWithAttachement() {
+		String note = getNewEventNote();
+		if (getAttachement() != null && getAttachement().getFileSize() > 0) {
+			if (note == null) {
+				note = "";
+			} else if (!note.isEmpty()) {
+				note += "\n\n";
+			}
+			note += "<i>" + getAttachement().getFileName() + " attached.</i>";
+		}
+		return note;
+	}
 	
 	public Long[] getSelectedMeetings() { return iSelectedMeetings; }
 	public void setSelectedMeetings(Long[] selectedMeetings) { iSelectedMeetings = selectedMeetings; }
@@ -328,4 +346,7 @@ public class EventDetailForm extends ActionForm {
 	public void setEnrollment(String enrollment) {
 		iEnrollment = enrollment;
 	}
+	
+	public FormFile getAttachement() { return iAttachment; }
+	public void setAttachement(FormFile attachement) { iAttachment = attachement; }
 }
