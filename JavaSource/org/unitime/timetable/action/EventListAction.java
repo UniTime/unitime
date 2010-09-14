@@ -37,6 +37,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CalendarEventTableBuilder;
+import org.unitime.timetable.webutil.CsvEventTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfEventTableBuilder;
 
 /**
@@ -57,7 +58,7 @@ public class EventListAction extends Action {
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (!("Search".equals(op) || "Export PDF".equals(op)
-				|| "Add Event".equals(op) || "iCalendar".equals(op))){
+				|| "Add Event".equals(op) || "iCalendar".equals(op) || "Export CSV".equals(op))){
 			op = null;
 		}
         ActionMessages errors1 = myForm.validate(mapping, request);
@@ -77,6 +78,11 @@ public class EventListAction extends Action {
         if ("Export PDF".equals(op)) {
             File pdfFile = new PdfEventTableBuilder().pdfTableForEvents(myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+        }
+        
+        if ("Export CSV".equals(op)) {
+            File csvFile = new CsvEventTableBuilder().csvTableForEvents(myForm);
+            if (csvFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+csvFile.getName());
         }
 
         if ("iCalendar".equals(op)) {

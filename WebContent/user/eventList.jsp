@@ -123,6 +123,8 @@
 				&nbsp; 
 				<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
 				&nbsp; 
+				<html:submit property="op" value="Export CSV" onclick="displayLoading();" accesskey="C" title="Export to CSV (Alt+C)"/> 
+				&nbsp; 
 				<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
 				&nbsp; 
 				<html:submit property="op" value="Add Event" accesskey="A" title="Add Event (Alt+A)"/>
@@ -134,6 +136,8 @@
 	<TR>
 		<TD align='right'>
 			<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
+			&nbsp; 
+			<html:submit property="op" value="Export CSV" onclick="displayLoading();" accesskey="C" title="Export to CSV (Alt+C)"/> 
 			&nbsp; 
 			<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
 			&nbsp; 

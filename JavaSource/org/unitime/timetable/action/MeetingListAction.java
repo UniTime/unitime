@@ -37,6 +37,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CalendarEventTableBuilder;
+import org.unitime.timetable.webutil.CsvEventTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfEventTableBuilder;
 
 /**
@@ -57,11 +58,11 @@ public class MeetingListAction extends Action {
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (!("Search".equals(op) || "Export PDF".equals(op)
-				|| "Add Event".equals(op) || "iCalendar".equals(op))){
+				|| "Add Event".equals(op) || "iCalendar".equals(op) || "Export CSV".equals(op))){
 			op = null;
 		}
 
-        if ("Search".equals(op) || "Export PDF".equals(op)) {
+        if ("Search".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) saveErrors(request, errors);
         	else myForm.save(request.getSession());
@@ -76,7 +77,13 @@ public class MeetingListAction extends Action {
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
         }
 
+        if ("Export CSV".equals(op)) {
+            File csvFile = new CsvEventTableBuilder().csvTableForMeetings(myForm);
+            if (csvFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+csvFile.getName());
+        }
+
         if ("iCalendar".equals(op)) {
+        	
             File pdfFile = new CalendarEventTableBuilder().calendarTableForMeetings(myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
         }
