@@ -27,11 +27,16 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
 import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -264,10 +269,19 @@ public class WebEventTableBuilder {
 			} else {
 				cell.addContent("0");
 			}
-			cell.setAlign("right");
+		} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
+			ExamEvent ee = new ExamEventDAO().get(e.getUniqueId());
+			cell.addContent(String.valueOf(ee.getExam().countStudents()));
+		} else if (Event.sEventTypeCourse == e.getEventType()) {
+			CourseEvent ce = new CourseEventDAO().get(e.getUniqueId());
+			int enrl = 0;
+			for (RelatedCourseInfo rci: ce.getRelatedCourses())
+				enrl += rci.countStudents();
+			cell.addContent(String.valueOf(enrl));
 		} else {
 			cell.addContent("&nbsp;");
 		}
+		cell.setAlign("right");
     	this.endCell(cell, true);
     	return (cell);
     }
