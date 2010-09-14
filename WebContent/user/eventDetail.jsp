@@ -28,7 +28,7 @@
 
 <tiles:importAttribute />
 
-<html:form action="/eventDetail">
+<html:form action="/eventDetail" enctype="multipart/form-data">
 	<html:hidden property="id"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>	
@@ -323,7 +323,15 @@
 								name="eventDetailForm"  
 								property="newEventNote">
 					</html:textarea>
-				</TD>			
+				</TD>
+			</TR>
+			<TR>
+				<TD>
+					Attachement:
+				</TD>
+				<TD>
+					<html:file name="eventDetailForm" property="attachement" size="80"/>
+				</TD>
 			</TR>
 			</logic:equal>
 			<TR>
@@ -335,6 +343,8 @@
 				<logic:equal name="eventDetailForm" property="canApprove" value="true">
 					<html:submit property="op" styleClass="btn" accesskey="P"
 						title="Approve Selected Meetings (Alt+P)" value="Approve"/>
+					<html:submit property="op" styleClass="btn" accesskey="I"
+						title="Send an email without approving or rejecting the event (Alt+I)" value="Inquire"/>
 					<html:submit property="op" styleClass="btn" accesskey="R"
 						title="Reject Selected Meetings (Alt+R)" value="Reject"/>
 				</logic:equal>

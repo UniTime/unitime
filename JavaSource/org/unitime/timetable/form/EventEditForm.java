@@ -141,7 +141,7 @@ public class EventEditForm extends EventAddInfoForm {
 
 			hibSession.saveOrUpdate(event);
 			
-            new EventEmail(event, EventEmail.sActionUpdate, new TreeSet<MultiMeeting>(), getAdditionalInfo()).send(request);
+            new EventEmail(event, EventEmail.sActionUpdate, new TreeSet<MultiMeeting>(), getAdditionalInfo(), null).send(request);
 			
 			ChangeLog.addChange(
                     hibSession,

@@ -20,11 +20,15 @@
 package org.unitime.commons;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
@@ -38,6 +42,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.struts.upload.FormFile;
 import org.unitime.timetable.ApplicationProperties;
 
 public class Email {
@@ -131,6 +136,33 @@ public class Email {
         BodyPart attachement = new MimeBodyPart();
         attachement.setDataHandler(new DataHandler(new FileDataSource(file)));
         attachement.setFileName(name == null ? file.getName() : name);
+        iBody.addBodyPart(attachement);
+	}
+
+	public void addAttachement(final FormFile file) throws MessagingException {
+        BodyPart attachement = new MimeBodyPart();
+        attachement.setDataHandler(new DataHandler(new DataSource() {
+			@Override
+			public OutputStream getOutputStream() throws IOException {
+				throw new IOException("No output stream.");
+			}
+			
+			@Override
+			public String getName() {
+				return file.getFileName();
+			}
+			
+			@Override
+			public InputStream getInputStream() throws IOException {
+				return file.getInputStream();
+			}
+			
+			@Override
+			public String getContentType() {
+				return file.getContentType();
+			}
+		}));
+        attachement.setFileName(file.getFileName());
         iBody.addBodyPart(attachement);
 	}
 

@@ -390,7 +390,7 @@ public class EventAddInfoForm extends ActionForm {
                     ChangeLog.Operation.CREATE,
                     null,null);
 			
-			new EventEmail(event, EventEmail.sActionCreate, event.getMultiMeetings(), iAdditionalInfo).send(request);
+			new EventEmail(event, EventEmail.sActionCreate, event.getMultiMeetings(), iAdditionalInfo, null).send(request);
 			
 			tx.commit();
 			iEventId = event.getUniqueId();
@@ -453,7 +453,7 @@ public class EventAddInfoForm extends ActionForm {
                     ChangeLog.Operation.UPDATE,
                     null,null);
 			
-			new EventEmail(iEvent, EventEmail.sActionAddMeeting, Event.getMultiMeetings(createdMeetings), iAdditionalInfo).send(request);
+			new EventEmail(iEvent, EventEmail.sActionAddMeeting, Event.getMultiMeetings(createdMeetings), iAdditionalInfo, null).send(request);
 			
 			tx.commit();
 		} catch (Exception e) {

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.struts.upload.FormFile;
 import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -27,6 +28,7 @@ public class EventEmail {
     private TreeSet<MultiMeeting> iMeetings = null;
     private String iNote = null;
     private int iAction = sActionCreate;
+    private FormFile iAttachement = null;
     
     public static final int sActionCreate = 0;
     public static final int sActionApprove = 1;
@@ -34,12 +36,14 @@ public class EventEmail {
     public static final int sActionAddMeeting = 3;
     public static final int sActionUpdate = 4;
     public static final int sActionDelete = 5;
+    public static final int sActionInquire = 6;
     
-    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note) {
+    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note, FormFile attachement) {
         iEvent = event;
         iAction = action;
         iMeetings = meetings;
         iNote = note;
+        iAttachement = attachement;
     }
     
     public void send(HttpServletRequest request) {
@@ -48,7 +52,7 @@ public class EventEmail {
         try {
             User user = Web.getUser(request.getSession());
             if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-                if (iAction!=sActionReject && iAction!=sActionApprove) return;
+                if (iAction!=sActionReject && iAction!=sActionApprove && iAction!=sActionInquire) return;
             }
             
             switch (iAction) {
@@ -69,6 +73,9 @@ public class EventEmail {
                 break;
             case sActionDelete : 
                 subject = "Event "+iEvent.getEventName()+" updated (one or more meetings deleted).";
+                break;
+            case sActionInquire : 
+                subject = "Event "+iEvent.getEventName()+" inquiry.";
                 break;
             }
 
@@ -139,6 +146,9 @@ public class EventEmail {
                 case sActionDelete :
                     message += "Following meetings were deleted by you or on your behalf";
                     break;
+                case sActionInquire :
+                    message += "Following meetings are in question";
+                    break;
                 }
                 message += "</font>";
                 message += "</td></tr><tr><td colspan='2'>";
@@ -159,7 +169,7 @@ public class EventEmail {
             
             if (iNote!=null && iNote.length()>0) {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
-                message += "<br><font size='+1'>Notes</font>";
+                message += "<br><font size='+1'>" + (iAction == sActionInquire ? "Inquiry" : "Notes" ) + "</font>";
                 message += "</td></tr><tr><td colspan='2' >";
                 message += iNote.replaceAll("\n", "<br>");
                 message += "</td></tr>";
@@ -167,7 +177,7 @@ public class EventEmail {
             
             if (iAction!=sActionCreate) {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
-                message += "<br><font size='+1'>All Meetings of "+iEvent.getEventName()+"</font>";
+                message += "<br><font size='+1'>History of "+iEvent.getEventName()+"</font>";
                 message += "</td></tr>";
                 if (iEvent.getMeetings().isEmpty()) {
                     message += "<tr><td colspan='2' style='background-color:';>";
@@ -257,6 +267,9 @@ public class EventEmail {
                 if (to.length()>0) to+=", ";
                 to += "<a href='mailto:"+iEvent.getSponsoringOrganization().getEmail()+"'>"+iEvent.getSponsoringOrganization().getName()+"</a>";
             }
+            
+            if (iAttachement != null && iAttachement.getFileSize() > 0)
+            	mail.addAttachement(iAttachement);
             
             mail.send();
             
