@@ -74,6 +74,10 @@ public class EventListForm extends ActionForm {
 	private Set iManagingDepts = null;
 	private boolean iConf = false;
 	
+	private boolean iDayMon, iDayTue, iDayWed, iDayThu, iDayFri, iDaySat, iDaySun;
+	private int iStartTime;
+	private int iStopTime;
+	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
 		ActionErrors errors = new ActionErrors();
@@ -101,6 +105,9 @@ public class EventListForm extends ActionForm {
 			iEventMainContactSubstring = "";
 			errors.add("mainContact", new ActionMessage("errors.invalidCharacters", "Requested by"));
 		}
+		
+		if (iStartTime >= 0 && iStopTime >= 0 && iStartTime>=iStopTime)
+			errors.add("stopTime", new ActionMessage("errors.generic", "From Time must be earlier than To Time."));
 
 		String df = "MM/dd/yyyy";
 		Date start = null;
@@ -169,6 +176,10 @@ public class EventListForm extends ActionForm {
 		iUserId = (user==null?null:user.getId());
 		iSponsorOrgId = null;
 		iConf = false;
+		
+		iStartTime = -1;
+		iStopTime = -1;
+		iDayMon = false; iDayTue = false; iDayWed = false; iDayThu = false; iDayFri = false; iDaySat = false; iDaySun = false;
 	}
 	
 	public void load(HttpSession session) {
@@ -188,6 +199,34 @@ public class EventListForm extends ActionForm {
 		iSponsorOrgId = (Long)session.getAttribute("EventList.SponsoringOrganizationId");
 		if (session.getAttribute("EventList.Conf")!=null) {
 		    iConf = (Boolean) session.getAttribute("EventList.Conf");
+		}
+		
+		if (session.getAttribute("EventList.StartTime")!=null) {
+			iStartTime = (Integer)session.getAttribute("EventList.StartTime");
+		}
+		if (session.getAttribute("EventList.StopTime")!=null) {
+			iStopTime = (Integer)session.getAttribute("EventList.StopTime");
+		}
+		if (session.getAttribute("EventList.DayMon")!=null) {
+			iDayMon = (Boolean)session.getAttribute("EventList.DayMon");
+		}
+		if (session.getAttribute("EventList.DayTue")!=null) {
+			iDayTue = (Boolean)session.getAttribute("EventList.DayTue");
+		}
+		if (session.getAttribute("EventList.DayWed")!=null) {
+			iDayWed = (Boolean)session.getAttribute("EventList.DayWed");
+		}
+		if (session.getAttribute("EventList.DayThu")!=null) {
+			iDayThu = (Boolean)session.getAttribute("EventList.DayThu");
+		}
+		if (session.getAttribute("EventList.DayFri")!=null) {
+			iDayFri = (Boolean)session.getAttribute("EventList.DayFri");
+		}
+		if (session.getAttribute("EventList.DaySat")!=null) {
+			iDaySat = (Boolean)session.getAttribute("EventList.DaySat");
+		}
+		if (session.getAttribute("EventList.DaySun")!=null) {
+			iDaySun = (Boolean)session.getAttribute("EventList.DaySun");
 		}
 	}
 	
@@ -225,6 +264,16 @@ public class EventListForm extends ActionForm {
 		
 		session.setAttribute("EventList.Mode", iMode);  
 		session.setAttribute("EventList.Conf", iConf);
+		
+		session.setAttribute("EventList.StartTime", iStartTime);
+		session.setAttribute("EventList.StopTime", iStopTime);
+		session.setAttribute("EventList.DayMon", iDayMon);
+		session.setAttribute("EventList.DayTue", iDayTue);
+		session.setAttribute("EventList.DayWed", iDayWed);
+		session.setAttribute("EventList.DayThu", iDayThu);
+		session.setAttribute("EventList.DayFri", iDayFri);
+		session.setAttribute("EventList.DaySat", iDaySat);
+		session.setAttribute("EventList.DaySun", iDaySun);
 	}
 
 	public String getEventNameSubstring () {
@@ -294,4 +343,58 @@ public class EventListForm extends ActionForm {
     public boolean getDispConflicts() { return iConf; }
     public void setDispConflicts(boolean conf) { iConf = conf; }
 
+    public int getStartTime() {return iStartTime; }
+    public void setStartTime(int startTime) {iStartTime = startTime;}
+
+    public int getStopTime() {return iStopTime; }
+    public void setStopTime(int stopTime) {iStopTime = stopTime;}
+    
+    public boolean isDayMon() { return iDayMon; }
+    public void setDayMon(boolean dayMon) { iDayMon = dayMon; }
+    public boolean isDayTue() { return iDayTue; }
+    public void setDayTue(boolean dayTue) { iDayTue = dayTue; }
+    public boolean isDayWed() { return iDayWed; }
+    public void setDayWed(boolean dayWed) { iDayWed = dayWed; }
+    public boolean isDayThu() { return iDayThu; }
+    public void setDayThu(boolean dayThu) { iDayThu = dayThu; }
+    public boolean isDayFri() { return iDayFri; }
+    public void setDayFri(boolean dayFri) { iDayFri = dayFri; }
+    public boolean isDaySat() { return iDaySat; }
+    public void setDaySat(boolean daySat) { iDaySat = daySat; }
+    public boolean isDaySun() { return iDaySun; }
+    public void setDaySun(boolean daySun) { iDaySun = daySun; }
+
+    public Vector<ComboBoxLookup> getTimes() {
+    	Vector<ComboBoxLookup> times = new Vector();
+    	times.add(new ComboBoxLookup("", "-1"));
+    	int hour;
+    	int minute;
+    	String ampm;
+    	for (int i=0; i<288; i=i+3) {
+    		hour = (i/12)%12;
+    		if (hour==0) hour=12; 
+    		minute = i%12*5;
+    		if (i/144==0) ampm="am"; 
+    			else ampm = "pm";
+    		times.add(new ComboBoxLookup(hour+":"+(minute<10?"0":"")+minute+" "+ampm, String.valueOf(i)));
+    	}
+    	return times;
+    }
+    
+    public Vector<ComboBoxLookup> getStopTimes() {
+        Vector<ComboBoxLookup> times = new Vector();
+    	times.add(new ComboBoxLookup("", "-1"));
+        int hour;
+        int minute;
+        String ampm;
+        for (int i=3; i<=288; i=i+3) {
+            hour = (i/12)%12;
+            if (hour==0) hour=12; 
+            minute = i%12*5;
+            if ((i/144)%2==0) ampm="am"; 
+                else ampm = "pm";
+            times.add(new ComboBoxLookup(hour+":"+(minute<10?"0":"")+minute+" "+ampm, String.valueOf(i)));
+        }
+        return times;
+    }
 }
