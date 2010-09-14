@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.Debug;
+import org.unitime.commons.MultiComparable;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -181,15 +182,17 @@ public class RoleListAction extends Action {
      * @param user User object
      */
     private ManagerRole setUpRoles (HttpServletRequest request, User user) throws Exception {
+		WebTable.setOrder(request.getSession(),"roleLists.ord",request.getParameter("ord"), -2);
         
         ManagerRole defaultRole = null;
  	    
  	    TimetableManager tm = TimetableManager.getManager(user);
  	    
         WebTable table = new WebTable(4,"Select "+(tm.getManagerRoles().size()>1?"User Role &amp; ":"")+"Academic Session",
+        		"selectPrimaryRole.do?list=Y&ord=%%",
                 new String[] { "User Role", "Academic Session", "Academic Initiative", "Academic Session Status" },
                 new String[] { "left", "left", "left", "left"},
-                null);
+                new boolean[] { true, true, true, true});
         
         Object currentSessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 
@@ -219,7 +222,13 @@ public class RoleListAction extends Action {
                             mr.getRole().getAbbv(),
                             session.getAcademicYear()+" "+session.getAcademicTerm(),
                             session.getAcademicInitiative(),
-                            (session.getStatusType()==null?"":session.getStatusType().getLabel())}, null)
+                            (session.getStatusType()==null?"":session.getStatusType().getLabel())}, 
+                        new Comparable[] {
+                        	new MultiComparable(mr.getRole().getAbbv(), session.getSessionBeginDateTime(), session.getAcademicInitiative()),
+                        	new MultiComparable(session.getSessionBeginDateTime(), session.getAcademicInitiative(), mr.getRole().getAbbv()),
+                        	new MultiComparable(session.getAcademicInitiative(), session.getSessionBeginDateTime(), mr.getRole().getAbbv()),
+                        	new MultiComparable(session.getStatusType()==null ? -1 : session.getStatusType().getOrd(), session.getAcademicInitiative(), session.getSessionBeginDateTime(), mr.getRole().getAbbv())
+                        })
                .setBgColor(bgColor);
                    
                nrLines++;
@@ -234,7 +243,7 @@ public class RoleListAction extends Action {
  	    if (defaultRole==null && tm.getManagerRoles().size()==1)
  	       defaultRole = (ManagerRole)tm.getManagerRoles().iterator().next();
  	    
- 	    request.setAttribute(Roles.USER_ROLES_ATTR_NAME, table.printTable());
+ 	    request.setAttribute(Roles.USER_ROLES_ATTR_NAME, table.printTable(WebTable.getOrder(request.getSession(),"roleLists.ord")));
  	    
  	    Web.setUser(request.getSession(), user);
  	    
