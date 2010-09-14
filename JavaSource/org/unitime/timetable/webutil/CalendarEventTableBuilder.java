@@ -21,6 +21,10 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
     SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
     SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
     
+    public int getMaxResults() {
+    	return 1500;
+    }
+    
     public CalendarEventTableBuilder() {
         super();
         df.setTimeZone(TimeZone.getTimeZone("UTC"));

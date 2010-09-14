@@ -61,6 +61,10 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     	super();
     }
     
+    public int getMaxResults() {
+    	return 1500;
+    }
+    
     public PdfPCell createCell() {
         PdfPCell cell = new PdfPCell();
         cell.setBorderColor(BaseColor.BLACK);
@@ -111,9 +115,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     protected void pdfBuildTableHeader(boolean events, boolean mainContact, int numEventsOrMeetings) {
         if (events) {
         	PdfPCell c;
-        	if (numEventsOrMeetings >= 1501) {
+        	if (numEventsOrMeetings > getMaxResults()) {
             	c = createCell();
-                addText(c, "**Warning: More than 1500 events match your search criteria. Only the first 1500 events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                addText(c, "**Warning: More than " + getMaxResults() + " events match your search criteria. Only the first " + getMaxResults() + " events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
                 c.setColspan(mainContact?6:5);
                 iPdfTable.addCell(c);
             }
@@ -159,16 +163,16 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            if (numEventsOrMeetings < 1501){
+            if (numEventsOrMeetings <= getMaxResults()){
             	iPdfTable.setHeaderRows(2);
             } else {
                 iPdfTable.setHeaderRows(3);
             }
         } else {
             PdfPCell c;
-            if (numEventsOrMeetings >= 1501){
+            if (numEventsOrMeetings > getMaxResults()){
             	c = createCell();
-                addText(c, "**Warning: More than 1500 meetings match your search criteria. Only the first 1500 meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                addText(c, "**Warning: More than " + getMaxResults() + " meetings match your search criteria. Only the first " + getMaxResults() + " meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
                 c.setColspan(mainContact?10:9);
                 iPdfTable.addCell(c);
             }
@@ -207,7 +211,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            if (numEventsOrMeetings < 1501){
+            if (numEventsOrMeetings <= getMaxResults()){
             	iPdfTable.setHeaderRows(1);
             } else {
              	iPdfTable.setHeaderRows(2);

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.hibernate.Query;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
@@ -70,6 +71,10 @@ public class WebEventTableBuilder {
     public static final String MEETING_TIME = "Time";
     public static final String MEETING_LOCATION = "Location";
     public static final String APPROVED_DATE = "Approved";
+    
+    public int getMaxResults() {
+    	return 100;
+    }
     
     public WebEventTableBuilder() {
     	super();
@@ -610,11 +615,56 @@ public class WebEventTableBuilder {
             query += " and e.sponsoringOrganization.uniqueId=:sponsorOrgId";
         }
         
+        if (form.getStartTime() >= 0) {
+        	query += " and m.stopPeriod > " + form.getStartTime();
+        }
+
+        if (form.getStopTime() >= 0) {
+        	query += " and m.startPeriod < " + form.getStopTime();
+        }
+        
+        if (form.isDayMon() || form.isDayTue() || form.isDayWed() || form.isDayThu() || form.isDayFri() || form.isDaySat() || form.isDaySun()) {
+        	String dow = "";
+        	if (form.isDayMon()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "2";
+        	}
+        	if (form.isDayTue()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "3";
+        	}
+        	if (form.isDayWed()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "4";
+        	}
+        	if (form.isDayThu()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "5";
+        	}
+        	if (form.isDayFri()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "6";
+        	}
+        	if (form.isDaySat()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "7";
+        	}
+        	if (form.isDaySun()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "1";
+        	}
+        	if (dow.indexOf(',') >= 0)
+        		query += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")";
+        	else
+        		query += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow;
+        }
+        
         query += " order by e.eventName, e.uniqueId";
         
         Query hibQuery = new EventDAO().getSession().createQuery(query);
-        hibQuery.setFetchSize(1501);
-        hibQuery.setMaxResults(1501);
+        hibQuery.setFetchSize(getMaxResults() + 1);
+        if (form.getMode() != EventListForm.sModeEvents4Approval)
+        	hibQuery.setMaxResults(getMaxResults() + 1);
         
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
             hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
@@ -658,10 +708,10 @@ public class WebEventTableBuilder {
         int numberOfEvents = events.size();
         
         TableStream eventsTable = this.initTable(outputStream);
-        if (numberOfEvents>100 && form.getMode()!=EventListForm.sModeEvents4Approval) {
+        if (numberOfEvents>getMaxResults() && form.getMode()!=EventListForm.sModeEvents4Approval) {
         	TableRow row = new TableRow();
         	TableCell cell = initCell(true, null, 5, false);
-        	cell.addContent("Warning: There are more than 100 events matching your search criteria. Only the first 100 events are displayed. Please, redefine the search criteria in your filter.");
+        	cell.addContent("Warning: There are more than " + getMaxResults() + " events matching your search criteria. Only the first " + getMaxResults() + " events are displayed. Please, redefine the search criteria in your filter.");
         	cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
         	row.addContent(cell);
         	eventsTable.addContent(row);
@@ -688,7 +738,7 @@ public class WebEventTableBuilder {
                     }
                 }
                 if (!myApproval) continue;
-            } else  if (idx==100) break;
+            } else  if (idx==getMaxResults()) break;
             eventIds.add(event.getUniqueId());
             TreeSet<MultiMeeting> meetings = event.getMultiMeetings();
             addEventsRowsToTable(eventsTable, event, form.isAdmin() || form.isEventManager(), meetings);
@@ -789,10 +839,55 @@ public class WebEventTableBuilder {
         if (form.getSponsoringOrganization()!=null && form.getSponsoringOrganization()>=0) {
             query += " and e.sponsoringOrganization.uniqueId=:sponsorOrgId";
         }
+        
+        if (form.getStartTime() >= 0) {
+        	query += " and m.stopPeriod > " + form.getStartTime();
+        }
 
+        if (form.getStopTime() >= 0) {
+        	query += " and m.startPeriod < " + form.getStopTime();
+        }
+        
+        if (form.isDayMon() || form.isDayTue() || form.isDayWed() || form.isDayThu() || form.isDayFri() || form.isDaySat() || form.isDaySun()) {
+        	String dow = "";
+        	if (form.isDayMon()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "2";
+        	}
+        	if (form.isDayTue()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "3";
+        	}
+        	if (form.isDayWed()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "4";
+        	}
+        	if (form.isDayThu()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "5";
+        	}
+        	if (form.isDayFri()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "6";
+        	}
+        	if (form.isDaySat()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "7";
+        	}
+        	if (form.isDaySun()) {
+        		if (!dow.isEmpty()) dow += ",";
+        		dow += "1";
+        	}
+        	if (dow.indexOf(',') >= 0)
+        		query += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")";
+        	else
+        		query += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow;
+        }
+        
         Query hibQuery = new EventDAO().getSession().createQuery(query);
-        hibQuery.setFetchSize(1501);
-        hibQuery.setMaxResults(1501);
+        hibQuery.setFetchSize(getMaxResults() + 1);
+        if (form.getMode() != EventListForm.sModeEvents4Approval)
+        	hibQuery.setMaxResults(getMaxResults() + 1);
 
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
             hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
@@ -909,10 +1004,10 @@ public class WebEventTableBuilder {
         int numberOfMeetings = meetings.size();
         
         TableStream eventsTable = this.initTable(outputStream);
-        if (numberOfMeetings>100 && form.getMode()!=EventListForm.sModeEvents4Approval) {
+        if (numberOfMeetings>getMaxResults() && form.getMode()!=EventListForm.sModeEvents4Approval) {
             TableRow row = new TableRow();
             TableCell cell = initCell(true, null, 5, false);
-            cell.addContent("Warning: There are more than 100 meetings matching your search criteria. Only the first 100 meetings are displayed. Please, redefine the search criteria in your filter.");
+            cell.addContent("Warning: There are more than " + getMaxResults() + " meetings matching your search criteria. Only the first " + getMaxResults() + " meetings are displayed. Please, redefine the search criteria in your filter.");
             cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
             row.addContent(cell);
             eventsTable.addContent(row);
@@ -935,7 +1030,7 @@ public class WebEventTableBuilder {
         
         for (Iterator it = meetings.iterator();it.hasNext();idx++){
             Meeting meeting = (Meeting) it.next();
-            if (idx==100) break;
+            if (idx==getMaxResults()) break;
             if (eventIdsHash.add(meeting.getEvent().getUniqueId())) eventIds.add(meeting.getEvent().getUniqueId());
             addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), lastEvent, now, line, form.getDispConflicts());
             lastEvent = meeting.getEvent();

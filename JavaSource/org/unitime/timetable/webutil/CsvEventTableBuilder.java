@@ -50,6 +50,10 @@ public class CsvEventTableBuilder extends WebEventTableBuilder {
         super();
     }
     
+    public int getMaxResults() {
+    	return 1500;
+    }
+    
     public String getName(EventListForm form) {
         String type = "";
         if (form.getEventTypes().length<5) {

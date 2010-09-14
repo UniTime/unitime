@@ -33,6 +33,8 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
@@ -385,8 +387,20 @@ public class HibernateUtil {
             hibSessionFactory.getCache().evictQueryRegions();
     }
     
+    public static Class<?> getDialect() {
+    	try {
+    		return Class.forName(_RootDAO.getConfiguration().getProperty("dialect"));
+    	} catch (ClassNotFoundException e) {
+    		return null;
+    	}
+    }
+    
     public static boolean isMySQL() {
-        return "org.hibernate.dialect.MySQLInnoDBDialect".equals(_RootDAO.getConfiguration().getProperty("dialect"));
+    	return MySQLDialect.class.isAssignableFrom(getDialect());
+    }
+    
+    public static boolean isOracle() {
+    	return Oracle8iDialect.class.isAssignableFrom(getDialect());
     }
     
     public static String addDate(String dateSQL, String incrementSQL) {
@@ -394,5 +408,12 @@ public class HibernateUtil {
             return "adddate("+dateSQL+","+incrementSQL+")";
         else
             return dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL;
+    }
+    
+    public static String dayOfWeek(String field) {
+    	if (isOracle())
+    		return "to_char(" + field + ",'D')";
+    	else
+    		return "dayofweek(" + field + ")";
     }
 }
