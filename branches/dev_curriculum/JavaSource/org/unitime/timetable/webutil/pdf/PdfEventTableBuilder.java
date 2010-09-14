@@ -19,10 +19,15 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
 import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.WebEventTableBuilder;
@@ -246,6 +251,15 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
 			} else {
 				addText(cell, "0", Element.ALIGN_RIGHT);
 			}
+		} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
+			ExamEvent ee = new ExamEventDAO().get(e.getUniqueId());
+			addText(cell, String.valueOf(ee.getExam().countStudents()), Element.ALIGN_RIGHT);
+		} else if (Event.sEventTypeCourse == e.getEventType()) {
+			CourseEvent ce = new CourseEventDAO().get(e.getUniqueId());
+			int enrl = 0;
+			for (RelatedCourseInfo rci: ce.getRelatedCourses())
+				enrl += rci.countStudents();
+			addText(cell, String.valueOf(enrl), Element.ALIGN_RIGHT);
     	} 
     	return (cell);
     }
