@@ -91,6 +91,41 @@
 			</TD> 
 		</TR>
 		<TR>
+			<TD nowrap>Time: </TD>
+			<TD>
+				<html:checkbox property="dayMon"/>
+				Mon&nbsp;
+				<html:checkbox property="dayTue"/>
+				Tue&nbsp;
+				<html:checkbox property="dayWed"/>
+				Wed&nbsp;
+				<html:checkbox property="dayThu"/>
+				Thu&nbsp;
+				<html:checkbox property="dayFri"/>
+				Fri&nbsp;
+				<html:checkbox property="daySat"/>
+				Sat&nbsp;
+				<html:checkbox property="daySun"/>
+				Sun
+				<br/>
+				From:&nbsp;
+				<html:select name="meetingListForm" property="startTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="meetingListForm" property="times"/>
+				</html:select>
+				
+				&nbsp;&nbsp;
+				To: 
+				<html:select name="meetingListForm" property="stopTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="meetingListForm" property="stopTimes"/>
+				</html:select> 
+		</TR>
+		<TR>
 			<TD valign="top">Event Type:</TD>
 			<TD>
 				<logic:iterate name="meetingListForm" property="allEventTypes" id="type" indexId="typeIdx">

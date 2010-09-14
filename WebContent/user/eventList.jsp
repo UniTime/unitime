@@ -85,15 +85,41 @@
 				border="0" id="show_event_date_to">  
 			</TD> 
 		</TR>
-		<%--
 		<TR>
-			<TD>Time: </TD>
+			<TD nowrap>Time: </TD>
 			<TD>
-				From: <html:text property="eventTimeFrom" maxlength="10" size="10" /> 
-				To: <html:text property="eventTimeTo" maxlength="10" size="10" />  
-			</TD> 
+				<html:checkbox property="dayMon"/>
+				Mon&nbsp;
+				<html:checkbox property="dayTue"/>
+				Tue&nbsp;
+				<html:checkbox property="dayWed"/>
+				Wed&nbsp;
+				<html:checkbox property="dayThu"/>
+				Thu&nbsp;
+				<html:checkbox property="dayFri"/>
+				Fri&nbsp;
+				<html:checkbox property="daySat"/>
+				Sat&nbsp;
+				<html:checkbox property="daySun"/>
+				Sun
+				<br/>
+				From:&nbsp;
+				<html:select name="eventListForm" property="startTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="eventListForm" property="times"/>
+				</html:select>
+				
+				&nbsp;&nbsp;
+				To: 
+				<html:select name="eventListForm" property="stopTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="eventListForm" property="stopTimes"/>
+				</html:select> 
 		</TR>
-		--%>
 		<TR>
 			<TD valign="top">Event Type:</TD>
 			<TD>
