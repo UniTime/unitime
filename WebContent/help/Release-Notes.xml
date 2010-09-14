@@ -92,6 +92,9 @@
 				<line>Excessive days/months on sessions/date patterns made more general.</line>
 				<line>Few improvements to the Timetable (grid) page (e.g., show event when a solution from the database is displayed).</line>
 				<line>Room allocation report (Solvers Reports page) improved (counting of weekly hour usage)</line>
+				<line>Select Academic Session / Select User Role: table or roles / sessions made sortable, default order by session (last session first)</line>
+				<line>Event Detail: added Inquire button (an email is sent, a message is added to events history); added ability to attach a file to a approve / inquiry / reject email</line>
+				<line>Events / Meetings: added export to CSV; added enrollment counts for exam and course related events; added filter by day of week and time</line>
 			</description>
 		</item>
 		<item>
