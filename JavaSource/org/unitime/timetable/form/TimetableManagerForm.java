@@ -30,7 +30,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Roles;
@@ -190,12 +189,14 @@ public class TimetableManagerForm extends ActionForm {
                 errors.add("externalId", 
                         new ActionMessage("errors.required", "PuID / Account Name"));
                 
+            /*
             if (User.canIdentify()) {
                 User user = User.identify(externalId);
                 if (user==null)
                     errors.add("externalId", 
                         new ActionMessage("errors.generic", "Manager '" + externalId + "' cannot be identified"));
             }
+            */
             
             if (email==null || email.trim().length()==0)
                 errors.add("email", 
