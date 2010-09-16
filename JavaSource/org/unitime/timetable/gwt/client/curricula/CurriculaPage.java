@@ -232,7 +232,6 @@ public class CurriculaPage extends Composite {
 					public void onSuccess(CurriculumInterface result) {
 						iCurriculumPanel.edit(result, true);
 						iCurriculaPanel.setVisible(false);
-						UniTimePageLabel.getInstance().setPageName(result.isEditable() ? "Edit Curriculum" : "Curriculum Details");
 						iCurriculumPanel.setVisible(true);
 						hideLoading();
 					}

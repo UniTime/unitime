@@ -44,7 +44,7 @@ public interface CurriculaServiceAsync {
 	public void loadMajors(Long curriculumId, Long academicAreaId, AsyncCallback<TreeSet<CurriculumInterface.MajorInterface>> callback) throws CurriculaException;
 	public void lastCurriculaFilter(AsyncCallback<String> callback) throws CurriculaException;
 	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException;
-	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Long> callback) throws CurriculaException;
 	public void deleteCurriculum(Long curriculumId, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void deleteCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void mergeCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
