@@ -427,6 +427,10 @@ h1 {
 	border-bottom: 1px solid #9CB0CE;
 }
 
+.unitime-TopLine {
+	border-top: 1px solid #9CB0CE;
+}
+
 .unitime-TimeGridHorizontalHeaderFirst {
 	border: 1px solid #9CB0CE;
 	background-color: #92c1f0;
@@ -1112,6 +1116,10 @@ h1 {
 	border-bottom: 1px solid #9CB0CE;
 }
 
+.unitime-NotPrintableTopLine {
+	border-top: 1px solid #9CB0CE;
+}
+
 .unitime-GrayText {
 	color: #777777;
 }
@@ -1150,6 +1158,9 @@ h1 {
 	  	border-bottom: 1px dashed black;
 	}
 	.unitime-NotPrintableBottomLine {
+		border: none;
+	}
+	.unitime-NotPrintableTopLine {
 		border: none;
 	}
 	.unitime-GrayText {

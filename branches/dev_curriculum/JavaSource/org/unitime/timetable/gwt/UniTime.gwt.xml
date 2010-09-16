@@ -43,6 +43,5 @@
 	<source path='shared' />
 	<source path='resources' />
 	<source path='services' />
-	<source path='widgets' />
 
 </module>

@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.gwt.client;
 
-import org.unitime.timetable.gwt.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.widgets.PageLabel;
+import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -79,12 +79,7 @@ public class Client implements EntryPoint {
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
 					LoadingWidget.getInstance().setMessage("Loading " + p.title() + " ...");
-					RootPanel title = RootPanel.get("UniTimeGWT:Title");
-					if (title != null) {
-						title.clear();
-						PageLabel label = new PageLabel(); label.setPageName(p.title());
-						title.add(label);
-					}
+					UniTimePageLabel.getInstance().setPageName(p.title());
 					Window.setTitle("UniTime 3.2| " + p.title());
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;

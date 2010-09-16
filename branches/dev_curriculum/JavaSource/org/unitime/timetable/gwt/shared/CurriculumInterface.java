@@ -40,8 +40,6 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	private TreeSet<CurriculumClassificationInterface> iClasf;
 	private TreeSet<CourseInterface> iCourses;
 	
-	private Integer iRow = null;
-	
 	public CurriculumInterface() {}
 	
 	public Long getId() { return iId; }
@@ -163,9 +161,6 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		Integer count = getEnrollment();
 		return (count == null ? "N/A" : count.toString());
 	}
-	
-	public Integer getRow() { return iRow; }
-	public void setRow(Integer row) { iRow = row; }
 	
 	public void setEditable(boolean editable) { iEditable = editable; }
 	public boolean isEditable() { return iEditable; }

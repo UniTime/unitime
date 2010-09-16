@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
+import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
+import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
+import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
+
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -27,10 +32,10 @@ import com.google.gwt.user.client.ui.Widget;
  *
  */
 public enum Pages {
-	curricula("Curricula", new PageFactory() { public Widget create() { return new Curricula(); } }),
-	curprojrules("Curriculum Projection Rules", new PageFactory() { public Widget create() { return new CurriculumProjectionRules(); } }),
-	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioning(); } }),
-	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEdit(); } });
+	curricula("Curricula", new PageFactory() { public Widget create() { return new CurriculaPage(); } }),
+	curprojrules("Curriculum Projection Rules", new PageFactory() { public Widget create() { return new CurriculumProjectionRulesPage(); } }),
+	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(); } }),
+	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } });
 	
 	private String iTitle;
 	private PageFactory iFactory;
