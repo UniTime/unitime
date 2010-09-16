@@ -160,6 +160,14 @@ public class UniTimeHeaderPanel extends Composite {
 		setEnabled(iOperations.get(operation), enabled);
 	}
 	
+	public boolean isEnabled(int button) {
+		return ((Button)iButtons.getWidget(button)).isVisible();
+	}
+
+	public boolean isEnabled(String operation) {
+		return isEnabled(iOperations.get(operation));
+	}
+	
 	public UniTimeHeaderPanel clonePanel(String newTitle) {
 		UniTimeHeaderPanel clone = new UniTimeHeaderPanel(newTitle == null ? "&nbsp;" : newTitle);
 		iClones.add(clone);
