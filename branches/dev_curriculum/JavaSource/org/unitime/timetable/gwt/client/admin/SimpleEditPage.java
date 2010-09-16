@@ -58,6 +58,8 @@ public class SimpleEditPage extends Composite {
 	
 	private SimpleEditInterface iData;
 	
+	private boolean iEditable = false;
+	
 	public SimpleEditPage() throws SimpleEditException {
 		String typeString = Window.Location.getParameter("type");
 		if (typeString == null) throw new SimpleEditException("Edit type is not provided.");
@@ -79,6 +81,7 @@ public class SimpleEditPage extends Composite {
 					@Override
 					public void onSuccess(SimpleEditInterface result) {
 						iData = result;
+						iEditable = false;
 						refreshTable();
 						saveOrder();
 					}
@@ -86,22 +89,74 @@ public class SimpleEditPage extends Composite {
 			}
 		};
 		
+		ClickHandler edit = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEditable = true;
+				iHeader.setEnabled("edit", false);
+				refreshTable();
+			}
+		};
+		
+		ClickHandler back = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEditable = false;
+				load();
+			}
+		};
+
 		iPanel = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.setMessage("Loading data...");
+		iHeader.addButton("edit", "<u>E</u>dit", 'e', 75, edit);
 		iHeader.addButton("save", "<u>S</u>ave", 's', 75, save);
-		iHeader.setEnabled("save", false);
+		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, back);
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
 		iPanel.addRow(iTable);
 		
 		iBottom = iHeader.clonePanel();
-		iBottom.setVisible(false);
 		iPanel.addNotPrintableBottomRow(iBottom);
 		
 		initWidget(iPanel);
 		
+		final Timer timer = new Timer() {
+			@Override
+			public void run() {
+				saveOrder();
+			}
+		};
+		iTable.addDataChangedListener(new DataChangedListener<Record>() {
+			@Override
+			public void onDataInserted(DataChangedEvent<Record> event) {
+			}
+
+			@Override
+			public void onDataMoved(List<DataChangedEvent<Record>> event) {
+				timer.schedule(5000);
+			}
+
+			@Override
+			public void onDataRemoved(DataChangedEvent<Record> event) {
+			}
+
+			@Override
+			public void onDataSorted(List<DataChangedEvent<Record>> event) {
+			}
+		});
+		
+		load();
+	}
+	
+	public void load() {
+		iBottom.setVisible(false);
+		iHeader.setEnabled("save", false);
+		iHeader.setEnabled("edit", false);
+		iHeader.setEnabled("back", false);
+		iHeader.setMessage("Loading data...");
+		iTable.clearTable();
+
 		iService.load(iType, new AsyncCallback<SimpleEditInterface>() {
 			
 			@Override
@@ -142,31 +197,6 @@ public class SimpleEditPage extends Composite {
 				iHeader.setErrorMessage("Unable to load data (" + caught.getMessage() + ")");
 			}
 		});
-		
-		final Timer timer = new Timer() {
-			@Override
-			public void run() {
-				saveOrder();
-			}
-		};
-		iTable.addDataChangedListener(new DataChangedListener<Record>() {
-			@Override
-			public void onDataInserted(DataChangedEvent<Record> event) {
-			}
-
-			@Override
-			public void onDataMoved(List<DataChangedEvent<Record>> event) {
-				timer.schedule(5000);
-			}
-
-			@Override
-			public void onDataRemoved(DataChangedEvent<Record> event) {
-			}
-
-			@Override
-			public void onDataSorted(List<DataChangedEvent<Record>> event) {
-			}
-		});
 	}
 	
 	private void refreshTable() {
@@ -175,7 +205,7 @@ public class SimpleEditPage extends Composite {
 		List<Widget> header = new ArrayList<Widget>();
 		int col = 0;
 		for (final Field field: iData.getFields()) {
-			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName(), col + 1 == iData.getFields().length ? 3 : 1);
+			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName(), col + 1 == iData.getFields().length && iData.isEditable() && iEditable ? 3 : 1);
 			header.add(cell);
 			final int index = col;
 			cell.addOperation(new UniTimeTableHeader.Operation() {
@@ -223,11 +253,15 @@ public class SimpleEditPage extends Composite {
 			fillRow(r, row++);
 			empty = r.isEmpty();
 		}
-		if (!empty)
+		if (!empty && iEditable && iData.isEditable())
 			fillRow(iData.addRecord(null), row);
 		
 		iBottom.setVisible(true);
-		iHeader.setEnabled("save", true);
+		if (iData.isEditable()) {
+			iHeader.setEnabled("back", iEditable);
+			iHeader.setEnabled("save", iEditable);
+			iHeader.setEnabled("edit", !iEditable);
+		}
 		iHeader.clearMessage();
 	}
 	
@@ -235,32 +269,34 @@ public class SimpleEditPage extends Composite {
 		List<Widget> line = new ArrayList<Widget>();
 		int col = 0;
 		for (Field field: iData.getFields()) {
-			MyCell cell = new MyCell(iData.isEditable(), field, record, col++);
+			MyCell cell = new MyCell(iData.isEditable() && iEditable, field, record, col++);
 			line.add(cell);
 		}
-		Image add = new Image(RESOURCES.add());
-		add.getElement().getStyle().setCursor(Cursor.POINTER);
-		add.setTitle("Insert a new row above this row.");
-		add.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				int row = iTable.getCellForEvent(event).getRowIndex();
-				fillRow(iData.addRecord(null), iTable.insertRow(row));
-			}
-		});
-		line.add(add);
-		Image delete = new Image(RESOURCES.delete());
-		delete.setTitle("Delete this row.");
-		delete.getElement().getStyle().setCursor(Cursor.POINTER);
-		delete.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				int row = iTable.getCellForEvent(event).getRowIndex();
-				iData.getRecords().remove(iTable.getData(row));
-				iTable.removeRow(row);
-			}
-		});
-		line.add(delete);
+		if (iData.isEditable() && iEditable) {
+			Image add = new Image(RESOURCES.add());
+			add.getElement().getStyle().setCursor(Cursor.POINTER);
+			add.setTitle("Insert a new row above this row.");
+			add.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					int row = iTable.getCellForEvent(event).getRowIndex();
+					fillRow(iData.addRecord(null), iTable.insertRow(row));
+				}
+			});
+			line.add(add);
+			Image delete = new Image(RESOURCES.delete());
+			delete.setTitle("Delete this row.");
+			delete.getElement().getStyle().setCursor(Cursor.POINTER);
+			delete.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					int row = iTable.getCellForEvent(event).getRowIndex();
+					iData.getRecords().remove(iTable.getData(row));
+					iTable.removeRow(row);
+				}
+			});
+			line.add(delete);
+		}
 		iTable.setRow(row, record, line);
 	}
 	
