@@ -82,6 +82,7 @@ public class UniTimeMenuBar extends Composite {
 			final Timer showTimer = new Timer() {
 				@Override
 				public void run() {
+					iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
 					DOM.setStyleAttribute(iMenu.getElement(), "left", String.valueOf(Window.getScrollLeft()));
 					DOM.setStyleAttribute(iMenu.getElement(), "top", String.valueOf(Window.getScrollTop()));
 					iMenu.setVisible(true);
@@ -100,7 +101,7 @@ public class UniTimeMenuBar extends Composite {
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
 			@Override
 			public void onSuccess(List<MenuInterface> result) {
-				initMenu(iMenu, result, 0);
+				initMenu(iMenu, result, 0); 
 				iMenu.setVisible(true);
 				if (iSimple != null)
 					iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
