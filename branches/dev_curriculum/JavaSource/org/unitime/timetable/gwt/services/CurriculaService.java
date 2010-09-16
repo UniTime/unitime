@@ -46,7 +46,7 @@ public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException;
 	public String lastCurriculaFilter() throws CurriculaException;
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException;
-	public Boolean saveCurriculum(CurriculumInterface curriculum) throws CurriculaException;
+	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException;
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException;
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException;
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException;

@@ -170,8 +170,8 @@ public class CurriculaCourses extends Composite {
 		});
 	}
 	
-	public void populate(CurriculumInterface curriculum) {
-		iEditable = curriculum.isEditable();
+	public void populate(CurriculumInterface curriculum, boolean editable) {
+		iEditable = curriculum.isEditable() && editable;
 		iTable.clearTable();
 		// iTable.clear(true);
 		iGroups.clear();
@@ -471,9 +471,9 @@ public class CurriculaCourses extends Composite {
 						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
 						EnrollmentLabel label = (EnrollmentLabel)iTable.getWidget(row, x + 1);
 						if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
-							text.setShare(label.getProjectionPercent());
+							text.setShare(label.getEnrollmentPercent());
 						else
-							text.setExpected(label.getProjection());
+							text.setExpected(label.getEnrollment());
 					}
 				}
 			}
@@ -501,9 +501,9 @@ public class CurriculaCourses extends Composite {
 						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
 						EnrollmentLabel label = (EnrollmentLabel)iTable.getWidget(row, x + 1);
 						if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
-							text.setShare(label.getEnrollmentPercent());
+							text.setShare(label.getProjectionPercent());
 						else
-							text.setExpected(label.getEnrollment());
+							text.setExpected(label.getProjection());
 					}
 				}
 			}

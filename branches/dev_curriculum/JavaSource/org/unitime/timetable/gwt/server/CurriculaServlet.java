@@ -408,7 +408,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		}
 	}
 	
-	public Boolean saveCurriculum(CurriculumInterface curriculum) throws CurriculaException {
+	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException {
 		try {
 			sLog.info("saveCurriculum(curriculum=" + curriculum.getId() + ")");
 			Long s0 = System.currentTimeMillis();
@@ -608,9 +608,18 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					}
 				}
 				
-				hibSession.saveOrUpdate(c);
+				Long ret = c.getUniqueId();
+				if (ret == null) {
+					ret = (Long)hibSession.save(c);
+				} else {
+					hibSession.update(c);
+				}
+				
 				hibSession.flush();
 				tx.commit(); tx = null;
+
+				sLog.info("Saved 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+				return ret;
 			} finally {
 				try {
 					if (tx != null && tx.isActive()) {
@@ -619,8 +628,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Saved 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
-			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
 			sLog.error(e.getMessage(), e);
