@@ -29,6 +29,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -50,13 +53,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
@@ -68,7 +69,6 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class CurriculumProjectionRulesPage extends Composite {
@@ -79,10 +79,8 @@ public class CurriculumProjectionRulesPage extends Composite {
 
 	private MyFlexTable iTable;
 	
-	private VerticalPanel iPanel = null;
-	private Button[] iSave = null, iClose = null, iPrint = null;
-	private Label[] iErrorMessage = null;
-	private HorizontalPanel[] iHeaderPanel = null;
+	private SimpleForm iPanel = null;
+	private UniTimeHeaderPanel iHeader = null, iBottom = null;
 	
 	private boolean iEditable = false;
 	
@@ -93,8 +91,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 	
 	public CurriculumProjectionRulesPage() {
 		
-		iPanel = new VerticalPanel();
-		iPanel.setWidth("100%");
+		iPanel = new SimpleForm();
 		
 		ClickHandler save = new ClickHandler() {
 			@Override
@@ -103,7 +100,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 				iService.saveProjectionRules(iRules, new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						showError("Failed to save curricula projection rules (" + caught.getMessage() + ")");
+						iHeader.setErrorMessage("Failed to save curricula projection rules (" + caught.getMessage() + ")");
 						LoadingWidget.getInstance().hide();
 						for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 							h.onException(caught);
@@ -111,11 +108,19 @@ public class CurriculumProjectionRulesPage extends Composite {
 					}
 					@Override
 					public void onSuccess(Boolean result) {
-						hideError();
+						iHeader.clearMessage();
 						LoadingWidget.getInstance().hide();
 						ProjectionRulesEvent e = new ProjectionRulesEvent();
 						for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 							h.onRulesSaved(e);
+						}
+						if (!iHeader.isEnabled("close")) {
+							iHeader.setEnabled("back", false);
+							iHeader.setEnabled("save", false);
+							iHeader.setEnabled("edit", true);
+							iHeader.setEnabled("print", true);
+							iEditable = false;
+							updateAll();
 						}
 					}
 				});
@@ -138,60 +143,62 @@ public class CurriculumProjectionRulesPage extends Composite {
 				Window.print();
 			}
 		};
+		
+		ClickHandler edit = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEditable = true;
+				updateAll();
+				iHeader.setEnabled("back", true);
+				iHeader.setEnabled("save", true);
+				iHeader.setEnabled("edit", false);
+				iHeader.setEnabled("print", false);
+			}
+		};
+
+		ClickHandler back = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEditable = false;
+				reload();
+			}
+		};
+
+		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("edit", "<u>E</u>dit", 's', 75, edit);
+		iHeader.addButton("save", "<u>S</u>ave", 's', 75, save);
+		iHeader.addButton("print", "<u>P</u>rint", 'p', 75, print);
+		iHeader.addButton("close", "<u>C</u>lose", 'c', 75, close);
+		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, back);
 				
-		iHeaderPanel = new HorizontalPanel[] { new HorizontalPanel(), new HorizontalPanel()};
-		iHeaderPanel[0].setStyleName("unitime-MainTableHeader");
-		iErrorMessage = new Label[] {new Label(), new Label()};
-		iSave = new Button[] { new Button("<u>S</u>ave"), new Button("<u>S</u>ave")};
-		iClose = new Button[] { new Button("<u>C</u>lose"), new Button("<u>C</u>lose")};
-		iPrint = new Button[] { new Button("<u>P</u>rint"), new Button("<u>P</u>rint")};
-		
-		iSave[0].setAccessKey('s');
-		iClose[0].setAccessKey('c');
-		iPrint[0].setAccessKey('p');
-		
-		for (int i = 0; i < 2; i++) {
-			iHeaderPanel[i].setSpacing(2);
-			iHeaderPanel[i].setWidth("100%");
-			iErrorMessage[i].setStyleName("unitime-ErrorMessage");
-			iErrorMessage[i].setVisible(false);
-			iSave[i].setVisible(false);
-			iSave[i].addClickHandler(save);
-			iSave[i].addStyleName("unitime-NoPrint");
-			iClose[i].setVisible(false);
-			iClose[i].addClickHandler(close);
-			iClose[i].getElement().getStyle().setMarginLeft(4, Unit.PX);
-			iClose[i].addStyleName("unitime-NoPrint");
-			iPrint[i].setVisible(false);
-			iPrint[i].addClickHandler(print);
-			iPrint[i].getElement().getStyle().setMarginLeft(4, Unit.PX);
-			iPrint[i].addStyleName("unitime-NoPrint");
-			HorizontalPanel buttons = new HorizontalPanel();
-			buttons.add(iSave[i]);
-			buttons.add(iPrint[i]);
-			buttons.add(iClose[i]);
-			iHeaderPanel[i].add(iErrorMessage[i]);
-			iHeaderPanel[i].setCellWidth(iErrorMessage[i], "100%");
-			iHeaderPanel[i].add(buttons);
-		}
-		iHeaderPanel[0].setVisible(false);
-		iHeaderPanel[0].addStyleName("unitime-NoPrint");
-		
-		iPanel.add(iHeaderPanel[0]);
+		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new MyFlexTable();
 		iTable.setVisible(false);
-		iPanel.add(iTable);
-
-		iPanel.add(iHeaderPanel[1]);
+		
+		iPanel.addRow(iTable);
+		
+		iBottom = iHeader.clonePanel();
+		iPanel.addNotPrintableBottomRow(iBottom);
 
 		initWidget(iPanel);
+		
+		iHeader.setEnabled("close", false);
+
+		reload();
+	}
+	
+	public void reload() {
+		iHeader.setEnabled("save", false);
+		iHeader.setEnabled("edit", false);
+		iHeader.setEnabled("back", false);
+		iHeader.setEnabled("print", false);
 
 		LoadingWidget.getInstance().show("Loading curriculum projection rules ...");
 		iService.loadProjectionRules(new AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				showError("Loading failed (" + caught.getMessage() + ")");
+				iHeader.setErrorMessage("Loading failed (" + caught.getMessage() + ")");
 				LoadingWidget.getInstance().hide();
 				for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 					h.onException(caught);
@@ -204,7 +211,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 				ordRequest.add("CurProjRules.Order");
 				for (AcademicAreaInterface area: iRules.keySet())
 					ordRequest.add("CurProjRules.Order["+area.getAbbv()+"]");
-				hideError();
+				iHeader.clearMessage();
 				iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
 					@Override
 					public void onSuccess(HashMap<String, String> result) {
@@ -231,12 +238,13 @@ public class CurriculumProjectionRulesPage extends Composite {
 				@Override
 				public void onSuccess(Boolean result) {
 					if (result) {
-						for (int i = 0; i < iSave.length; i++) {
-							iSave[i].setVisible(true);
-							iPrint[i].setVisible(!iClose[i].isVisible());
+						if (iHeader.isEnabled("close")) {
+							iHeader.setEnabled("save", true);
+							iEditable = true;
+							updateAll();
+						} else {
+							iHeader.setEnabled("edit", true);
 						}
-						iEditable = true;
-						updateAll();
 					}
 				}
 			});
@@ -247,7 +255,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			}
 			
 		} catch (Throwable t) {
-			showError("Loading failed (" + t.getMessage() + ")");
+			iHeader.setErrorMessage("Loading failed (" + t.getMessage() + ")");
 			for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 				h.onException(t);
 			}
@@ -256,32 +264,8 @@ public class CurriculumProjectionRulesPage extends Composite {
 		}
 	}
 	
-	public void showError(String error) {
-		for (int i = 0; i < iErrorMessage.length; i++) {
-			iErrorMessage[i].setText(error);
-			iErrorMessage[i].setVisible(true);
-			iErrorMessage[i].setStyleName("unitime-ErrorMessage");
-		}
-	}
-	
-	public void showMessage(String message) {
-		for (int i = 0; i < iErrorMessage.length; i++) {
-			iErrorMessage[i].setText(message);
-			iErrorMessage[i].setVisible(true);
-			iErrorMessage[i].setStyleName("unitime-Message");
-		}
-	}
-
-	public void hideError() {
-		for (int i = 0; i < iErrorMessage.length; i++) {
-			iErrorMessage[i].setVisible(false);
-		}
-	}
-	
 	public void setAllowClose(boolean allow) {
-		for (int i = 0; i < iClose.length; i++) {
-			iClose[i].setVisible(allow);
-		}
+		iHeader.setEnabled("close", allow);
 	}
 
 	private boolean isUsed(AcademicClassificationInterface c) {
@@ -589,9 +573,13 @@ public class CurriculumProjectionRulesPage extends Composite {
 				iTable.setHTML(r, c, "&nbsp;");
 			}
 		}
+
 		
-		iHeaderPanel[0].setVisible(true);
+		iBottom.setVisible(true);
 		iTable.setVisible(true);
+		if (!iHeader.isEnabled("close")) {
+			iHeader.setEnabled("print", true);
+		}
 	}
 	
 	private interface Updatable {
@@ -603,7 +591,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		private MyRow iRow;
 		private AcademicClassificationInterface iClasf;
 		
-		private TextBox iTextBox;
+		private UniTimeTextBox iTextBox;
 		private HTML iFrontLabel, iRearLabel;
 		private HorizontalPanel iPanel;
 		
@@ -621,11 +609,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			
 			iPanel = new HorizontalPanel();
 			
-			iTextBox = new TextBox();
-			iTextBox.setWidth("60px");
-			iTextBox.setStyleName("unitime-TextBox");
-			iTextBox.setMaxLength(6);
-			iTextBox.setTextAlignment(TextBox.ALIGN_RIGHT);
+			iTextBox = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -699,13 +683,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		public List<MySumCell> getSums() { return iSums; }
 		
 		public void focus() {
-			iTextBox.setFocus(true);
-			DeferredCommand.addCommand(new Command() {
-				@Override
-				public void execute() {
-					iTextBox.selectAll();
-				}
-			});
+			iTextBox.focus();
 		}
 		
 		public void onBrowserEvent(final Event event) {
@@ -786,7 +764,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		private List<MyCell> iCells;
 		private boolean iVertical;
 		
-		private TextBox iTextBox;
+		private UniTimeTextBox iTextBox;
 		private HTML iFrontLabel, iRearLabel;
 		private HorizontalPanel iPanel;
 		
@@ -801,11 +779,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			
 			iPanel = new HorizontalPanel();
 			
-			iTextBox = new TextBox();
-			iTextBox.setWidth("60px");
-			iTextBox.setStyleName("unitime-TextBox");
-			iTextBox.setMaxLength(6);
-			iTextBox.setTextAlignment(TextBox.ALIGN_RIGHT);
+			iTextBox = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -883,13 +857,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		}
 		
 		public void focus() {
-			iTextBox.setFocus(true);
-			DeferredCommand.addCommand(new Command() {
-				@Override
-				public void execute() {
-					iTextBox.selectAll();
-				}
-			});
+			iTextBox.focus();
 		}
 		
 		public void update() {
@@ -933,7 +901,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			}
 		}
 	}
-	
+
 	private class MyRow {
 		private AcademicAreaInterface iArea;
 		private MajorInterface iMajor;
@@ -1011,7 +979,6 @@ public class CurriculumProjectionRulesPage extends Composite {
 			sinkEvents(Event.ONCLICK);
 			sinkEvents(Event.ONKEYDOWN);
 			setStylePrimaryName("unitime-MainTable");
-			addStyleName("unitime-NotPrintableBottomLine");
 			iTimer = new Timer() {
 				@Override
 				public void run() {
@@ -1048,7 +1015,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		}
 		
 		public void saveOrder() {
-			showMessage("Saving order...");
+			iHeader.setMessage("Saving order...");
 			String areaOrd = "";
 			HashMap<String, String> area2majorOrd = new HashMap<String, String>();
 			for (int i = 1; i < getRowCount() - 1; i++) {
@@ -1070,11 +1037,11 @@ public class CurriculumProjectionRulesPage extends Composite {
 			iMenuService.setUserData(ord, new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					showError("Failed to save table order (" + caught.getMessage() + ")");
+					iHeader.setErrorMessage("Failed to save table order (" + caught.getMessage() + ")");
 				}
 				@Override
 				public void onSuccess(Boolean result) {
-					hideError();
+					iHeader.clearMessage();
 				}
 			});
 		}
