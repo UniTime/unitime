@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.page;
 
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
@@ -30,17 +31,12 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -79,13 +75,10 @@ public class UniTimePageLabel extends Composite {
 				
 		initWidget(iPanel);
 		
-		final DialogBox dialog = new MyDialogBox();
-		dialog.setAutoHideEnabled(true);
-		dialog.setModal(true);
+		final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+		dialog.setEscapeToHide(true);
 		final Frame frame = new MyFrame();
 		frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-		dialog.setGlassEnabled(true);
-		dialog.setAnimationEnabled(true);
 		dialog.setWidget(frame);
 		
 		iTimer = new Timer() {
@@ -152,15 +145,6 @@ public class UniTimePageLabel extends Composite {
 		});		
 	}
 
-	private class MyDialogBox extends DialogBox {
-		private MyDialogBox() { super(); }
-		protected void onPreviewNativeEvent(NativePreviewEvent event) {
-			super.onPreviewNativeEvent(event);
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ESCAPE)
-				MyDialogBox.this.hide();
-		}
-	}
-	
 	public static void notifyFrameLoaded() {
 		LoadingWidget.getInstance().hide();
 	}
