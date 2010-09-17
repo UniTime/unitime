@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -282,12 +283,8 @@ public class CourseSelectionBox extends Composite implements Validator {
 	
 	private void openDialog() {
 		if (iDialog == null) {
-			iDialog = new DialogBox();
+			iDialog = new UniTimeDialogBox(true, true);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
-			iDialog.setAnimationEnabled(true);
-			iDialog.setAutoHideEnabled(true);
-			iDialog.setGlassEnabled(true);
-			iDialog.setModal(true);
 			
 			iFilter = new TextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
