@@ -24,6 +24,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.Pages;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
@@ -32,21 +33,17 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -163,13 +160,10 @@ public class UniTimeMenuBar extends Composite {
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {
-			final DialogBox dialog = new MyDialogBox();
-			dialog.setAutoHideEnabled(true);
-			dialog.setModal(true);
+			final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+			dialog.setEscapeToHide(true);
 			final Frame frame = new MyFrame(name);
 			frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-			dialog.setGlassEnabled(true);
-			dialog.setAnimationEnabled(true);
 			dialog.setWidget(frame);
 			dialog.setText(name);
 			frame.setUrl(url);
@@ -249,15 +243,6 @@ public class UniTimeMenuBar extends Composite {
 		if (iSimple != null) {
 			iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
 			panel.add(iSimple);
-		}
-	}
-	
-	protected class MyDialogBox extends DialogBox {
-		private MyDialogBox() { super(); }
-		protected void onPreviewNativeEvent(NativePreviewEvent event) {
-			super.onPreviewNativeEvent(event);
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ESCAPE)
-				MyDialogBox.this.hide();
 		}
 	}
 	
