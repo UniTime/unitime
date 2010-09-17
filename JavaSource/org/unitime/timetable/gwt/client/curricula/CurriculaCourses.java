@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameChangedEvent;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
@@ -49,9 +50,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
@@ -59,7 +57,6 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -110,7 +107,6 @@ public class CurriculaCourses extends Composite {
 	
 	public CurriculaCourses() {
 		iTable = new UniTimeTable<String>();
-		iTable.setAllowSelection(true);
 		initWidget(iTable);
 		iCourseChangedHandler = new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
 			@Override
@@ -172,6 +168,7 @@ public class CurriculaCourses extends Composite {
 	
 	public void populate(CurriculumInterface curriculum, boolean editable) {
 		iEditable = curriculum.isEditable() && editable;
+		iTable.setAllowSelection(iEditable);
 		iTable.clearTable();
 		// iTable.clear(true);
 		iGroups.clear();
@@ -375,14 +372,16 @@ public class CurriculaCourses extends Composite {
 		hCourse.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				boolean selectedOnly = (iTable.getSelectedCount() > 0);
+				// boolean selectedOnly = (iTable.getSelectedCount() > 0);
 				rows: for (int row = iTable.getRowCount() - 1; row > 0; row --) {
 					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
 					if (course.isEmpty() && row + 1 == iTable.getRowCount()) continue;
+					/*
 					if (selectedOnly && !iTable.isSelected(row)) {
 						iTable.setSelected(row, false);
 						continue;
 					}
+					*/
 					for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 						int x = 2 + 2 * c;
 						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
@@ -1755,7 +1754,7 @@ public class CurriculaCourses extends Composite {
 		
 	}
 	
-	private class GroupDialogBox extends DialogBox {
+	private class GroupDialogBox extends UniTimeDialogBox {
 		private TextBox iGrName;
 		private ListBox iGrType;
 		private Button iGrAssign, iGrDelete, iGrUpdate;
@@ -1763,10 +1762,7 @@ public class CurriculaCourses extends Composite {
 		private ClickHandler iGrHandler;
 
 		private GroupDialogBox() {
-			setAnimationEnabled(true);
-			setAutoHideEnabled(true);
-			setGlassEnabled(true);
-			setModal(true);
+			super(true, true);
 			FlexTable groupTable = new FlexTable();
 			groupTable.setCellSpacing(2);
 			groupTable.setText(0, 0, "Name:");
@@ -1788,7 +1784,7 @@ public class CurriculaCourses extends Composite {
 			grButtons.add(iGrDelete);
 			groupTable.setWidget(2, 1, grButtons);
 			groupTable.getFlexCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-			add(groupTable);
+			setWidget(groupTable);
 			
 			iGrAssign.addClickHandler(new ClickHandler() {
 				@Override
@@ -1798,6 +1794,15 @@ public class CurriculaCourses extends Composite {
 				}
 			});
 			
+			setEscapeToHide(true);
+			setEnterToSubmit(new Command() {
+				@Override
+				public void execute() {
+					hide();
+					assignGroup(iGrOldName, iGrName.getText(), iGrType.getSelectedIndex());
+				}
+			});
+			/*
 			iGrName.addKeyUpHandler(new KeyUpHandler() {
 				@Override
 				public void onKeyUp(KeyUpEvent event) {
@@ -1810,6 +1815,7 @@ public class CurriculaCourses extends Composite {
 					}
 				}
 			});
+			*/
 			
 			iGrUpdate.addClickHandler(new ClickHandler() {
 				@Override

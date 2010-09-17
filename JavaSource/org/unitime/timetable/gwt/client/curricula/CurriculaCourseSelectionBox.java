@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -37,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -60,12 +62,14 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -242,12 +246,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	
 	private void openDialog() {
 		if (iDialog == null) {
-			iDialog = new DialogBox();
+			iDialog = new UniTimeDialogBox(true, true);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
-			iDialog.setAnimationEnabled(true);
-			iDialog.setAutoHideEnabled(true);
-			iDialog.setGlassEnabled(true);
-			iDialog.setModal(true);
 			
 			iFilter = new TextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
@@ -258,18 +258,28 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 					new WebTable.Row(
 							new WebTable.Cell(MESSAGES.colSubject(), 1, "80"),
 							new WebTable.Cell(MESSAGES.colCourse(), 1, "80"),
-							new WebTable.Cell(MESSAGES.colTitle(), 1, "300"),
-							new WebTable.Cell(MESSAGES.colNote(), 1, "300"),
+							new WebTable.Cell(MESSAGES.colTitle(), 1, "400"),
 							new WebTable.Cell("Limit", 1, "60"),
-							new WebTable.Cell("Last-Like", 1, "60"),
+							new WebTable.Cell("Last&#8209;Like", 1, "60"),
 							new WebTable.Cell("Projected", 1, "60"),
 							new WebTable.Cell("Enrolled", 1, "60")
 							));
 			
 			iDialogPanel = new VerticalPanel();
 			iDialogPanel.setSpacing(5);
-			iDialogPanel.add(iFilter);
-			iDialogPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
+			HorizontalPanel filterPanel = new HorizontalPanel();
+			Label filterText = new Label("Filter:", false);
+			filterText.getElement().getStyle().setMarginRight(5, Unit.PX);
+			filterPanel.setWidth("75px");
+			filterPanel.add(filterText);
+			filterPanel.setCellHorizontalAlignment(filterText, HasHorizontalAlignment.ALIGN_RIGHT);
+			filterPanel.setCellVerticalAlignment(filterText, HasVerticalAlignment.ALIGN_MIDDLE);
+			filterPanel.add(iFilter);
+			HTML blank = new HTML("&nbsp;");
+			blank.setWidth("75px");
+			filterPanel.add(blank);
+			iDialogPanel.add(filterPanel);
+			iDialogPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 			
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -310,7 +320,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iClassesPanel, new HTML(MESSAGES.courseSelectionClasses(), false));
+			iCourseDetailsTabPanel.add(iClassesPanel, new HTML("C<u>l</u>asses", false));
 			
 			iCurricula = new CourseCurriculaTable(false, false);
 			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
@@ -341,9 +351,16 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			
 			iDialog.setWidget(iDialogPanel);
 			
+			final Timer finderTimer = new Timer() {
+				@Override
+				public void run() {
+					updateCourses();
+				}
+			};
+			
 			iFilter.addKeyUpHandler(new KeyUpHandler() {
 				public void onKeyUp(KeyUpEvent event) {
-					updateCourses();
+					finderTimer.schedule(500);
 					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER || event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
 						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 							if (iCourses.getSelectedRow()>=0) {
@@ -563,7 +580,6 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 								record.getSubject(),
 								record.getCourseNbr(),
 								record.getTitle(),
-								record.getNote(),
 								record.getLimitString(),
 								record.getLastLikeString(),
 								record.getProjectedString(),
@@ -590,7 +606,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 		} else {
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionLoadingCourses());
-			iCurriculaService.listCourseOfferings(iFilter.getText(), null, iCourseOfferingsCallback);
+			iCurriculaService.listCourseOfferings(iFilter.getText(), 100, iCourseOfferingsCallback);
 		}
 		iLastQuery = iFilter.getText();
 	}
@@ -642,7 +658,12 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 						}
 						iClasses.setData(rows);
 					} else {
-						iClasses.setEmptyMessage(MESSAGES.courseSelectionNoClasses(iFilter.getText()));
+						String courseName = iFilter.getText();
+						try {
+							WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
+							courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
+						} catch (Exception e) {}
+						iClasses.setEmptyMessage(MESSAGES.courseSelectionNoClasses(courseName));
 					}
 				}
 			};

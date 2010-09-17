@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -205,11 +206,7 @@ public class CourseCurriculaTable extends Composite {
 	
 	private void openDialog(final CurriculumInterface curriculum, final ConditionalCommand next) {
 		if (iDialog == null) {
-			iDialog = new DialogBox();
-			iDialog.setAnimationEnabled(true);
-			iDialog.setAutoHideEnabled(true);
-			iDialog.setGlassEnabled(true);
-			iDialog.setModal(true);
+			iDialog = new UniTimeDialogBox(true, true);
 			iCurriculumEdit = new CurriculumEdit();
 			ScrollPanel panel = new ScrollPanel(iCurriculumEdit);
 			// panel.setSize(Math.round(0.9 * Window.getClientWidth()) + "px", Math.round(0.9 * Window.getClientHeight()) + "px");

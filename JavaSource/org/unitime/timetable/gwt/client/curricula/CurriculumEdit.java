@@ -78,16 +78,32 @@ public class CurriculumEdit extends Composite {
 	
 	private boolean iAreaHasNoMajors = false;
 	
-	private boolean iEditable = false, iDetailsEditable = true, iSaved = false;
+	private Mode iMode;
+	
+	private boolean iSaved = false;
+	
+	public static enum Mode {
+		ADD("Add Curriculum", true, true),
+		EDIT("Edit Curriculum", true, true),
+		DETAILS("Curriculum Detail", false, false),
+		DIALOG(null, true, false);
+		
+		private String iTitle;
+		private boolean iEditable, iEditableDetails;
+		Mode(String title, boolean editable, boolean details) { iTitle = title; iEditable = editable; iEditableDetails = details; }
+		public boolean hasTitle() { return iTitle != null; }
+		public String getTitle() { return iTitle; }
+		public boolean isEditable() { return iEditable; }
+		public boolean areDetailsEditable() { return iEditableDetails; }
+	}
 	
 	public CurriculumEdit() {
 
 		ClickHandler backHandler = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iDetailsEditable && iEditable && iCurriculum.getId() != null) { // back to detail screen
-					iEditable = false;
-					loadCurriculum(true);
+				if (iMode == Mode.EDIT) { // back to detail screen
+					loadCurriculum(Mode.DETAILS);
 				} else {
 					EditFinishedEvent e = new EditFinishedEvent();
 					for (EditFinishedHandler h: iEditFinishedHandlers) {
@@ -113,10 +129,9 @@ public class CurriculumEdit extends Composite {
 						}
 						@Override
 						public void onSuccess(Long result) {
-							if (iDetailsEditable) { // back to details page
-								iEditable = false;
+							if (iMode == Mode.EDIT) { // back to details page
 								iCurriculum.setId(result);
-								reload();
+								reload(Mode.DETAILS);
 								iSaved = true;
 							} else {
 								EditFinishedEvent e = new EditFinishedEvent();
@@ -166,8 +181,7 @@ public class CurriculumEdit extends Composite {
 		ClickHandler editHandler = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEditable = true;
-				loadCurriculum(true);
+				loadCurriculum(Mode.EDIT);
 			}
 		};
 		
@@ -291,11 +305,13 @@ public class CurriculumEdit extends Composite {
 		initWidget(curriculaTable);
 	}
 	
-	private void loadCurriculum(boolean detailsEditable) {
-		iDetailsEditable = detailsEditable;
+	public Mode getMode() { return iMode; }
+	
+	private void loadCurriculum(Mode mode) {
+		iMode = mode;
 
-		if (iDetailsEditable)
-			UniTimePageLabel.getInstance().setPageName(iCurriculum.isEditable() && iEditable ? "Edit Curriculum" : "Curriculum Details");
+		if (iMode.hasTitle())
+			UniTimePageLabel.getInstance().setPageName(iMode.getTitle());
 		
 		if (iCurriculum.getId() == null) {
 			iDefaultAbbv = true; iDefaultName = true;
@@ -311,15 +327,15 @@ public class CurriculumEdit extends Composite {
 		iCurriculumClasfTable.clearHint();
 
 		iTitleAndButtons.clearMessage();
-		iTitleAndButtons.setEnabled("delete", iDetailsEditable && iCurriculum.getId() != null && iCurriculum.isEditable() && !iEditable);
-		iTitleAndButtons.setEnabled("save", iCurriculum.isEditable() && iEditable);
-		iTitleAndButtons.setEnabled("edit", iCurriculum.isEditable() && !iEditable);
-		iTitleAndButtons.setEnabled("print", iDetailsEditable && !iEditable);
+		iTitleAndButtons.setEnabled("delete", iMode == Mode.DETAILS && iCurriculum.getId() != null && iCurriculum.isEditable());
+		iTitleAndButtons.setEnabled("save", iCurriculum.isEditable() && iMode.isEditable());
+		iTitleAndButtons.setEnabled("edit", iCurriculum.isEditable() && !iMode.isEditable());
+		iTitleAndButtons.setEnabled("print", iMode.areDetailsEditable() && !iMode.isEditable());
 
 		iCurriculumAbbv.getWidget().setText(iCurriculum.getAbbv());
-		iCurriculumAbbv.getWidget().setReadOnly(!iCurriculum.isEditable() || !iDetailsEditable || !iEditable);
+		iCurriculumAbbv.getWidget().setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 		iCurriculumName.getWidget().setText(iCurriculum.getName());
-		iCurriculumName.getWidget().setReadOnly(!iCurriculum.isEditable() || !iDetailsEditable || !iEditable);
+		iCurriculumName.getWidget().setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 		iCurriculumArea.getWidget().setSelectedIndex(0);
 		if (iCurriculum.getAcademicArea() != null) {
 			for (int i = 0; i < iAreas.size(); i++)
@@ -327,7 +343,7 @@ public class CurriculumEdit extends Composite {
 					iCurriculumArea.getWidget().setSelectedIndex(1 + i);
 		}
 		iCurriculumArea.setText(iCurriculum.getAcademicArea() == null ? "" : iCurriculum.getAcademicArea().getName());
-		iCurriculumArea.setReadOnly(!iCurriculum.isEditable() || !iDetailsEditable || !iEditable);
+		iCurriculumArea.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 		iCurriculumDept.getWidget().setSelectedIndex(0);
 		if (iCurriculum.getDepartment() != null) {
 			for (int i = 0; i < iDepts.size(); i++)
@@ -335,15 +351,15 @@ public class CurriculumEdit extends Composite {
 					iCurriculumDept.getWidget().setSelectedIndex(1 + i);
 		}
 		iCurriculumDept.setText(iCurriculum.getDepartment() == null ? "" : iCurriculum.getDepartment().getLabel());
-		iCurriculumDept.setReadOnly(!iCurriculum.isEditable() || !iDetailsEditable || !iEditable);
+		iCurriculumDept.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 
-		iCurriculumMajors.setReadOnly(!iCurriculum.isEditable() || !iDetailsEditable || !iEditable);
+		iCurriculumMajors.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 		iCurriculumMajors.setText(iCurriculum.getCodeMajorNames("<br>"));
 		iCurriculumMajors.setPrintText(iCurriculum.getCodeMajorNames("<br>"));
-		loadMajors(iDetailsEditable);
+		loadMajors(iMode.areDetailsEditable());
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
-		iCurriculumClasfTable.setReadOnly(!iCurriculum.isEditable() || !iEditable);
-		iCurriculumCourses.populate(iCurriculum, iEditable);
+		iCurriculumClasfTable.setReadOnly(!iCurriculum.isEditable() || !iMode.isEditable());
+		iCurriculumCourses.populate(iCurriculum, iMode.isEditable());
 		for (int col = 0; col < iClassifications.size(); col++) {
 			if (iCurriculumClasfTable.getWidget().getExpected(col) == null)
 				iCurriculumCourses.setVisible(col, false);
@@ -545,7 +561,6 @@ public class CurriculumEdit extends Composite {
 	
 	public void addNew() {
 		iSaved = false;
-		iEditable = true;
 		iCurriculum = new CurriculumInterface();
 		iCurriculum.setEditable(true);
 		if (iDepts.size() == 1) {
@@ -553,14 +568,13 @@ public class CurriculumEdit extends Composite {
 			d.setId(Long.valueOf(iCurriculumDept.getWidget().getValue(iCurriculumDept.getWidget().getSelectedIndex())));
 			iCurriculum.setDepartment(d);
 		}
-		loadCurriculum(true);
+		loadCurriculum(Mode.ADD);
 	}
 	
 	public void edit(CurriculumInterface curriculum, boolean detailsEditable) {
 		iSaved = false;
-		iEditable = !detailsEditable;
 		iCurriculum = curriculum;
-		loadCurriculum(detailsEditable);
+		loadCurriculum(detailsEditable ? Mode.DETAILS : Mode.DIALOG);
 	}
 
 	public void setupAreas(TreeSet<AcademicAreaInterface> result) {
@@ -648,7 +662,7 @@ public class CurriculumEdit extends Composite {
 		}
 	}
 	
-	public void reload() {
+	public void reload(final Mode mode) {
 		showLoading("Loading curriculum " + iCurriculum.getName() + " ...");
 		iService.loadCurriculum(iCurriculum.getId(), new AsyncCallback<CurriculumInterface>() {
 			@Override
@@ -658,7 +672,7 @@ public class CurriculumEdit extends Composite {
 			@Override
 			public void onSuccess(CurriculumInterface result) {
 				iCurriculum = result;
-				loadCurriculum(iDetailsEditable);
+				loadCurriculum(mode);
 				hideLoading();
 			}
 		});
