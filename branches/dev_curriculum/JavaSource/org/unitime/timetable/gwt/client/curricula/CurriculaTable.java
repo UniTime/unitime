@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage.ProjectionRulesEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HintProvider;
@@ -1172,11 +1173,7 @@ public class CurriculaTable extends Composite {
 	}
 	
 	private void openCurriculumProjectionRules() {
-		final DialogBox dialog = new DialogBox();
-		dialog.setAnimationEnabled(true);
-		dialog.setAutoHideEnabled(true);
-		dialog.setGlassEnabled(true);
-		dialog.setModal(true);
+		final DialogBox dialog = new UniTimeDialogBox(true, true);
 		final CurriculumProjectionRulesPage rules = new CurriculumProjectionRulesPage();
 		rules.setAllowClose(true);
 		rules.getElement().getStyle().setMarginRight(ToolBox.getScrollBarWidth(), Unit.PX);
