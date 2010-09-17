@@ -29,6 +29,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -63,8 +64,6 @@ public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTi
         iControls = new FlowPanel();
         iControls.setStyleName("dialogControls");        
         iControls.add(iClose);
-        
-        sinkEvents(Event.ONKEYDOWN);
     }
     
     public void setAutoHideEnabled(boolean autoHide) {
@@ -106,17 +105,13 @@ public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTi
             OpenEvent.fire(this, this);
         }
     }
-
+    
     @Override
-    public void onBrowserEvent(Event event) {
-    	super.onBrowserEvent(event);
-		switch (DOM.eventGetType(event)) {
-		case Event.ONKEYDOWN:
-			if (isEscapeToHide() && event.getKeyCode() == KeyCodes.KEY_ESCAPE)
-				hide();
-			if (isEnterToSubmit() && event.getKeyCode() == KeyCodes.KEY_ENTER)
-		    	iSubmitHandler.execute();
-			break;
-		}
-    }
+	protected void onPreviewNativeEvent(NativePreviewEvent event) {
+		super.onPreviewNativeEvent(event);
+		if (isEscapeToHide() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ESCAPE)
+			hide();
+		if (isEnterToSubmit() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ENTER)
+	    	iSubmitHandler.execute();
+	}
 }
