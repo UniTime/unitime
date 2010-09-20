@@ -224,7 +224,6 @@
 		}
 	}
 	 %>
-    </TABLE>
 	<logic:notEmpty scope="request" name="hash">
 		<SCRIPT type="text/javascript" language="javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
