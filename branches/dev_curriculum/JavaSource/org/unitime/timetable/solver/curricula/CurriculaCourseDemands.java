@@ -36,6 +36,7 @@ import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
@@ -50,10 +51,14 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private IdGenerator lastStudentId = new IdGenerator();
 	protected ProjectedStudentCourseDemands iFallback;
+	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
+	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
+	private boolean iIncludeOtherStudents = true;
 
 	public CurriculaCourseDemands(DataProperties properties) {
 		if (properties != null)
 			iFallback = new ProjectedStudentCourseDemands(properties);
+		iIncludeOtherStudents = properties.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 	}
 	
 	public CurriculaCourseDemands() {
@@ -112,6 +117,24 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		for (CurriculumCourse course: clasf.getCourses()) {
 			int nrStudents = Math.round(clasf.getNrStudents() * course.getPercShare());
 			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), nrStudents);
+			
+			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
+			if (curricula == null) {
+				curricula = new Hashtable<String, Set<String>>();
+				iLoadedCurricula.put(course.getCourse().getUniqueId(), curricula);
+			}
+			Set<String> majors = curricula.get(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation());
+			if (majors == null) {
+				majors = new HashSet<String>();
+				curricula.put(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), majors);
+			}
+			if (clasf.getCurriculum().getMajors().isEmpty()) {
+				majors.add("");
+			} else {
+				for (PosMajor mj: clasf.getCurriculum().getMajors())
+					majors.add(mj.getCode());
+			}
+
 		}
 		computeTargetShare(clasf, m);
 		m.setStudentLimits();
@@ -190,11 +213,35 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	public Set<WeightedStudentId> getDemands(CourseOffering course) {
 		if (iDemands.isEmpty()) return iFallback.getDemands(course);
-		return iDemands.get(course.getUniqueId());
+		Set<WeightedStudentId> demands = iDemands.get(course.getUniqueId());
+		if (!iIncludeOtherStudents) return demands;
+		if (demands == null) {
+			demands = new HashSet<WeightedStudentId>();
+			iDemands.put(course.getUniqueId(), demands);
+		}
+		if (iCheckedCourses.add(course.getUniqueId())) {
+			int was = demands.size();
+			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getUniqueId());
+			Set<WeightedStudentId> other = iFallback.getDemands(course);
+			if (curricula == null || curricula.isEmpty()) {
+				demands.addAll(other);
+			} else {
+				for (WeightedStudentId student: other) {
+					if (student.getArea() == null) continue; // ignore students w/o academic area
+					Set<String> majors = curricula.get(student.getArea());
+					if (majors != null && majors.contains("")) continue; // all majors
+					if (majors == null || (student.getMajor() != null && !majors.contains(student.getMajor())))
+						demands.add(student);
+				}
+			}
+			if (demands.size() > was)
+				sLog.info(course.getCourseName() + " has " + (demands.size() - was) + " other students (besides of the " + was + " curriculum students).");
+		}
+		return demands;
 	}
 	
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
-		if (iStudentRequests.isEmpty()) return iFallback.getCourses(studentId);
+		if (studentId >= 0 || iStudentRequests.isEmpty()) return iFallback.getCourses(studentId);
 		return iStudentRequests.get(studentId);
 	}
 }
