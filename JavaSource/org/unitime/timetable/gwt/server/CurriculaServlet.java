@@ -1279,7 +1279,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							if (e != null) {
 								lastLike += e;
 								proj += getProjection(rules, m.getCode(), clasf.getCode()) * e;
-								clasf2ll.remove(clasf.getId());
+								clasf2ll.remove(clasf.getCode());
 							}
 						}
 					}
@@ -1344,7 +1344,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					}
 				}
 				int lastLike = 0;
-				float proj = 0.0f;
+				int proj = 0;
 				Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areasId2Abbv.get(areaId));
 				if (major2clasf2ll != null) {
 					for (String majorCode: major2clasf2ll.keySet()) {
@@ -1352,11 +1352,11 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 						if (e != null) {
 							lastLike += e;
-							proj += getProjection(rules, majorCode, clasf.getCode()) * e;
+							proj += Math.round(getProjection(rules, majorCode, clasf.getCode()) * e);
 						}
 					}
 				}
-				if (enrl > 0 || lastLike > 0 || Math.round(proj) > 0) {
+				if (enrl > 0 || lastLike > 0 || proj > 0) {
 					CurriculumCourseInterface otherCurCourseIfc = new CurriculumCourseInterface();
 					otherCurCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
 					otherCurCourseIfc.setCourseName(courseOffering.getCourseName());
@@ -1364,8 +1364,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						otherCurCourseIfc.setEnrollment(enrl);
 					if (lastLike > 0)
 						otherCurCourseIfc.setLastLike(lastLike);
-					if (Math.round(proj) > 0)
-						otherCurCourseIfc.setProjection(Math.round(proj));
+					if (proj > 0)
+						otherCurCourseIfc.setProjection(proj);
 					otherCourseIfc.setCurriculumCourse(classifications.get(clasf.getId()), otherCurCourseIfc);
 					empty = false;
 				}
@@ -2218,23 +2218,29 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = (course2area2major2clasf2ll == null ? null : course2area2major2clasf2ll.get(courseOffering.getUniqueId()));
 					List<CurriculumCourse> curricula = course2curriculum.get(courseOffering.getUniqueId());
 					
-					float demand = 0.0f;
+					int demand = 0;
 					if (curricula != null)
 						for (CurriculumCourse curriculum: curricula) {
-							demand += curriculum.getPercShare() * curriculum.getClassification().getNrStudents();
+							demand += Math.round(curriculum.getPercShare() * curriculum.getClassification().getNrStudents());
 							if (area2major2clasf2ll != null) {
 								String areaAbbv = curriculum.getClassification().getCurriculum().getAcademicArea().getAcademicAreaAbbreviation();
 								Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
 								if (major2clasf2ll != null) {
 									if (curriculum.getClassification().getCurriculum().getMajors().isEmpty()) {
+										area2major2clasf2ll.remove(areaAbbv);
+										/*
 										for (Hashtable<String, Integer> clasf2ll: major2clasf2ll.values()) {
 											clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
 										}
+										*/
 									} else {
 										for (PosMajor major: (Collection<PosMajor>)curriculum.getClassification().getCurriculum().getMajors()) {
+											major2clasf2ll.remove(major.getCode());
+											/*
 											Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(major.getCode());
 											if (clasf2ll != null)
 												clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+											*/
 										}
 									}
 								}
@@ -2245,13 +2251,13 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						for (Map.Entry<String, Hashtable<String, Hashtable<String, Integer>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
 							for (Map.Entry<String, Hashtable<String, Integer>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
 								for (Map.Entry<String, Integer> clasfEll: majorEclasf2ll.getValue().entrySet()) {
-									demand += getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue();
+									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue());
 								}
 							}
 						}
 					}
 					
-					courseOffering.setProjectedDemand(Math.round(demand));
+					courseOffering.setProjectedDemand(demand);
 					
 					hibSession.saveOrUpdate(courseOffering);
 				}
@@ -2305,25 +2311,31 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					
 					Hashtable<String, Hashtable<String, HashMap<String, Float>>> rules = (includeOtherStudents ? getRules(hibSession) : null);
 					
-					float demand = 0.0f;
+					int demand = 0;
 					for (CurriculumCourse curriculum: (List<CurriculumCourse>)hibSession.createQuery(
 							"select cc from CurriculumCourse cc where cc.course.uniqueId = :courseId")
 							.setLong("courseId", courseOffering.getUniqueId())
 							.setCacheable(true).list()) {
-						demand += curriculum.getPercShare() * curriculum.getClassification().getNrStudents();
+						demand += Math.round(curriculum.getPercShare() * curriculum.getClassification().getNrStudents());
 						if (area2major2clasf2ll != null) {
 							String areaAbbv = curriculum.getClassification().getCurriculum().getAcademicArea().getAcademicAreaAbbreviation();
 							Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
 							if (major2clasf2ll != null) {
 								if (curriculum.getClassification().getCurriculum().getMajors().isEmpty()) {
+									area2major2clasf2ll.remove(areaAbbv);
+									/*
 									for (Hashtable<String, Integer> clasf2ll: major2clasf2ll.values()) {
 										clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
 									}
+									*/
 								} else {
 									for (PosMajor major: (Collection<PosMajor>)curriculum.getClassification().getCurriculum().getMajors()) {
+										major2clasf2ll.remove(major.getCode());
+										/*
 										Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(major.getCode());
 										if (clasf2ll != null)
 											clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+										*/
 									}
 								}
 							}
@@ -2333,15 +2345,17 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						
 					if (area2major2clasf2ll != null) {
 						for (Map.Entry<String, Hashtable<String, Hashtable<String, Integer>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							float demandThisArea = 0;
 							for (Map.Entry<String, Hashtable<String, Integer>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
 								for (Map.Entry<String, Integer> clasfEll: majorEclasf2ll.getValue().entrySet()) {
-									demand += getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue();
+									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue());
+									demandThisArea += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue());
 								}
 							}
 						}
 					}
 					
-					courseOffering.setProjectedDemand(Math.round(demand));
+					courseOffering.setProjectedDemand(demand);
 					
 					offeringDemand += Math.round(demand);
 					
