@@ -354,7 +354,7 @@ public class CurriculaCourses extends Composite {
 		hCourse.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				updateEnrollmentsAndLastLike(iLastCourses);
+				updateEnrollmentsAndLastLike(iLastCourses, true);
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1055,7 +1055,7 @@ public class CurriculaCourses extends Composite {
 		return changed;
 	}
 	
-	public void updateEnrollmentsAndLastLike(HashMap<String, CurriculumStudentsInterface[]> courses) {
+	public void updateEnrollmentsAndLastLike(HashMap<String, CurriculumStudentsInterface[]> courses, boolean showEmptyCourses) {
 		iLastCourses = courses;
 		rows: for (int row = 1; row < iTable.getRowCount() - 1; ) {
 			for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
@@ -1158,30 +1158,31 @@ public class CurriculaCourses extends Composite {
 				include.add(course);
 			}
 		}
-		for (Map.Entry<String, CurriculumStudentsInterface[]> course: include) {
-			CurriculumStudentsInterface[] cc = course.getValue();
-			int row = iTable.getRowCount() - 1;
-			if (!iEditable) row++;
-			addBlankLine();
-			CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
-			c.setCourse(course.getKey(), false);
-			iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
-			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
-				EnrollmentLabel note = ((EnrollmentLabel)iTable.getWidget(row, 3 + 2 * col));
-				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col].getEnrollment());
-				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
-				note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
-				note.update();
-			}
-			if (iVisibleCourses!=null) {
-				if (iVisibleCourses.contains(course.getKey())) {
-					((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
-					iTable.getRowFormatter().setVisible(row, true);
-				} else {
-					iTable.getRowFormatter().setVisible(row, false);
+		if (showEmptyCourses)
+			for (Map.Entry<String, CurriculumStudentsInterface[]> course: include) {
+				CurriculumStudentsInterface[] cc = course.getValue();
+				int row = iTable.getRowCount() - 1;
+				if (!iEditable) row++;
+				addBlankLine();
+				CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
+				c.setCourse(course.getKey(), false);
+				iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
+				for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
+					EnrollmentLabel note = ((EnrollmentLabel)iTable.getWidget(row, 3 + 2 * col));
+					note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col].getEnrollment());
+					note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
+					note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
+					note.update();
+				}
+				if (iVisibleCourses!=null) {
+					if (iVisibleCourses.contains(course.getKey())) {
+						((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
+						iTable.getRowFormatter().setVisible(row, true);
+					} else {
+						iTable.getRowFormatter().setVisible(row, false);
+					}
 				}
 			}
-		}
 	}
 	
 	public void expectedChanged(int col, int expected) {
