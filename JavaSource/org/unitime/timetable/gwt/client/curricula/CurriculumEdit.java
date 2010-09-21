@@ -270,7 +270,7 @@ public class CurriculumEdit extends Composite {
 					if (iDefaultName) iCurriculumName.getWidget().setText(defaultName);
 					iCurriculumMajors.setPrintText(majors);
 				} catch (Exception e) {}
-				loadEnrollments();
+				loadEnrollments(true);
 			}
 		});
 
@@ -434,7 +434,7 @@ public class CurriculumEdit extends Composite {
 		return ret;
 	}
 
-	private void loadMajors(final boolean loadEnrollments) {
+	private void loadMajors(final boolean showEmptyCourses) {
 		if (iCurriculumArea.getWidget().getSelectedIndex() > 0) {
 			showLoading("Loading majors ...");
 			iService.loadMajors(iCurriculum.getId(), Long.valueOf(iCurriculumArea.getWidget().getValue(iCurriculumArea.getWidget().getSelectedIndex())),
@@ -490,7 +490,7 @@ public class CurriculumEdit extends Composite {
 							if (!iDefaultName && allSelected && area != null && area.getName().equalsIgnoreCase(iCurriculumName.getWidget().getText()))
 								iDefaultName = true;
 							iCurriculumMajors.getWidget().setVisibleItemCount(iCurriculumMajors.getWidget().getItemCount() <= 3 ? 3 : iCurriculumMajors.getWidget().getItemCount() > 10 ? 10 : iCurriculumMajors.getWidget().getItemCount());
-							if (loadEnrollments) loadEnrollments();
+							loadEnrollments(showEmptyCourses);
 							hideLoading();
 						}
 					});
@@ -499,7 +499,7 @@ public class CurriculumEdit extends Composite {
 		}
 	}
 	
-	private void loadEnrollments() {
+	private void loadEnrollments(final boolean showEmptyCourses) {
 		if (iCurriculumArea.getWidget().getSelectedIndex() >= 0) {
 			final Long areaId = Long.valueOf(iCurriculumArea.getWidget().getValue(iCurriculumArea.getWidget().getSelectedIndex()));
 			final List<Long> majorIds = new ArrayList<Long>();
@@ -530,7 +530,7 @@ public class CurriculumEdit extends Composite {
 						iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
 						iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
 					}
-					iCurriculumCourses.updateEnrollmentsAndLastLike(result);
+					iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
 					if (iCurriculumClasfTable.isShowingAllColumns())
 						iCurriculumClasfTable.getWidget().showAllColumns();
 					else
