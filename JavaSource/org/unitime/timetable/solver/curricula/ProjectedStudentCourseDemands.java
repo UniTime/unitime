@@ -69,11 +69,11 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 	
 	public float getProjection(String areaAbbv, String clasfCode, String majorCode) {
 		if (iAreaClasfMajor2Proj.isEmpty()) return 1.0f;
-		Hashtable<String,Hashtable<String, Float>> clasf2major2proj = iAreaClasfMajor2Proj.get(areaAbbv);
+		Hashtable<String,Hashtable<String, Float>> clasf2major2proj = (areaAbbv == null ? null : iAreaClasfMajor2Proj.get(areaAbbv));
 		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
-		Hashtable<String, Float> major2proj = clasf2major2proj.get(clasfCode);
+		Hashtable<String, Float> major2proj = (clasfCode == null ? null : clasf2major2proj.get(clasfCode));
 		if (major2proj == null) return 1.0f;
-		Float projection = major2proj.get(majorCode);
+		Float projection = (majorCode == null ? null : major2proj.get(majorCode));
 		if (projection == null)
 			projection = major2proj.get("");
 		return (projection == null ? 1.0f : projection);
@@ -85,8 +85,8 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 		iDemandsForSubjectCourseNbr.put(subject.getUniqueId(), demandsForCourseNbr);
 		for (Object[] d: (List<Object[]>)iHibSession.createQuery("select d.courseNbr, s.uniqueId, d.coursePermId, "+
 				"a.academicAreaAbbreviation, f.code, m.code " +
-				"from LastLikeCourseDemand d inner join d.student s inner join s.academicAreaClassifications c inner join s.posMajors m " +
-				"inner join c.academicArea a inner join c.academicClassification f where " +
+				"from LastLikeCourseDemand d inner join d.student s left outer join s.academicAreaClassifications c left outer join s.posMajors m " +
+				"left outer join c.academicArea a left outer join c.academicClassification f where " +
 				"d.subjectArea.uniqueId=:subjectAreaId")
 				.setLong("subjectAreaId", subject.getUniqueId()).setCacheable(true).list()) {
 			String courseNbr = (String)d[0];
@@ -96,7 +96,7 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 			String majorCode = (String)d[5];
 			WeightedStudentId studentId = new WeightedStudentId((Long)d[1], getProjection(areaAbbv, clasfCode, majorCode));
 			studentId.setStats(areaAbbv, clasfCode, majorCode);
-			studentId.setCurriculum(areaAbbv + "/" + majorCode);
+			studentId.setCurriculum(areaAbbv == null ? null : majorCode == null ? areaAbbv : areaAbbv + "/" + majorCode);
 			Set<WeightedStudentId> studentIds = demandsForCourseNbr.get(courseNbr);
 			if (studentIds == null) {
 				studentIds = new HashSet<WeightedStudentId>();
@@ -127,8 +127,8 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
 					"select s.uniqueId, co, " +
 					"a.academicAreaAbbreviation, f.code, m.code " +
-					"from LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications c inner join s.posMajors m " +
-					"inner join c.academicArea a inner join c.academicClassification f, CourseOffering co where " +
+					"from LastLikeCourseDemand x inner join x.student s left outer join s.academicAreaClassifications c left outer join s.posMajors m " +
+					"left outer join c.academicArea a left outer join c.academicClassification f, CourseOffering co where " +
 					"x.subjectArea.session.uniqueId = :sessionId and "+
 					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
 					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
