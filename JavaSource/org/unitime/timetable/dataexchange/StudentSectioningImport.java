@@ -224,7 +224,7 @@ public class StudentSectioningImport extends BaseImport {
                 String majorCode = majorElement.attributeValue("code");
                 PosMajor major = PosMajor.findByCodeAcadAreaId(student.getSession().getUniqueId(), majorCode, area.getUniqueId());
                 if (major==null) {
-                    warn("Major "+code+" not found."); continue;
+                    warn("Major "+majorCode+" not found."); continue;
                 }
                 student.getPosMajors().add(major);
             }
@@ -233,7 +233,7 @@ public class StudentSectioningImport extends BaseImport {
                 String minorCode = minorElement.attributeValue("code");
                 PosMinor minor = PosMinor.findByCodeAcadAreaId(student.getSession().getUniqueId(), minorCode, area.getUniqueId());
                 if (minor==null) {
-                    warn("Major "+code+" not found."); continue;
+                    warn("Major "+minorCode+" not found."); continue;
                 }
                 student.getPosMinors().add(minor);
             }
