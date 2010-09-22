@@ -90,7 +90,7 @@ public class Session extends BaseSession implements Comparable {
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    for (Iterator i=hibSession.createQuery("from Location").iterate();i.hasNext();) {
+		    for (Iterator i=hibSession.createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", id).iterate();i.hasNext();) {
                 Location loc = (Location)i.next();
                 loc.getFeatures().clear();
                 loc.getRoomGroups().clear();
