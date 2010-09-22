@@ -35,8 +35,11 @@ flush privileges;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE DATABASE IF NOT EXISTS `timetable`
-  CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+DROP DATABASE IF EXISTS `timetable`;
+
+CREATE DATABASE `timetable`
+   CHARACTER SET utf8;
+
 USE `timetable`;
 -- -------------------------------------
 -- Tables
