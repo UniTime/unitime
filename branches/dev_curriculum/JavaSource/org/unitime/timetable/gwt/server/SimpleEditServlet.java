@@ -89,7 +89,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						new Field("External Id", FieldType.text, 120, 40),
 						new Field("Code", FieldType.text, 80, 10),
 						new Field("Name", FieldType.text, 300, 50),
-						new Field("Academic Area(s)", FieldType.list, 300, areas));
+						new Field("Academic Area", FieldType.list, 300, areas));
 				data.setSortBy(3,1,2);
 				for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, sessionId)) {
 					Record r = data.addRecord(major.getUniqueId());
@@ -109,7 +109,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						new Field("External Id", FieldType.text, 120, 40),
 						new Field("Code", FieldType.text, 80, 10),
 						new Field("Name", FieldType.text, 300, 50),
-						new Field("Academic Area(s)", FieldType.list, 300, areas));
+						new Field("Academic Area", FieldType.list, 300, areas));
 				data.setSortBy(3,1,2);
 				for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, sessionId)) {
 					Record r = data.addRecord(minor.getUniqueId());
