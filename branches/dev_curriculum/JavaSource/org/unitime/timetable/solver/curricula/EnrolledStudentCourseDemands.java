@@ -43,8 +43,10 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 
 	public boolean isMakingUpStudents() { return false; }
 	
-	public boolean isWeightStudentsToFillUpOffering() { return false; }
+	public boolean canUseStudentClassEnrollmentsAsSolution() { return true; }
 
+	public boolean isWeightStudentsToFillUpOffering() { return false; }
+	
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
 		iHibSession = hibSession;
 		if (iCacheAll)

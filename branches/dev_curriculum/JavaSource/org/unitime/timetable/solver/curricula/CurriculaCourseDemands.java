@@ -67,6 +67,8 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	public boolean isMakingUpStudents() { return true; }
 	
+	public boolean canUseStudentClassEnrollmentsAsSolution() { return false; }
+	
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {

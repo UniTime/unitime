@@ -2837,4 +2837,10 @@
 		<mysql>create index idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</mysql>
 		<plsql>create index %SCHEMA%.idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</plsql>
 	</update>
+	<update version="60" date="23-Sep-2010" comment="Using student course requests in the solver">
+		<sql>update %SCHEMA%.solver_parameter_def set
+			type = 'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Student Course Requests,Enrolled Student Course Demands)'
+			where name = 'Curriculum.StudentCourseDemadsClass'
+		</sql>
+	</update>
 </dbupdate>
