@@ -330,7 +330,7 @@ public class CurriculumEdit extends Composite {
 		iTitleAndButtons.setEnabled("delete", iMode == Mode.DETAILS && iCurriculum.getId() != null && iCurriculum.isEditable());
 		iTitleAndButtons.setEnabled("save", iCurriculum.isEditable() && iMode.isEditable());
 		iTitleAndButtons.setEnabled("edit", iCurriculum.isEditable() && !iMode.isEditable());
-		iTitleAndButtons.setEnabled("print", iMode.areDetailsEditable() && !iMode.isEditable());
+		iTitleAndButtons.setEnabled("print", iMode == Mode.DETAILS);
 
 		iCurriculumAbbv.getWidget().setText(iCurriculum.getAbbv());
 		iCurriculumAbbv.getWidget().setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
