@@ -53,6 +53,12 @@ public interface StudentCourseDemands {
 	public boolean isMakingUpStudents();
 	
 	/**
+	 * Return true if students are real students (not last-like) for which the student class enrollments
+	 * apply (real student class enrollments can be loaded instead of solution's student class assignments).
+	 */
+	public boolean canUseStudentClassEnrollmentsAsSolution();
+
+	/**
 	 * Return true if students should be weghted so that the offering is filled in completely.
 	 */
 	public boolean isWeightStudentsToFillUpOffering();

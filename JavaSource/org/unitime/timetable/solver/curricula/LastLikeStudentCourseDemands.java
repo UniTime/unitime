@@ -44,6 +44,8 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 	
 	public boolean isMakingUpStudents() { return false; }
 	
+	public boolean canUseStudentClassEnrollmentsAsSolution() { return false; }
+
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 	
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {

@@ -112,7 +112,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.solver.curricula.EnrolledStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
@@ -2609,7 +2608,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	Hashtable<Student, Set<Lecture>> iPreEnrollments = new Hashtable<Student, Set<Lecture>>();
     	if (iLoadStudentEnrlsFromSolution) {
-    		if (iStudentCourseDemands instanceof EnrolledStudentCourseDemands) {
+    		if (iStudentCourseDemands.canUseStudentClassEnrollmentsAsSolution()) {
     			// Load real student enrollments (not saved last-like)
     			List<Object[]> enrollments = (List<Object[]>)hibSession.createQuery(
     					"select distinct e.student.uniqueId, e.clazz.uniqueId from " +
