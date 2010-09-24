@@ -85,7 +85,6 @@ DELETE FROM `timetable`.`external_room`;
 DELETE FROM `timetable`.`external_room_department`;
 DELETE FROM `timetable`.`external_room_feature`;
 DELETE FROM `timetable`.`free_time`;
-DELETE FROM `timetable`.`hibernate_unique_key`;
 DELETE FROM `timetable`.`history`;
 DELETE FROM `timetable`.`individual_reservation`;
 DELETE FROM `timetable`.`instr_offering_config`;
