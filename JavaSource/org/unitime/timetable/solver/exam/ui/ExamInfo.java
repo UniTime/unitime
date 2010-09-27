@@ -97,7 +97,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iMaxRooms = exam.getMaxNbrRooms();
         iExam = exam;
         iLength = exam.getLength();
-        iNrStudents = -1;
+        iNrStudents = (exam.getExamSize() == null ? -1 : exam.getExamSize());
         iSeatingType = exam.getSeatingType().intValue();
         iPrintOffset = exam.examOffset();
     }
