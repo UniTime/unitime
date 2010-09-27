@@ -90,6 +90,10 @@ public interface StudentCourseDemands {
 			return iWeight;
 		}
 		
+		public void setWeight(float weight) {
+			iWeight = weight;
+		}
+		
 		public void setStats(String areaAbbv, String clasfCode, String majorCode) {
 			iAreaAbbv = areaAbbv;
 			iClasfCode = clasfCode;
