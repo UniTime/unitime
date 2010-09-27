@@ -41,21 +41,12 @@ public class CurVariableSelection implements VariableSelection<CurVariable, CurV
 	@Override
 	public CurVariable selectVariable(Solution<CurVariable, CurValue> solution) {
 		CurModel m = (CurModel)solution.getModel();
-		if (m.unassignedVariables().isEmpty()) {
-			if (iWheel == null || !iWheel.hasMoreElements())  {
-				iWheel = new RouletteWheelSelection<CurVariable>();
-				for (CurVariable course: m.assignedVariables()) {
-					double penalty = course.getAssignment().toDouble();
-					if (course.getCouse().getStudents().size() == m.getStudents().size()) continue;
-					if (penalty != 0) iWheel.add(course, penalty);
-				}
-			}
-			return iWheel.nextElement();
-		} else {
+		if (!m.unassignedVariables().isEmpty()) {
 			List<CurVariable> best = new ArrayList<CurVariable>();
 			double bestValue = 0.0;
 			for (CurVariable course: m.unassignedVariables()) {
-				double value = course.getCouse().getNrStudents();
+				if (course.getCourse().isComplete()) continue;
+				double value = course.getCourse().getMaxSize() - course.getCourse().getSize();
 				if (best.isEmpty() || bestValue < value) {
 					best.clear();
 					best.add(course);
@@ -64,8 +55,17 @@ public class CurVariableSelection implements VariableSelection<CurVariable, CurV
 					best.add(course);
 				}
 			}
-			return ToolBox.random(best);
+			if (!best.isEmpty()) return ToolBox.random(best);
 		}
+		if (iWheel == null || !iWheel.hasMoreElements())  {
+			iWheel = new RouletteWheelSelection<CurVariable>();
+			for (CurVariable course: m.assignedVariables()) {
+				double penalty = course.getAssignment().toDouble();
+				if (course.getCourse().getStudents().size() == m.getStudents().size()) continue;
+				if (penalty != 0) iWheel.add(course, penalty);
+			}
+		}
+		return iWheel.nextElement();
 	}
 
 }

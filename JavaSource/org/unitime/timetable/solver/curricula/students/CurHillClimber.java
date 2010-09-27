@@ -44,17 +44,20 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 		CurModel model = (CurModel)solution.getModel();
 		List<CurValue> best = new ArrayList<CurValue>();
 		double bestValue = 0;
-		boolean isComplete = model.unassignedVariables().isEmpty();
 		int ix = ToolBox.random(model.variables().size());
 		for (int i = 0; i < model.variables().size(); i++) {
 			CurVariable course = model.variables().get((ix + i) % model.variables().size());
-			if (!isComplete && course.getAssignment() != null) continue;
+			if (!course.getCourse().isComplete() && course.getAssignment() != null) continue;
 			int jx = ToolBox.random(course.values().size());
 			if (course.getAssignment() != null && course.getAssignment().getStudent().getCourses().size() <= model.getStudentLimit().getMinLimit()) continue;
 			for (int j = 0; j < course.values().size(); j++) {
 				CurValue student = course.values().get((j + jx) % course.values().size());
-				if (course.getCouse().getStudents().contains(student.getStudent())) continue;
+				if (course.getCourse().getStudents().contains(student.getStudent())) continue;
 				if (student.getStudent().getCourses().size() >= model.getStudentLimit().getMaxLimit()) continue;
+				if (course.getCourse().getSize() + student.getStudent().getWeight() - (course.getAssignment() == null ? 0.0 : course.getAssignment().getStudent().getWeight())
+						> course.getCourse().getMaxSize()) continue;
+				if (course.getAssignment() != null && course.getCourse().getSize() + student.getStudent().getWeight() - course.getAssignment().getStudent().getWeight()
+						< course.getCourse().getMaxSize() - model.getMinStudentWidth()) continue;
 				double value = student.toDouble();
 				if (best.isEmpty() || value < bestValue) {
 					if (value < 0.0) return new CurSimpleAssignment(student);
@@ -66,8 +69,8 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 				}
 			}
 		}
-		if (isComplete && bestValue > 0.0) return null;
 		CurValue student = ToolBox.random(best);
+		if (bestValue > 0.0 && !student.variable().getCourse().isComplete()) return null;
 		return (student == null ? null : new CurSimpleAssignment(student));
 	}
 }

@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.curricula.students;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.cpsolver.ifs.heuristics.ValueSelection;
 import net.sf.cpsolver.ifs.solution.Solution;
@@ -56,8 +57,15 @@ public class CurValueSelection implements ValueSelection<CurVariable, CurValue> 
 		for (int j = 0; j < size; j++) {
 			CurValue student = selectedVariable.values().get((i + j) % size);
 			if (student.equals(selectedVariable.getAssignment())) continue;
-			if (selectedVariable.getCouse().getStudents().contains(student.getStudent())) continue;
+			if (selectedVariable.getCourse().getStudents().contains(student.getStudent())) continue;
 			if (student.getStudent().getCourses().size() >= m.getStudentLimit().getMaxLimit()) continue;
+			if (selectedVariable.getCourse().getSize() + student.getStudent().getWeight() - 
+				(selectedVariable.getAssignment() == null ? 0.0 : selectedVariable.getAssignment().getStudent().getWeight()) >
+				selectedVariable.getCourse().getMaxSize()) continue;
+			if (selectedVariable.getAssignment() != null && 
+				selectedVariable.getCourse().getSize() + student.getStudent().getWeight() - 
+				selectedVariable.getAssignment().getStudent().getWeight() <
+				selectedVariable.getCourse().getMaxSize() - m.getMinStudentWidth()) continue;
 			return student;
 		}
 		return null;
@@ -74,9 +82,22 @@ public class CurValueSelection implements ValueSelection<CurVariable, CurValue> 
 		double bestValue = 0;
 		for (CurValue student: selectedVariable.values()) {
 			if (student.equals(selectedVariable.getAssignment())) continue;
-			if (selectedVariable.getCouse().getStudents().contains(student.getStudent())) continue;
+			if (selectedVariable.getCourse().getStudents().contains(student.getStudent())) continue;
 			if (student.getStudent().getCourses().size() >= m.getStudentLimit().getMaxLimit()) continue;
+/*
+			if (selectedVariable.getCourse().getSize() + student.getStudent().getWeight() - 
+					(selectedVariable.getAssignment() == null ? 0.0 : selectedVariable.getAssignment().getStudent().getWeight()) >
+					selectedVariable.getCourse().getMaxSize()) continue;
+			if (selectedVariable.getAssignment() != null && 
+					selectedVariable.getCourse().getSize() + student.getStudent().getWeight() - 
+					selectedVariable.getAssignment().getStudent().getWeight() <
+					selectedVariable.getCourse().getMaxSize() - m.getMinStudentWidth()) continue;
+*/
 			double value = student.toDouble();
+			Set<CurValue> conflicts = m.conflictValues(student);
+			for (CurValue conf: conflicts) {
+				value -= conf.toDouble();
+			}
 			if (bestStudents.isEmpty() || bestValue > value) {
 				bestValue = value;
 				bestStudents.clear();

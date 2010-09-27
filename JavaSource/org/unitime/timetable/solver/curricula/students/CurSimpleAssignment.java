@@ -35,12 +35,12 @@ public class CurSimpleAssignment extends Neighbour<CurVariable, CurValue> {
 
 	@Override
 	public double value() {
-		return iNewValue.variable().getCouse().penalty(iNewValue.getStudent(),
+		return iNewValue.variable().getCourse().penalty(iNewValue.getStudent(),
 				iNewValue.variable().getAssignment() == null ? null : iNewValue.variable().getAssignment().getStudent());
 	}
 	
 	public String toString() {
-		return iNewValue.variable().getCouse().getCourseName() + " " +
+		return iNewValue.variable().getCourse().getCourseName() + " " +
 			(iNewValue.variable().getAssignment() == null ? "N/A" : iNewValue.variable().getAssignment().getStudent().getStudentId()) +
 			" -> " + iNewValue.getStudent().getStudentId() + " (" + value() + ")";
 	}

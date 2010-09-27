@@ -36,5 +36,9 @@ public class CurVariable extends Variable<CurVariable, CurValue> {
 		setValues(values);
 	}
 	
-	public CurCourse getCouse() { return iCourse; }
+	public CurCourse getCourse() { return iCourse; }
+	
+	public String toString() {
+		return getCourse().getCourseName();
+	}
 }
