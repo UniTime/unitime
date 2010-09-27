@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.solver.curricula;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -115,7 +115,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		sLog.debug("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
 				
 		// Create model
-		CurModel m = new CurModel(clasf.getNrStudents(), lastStudentId);
+		List<CurStudent> students = new ArrayList<CurStudent>();
+		for (int i = 0; i < clasf.getNrStudents(); i++)
+			students.add(new CurStudent(- lastStudentId.newId(), 1f));
+		CurModel m = new CurModel(students);
 		for (CurriculumCourse course: clasf.getCourses()) {
 			int nrStudents = Math.round(clasf.getNrStudents() * course.getPercShare());
 			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), nrStudents);
@@ -145,27 +148,23 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		CurModel cachedModel = null;
 		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
 		if (cache != null && cache.getName().equals(getCacheName())) {
-			cachedModel = CurModel.loadFromXml(cache, lastStudentId);
+			cachedModel = CurModel.loadFromXml(cache);
 			cachedModel.setStudentLimits();
 		}
 
 		// Check the cached model
 		if (cachedModel != null && cachedModel.isSameModel(m)) {
-			// Reust
+			// Reuse
 			sLog.debug("  using cached model...");
 			m = cachedModel;
 		} else {
-			// Print model
-			try {
-				sLog.debug("Model:\n" + m.save());
-			} catch (IOException e) {}
-
 			// Solve model
 			m.solve();
 			
 			// Save into the cache
 			Document doc = DocumentHelper.createDocument();
 			m.saveAsXml(doc.addElement(getCacheName()));
+			// sLog.debug("Model:\n" + doc.asXML());
 			clasf.setStudents(doc);
 			hibSession.update(clasf);
 		}
