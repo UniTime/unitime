@@ -35,8 +35,8 @@ public class CurValue extends Value<CurVariable, CurValue> {
 	
 	public double toDouble() {
 		if (variable().getAssignment() == null)
-			return variable().getCouse().penalty(iStudent);
-		return variable().getCouse().penalty(iStudent, variable().getAssignment().getStudent());
+			return variable().getCourse().penalty(iStudent);
+		return variable().getCourse().penalty(iStudent, variable().getAssignment().getStudent());
 	}
 
 }

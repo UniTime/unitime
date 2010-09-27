@@ -59,10 +59,14 @@ public class CurStudentSwap implements NeighbourSelection<CurVariable, CurValue>
 			if (oldValue != null) {
 				if (course.getStudents().contains(newStudent)) continue;
 				if (newStudent.getCourses().size() >= model.getStudentLimit().getMaxLimit()) continue;
+				if (course.getSize() + newStudent.getWeight() - student.getWeight() > course.getMaxSize()) continue;
+				if (course.getSize() + newStudent.getWeight() - student.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
 				newValue = new CurValue(oldValue.variable(), newStudent);
 				break;
 			} else {
 				if (newStudent.getCourses().size() <= model.getStudentLimit().getMinLimit()) continue;
+				if (course.getSize() + student.getWeight() - newStudent.getWeight() > course.getMaxSize()) continue;
+				if (course.getSize() + student.getWeight() - newStudent.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
 				oldValue = course.getValue(newStudent);
 				if (oldValue != null) {
 					newValue = new CurValue(oldValue.variable(), student);

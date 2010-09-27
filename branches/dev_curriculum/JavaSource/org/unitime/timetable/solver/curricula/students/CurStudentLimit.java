@@ -45,21 +45,25 @@ public class CurStudentLimit extends GlobalConstraint<CurVariable, CurValue> {
 	@Override
 	public void computeConflicts(CurValue value, Set<CurValue> conflicts) {
 		int courses = value.getStudent().getCourses().size();
-		if (!value.getStudent().getCourses().contains(value.variable().getCouse())) courses++;
+		if (!value.getStudent().getCourses().contains(value.variable().getCourse())) courses++;
 		for (CurValue conflict: conflicts) {
-			if (conflict.getStudent().equals(value.getStudent()) && value.getStudent().getCourses().contains(conflict.variable().getCouse()))
+			if (conflict.getStudent().equals(value.getStudent()) && value.getStudent().getCourses().contains(conflict.variable().getCourse()))
 				courses--;
 		}
 		if (courses > iMaxLimit) {
 			List<CurValue> adepts = new ArrayList<CurValue>();
 			for (CurCourse course: value.getStudent().getCourses()) {
-				if (course.equals(value.variable().getCouse())) continue;
+				if (course.equals(value.variable().getCourse())) continue;
 				CurValue adept = course.getValue(value.getStudent());
 				if (conflicts.contains(adept)) continue;
 				adepts.add(adept);
 			}
 			conflicts.add(ToolBox.random(adepts));
 		}
+	}
+	
+	public String toString() {
+		return "StudentLimit<" + getMinLimit() + "," + getMaxLimit() + ">";
 	}
 
 }

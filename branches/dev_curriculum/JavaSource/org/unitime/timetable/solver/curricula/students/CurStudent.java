@@ -19,15 +19,27 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
 public class CurStudent {
+	private static DecimalFormat sDF = new DecimalFormat("0.###");
 	private Set<CurCourse> iCourses = new HashSet<CurCourse>();
 	private Long iStudentId;
+	private double iWeight;
 	
-	public CurStudent(Long studentId) {
+	public CurStudent(Long studentId, double weight) {
 		iStudentId = studentId;
+		iWeight = weight;
+	}
+	
+	public double getWeight() {
+		return iWeight;
+	}
+	
+	public void setWeight(double weight) {
+		iWeight = weight;
 	}
 	
 	public Long getStudentId() {
@@ -36,6 +48,10 @@ public class CurStudent {
 	
 	public Set<CurCourse> getCourses() {
 		return iCourses;
+	}
+	
+	public String toString() {
+		return getStudentId() + (getWeight() != 1.f ? "@" + sDF.format(getWeight()): "" );
 	}
 	
 	
