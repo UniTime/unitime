@@ -362,7 +362,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildLocation (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent(m.getLocation()==null?"&nbsp;":m.getLocation().getLabel());
+    	cell.addContent(m.getLocation()==null?"&nbsp;":m.getLocation().getLabelWithHint());
     	return(cell);
     }
     

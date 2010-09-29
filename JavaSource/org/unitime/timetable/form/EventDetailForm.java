@@ -253,7 +253,7 @@ public class EventDetailForm extends ActionForm {
     	    iTime = (startTime==0 && endTime==Constants.SLOTS_PER_DAY?"All Day":
     	            Constants.toTime(Constants.SLOT_LENGTH_MIN*startTime+Constants.FIRST_SLOT_TIME_MIN)+" - "+
     	            Constants.toTime(Constants.SLOT_LENGTH_MIN*endTime+Constants.FIRST_SLOT_TIME_MIN));
-    	    iLocation = (location==null?"":location.getLabel());
+    	    iLocation = (location==null?"":location.getLabelWithHint());
     	    iLocationCapacity = (location==null?0:location.getCapacity());
     	}
     	
@@ -266,7 +266,7 @@ public class EventDetailForm extends ActionForm {
     	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStartOffset()==null?0:meeting.getStartOffset()))+" - "+
     	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStopOffset()==null?0:meeting.getStopOffset())));
             Location location = meeting.getLocation();
-            iLocation = (location==null?"":location.getLabel());
+            iLocation = (location==null?"":location.getLabelWithHint());
             iLocationCapacity = (location==null?0:location.getCapacity());
             iApprovedDate = (meeting.getApprovedDate()==null?"":new SimpleDateFormat("MM/dd/yy", Locale.US).format(meeting.getApprovedDate()));
             iDate = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US).format(meeting.getMeetingDate());

@@ -176,7 +176,7 @@
 						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="location"/>
+						<bean:write name="meeting" property="location" filter="false"/>
 					</TD>	
 					<TD>
 						<bean:write name="meeting" property="locationCapacity"/>
@@ -315,7 +315,7 @@
 						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="location"/>
+						<bean:write name="meeting" property="location" filter="false"/>
 					</TD>	
 					<TD>
 						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
