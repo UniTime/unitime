@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint {
 	public void onModuleLoad() {
+		GwtHint.createTriggers();
 		if (RootPanel.get("UniTimeGWT:Body") != null) {
 			LoadingWidget.getInstance().show("Loading page ...");
 			DeferredCommand.addCommand(new Command() {
