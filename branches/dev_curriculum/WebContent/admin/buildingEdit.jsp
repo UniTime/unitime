@@ -52,7 +52,7 @@
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD colspan="2">
+			<TD colspan="3">
 			<tt:section-header>
 					<tt:section-title>
 						<logic:equal name="buildingEditForm" property="op" value="Save">
@@ -81,6 +81,11 @@
 				<html:text property="name" size="100" maxlength="80"/>
 				&nbsp;<html:errors property="name"/>
 			</TD>
+			<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+				<TD rowspan="4">
+					<div id="map_canvas" style="width: 600px; height: 400px; border: 1px solid #9CB0CE;"></div>
+				</TD>
+			</tt:propertyEquals>
 		</TR>
 
 		<TR>
@@ -102,8 +107,8 @@
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
-				<html:text property="coordX" size="12" maxlength="12"/>,
-				<html:text property="coordY" size="12" maxlength="12"/>
+				<html:text property="coordX" size="12" maxlength="12" styleId="coordX" onchange="setMarker();"/>,
+				<html:text property="coordY" size="12" maxlength="12" styleId="coordY" onchange="setMarker();"/>
 				&nbsp;<html:errors property="coordX"/> <html:errors property="coordy"/>
 				<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
 				&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
@@ -111,13 +116,13 @@
 		</TR>
 
 		<tr>
-			<td valign="middle" colspan="2">
+			<td valign="middle" colspan="3">
 				<tt:section-title/>
 			</td>
 		<tr>
 		
 		<TR>
-			<TD align="right" colspan="2">
+			<TD align="right" colspan="3">
 				<logic:equal name="buildingEditForm" property="op" value="Save">
 					<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
 				</logic:equal>
@@ -131,3 +136,61 @@
 	</TABLE>
 
 </html:form>
+
+<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" language="javascript">
+	var latlng = new google.maps.LatLng(50, -58);
+	var myOptions = {
+		zoom: 2,
+		center: latlng,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	var geocoder = new google.maps.Geocoder();
+	var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	var marker = marker = new google.maps.Marker({
+		position: latlng, 
+		map: map,
+		draggable: true,
+		visible: false
+	});
+	google.maps.event.addListener(marker, 'position_changed', function() {
+		document.getElementById("coordX").value = '' + marker.getPosition().lat().toFixed(6);
+		document.getElementById("coordY").value = '' + marker.getPosition().lng().toFixed(6);
+		geocoder.geocode({'location': marker.getPosition()}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				if (results[0]) {
+					marker.setTitle(results[0].formatted_address);
+				} else {
+					marker.setTitle(null);
+				}
+			} else {
+				marker.setTitle(null);
+			}
+		});
+	});
+	google.maps.event.addListener(map, 'rightclick', function(event) {
+		marker.setPosition(event.latLng);
+		marker.setVisible(true);
+	});
+	function setMarker() {
+		var x = document.getElementById("coordX").value;
+		var y = document.getElementById("coordY").value;
+		if (x && y) {
+			var pos = new google.maps.LatLng(x, y);
+			marker.setPosition(pos);
+			marker.setVisible(true);
+			if (map.getZoom() <= 10) map.setZoom(16);
+			map.panTo(pos);
+		} else {
+			marker.setVisible(false);
+		}
+	}
+	setMarker();
+</script>
+</tt:propertyEquals>
+<tt:propertyNotEquals name="unitime.coordinates.googlemap" value="true">
+	<script type="text/javascript" language="javascript">
+		function setMarker() {}
+	</script>
+</tt:propertyNotEquals>

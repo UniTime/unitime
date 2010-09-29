@@ -22,6 +22,8 @@
 <%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.form.NonUnivLocationForm" %>
+<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -75,6 +77,13 @@
 			</TR>
 		</logic:messagesPresent>
 	
+		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr><td valign="top">
+					<table width="100%" border="0" cellspacing="0" cellpadding="3">
+		</tt:propertyEquals>
+
 			<TR>
 				<TD>Name:</TD>
 				<TD width='100%'>
@@ -95,6 +104,15 @@
 				<TD>Capacity:</TD>
 				<TD>
 					<html:text property="capacity" maxlength="15" size="10"/>
+				</TD>
+			</TR>
+
+			<TR>
+				<TD>Coordinates:</TD>
+				<TD>
+					<html:text property="coordX" maxlength="12" size="12" styleId="coordX" onchange="setMarker();"/>, <html:text property="coordY" maxlength="12" size="12" styleId="coordY" onchange="setMarker();"/>
+					<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
+					&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 				</TD>
 			</TR>
 			
@@ -132,6 +150,15 @@
 				</TD>
 			</TR>
 			
+		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+					</table>
+				</td><td width="1%" nowrap="nowrap" style="padding-right: 3px;">
+					<div id="map_canvas" style="width: 600px; height: 400px; border: 1px solid #9CB0CE;"></div>
+				</td></tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="3">
+		</tt:propertyEquals>
+
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title/>
@@ -153,6 +180,64 @@
 		</TR>
 	</TABLE>
 </html:form>
+
+<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" language="javascript">
+	var latlng = new google.maps.LatLng(50, -58);
+	var myOptions = {
+		zoom: 2,
+		center: latlng,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	var geocoder = new google.maps.Geocoder();
+	var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	var marker = marker = new google.maps.Marker({
+		position: latlng, 
+		map: map,
+		draggable: true,
+		visible: false
+	});
+	google.maps.event.addListener(marker, 'position_changed', function() {
+		document.getElementById("coordX").value = '' + marker.getPosition().lat().toFixed(6);
+		document.getElementById("coordY").value = '' + marker.getPosition().lng().toFixed(6);
+		geocoder.geocode({'location': marker.getPosition()}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				if (results[0]) {
+					marker.setTitle(results[0].formatted_address);
+				} else {
+					marker.setTitle(null);
+				}
+			} else {
+				marker.setTitle(null);
+			}
+		});
+	});
+	google.maps.event.addListener(map, 'rightclick', function(event) {
+		marker.setPosition(event.latLng);
+		marker.setVisible(true);
+	});
+	function setMarker() {
+		var x = document.getElementById("coordX").value;
+		var y = document.getElementById("coordY").value;
+		if (x && y) {
+			var pos = new google.maps.LatLng(x, y);
+			marker.setPosition(pos);
+			marker.setVisible(true);
+			if (map.getZoom() <= 10) map.setZoom(16);
+			map.panTo(pos);
+		} else {
+			marker.setVisible(false);
+		}
+	}
+	setMarker();
+</script>
+</tt:propertyEquals>
+<tt:propertyNotEquals name="unitime.coordinates.googlemap" value="true">
+	<script type="text/javascript" language="javascript">
+		function setMarker() {}
+	</script>
+</tt:propertyNotEquals>
 
 <script type="text/javascript" language="javascript">
 	// Validator
