@@ -205,11 +205,11 @@
 					&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 				</TD>
 			</TR>
-		<% } else {%>
-			<TR>
-				<TD nowrap>Ignore Too Far Distances:</TD><TD><%=frm.getIgnoreTooFar()%></TD>
-			</TR>
 		<% } %>
+
+		<TR>
+			<TD nowrap>Ignore Too Far Distances:</TD><TD><%=frm.getIgnoreTooFar()%></TD>
+		</TR>
 			
 		<TR>
 			<TD nowrap>Ignore Room Checks:</TD><TD><bean:write name="<%=frmName%>" property="ignoreRoomCheck"/></TD>

@@ -84,6 +84,13 @@
 			</TR>
 		</logic:messagesPresent>
 		
+		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr><td valign="top">
+					<table width="100%" border="0" cellspacing="0" cellpadding="3">
+		</tt:propertyEquals>
+		
 		<logic:empty name="<%=frmName%>" property="id">
 			<TR>
 				<TD>Building:</TD>
@@ -198,42 +205,31 @@
 			</logic:notEmpty>
 		</logic:notEmpty>
 			
-		<logic:equal name="<%=frmName%>" property="room" value="true">
-			<TR>
-				<TD>Coordinates:</TD>
-				<TD>
-					<% if (examMgr) { %>
-						<bean:write name="<%=frmName%>" property="coordX"/>, <bean:write name="<%=frmName%>" property="coordY"/>
-						<html:hidden property="coordX" />
-						<html:hidden property="coordY" />
-					<% } else { %>
-					<html:text property="coordX" maxlength="12" size="12"/>, <html:text property="coordY" maxlength="12" size="12"/>
-					<% } %>
-					<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
-					&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
-				</TD>
-			</TR>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="room" value="false">
-			<html:hidden property="coordX" />
-			<html:hidden property="coordY" />
-		</logic:equal>
+		<TR>
+			<TD>Coordinates:</TD>
+			<TD>
+				<% if (examMgr) { %>
+					<bean:write name="<%=frmName%>" property="coordX"/>, <bean:write name="<%=frmName%>" property="coordY"/>
+					<html:hidden property="coordX" styleId="coordX"/>
+					<html:hidden property="coordY" styleId="coordY"/>
+				<% } else { %>
+				<html:text property="coordX" maxlength="12" size="12" styleId="coordX" onchange="setMarker();"/>, <html:text property="coordY" maxlength="12" size="12" styleId="coordY" onchange="setMarker();"/>
+				<% } %>
+				<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
+				&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
+			</TD>
+		</TR>
 
-		<logic:equal name="<%=frmName%>" property="room" value="false">
-			<% if (examMgr) { %>
+		<% if (examMgr) { %>
 			<html:hidden property="ignoreTooFar" />
-			<% } else { %>
+		<% } else { %>
 			<TR>
 				<TD nowrap>Ignore Too Far Distances:</TD>
 				<TD>
 					<html:checkbox property="ignoreTooFar" />
 				</TD>
 			</TR>
-			<% } %>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="room" value="false">
-			<html:hidden property="ignoreTooFar" />
-		</logic:equal>
+		<% } %>
 			
 		<% if (examMgr) { %>
 			<html:hidden property="ignoreRoomCheck" />
@@ -268,6 +264,16 @@
 			<html:hidden property="examEEnabled"/>
 			<html:hidden property="examCapacity"/>
 		<% } %>
+		
+		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+					</table>
+				</td><td width="1%" nowrap="nowrap" style="padding-right: 3px;">
+					<div id="map_canvas" style="width: 600px; height: 400px; border: 1px solid #9CB0CE;"></div>
+				</td></tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="3">
+		</tt:propertyEquals>
+
 		
 		<logic:notEmpty scope="request" name="PeriodPrefs">
 			<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
@@ -325,6 +331,68 @@
 	
 </html:form>
 
+<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" language="javascript">
+	var latlng = new google.maps.LatLng(50, -58);
+	var myOptions = {
+		zoom: 2,
+		center: latlng,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	var geocoder = new google.maps.Geocoder();
+	var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	var marker = new google.maps.Marker({
+		position: latlng, 
+		map: map,
+		draggable: true,
+		visible: false
+	});
+	google.maps.event.addListener(marker, 'position_changed', function() {
+		document.getElementById("coordX").value = '' + marker.getPosition().lat().toFixed(6);
+		document.getElementById("coordY").value = '' + marker.getPosition().lng().toFixed(6);
+		geocoder.geocode({'location': marker.getPosition()}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				if (results[0]) {
+					marker.setTitle(results[0].formatted_address);
+				} else {
+					marker.setTitle(null);
+				}
+			} else {
+				marker.setTitle(null);
+			}
+		});
+	});
+	<% if (examMgr) { %>
+		marker.setDraggable(false);
+	<% } else { %>
+		google.maps.event.addListener(map, 'rightclick', function(event) {
+			marker.setPosition(event.latLng);
+			marker.setVisible(true);
+		});
+	<% } %>
+	function setMarker() {
+		var x = document.getElementById("coordX").value;
+		var y = document.getElementById("coordY").value;
+		if (x && y) {
+			var pos = new google.maps.LatLng(x, y);
+			marker.setPosition(pos);
+			marker.setVisible(true);
+			if (map.getZoom() <= 10) map.setZoom(16);
+			map.panTo(pos);
+		} else {
+			marker.setVisible(false);
+		}
+	}
+	setMarker();
+</script>
+</tt:propertyEquals>
+<tt:propertyNotEquals name="unitime.coordinates.googlemap" value="true">
+	<script type="text/javascript" language="javascript">
+		function setMarker() {}
+	</script>
+</tt:propertyNotEquals>
+
 <script type="text/javascript" language="javascript">
 	// Validator
 	var frmvalidator  = new Validator("editRoomForm");
@@ -361,6 +429,7 @@
 							if (optId=='x') xObj.value = optVal;
 							if (optId=='y') yObj.value = optVal;
 						}
+						setMarker();
 					}
 				}
 			}
