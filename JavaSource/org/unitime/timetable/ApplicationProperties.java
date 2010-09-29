@@ -22,6 +22,7 @@ package org.unitime.timetable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -204,16 +205,21 @@ public class ApplicationProperties {
 	 * @return Absolute file path 
 	 */
 	public static String getBasePath() {
-
 		//Get the URL of the class location (usually in /WEB-INF/classes/...) 		
-		java.net.URL url = ApplicationProperties.class.
+		URL url = ApplicationProperties.class.
 							getProtectionDomain().getCodeSource().getLocation();
 		
 		if (url==null) return null;
-
+		
 		//Get file and parent		
-		java.io.File file = new java.io.File(url.getFile());
-		java.io.File parent = file.getParentFile();
+		File file = null;
+		try {
+			// Try to use URI to avoid bug 4466485 on Windows (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4466485)
+			file = new File(new URI(url.toString()).getPath());
+		} catch (URISyntaxException e) {
+			file = new File(url.getFile());
+		}
+		File parent = file.getParentFile();
 
 		// Iterate up the folder structure till WEB-INF is encountered
 		while (parent!=null && !parent.getName().equals("WEB-INF"))
