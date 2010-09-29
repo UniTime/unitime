@@ -300,15 +300,21 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * 
 	 * @return
 	 */
-	public Collection getGlobalRoomFeatures() {
-		Collection grfs = new HashSet();
-		for (Iterator iter = getFeatures().iterator(); iter.hasNext();) {
-			RoomFeature rf = (RoomFeature) iter.next();
+	public TreeSet<GlobalRoomFeature> getGlobalRoomFeatures() {
+		TreeSet<GlobalRoomFeature> grfs = new TreeSet<GlobalRoomFeature>();
+		for (RoomFeature rf: getFeatures())
 			if (rf instanceof GlobalRoomFeature) {
-				grfs.add(rf);
+				grfs.add((GlobalRoomFeature)rf);
 			}
+		return grfs;
+	}
+	
+	TreeSet<RoomGroup> getGlobalRoomGroups() {
+		TreeSet<RoomGroup> grgs = new TreeSet<RoomGroup>();
+		for (RoomGroup rg: getRoomGroups()) {
+			if (rg.isGlobal()) grgs.add(rg);
 		}
-		return (new TreeSet(grfs));
+		return grgs;
 	}
 	
 	/**
@@ -840,5 +846,38 @@ public abstract class Location extends BaseLocation implements Comparable {
             events.add((Event)o[1]);
         }
         return table;
+    }
+    
+    public String getLabelWithHint() {
+    	String hint = getLabel() + (getDisplayName() == null ? "" : " (" + getDisplayName() + ")");
+    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
+    		hint += "<br><img src=\\'" + 
+    			minimap.replace("%x", getCoordinateX().toString()).replace("%y", getCoordinateY().toString()) +
+    			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
+    	}
+    	hint += "<table width=\\'300px;\\'>";
+    	hint += "<tr><td>Capacity:</td><td width=\\'99%\\'>" + getCapacity();
+    	if (getExamCapacity() != null && getExamCapacity() > 0 && !getExamCapacity().equals(getCapacity()) &&
+    			(isExamEnabled(Exam.sExamTypeFinal) || isExamEnabled(Exam.sExamTypeMidterm))) {
+    		hint += " (" + getExamCapacity() + " for" +
+    				(isExamEnabled(Exam.sExamTypeFinal) ? isExamEnabled(Exam.sExamTypeMidterm) ? "" : " final" : " midterm") +
+    				" examinations)";
+    	}
+    	hint += "</td></tr>";
+    	String features = "";
+    	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {
+    		if (!features.isEmpty()) features += ", ";
+    		features += f.getLabel();
+    	}
+    	if (!features.isEmpty()) hint += "<tr><td>Features:</td><td>" + features + "</td></tr>";
+    	String groups = "";
+    	for (RoomGroup g: getGlobalRoomGroups()) {
+    		if (!groups.isEmpty()) groups += ", ";
+    		groups += g.getName();
+    	}
+    	if (!groups.isEmpty()) hint += "<tr><td>Groups:</td><td>" + groups + "</td></tr>";
+    	hint += "</table>";
+    	return "<span onmouseover=\"showGwtHint(this, '" + hint + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
     }
 }
