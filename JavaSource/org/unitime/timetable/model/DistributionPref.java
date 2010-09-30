@@ -145,7 +145,9 @@ public class DistributionPref extends BaseDistributionPref {
     	String color = getPrefLevel().prefcolor();
     	if (PreferenceLevel.sNeutral.equals(getPrefLevel().getPrefProlog()))
     		color = "gray";
-    	sb.append("<span style='color:"+color+";font-weight:bold;' title='"+getPrefLevel().getPrefName()+" "+preferenceText(true,false," (",", ",")")+"'>" );
+    	sb.append("<span style='color:"+color+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" + 
+    			getPrefLevel().getPrefName() + " " + preferenceText(true,false,"<ul><li>","<li>","</ul>")
+    			+ "');\" onmouseout=\"hideGwtHint();\">" );
     	sb.append(preferenceText(false,true, "", "", ""));
     	sb.append("</span>");
     	return sb.toString();
