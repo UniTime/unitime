@@ -511,7 +511,7 @@ public class RoomListAction extends Action {
 					text[idx] = 
 						(editable?"":"<font color='gray'>")+
 						(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-						bldg.getAbbreviation()+
+						"<span onmouseover=\"showGwtHint(this, '" + bldg.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + bldg.getAbbreviation() + "</span>"+
 						(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 						(editable?"":"</font>");
 					comp[0] = location.getLabel();
@@ -521,7 +521,7 @@ public class RoomListAction extends Action {
 				text[idx] = 
 					(editable?"":"<font color='gray'>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-					(room==null?location.getLabel():room.getRoomNumber())+
+					(room==null?location.getLabelWithHint():"<span onmouseover=\"showGwtHint(this, '" + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + room.getRoomNumber() + "</span>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 					(editable?"":"</font>");
 				comp[idx] = location.getLabel();
@@ -553,15 +553,17 @@ public class RoomListAction extends Action {
 	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            px.load(location);
 	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+	                            String hint = null;
 	                            File imageFileName = null;
 	                            try {
 	                                imageFileName = rtt.createImage(timeVertical);
+	                				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
 	                            } catch (IOException ex) {
-	                                ex.printStackTrace();
+	                            	hint = "'" + rtt.getModel().toString() + "'";
+	                            	Debug.error(ex);
 	                            }
-	                            String title = rtt.getModel().toString();
 	                            if (imageFileName!=null)
-	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
 	                            else
 	                                text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                        }
@@ -578,16 +580,16 @@ public class RoomListAction extends Action {
 	                    if (room==null) {
 	                        text[0] =
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+location.getLabel()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+location.getLabel()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    } else {
 	                        text[0] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +(bldg == null ? roomPref.getPrefName() + " " + location.getHtmlHint() : bldg.getHtmlHint()) + "');\" onmouseout=\"hideGwtHint();\">"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                        text[1] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+room.getRoomNumber()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+room.getRoomNumber()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    }
 	                }
@@ -608,18 +610,28 @@ public class RoomListAction extends Action {
 	                RequiredTimeTable rtt = location.getRoomSharingTable();
 	                rtt.getModel().setDefaultSelection(timeGridSize);
 	                if (gridAsText) {
-	                    text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                    String hint = null;
+	                    try {
+            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                    } catch (IOException ex) {
+                        	hint = "'" + rtt.getModel().toString() + "'";
+                        	Debug.error(ex);
+	                    }
+                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                } else {
 	                    File imageFileName = null;
+	                    String hint = null;
 	                    try {
 	                        imageFileName = rtt.createImage(timeVertical);
+            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
 	                    } catch (IOException ex) {
-	                        ex.printStackTrace();
+                        	hint = "'" + rtt.getModel().toString() + "'";
+                        	Debug.error(ex);
 	                    }
 	                    if (imageFileName!=null){
-	                        text[idx] = ("<img border='0' title='"+rtt.getModel().toString()+"' src='temp/"+(imageFileName.getName())+"'>&nbsp;");
+	                        text[idx] = ("<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='temp/"+(imageFileName.getName())+"'>&nbsp;");
 	                    } else {
-	                        text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                    }
 	                }
 	                comp[idx]=null;
