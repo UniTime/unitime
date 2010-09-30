@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -222,15 +223,20 @@ public class ExamListAction extends Action {
                     PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType());
                     px.load(exam);
                     RequiredTimeTable rtt = new RequiredTimeTable(px);
+                    String hint = null;
                     File imageFileName = null;
                     try {
                         imageFileName = rtt.createImage(timeVertical);
+                        hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+            			hint = "'" + rtt.getModel().toString();
+            			if (ea!=null)
+            				hint += ", assigned "+ea.getPeriodName();
+            			hint += "'";
+        				Debug.error(ex);
                     }
-                    String title = rtt.getModel().toString();
                     if (imageFileName!=null)
-                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
                     else
                         perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                 }
