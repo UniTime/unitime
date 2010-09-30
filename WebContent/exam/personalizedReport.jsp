@@ -32,7 +32,7 @@
 				<html:hidden property="mname" styleId="mname"/>
 				<html:hidden property="lname" styleId="lname"/>
 				<input type='hidden' name='session' value=''/>
-				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
@@ -101,7 +101,7 @@
 		<TR><TD><tt:section-title/></TD></TR>
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
-				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
@@ -112,4 +112,17 @@
 			</logic:equal>
 		</TD></TR>
 	</TABLE>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((fname.value + ' ' + lname.value).trim(), function(person) {
+			if (person) {
+				uid.value = person[0];
+				fname.value = person[1];
+				mname.value = person[2];
+				lname.value = person[3];
+				document.forms[0].submit();
+			}
+		});
+	}
+</script>
 </html:form>
