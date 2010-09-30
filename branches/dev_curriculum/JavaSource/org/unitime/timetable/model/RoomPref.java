@@ -67,6 +67,6 @@ public class RoomPref extends BaseRoomPref {
     }
     
 	public String preferenceTitle() {
-		return getPrefLevel().getPrefName()+" Room "+preferenceText();
+    	return getPrefLevel().getPrefName() + " Room " + getRoom().getHtmlHint();
 	}
 }

@@ -848,8 +848,8 @@ public abstract class Location extends BaseLocation implements Comparable {
         return table;
     }
     
-    public String getLabelWithHint() {
-    	String hint = getLabel() + (getDisplayName() == null ? "" : " (" + getDisplayName() + ")");
+    public String getHtmlHint() {
+    	String hint = getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 
@@ -878,6 +878,10 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
     	if (!groups.isEmpty()) hint += "<tr><td>Groups:</td><td>" + groups + "</td></tr>";
     	hint += "</table>";
-    	return "<span onmouseover=\"showGwtHint(this, '" + hint + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
+    	return hint;
+    }
+    
+    public String getLabelWithHint() {
+    	return "<span onmouseover=\"showGwtHint(this, '" + getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
     }
 }

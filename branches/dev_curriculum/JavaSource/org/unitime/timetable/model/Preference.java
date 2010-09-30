@@ -48,12 +48,13 @@ public abstract class Preference extends BasePreference implements Comparable {
 	}
 
     protected String preferenceHtml() {
-	StringBuffer sb = new StringBuffer();
+	StringBuffer sb = new StringBuffer("<span ");
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
-			sb.append("<span style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' title='"+preferenceTitle()+"'>" );
+			sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");
 		} else {
-			sb.append("<span style='font-weight:bold;' title='"+preferenceTitle()+"'>" );
+			sb.append("style='font-weight:bold;' ");
 		}
+		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle() + "');\" onmouseout=\"hideGwtHint();\">");
 		
 		sb.append(this.preferenceAbbv());
 		sb.append("</span>");

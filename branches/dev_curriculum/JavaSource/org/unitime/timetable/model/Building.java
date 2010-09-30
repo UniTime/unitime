@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.hibernate.criterion.Restrictions;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -262,5 +263,15 @@ public class Building extends BaseBuilding implements Comparable {
 				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation").
 				setLong("sessionId", sessionId).setCacheable(true).list();
 	}
-	
+
+    public String getHtmlHint() {
+    	String hint = getName();
+    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
+    		hint += "<br><img src=\\'" + 
+			minimap.replace("%x", getCoordinateX().toString()).replace("%y", getCoordinateY().toString()) +
+			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
+    	}
+    	return hint;
+    }
 }
