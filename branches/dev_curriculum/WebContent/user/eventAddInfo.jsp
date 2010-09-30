@@ -240,7 +240,7 @@
 						<TD>
 							<html:text property="mainContactFirstName" maxlength="100" size="30" styleId="fname" />
 							<logic:equal name="eventAddInfoForm" property="mainContactLookup" value="true">
-								<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+mainContactFirstName.value+' '+mainContactLastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn"> 
+								<input type='button' value='Lookup' onclick="lookup();" style="btn"> 
 							</logic:equal>
 						</TD>
 					</TR>
@@ -438,4 +438,18 @@
 		</TR>
 		
 </TABLE>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = person[0];
+				document.getElementById('fname').value = person[1];
+				document.getElementById('mname').value = person[2];
+				document.getElementById('lname').value = person[3];
+				document.getElementById('email').value = person[4];
+				document.getElementById('phone').value = person[5];
+			}
+		});
+	}
+</script>
 </html:form>

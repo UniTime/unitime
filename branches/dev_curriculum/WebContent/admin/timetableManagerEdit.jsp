@@ -55,7 +55,7 @@
 </SCRIPT>
 <tiles:importAttribute />
 
-	<html:form method="post" action="timetableManagerEdit.do">
+<html:form method="post" action="timetableManagerEdit.do">
 	<html:hidden name="mgrForm" property="uniqueId" />
 	<html:hidden name="mgrForm" property="op1" />
 	<html:hidden name="mgrForm" property="isExternalManager" />
@@ -127,7 +127,7 @@
 				<TD>First Name:</TD>
 				<TD>
 					<html:text name="mgrForm" property="firstName" size="50" maxlength="100" styleId="fname"></html:text>
-					<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+firstName.value+' '+lastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+					<input type='button' value='Lookup' onclick="lookup();" style="btn">
 				</TD>
 			</TR>
 			<TR>
@@ -392,4 +392,17 @@
 			</TD>
 		</TR>
 	</TABLE>
-	</html:form>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = person[0];
+				document.getElementById('fname').value = person[1];
+				document.getElementById('mname').value = person[2];
+				document.getElementById('lname').value = person[3];
+				document.getElementById('email').value = person[4];
+			}
+		});
+	}
+</script>
+</html:form>

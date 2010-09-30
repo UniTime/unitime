@@ -509,9 +509,15 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	public int getSelectedCount() {
 		int selected = 0;
-		for (int row = 1; row < getRowCount(); row ++)
+		for (int row = 0; row < getRowCount(); row ++)
 			if (isSelected(row)) selected ++;
 		return selected;
+	}
+	
+	public int getSelectedRow() {
+		for (int row = 0; row < getRowCount(); row ++)
+			if (isSelected(row)) return row;
+		return -1;
 	}
 	
 	public static class TableEvent<T> {
