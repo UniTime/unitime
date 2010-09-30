@@ -68,6 +68,6 @@ public class BuildingPref extends BaseBuildingPref {
     }
 
 	public String preferenceTitle() {
-		return getPrefLevel().getPrefName()+" Building "+preferenceText();
+    	return getPrefLevel().getPrefName() + " Building " + getBuilding().getHtmlHint();
 	}
 }
