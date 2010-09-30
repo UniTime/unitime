@@ -289,7 +289,7 @@ public class RequiredTimeTable {
         } else {
         	return
         		"<script language=\"javascript\">\n"+
-        		"tpGenerate(\n\t"+
+        		"document.write(tpGenerate(\n\t"+
         		"'"+iName+"',\n\t"+
         		(timeVertical?"false":"true")+",\n\t"+
         		(getModel().getName()==null?"null":"'"+getModel().getName()+"'")+",\n\t"+
@@ -310,7 +310,7 @@ public class RequiredTimeTable {
         		getModel().getDefaultSelection()+",\n\t"+
         		"'"+getModel().getDefaultPreference()+"',\n\t"+
         		(getModel().getPreferenceCheck()==null?"null":"\""+getModel().getPreferenceCheck()+"\"")+", \n\t"+
-        		showLegend+");\n"+
+        		showLegend+"));\n"+
         		"</script>";
         }
     }
