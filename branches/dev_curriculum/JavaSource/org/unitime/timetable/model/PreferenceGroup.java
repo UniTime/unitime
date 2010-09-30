@@ -203,25 +203,35 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		TimePref tp = (TimePref)i.next();
     		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment);
         	if (gridAsText) {
-    			String title = tp.getTimePattern().getName();
-    			if (assignment!=null)
-    				title += ", assigned "+assignment.getPlacement().getName();
-        		sb.append("<span title='"+title+"'>"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
+    			String hint = null;
+    			try {
+    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+    			} catch (IOException ex) {
+        			hint = "'" + tp.getTimePattern().getName();
+        			if (assignment!=null)
+        				hint += ", assigned "+assignment.getPlacement().getName();
+        			hint += "'";
+    				Debug.error(ex);
+    			}
+        		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
     			File imageFileName = null;
+    			String hint = null;
     			try {
     				imageFileName = rtt.createImage(timeVertical);
+    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
     			} catch (IOException ex) {
-    				ex.printStackTrace();
+        			hint = "'" + rtt.getModel().toString();
+        			if (assignment!=null)
+        				hint += ", assigned "+assignment.getPlacement().getName();
+        			hint += "'";
+    				Debug.error(ex);
     			}
-    			String title = rtt.getModel().toString();
-    			if (assignment!=null)
-    				title += ", assigned "+assignment.getPlacement().getName();
     			if (imageFileName!=null)
-    				sb.append("<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>&nbsp;");
+    				sb.append("<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
     			else
-    				sb.append("<span title='"+title+"'>"+rtt.getModel().toString()+"</span>");
+    				sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString()+"</span>");
         	}
 			if (i.hasNext()) sb.append("<br>");
     	}

@@ -17,33 +17,60 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-function tpGenVariables(tpName, nrTimes, nrDays, pref, prefTable, prefColors, selections, defPreference, prefCheck, prefNames) {
-	document.writeln("<INPUT id='"+tpName+"_reqSelect' type='hidden' value='"+defPreference+"' name='"+tpName+"_reqSelect'>");
-	document.writeln("<INPUT id='"+tpName+"_nrTimes' type='hidden' value='"+nrTimes+"' name='"+tpName+"_nrTimes'>");
-	document.writeln("<INPUT id='"+tpName+"_nrDays' type='hidden' value='"+nrDays+"' name='"+tpName+"_nrDays'>");
-	document.writeln("<INPUT id='"+tpName+"_nrSelections' type='hidden' value='"+(selections==null?1:selections.length)+"' name='"+tpName+"_nrSelections'>");
-	var reqUsed=0;
-	for (var t=0;t<nrTimes;t++)
-		for (var d=0;d<nrDays;d++) {
-			document.writeln("<INPUT id='"+tpName+"_req_"+d+"_"+t+"' name='"+tpName+"_req_"+d+"_"+t+"' type='hidden' value='"+pref[d][t]+"'>");
-			if (pref[d][t]=='R') reqUsed=1;
-		}
-	document.writeln("<INPUT id='"+tpName+"_reqUsed' type='hidden' value='"+reqUsed+"' name='"+tpName+"_reqUsed'>");
-	document.writeln("<script language='javascript'>");
-	document.writeln("function fn_"+tpName+"_pref2color(pref) {");
-	for (var i=0;i<prefTable.length;i++)
-		document.writeln("if (pref=='"+prefTable[i]+"') return '"+prefColors[i]+"';");
-	document.writeln("return 'rgb(240,240,240)';");
-	document.writeln("}");
-	document.writeln("function fn_"+tpName+"_pref2name(pref) {");
-	for (var i=0;i<prefTable.length;i++)
-		document.writeln("if (pref=='"+prefTable[i]+"') return '"+prefNames[i]+"';");
-	document.writeln("return 'rgb(240,240,240)';");
-	document.writeln("}");
-	document.writeln("function fn_"+tpName+"_prefCheck(pref) {");
-	if (prefCheck!=null) document.writeln(prefCheck);
-	document.writeln("}");
-	document.writeln("</script>");
+var tpOutput;
+var tpDefPreference;
+var tpNrTimes;
+var tpNrDays;
+var tpPrefTable;
+var tpPrefColors;
+var tpPrefNames;
+var tpPref;
+
+function tpGenVariables(tpName, nrTimes, nrDays, pref, prefTable, prefColors, selections, defPreference, prefCheck, prefNames, editable) {
+	var ed = false;
+	if (editable) {
+		for (var d=0;d<nrDays;d++)
+			for (var t=0;t<nrTimes;t++)
+				if (editable[d][t]) { ed = true; break; }
+	} else {
+		ed = true;
+	}
+	if (ed) {
+		document.writeln("<INPUT id='"+tpName+"_reqSelect' type='hidden' value='"+defPreference+"' name='"+tpName+"_reqSelect'>");
+		document.writeln("<INPUT id='"+tpName+"_nrTimes' type='hidden' value='"+nrTimes+"' name='"+tpName+"_nrTimes'>");
+		document.writeln("<INPUT id='"+tpName+"_nrDays' type='hidden' value='"+nrDays+"' name='"+tpName+"_nrDays'>");
+		document.writeln("<INPUT id='"+tpName+"_nrSelections' type='hidden' value='"+(selections==null?1:selections.length)+"' name='"+tpName+"_nrSelections'>");
+		var reqUsed=0;
+		for (var t=0;t<nrTimes;t++)
+			for (var d=0;d<nrDays;d++) {
+				document.writeln("<INPUT id='"+tpName+"_req_"+d+"_"+t+"' name='"+tpName+"_req_"+d+"_"+t+"' type='hidden' value='"+pref[d][t]+"'>");
+				if (pref[d][t]=='R') reqUsed=1;
+			}
+		document.writeln("<INPUT id='"+tpName+"_reqUsed' type='hidden' value='"+reqUsed+"' name='"+tpName+"_reqUsed'>");
+		document.writeln("<script language='javascript'>");
+		document.writeln("function fn_"+tpName+"_pref2color(pref) {");
+		for (var i=0;i<prefTable.length;i++)
+			document.writeln("if (pref=='"+prefTable[i]+"') return '"+prefColors[i]+"';");
+		document.writeln("return 'rgb(240,240,240)';");
+		document.writeln("}");
+		document.writeln("function fn_"+tpName+"_pref2name(pref) {");
+		for (var i=0;i<prefTable.length;i++)
+			document.writeln("if (pref=='"+prefTable[i]+"') return '"+prefNames[i]+"';");
+		document.writeln("return 'rgb(240,240,240)';");
+		document.writeln("}");
+		document.writeln("function fn_"+tpName+"_prefCheck(pref) {");
+		if (prefCheck!=null) document.writeln(prefCheck);
+		document.writeln("}");
+		document.writeln("</script>");
+	} else {
+		tpDefPreference = defPreference;
+		tpNrTimes = nrTimes;
+		tpNrDays = nrDays;
+		tpPrefTable = prefTable;
+		tpPrefNames = prefNames;
+		tpPrefColors = prefColors;
+		tpPref = pref;
+	}
 }
 function tpGetBorder(tpName, time, day, highlight, selected) {
 	var b = (highlight==null?null:highlight[day][time]);
@@ -77,10 +104,18 @@ function tpIsEditable(tpName, editable) {
 	return 0;
 }
 function tpGetNrDays(tpName) {
-	return document.getElementById(tpName+"_nrDays").value;
+	try {
+		return document.getElementById(tpName+"_nrDays").value;
+	} catch (e) {
+		return tpNrDays;
+	}
 }
 function tpGetNrTimes(tpName) {
-	return document.getElementById(tpName+"_nrTimes").value;
+	try {
+		return document.getElementById(tpName+"_nrTimes").value;
+	} catch (e) {
+		return tpNrTimes;
+	}
 }
 function tpGetNrSelections(tpName) {
 	return document.getElementById(tpName+"_nrSelections").value;
@@ -89,7 +124,11 @@ function tpGetCurrentPreference(tpName) {
 	return document.getElementById(tpName+"_reqSelect").value;
 }
 function tpGetPreference(tpName, time, day) {
-	return document.getElementById(tpName+"_req_"+day+"_"+time).value;
+	try {
+		return document.getElementById(tpName+"_req_"+day+"_"+time).value;
+	} catch (e) {
+		return tpPref[day][time];
+	}
 }
 function tpSetPreferenceNoCheck(tpName, time, day, pref) {
 	document.getElementById(tpName+"_req_"+day+"_"+time).value=pref;
@@ -124,10 +163,20 @@ function tpSetPreference(tpName, time, day, pref) {
 	tpSetPreferenceNoCheck(tpName, time, day, pref);
 }
 function tpPref2Color(tpName, pref) {
-	return eval("fn_"+tpName+"_pref2color('"+pref+"');");
+	try {
+		return eval("fn_"+tpName+"_pref2color('"+pref+"');");
+	} catch (e) {
+		for (var i=0;i<tpPrefTable.length;i++)
+			if (pref==tpPrefTable[i]) return tpPrefColors[i];
+	}
 }
 function tpPref2Name(tpName, pref) {
-	return eval("fn_"+tpName+"_pref2name('"+pref+"');");
+	try {
+		return eval("fn_"+tpName+"_pref2name('"+pref+"');");
+	} catch (e) {
+		for (var i=0;i<tpPrefTable.length;i++)
+			if (pref==tpPrefTable[i]) return tpPrefNames[i];
+	}
 }
 function tpTimeDaySelected(tpName, time, day) {
 	tpSetPreference(tpName, time, day, tpGetCurrentPreference(tpName));
@@ -140,7 +189,7 @@ function tpGenTimeHeader(tpName, editable, time, startTime, endTime, minDay, max
 			if (tpIsFieldEditable(tpName, editable, time, d))
 				onclick += "tpSetPreference('"+tpName+"', "+time+", "+d+",tpGetCurrentPreference('"+tpName+"'));";
 		}
- 		document.writeln("<th width='30' height='20' "+
+ 		tpOutput += ("<th width='30' height='20' "+
  	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(240,240,240);\" "+
  			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
@@ -148,7 +197,7 @@ function tpGenTimeHeader(tpName, editable, time, startTime, endTime, minDay, max
  			"<font size=1>"+startTime+"<br><font color=gray>"+endTime+"</font></font>"+
  			"</th>");
 	} else {
- 		document.writeln("<th width='30' height='20' "+
+ 		tpOutput += ("<th width='30' height='20' "+
  	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(240,240,240);\" "+
  			"<font size=1>"+startTime+"<br><font color=gray>"+endTime+"</font></font>"+
  			"</th>");
@@ -156,7 +205,7 @@ function tpGenTimeHeader(tpName, editable, time, startTime, endTime, minDay, max
 }
   
 function tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay) {
-	document.writeln("<TR>");
+	tpOutput += ("<TR>");
 	if (tpIsBlockEditable(tpName,editable,minTime,maxTime,minDay,maxDay)) {
 		var onclick = "";
 		for (var t=minTime;t<=maxTime;t++) {
@@ -165,19 +214,19 @@ function tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minT
 					onclick += "tpSetPreference('"+tpName+"', "+t+", "+d+",tpGetCurrentPreference('"+tpName+"'));";
 			}
 		}
-	 	document.writeln("<TH "+
+	 	tpOutput += ("<TH "+
  				"style=\"border:white 1px solid;\" "+
  				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  				"onmouseout=\"this.style.border='white 1px solid';\" "+
 	 			"onclick=\""+onclick+"\" "+
  				"align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
  	} else {
-	 	document.writeln("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+	 	tpOutput += ("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
  	}
  	for (var t=minTime;t<=maxTime;t++) {
  		tpGenTimeHeader(tpName,editable,t,startTimes[t],endTimes[t], minDay, maxDay);
  	}
- 	document.writeln("</TR>");
+ 	tpOutput += ("</TR>");
 }
   
 function tpGenDayHeader(tpName, editable, day, text, minTime, maxTime) {
@@ -187,7 +236,7 @@ function tpGenDayHeader(tpName, editable, day, text, minTime, maxTime) {
 			if (tpIsFieldEditable(tpName, editable, t, day))
 				onclick += "tpSetPreference('"+tpName+"', "+t+", "+day+",tpGetCurrentPreference('"+tpName+"'));";
 		}
-		document.writeln("<th width='30' height='20' "+
+		tpOutput += ("<th width='30' height='20' "+
 			"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(240,240,240);\" "+
  			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
@@ -195,7 +244,7 @@ function tpGenDayHeader(tpName, editable, day, text, minTime, maxTime) {
  			"<font size=1>"+text+"</font>"+
  			"</th>");
  	} else {
-  	document.writeln("<th width='30' height='20' "+
+  	tpOutput += ("<th width='30' height='20' "+
  		  "style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(240,240,240);\" "+
  			"<font size=1>"+text+"</font>"+
  			"</th>");
@@ -203,7 +252,7 @@ function tpGenDayHeader(tpName, editable, day, text, minTime, maxTime) {
 }
   
 function tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, minDay, maxDay) {
- 	document.writeln("<TR>");
+ 	tpOutput += ("<TR>");
  	if (tpIsBlockEditable(tpName,editable,minTime,maxTime,minDay,maxDay)) {
 		var onclick = "";
 		for (var t=minTime;t<=maxTime;t++) {
@@ -212,26 +261,26 @@ function tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, min
 					onclick += "tpSetPreference('"+tpName+"', "+t+", "+d+",tpGetCurrentPreference('"+tpName+"'));";
 			}
 		}
-	 	document.writeln("<TH "+
+	 	tpOutput += ("<TH "+
  				"style=\"border:white 1px solid;\" "+
  				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  				"onmouseout=\"this.style.border='white 1px solid';\" "+
 	 			"onclick=\""+onclick+"\" "+
 				"align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
 	} else {
-	 	document.writeln("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+	 	tpOutput += ("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
 	}
  	for (var d=minDay;d<=maxDay;d++) {
  		tpGenDayHeader(tpName,editable,d,days[d], minTime, maxTime);
  	}
- 	document.writeln("</TR>");
+ 	tpOutput += ("</TR>");
 }
  
 function tpGenField(tpName, editable, time, day, text, highlight, sel) {
 	border = tpGetBorder(tpName, time, day, highlight, false);
  	borderSelected = tpGetBorder(tpName, time, day, highlight, true);
  	if (tpIsFieldEditable(tpName, editable, time, day)) {
-  	document.writeln("<td width='30' height='20' id='"+tpName+"_"+day+"_"+time+"_"+sel+"' "+
+  	tpOutput += ("<td width='30' height='20' id='"+tpName+"_"+day+"_"+time+"_"+sel+"' "+
  		  "style=\"border:"+border+";background-color:"+tpPref2Color(tpName, tpGetPreference(tpName, time,day))+";\" "+
  			"onmouseover=\"this.style.border='"+borderSelected+"';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='"+border+"';\" "+
@@ -239,7 +288,7 @@ function tpGenField(tpName, editable, time, day, text, highlight, sel) {
  			"<font size=1>"+(text==null?"&nbsp;":text)+"</font>"+
  			"</td>");
  	} else {
-  	document.writeln("<td width='30' height='20' id='"+tpName+"_"+day+"_"+time+"_"+sel+"' title='"+tpPref2Name(tpName, tpGetPreference(tpName, time,day))+"'"+
+  	tpOutput += ("<td width='30' height='20' id='"+tpName+"_"+day+"_"+time+"_"+sel+"' title='"+tpPref2Name(tpName, tpGetPreference(tpName, time,day))+"'"+
  		  "style=\"border:"+border+";background-color:"+tpPref2Color(tpName, tpGetPreference(tpName, time,day))+";\" "+
  			"<font size=1>"+(text==null?"&nbsp;":text)+"</font>"+
  			"</td>");
@@ -247,25 +296,25 @@ function tpGenField(tpName, editable, time, day, text, highlight, sel) {
 }
  
 function tpGenRowHorizontal(tpName, editable, day, dayText, text, highlight, sel, minTime, maxTime) {
- 	document.writeln("<tr>");
+ 	tpOutput += ("<tr>");
  	tpGenDayHeader(tpName, editable, day, dayText, minTime, maxTime);
  	for (var t=minTime;t<=maxTime;t++) {
  		tpGenField(tpName,editable,t,day,(text==null?null:text[t]), highlight, sel);
  	}
- 	document.writeln("</tr>");
+ 	tpOutput += ("</tr>");
 }
 	
 function tpGenRowVertical(tpName, editable, time, startTime, endTime, text, highlight, sel, minDay, maxDay) {
-	document.writeln("<tr>");
+	tpOutput += ("<tr>");
  	tpGenTimeHeader(tpName, editable, time, startTime, endTime, minDay, maxDay);
  	for (var d=minDay;d<=maxDay;d++) {
  		tpGenField(tpName, editable,time,d,(text==null?null:text[d][t]), highlight, sel);
  	}
- 	document.writeln("</tr>");
+ 	tpOutput += ("</tr>");
 }
 
 function tpGenTable(tpName, horizontal, editable, days, startTimes, endTimes, text, highlight, sel, minTime, maxTime, minDay, maxDay) {
-	document.writeln("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
+	tpOutput += ("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
 	if (horizontal) {
 		tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay);
 		for (var d=minDay;d<=maxDay;d++)
@@ -275,7 +324,7 @@ function tpGenTable(tpName, horizontal, editable, days, startTimes, endTimes, te
 		for (var t=minTime;t<=maxTime;t++)
 			tpGenRowVertical(tpName, editable,t,startTimes[t],endTimes[t],text, highlight, sel, minDay, maxDay);
 	}
-	document.writeln("</table>");
+	tpOutput += ("</table>");
 }
 	
 function tpPrefSelected(tpName, pref) {
@@ -295,7 +344,7 @@ function tpPrefSelected(tpName, pref) {
 function tpGenPreference(tpName, editable, pref, title, enable) {
 	if (tpIsEditable(tpName, editable)) {
 		if (enable) {
-			document.writeln("<tr align=left "+
+			tpOutput += ("<tr align=left "+
 				"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='pointer';\" "+
 				"onclick=\"tpPrefSelected('"+tpName+"','"+pref+"');\" "+
 				"onmouseout=\"this.style.backgroundColor='rgb(255,255,255)';\">"+
@@ -304,14 +353,14 @@ function tpGenPreference(tpName, editable, pref, title, enable) {
 				"&nbsp;</td>"+
 				"<th nowrap>"+title+"</th></tr>");
 		} else {
-			document.writeln("<tr align=left>"+
+			tpOutput += ("<tr align=left>"+
 				"<td id='"+tpName+"_req"+pref+"' width='30' height='20' "+
 				"style=\"border:gray 2px solid;background-color:"+tpPref2Color(tpName, pref)+";\">"+
 				"&nbsp;</td>"+
 				"<th nowrap><font color='gray'>"+title+"</font></th></tr>");
 		}
 	} else {
-		document.writeln("<tr align=left>"+
+		tpOutput += ("<tr align=left>"+
 			"<td id='"+tpName+"_req"+pref+"' width='30' height='20' "+
 			"style=\"border:rgb(0,0,0) 2px solid;background-color:"+tpPref2Color(tpName, pref)+";\">"+
 			"&nbsp;</td>"+
@@ -327,77 +376,79 @@ function tpSelectionChanged(tpName, nrSelections) {
 }
 
 function tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables) {
-	document.writeln("<table style='font-size:10px' cellSpacing='2' cellPadding='2' border='0'>");
+	tpOutput += ("<table style='font-size:10px' cellSpacing='2' cellPadding='2' border='0'>");
 	for (var i=0;i<prefTable.length;i++)
 		tpGenPreference(tpName,editable,prefTable[i],prefNames[i],prefEnables[i]);
-	document.writeln("</table>");
+	tpOutput += ("</table>");
 }
 
 function tpGenSelection(tpName, selections, defSelection) {
-	document.writeln("<select onchange=\"tpSelectionChanged('"+tpName+"',"+selections.length+");\" name='"+tpName+"_selections' id='"+tpName+"_selections'>");
+	tpOutput += ("<select onchange=\"tpSelectionChanged('"+tpName+"',"+selections.length+");\" name='"+tpName+"_selections' id='"+tpName+"_selections'>");
 	for (var i=0;i<selections.length;i++)
-		document.writeln("<option value='"+i+"' "+(defSelection==i?"selected":"")+">"+selections[i][0]+"</option>");
-	document.writeln("</select>");
+		tpOutput += ("<option value='"+i+"' "+(defSelection==i?"selected":"")+">"+selections[i][0]+"</option>");
+	tpOutput += ("</select>");
 }
 
 function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes, endTimes, text, preferences, highlight, editable, prefTable, prefColors, prefNames, prefEnables, selections, defSelection, defPreference, prefCheck, showLegend) {
-	tpGenVariables(tpName,nrTimes,nrDays,preferences, prefTable, prefColors, selections, defPreference, prefCheck, prefNames);
-	document.writeln("<table border='0'>");
+	tpOutput = "";
+	tpGenVariables(tpName,nrTimes,nrDays,preferences, prefTable, prefColors, selections, defPreference, prefCheck, prefNames, editable);
+	tpOutput += ("<table border='0'>");
 	if (title==null) {
 		if (selections==null) {
-			document.writeln("<tr><td>");
+			tpOutput += ("<tr><td>");
 			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1);
 			if (showLegend) {
-				document.writeln("</td><td width='10'>&nbsp;</td><td>");
+				tpOutput += ("</td><td width='10'>&nbsp;</td><td>");
 				tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables);
 			}
-			document.writeln("</td></tr>");
+			tpOutput += ("</td></tr>");
 		} else {
-			document.writeln("<tr><td align='right'>");
+			tpOutput += ("<tr><td align='right'>");
 			tpGenSelection(tpName, selections, defSelection);
 			if (showLegend) {
-				document.writeln("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
+				tpOutput += ("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
 				tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables);
 			}
-			document.writeln("</td></tr>");
-			document.writeln("<tr><td valign='top'>");
+			tpOutput += ("</td></tr>");
+			tpOutput += ("<tr><td valign='top'>");
 			for (var i=0;i<selections.length;i++) {
-				document.writeln("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
+				tpOutput += ("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
 				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3]);
-				document.writeln("</div>");
+				tpOutput += ("</div>");
 			}
-			document.writeln("</td></tr>");
+			tpOutput += ("</td></tr>");
 		}
 	} else {
 		if (selections==null) {
-			document.writeln("<tr><td>");
-			document.writeln(title);
+			tpOutput += ("<tr><td>");
+			tpOutput += (title);
 			if (showLegend) {
-				document.writeln("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
+				tpOutput += ("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
 				tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables);
 			}
-			document.writeln("</td></tr>");
-			document.writeln("<tr><td valign='top'>");
+			tpOutput += ("</td></tr>");
+			tpOutput += ("<tr><td valign='top'>");
 			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1);
-			document.writeln("</td></tr>");
+			tpOutput += ("</td></tr>");
 		} else {
-			document.writeln("<tr><td>");
-			document.writeln(title);
-			document.writeln("</td><td align='right'>");
+			tpOutput += ("<tr><td>");
+			tpOutput += (title);
+			tpOutput += ("</td><td align='right'>");
 			tpGenSelection(tpName, selections, defSelection);
 			if (showLegend) {
-				document.writeln("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
+				tpOutput += ("</td><td width='10' rowspan='2'>&nbsp;</td><td rowspan='2'>");
 				tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables);
 			}
-			document.writeln("</td></tr>");
-			document.writeln("<tr><td colspan='2' valign='top'>");
+			tpOutput += ("</td></tr>");
+			tpOutput += ("<tr><td colspan='2' valign='top'>");
 			for (var i=0;i<selections.length;i++) {
-				document.writeln("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
+				tpOutput += ("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
 				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3]);
-				document.writeln("</div>");
+				tpOutput += ("</div>");
 			}
-			document.writeln("</td></tr>");
+			tpOutput += ("</td></tr>");
 		}
 	}
-	document.writeln("</table>");
+	tpOutput += ("</table>");
+	return tpOutput;
 }
