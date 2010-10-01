@@ -976,7 +976,7 @@ public class ExamGridTable {
 	        }
 
 	        public String getOnClick() {
-	            return "window.open('examInfo.do?examId="+getInfo().getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+	            return "showGwtDialog('Examination Assignment', 'examInfo.do?examId="+getInfo().getExamId()+"','900','90%');";
 	        }
 	        
 	        public String getId() {

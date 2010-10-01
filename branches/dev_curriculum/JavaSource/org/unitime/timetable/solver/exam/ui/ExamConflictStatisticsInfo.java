@@ -549,7 +549,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('examInfo.do?examId="+variable.getId()+"&op=Reset','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+variable.getId()+"&op=Reset','900','90%');\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -566,7 +566,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";	
+    		onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -614,7 +614,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	}
     	String onClick = null;
     	if (clickable)
-    	    onClick = "onclick=\"window.open('examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    	    onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     

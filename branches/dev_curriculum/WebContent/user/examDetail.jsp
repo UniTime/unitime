@@ -65,8 +65,8 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
-					<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
-							onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
 					/>
 					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 						<bean:message key="button.deleteExam" />
@@ -281,7 +281,7 @@
 					<bean:message key="button.addDistPref" />
 				</html:submit>
 				<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
-						onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+						onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
 				/>
 				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 					<bean:message key="button.deleteExam" />

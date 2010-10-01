@@ -33,8 +33,19 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint {
 	public void onModuleLoad() {
-		GwtHint.createTriggers();
-		Lookup.createTriggers();
+		// register triggers
+		GWT.runAsync(new RunAsyncCallback() {
+			@Override
+			public void onSuccess() {
+				for (Triggers t: Triggers.values())
+					t.register();
+			}
+			@Override
+			public void onFailure(Throwable reason) {
+			}
+		});
+		
+		// load page
 		if (RootPanel.get("UniTimeGWT:Body") != null) {
 			LoadingWidget.getInstance().show("Loading page ...");
 			DeferredCommand.addCommand(new Command() {
@@ -44,6 +55,8 @@ public class Client implements EntryPoint {
 				}
 			});
 		}
+		
+		// load components
 		for (final Components c: Components.values()) {
 			final RootPanel p = RootPanel.get(c.id());
 			if (p != null) {

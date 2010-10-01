@@ -70,7 +70,7 @@ public class WikiHelp extends BodyTagSupport {
             String url = getWikiUrl() + pageName.trim().replace(' ', '_');
             html.append("<a "+
                     "onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
-                    "onClick=\"var w = window.open('"+url+"','wikiHelp','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no'); w.focus();\" " +
+                    "onClick=\"showGwtDialog('" + pageName.trim() + " Help', '" + url +"', '75%', '75%');\" " +
                     "title='"+pageName.trim()+" Help'>");
             html.append("<span class='PageTitle'>");
             html.append(pageName.trim());

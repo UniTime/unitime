@@ -195,7 +195,7 @@ public class AssignedClassesAction extends Action {
             	                new Long(ci.getNrStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine("onClick=\"window.open('suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"",
+            	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
             	    		new String[] {
     	    					ca.getClazz().getName(),
     	    					(ca.getTime()==null?ca.getAssignedTime()==null?"":ca.getAssignedTime().getDatePatternName():ca.getTime().getDatePatternName()),
@@ -285,7 +285,7 @@ public class AssignedClassesAction extends Action {
         	    	}
         	    
         	    if (simple)
-            	    webTable.addLine("onClick=\"window.open('suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"",
+            	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
             	    		new String[] {
             	    			ca.getClazz().toHtml(true,true),
             	    			ca.getDaysHtml(),
@@ -303,7 +303,7 @@ public class AssignedClassesAction extends Action {
             	                new Long(ci.getNrStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine("onClick=\"window.open('suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"",
+            	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
             	    		new String[] {
     	    					ca.getClazz().toHtml(true,true),
     	    					ca.getDaysHtml(),

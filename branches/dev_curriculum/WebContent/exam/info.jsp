@@ -47,10 +47,8 @@
 	</logic:notEmpty>
 	<logic:equal name="examInfoForm" property="op" value="Close">
 		<script language="JavaScript" type="text/javascript">
-			if (document.parentWindow && document.parentWindow.frames[5]) { 
-				document.parentWindow.frames[5].location = document.parentWindow.frames[5].location+'?backId=<%=examId%>&backType=Exam';
-			}
-			window.close();
+			parent.hideGwtDialog();
+			parent.location.reload(false);
 		</script>
 	</logic:equal>
 	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
