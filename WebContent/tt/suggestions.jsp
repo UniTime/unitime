@@ -135,7 +135,8 @@
 <html:form action="/suggestions">
 <logic:equal name="suggestionsForm" property="op" value="close">
 <script language="JavaScript" type="text/javascript">
-window.close();
+	parent.hideGwtDialog();
+	parent.location.reload(false);
 </script>
 </logic:equal>
 <%
@@ -226,7 +227,7 @@ try {
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" title="Apply changes" value="Apply"/>
-				<html:button onclick="displayLoading();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close" onclick="window.close();"/>
+				<html:button onclick="displayLoading();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close" onclick="parent.hideGwtDialog();"/>
 			</TD>
 		</TR>
 		</TABLE>
@@ -265,7 +266,7 @@ try {
 			</TR>
 			<TR>
 				<TD>
-					<I>No timetable is loaded. However, you can load one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here</a>.</I>
+					<I>No timetable is loaded. However, you can load one <a href="" onclick="parent.hideGwtDialog(); parent.location='listSolutions.do';">here</a>.</I>
 				</TD>
 			</TR>
 		</TABLE>

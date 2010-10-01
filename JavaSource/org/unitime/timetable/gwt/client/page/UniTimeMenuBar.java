@@ -59,6 +59,8 @@ public class UniTimeMenuBar extends Composite {
 	private MenuBar iMenu;
 	private Timer iTimer = null;
 	private SimplePanel iSimple = null;
+	
+	private static UniTimeDialogBox sDialog = null;
 
 	public UniTimeMenuBar(boolean absolute) {
 		iMenu = new MenuBar();
@@ -250,7 +252,7 @@ public class UniTimeMenuBar extends Composite {
 		LoadingWidget.getInstance().hide();
 	}
 	
-	public class MyFrame extends Frame {
+	public static class MyFrame extends Frame {
 		private String iName;
 		
 		public MyFrame(String name) {
@@ -265,9 +267,62 @@ public class UniTimeMenuBar extends Composite {
 		}
 	}
 	
-	public native void hookFremaLoaded(FrameElement element) /*-{
+	public static native void hookFremaLoaded(FrameElement element) /*-{
 		element.onload = function() {
 			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::notifyFrameLoaded()();
 		}
 	}-*/;
+	
+	public static native void createTriggers()/*-{
+		$wnd.showGwtDialog = function(title, source, width, height) {
+			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::openDialog(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(title, source, width, height);
+		};
+		$wnd.hideGwtDialog = function() {
+			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::hideDialog()();
+		};
+		if ($wnd.onGwtLoad) {
+			$wnd.onGwtLoad();
+		}
+	}-*/;
+	
+	public static void openDialog(final String title, final String source, String width, String height) {
+		sDialog = new UniTimeDialogBox(true, true);
+		sDialog.setEscapeToHide(true);
+		final Frame frame = new MyFrame(title);
+		frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
+		sDialog.setWidget(frame);
+		sDialog.setText(title);
+		frame.setUrl(source);
+		String w = (width == null || width.isEmpty() ? String.valueOf(Window.getClientWidth() * 3 / 4) : width);
+		String h = (height == null || height.isEmpty() ? String.valueOf(Window.getClientHeight() * 3 / 4) : height);
+		if (w.endsWith("%")) w = String.valueOf(Integer.parseInt(w.substring(0, w.length() - 1)) * Window.getClientWidth() / 100);
+		if (h.endsWith("%")) h = String.valueOf(Integer.parseInt(h.substring(0, h.length() - 1)) * Window.getClientHeight() / 100);
+		frame.setSize(w, h);
+
+		Timer timer = new Timer() {
+			@Override
+			public void run() {
+				if (LoadingWidget.getInstance().isShowing())
+					LoadingWidget.getInstance().fail(title + " does not seem to load, " +
+							"please check <a href='" + source + "' style='white-space: nowrap;'>" + source + "</a> for yourself.");
+			}
+		};
+
+		sDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				if (LoadingWidget.getInstance().isShowing())
+					LoadingWidget.getInstance().hide();
+			}
+		});
+
+		sDialog.center();
+		timer.schedule(30000);
+	}
+	
+	public static void hideDialog() {
+		if (sDialog != null && sDialog.isShowing()) sDialog.hide();
+	}
+
+
 }

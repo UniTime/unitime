@@ -83,7 +83,7 @@ public class SolutionChangesAction extends Action {
 
         SolverProxy solver = WebSolver.getSolver(request.getSession());
         if (solver==null) {
-        	request.setAttribute("SolutionChanges.message","No timetable is loaded. However, you can load one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here</a>.");
+        	request.setAttribute("SolutionChanges.message","No timetable is loaded. However, you can load one <a href='listSolutions.do'>here</a>.");
         	return mapping.findForward("showSolutionChanges");
         }
         
@@ -99,7 +99,7 @@ public class SolutionChangesAction extends Action {
     	} else if (myForm.getReferenceInt()==SolutionChangesForm.sReferenceSelected) {
     		String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
     		if (solutionIdsStr==null || solutionIdsStr.length()==0) {
-    			request.setAttribute("SolutionChanges.message","No solution selected. However, you can select one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here");
+    			request.setAttribute("SolutionChanges.message","No solution selected. However, you can select one <a href='listSolutions.do'>here");
     			return mapping.findForward("showSolutionChanges");
     		} 
     		changes = new Vector();
@@ -189,7 +189,7 @@ public class SolutionChangesAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    if (simple)
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?"+link+"&op=Try','900','90%');\"":null),
             	    		new String[] {
             	    			className,
             	    			dates,
@@ -205,7 +205,7 @@ public class SolutionChangesAction extends Action {
             	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?"+link+"&op=Try','900','90%');\"":null),
             	    		new String[] {
         	    				className,
         	    				dates,

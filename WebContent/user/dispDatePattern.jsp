@@ -55,24 +55,9 @@
 			</td>
 		<% } %>
 	</tr><tr>
-		<td valign="middle" align='left'>
-			<table width='100%' cellspacing='1' cellpadding='1' border='0' style='border-bottom:black 1px solid'>
-				<tr><td align='center'>
-					<tt:displayPrefLevelLegend prefs="false" dpOffered="true" dpBackgrounds="true" separator="none"/>
-				</td></tr>
-			</table>
-		</td>
-	</tr><tr valign='bottom'>
-		<td>
-			<table width='100%'><tr><td align='right'>
-				<input type='button' value='Close' onclick='window.close();'>
-			</td></tr></table>
+		<td align='center'>
+			<tt:displayPrefLevelLegend prefs="false" dpOffered="true" dpBackgrounds="true" separator="top"/>
 		</td>
 	</tr></table>
   </body>
 </html>
-<% if (datePattern==null) { %>
-<script language="JavaScript">
-	alert('No default date pattern selected.'); window.close();
-</script>
-<% } %>

@@ -64,9 +64,9 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     	if ((clazz.getDatePattern()==null && clazz.getSchedulingSubpart().getDatePattern()==null))
     		iDatePatternHtml = "Default ("+iDatePatternHtml+")";
     	iDatePatternHtml +=
-    		"<img style=\"cursor: pointer;\" src=\"scripts/jscalendar/calendar_1.gif\" border=\"0\" "+
-    		"onclick=\"window.open('user/dispDatePattern.jsp?id="+clazz.effectiveDatePattern().getUniqueId()+"&class="+clazz.getUniqueId()+"',"+
-    		"'datepatt','width=1040,height=760,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');\">";
+    		" <img style=\"cursor: pointer;\" src=\"scripts/jscalendar/calendar_1.gif\" border=\"0\" "+
+    		"onclick=\"showGwtDialog('Preview of "+clazz.effectiveDatePattern().getName()+"', 'user/dispDatePattern.jsp?id="+clazz.effectiveDatePattern().getUniqueId()+"&class="+clazz.getUniqueId()+"','840','520');" +
+    		"\">";
     	Class_ parent = clazz.getParentClass();
     	while (parent!=null) {
     		iParents.add(parent.getUniqueId());

@@ -91,8 +91,8 @@
 					
 					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 						&nbsp;
-						<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
-								onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+						<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+								onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 						/>
 					</logic:equal>
 									
@@ -221,7 +221,7 @@
 				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
 						<bean:write name="dp" property="value" />
-						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="window.open('user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'datepatt','width=1040,height=760,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');">
+						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'840','520');">
 					</logic:equal>
 				</logic:iterate>
 			<TD>
@@ -408,8 +408,8 @@
 
 				<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 					&nbsp;
-					<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
-							onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+							onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 					/>
 				</logic:equal>
 			

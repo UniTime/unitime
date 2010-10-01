@@ -351,7 +351,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		}
 		String shortComment = null;
 		String shortCommentNoColor = null;
-		String onClick = "window.open('suggestions.do?id="+assignment.getClassId()+"&op=Reset','suggestions','width=1024,height=768,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+		String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+assignment.getClassId()+"&op=Reset','900','90%');";
 		String background = null;
 		StringBuffer roomName = new StringBuffer();
 		for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {

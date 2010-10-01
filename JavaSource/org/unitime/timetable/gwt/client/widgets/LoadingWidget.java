@@ -147,4 +147,21 @@ public class LoadingWidget extends Composite {
 		if (sInstance == null) sInstance = new LoadingWidget();
 		return sInstance;
 	}
+	
+	public static native void createTriggers()/*-{
+		$wnd.showGwtLoading = function(message) {
+			@org.unitime.timetable.gwt.client.widgets.LoadingWidget::showLoading(Ljava/lang/String;)(message);
+		};
+		$wnd.hideGwtLoading = function() {
+			@org.unitime.timetable.gwt.client.widgets.LoadingWidget::hideLoading()();
+		};
+	}-*/;
+	
+	public static void showLoading(String message) {
+		getInstance().show(message == null || message.isEmpty() ? null : message);
+	}
+	
+	public static void hideLoading() {
+		getInstance().hide();
+	}
 }

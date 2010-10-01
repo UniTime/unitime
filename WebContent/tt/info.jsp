@@ -39,10 +39,8 @@
 	<bean:define id="classId" name="clazz" property="classId"/>
 	<logic:equal name="classInfoForm" property="op" value="Close">
 		<script language="JavaScript" type="text/javascript">
-			if (document.parentWindow && document.parentWindow.frames[5]) { 
-				document.parentWindow.frames[5].location = document.parentWindow.frames[5].location+'?backId=<%=classId%>&backType=Class';
-			}
-			window.close();
+			parent.hideGwtDialog();
+			parent.location.reload(false);
 		</script>
 	</logic:equal>
 	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
@@ -62,6 +60,9 @@
 		<tr><td>Class Limit:</td><td><bean:write name="clazz" property="classLimit"/></td></tr>
 		<tr><td>Number of Rooms:</td><td><bean:write name="clazz" property="numberOfRooms"/></td></tr>
 		<tr><td>Room Ration:</td><td><bean:write name="clazz" property="roomRatio"/> ( Minimum Room Capacity: <bean:write name="clazz" property="minRoomCapacity"/> )</td></tr>
+		<logic:notEmpty name="clazz" property="datePatternHtml">
+			<tr><td>Date Pattern:</td><td><bean:write name="clazz" property="datePatternHtml" filter="false"/></td></tr>
+		</logic:notEmpty>
 		<logic:notEmpty name="clazz" property="instructors">
 			<tr><td valign="top">Conflict Checked Instructor(s):</td><td>
 			<%= frm.getModel().getClazz().getLeadingInstructorNames("<br>") %> 

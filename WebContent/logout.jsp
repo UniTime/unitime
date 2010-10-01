@@ -35,8 +35,8 @@
 		<TITLE>Timetabling - Logout</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
-				top.window.close();				
-				top.location.href='<%=request.getContextPath()%>/login.do';
+				window.close();				
+				location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
 	    <meta http-equiv="X-UA-Compatible" content="chrome=1">
