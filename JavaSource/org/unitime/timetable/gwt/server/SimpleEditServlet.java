@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
@@ -22,9 +24,12 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Type;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.ChangeLog.Operation;
+import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
@@ -151,13 +156,35 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, sessionId)) {
 						Record r = data.getRecord(area.getUniqueId());
 						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									area,
+									area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
 							hibSession.delete(area);
 						} else {
+							boolean changed = 
+								!ToolBox.equals(area.getExternalUniqueId(), r.getField(0)) ||
+								!ToolBox.equals(area.getAcademicAreaAbbreviation(), r.getField(1)) ||
+								!ToolBox.equals(area.getShortTitle(), r.getField(2)) ||
+								!ToolBox.equals(area.getLongTitle(), r.getField(3));
 							area.setExternalUniqueId(r.getField(0));
 							area.setAcademicAreaAbbreviation(r.getField(1));
 							area.setShortTitle(r.getField(2));
 							area.setLongTitle(r.getField(3));
 							hibSession.saveOrUpdate(area);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										area,
+										area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
 						}
 					}
 					for (Record r: data.getNewRecords()) {
@@ -168,18 +195,47 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						area.setLongTitle(r.getField(3));
 						area.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
 						r.setUniqueId((Long)hibSession.save(area));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								area,
+								area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
 					}	
 					break;
 				case classification:
 					for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, sessionId)) {
 						Record r = data.getRecord(clasf.getUniqueId());
 						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									clasf,
+									clasf.getCode() + " " + clasf.getName(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
 							hibSession.delete(clasf);
 						} else {
+							boolean changed = 
+								!ToolBox.equals(clasf.getExternalUniqueId(), r.getField(0)) ||
+								!ToolBox.equals(clasf.getCode(), r.getField(1)) ||
+								!ToolBox.equals(clasf.getName(), r.getField(2));
 							clasf.setExternalUniqueId(r.getField(0));
 							clasf.setCode(r.getField(1));
 							clasf.setName(r.getField(2));
 							hibSession.saveOrUpdate(clasf);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										clasf,
+										clasf.getCode() + " " + clasf.getName(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
 						}
 					}
 					for (Record r: data.getNewRecords()) {
@@ -189,14 +245,34 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						clasf.setName(r.getField(2));
 						clasf.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
 						r.setUniqueId((Long)hibSession.save(clasf));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								clasf,
+								clasf.getCode() + " " + clasf.getName(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
 					}	
 					break;
 				case major:
 					for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, sessionId)) {
 						Record r = data.getRecord(major.getUniqueId());
 						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									major,
+									major.getCode() + " " + major.getName(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
 							hibSession.delete(major);
 						} else {
+							boolean changed =
+								!ToolBox.equals(major.getExternalUniqueId(), r.getField(0)) ||
+								!ToolBox.equals(major.getCode(), r.getField(1)) ||
+								!ToolBox.equals(major.getName(), r.getField(2));
 							major.setExternalUniqueId(r.getField(0));
 							major.setCode(r.getField(1));
 							major.setName(r.getField(2));
@@ -206,13 +282,24 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								if (!delete.remove(area)) {
 									major.getAcademicAreas().add(area);
 									area.getPosMajors().add(major);
+									changed = true;
 								}
 							}
 							for (AcademicArea area: delete) {
 								major.getAcademicAreas().remove(area);
 								area.getPosMajors().remove(major);
+								changed = true;
 							}
 							hibSession.saveOrUpdate(major);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										major,
+										major.getCode() + " " + major.getName(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
 						}
 					}
 					for (Record r: data.getNewRecords()) {
@@ -228,14 +315,34 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							area.getPosMajors().add(major);
 						}
 						r.setUniqueId((Long)hibSession.save(major));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								major,
+								major.getCode() + " " + major.getName(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
 					}
 					break;
 				case minor:
 					for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, sessionId)) {
 						Record r = data.getRecord(minor.getUniqueId());
 						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									minor,
+									minor.getCode() + " " + minor.getName(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
 							hibSession.delete(minor);
 						} else {
+							boolean changed =
+								!ToolBox.equals(minor.getExternalUniqueId(), r.getField(0)) ||
+								!ToolBox.equals(minor.getCode(), r.getField(1)) ||
+								!ToolBox.equals(minor.getName(), r.getField(2));
 							minor.setExternalUniqueId(r.getField(0));
 							minor.setCode(r.getField(1));
 							minor.setName(r.getField(2));
@@ -245,13 +352,24 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								if (!delete.remove(area)) {
 									minor.getAcademicAreas().add(area);
 									area.getPosMinors().add(minor);
+									changed = true;
 								}
 							}
 							for (AcademicArea area: delete) {
 								minor.getAcademicAreas().remove(area);
 								area.getPosMinors().remove(minor);
+								changed = true;
 							}
 							hibSession.saveOrUpdate(minor);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										minor,
+										minor.getCode() + " " + minor.getName(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
 						}
 					}
 					for (Record r: data.getNewRecords()) {
@@ -267,6 +385,14 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							area.getPosMinors().add(minor);
 						}
 						r.setUniqueId((Long)hibSession.save(minor));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								minor,
+								minor.getCode() + " " + minor.getName(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
 					}
 					break;
 				}

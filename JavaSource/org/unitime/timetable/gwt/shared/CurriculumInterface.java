@@ -33,6 +33,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	private Long iId;
 	private String iAbbv, iName;
 	private boolean iEditable = false;
+	private String iLastChange = null;
 	
 	private AcademicAreaInterface iAcademicArea;
 	private TreeSet<MajorInterface> iMajors;
@@ -50,6 +51,10 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
+	
+	public String getLastChange() { return iLastChange; }
+	public void setLastChange(String lastChange) { iLastChange = lastChange; }
+	public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
 	
 	public AcademicAreaInterface getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicAreaInterface area) { iAcademicArea = area; }

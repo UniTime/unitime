@@ -58,6 +58,8 @@ import com.google.gwt.user.client.ui.TextBox;
 public class CurriculumEdit extends Composite {
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
+	private SimpleForm iCurriculaTable;
+	
 	private UniTimeHeaderPanel iTitleAndButtons;
 	
 	private UniTimeWidget<TextBox> iCurriculumAbbv, iCurriculumName;
@@ -185,7 +187,7 @@ public class CurriculumEdit extends Composite {
 			}
 		};
 		
-		SimpleForm curriculaTable = new SimpleForm();
+		iCurriculaTable = new SimpleForm();
 
 		iTitleAndButtons = new UniTimeHeaderPanel("Curriculum Details");
 		iTitleAndButtons.addButton("edit", "<u>E</u>dit", 'e', 75, editHandler);
@@ -194,10 +196,10 @@ public class CurriculumEdit extends Composite {
 		iTitleAndButtons.addButton("print", "<u>P</u>rint", 'p', 75, printHandler);
 		iTitleAndButtons.addButton("back", "<u>B</u>ack", 'b', 75, backHandler);
 		
-		curriculaTable.addHeaderRow(iTitleAndButtons);
+		iCurriculaTable.addHeaderRow(iTitleAndButtons);
 		
 		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(20, TextBox.ALIGN_LEFT));
-		curriculaTable.addRow("Abbreviation:", iCurriculumAbbv);
+		iCurriculaTable.addRow("Abbreviation:", iCurriculumAbbv);
 		iCurriculumAbbv.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -207,7 +209,7 @@ public class CurriculumEdit extends Composite {
 		});
 
 		iCurriculumName = new UniTimeWidget<TextBox>(new UniTimeTextBox(60, 500));
-		curriculaTable.addRow("Name:", iCurriculumName);
+		iCurriculaTable.addRow("Name:", iCurriculumName);
 		iCurriculumName.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -220,7 +222,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumArea.getWidget().setWidth("300px");
 		iCurriculumArea.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumArea.getWidget().setVisibleItemCount(1);
-		curriculaTable.addRow("Academic Area:", iCurriculumArea);
+		iCurriculaTable.addRow("Academic Area:", iCurriculumArea);
 		
 		iCurriculumArea.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -242,7 +244,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumMajors.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumMajors.getWidget().setVisibleItemCount(3);
 		iCurriculumMajors.getWidget().setHeight("100px");
-		curriculaTable.addRow("Major(s):", iCurriculumMajors);
+		iCurriculaTable.addRow("Major(s):", iCurriculumMajors);
 		
 		iCurriculumMajors.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -278,7 +280,10 @@ public class CurriculumEdit extends Composite {
 		iCurriculumDept.getWidget().setWidth("300px");
 		iCurriculumDept.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumDept.getWidget().setVisibleItemCount(1);
-		curriculaTable.addRow("Department:", iCurriculumDept);
+		iCurriculaTable.addRow("Department:", iCurriculumDept);
+		
+		iCurriculaTable.addRow("Last Change:", new Label("",false));
+		iCurriculaTable.getRowFormatter().setVisible(6, false);
 		
 		iCurriculumDept.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -287,22 +292,22 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 		
-		curriculaTable.addHeaderRow("Curriculum Classifications");
+		iCurriculaTable.addHeaderRow("Curriculum Classifications");
 		
 		iCurriculumClasfTable = new CurriculaClassificationsPanel(new CurriculaClassifications());
 		
-		curriculaTable.addRow(iCurriculumClasfTable);
+		iCurriculaTable.addRow(iCurriculumClasfTable);
 		
 
 		iCurriculumCourses = new CurriculaCourses();
 
-		curriculaTable.addHeaderRow("Course Projections");
+		iCurriculaTable.addHeaderRow("Course Projections");
 	
-		curriculaTable.addRow(iCurriculumCourses);
+		iCurriculaTable.addRow(iCurriculumCourses);
 		
-		curriculaTable.addNotPrintableBottomRow(iTitleAndButtons.clonePanel(null));
+		iCurriculaTable.addNotPrintableBottomRow(iTitleAndButtons.clonePanel(null));
 		
-		initWidget(curriculaTable);
+		initWidget(iCurriculaTable);
 	}
 	
 	public Mode getMode() { return iMode; }
@@ -331,6 +336,13 @@ public class CurriculumEdit extends Composite {
 		iTitleAndButtons.setEnabled("save", iCurriculum.isEditable() && iMode.isEditable());
 		iTitleAndButtons.setEnabled("edit", iCurriculum.isEditable() && !iMode.isEditable());
 		iTitleAndButtons.setEnabled("print", iMode == Mode.DETAILS);
+
+		if (iCurriculum.hasLastChange() && iMode == Mode.DETAILS) {
+			((Label)iCurriculaTable.getWidget(6, 1)).setText(iCurriculum.getLastChange());
+			iCurriculaTable.getRowFormatter().setVisible(6, true);
+		} else {
+			iCurriculaTable.getRowFormatter().setVisible(6, false);
+		}
 
 		iCurriculumAbbv.getWidget().setText(iCurriculum.getAbbv());
 		iCurriculumAbbv.getWidget().setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
