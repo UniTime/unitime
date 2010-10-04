@@ -22,6 +22,7 @@ package org.unitime.timetable.tags;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
@@ -33,6 +34,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -99,13 +101,13 @@ public class LastChange extends BodyTagSupport {
         if (lastChange==null) return 0;
         webTable.addLine(null,
                 new String[] {
-                        lastChange.getSourceTitle(pageContext.getRequest()),
+                        lastChange.getSourceTitle(),
                         lastChange.getObjectTitle(),
-                        lastChange.getOperationTitle(pageContext.getRequest()),
+                        lastChange.getOperationTitle(),
                         lastChange.getManager().getShortName(),
                         ChangeLog.sDF.format(lastChange.getTimeStamp())},
                 new Comparable[] {
-                        lastChange.getSourceTitle(pageContext.getRequest()), //new Integer(lastChange.getSource().ordinal()),
+                        lastChange.getSourceTitle(), //new Integer(lastChange.getSource().ordinal()),
                         lastChange.getObjectTitle(),
                         new Integer(lastChange.getOperation().ordinal()),
                         lastChange.getManager().getName(),
@@ -137,6 +139,7 @@ public class LastChange extends BodyTagSupport {
         HashSet subpartIds = new HashSet();
         HashSet classIds = new HashSet();
         HashSet offeringIds = new HashSet();
+        HashSet curriculumIds = new HashSet();
         
         for (Iterator i1=io.getInstrOfferingConfigs().iterator();i1.hasNext();) {
             InstrOfferingConfig ioc = (InstrOfferingConfig)i1.next();
@@ -155,6 +158,10 @@ public class LastChange extends BodyTagSupport {
             offeringIds.add(o.getUniqueId());
         }
         
+        curriculumIds.addAll((List<Long>)InstructionalOfferingDAO.getInstance().getSession().createQuery(
+				"select c.classification.curriculum.uniqueId from CurriculumCourse c where c.course.instructionalOffering.uniqueId = :offeringId")
+				.setLong("offeringId", io.getUniqueId()).setCacheable(true).list());
+
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(io, ChangeLog.Source.CROSS_LIST));
         
@@ -191,6 +198,14 @@ public class LastChange extends BodyTagSupport {
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(io, ChangeLog.Source.DIST_PREF_EDIT));
         
+        nrChanges += printLastChangeTableRow(webTable, 
+        		ChangeLog.findLastChange(CourseOffering.class.getName(), offeringIds, ChangeLog.Source.CURRICULA));
+        		
+        nrChanges += printLastChangeTableRow(webTable, 
+                combine(ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULA),
+                		ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULUM_EDIT)
+                		));
+
         if (nrChanges>0) {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+
@@ -326,7 +341,7 @@ public class LastChange extends BodyTagSupport {
             if (lch==null)
                 pageContext.getOut().print("<i>N/A</i>");
             else
-                pageContext.getOut().print(lch.getShortLabel(pageContext.getRequest()));
+                pageContext.getOut().print(lch.getShortLabel());
             pageContext.getOut().println("</TD></TR>");
         } catch (Exception e) {
             Debug.error(e);

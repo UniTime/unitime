@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -79,6 +80,8 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.ChangeLog.Operation;
+import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
@@ -394,7 +397,9 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						curriculumIfc.addClassification(clasfIfc);
 					}
 				}
-
+				
+				ChangeLog ch = ChangeLog.findLastChange(c);
+				if (ch != null) curriculumIfc.setLastChange(ch.getShortLabel());
 				
 				sLog.info("Loaded 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 				return curriculumIfc;
@@ -615,6 +620,15 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					hibSession.update(c);
 				}
 				
+				ChangeLog.addChange(hibSession,
+						getThreadLocalRequest(),
+						c,
+						c.getAbbv(),
+						Source.CURRICULUM_EDIT, 
+						(curriculum.getId() == null ? Operation.CREATE : Operation.UPDATE),
+						null,
+						c.getDepartment());
+				
 				hibSession.flush();
 				tx.commit(); tx = null;
 
@@ -681,6 +695,15 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						hibSession.delete(cl);
 					}
 					
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							c,
+							c.getAbbv(),
+							Source.CUR_CLASF_EDIT, 
+							Operation.UPDATE,
+							null,
+							c.getDepartment());
+
 					hibSession.saveOrUpdate(c);
 				}
 				hibSession.flush();
@@ -719,6 +742,15 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
 				
 				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete this curriculum.");
+				
+				ChangeLog.addChange(hibSession,
+						getThreadLocalRequest(),
+						c,
+						c.getAbbv(),
+						Source.CURRICULUM_EDIT, 
+						Operation.DELETE,
+						null,
+						c.getDepartment());
 				
 				hibSession.delete(c);
 				hibSession.flush();
@@ -760,6 +792,15 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					
 					if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
 					
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							c,
+							c.getAbbv(),
+							Source.CURRICULUM_EDIT, 
+							Operation.DELETE,
+							null,
+							c.getDepartment());
+					
 					hibSession.delete(c);
 				}
 				
@@ -799,6 +840,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				
 				int clasfOrd = 0, courseOrd = 0, cidx = 0;
 				Hashtable<Long, CurriculumCourseGroup> groups = new Hashtable<Long, CurriculumCourseGroup>();
+				
+				ArrayList<Curriculum> merged = new ArrayList<Curriculum>();
 				
 				for (Long curriculumId: curriculumIds) {
 					if (curriculumId == null) 
@@ -905,7 +948,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						
 					}
 					
-					hibSession.delete(curriculum);
+					merged.add(curriculum);
 				}
 				
 				if (mergedCurriculum.getAcademicArea() != null) {
@@ -939,6 +982,19 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					
 					for (CurriculumCourseGroup g: groups.values())
 						hibSession.saveOrUpdate(g);
+				}
+				
+				for (Curriculum curriculum: merged) {
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							curriculum,
+							curriculum.getAbbv() + " &rarr; " + mergedCurriculum.getAbbv(),
+							Source.CURRICULA, 
+							Operation.MERGE,
+							null,
+							curriculum.getDepartment());
+					
+					hibSession.delete(curriculum);
 				}
 				
 				hibSession.flush();
@@ -1929,6 +1985,16 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
 						"select r from CurriculumProjectionRule r where academicArea.session.uniqueId=:sessionId")
 						.setLong("sessionId", sessionId).setCacheable(true).list()) {
+					
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							rule,
+							rule.getAcademicArea().getAcademicAreaAbbreviation() + (rule.getMajor() == null ? "" : "/" + rule.getMajor().getCode()) + " " + rule.getAcademicClassification().getCode() + ": " + sDF.format(100.0 * rule.getProjection()) + "%",
+							Source.CUR_PROJ_RULES, 
+							Operation.DELETE,
+							null,
+							null);
+
 					hibSession.delete(rule);
 				}
 				
@@ -1951,10 +2017,20 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							r.setAcademicClassification(clasf);
 							r.setProjection(c.getValue()[0].floatValue());
 							hibSession.saveOrUpdate(r);	
+							
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									r,
+									area.getAcademicAreaAbbreviation() + (major == null ? "" : "/" + major.getCode()) + " " + clasf.getCode() + ": " +
+									sDF.format(100.0 * r.getProjection()) + "%",
+									Source.CUR_PROJ_RULES, 
+									Operation.CREATE,
+									null,
+									null);
 						}
 					}
 				}
-				
+								
 				hibSession.flush();
 				tx.commit(); tx = null;
 			} finally {
@@ -1996,8 +2072,32 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				tx = hibSession.beginTransaction();
 				Long sessionId = getAcademicSessionId();
 				
+				for (Curriculum c: (List<Curriculum>)hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list()) {
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							c,
+							c.getAbbv(),
+							Source.CURRICULA, 
+							Operation.DELETE,
+							null,
+							c.getDepartment());
+
+				}
+
 				MakeCurriculaFromLastlikeDemands m = new MakeCurriculaFromLastlikeDemands(sessionId);
 				m.update(hibSession, lastLike);
+				
+				for (Curriculum c: (List<Curriculum>)hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list()) {
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							c,
+							c.getAbbv(),
+							Source.CURRICULA, 
+							Operation.CREATE,
+							null,
+							c.getDepartment());
+
+				}
 
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -2156,6 +2256,16 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							}
 						}
 					}
+					
+					ChangeLog.addChange(hibSession,
+							getThreadLocalRequest(),
+							c,
+							c.getAbbv(),
+							Source.CURRICULA, 
+							Operation.UPDATE,
+							null,
+							c.getDepartment());
+
 				}
 				
 				hibSession.flush();
@@ -2214,6 +2324,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						"select co from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId")
 						.setLong("sessionId", sessionId)
 						.setCacheable(true).list()) {
+					
+					Integer oldDemand = courseOffering.getDemand();
 
 					Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = (course2area2major2clasf2ll == null ? null : course2area2major2clasf2ll.get(courseOffering.getUniqueId()));
 					List<CurriculumCourse> curricula = course2curriculum.get(courseOffering.getUniqueId());
@@ -2259,6 +2371,17 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					
 					courseOffering.setProjectedDemand(demand);
 					
+					if (oldDemand == null || demand != oldDemand) {
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								courseOffering,
+								courseOffering.getCourseName() + " projection: " + oldDemand + " &rarr " + demand,
+								Source.CURRICULA, 
+								Operation.UPDATE,
+								courseOffering.getSubjectArea(),
+								courseOffering.getSubjectArea().getDepartment());
+					}
+					
 					hibSession.saveOrUpdate(courseOffering);
 				}
 				
@@ -2303,6 +2426,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
 					CourseOffering courseOffering = i.next();
 					
+					Integer oldDemand = courseOffering.getDemand();
 					
 					Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll =  null;
 					if (includeOtherStudents) {
@@ -2358,6 +2482,17 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					courseOffering.setProjectedDemand(demand);
 					
 					offeringDemand += Math.round(demand);
+					
+					if (oldDemand == null || demand != oldDemand) {
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								courseOffering,
+								courseOffering.getCourseName() + " projection: " + oldDemand + " &rarr " + demand,
+								Source.CURRICULA, 
+								Operation.UPDATE,
+								courseOffering.getSubjectArea(),
+								courseOffering.getSubjectArea().getDepartment());
+					}
 					
 					hibSession.saveOrUpdate(courseOffering);
 				}

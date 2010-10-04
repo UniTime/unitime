@@ -124,16 +124,16 @@ public class LastChangesAction extends Action {
                                 "</span>":lastChange.getDepartment().getShortLabel())),
                     (lastChange.getSubjectArea()==null?"":lastChange.getSubjectArea().getSubjectAreaAbbreviation()),
                     (html?lastChange.getManager().getShortName():lastChange.getManager().getShortName().replaceAll("&nbsp;"," ")),
-                    lastChange.getSourceTitle(request),
+                    lastChange.getSourceTitle(),
                     lastChange.getObjectTitle(),
-                    lastChange.getOperationTitle(request)
+                    lastChange.getOperationTitle()
                     },
                 new Comparable[] {
                     new Long(lastChange.getTimeStamp().getTime()),
                     (lastChange.getDepartment()==null?"":lastChange.getDepartment().getDeptCode()),
                     (lastChange.getSubjectArea()==null?"":lastChange.getSubjectArea().getSubjectAreaAbbreviation()),
                     lastChange.getManager().getName(),
-                    lastChange.getSourceTitle(request), //new Integer(lastChange.getSource().ordinal()),
+                    lastChange.getSourceTitle(), //new Integer(lastChange.getSource().ordinal()),
                     lastChange.getObjectTitle(),
                     new Integer(lastChange.getOperation().ordinal())
                     });

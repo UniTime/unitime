@@ -25,12 +25,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
-import org.apache.struts.util.MessageResources;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -59,62 +56,76 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
 /*[CONSTRUCTOR MARKER END]*/
     
     public static enum Operation {
-        CREATE,
-        UPDATE,
-        DELETE,
-        CLEAR_PREF,
-        CLEAR_ALL_PREF,
-        ASSIGN,
-        UNASSIGN,
-        APPROVE,
-        REJECT
+        CREATE("create"),
+        UPDATE("update"),
+        DELETE("delete"),
+        CLEAR_PREF("clear preferences"),
+        CLEAR_ALL_PREF("clear class preferences"),
+        ASSIGN("assignment"),
+        UNASSIGN("unassignment"),
+        APPROVE("approve"),
+        REJECT("reject"),
+        MERGE("merge");
+        
+        private String iTitle;
+        Operation(String title) { iTitle = title; }
+        public String getTitle() { return iTitle; }
     }
     
     public static enum Source {
-        CLASS_EDIT,
-        SCHEDULING_SUBPART_EDIT,
-        INSTR_CFG_EDIT,
-        CROSS_LIST,
-        MAKE_OFFERED,
-        MAKE_NOT_OFFERED,
-        RESERVATION,
-        COURSE_OFFERING_EDIT,
-        CLASS_SETUP,
-        CLASS_INSTR_ASSIGN,
-        DIST_PREF_EDIT,
-        DESIGNATOR_EDIT,
-        INSTRUCTOR_EDIT,
-        INSTRUCTOR_PREF_EDIT,
-        INSTRUCTOR_MANAGE,
-        ROOM_DEPT_EDIT,
-        ROOM_FEATURE_EDIT,
-        ROOM_GROUP_EDIT,
-        ROOM_EDIT,
-        ROOM_PREF_EDIT,
-        DEPARTMENT_EDIT,
-        SESSION_EDIT,
-        SOLVER_GROUP_EDIT,
-        TIME_PATTERN_EDIT,
-        DATE_PATTERN_EDIT,
-        DIST_TYPE_EDIT,
-        MANAGER_EDIT,
-        SUBJECT_AREA_EDIT,
-        BUILDING_EDIT,
-        EXAM_PERIOD_EDIT,
-        EXAM_EDIT,
-        DATA_IMPORT_OFFERINGS,
-        DATA_IMPORT_STUDENT_ENROLLMENTS,
-        DATA_IMPORT_SUBJECT_AREAS,
-        DATA_IMPORT_DEPARTMENTS,
-        DATA_IMPORT_EXT_BUILDING_ROOM,
-        DATA_IMPORT_STAFF,
-        EXAM_INFO,
-        EXAM_SOLVER,
-        EVENT_EDIT,
-        DATA_IMPORT_EVENTS,
-        DATA_IMPORT_LASTLIKE_DEMAND,
-        CLASS_INFO,
-        DATA_IMPORT_CURRICULA,
+        CLASS_EDIT("Class Edit"),
+        SCHEDULING_SUBPART_EDIT("Scheduling Subpart Edit"),
+        INSTR_CFG_EDIT("Configuration Edit"),
+        CROSS_LIST("Cross Lists"),
+        MAKE_OFFERED("Make Offered"),
+        MAKE_NOT_OFFERED("Make Not Offered"),
+        RESERVATION("Reservations"),
+        COURSE_OFFERING_EDIT("Course Offering Edit"),
+        CLASS_SETUP("Class Setup"),
+        CLASS_INSTR_ASSIGN("Assign Instructors"),
+        DIST_PREF_EDIT("Distribution Preferences"),
+        DESIGNATOR_EDIT("Designator Edit"),
+        INSTRUCTOR_EDIT("Instructor Edit"),
+        INSTRUCTOR_PREF_EDIT("Instructor Preferences"),
+        INSTRUCTOR_MANAGE("Manage Instructors"),
+        ROOM_DEPT_EDIT("Room Availability"),
+        ROOM_FEATURE_EDIT("Room Feature Edit"),
+        ROOM_GROUP_EDIT("Room Group Edit"),
+        ROOM_EDIT("Room Edit"),
+        ROOM_PREF_EDIT("Room Preference Edit"),
+        DEPARTMENT_EDIT("Department Edit"),
+        SESSION_EDIT("Session Edit"),
+        SOLVER_GROUP_EDIT("Solver Group Edit"),
+        TIME_PATTERN_EDIT("Time Pattern Edit"),
+        DATE_PATTERN_EDIT("Date Pattern Edit"),
+        DIST_TYPE_EDIT("Distribution Type Edit"),
+        MANAGER_EDIT("Timetabling Manager Edit"),
+        SUBJECT_AREA_EDIT("Subject Area Edit"),
+        BUILDING_EDIT("Building Edit"),
+        EXAM_PERIOD_EDIT("Examination Period Edit"),
+        EXAM_EDIT("Examination Edit"),
+        DATA_IMPORT_OFFERINGS("Data Import: Offerings"),
+        DATA_IMPORT_STUDENT_ENROLLMENTS("Data Import: Students"),
+        DATA_IMPORT_SUBJECT_AREAS("Data Import: Subjects"),
+        DATA_IMPORT_DEPARTMENTS("Data Import: Departments"),
+        DATA_IMPORT_EXT_BUILDING_ROOM("Data Import: Rooms"),
+        DATA_IMPORT_STAFF("Data Import: Staff"),
+        EXAM_INFO("Examination Assignment"),
+        EXAM_SOLVER("Examination Solver"),
+        EVENT_EDIT("Event Edit"),
+        DATA_IMPORT_EVENTS("Data Import: Events"),
+        DATA_IMPORT_LASTLIKE_DEMAND("Data Import: Demands"),
+        CLASS_INFO("Class Assignment"),
+        DATA_IMPORT_CURRICULA("Data Import: Curricula"),
+        CURRICULUM_EDIT("Curriculum Edit"),
+        CUR_CLASF_EDIT("Curriculum Requested Enrollments"),
+        CUR_PROJ_RULES("Course Projection Rules"),
+        CURRICULA("Curricula"),
+        SIMPLE_EDIT("Configuration");
+        
+        private String iTitle;
+        Source(String title) { iTitle = title; }
+        public String getTitle() { return iTitle; }
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
@@ -264,35 +275,41 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         }
     }
 
+    /*
     public static String getMessage(ServletRequest request, String message) {
         MessageResources rsc = (MessageResources)request.getAttribute(Globals.MESSAGES_KEY);
         if (rsc==null) return message;
         String ret = rsc.getMessage(message);
         return (ret==null?message:ret);
     }
+    */
             
-    public String getOperationTitle(ServletRequest request) {
-        return getMessage(request, "changelog.operation."+getOperationString());
+    public String getOperationTitle() {
+    	return getOperation().getTitle();
+        // return getMessage(request, "changelog.operation."+getOperationString());
     }
 
-    public String getSourceTitle(ServletRequest request) {
-        return getMessage(request, "changelog.source."+getSourceString());
+    public String getSourceTitle() {
+    	return getSource().getTitle();
+    	//return getMessage(request, "changelog.source."+getSourceString());
     }
     
-    public String getLabel(ServletRequest request) {
+    public String getLabel() {
         return 
-        "Last " + getOperationTitle(request) +
+        "Last " + getOperationTitle() +
         " of " + getObjectTitle() +
         " was made by " + getManager().getShortName() +
         " at " + sDF.format(getTimeStamp()); 
     }
 
-    public String getShortLabel(ServletRequest request) {
+    public String getShortLabel() {
         return 
-            "Last " + getOperationTitle(request) +
+            "Last " + getOperationTitle() +
             " was made by " + getManager().getShortName() +
             " at " + sDF.format(getTimeStamp()); 
     }
+    
+    public String toString() { return getLabel(); }
     
     public int compareTo(Object obj) {
         if (obj==null || !(obj instanceof ChangeLog)) return -1;

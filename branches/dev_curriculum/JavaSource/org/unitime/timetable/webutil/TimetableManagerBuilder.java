@@ -215,9 +215,9 @@ public class TimetableManagerBuilder {
                 if (session!=null) changes = ChangeLog.findLastNChanges(session.getUniqueId(), manager.getUniqueId(), null, null, 1);
                 ChangeLog lastChange = (changes==null || changes.isEmpty()?null:(ChangeLog)changes.get(0));
                 if (html)
-                    lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel(request)+"'>"+lastChange.getSourceTitle(request)+" ("+lastChange.getOperationTitle(request)+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+"</span>");
+                    lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel()+"'>"+lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+"</span>");
                 else
-                    lastChangeStr = (lastChange==null?"":lastChange.getSourceTitle(request)+" ("+lastChange.getOperationTitle(request)+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp()));
+                    lastChangeStr = (lastChange==null?"":lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp()));
                 lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
             }
 		    
