@@ -26,6 +26,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
+import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -185,11 +186,11 @@ public class CourseCurriculaTable extends Composite {
 				iHint.setText("Showing " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment");
 				if (iCurricula.getRowCount() > 1) {
 					for (int row = 1; row < iCurricula.getRowCount(); row++) {
-						for (int col = 0; col < iClassifications.size(); col++) {
+						for (int col = 0; col <= iClassifications.size(); col++) {
 							((MyLabel)iCurricula.getWidget(row, getHeaderCols(row) + col)).refresh();
 						}
 					}
-					((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+					//((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
 					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment");
 				}
 			}
@@ -266,11 +267,20 @@ public class CourseCurriculaTable extends Composite {
 			iDialog.center();
 			next.executeOnSuccess();
 		}
+		iCurriculumEdit.addEditFinishedHandler(new EditFinishedHandler() {
+			@Override
+			public void onSave(EditFinishedEvent evt) {
+				refresh();
+			}
+			@Override
+			public void onDelete(EditFinishedEvent evt) {
+			}
+			@Override
+			public void onBack(EditFinishedEvent evt) {
+			}
+		});
+
 	}
-	
-	native void redirect(String url) /*-{
-		$wnd.location.replace(url);
-	}-*/;
 	
 	private void init(final Command next) {
 		iCurriculaService.loadAcademicClassifications(new AsyncCallback<TreeSet<AcademicClassificationInterface>>() {
@@ -384,11 +394,11 @@ public class CourseCurriculaTable extends Composite {
 									if (iCurricula.getRowCount() > 1) {
 										for (int row = 1; row < iCurricula.getRowCount(); row++) {
 											int hc = getHeaderCols(row);
-											for (int col = 0; col < iClassifications.size(); col++) {
+											for (int col = 0; col <= iClassifications.size(); col++) {
 												((MyLabel)iCurricula.getWidget(row, hc + col)).refresh();
 											}
 										}
-										((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+										//((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
 										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + t.getName() + " Enrollment");
 									}
 								}
@@ -483,6 +493,14 @@ public class CourseCurriculaTable extends Composite {
 			col++;
 		}
 		
+		final Label totalLabel = new Label("Total", false);
+		totalLabel.addClickHandler(menu);
+		iCurricula.setWidget(0, col, totalLabel);
+		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iCurricula.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCurricula.getFlexCellFormatter().setWidth(0, col, "75px");
+		col++;
+
 		// Create body
 		iCourses.clear();
 		iRowClicks.clear();
@@ -522,15 +540,23 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 				iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
+				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0;
 				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = totalThisArea[clasfIdx][0];
 					int last = totalThisArea[clasfIdx][1];
 					int enrl = totalThisArea[clasfIdx][2];
 					int proj = totalThisArea[clasfIdx][3];
+					tExp += exp;
+					tLast += last;
+					tEnrl += enrl;
+					tProj += proj;
 					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 					col++;
 				}
+				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj));
+				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+				
 				final int finalRow = row;
 				final int lastAreas = lastArea.size();
 				final Long lastAreaId = lastArea.get(0).getAcademicArea().getId();
@@ -563,6 +589,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setText(row, col++, curriculum.getAcademicArea().getAbbv());
 			iCurricula.setText(row, col++, curriculum.getMajorCodes(", "));
 			int clasfIdx = 0;
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0;
 			for (AcademicClassificationInterface clasf: iClassifications) {
 				CurriculumClassificationInterface f = null;
 				for (CurriculumClassificationInterface x: curriculum.getClassifications()) {
@@ -587,11 +614,17 @@ public class CourseCurriculaTable extends Composite {
 				totalThisArea[clasfIdx][1] += last;
 				totalThisArea[clasfIdx][2] += enrl;
 				totalThisArea[clasfIdx][3] += proj;
+				tExp += exp;
+				tLast += last;
+				tEnrl += enrl;
+				tProj += proj;
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				col++;
 				clasfIdx++;
 			}
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj));
+			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			if (iEditable) {
 				iRowClicks.add(new ChainedCommand() {
 					@Override
@@ -648,15 +681,22 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 			iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0;
 			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalThisArea[clasfIdx][0];
 				int last = totalThisArea[clasfIdx][1];
 				int enrl = totalThisArea[clasfIdx][2];
 				int proj = totalThisArea[clasfIdx][3];
+				tExp += exp;
+				tLast += last;
+				tEnrl += enrl;
+				tProj += proj;
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				col++;
 			}
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj));
+			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			final int finalRow = row;
 			final int lastAreas = lastArea.size();
 			final Long lastAreaId = lastArea.get(0).getAcademicArea().getId();
@@ -692,6 +732,7 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.setHTML(row, col, "<i>" + other.getAbbv() + " - " + other.getName() + "</i>");
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				col++;
+				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0;
 				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = 0, last = 0, enrl = 0, proj = 0;;
 					for (CourseInterface course: other.getCourses()) {
@@ -712,11 +753,18 @@ public class CourseCurriculaTable extends Composite {
 					totalOther[clasfIdx][1] += last;
 					totalOther[clasfIdx][2] += enrl;
 					totalOther[clasfIdx][3] += proj;
+					tExp += exp;
+					tLast += last;
+					tEnrl += enrl;
+					tProj += proj;
 					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 					iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 					col++;
 				}
+				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj));
+				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				iRowTypes.add(sRowTypeOtherArea);
 				iRowAreaId.add(-1l);
 				final int finalRow = row;
@@ -750,16 +798,24 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setWidget(row, col, new HTML("<i>Other Students</i>", false));
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			col++;
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0;
 			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalOther[clasfIdx][0];
 				int last = totalOther[clasfIdx][1];
 				int enrl = totalOther[clasfIdx][2];
 				int proj = totalOther[clasfIdx][3];
+				tExp += exp;
+				tLast += last;
+				tEnrl += enrl;
+				tProj += proj;
 				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				col++;
 			}
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj));
+			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			final int finalRow = row;
 			final int lastAreas = otherCurricula.size();
 			iAllAreas.add(-1l);
@@ -811,16 +867,10 @@ public class CourseCurriculaTable extends Composite {
 		});
 		iRowTypes.add(sRowTypeTotal);
 		iRowAreaId.add(-3l);
-		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
-		iCurricula.setWidget(row, col++, new Label("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment", false));
-		int[] tx = new int[] {0, 0, 0, 0};
-		for (int i = 0; i < total.length; i ++)
-			for (int j = 0; j < 4; j++)
-				tx[j] += total[i][j];
-		iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
-		iCurricula.setWidget(row, col++, new MyLabel(tx[0], tx[2], tx[1], tx[3]));
-		for (int c = 0; c < 2; c++)
-			iCurricula.getCellFormatter().setStyleName(row, c, "unitime-TotalRow");
+		iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
+		iCurricula.setWidget(row, col, new Label("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment", false));
+		iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
+		col++;
 		for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 			int exp = total[clasfIdx][0];
 			int last = total[clasfIdx][1];
@@ -831,6 +881,13 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
 			col++;
 		}
+		int[] tx = new int[] {0, 0, 0, 0};
+		for (int i = 0; i < total.length; i ++)
+			for (int j = 0; j < 4; j++)
+				tx[j] += total[i][j];
+		iCurricula.setWidget(row, col, new MyLabel(tx[0], tx[2], tx[1], tx[3]));
+		iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
 		
 		// Hide all lines if requested
 		if (!CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
@@ -909,11 +966,11 @@ public class CourseCurriculaTable extends Composite {
 			if (iCurricula.getRowCount() > 1) {
 				for (int r = 1; r < iCurricula.getRowCount(); r++) {
 					int hc = getHeaderCols(r);
-					for (int c = 0; c < iClassifications.size(); c++) {
+					for (int c = 0; c <= iClassifications.size(); c++) {
 						((MyLabel)iCurricula.getWidget(r, hc + c)).refresh();
 					}
 				}
-				((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+				//((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
 				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + type.getName() + " Enrollment");
 			}
 		}
