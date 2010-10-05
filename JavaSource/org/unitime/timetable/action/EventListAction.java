@@ -86,8 +86,12 @@ public class EventListAction extends Action {
         }
 
         if ("iCalendar".equals(op)) {
-            File pdfFile = new CalendarEventTableBuilder().calendarTableForEvents(myForm);
+        	String url = new CalendarEventTableBuilder().calendarUrlForEvents(myForm);
+        	if (url != null) request.setAttribute(Constants.REQUEST_OPEN_URL, url);
+        	/*
+        	File pdfFile = new CalendarEventTableBuilder().calendarTableForEvents(myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+            */
         }
 
         if (request.getParameter("backId")!=null)

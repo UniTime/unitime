@@ -73,6 +73,32 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         out.println("END:VEVENT");
     }
     
+    public String calendarUrlForEvents(EventListForm form) {
+        List events = loadEvents(form);
+        if (events.isEmpty()) return null;
+
+        String eventIds = "";
+        Long sid = null;
+        for (Iterator it = events.iterator();it.hasNext();){
+            Event event = (Event) it.next();
+            if (form.getMode()==EventListForm.sModeEvents4Approval) {
+                boolean myApproval = false;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting m = (Meeting)j.next();
+                    if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        myApproval = true; break;
+                    }
+                }
+                if (!myApproval) continue;
+            }
+            if (!eventIds.isEmpty()) eventIds += ",";
+            eventIds += event.getUniqueId();
+            if (sid == null) sid = event.getSession().getUniqueId();
+        }
+        
+        return "calendar?sid=" + sid + "&eid=" + eventIds;
+    }
+    
     public File calendarTableForEvents (EventListForm form){
         List events = loadEvents(form);
         if (events.isEmpty()) return null;
@@ -116,6 +142,22 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             if (out!=null) { out.flush(); out.close(); }
         }
         return null;
+    }
+    
+    public String calendarUrlForMeetings(MeetingListForm form) {
+        List meetings = loadMeetings(form);
+        if (meetings.isEmpty()) return null;
+
+        String meetingIds = "";
+        Long sid = null;
+        for (Iterator it = meetings.iterator();it.hasNext();){
+            Meeting meeting = (Meeting) it.next();
+            if (!meetingIds.isEmpty()) meetingIds += ",";
+            meetingIds += meeting.getUniqueId();
+            if (sid == null) sid = meeting.getEvent().getSession().getUniqueId();
+        }
+        
+        return "calendar?sid=" + sid + "&mid=" + meetingIds;
     }
 
     public File calendarTableForMeetings (MeetingListForm form){
