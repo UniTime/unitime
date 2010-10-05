@@ -286,6 +286,8 @@ public class CalendarServlet extends HttpServlet {
                 out.println("BEGIN:VEVENT");
                 out.println("SEQUENCE:0");
                 out.println("UID:"+event.getUniqueId());
+                out.println("SUMMARY:"+event.getEventName());
+                out.println("DESCRIPTION:"+event.getEventTypeLabel());
                 out.println("DTSTART:" + start);
                 out.println("DTEND:" + end);
             	if (!rdate.isEmpty())
@@ -297,6 +299,8 @@ public class CalendarServlet extends HttpServlet {
                 out.println("BEGIN:VEVENT");
                 out.println("SEQUENCE:0");
                 out.println("UID:"+event.getUniqueId());
+                out.println("SUMMARY:"+event.getEventName());
+                out.println("DESCRIPTION:"+event.getEventTypeLabel());
     	        out.println("RECURRENCE-ID:" + start);
                 out.println("DTSTART:" + start);
                 out.println("DTEND:" + end);
