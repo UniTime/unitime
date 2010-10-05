@@ -106,7 +106,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                 for (Meeting meeting : (Set<Meeting>)event.getMeetings()) printMeeting(out, meeting);
             }
 
-            out.println("END:VEVENT");
+            out.println("END:VCALENDAR");
             out.flush(); out.close(); out = null;
             
             return file;
@@ -142,7 +142,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                 printMeeting(out, meeting);
             }
 
-            out.println("END:VEVENT");
+            out.println("END:VCALENDAR");
             out.flush(); out.close(); out = null;
             
             return file;

@@ -83,7 +83,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
             uniqueResult();
     }
     
-    public Set getExams(Integer examType) {
+    public Set<Exam> getExams(Integer examType) {
         HashSet exams = new HashSet();
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+

@@ -511,7 +511,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 .setCacheable(true).list();
     }
     
-    public List getExams(Integer examType) {
+    public List<Exam> getExams(Integer examType) {
         if (getExternalUniqueId()!=null) {
             return (new DepartmentalInstructorDAO()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
