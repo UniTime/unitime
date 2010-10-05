@@ -91,24 +91,34 @@ public class AcademicArea extends BaseAcademicArea {
         return this.getShortTitle() + " : " + this.getAcademicAreaAbbreviation();
     }
 	
-		public Long getSessionId(){
-			if (getSession() != null){
-				return(getSession().getUniqueId());
-			} else {
-				return(null);
-			}
+	public Long getSessionId(){
+		if (getSession() != null){
+			return(getSession().getUniqueId());
+		} else {
+			return(null);
 		}
+	}
+    
+    public static AcademicArea findByAbbv(Long sessionId, String abbv) {
+        return (AcademicArea)new AcademicAreaDAO().
+            getSession().
+            createQuery(
+                    "select a from AcademicArea a where "+
+                    "a.session.uniqueId=:sessionId and "+
+                    "a.academicAreaAbbreviation=:abbv").
+             setLong("sessionId", sessionId.longValue()).
+             setString("abbv", abbv).
+             setCacheable(true).
+             uniqueResult(); 
+    }
+    
+    public Object clone() {
+    	AcademicArea area = new AcademicArea();
+    	area.setExternalUniqueId(getExternalUniqueId());
+    	area.setAcademicAreaAbbreviation(getAcademicAreaAbbreviation());
+    	area.setShortTitle(getShortTitle());
+    	area.setLongTitle(getLongTitle());
+    	return area;
+    }
         
-        public static AcademicArea findByAbbv(Long sessionId, String abbv) {
-            return (AcademicArea)new AcademicAreaDAO().
-                getSession().
-                createQuery(
-                        "select a from AcademicArea a where "+
-                        "a.session.uniqueId=:sessionId and "+
-                        "a.academicAreaAbbreviation=:abbv").
-                 setLong("sessionId", sessionId.longValue()).
-                 setString("abbv", abbv).
-                 setCacheable(true).
-                 uniqueResult(); 
-        }
 }

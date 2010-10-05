@@ -274,6 +274,11 @@ public class RollForwardSessionAction extends Action {
         	    sessionRollForward.rollStudentsForward(iErrors, iForm);
         	}
 	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardCurricula()) {
+				setStatus("Curricula ...");
+        	    sessionRollForward.rollCurriculaForward(iErrors, iForm);
+        	}
+	        iProgress++;
 	        if (!iErrors.isEmpty()) {
 	        	setError(new Exception(((ActionMessage)iErrors.get().next()).getValues()[0].toString()));
 	        }
@@ -296,6 +301,7 @@ public class RollForwardSessionAction extends Action {
         	if (iForm.getRollForwardMidtermExams()) names.add("midter exams");
         	if (iForm.getRollForwardFinalExams()) names.add("final exams");
         	if (iForm.getRollForwardStudents()) names.add("students");
+        	if (iForm.getRollForwardCurricula()) names.add("curricula");
         	String name = names.toString().replace("[", "").replace("]", "");
         	if (name.length() > 50) name = name.substring(0, 47) + "...";
         	return name;

@@ -83,5 +83,13 @@ public class PosMinor extends BasePosMinor {
          setCacheable(true).
          uniqueResult(); 
     }
+    
+    public Object clone() {
+    	PosMinor m = new PosMinor();
+    	m.setExternalUniqueId(getExternalUniqueId());
+    	m.setCode(getCode());
+    	m.setName(getName());
+    	return m;
+    }
 
 }

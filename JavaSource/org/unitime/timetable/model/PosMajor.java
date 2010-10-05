@@ -122,4 +122,12 @@ public class PosMajor extends BasePosMajor {
          setCacheable(true).
          uniqueResult(); 
     }
+    
+    public Object clone() {
+    	PosMajor m = new PosMajor();
+    	m.setExternalUniqueId(getExternalUniqueId());
+    	m.setCode(getCode());
+    	m.setName(getName());
+    	return m;
+    }
 }
