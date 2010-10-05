@@ -85,6 +85,19 @@ public class CalendarServlet extends HttpServlet {
 			else
 				sessionId = (Long)request.getSession().getAttribute("sessionId");
 		}
+		if (request.getParameter("term") != null) {
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			try {
+				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
+						"s.academicTerm || s.academicYear = :term or " +
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						setString("term", request.getParameter("term")).list();
+				if (!sessions.isEmpty())
+					sessionId = sessions.get(0);
+			} finally {
+				hibSession.close();
+			}
+		}
 		if (sessionId == null)
 			throw new ServletException("No academic session provided.");
 		SectioningServer server = SectioningServer.getInstance(sessionId);
