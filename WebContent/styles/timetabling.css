@@ -291,6 +291,20 @@ input[type="text"] {
 	padding: 2px;
 }
 
+input[type="password"] {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
 textarea {
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;
@@ -358,86 +372,10 @@ body, table td, select {
   font-size: small;
 }
 
-/*
-input {
-	font-family: Verdana, sans-serif;
-	font-size: 8pt;
-	font-weight: 400;
-	font-style: normal;
-	color: #333333;
-	line-height: 15px;
-	vertical-align: baseline;
-	background: #FFFFFF;
-	height: 22px;
+select {
 	border: 1px solid #9CB0CE;
-	padding: 2px;
 }
 
-textarea,select {
-	font-family: Verdana, sans-serif;
-	font-size: 8pt;
-	font-weight: 400;
-	font-style: normal;
-	color: #333333;
-	line-height: 15px;
-	vertical-align: baseline;
-	background: #FFFFFF;
-	height: 22px;
-	border: 1px solid #9CB0CE;
-	padding: 2px;
-}
-
-input.btn {
-	background-color: #EFEFEF;
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 1px 1px 1px 1px;
-	font-family: sans-serif, verdana, arial;
-	font-size: 90%;
-	font-weight: normal;
-}
-
-input.btnSmall {
-	background-color: #EFEFEF;
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 1px 1px 1px 1px;
-	font-family: sans-serif, verdana, arial;
-	font-size: 90%;
-}
-input.txt,textarea.txt {
-	font-family: Verdana, sans-serif;
-	font-size: 8pt;
-	font-weight: 400;
-	font-style: normal;
-	color: #333333;
-	line-height: 15px;
-	vertical-align: baseline;
-	background: #FFFFFF;
-	height: 22px;
-	border: 1px solid #9CB0CE;
-	padding: 2px;
-}
-select.cmb {
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 2px 2px 2px 2px;
-	font-family: sans-serif, verdana, arial;
-	font-size: 90%;
-}
-*/
 A.menuLink:hover {
 	font-size: 80%;
 	color: red;
