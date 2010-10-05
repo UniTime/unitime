@@ -480,7 +480,7 @@ public class PersonalizedExamReportAction extends Action {
         return mapping.findForward("show");
     }
     
-    private static boolean canDisplay(Session session) {
+    public static boolean canDisplay(Session session) {
         if (session.getStatusType()==null) return false;
         if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeFinal)) return true;
         if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeMidterm)) return true;
