@@ -250,7 +250,7 @@ public class CourseLoader {
                     	instructorIds += ci.getInstructor().getUniqueId().toString();
                     	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
                     }
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
                     class2section.put(c.getUniqueId(), section);
                     iClassTable.put(c.getUniqueId(), section);
                 }
