@@ -132,4 +132,12 @@ public class AcademicClassification extends BaseAcademicClassification {
          setCacheable(true).
          uniqueResult(); 
     }
+    
+    public Object clone() {
+    	AcademicClassification c = new AcademicClassification();
+    	c.setExternalUniqueId(getExternalUniqueId());
+    	c.setCode(getCode());
+    	c.setName(getName());
+    	return c;
+    }
 }

@@ -184,6 +184,13 @@
 				</html:select>
 			</td>		
 		</tr>
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
+			<html:select style="width:200;" property="sessionToRollCurriculaForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).</i>
+			</td>
+		</tr>
 		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>
 		<tr>
 			<td>
