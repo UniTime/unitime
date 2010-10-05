@@ -83,9 +83,12 @@ public class MeetingListAction extends Action {
         }
 
         if ("iCalendar".equals(op)) {
-        	
+            String url = new CalendarEventTableBuilder().calendarUrlForMeetings(myForm);
+            if (url!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, url);
+            /*
             File pdfFile = new CalendarEventTableBuilder().calendarTableForMeetings(myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+            */
         }
 
         if (request.getParameter("backId")!=null)

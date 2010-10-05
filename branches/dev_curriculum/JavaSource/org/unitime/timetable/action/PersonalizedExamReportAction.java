@@ -430,6 +430,16 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         if ("iCalendar".equals(myForm.getOp())) {
+        	Long sid = sessionId;
+        	if (sid == null && instructor != null)
+        		sid = instructor.getDepartment().getSession().getUniqueId();
+        	if (sid == null && student != null)
+        		sid = student.getSession().getUniqueId();
+        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?uid=" + externalId + (sid == null ? "" : "&sid=" + sid));
+        }
+        
+        /*
+        if ("iCalendar".equals(myForm.getOp())) {
             sLog.info("  Generating calendar for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
             try {
                 File file = ApplicationProperties.getTempFile("schedule", "ics");
@@ -445,6 +455,7 @@ public class PersonalizedExamReportAction extends Action {
                 sLog.error("Unable to generate calendar for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)),e);
             }
         }
+        */
         
         if (!studentExams.isEmpty()) {
             myForm.setCanExport(true);
