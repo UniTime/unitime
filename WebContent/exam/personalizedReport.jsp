@@ -24,6 +24,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 <html:form action="/personalSchedule">
+	<html:hidden property="sessionId" />
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
@@ -31,7 +32,6 @@
 				<html:hidden property="fname" styleId="fname"/>
 				<html:hidden property="mname" styleId="mname"/>
 				<html:hidden property="lname" styleId="lname"/>
-				<input type='hidden' name='session' value=''/>
 				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
