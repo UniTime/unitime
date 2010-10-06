@@ -13,6 +13,7 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
+import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.util.Constants;
@@ -22,7 +23,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
     SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
     
     public int getMaxResults() {
-    	return 1500;
+    	return 100;
     }
     
     public CalendarEventTableBuilder() {
@@ -96,7 +97,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             if (sid == null) sid = event.getSession().getUniqueId();
         }
         
-        return "calendar?sid=" + sid + "&eid=" + eventIds;
+        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&eid=" + eventIds);
     }
     
     public File calendarTableForEvents (EventListForm form){
@@ -157,7 +158,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             if (sid == null) sid = meeting.getEvent().getSession().getUniqueId();
         }
         
-        return "calendar?sid=" + sid + "&mid=" + meetingIds;
+        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&mid=" + meetingIds);
     }
 
     public File calendarTableForMeetings (MeetingListForm form){
