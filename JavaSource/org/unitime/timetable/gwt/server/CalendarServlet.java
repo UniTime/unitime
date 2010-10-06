@@ -20,21 +20,31 @@
 package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -73,11 +83,23 @@ import net.sf.cpsolver.studentsct.model.Section;
 
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
+	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String q = request.getParameter("q");
+		HashMap<String, String> params = new HashMap<String, String>();
+		if (q != null) {
+			for (String p: decode(q).split("&")) {
+				params.put(p.substring(0, p.indexOf('=')), p.substring(p.indexOf('=') + 1));
+			}
+		} else {
+			for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
+				String name = e.nextElement();
+				params.put(name, request.getParameter(name));
+			}
+		}
 		Long sessionId = null;
-		if (request.getParameter("sid") != null) {
-			sessionId = Long.valueOf(request.getParameter("sid"));
+		if (params.get("sid") != null) {
+			sessionId = Long.valueOf(params.get("sid"));
 		} else {
 			User user = Web.getUser(request.getSession());
 			if (user != null)
@@ -85,13 +107,13 @@ public class CalendarServlet extends HttpServlet {
 			else
 				sessionId = (Long)request.getSession().getAttribute("sessionId");
 		}
-		if (request.getParameter("term") != null) {
+		if (params.get("term") != null) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
-						setString("term", request.getParameter("term")).list();
+						setString("term", params.get("term")).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
 			} finally {
@@ -101,12 +123,13 @@ public class CalendarServlet extends HttpServlet {
 		if (sessionId == null)
 			throw new ServletException("No academic session provided.");
 		SectioningServer server = SectioningServer.getInstance(sessionId);
-    	String classIds = request.getParameter("cid");
-    	String fts = request.getParameter("ft");
-    	String examIds = request.getParameter("xid");
-    	String eventIds = request.getParameter("eid");
-    	String meetingIds = request.getParameter("mid");
-    	String userId = request.getParameter("uid");
+    	String classIds = params.get("cid");
+    	String fts = params.get("ft");
+    	String examIds = params.get("xid");
+    	String eventIds = params.get("eid");
+    	String meetingIds = params.get("mid");
+    	String userId = params.get("uid");
+    	if (q == null) userId = decode(userId);
    
 		response.setContentType("text/calendar");
 		response.setHeader( "Content-Disposition", "attachment; filename=\"schedule.ics\"" );
@@ -180,23 +203,23 @@ public class CalendarServlet extends HttpServlet {
             	}
             }
             if (meetingIds != null && !meetingIds.isEmpty()) {
-            	Hashtable<Event, List<Meeting>> meetings = new Hashtable<Event, List<Meeting>>();
+            	Hashtable<Long, List<Meeting>> meetings = new Hashtable<Long, List<Meeting>>();
             	for (String meetingId: meetingIds.split(",")) {
             		if (meetingId.isEmpty()) continue;
             		try {
             			Meeting meeting = MeetingDAO.getInstance().get(Long.valueOf(meetingId), hibSession);
             			if (meeting != null) {
-            				List<Meeting> m = meetings.get(meeting.getEvent());
+            				List<Meeting> m = meetings.get(meeting.getEvent().getUniqueId());
             				if (m == null) {
             					m = new ArrayList<Meeting>();
-            					meetings.put(meeting.getEvent(), m);
+            					meetings.put(meeting.getEvent().getUniqueId(), m);
             				}
             				m.add(meeting);
             			}
             		} catch (NumberFormatException e) {}
             	}
-            	for (Map.Entry<Event, List<Meeting>> entry: meetings.entrySet()) {
-            		printEvent(entry.getKey(), entry.getValue(), out);
+            	for (List<Meeting> eventMeetings: meetings.values()) {
+            		printEvent(eventMeetings.get(0).getEvent(), eventMeetings, out);
             	}
             }
             if (userId != null && !userId.isEmpty()) {
@@ -881,5 +904,35 @@ public class CalendarServlet extends HttpServlet {
     	
         out.println("END:VFREEBUSY");
 	}
+	
+	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
+		byte salt[] = new byte[] { (byte)0x33, (byte)0x7b, (byte)0x09, (byte)0x0e, (byte)0xcf, (byte)0x5a, (byte)0x58, (byte)0xd9 };
+		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		KeySpec spec = new PBEKeySpec(ApplicationProperties.getProperty("unitime.encode.secret", "ThisIs8Secret").toCharArray(), salt, 1024, 256);
+		SecretKey key = factory.generateSecret(spec);
+		return new SecretKeySpec(key.getEncoded(), "AES");
+	}
+	
+	public static String encode(String text) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, secret());
+			return new BigInteger(cipher.doFinal(text.getBytes())).toString(36);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static String decode(String text) {
+		try {
+			if (text == null || text.isEmpty()) return null;
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			cipher.init(Cipher.DECRYPT_MODE, secret());
+			return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 
 }
