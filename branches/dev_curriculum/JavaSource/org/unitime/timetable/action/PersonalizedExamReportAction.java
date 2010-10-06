@@ -55,6 +55,7 @@ import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.commons.web.WebTable.WebTableTweakStyle;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
+import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.Assignment;
@@ -179,22 +180,17 @@ public class PersonalizedExamReportAction extends Action {
             return mapping.findForward(back);
         }
         
-        Long sessionId = (Long)request.getAttribute("PersonalizedExamReport.SessionId");
-        if (request.getParameter("session")!=null && request.getParameter("session").length() > 0) {
-            sessionId = Long.valueOf(request.getParameter("session"));
-            request.setAttribute("PersonalizedExamReport.SessionId", sessionId);
-        }
         if ("classes".equals(back)) {
-            if (sessionId==null) {
-                sessionId = (Long)request.getSession().getAttribute("Classes.session");
+            if (myForm.getSessionId() == null) {
+                myForm.setSessionId((Long)request.getSession().getAttribute("Classes.session"));
             } else {
-                request.getSession().setAttribute("Classes.session", sessionId);
+                request.getSession().setAttribute("Classes.session", myForm.getSessionId());
             }
         } else if ("exams".equals(back)) {
-            if (sessionId==null) {
-                sessionId = (Long)request.getSession().getAttribute("Exams.session");
+            if (myForm.getSessionId() == null) {
+            	myForm.setSessionId((Long)request.getSession().getAttribute("Exams.session"));
             } else {
-                request.getSession().setAttribute("Exams.session", sessionId);
+                request.getSession().setAttribute("Exams.session", myForm.getSessionId());
             }
         }
         
@@ -208,9 +204,9 @@ public class PersonalizedExamReportAction extends Action {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
-            if (sessionId==null) {
+            if (myForm.getSessionId() == null) {
                 if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
-            } else if (sessionId.equals(s.getDepartment().getSession().getUniqueId())) {
+            } else if (myForm.getSessionId().equals(s.getDepartment().getSession().getUniqueId())) {
                 instructor = s;
             }
         }
@@ -224,9 +220,9 @@ public class PersonalizedExamReportAction extends Action {
             Student s = (Student)i.next();
             if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
-            if (sessionId==null) {
+            if (myForm.getSessionId() == null) {
                 if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
-            } else if (sessionId.equals(s.getSession().getUniqueId()))
+            } else if (myForm.getSessionId().equals(s.getSession().getUniqueId()))
                 student = s;
         }
         
@@ -430,12 +426,8 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         if ("iCalendar".equals(myForm.getOp())) {
-        	Long sid = sessionId;
-        	if (sid == null && instructor != null)
-        		sid = instructor.getDepartment().getSession().getUniqueId();
-        	if (sid == null && student != null)
-        		sid = student.getSession().getUniqueId();
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?uid=" + externalId + (sid == null ? "" : "&sid=" + sid));
+        	Long sid = (instructor != null ? instructor.getDepartment().getSession().getUniqueId() : student.getSession().getUniqueId());
+        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?q=" + CalendarServlet.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid)));
         }
         
         /*
@@ -588,7 +580,7 @@ public class PersonalizedExamReportAction extends Action {
             String bgColor = null;
             if (sessionId.equals(session.getUniqueId())) bgColor = "rgb(168,187,225)";
             table.addLine(
-            		"onClick=\"personalizedExamReportForm.session.value='" + session.getUniqueId() +"'; personalizedExamReportForm.submit();\"",
+            		"onClick=\"personalizedExamReportForm.sessionId.value='" + session.getUniqueId() +"'; personalizedExamReportForm.submit();\"",
                     new String[] {
                         session.getAcademicTerm(),
                         session.getAcademicYear(),

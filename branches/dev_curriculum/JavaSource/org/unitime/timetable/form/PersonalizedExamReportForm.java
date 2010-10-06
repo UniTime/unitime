@@ -39,6 +39,7 @@ public class PersonalizedExamReportForm extends ActionForm {
     private String iFname = null;
     private String iMname = null;
     private String iLname = null;
+    private Long iSessionId = null;
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -52,6 +53,7 @@ public class PersonalizedExamReportForm extends ActionForm {
         iMessage = null;
         iUid = null;
         iAdmin = false;
+        iSessionId = null;
     }
     
     public String getOp() { return iOp; }
@@ -72,4 +74,6 @@ public class PersonalizedExamReportForm extends ActionForm {
     public void setMname(String mname) { iMname = mname; }
     public String getLname() { return iLname; }
     public void setLname(String lname) { iLname = lname; }
+    public Long getSessionId() { return iSessionId; }
+    public void setSessionId(Long sessionId) { iSessionId = (sessionId == null || sessionId == 0 ? null : sessionId); }
 }
