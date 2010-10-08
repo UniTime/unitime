@@ -343,6 +343,14 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 		
 		try {
 			System.out.println("configure "+properties.getProperty("General.Output","."));
+			// remove unitime logger
+			for (Iterator<Map.Entry<Object, Object>> i = properties.entrySet().iterator(); i.hasNext(); ) {
+				Map.Entry<Object, Object> entry = i.next();
+				String name = entry.getKey().toString();
+				if (name.startsWith("log4j.appender.unitime") ||
+						(name.startsWith("log4j.logger.") && entry.getValue().toString().endsWith(", unitime")))
+						i.remove();
+			}
 			String logFile = ToolBox.configureLogging(properties.getProperty("General.Output","."),properties);
 			if (SolverTray.isInitialized())
 				SolverTray.getInstance().setLogFile(logFile);
