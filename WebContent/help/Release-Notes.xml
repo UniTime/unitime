@@ -57,6 +57,9 @@
 				<line>Exam print offset got completely ignored (bug introduced by a change from October 28, 2009)</line>
 				<line>Add Event: Changed location search to use an in statement when searching for room groups rather than an or statement.  This makes the search more efficient.</line>
 				<line>Updated updateCourseOfferingEnrollmentForSession - previous change to fix this to work with MySQL broke it with Oracle.  The current change has been tested to work with both Oracle and MySQL.</line>
+				<line>Examination conflicts: query returning overlapping course meetings with required attendance improved</line>
+				<line>Add Event: fixed a problem with creating a course event with >1000 students</line>
+				<line>Enrollment Audits: Ensure the correct enrollment is used for the audit results when a student is enrolled in multiple names of a cross listed course.</line>
 			</description>
 		</item>
 	</category>
