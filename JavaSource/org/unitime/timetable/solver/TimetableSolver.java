@@ -130,6 +130,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	private Hashtable iBestSolutionInfoBeforePassivation = null;
 	private File iPassivationFolder = null;
 	private String iPassivationPuid = null;
+	private Thread iWorkThread = null;
 
 	public TimetableSolver(DataProperties properties) {
 		super(properties);
@@ -208,7 +209,8 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     }
     
 	public void finalSectioning() {
-		(new FinalSectioning()).start();
+		iWorkThread = new FinalSectioning();
+		iWorkThread.start();
 	}
     
     public class FinalSectioning extends Thread {
@@ -285,9 +287,9 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		getProperties().setProperty("General.CommitSolution",(commitSolution?"true":"false"));
 		TimetableDatabaseSaver saver = new TimetableDatabaseSaver(this);
 		saver.setCallback(getSavingDoneCallback());
-		Thread thread = new Thread(saver);
-		thread.setPriority(THREAD_PRIORITY);
-		thread.start();
+		iWorkThread = new Thread(saver);
+		iWorkThread.setPriority(THREAD_PRIORITY);
+		iWorkThread.start();
     }
     
     public void load(DataProperties properties) {
@@ -303,9 +305,9 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		
 		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model);
 		loader.setCallback(getLoadingDoneCallback());
-		Thread thread = new Thread(loader);
-		thread.setPriority(THREAD_PRIORITY);
-		thread.start();
+		iWorkThread = new Thread(loader);
+		iWorkThread.setPriority(THREAD_PRIORITY);
+		iWorkThread.start();
     }
     
     public void reload(DataProperties properties) {
@@ -325,7 +327,8 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		
 		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model);
 		loader.setCallback(callBack);
-		(new Thread(loader)).start();
+		iWorkThread = new Thread(loader);
+		iWorkThread.start();
     }
     
     public Callback getLoadingDoneCallback() {
@@ -1398,5 +1401,20 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
             }
             return ret.toByteArray();
         }
+    }
+    
+    public void interrupt() {
+    	try {
+            if (iSolverThread != null) {
+                iStop = true;
+                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
+                	iSolverThread.interrupt();
+            }
+			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+				iWorkThread.interrupt();
+			}
+    	} catch (Exception e) {
+    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
     }
 }

@@ -102,4 +102,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public boolean passivate(File folder, String puid);
     public boolean passivateIfNeeded(File folder, String puid);
     public Date getLastUsed();
+    
+    public void interrupt();
 }
