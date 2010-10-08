@@ -752,7 +752,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 		session.removeAttribute("Timetable.table");
 		SolverProxy solver = getSolverNoSessionCheck(session);
 		if (solver!=null) {
-			if (solver.isRunning()) solver.stopSolver();
+			solver.interrupt();
 			solver.dispose();
 		}
 		session.removeAttribute("ManageSolver.puid");
@@ -762,7 +762,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         session.removeAttribute("ExamSolverProxy");
         ExamSolverProxy solver = getExamSolverNoSessionCheck(session);
         if (solver!=null) {
-            if (solver.isRunning()) solver.stopSolver();
+			solver.interrupt();
             solver.dispose();
         }
         session.removeAttribute("ManageSolver.examPuid");
@@ -772,7 +772,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         session.removeAttribute("StudentSolverProxy");
         StudentSolverProxy solver = getStudentSolverNoSessionCheck(session);
         if (solver!=null) {
-            if (solver.isRunning()) solver.stopSolver();
+			solver.interrupt();
             solver.dispose();
         }
         session.removeAttribute("ManageSolver.sectionPuid");

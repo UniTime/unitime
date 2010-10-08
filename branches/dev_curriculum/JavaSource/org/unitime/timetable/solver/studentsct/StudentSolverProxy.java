@@ -71,4 +71,6 @@ public interface StudentSolverProxy {
     public boolean passivate(File folder, String puid);
     public boolean passivateIfNeeded(File folder, String puid);
     public Date getLastUsed();
+    
+    public void interrupt();
 }

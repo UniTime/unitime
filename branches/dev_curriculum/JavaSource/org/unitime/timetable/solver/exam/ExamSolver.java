@@ -93,6 +93,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     private Hashtable iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
+    private Thread iWorkThread = null;
 
     
     public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
@@ -352,9 +353,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         iWorking = true;
         ExamDatabaseSaver saver = new ExamDatabaseSaver(this);
         saver.setCallback(getSavingDoneCallback());
-        Thread thread = new Thread(saver);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(saver);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void load(DataProperties properties) {
@@ -369,9 +370,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         
         ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
         loader.setCallback(getLoadingDoneCallback());
-        Thread thread = new Thread(loader);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void reload(DataProperties properties) {
@@ -391,7 +392,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         
         ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
         loader.setCallback(callBack);
-        (new Thread(loader)).start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.start();
     }
     
     public Callback getLoadingDoneCallback() {
@@ -1176,5 +1178,20 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     
     public Date getLastUsed() {
         return new Date(iLastTimeStamp);
+    }
+    
+    public void interrupt() {
+    	try {
+            if (iSolverThread != null) {
+                iStop = true;
+                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
+                	iSolverThread.interrupt();
+            }
+			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+				iWorkThread.interrupt();
+			}
+    	} catch (Exception e) {
+    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
     }
 }

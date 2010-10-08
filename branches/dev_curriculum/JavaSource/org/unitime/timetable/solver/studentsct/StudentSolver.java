@@ -74,6 +74,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private Hashtable iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
+    private Thread iWorkThread = null;
 
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
@@ -219,9 +220,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         iWorking = true;
         StudentSectioningSaver saver = new StudentSectioningDatabaseSaver(this);
         saver.setCallback(getSavingDoneCallback());
-        Thread thread = new Thread(saver);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(saver);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void load(DataProperties properties) {
@@ -235,9 +236,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
         loader.setCallback(getLoadingDoneCallback());
-        Thread thread = new Thread(loader);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void reload(DataProperties properties) {
@@ -257,7 +258,8 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
         loader.setCallback(callBack);
-        (new Thread(loader)).start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.start();
     }
     
     public Callback getLoadingDoneCallback() {
@@ -597,5 +599,20 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public Date getLastUsed() {
         return new Date(iLastTimeStamp);
+    }
+
+    public void interrupt() {
+    	try {
+            if (iSolverThread != null) {
+                iStop = true;
+                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
+                	iSolverThread.interrupt();
+            }
+			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+				iWorkThread.interrupt();
+			}
+    	} catch (Exception e) {
+    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
     }
 }

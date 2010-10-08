@@ -123,5 +123,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
     public Hashtable getAssignmentTable2(Collection classesOrClassIds) throws Exception;
     public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) throws Exception;
     
+    public void interrupt();
+    
     public byte[] exportXml() throws Exception;
 }
