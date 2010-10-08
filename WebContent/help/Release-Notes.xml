@@ -42,6 +42,25 @@
 				</line>
 				<line>Room &amp; building coordinates can be in GPS
 					<line>A map showing the room's location can be displayed  on the Room Detail page</line>
+					<line>Edit pages can use Google maps to enter coordinates</line>
+					<line>Non-university locations can have GPS coordinates set</line>
+					<line>Rooms can ignore distances (not just non-university locations)</line>
+				</line>
+				<line>More informative tooltips
+					<line>Events (all pages): show tooltip on locations including name, display name, room type, minimap, capacity, global groups and features</line>
+					<line>Classes, Instructional Offerings: show enlarged version of the time preferences table as tooltip for time preferences icon</line>
+					<line>Examinations: show enlarged version of the period preferences table as tooltip for period preferences icon</line>
+					<line>Classes, Instructional Offerings, Examinations: show list of distribution objects in the tooltip of a distribution preference</line>
+					<line>Classes, Instructional Offerings, Examinations: show a bigger tooltip for room and building preferences (including minimap and capacity, global room/features for rooms)</line>
+					<line>Rooms: show a bigger tooltip for room sharing, exam period preferences, room and building names</line>
+				</line>
+				<line>New version of people lookup dialog
+					<line>Show each person only once (merging information from various sources)</line>
+					<line>Only people having external id are displayed (external id is used to merge contact information)</line>
+				</line>
+				<line>Suggestions, Class Assignment, Examination Assignment, Date pattern preview, wiki help
+					<line>Use GWT-based dialog box instead of opening a new browser window</line>
+					<line>Suggestions, Class/Examination Assignment -- refresh the parent page when a new assignment is made</line>
 				</line>
 			</description>
 		</item>
@@ -55,6 +74,7 @@
 						<line>Projected course demands (last-like + curriculum projections)</line>
 						<line>Curriculum-based (with or without last-like information)</line>
 						<line>Current student enrollments</line>
+						<line>Student course requests</line>
 					</line>
 				</line>
 				<line>Student sectioning in course timetabling changes
@@ -97,6 +117,10 @@
 				<line>Select Academic Session / Select User Role: table or roles / sessions made sortable, default order by session (last session first)</line>
 				<line>Event Detail: added Inquire button (an email is sent, a message is added to events history); added ability to attach a file to a approve / inquiry / reject email</line>
 				<line>Events / Meetings: added export to CSV; added enrollment counts for exam and course related events; added filter by day of week and time</line>
+				<line>Woebegon example contains a new term (Fall 2010) with few example curricula defined</line>
+				<line>Examination Assignment page, examination reports: for the sake of consistency, exam size (if set) overrides the number of students on an exam in all cases (not just for the examination solver)</line>
+				<line>Exporting an iCalendar now produces a URL that can be shared.</line>
+				<line>Manage Solvers: it is now possible to unload a (working) solver</line>
 			</description>
 		</item>
 		<item>
@@ -106,6 +130,8 @@
 				<line>Personal Schedule -- fixed the ability to change sessions for an administrator looking up a student's schedule</line>
 				<line>Fixed a problem in people lookup (single quotation marks were not escaped)</line>
 				<line>Preview of a date pattern -- window size increased to fit more months</line>
+				<line>Delete Session -- all room group / feature relations were deleted (not just the ones of the session)</line>
+				<line>Added workaround for a Java Bug 4466485 (URL.getFile() may return %20 for spaces on Windows).</line>
 			</description>
 		</item>
 	</category>
@@ -160,6 +186,9 @@
 					<line>Room Allocation report (Solution Reports page) fixed.</line>
 				</line>
 				<line>Add Event: Changed location search to use an in statement when searching for room groups rather than an or statement.  This makes the search more efficient.</line>
+				<line>Examination conflicts: query returning overlapping course meetings with required attendance improved</line>
+				<line>Add Event: fixed a problem with creating a course event with >1000 students</line>
+				<line>Enrollment Audits: Ensure the correct enrollment is used for the audit results when a student is enrolled in multiple names of a cross listed course.</line>
 			</description>
 		</item>
 	</category>
