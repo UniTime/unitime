@@ -98,7 +98,7 @@
 							: (ChangeLog) changes.get(0));
 					lastChangeStr = (lastChange == null ? "&nbsp;"
 							: "<span title='"
-							+ lastChange.getLabel(request)
+							+ lastChange.getLabel()
 							+ "'>"
 							+ ChangeLog.sDFdate.format(lastChange
 							.getTimeStamp())

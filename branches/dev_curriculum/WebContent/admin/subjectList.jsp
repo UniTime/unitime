@@ -95,7 +95,7 @@
 		(lastChange == null 
 			? "&nbsp;"
 			: "<span title='"
-				+ lastChange.getLabel(request)
+				+ lastChange.getLabel()
 				+ "'>"
 				+ ChangeLog.sDFdate.format(lastChange
 						.getTimeStamp()) + " by "
