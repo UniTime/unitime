@@ -402,7 +402,7 @@
 				document.getElementById('lname').value = person[3];
 				document.getElementById('email').value = person[4];
 			}
-		});
+		}, "mustHaveExternalId");
 	}
 </script>
 </html:form>

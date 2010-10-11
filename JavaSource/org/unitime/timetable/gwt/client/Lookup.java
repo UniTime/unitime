@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -69,6 +68,7 @@ public class Lookup extends UniTimeDialogBox {
 	private ScrollPanel iScroll;
 	private TextBox iQuery;
 	private JavaScriptObject iCallback;
+	private String iOptions;
 	private Timer iTimer;
 	private String iLastQuery = null;
 	
@@ -214,6 +214,8 @@ public class Lookup extends UniTimeDialogBox {
 	
 	public void setCallback(JavaScriptObject callback) { iCallback = callback; }
 	
+	public void setOptions(String options) { iOptions = options; }
+	
 	public void update() {
 		final String q = iQuery.getText().trim();
 		if (q.equals(iLastQuery)) return;
@@ -225,11 +227,12 @@ public class Lookup extends UniTimeDialogBox {
 		List<Widget> line = new ArrayList<Widget>();
 		line.add(new LoadingImage());
 		iTable.addRow(null, line);
-		iLookupService.lookupPeople(q, new AsyncCallback<Set<PersonInterface>>() {
+		iLookupService.lookupPeople(q, iOptions, new AsyncCallback<List<PersonInterface>>() {
 			@Override
-			public void onSuccess(Set<PersonInterface> result) {
+			public void onSuccess(List<PersonInterface> result) {
 				iLastQuery = q;
 				iTable.clearTable(1);
+				boolean hasId = true;
 				for (PersonInterface person: result) {
 					List<Widget> line = new ArrayList<Widget>();
 					line.add(new Label(person.getName(), false));
@@ -238,6 +241,17 @@ public class Lookup extends UniTimeDialogBox {
 					line.add(new Label(person.getDepartment()));
 					line.add(new Label(person.getSource()));
 					iTable.addRow(person, line);
+					if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) {
+						int row = iTable.getRowCount() - 1;
+						for (int col = 0; col < iTable.getCellCount(row); col++)
+							iTable.getCellFormatter().addStyleName(row, col, "unitime-Disabled");
+						if (hasId) {
+							hasId = false;
+							if (row > 1)
+								for (int col = 0; col < iTable.getCellCount(row); col++)
+									iTable.getCellFormatter().addStyleName(row, col, "unitime-TopLineDash");
+						}
+					}
 				}
 				if (result.isEmpty()) {
 					List<Widget> line = new ArrayList<Widget>();
@@ -298,8 +312,8 @@ public class Lookup extends UniTimeDialogBox {
 	}
 
 	public static native void createTriggers()/*-{
-		$wnd.peopleLookup = function(query, callback) {
-			@org.unitime.timetable.gwt.client.Lookup::peopleLookup(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(query,callback);
+		$wnd.peopleLookup = function(query, callback, options) {
+			@org.unitime.timetable.gwt.client.Lookup::peopleLookup(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(query,callback,options);
 		};
 	}-*/;
 	
@@ -316,10 +330,11 @@ public class Lookup extends UniTimeDialogBox {
 		});
 	}
 	
-	public static void peopleLookup(String query, JavaScriptObject callback) {
+	public static void peopleLookup(String query, JavaScriptObject callback, String options) {
 		if (query != null && !query.trim().isEmpty())
 			getInstance().setQuery(query);
 		getInstance().setCallback(callback);
+		getInstance().setOptions(options);
 		getInstance().center();
 	}
 	

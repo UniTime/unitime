@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.gwt.services;
 
-import java.util.Set;
+import java.util.List;
 
 import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -27,5 +27,5 @@ import org.unitime.timetable.gwt.shared.PersonInterface;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface LookupServiceAsync {
-	public void lookupPeople(String query, AsyncCallback<Set<PersonInterface>> callback) throws LookupException;
+	public void lookupPeople(String query, String options, AsyncCallback<List<PersonInterface>> callback) throws LookupException;
 }
