@@ -285,6 +285,11 @@ h1 {
 	font-weight: normal;
 }
 
+.unitime-Disabled {
+	color: gray;
+	font-style: italic;
+}
+
 .unitime-ProgressMessage {
 	text-align: center;
 	font-style: italic;
@@ -429,6 +434,10 @@ h1 {
 
 .unitime-TopLine {
 	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-TopLineDash {
+	border-top: 1px dashed #9CB0CE;
 }
 
 .unitime-TimeGridHorizontalHeaderFirst {

@@ -122,7 +122,7 @@
 				lname.value = person[3];
 				document.forms[0].submit();
 			}
-		});
+		}, "mustHaveExternalId");
 	}
 </script>
 </html:form>

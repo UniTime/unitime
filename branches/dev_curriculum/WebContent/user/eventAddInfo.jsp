@@ -449,7 +449,7 @@
 				document.getElementById('email').value = person[4];
 				document.getElementById('phone').value = person[5];
 			}
-		});
+		}, "allowNoExternalId");
 	}
 </script>
 </html:form>

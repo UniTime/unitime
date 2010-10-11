@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.gwt.services;
 
-import java.util.Set;
+import java.util.List;
 
 import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -29,5 +29,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("lookupService")
 public interface LookupService extends RemoteService {
-	public Set<PersonInterface> lookupPeople(String query) throws LookupException;
+	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException;
 }

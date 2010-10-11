@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.gwt.server;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
@@ -81,19 +83,42 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 	}
 
 	@Override
-	public Set<PersonInterface> lookupPeople(String query) throws LookupException {
+	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException {
 		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
+				boolean displayWithoutId = true;
+				int maxResults = -1;
+				if (options != null) {
+					for (String option: options.split(",")) {
+						option = option.trim();
+						if (option.equals("mustHaveExternalId"))
+							displayWithoutId = false;
+						else if (option.equals("allowNoExternalId"))
+							displayWithoutId = true;
+						else if (option.startsWith("mustHaveExternalId="))
+							displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
+						else if (option.startsWith("maxResults="))
+							maxResults = Integer.parseInt(option.substring("maxResults=".length()));
+					}
+				}
 				Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
+				TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
 				Long sessionId = getAcademicSessionId();
 				String q = query.trim().toLowerCase();
-		        findPeopleFromLdap(people, q);
-		        findPeopleFromStudents(people, q, sessionId);
-		        findPeopleFromStaff(people, q);
-		        findPeopleFromTimetableManagers(people, q);
-		        findPeopleFromEventContact(people, q);
-				return new TreeSet<PersonInterface>(people.values());
+		        findPeopleFromLdap(people, peopleWithoutId, q);
+		        findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
+		        findPeopleFromStaff(people, peopleWithoutId, q);
+		        findPeopleFromTimetableManagers(people, peopleWithoutId, q);
+		        findPeopleFromEventContact(people, peopleWithoutId, q);
+		        List<PersonInterface> ret = new ArrayList<PersonInterface>(people.values());
+		        Collections.sort(ret);
+		        if (displayWithoutId)
+		        	ret.addAll(peopleWithoutId);
+		        if (maxResults > 0 && ret.size() > maxResults) {
+		        	return new ArrayList<PersonInterface>(ret.subList(0, maxResults));
+		        }
+				return ret;
 			} finally {
 				hibSession.close();
 			}
@@ -104,13 +129,16 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 		}
 	}
 	
-	protected void addPerson(Hashtable<String, PersonInterface> people, PersonInterface person) {
-		if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) return;
-		PersonInterface old = people.get(person.getId());
-		if (old == null) {
-			people.put(person.getId(), person);
+	protected void addPerson(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, PersonInterface person) {
+		if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) {
+			peopleWithoutId.add(person);
 		} else {
-			old.merge(person);
+			PersonInterface old = people.get(person.getId());
+			if (old == null) {
+				people.put(person.getId(), person);
+			} else {
+				old.merge(person);
+			}
 		}
 	}
 	
@@ -121,7 +149,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
     }
 
 	
-    protected void findPeopleFromStaff(Hashtable<String, PersonInterface> people, String query) throws Exception {
+    protected void findPeopleFromStaff(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
         String q = "select s from Staff s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
@@ -130,7 +158,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
         for (Iterator i=StaffDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
             Staff staff = (Staff)i.next();
-            addPerson(people, new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
+            addPerson(people, peopleWithoutId, new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
                     staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),
                     staff.getEmail(), null, staff.getDept(), 
                     (staff.getPositionCode()==null?null:staff.getPositionCode().getPositionType()==null?staff.getPositionCode().getPositionCode():staff.getPositionCode().getPositionType().getLabel()),
@@ -138,7 +166,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
     }
     
-    protected void findPeopleFromEventContact(Hashtable<String, PersonInterface> people, String query) throws Exception {
+    protected void findPeopleFromEventContact(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
         String q = "select s from EventContact s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
@@ -147,7 +175,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
         for (Iterator i=EventContactDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
             EventContact contact = (EventContact)i.next();
-            addPerson(people, new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
+            addPerson(people, peopleWithoutId, new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
                     contact.getFirstName(), contact.getMiddleName(), contact.getLastName(),
                     contact.getEmailAddress(), contact.getPhone(), null, 
                     null,
@@ -155,7 +183,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
     }
 
-    protected void findPeopleFromStudents(Hashtable<String, PersonInterface> people, String query, Long sessionId) throws Exception {
+    protected void findPeopleFromStudents(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query, Long sessionId) throws Exception {
         String q = "select s from Student s where s.session.uniqueId="+sessionId+" and ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
@@ -164,7 +192,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
         for (Iterator i=StudentDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
             Student student = (Student)i.next();
-            addPerson(people, new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
+            addPerson(people, peopleWithoutId, new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
                     student.getFirstName(), student.getMiddleName(), student.getLastName(),
                     student.getEmail(), null, null, 
                     "Student",
@@ -172,7 +200,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
     }
     
-    protected void findPeopleFromTimetableManagers(Hashtable<String, PersonInterface> people, String query) throws Exception {
+    protected void findPeopleFromTimetableManagers(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
         String q = "select s from TimetableManager s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
@@ -181,7 +209,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
         for (Iterator i=TimetableManagerDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
             TimetableManager manager = (TimetableManager)i.next();
-            addPerson(people, new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
+            addPerson(people, peopleWithoutId, new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
                     manager.getFirstName(), manager.getMiddleName(), manager.getLastName(),
                     manager.getEmailAddress(), null, null, 
                  (manager.getPrimaryRole()==null?null:manager.getPrimaryRole().getAbbv()),
@@ -189,7 +217,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
     }
     
-    protected void findPeopleFromLdap(Hashtable<String, PersonInterface> people, String query) throws Exception {
+    protected void findPeopleFromLdap(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
         if (ApplicationProperties.getProperty("tmtbl.lookup.ldap")==null) return;
         InitialDirContext ctx = null;
         try {
@@ -212,7 +240,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
             }
             for (NamingEnumeration<SearchResult> e=ctx.search(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name",""),filter,ctls);e.hasMore();) {
             	Attributes a = e.next().getAttributes();
-                addPerson(people, new PersonInterface(translate(getAttribute(a,"uid"), Source.LDAP),
+                addPerson(people, peopleWithoutId, new PersonInterface(translate(getAttribute(a,"uid"), Source.LDAP),
                         Constants.toInitialCase(getAttribute(a,"givenName")),
                         Constants.toInitialCase(getAttribute(a,"cn")),
                         Constants.toInitialCase(getAttribute(a,"sn")),
