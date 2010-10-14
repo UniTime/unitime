@@ -133,7 +133,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		double rmsEnrollment = 0.0;
 		for (CurCourse c1: getCourses())
 			rmsEnrollment += (c1.getNrStudents() - avgEnrollment) * (c1.getNrStudents() - avgEnrollment);
-		ret.put("Course size", sDF.format(avgEnrollment) + " ± " + sDF.format(Math.sqrt(rmsEnrollment / getCourses().size())));
+		ret.put("Course size", sDF.format(avgEnrollment) + " Â± " + sDF.format(Math.sqrt(rmsEnrollment / getCourses().size())));
 		int totalCourses = 0;
 		for (CurStudent student: getStudents())
 			totalCourses += student.getCourses().size();
@@ -141,7 +141,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		double rmsCourses = 0.0;
 		for (CurStudent student: getStudents())
 			rmsCourses += (student.getCourses().size() - avgCourses) * (student.getCourses().size() - avgCourses);
-		ret.put("Courses per student", sDF.format(avgCourses) + " ± " + sDF.format(Math.sqrt(rmsCourses / getStudents().size())) +
+		ret.put("Courses per student", sDF.format(avgCourses) + " Â± " + sDF.format(Math.sqrt(rmsCourses / getStudents().size())) +
 				" (limit: " + getStudentLimit().getMinLimit() + " .. " + getStudentLimit().getMaxLimit() + ")");
 		int totalShare = 0;
 		double totalError = 0;
