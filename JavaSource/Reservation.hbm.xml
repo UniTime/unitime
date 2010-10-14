@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,187 +19,155 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Reservation"
-		abstract="true">
-
-		<cache include="non-lazy" usage="read-write"/>
-		
-		<id 
+    <class name="Reservation" abstract="true">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">RESERVATION_SEQ</param>
-			</generator>
-            
+                <param name="sequence">reservation_seq</param>
+            </generator>
         </id>
 
-		<property
-			name="ownerClassId"
-			column="OWNER_CLASS_ID"
-			type="java.lang.String"
-			not-null="true"
-			length="1"
-		/>
-			
-		<property
-			name="owner"
-			column="OWNER"
-			type="java.lang.Long"
-			not-null="true"
-			length="20"
-		/>
-			
-		<property
-			name="priority"
-			column="PRIORITY"
-			type="java.lang.Integer"
-			not-null="true"
-			length="5"
-		/>
-			
-		<many-to-one 
-			name="reservationType"
-			class="ReservationType"
-			column="RESERVATION_TYPE"
-			not-null="true"
-		/>
-		
-		
-		<union-subclass
-		 	name="IndividualReservation"
-		 	table="INDIVIDUAL_RESERVATION"
-		 	abstract="false"
-		 	>
-			<property
-				name="externalUniqueId"
-				column="EXTERNAL_UID"
-				type="java.lang.String"
-				not-null="true"
-				length="40"
-			/>
-			
-			<property
-				name="overLimit"
-				column="OVER_LIMIT"
-				type="java.lang.Boolean"
-				not-null="true"
-			/>
-			
-			<property
-				name="expirationDate"
-				column="EXPIRATION_DATE"
-				type="java.sql.Timestamp"
-				not-null="true"
-			/>
-			
-		</union-subclass>
+        <property
+            name="ownerClassId"
+            column="owner_class_id"
+            type="java.lang.String"
+            not-null="true"
+            length="1"/>
 
-		<union-subclass
-		 	name="CharacteristicReservation"
-		 	abstract="true"
-		 	>
-			<property
-				name="reserved"
-				column="RESERVED"
-				type="java.lang.Integer"
-				not-null="true"
-				length="10"
-			/>
-			
-			<property
-				name="requested"
-				column="REQUESTED"
-				type="java.lang.Integer"
-				not-null="false"
-				length="10"
-			/>
+        <property
+            name="owner"
+            column="owner"
+            type="java.lang.Long"
+            not-null="true"
+            length="20"/>
 
-			<property
-				name="priorEnrollment"
-				column="PRIOR_ENROLLMENT"
-				type="java.lang.Integer"
-				not-null="false"
-				length="10"
-			/>
-			
-			<property
-				name="projectedEnrollment"
-				column="PROJECTED_ENROLLMENT"
-				type="java.lang.Integer"
-				not-null="false"
-				length="10"
-			/>
+        <property
+            name="priority"
+            column="priority"
+            type="java.lang.Integer"
+            not-null="true"
+            length="5"/>
 
-			<union-subclass
-			 	name="StudentGroupReservation"
-			 	table="STUDENT_GROUP_RESERVATION"
-			 	abstract="false"
-			 	>
-		 		<many-to-one name="studentGroup"
-		 			class="StudentGroup"
-		 			column="STUDENT_GROUP"
-		 			not-null="true"
-		 		/>
-			 	
-			</union-subclass>
-			 	
-			<union-subclass
-			 	name="CourseOfferingReservation"
-			 	table="COURSE_RESERVATION"
-			 	abstract="false"
-			 	>
-		 		<many-to-one name="courseOffering"
-		 			class="CourseOffering"
-		 			column="COURSE_OFFERING"
-		 			not-null="true"
-		 		/>
-			 	
-			</union-subclass>
-			 	
-			<union-subclass
-			 	name="AcadAreaPosReservation"
-			 	abstract="true"
-			 	>
-		 		<many-to-one name="academicClassification"
-		 			class="AcademicClassification"
-		 			column="ACAD_CLASSIFICATION"
-		 			not-null="false"
-		 		/>
-			 	
-				<union-subclass
-				 	name="AcadAreaReservation"
-				 	table="ACAD_AREA_RESERVATION"
-				 	abstract="false"
-				 	>
-			 		<many-to-one name="academicArea"
-			 			class="AcademicArea"
-			 			column="ACAD_AREA"
-			 			not-null="true"
-			 		/>
-			 	
-				</union-subclass>
-			 	
-				<union-subclass
-				 	name="PosReservation"
-				 	table="POS_RESERVATION"
-				 	abstract="false"
-				 	>
-			 		<many-to-one name="posMajor"
-			 			class="PosMajor"
-			 			column="POS_MAJOR"
-			 			not-null="true"
-			 		/>
-			 	
-				</union-subclass>
-			 	
-			</union-subclass>
-			 	
-		</union-subclass>
+        <many-to-one
+            name="reservationType"
+            class="ReservationType"
+            column="reservation_type"
+            not-null="true"/>
 
-		
-	</class>	
+        <union-subclass
+            name="IndividualReservation"
+            table="individual_reservation"
+            abstract="false">
+            <property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                not-null="true"
+                length="40"/>
+
+            <property
+                name="overLimit"
+                column="over_limit"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="expirationDate"
+                column="expiration_date"
+                type="java.sql.Timestamp"
+                not-null="true"/>
+
+        </union-subclass>
+
+        <union-subclass name="CharacteristicReservation" abstract="true">
+            <property
+                name="reserved"
+                column="reserved"
+                type="java.lang.Integer"
+                not-null="true"
+                length="10"/>
+
+            <property
+                name="requested"
+                column="requested"
+                type="java.lang.Integer"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="priorEnrollment"
+                column="prior_enrollment"
+                type="java.lang.Integer"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="projectedEnrollment"
+                column="projected_enrollment"
+                type="java.lang.Integer"
+                not-null="false"
+                length="10"/>
+
+            <union-subclass
+                name="StudentGroupReservation"
+                table="student_group_reservation"
+                abstract="false">
+                <many-to-one
+                    name="studentGroup"
+                    class="StudentGroup"
+                    column="student_group"
+                    not-null="true"/>
+
+            </union-subclass>
+
+            <union-subclass
+                name="CourseOfferingReservation"
+                table="course_reservation"
+                abstract="false">
+                <many-to-one
+                    name="courseOffering"
+                    class="CourseOffering"
+                    column="course_offering"
+                    not-null="true"/>
+
+            </union-subclass>
+
+            <union-subclass name="AcadAreaPosReservation" abstract="true">
+                <many-to-one
+                    name="academicClassification"
+                    class="AcademicClassification"
+                    column="acad_classification"
+                    not-null="false"/>
+
+                <union-subclass
+                    name="AcadAreaReservation"
+                    table="acad_area_reservation"
+                    abstract="false">
+                    <many-to-one
+                        name="academicArea"
+                        class="AcademicArea"
+                        column="acad_area"
+                        not-null="true"/>
+
+                </union-subclass>
+
+                <union-subclass
+                    name="PosReservation"
+                    table="pos_reservation"
+                    abstract="false">
+                    <many-to-one
+                        name="posMajor"
+                        class="PosMajor"
+                        column="pos_major"
+                        not-null="true"/>
+
+                </union-subclass>
+
+            </union-subclass>
+        </union-subclass>
+    </class>
 </hibernate-mapping>

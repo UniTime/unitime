@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,51 +19,44 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="StudentSectHistory" table="STUDENT_SECT_HIST">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="StudentSectHistory" table="student_sect_hist">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-		
-		<many-to-one 
-			name="student" 
-			class="Student" 
-			column="STUDENT_ID" 
-			not-null="true"
-			foreign-key="FK_STUDENT_SECT_HIST_STUDENT"
-		/>
-		
-		<property
-			name="data"
-			column="DATA"
-			type="org.unitime.commons.hibernate.blob.XmlBlobType"
-			not-null="true"
-			length="65535"
-		/>
 
-		<property
-			name="type"
-			column="TYPE"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            not-null="true"
+            foreign-key="fk_student_sect_hist_student"/>
 
-		<property
-			name="timestamp"
-			column="TIMESTAMP"
-			type="java.util.Date"
-			not-null="true"
-		/>
+        <property
+            name="data"
+            column="data"
+            type="org.unitime.commons.hibernate.blob.XmlBlobType"
+            not-null="true"
+            length="65535"/>
 
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="timestamp"
+            column="timestamp"
+            type="java.util.Date"
+            not-null="true"/>
 
     </class>
-
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,51 +19,46 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ManagerRole"
-		abstract="false"
-		table="TMTBL_MGR_TO_ROLES">
-		<id 
+    <class
+        name="ManagerRole"
+        abstract="false"
+        table="tmtbl_mgr_to_roles">
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">TMTBL_MGR_TO_ROLES_SEQ</param>
-			</generator>
-            
+                <param name="sequence">tmtbl_mgr_to_roles_seq</param>
+            </generator>
         </id>
-        
-		<property
-			name="primary"
-			column="IS_PRIMARY"
-			type="java.lang.Boolean"
-			not-null="false"
-		/>
-			
-		<many-to-one
-			name="role"
-			class="Roles"
-			column="ROLE_ID"
-			not-null="true"
-			foreign-key="FK_TMTBL_ROLE_ROLE"
-		/>
-		
-		<many-to-one
-			name="timetableManager"
-			class="TimetableManager"
-			column="MANAGER_ID"
-			not-null="true"
-			foreign-key="FK_TMTBL_MGR_MANAGER"
-		/>
-		<property
-			name="receiveEmails"
-			column="receive_emails"
-			type="java.lang.Boolean"
-			not-null="false"
-		/>
-			
-					
-	</class>	
+
+        <property
+            name="primary"
+            column="is_primary"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
+        <many-to-one
+            name="role"
+            class="Roles"
+            column="role_id"
+            not-null="true"
+            foreign-key="fk_tmtbl_role_role"/>
+
+        <many-to-one
+            name="timetableManager"
+            class="TimetableManager"
+            column="manager_id"
+            not-null="true"
+            foreign-key="fk_tmtbl_mgr_manager"/>
+
+        <property
+            name="receiveEmails"
+            column="receive_emails"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
+    </class>
+
 </hibernate-mapping>

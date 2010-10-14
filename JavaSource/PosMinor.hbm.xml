@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,64 +19,60 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="PosMinor"
-		table="POS_MINOR">
-
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
-
+    <class name="PosMinor" table="pos_minor">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
 
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
+        <property
+            name="code"
+            column="code"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
 
-		<property
-			name="code"
-			column="CODE"
-			type="java.lang.String"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="50"/>
 
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="true"
-			length="50"
-		/>
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            foreign-key="fk_student_session"
+            not-null="true"/>
 
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			foreign-key="FK_STUDENT_SESSION"
-			not-null="true"
-		/>
+        <set
+            name="academicAreas"
+            table="pos_acad_area_minor"
+            inverse="false"
+            lazy="true">
 
-		<set name="academicAreas" table="POS_ACAD_AREA_MINOR" inverse="false" lazy="true">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="MINOR_ID"/> 
-			<many-to-many class="org.unitime.timetable.model.AcademicArea" 
-				column="ACADEMIC_AREA_ID" 
-				foreign-key="FK_ACAD_AREA_MINOR_AREA"
-				/>
-		</set>
-	</class>
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="minor_id"/>
+            <many-to-many
+                class="org.unitime.timetable.model.AcademicArea"
+                column="academic_area_id"
+                foreign-key="fk_acad_area_minor_area"/>
+
+        </set>
+
+    </class>
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,48 +19,41 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="RoomDept"
-		table="ROOM_DEPT"
-		 	abstract="false">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
-
+    <class
+        name="RoomDept"
+        table="room_dept"
+        abstract="false">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">ROOM_SHARING_GROUP_SEQ</param>
+                <param name="sequence">room_sharing_group_seq</param>
             </generator>
         </id>
-        
-		<property
-			name="control"
-			column="IS_CONTROL"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
 
-		<many-to-one 
-			name="room" 
-			class="Location" 
-			column="ROOM_ID" 
-			not-null="true" 
-			lazy="false"
-			/>
-			
-		
-		<many-to-one 
-			name="department" 
-			class="Department" 
-			column="DEPARTMENT_ID" 
-			not-null="true"
-			foreign-key="FK_ROOM_DEPT_DEPT"
-			/>
-		
-	</class>	
+        <property
+            name="control"
+            column="is_control"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <many-to-one
+            name="room"
+            class="Location"
+            column="room_id"
+            not-null="true"
+            lazy="false"/>
+
+        <many-to-one
+            name="department"
+            class="Department"
+            column="department_id"
+            not-null="true"
+            foreign-key="fk_room_dept_dept"/>
+
+    </class>
+
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
@@ -21,94 +19,81 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Meeting"
-		abstract="false"
-		table="MEETING">
-
-		<cache include="non-lazy" usage="read-write"/>
-
-		<id 
+    <class
+        name="Meeting"
+        abstract="false"
+        table="meeting">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">PREF_GROUP_SEQ</param>
-			</generator>
-            
+                <param name="sequence">pref_group_seq</param>
+            </generator>
         </id>
-        
-		<many-to-one 
-			name="event" 
-			class="Event" 
-			column="EVENT_ID" 
-			foreign-key="fk_meeting_event"
-			not-null="true"
-		/>
 
-		<property
-			name="meetingDate"
-			column="MEETING_DATE"
-			type="java.sql.Timestamp"
-			not-null="true"
-		/>
-		
- 		<property
-			name="startPeriod"
-			column="START_PERIOD"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <many-to-one
+            name="event"
+            class="Event"
+            column="event_id"
+            foreign-key="fk_meeting_event"
+            not-null="true"/>
 
- 		<property
-			name="startOffset"
-			column="START_OFFSET"
-			type="java.lang.Integer"
-			not-null="false"
-			length="10"
-		/>
+        <property
+            name="meetingDate"
+            column="meeting_date"
+            type="java.sql.Timestamp"
+            not-null="true"/>
 
-		<property
-			name="stopPeriod"
-			column="STOP_PERIOD"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="startPeriod"
+            column="start_period"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
- 		<property
-			name="stopOffset"
-			column="STOP_OFFSET"
-			type="java.lang.Integer"
-			not-null="false"
-			length="10"
-		/>
-		
- 		<property
-			name="locationPermanentId"
-			column="location_perm_id"
-			type="java.lang.Long"
-			not-null="false"
-			length="20"
-		/>
-		
-		<property
-			name="classCanOverride"
-			column="CLASS_CAN_OVERRIDE"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
+        <property
+            name="startOffset"
+            column="start_offset"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
 
-		<property
-			name="approvedDate"
-			column="APPROVED_DATE"
-			type="java.sql.Timestamp"
-			not-null="false"
-		/>
-			
-		
-	</class>
+        <property
+            name="stopPeriod"
+            column="stop_period"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="stopOffset"
+            column="stop_offset"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <property
+            name="locationPermanentId"
+            column="location_perm_id"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="classCanOverride"
+            column="class_can_override"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="approvedDate"
+            column="approved_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+
+    </class>
+
 </hibernate-mapping>

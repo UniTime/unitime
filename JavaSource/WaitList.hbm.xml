@@ -1,8 +1,6 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-    
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
  * Copyright (C) 2008, UniTime LLC
@@ -21,51 +19,44 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="WaitList" table="WAITLIST">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="WaitList" table="waitlist">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-		
-		<many-to-one 
-			name="student" 
-			class="Student" 
-			column="STUDENT_ID" 
-			not-null="true"
-			foreign-key="FK_WAITLIST_STUDENT"
-		/>
-		
-		<many-to-one 
-			name="courseOffering" 
-			class="CourseOffering" 
-			column="COURSE_OFFERING_ID" 
-			not-null="true"
-			foreign-key="FK_WAITLIST_COURSE_OFFERING"
-		/>
 
-		<property
-			name="type"
-			column="TYPE"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            not-null="true"
+            foreign-key="fk_waitlist_student"/>
 
-		<property
-			name="timestamp"
-			column="TIMESTAMP"
-			type="java.util.Date"
-			not-null="true"
-		/>
+        <many-to-one
+            name="courseOffering"
+            class="CourseOffering"
+            column="course_offering_id"
+            not-null="true"
+            foreign-key="fk_waitlist_course_offering"/>
 
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="timestamp"
+            column="timestamp"
+            type="java.util.Date"
+            not-null="true"/>
 
     </class>
-
 </hibernate-mapping>

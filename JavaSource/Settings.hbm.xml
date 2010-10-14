@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,62 +19,50 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Settings"
-		table="SETTINGS"
-		>
-
- 		<cache include="non-lazy" usage="read-write"/>
-
-		<id 
+    <class name="Settings" table="settings">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">SETTINGS_SEQ</param>
-			</generator>
-            
+                <param name="sequence">settings_seq</param>
+            </generator>
         </id>
 
-		<property
-			name="key"
-			column="NAME"
-			type="java.lang.String"
-			length="30"
-			not-null="true"
-		/>
+        <property
+            name="key"
+            column="name"
+            type="java.lang.String"
+            length="30"
+            not-null="true"/>
 
-		<property
-			name="defaultValue"
-			column="DEFAULT_VALUE"
-			type="java.lang.String"
-			length="100"
-			not-null="true"
-		/>
+        <property
+            name="defaultValue"
+            column="default_value"
+            type="java.lang.String"
+            length="100"
+            not-null="true"/>
 
-		<property
-			name="allowedValues"
-			column="ALLOWED_VALUES"
-			type="java.lang.String"
-			length="500"
-			not-null="true"
-		/>
+        <property
+            name="allowedValues"
+            column="allowed_values"
+            type="java.lang.String"
+            length="500"
+            not-null="true"/>
 
-		<property
-			name="description"
-			column="DESCRIPTION"
-			type="java.lang.String"
-			length="100"
-			not-null="true"
-		/>
+        <property
+            name="description"
+            column="description"
+            type="java.lang.String"
+            length="100"
+            not-null="true"/>
 
-		<set name="managerSettings" table="MANAGER_SETTINGS">
-	 		<cache include="non-lazy" usage="nonstrict-read-write"/>
-			<key column="UNIQUEID" />
-			<one-to-many class="ManagerSettings" />
-		</set>
-
-	</class>	
+        <set name="managerSettings" table="manager_settings">
+            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <key column="uniqueid"/>
+            <one-to-many class="ManagerSettings"/>
+        </set>
+    </class>
 </hibernate-mapping>

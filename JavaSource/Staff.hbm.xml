@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,80 +19,65 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class
-		name="Staff"
-		table="STAFF">
-		
- 		<cache include="non-lazy" usage="read-write"/>
- 		
+    <class name="Staff" table="staff">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">STAFF_SEQ</param>
+                <param name="sequence">staff_seq</param>
             </generator>
         </id>
-        
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
 
-		<property
-			name="firstName"
-			column="FNAME"
-			type="java.lang.String"
-			not-null="false"
-			length="100"
-		/>
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
-		<property
-			name="middleName"
-			column="MNAME"
-			type="java.lang.String"
-			not-null="false"
-			length="100"
-		/>
+        <property
+            name="firstName"
+            column="fname"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
 
-		<property
-			name="lastName"
-			column="LNAME"
-			type="java.lang.String"
-			not-null="true"
-			length="100"
-		/>
+        <property
+            name="middleName"
+            column="mname"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
 
-		<property
-			name="dept"
-			column="DEPT"
-			type="java.lang.String"
-			not-null="false"
-			length="50"
-		/>
+        <property
+            name="lastName"
+            column="lname"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
 
-		<property
-			name="email"
-			column="EMAIL"
-			type="java.lang.String"
-			not-null="false"
-			length="200"
-		/>
+        <property
+            name="dept"
+            column="dept"
+            type="java.lang.String"
+            not-null="false"
+            length="50"/>
 
-		<many-to-one 
-			name="positionCode" 
-			class="PositionCodeType"
-			column="POS_CODE"			
-			not-found="ignore"
-		/>
-		
-	</class >	
-		
+        <property
+            name="email"
+            column="email"
+            type="java.lang.String"
+            not-null="false"
+            length="200"/>
+
+        <many-to-one
+            name="positionCode"
+            class="PositionCodeType"
+            column="pos_code"
+            not-found="ignore"/>
+
+    </class>
 </hibernate-mapping>

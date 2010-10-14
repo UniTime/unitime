@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,59 +19,50 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ClassInstructor"
-		table="CLASS_INSTRUCTOR">
-		
-		<cache include="non-lazy" usage="read-write"/>
-
+    <class name="ClassInstructor" table="class_instructor">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
+            column="uniqueid"
             type="java.lang.Long"
-			length="20"
-        >
+            length="20">
+
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">CLASS_INSTRUCTOR_SEQ</param>
+                <param name="sequence">class_instructor_seq</param>
             </generator>
         </id>
-				
-		<property
-			name="percentShare"
-			column="PERCENT_SHARE"
-			type="java.lang.Integer"
-			not-null="true"
-			length="3"
-		/>
-		
-		<property
-		    name="lead"
-		    type="java.lang.Boolean"
-		    column="IS_LEAD"
-		    not-null="true"
-		/>		
-				
-		<many-to-one 
-			name="classInstructing" 
-			class="Class_" 
-			column="CLASS_ID" 
-			not-null="true"
-			insert="true"
-			update="true"
-			foreign-key="FK_CLASS_INSTR_CLASS_"
-		/>
 
-		<many-to-one 
-			name="instructor" 
-			class="DepartmentalInstructor"
-			column="INSTRUCTOR_ID" 
-			not-null="true"
-			insert="true"
-			update="true"
-			foreign-key="FK_CLASS_INSTR_INSTR"
-		/>	
-				
-	</class>	
+        <property
+            name="percentShare"
+            column="percent_share"
+            type="java.lang.Integer"
+            not-null="true"
+            length="3"/>
+
+        <property
+            name="lead"
+            type="java.lang.Boolean"
+            column="is_lead"
+            not-null="true"/>
+
+        <many-to-one
+            name="classInstructing"
+            class="Class_"
+            column="class_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_class_instr_class_"/>
+
+        <many-to-one
+            name="instructor"
+            class="DepartmentalInstructor"
+            column="instructor_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_class_instr_instr"/>
+
+    </class>
 </hibernate-mapping>

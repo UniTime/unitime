@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,76 +19,78 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="CourseDemand" table="COURSE_DEMAND">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="CourseDemand" table="course_demand">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-        
-		<many-to-one 
-			name="student" 
-			class="Student" 
-			column="STUDENT_ID" 
-			foreign-key="FK_COURSE_DEMAND_STUDENT"
-			not-null="true"
-		/>
-		
-		<property
-			name="priority"
-			column="PRIORITY"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
 
-		<property
-			name="waitlist"
-			column="WAITLIST"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            foreign-key="fk_course_demand_student"
+            not-null="true"/>
 
-		<property
-			name="alternative"
-			column="IS_ALTERNATIVE"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
+        <property
+            name="priority"
+            column="priority"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
-		<property
-			name="timestamp"
-			column="TIMESTAMP"
-			type="java.util.Date"
-			not-null="true"
-		/>
+        <property
+            name="waitlist"
+            column="waitlist"
+            type="java.lang.Boolean"
+            not-null="true"/>
 
-		<many-to-one 
-			name="freeTime" 
-			class="FreeTime" 
-			column="FREE_TIME_ID" 
-			foreign-key="FK_COURSE_DEMAND_FREE_TIME"
-			not-null="false"
-		/>
+        <property
+            name="alternative"
+            column="is_alternative"
+            type="java.lang.Boolean"
+            not-null="true"/>
 
-		<set name="courseRequests" table="COURSE_REQUEST" inverse="true" cascade="all">
-	 		<cache include="non-lazy" usage="read-write"/>
-			<key column="COURSE_DEMAND_ID" foreign-key="FK_COURSE_REQUEST_DEMAND"/>
-			<one-to-many class="CourseRequest"/>
-		</set>
+        <property
+            name="timestamp"
+            column="timestamp"
+            type="java.util.Date"
+            not-null="true"/>
 
-		<set name="enrollmentMessages" table="STUDENT_ENRL_MSG" inverse="true" cascade="all">
-	 		<cache include="non-lazy" usage="read-write"/>
-			<key column="COURSE_DEMAND_ID" foreign-key="FK_STUDENT_ENRL_MSG_DEMAND"/>
-			<one-to-many class="StudentEnrollmentMessage"/>
-		</set>
+        <many-to-one
+            name="freeTime"
+            class="FreeTime"
+            column="free_time_id"
+            foreign-key="fk_course_demand_free_time"
+            not-null="false"/>
+
+        <set
+            name="courseRequests"
+            table="course_request"
+            inverse="true"
+            cascade="all">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="course_demand_id" foreign-key="fk_course_request_demand"/>
+            <one-to-many class="CourseRequest"/>
+        </set>
+
+        <set
+            name="enrollmentMessages"
+            table="student_enrl_msg"
+            inverse="true"
+            cascade="all">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="course_demand_id" foreign-key="fk_student_enrl_msg_demand"/>
+            <one-to-many class="StudentEnrollmentMessage"/>
+        </set>
 
     </class>
-    
 </hibernate-mapping>

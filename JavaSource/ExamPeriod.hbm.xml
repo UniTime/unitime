@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,87 +19,71 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ExamPeriod"
-		table="EXAM_PERIOD"
-		>
-
- 		<cache include="non-lazy" usage="read-write"/>
-
-		<id 
+    <class name="ExamPeriod" table="exam_period">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">PREF_GROUP_SEQ</param>
-			</generator>
-            
+                <param name="sequence">pref_group_seq</param>
+            </generator>
         </id>
-        
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			foreign-key="FK_EXAM_PERIOD_SESSION"
-			 />
-        
 
-		<property
-			name="dateOffset"
-			column="DATE_OFS"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            foreign-key="fk_exam_period_session"/>
 
-		<property
-			name="startSlot"
-			column="START_SLOT"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <property
+            name="dateOffset"
+            column="date_ofs"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
 
-		<property
-			name="length"
-			column="LENGTH"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <property
+            name="startSlot"
+            column="start_slot"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
 
-		<property
-			name="examType"
-			column="EXAM_TYPE"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <property
+            name="length"
+            column="length"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
 
-		<many-to-one name="prefLevel"
-			class="PreferenceLevel"
-			column="PREF_LEVEL_ID"
-			not-null="true"
-			/>
-			
-		<property
-			name="eventStartOffset"
-			column="event_start_offset"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <property
+            name="examType"
+            column="exam_type"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
 
-		<property
-			name="eventStopOffset"
-			column="event_stop_offset"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
+        <many-to-one
+            name="prefLevel"
+            class="PreferenceLevel"
+            column="pref_level_id"
+            not-null="true"/>
 
-	
-	</class>	
+        <property
+            name="eventStartOffset"
+            column="event_start_offset"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
+
+        <property
+            name="eventStopOffset"
+            column="event_stop_offset"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
+
+    </class>
 </hibernate-mapping>

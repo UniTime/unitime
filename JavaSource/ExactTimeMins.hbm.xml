@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,51 +19,45 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="ExactTimeMins" table="EXACT_TIME_MINS">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="ExactTimeMins" table="exact_time_mins">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
 
-		<property
-			name="minsPerMtgMin"
-			column="MINS_MIN"
-			type="java.lang.Integer"
-			not-null="true"
-			length="4"
-		/>
+        <property
+            name="minsPerMtgMin"
+            column="mins_min"
+            type="java.lang.Integer"
+            not-null="true"
+            length="4"/>
 
-		<property
-			name="minsPerMtgMax"
-			column="MINS_MAX"
-			type="java.lang.Integer"
-			not-null="true"
-			length="4"
-		/>
+        <property
+            name="minsPerMtgMax"
+            column="mins_max"
+            type="java.lang.Integer"
+            not-null="true"
+            length="4"/>
 
-		<property
-			name="nrSlots"
-			column="NR_SLOTS"
-			type="java.lang.Integer"
-			not-null="true"
-			length="4"
-		/>
+        <property
+            name="nrSlots"
+            column="nr_slots"
+            type="java.lang.Integer"
+            not-null="true"
+            length="4"/>
 
-		<property
-			name="breakTime"
-			column="BREAK_TIME"
-			type="java.lang.Integer"
-			not-null="true"
-			length="3"
-		/>
+        <property
+            name="breakTime"
+            column="break_time"
+            type="java.lang.Integer"
+            not-null="true"
+            length="3"/>
 
     </class>
-
 </hibernate-mapping>

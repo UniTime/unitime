@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,26 +19,29 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="UserData"
-		table="USER_DATA"
-		>
+    <class name="UserData" table="user_data">
+        <cache include="non-lazy" usage="read-write"/>
+        <composite-id>
+            <key-property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                length="12"/>
 
- 		<cache include="non-lazy" usage="read-write"/>
+            <key-property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                length="100"/>
 
-		<composite-id>
-        	<key-property name="externalUniqueId" column="EXTERNAL_UID" type="java.lang.String" length="12"/>
-	        <key-property name="name" column="NAME" type="java.lang.String" length="100"/>
-		</composite-id>
+        </composite-id>
+        <property
+            name="value"
+            column="value"
+            type="java.lang.String"
+            length="2048"
+            not-null="true"/>
 
-		<property
-			name="value"
-			column="VALUE"
-			type="java.lang.String"
-			length="2048"
-			not-null="true"
-		/>
-	</class>	
+    </class>
 </hibernate-mapping>

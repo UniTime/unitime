@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,105 +19,97 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="TimetableManager"
-		abstract="false"
-		table="TIMETABLE_MANAGER">
-
-		<cache include="non-lazy" usage="read-write"/>
-
-		<id 
+    <class
+        name="TimetableManager"
+        abstract="false"
+        table="timetable_manager">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">TIMETABLE_MGR_SEQ</param>
-			</generator>
-            
+                <param name="sequence">timetable_mgr_seq</param>
+            </generator>
         </id>
-        
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="string"
-			not-null="false"
-			length="40"
-		/>
-		
-		<set 
-			name="settings" 
-			table="MANAGER_SETTINGS" 
-			cascade="all-delete-orphan" 
-			lazy="true"
-			inverse="true"
-		>				
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="USER_UNIQUEID" />
-			<one-to-many class="ManagerSettings" />
-		</set>				
-		
-		<property
-			name="firstName"
-			column="FIRST_NAME"
-			type="string"
-			not-null="true"
-			length="100"
-		/>
-		
-		<property
-			name="middleName"
-			column="MIDDLE_NAME"
-			type="string"
-			not-null="false"
-			length="100"
-		/>
-		
-		<property
-			name="lastName"
-			column="LAST_NAME"
-			type="string"
-			not-null="true"
-			length="100"
-		/>
-		
-		<property
-			name="emailAddress"
-			column="EMAIL_ADDRESS"
-			type="string"
-			not-null="false"
-			length="200"
-		/>
-		
-		<set name="departments"
-			table="DEPT_TO_TT_MGR" >
-			 <cache include="non-lazy" usage="read-write"/>
-			 <key column="TIMETABLE_MGR_ID"/>			
-			<many-to-many 
-				class="Department" 
-				column="DEPARTMENT_ID" 
-				foreign-key="FK_DEPT_MGR_TO_DEPT"/>
-		</set>
-		
-		<set
-			name="managerRoles"
-			lazy="true"
-			cascade="all-delete-orphan"
-			inverse="true"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="MANAGER_ID" not-null="true"/>
-			<one-to-many class="ManagerRole"/>
-		</set>				
-					
-		<set name="solverGroups" table="SOLVER_GR_TO_TT_MGR" >
-	 		<cache include="non-lazy" usage="read-write"/>
-			<key column="TIMETABLE_MGR_ID"/>			
-			<many-to-many 
-				class="SolverGroup" 
-				column="SOLVER_GROUP_ID" 
-				foreign-key="FK_SOLVER_GR_TO_TT_MGR_SG"/>
-		</set>	
-	</class>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="string"
+            not-null="false"
+            length="40"/>
+
+        <set
+            name="settings"
+            table="manager_settings"
+            cascade="all-delete-orphan"
+            lazy="true"
+            inverse="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="user_uniqueid"/>
+            <one-to-many class="ManagerSettings"/>
+        </set>
+
+        <property
+            name="firstName"
+            column="first_name"
+            type="string"
+            not-null="true"
+            length="100"/>
+
+        <property
+            name="middleName"
+            column="middle_name"
+            type="string"
+            not-null="false"
+            length="100"/>
+
+        <property
+            name="lastName"
+            column="last_name"
+            type="string"
+            not-null="true"
+            length="100"/>
+
+        <property
+            name="emailAddress"
+            column="email_address"
+            type="string"
+            not-null="false"
+            length="200"/>
+
+        <set name="departments" table="dept_to_tt_mgr">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="timetable_mgr_id"/>
+            <many-to-many
+                class="Department"
+                column="department_id"
+                foreign-key="fk_dept_mgr_to_dept"/>
+
+        </set>
+        <set
+            name="managerRoles"
+            lazy="true"
+            cascade="all-delete-orphan"
+            inverse="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="manager_id" not-null="true"/>
+            <one-to-many class="ManagerRole"/>
+        </set>
+
+        <set name="solverGroups" table="solver_gr_to_tt_mgr">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="timetable_mgr_id"/>
+            <many-to-many
+                class="SolverGroup"
+                column="solver_group_id"
+                foreign-key="fk_solver_gr_to_tt_mgr_sg"/>
+
+        </set>
+    </class>
+
 </hibernate-mapping>

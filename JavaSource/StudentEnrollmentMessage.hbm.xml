@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,65 +19,58 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="StudentEnrollmentMessage" table="STUDENT_ENRL_MSG">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="StudentEnrollmentMessage" table="student_enrl_msg">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-        
-		<many-to-one 
-			name="courseDemand" 
-			class="CourseDemand" 
-			column="COURSE_DEMAND_ID" 
-			not-null="true"
-			foreign-key="FK_STUDENT_ENRL_MSG_DEMAND"
-		/>
 
-		<property 
-			name="message" 
-			column="MESSAGE" 
-			type="java.lang.String" 
-			not-null="true"
-			length="255"
-		/>
+        <many-to-one
+            name="courseDemand"
+            class="CourseDemand"
+            column="course_demand_id"
+            not-null="true"
+            foreign-key="fk_student_enrl_msg_demand"/>
 
-		<property 
-			name="level" 
-			column="MSG_LEVEL" 
-			type="java.lang.Integer" 
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="message"
+            column="message"
+            type="java.lang.String"
+            not-null="true"
+            length="255"/>
 
-		<property
-			name="type"
-			column="TYPE"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
-		
-		<property
-			name="timestamp"
-			column="TIMESTAMP"
-			type="java.util.Date"
-			not-null="true"
-		/>
+        <property
+            name="level"
+            column="msg_level"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
-		<property
-			name="order"
-			column="ORD"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="timestamp"
+            column="timestamp"
+            type="java.util.Date"
+            not-null="true"/>
+
+        <property
+            name="order"
+            column="ord"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
     </class>
-
 </hibernate-mapping>

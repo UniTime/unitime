@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,70 +19,57 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Building"
-		table="BUILDING">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
+    <class name="Building" table="building">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
                 <param name="sequence">building_seq</param>
             </generator>
         </id>
-		
-		
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
 
-		<property
-			name="abbreviation"
-			column="ABBREVIATION"
-			type="java.lang.String"
-			not-null="true"
-			length="10"
-		/>
-		
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="true"
-			length="100"
-		/>
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
-		<property
-			name="coordinateX"
-			column="COORDINATE_X"
-			type="java.lang.Double"
-			not-null="false"
-		/>
-		
-		<property
-			name="coordinateY"
-			column="COORDINATE_Y"
-			type="java.lang.Double"
-			not-null="false"
-		/>
-		
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			not-null="true"
-			foreign-key="FK_BUILDING_SESSION"
-			/>
-		
-	</class>	
+        <property
+            name="abbreviation"
+            column="abbreviation"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
+
+        <property
+            name="coordinateX"
+            column="coordinate_x"
+            type="java.lang.Double"
+            not-null="false"/>
+
+        <property
+            name="coordinateY"
+            column="coordinate_y"
+            type="java.lang.Double"
+            not-null="false"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_building_session"/>
+
+    </class>
 </hibernate-mapping>
