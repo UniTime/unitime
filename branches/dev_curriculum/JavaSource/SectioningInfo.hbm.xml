@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,42 +19,37 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="SectioningInfo" table="SECTIONING_INFO">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="SectioningInfo" table="sectioning_info">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-		
-		<many-to-one 
-			name="clazz" 
-			class="Class_" 
-			column="CLASS_ID" 
-			not-null="true"
-			unique="true"
-			foreign-key="FK_SECTIONING_INFO_CLASS"
-		/>
 
-		<property
-			name="nbrExpectedStudents"
-			column="NBR_EXP_STUDENTS"
-			type="java.lang.Double"
-			not-null="true"
-		/>
+        <many-to-one
+            name="clazz"
+            class="Class_"
+            column="class_id"
+            not-null="true"
+            unique="true"
+            foreign-key="fk_sectioning_info_class"/>
 
-		<property
-			name="nbrHoldingStudents"
-			column="NBR_HOLD_STUDENTS"
-			type="java.lang.Double"
-			not-null="true"
-		/>
+        <property
+            name="nbrExpectedStudents"
+            column="nbr_exp_students"
+            type="java.lang.Double"
+            not-null="true"/>
+
+        <property
+            name="nbrHoldingStudents"
+            column="nbr_hold_students"
+            type="java.lang.Double"
+            not-null="true"/>
 
     </class>
-
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,67 +19,55 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ItypeDesc"
-		table="ITYPE_DESC"
-		 >
-
-		<cache include="non-lazy" usage="nonstrict-read-write"/>
-		
+    <class name="ItypeDesc" table="itype_desc">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="itype"
-            column="ITYPE"
+            column="itype"
             type="java.lang.Integer"
-			length="2" >
-        </id>
-        
-		<property
-			name="abbv"
-			column="ABBV"
-			type="java.lang.String"
-			not-null="false"
-			length="7"
-		/>
+            length="2"/>
 
-		<property
-			name="desc"
-			column="DESCRIPTION"
-			type="java.lang.String"
-			not-null="false"
-			length="50"
-		/>
-		
-		<property
-			name="sis_ref"
-			column="SIS_REF"
-			type="java.lang.String"
-			not-null="false"
-			length="20"
-		/>
-		
-		<property
-			name="basic"
-			column="BASIC"
-			type="java.lang.Integer"
-			not-null="false"
-			length="1"
-		/>
-		
-		<property
-			name="organized"
-			column="ORGANIZED"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
-		
-		<many-to-one 
-			name="parent" 
-			class="ItypeDesc" 
-			column="PARENT" 
-			not-null="false"
-			foreign-key="FK_ITYPE_PARENT"
-		/>
-	</class>
+        <property
+            name="abbv"
+            column="abbv"
+            type="java.lang.String"
+            not-null="false"
+            length="7"/>
+
+        <property
+            name="desc"
+            column="description"
+            type="java.lang.String"
+            not-null="false"
+            length="50"/>
+
+        <property
+            name="sis_ref"
+            column="sis_ref"
+            type="java.lang.String"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="basic"
+            column="basic"
+            type="java.lang.Integer"
+            not-null="false"
+            length="1"/>
+
+        <property
+            name="organized"
+            column="organized"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <many-to-one
+            name="parent"
+            class="ItypeDesc"
+            column="parent"
+            not-null="false"
+            foreign-key="fk_itype_parent"/>
+
+    </class>
 </hibernate-mapping>

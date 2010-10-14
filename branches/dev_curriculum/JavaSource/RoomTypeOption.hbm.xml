@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,40 +19,36 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class name="RoomTypeOption" table="ROOM_TYPE_OPTION">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
- 		<composite-id>
- 			<key-many-to-one 
- 				name="roomType" 
- 				class="RoomType" 
- 				column="ROOM_TYPE" 
- 				foreign-key="fk_rtype_option_type"
- 			/>
- 			<key-many-to-one 
- 				name="session" 
- 				class="Session" 
- 				column="SESSION_ID"
- 				foreign-key="fk_rtype_option_session"/>
- 		</composite-id>
+    <class name="RoomTypeOption" table="room_type_option">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <composite-id>
+            <key-many-to-one
+                name="roomType"
+                class="RoomType"
+                column="room_type"
+                foreign-key="fk_rtype_option_type"/>
 
-		<property
-			name="status"
-			column="STATUS"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>			
-					
-		<property
-			name="message"
-			column="MESSAGE"
-			type="java.lang.String"
-			not-null="true"
-			length="200"
-		/>
-	</class>		
+            <key-many-to-one
+                name="session"
+                class="Session"
+                column="session_id"
+                foreign-key="fk_rtype_option_session"/>
+
+        </composite-id>
+        <property
+            name="status"
+            column="status"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="message"
+            column="message"
+            type="java.lang.String"
+            not-null="true"
+            length="200"/>
+
+    </class>
 </hibernate-mapping>

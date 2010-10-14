@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,88 +19,82 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ExamConflict"
-		table="XCONFLICT"
-		>
-
- 		<cache include="non-lazy" usage="read-write"/>
-
-		<id 
+    <class name="ExamConflict" table="xconflict">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
             name="uniqueId"
-            column="UNIQUEID" 
-            type="java.lang.Long">            
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-				<param name="sequence">PREF_GROUP_SEQ</param>
-			</generator>
-            
+                <param name="sequence">pref_group_seq</param>
+            </generator>
         </id>
-        
-		<property
-			name="conflictType"
-			column="CONFLICT_TYPE"
-			type="java.lang.Integer"
-			length="10"
-			not-null="true"
-		/>
-		
-		<property
-			name="distance"
-			column="DISTANCE"
-			type="java.lang.Double"
-			not-null="false"
-		/>
 
-		<property
-			name="nrStudents"
-			type="java.lang.Integer"
-			formula="(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)"
-		/>
+        <property
+            name="conflictType"
+            column="conflict_type"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
 
-		<property
-			name="nrInstructors"
-			type="java.lang.Integer"
-			formula="(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)"
-		/>
+        <property
+            name="distance"
+            column="distance"
+            type="java.lang.Double"
+            not-null="false"/>
 
-		<set
-			name="exams"
-			table="XCONFLICT_EXAM"
-			inverse="true"
-			lazy="false">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="CONFLICT_ID" foreign-key="FK_XCONFLICT_EX_CONF"/>
-			<many-to-many
-				class="Exam"
-				column="EXAM_ID"
-				foreign-key="FK_XCONFLICT_EX_EXAM"
-				fetch="join"/>
-		</set>
+        <property
+            name="nrStudents"
+            type="java.lang.Integer"
+            formula="(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)"/>
 
-		<set
-			name="students"
-			table="XCONFLICT_STUDENT"
-			lazy="true">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="CONFLICT_ID" foreign-key="FK_XCONFLICT_ST_CONF"/>
-			<many-to-many
-				class="Student"
-				column="STUDENT_ID"
-				foreign-key="FK_XCONFLICT_ST_STUDENT"/>
-		</set>
+        <property
+            name="nrInstructors"
+            type="java.lang.Integer"
+            formula="(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)"/>
 
-		<set
-			name="instructors"
-			table="XCONFLICT_INSTRUCTOR"
-			lazy="true">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="CONFLICT_ID" foreign-key="FK_XCONFLICT_IN_CONF"/>
-			<many-to-many
-				class="DepartmentalInstructor"
-				column="INSTRUCTOR_ID"
-				foreign-key="FK_XCONFLICT_IN_INSTRUCTOR"/>
-		</set>
-	</class>
+        <set
+            name="exams"
+            table="xconflict_exam"
+            inverse="true"
+            lazy="false">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="conflict_id" foreign-key="fk_xconflict_ex_conf"/>
+            <many-to-many
+                class="Exam"
+                column="exam_id"
+                foreign-key="fk_xconflict_ex_exam"
+                fetch="join"/>
+
+        </set>
+
+        <set
+            name="students"
+            table="xconflict_student"
+            lazy="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="conflict_id" foreign-key="fk_xconflict_st_conf"/>
+            <many-to-many
+                class="Student"
+                column="student_id"
+                foreign-key="fk_xconflict_st_student"/>
+
+        </set>
+
+        <set
+            name="instructors"
+            table="xconflict_instructor"
+            lazy="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="conflict_id" foreign-key="fk_xconflict_in_conf"/>
+            <many-to-many
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_xconflict_in_instructor"/>
+
+        </set>
+
+    </class>
 </hibernate-mapping>

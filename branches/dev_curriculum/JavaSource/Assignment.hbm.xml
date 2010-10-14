@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,135 +19,118 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Assignment"
-		table="ASSIGNMENT">
-		
-		<cache include="non-lazy" usage="read-write"/>
-
+    <class name="Assignment" table="assignment">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">ASSIGNMENT_SEQ</param>
+                <param name="sequence">assignment_seq</param>
             </generator>
         </id>
-		
-		<property
-			name="days"
-			column="DAYS"
-			type="java.lang.Integer"
-			not-null="false"
-			length="4"
-		/>
 
-		<property
-			name="startSlot"
-			column="SLOT"
-			type="java.lang.Integer"
-			not-null="false"
-			length="4"
-		/>
-		
-		<property
-			name="classId"
-			column="CLASS_ID"
-			type="java.lang.Long"
-			not-null="false"
-			insert="false"
-			update="false"
-		/>
-		
-		<property
-			name="className"
-			column="CLASS_NAME"
-			type="java.lang.String"
-			not-null="false"
-			length="100"
-		/>
+        <property
+            name="days"
+            column="days"
+            type="java.lang.Integer"
+            not-null="false"
+            length="4"/>
 
-		<many-to-one 
-			name="timePattern" 
-			class="TimePattern" 
-			column="TIME_PATTERN_ID" 
-			not-null="true"
-			foreign-key="FK_ASSIGNMENT_TIME_PATTERN"
-		/>
-		
-		<many-to-one 
-			name="solution" 
-			class="Solution" 
-			column="SOLUTION_ID" 
-			not-null="true"
-			foreign-key="FK_ASSIGNMENT_SOLUTION"
-		/>		
+        <property
+            name="startSlot"
+            column="slot"
+            type="java.lang.Integer"
+            not-null="false"
+            length="4"/>
 
-		<set
-			name="instructors"
-			lazy="true" 
-			table="ASSIGNED_INSTRUCTORS"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="ASSIGNMENT_ID"/>
-			<many-to-many 
-				class="DepartmentalInstructor"
-				column="INSTRUCTOR_ID"
-				foreign-key="FK_ASSIGNED_INSTRUCTOR"
-			/>
-		</set>
+        <property
+            name="classId"
+            column="class_id"
+            type="java.lang.Long"
+            not-null="false"
+            insert="false"
+            update="false"/>
 
-		<set
-			name="rooms"
-			lazy="false" 
-			table="ASSIGNED_ROOMS"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="ASSIGNMENT_ID"/>
-			<many-to-many 
-				class="Location"
-				column="ROOM_ID"
-			/>
-		</set>
+        <property
+            name="className"
+            column="class_name"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
 
-		<many-to-one 
-			name="clazz" 
-			class="Class_"
-			column="CLASS_ID" 
-			lazy="proxy"
-			not-null="true"
-			foreign-key="FK_ASSIGNMENT_CLASS"
-		/>
+        <many-to-one
+            name="timePattern"
+            class="TimePattern"
+            column="time_pattern_id"
+            not-null="true"
+            foreign-key="fk_assignment_time_pattern"/>
 
-		<set
-			name="assignmentInfo"
-			inverse="true"
-			cascade="all"
-			lazy="true" 
-			table="SOLVER_INFO"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="ASSIGNMENT_ID"/>
-			<one-to-many class="AssignmentInfo"/>
-		</set>
+        <many-to-one
+            name="solution"
+            class="Solution"
+            column="solution_id"
+            not-null="true"
+            foreign-key="fk_assignment_solution"/>
 
-		<set
-			name="constraintInfo"
-			inverse="true"
-			lazy="true" 
-			cascade="delete-orphan"
-			table="CONSTRAINT_INFO"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="ASSIGNMENT_ID"/>
-			<many-to-many 
-				class="ConstraintInfo"
-				column="SOLVER_INFO_ID"
-				foreign-key="FK_CONSTRAINT_INFO_SOLVER"
-			/>
-		</set>
-	</class>
+        <set
+            name="instructors"
+            lazy="true"
+            table="assigned_instructors">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="assignment_id"/>
+            <many-to-many
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_assigned_instructor"/>
+
+        </set>
+
+        <set
+            name="rooms"
+            lazy="false"
+            table="assigned_rooms">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="assignment_id"/>
+            <many-to-many class="Location" column="room_id"/>
+        </set>
+
+        <many-to-one
+            name="clazz"
+            class="Class_"
+            column="class_id"
+            lazy="proxy"
+            not-null="true"
+            foreign-key="fk_assignment_class"/>
+
+        <set
+            name="assignmentInfo"
+            inverse="true"
+            cascade="all"
+            lazy="true"
+            table="solver_info">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="assignment_id"/>
+            <one-to-many class="AssignmentInfo"/>
+        </set>
+
+        <set
+            name="constraintInfo"
+            inverse="true"
+            lazy="true"
+            cascade="delete-orphan"
+            table="constraint_info">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="assignment_id"/>
+            <many-to-many
+                class="ConstraintInfo"
+                column="solver_info_id"
+                foreign-key="fk_constraint_info_solver"/>
+
+        </set>
+
+    </class>
 </hibernate-mapping>

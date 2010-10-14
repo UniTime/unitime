@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,52 +19,44 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="Designator"
-		table="DESIGNATOR">
-		
-		<cache include="non-lazy" usage="read-write"/>
-
+    <class name="Designator" table="designator">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
+            column="uniqueid"
             type="java.lang.Long"
-			length="20"
-        >
+            length="20">
+
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">DESIGNATOR_SEQ</param>
+                <param name="sequence">designator_seq</param>
             </generator>
         </id>
-				
-		<property
-			name="code"
-			column="CODE"
-			type="java.lang.String"
-			not-null="true"
-			length="3"
-		/>
-		
-		<many-to-one 
-			name="subjectArea" 
-			class="SubjectArea" 
-			column="SUBJECT_AREA_ID" 
-			not-null="true"
-			insert="true"
-			update="true"
-			foreign-key="FK_DESIGNATOR_SUBJ_AREA"
-		/>
 
-		<many-to-one 
-			name="instructor" 
-			class="DepartmentalInstructor"
-			column="INSTRUCTOR_ID" 
-			not-null="true"
-			insert="true"
-			update="true"
-			foreign-key="FK_DESIGNATOR_INSTRUCTOR"
-		/>	
-				
-	</class>	
+        <property
+            name="code"
+            column="code"
+            type="java.lang.String"
+            not-null="true"
+            length="3"/>
+
+        <many-to-one
+            name="subjectArea"
+            class="SubjectArea"
+            column="subject_area_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_designator_subj_area"/>
+
+        <many-to-one
+            name="instructor"
+            class="DepartmentalInstructor"
+            column="instructor_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_designator_instructor"/>
+
+    </class>
 </hibernate-mapping>

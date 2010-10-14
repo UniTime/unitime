@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,46 +19,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="SolverInfoDef"
-		table="SOLVER_INFO_DEF">
-		
-  		<cache include="non-lazy" usage="read-write"/>
-
+    <class name="SolverInfoDef" table="solver_info_def">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">SOLVER_INFO_DEF_SEQ</param>
+                <param name="sequence">solver_info_def_seq</param>
             </generator>
         </id>
-		
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="false"
-			length="100"
-		/>
 
-		<property
-			name="description"
-			column="DESCRIPTION"
-			type="java.lang.String"
-			not-null="false"
-			length="1000"
-		/>
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
 
-		<property
-			name="implementation"
-			column="IMPLEMENTATION"
-			type="java.lang.String"
-			not-null="false"
-			length="250"
-		/>
-	</class>	
+        <property
+            name="description"
+            column="description"
+            type="java.lang.String"
+            not-null="false"
+            length="1000"/>
+
+        <property
+            name="implementation"
+            column="implementation"
+            type="java.lang.String"
+            not-null="false"
+            length="250"/>
+
+    </class>
 </hibernate-mapping>

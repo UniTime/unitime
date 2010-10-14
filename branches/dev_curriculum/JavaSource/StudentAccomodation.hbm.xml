@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,51 +19,45 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="StudentAccomodation" table="STUDENT_ACCOMODATION">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="StudentAccomodation" table="student_accomodation">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-		
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="true"
-			length="50"
-		/>
 
-		<property
-			name="abbreviation"
-			column="ABBREVIATION"
-			type="java.lang.String"
-			not-null="true"
-			length="20"
-		/>
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="50"/>
 
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
+        <property
+            name="abbreviation"
+            column="abbreviation"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
 
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			not-null="true"
-			foreign-key="FK_STUDENT_ACCOM_SESSION"
-		/>
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_student_accom_session"/>
 
     </class>
-
 </hibernate-mapping>

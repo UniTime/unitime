@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,93 +19,84 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="RoomFeature"
-		table="ROOM_FEATURE"
-		lazy="true"
-		>
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
-
+    <class
+        name="RoomFeature"
+        table="room_feature"
+        lazy="true">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">ROOM_FEATURE_SEQ</param>
+                <param name="sequence">room_feature_seq</param>
             </generator>
         </id>
-		
-		<discriminator
-			column="DISCRIMINATOR"
-			type="java.lang.String"
-			not-null="true"
-			length="10"
-		/>
-		
-		<property
-			name="label"
-			column="LABEL"
-			type="java.lang.String"
-			not-null="true"
-			length="20"
-		/>
-		
-		<property
-			name="abbv"
-			column="ABBV"
-			type="java.lang.String"
-			not-null="false"
-			length="20"
-		/>
 
-		<set name="rooms" table="ROOM_JOIN_ROOM_FEATURE" inverse="true">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="FEATURE_ID"/> 
-			<many-to-many class="Location" 
-				column="ROOM_ID" 
-				/>
-		</set>
-		
+        <discriminator
+            column="discriminator"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
 
-	<subclass
-		name="GlobalRoomFeature"
-		extends="RoomFeature"
-		discriminator-value="global"
-		>
-		<property 
-			name="sisReference"
-			column="SIS_REFERENCE"
-			type="java.lang.String" 
-			not-null="false" 
-			length="20"
-		/>
-		<property 
-			name="sisValue"
-			column="SIS_VALUE"
-			type="java.lang.String" 
-			not-null="false" 
-			length="20"
-		/>
-	</subclass>	
+        <property
+            name="label"
+            column="label"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
 
-	<subclass
-		name="DepartmentRoomFeature"
-		extends="RoomFeature"
-		discriminator-value="department"
-		>
-		<many-to-one 
-			name="department" 
-			class="Department" 
-			column="DEPARTMENT_ID" 
-			not-null="true"
-			lazy="false"
-			foreign-key="FK_ROOM_FEATURE_DEPT"
-		/>
-	</subclass>		
-		
-	</class>	
+        <property
+            name="abbv"
+            column="abbv"
+            type="java.lang.String"
+            not-null="false"
+            length="20"/>
+
+        <set
+            name="rooms"
+            table="room_join_room_feature"
+            inverse="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="feature_id"/>
+            <many-to-many class="Location" column="room_id"/>
+        </set>
+
+        <subclass
+            name="GlobalRoomFeature"
+            extends="RoomFeature"
+            discriminator-value="global">
+            <property
+                name="sisReference"
+                column="sis_reference"
+                type="java.lang.String"
+                not-null="false"
+                length="20"/>
+
+            <property
+                name="sisValue"
+                column="sis_value"
+                type="java.lang.String"
+                not-null="false"
+                length="20"/>
+
+        </subclass>
+
+        <subclass
+            name="DepartmentRoomFeature"
+            extends="RoomFeature"
+            discriminator-value="department">
+            <many-to-one
+                name="department"
+                class="Department"
+                column="department_id"
+                not-null="true"
+                lazy="false"
+                foreign-key="fk_room_feature_dept"/>
+
+        </subclass>
+
+    </class>
+
 </hibernate-mapping>

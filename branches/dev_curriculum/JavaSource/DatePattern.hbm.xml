@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,72 +19,71 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class name="DatePattern" table="DATE_PATTERN">
-	
-		<cache include="non-lazy" usage="nonstrict-read-write"/>
-
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="DatePattern" table="date_pattern">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">DATE_PATTERN_SEQ</param>
+                <param name="sequence">date_pattern_seq</param>
             </generator>
         </id>
 
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
             length="50"
-			not-null="false"
-		/>
-		
+            not-null="false"/>
+
         <property
             name="pattern"
-            column="PATTERN"
+            column="pattern"
             type="java.lang.String"
             length="366"
-            not-null="true"
-        />
-		
+            not-null="true"/>
+
         <property
             name="offset"
-            column="OFFSET"
+            column="offset"
             type="java.lang.Integer"
             not-null="true"
-            length="4"
-        />
+            length="4"/>
 
-		<property
-			name="type"
-			column="TYPE"
-			type="java.lang.Integer"
-			not-null="false"
-			length="2"
-		/>
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="false"
+            length="2"/>
 
-		<property
-			name="visible"
-			column="VISIBLE"
-			type="java.lang.Boolean"
-			not-null="false"
-		/>
+        <property
+            name="visible"
+            column="visible"
+            type="java.lang.Boolean"
+            not-null="false"/>
 
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			not-null="true"
-			foreign-key="FK_DATEPATT_SESSION"
-		/>
-		
-		<set name="departments" table="DATE_PATTERN_DEPT" inverse="true">
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="PATTERN_ID"/> 
-			<many-to-many class="Department" 
-				column="DEPT_ID" 
-				foreign-key="FK_DATE_PATTERN_DEPT_DEPT"
-				/>
-		</set>
-	</class>
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_datepatt_session"/>
+
+        <set
+            name="departments"
+            table="date_pattern_dept"
+            inverse="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="pattern_id"/>
+            <many-to-many
+                class="Department"
+                column="dept_id"
+                foreign-key="fk_date_pattern_dept_dept"/>
+
+        </set>
+
+    </class>
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,152 +19,141 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="InstrOfferingConfig"
-		table="INSTR_OFFERING_CONFIG">
-		
- 		<cache include="non-lazy" usage="read-write"/>
- 		
+    <class name="InstrOfferingConfig" table="instr_offering_config">
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
+            column="uniqueid"
             type="java.lang.Long"
-			length="10">
-			
+            length="10">
+
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">INSTR_OFFR_CONFIG_SEQ</param>
+                <param name="sequence">instr_offr_config_seq</param>
             </generator>
-            
-        </id>		
+        </id>
 
-		<property
-			name="limit"
-			column="CONFIG_LIMIT"
-			type="java.lang.Integer"
-			not-null="true"
-			length="4"
-		/>
+        <property
+            name="limit"
+            column="config_limit"
+            type="java.lang.Integer"
+            not-null="true"
+            length="4"/>
 
-		<many-to-one 
-			name="instructionalOffering" 
-			class="InstructionalOffering" 
-			column="INSTR_OFFR_ID" 
-			not-null="true"
-			insert="true"
-			update="true"
-			foreign-key="FK_INST_CONFIG_INSTR_OFFR"
-		/>
+        <many-to-one
+            name="instructionalOffering"
+            class="InstructionalOffering"
+            column="instr_offr_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_inst_config_instr_offr"/>
 
-		<set
-			name="schedulingSubparts"
-			inverse="true"
-			lazy="true"
-			cascade="all-delete-orphan"
-			table="SCHEDULING_SUBPART"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="CONFIG_ID"/>
-			<one-to-many class="SchedulingSubpart"/>
-		</set>		
+        <set
+            name="schedulingSubparts"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="scheduling_subpart">
 
-		<property
-			name="unlimitedEnrollment"
-			column="UNLIMITED_ENROLLMENT"
-			type="java.lang.Boolean"
-			not-null="true"
-			insert="true"
-			update="true"
-		/>
-		
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="false"
-			length="10"
-			insert="true"
-			update="true"
-		/>
-		
-		<set
-			name="courseReservations"
-			table="COURSE_RESERVATION"
-			order-by="PRIORITY, COURSE_OFFERING"
-			where="OWNER_CLASS_ID='R'"
-			cascade="all-delete-orphan"
-			inverse="true"
-			lazy="true"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="OWNER"/>
-			<one-to-many class="CourseOfferingReservation"/>
-		</set>
-		
-		<set
-			name="individualReservations"
-			table="INDIVIDUAL_RESERVATION"
-			order-by="PRIORITY, EXPIRATION_DATE"
-			where="OWNER_CLASS_ID='R'"
-			cascade="all-delete-orphan"
-			inverse="true"
-			lazy="true"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="OWNER"/>
-			<one-to-many class="IndividualReservation"/>
-		</set>
-		
-		<set
-			name="studentGroupReservations"
-			table="STUDENT_GROUP_RESERVATION"
-			order-by="PRIORITY, STUDENT_GROUP"
-			where="OWNER_CLASS_ID='R'"
-			cascade="all-delete-orphan"
-			inverse="true"
-			lazy="true"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="OWNER"/>
-			<one-to-many class="StudentGroupReservation"/>
-		</set>
-		
-		<set
-			name="acadAreaReservations"
-			table="ACAD_AREA_RESERVATION"
-			order-by="PRIORITY, ACAD_AREA"
-			where="OWNER_CLASS_ID='R'"
-			cascade="all-delete-orphan"
-			inverse="true"
-			lazy="true"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="OWNER"/>
-			<one-to-many class="AcadAreaReservation"/>
-		</set>
-		
-		<set
-			name="posReservations"
-			table="POS_RESERVATION"
-			order-by="PRIORITY, POS_MAJOR"
-			where="OWNER_CLASS_ID='R'"
-			cascade="all-delete-orphan"
-			inverse="true"
-			lazy="true"
-			>
-	 		<cache include="non-lazy" usage="read-write"/> 		
-			<key column="OWNER"/>
-			<one-to-many class="PosReservation"/>
-		</set>
-		
-		<property
-			name="uniqueIdRolledForwardFrom"
-			column="UID_ROLLED_FWD_FROM"
-			type="java.lang.Long"
-			not-null="false"
-			length="20"
-		/>
-		
-	</class>	
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="config_id"/>
+            <one-to-many class="SchedulingSubpart"/>
+        </set>
+
+        <property
+            name="unlimitedEnrollment"
+            column="unlimited_enrollment"
+            type="java.lang.Boolean"
+            not-null="true"
+            insert="true"
+            update="true"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="false"
+            length="10"
+            insert="true"
+            update="true"/>
+
+        <set
+            name="courseReservations"
+            table="course_reservation"
+            order-by="priority, course_offering"
+            where="owner_class_id='R'"
+            cascade="all-delete-orphan"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner"/>
+            <one-to-many class="CourseOfferingReservation"/>
+        </set>
+
+        <set
+            name="individualReservations"
+            table="individual_reservation"
+            order-by="priority, expiration_date"
+            where="owner_class_id='R'"
+            cascade="all-delete-orphan"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner"/>
+            <one-to-many class="IndividualReservation"/>
+        </set>
+
+        <set
+            name="studentGroupReservations"
+            table="student_group_reservation"
+            order-by="priority, student_group"
+            where="owner_class_id='R'"
+            cascade="all-delete-orphan"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner"/>
+            <one-to-many class="StudentGroupReservation"/>
+        </set>
+
+        <set
+            name="acadAreaReservations"
+            table="acad_area_reservation"
+            order-by="priority, acad_area"
+            where="owner_class_id='R'"
+            cascade="all-delete-orphan"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner"/>
+            <one-to-many class="AcadAreaReservation"/>
+        </set>
+
+        <set
+            name="posReservations"
+            table="pos_reservation"
+            order-by="priority, pos_major"
+            where="owner_class_id='R'"
+            cascade="all-delete-orphan"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner"/>
+            <one-to-many class="PosReservation"/>
+        </set>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+    </class>
 </hibernate-mapping>

@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,120 +19,101 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
-
 <hibernate-mapping package="org.unitime.timetable.model">
-	<class
-		name="ExternalRoom"
-		table="EXTERNAL_ROOM">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
-
+    <class name="ExternalRoom" table="external_room">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
-            column="UNIQUEID"
-            type="java.lang.Long"
-        >
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-        
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
 
-		<property
-			name="roomNumber"
-			column="ROOM_NUMBER"
-			type="java.lang.String"
-			not-null="true"
-			length="10"
-		/>
-		
-		<property
-			name="coordinateX"
-			column="COORDINATE_X"
-			type="java.lang.Double"
-			not-null="false"
-		/>
-		
-		<property
-			name="coordinateY"
-			column="COORDINATE_Y"
-			type="java.lang.Double"
-			not-null="false"
-		/>
-		
-		<property
-			name="capacity"
-			column="CAPACITY"
-			type="java.lang.Integer"
-			not-null="true"
-			length="6"
-		/>
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
-		<property
-			name="examCapacity"
-			column="EXAM_CAPACITY"
-			type="java.lang.Integer"
-			not-null="false"
-			length="6"
-		/>
-		
-		<property
-			name="classification"
-			column="CLASSIFICATION"
-			type="java.lang.String"
-			not-null="true"
-			length="20"
-		/>
-			
-		<many-to-one 
-			name="roomType" 
-			class="RoomType" 
-			column="ROOM_TYPE"
-			not-null="true"
-			foreign-key="FK_EXTERNAL_ROOM_TYPE"
-			/>
-	
-		<property
-			name="isInstructional"
-			column="INSTRUCTIONAL"
-			type="java.lang.Boolean"
-			not-null="true"
-		/>
-			 
-		<property
-			name="displayName"
-			column="DISPLAY_NAME"
-			type="java.lang.String"
-			not-null="false"
-			length="100"
-		/>
+        <property
+            name="roomNumber"
+            column="room_number"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
 
-		<set name="roomDepartments">
-	 		<cache include="non-lazy" usage="read-write"/>
-			<key column="EXTERNAL_ROOM_ID"/>
-			<one-to-many class="ExternalRoomDepartment"/>
-		</set>
-		
-		<set name="roomFeatures">
-	 		<cache include="non-lazy" usage="read-write"/>
-			<key column="EXTERNAL_ROOM_ID"/>
-			<one-to-many class="ExternalRoomFeature"/>
-		</set>
-		
-		<many-to-one
-			name="building"
-			class="ExternalBuilding"
-			column="EXTERNAL_BLDG_ID"
-			not-null="true"
-			foreign-key="FK_EXT_ROOM_BUILDING"
-		/>
+        <property
+            name="coordinateX"
+            column="coordinate_x"
+            type="java.lang.Double"
+            not-null="false"/>
 
-	</class>	
+        <property
+            name="coordinateY"
+            column="coordinate_y"
+            type="java.lang.Double"
+            not-null="false"/>
+
+        <property
+            name="capacity"
+            column="capacity"
+            type="java.lang.Integer"
+            not-null="true"
+            length="6"/>
+
+        <property
+            name="examCapacity"
+            column="exam_capacity"
+            type="java.lang.Integer"
+            not-null="false"
+            length="6"/>
+
+        <property
+            name="classification"
+            column="classification"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
+
+        <many-to-one
+            name="roomType"
+            class="RoomType"
+            column="room_type"
+            not-null="true"
+            foreign-key="fk_external_room_type"/>
+
+        <property
+            name="isInstructional"
+            column="instructional"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="displayName"
+            column="display_name"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
+
+        <set name="roomDepartments">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="external_room_id"/>
+            <one-to-many class="ExternalRoomDepartment"/>
+        </set>
+        <set name="roomFeatures">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="external_room_id"/>
+            <one-to-many class="ExternalRoomFeature"/>
+        </set>
+        <many-to-one
+            name="building"
+            class="ExternalBuilding"
+            column="external_bldg_id"
+            not-null="true"
+            foreign-key="fk_ext_room_building"/>
+
+    </class>
 </hibernate-mapping>

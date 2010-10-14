@@ -1,8 +1,6 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
- 
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
  * Copyright (C) 2008, UniTime LLC
@@ -21,67 +19,59 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="FreeTime" table="FREE_TIME">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="FreeTime" table="free_time">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-		
-		<property
-			name="name"
-			column="NAME"
-			type="java.lang.String"
-			not-null="true"
-			length="50"
-		/>
 
-		<property
-			name="dayCode"
-			column="DAY_CODE"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="50"/>
 
-		<property
-			name="startSlot"
-			column="START_SLOT"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="dayCode"
+            column="day_code"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
-		<property
-			name="length"
-			column="LENGTH"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="startSlot"
+            column="start_slot"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
-		<property
-			name="category"
-			column="CATEGORY"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <property
+            name="length"
+            column="length"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
 
-		<many-to-one 
-			name="session" 
-			class="Session" 
-			column="SESSION_ID" 
-			foreign-key="FK_FREE_TIME_SESSION"
-			not-null="true"
-		/>
+        <property
+            name="category"
+            column="category"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            foreign-key="fk_free_time_session"
+            not-null="true"/>
 
     </class>
-
 </hibernate-mapping>

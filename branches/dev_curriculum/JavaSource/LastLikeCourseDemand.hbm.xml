@@ -1,7 +1,5 @@
-<?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -21,59 +19,52 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
- 
 <hibernate-mapping package="org.unitime.timetable.model">
-
-	<class name="LastLikeCourseDemand" table="LASTLIKE_COURSE_DEMAND">
-		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
- 		
-        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+    <class name="LastLikeCourseDemand" table="lastlike_course_demand">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
-                <param name="sequence">PREF_GROUP_SEQ</param>
+                <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
-        
-		<many-to-one 
-			name="student" 
-			class="Student" 
-			column="STUDENT_ID" 
-			foreign-key="FK_LL_COURSE_DEMAND_STUDENT"
-			not-null="true"
-		/>
-		
-		<many-to-one 
-			name="subjectArea" 
-			class="SubjectArea" 
-			column="SUBJECT_AREA_ID" 
-			foreign-key="FK_LL_COURSE_DEMAND_SUBJAREA"
-			not-null="true"
-		/>
 
-		<property
-			name="courseNbr"
-			column="COURSE_NBR"
-			type="java.lang.String"
-			not-null="true"
-			length="10"
-		/>
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            foreign-key="fk_ll_course_demand_student"
+            not-null="true"/>
 
-		<property
-			name="priority"
-			column="PRIORITY"
-			type="java.lang.Integer"
-			not-null="true"
-			length="10"
-		/>
+        <many-to-one
+            name="subjectArea"
+            class="SubjectArea"
+            column="subject_area_id"
+            foreign-key="fk_ll_course_demand_subjarea"
+            not-null="true"/>
 
-		<property
-			name="coursePermId"
-			column="COURSE_PERM_ID"
-			type="java.lang.String"
-			not-null="false"
-			length="20"
-		/>
+        <property
+            name="courseNbr"
+            column="course_nbr"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="priority"
+            column="priority"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="coursePermId"
+            column="course_perm_id"
+            type="java.lang.String"
+            not-null="false"
+            length="20"/>
 
     </class>
-    
 </hibernate-mapping>
