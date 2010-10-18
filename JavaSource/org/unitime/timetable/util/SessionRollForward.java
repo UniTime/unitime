@@ -1300,9 +1300,14 @@ public class SessionRollForward {
 					toTimePref = (TimePref)fromTimePref.clone();
 				} else {
 					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
+					if (toTimePref == null){
+						Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+					}
 				}
-				toTimePref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toTimePref);
+				if (toTimePref != null){
+					toTimePref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toTimePref);
+				}
 			}
 		}
 		// If subpart time preferences are not to be rolled forward, make sure any subpart time patterns are rolled forward without their time preferences. 
@@ -1315,10 +1320,15 @@ public class SessionRollForward {
 					toTimePref = (TimePref)fromTimePref.clone();
 				} else {
 					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
+					if (toTimePref == null){
+						Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+					}
 				}
-				toTimePref.setPreference(null);
-				toTimePref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toTimePref);
+				if (toTimePref != null){
+					toTimePref.setPreference(null);
+					toTimePref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toTimePref);
+				}
 			}			
 		}
 		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp()) {
@@ -1357,11 +1367,16 @@ public class SessionRollForward {
 								continue;
 							}
 							toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
+							if (toTimePref == null){
+								Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+							}
 						}
-						toTimePref.setOwner(toPrefGroup);
-						toPrefGroup.addTopreferences(toTimePref);
-						if (toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelRequired) || toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelProhibited)){
-							toTimePref.setPreference(null);
+						if (toTimePref != null){
+							toTimePref.setOwner(toPrefGroup);
+							toPrefGroup.addTopreferences(toTimePref);
+							if (toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelRequired) || toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelProhibited)){
+								toTimePref.setPreference(null);
+							}
 						}
 						timePatterns.remove(fromTimePref.getTimePattern());
 					}
@@ -1379,7 +1394,9 @@ public class SessionRollForward {
 						toTimePref.setTimePattern(toTp);
 						toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
 						toPrefGroup.addTopreferences(toTimePref);
-					}					
+					} else {
+						Debug.warning("To Time Pattern not found:  " + fromTp.getName() + " for " + fromPrefGroup.htmlLabel());						
+					}
 				}
 			}
 		}
