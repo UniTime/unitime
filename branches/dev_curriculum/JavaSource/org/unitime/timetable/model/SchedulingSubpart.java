@@ -497,10 +497,18 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
     public String getSchedulingSubpartSuffix() {
-    	return getSchedulingSubpartSuffix(true);
+    	return getSchedulingSubpartSuffix(null, true);
+    }
+
+    public String getSchedulingSubpartSuffix(org.hibernate.Session hibSession) {
+    	return getSchedulingSubpartSuffix(hibSession, true);
     }
     
     public String getSchedulingSubpartSuffix(boolean save) {
+    	return getSchedulingSubpartSuffix(null, save);
+    }
+    
+    public String getSchedulingSubpartSuffix(org.hibernate.Session hibSession, boolean save) {
     	String suffix = getSchedulingSubpartSuffixCache();
     	if (suffix!=null) return ("-".equals(suffix)?"":suffix);
     	int nrItypes = 0;
@@ -524,8 +532,12 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	setSchedulingSubpartSuffixCache(suffix.length()==0?"-":suffix);
     	
     	if (save) {
-    		(new SchedulingSubpartDAO()).getSession().saveOrUpdate(this);
-    		(new SchedulingSubpartDAO()).getSession().flush();
+    		if (hibSession == null) {
+        		(new SchedulingSubpartDAO()).getSession().saveOrUpdate(this);
+        		(new SchedulingSubpartDAO()).getSession().flush();
+    		} else {
+    			hibSession.saveOrUpdate(this);
+    		}
     	}
     	
     	return suffix;
