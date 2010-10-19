@@ -134,7 +134,7 @@ public class CourseLoader {
 				}
 			}
 			for (InstructionalOffering offering: offerings)
-				loadOffering(offering);
+				loadOffering(hibSession, offering);
 			
 			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
 				List<org.unitime.timetable.model.Student> students = hibSession.createQuery(
@@ -173,7 +173,7 @@ public class CourseLoader {
 		}
 	}
 	
-    private Offering loadOffering(InstructionalOffering io) {
+    private Offering loadOffering(org.hibernate.Session hibSession, InstructionalOffering io) {
     	if (io.getInstrOfferingConfigs().isEmpty()) {
     		return null;
     	}
@@ -208,7 +208,7 @@ public class CourseLoader {
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (SchedulingSubpart ss: subparts) {
-                String sufix = ss.getSchedulingSubpartSuffix();
+                String sufix = ss.getSchedulingSubpartSuffix(hibSession);
                 Subpart parentSubpart = (ss.getParentSubpart() == null ? null : (Subpart)ss2subpart.get(ss.getParentSubpart().getUniqueId()));
                 if (ss.getParentSubpart() != null && parentSubpart == null) {
                     sLog.error("Subpart " + ss.getSchedulingSubpartLabel() + " has parent " + 
@@ -250,7 +250,7 @@ public class CourseLoader {
                     	instructorIds += ci.getInstructor().getUniqueId().toString();
                     	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
                     }
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString(hibSession) : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
                     class2section.put(c.getUniqueId(), section);
                     iClassTable.put(c.getUniqueId(), section);
                 }
