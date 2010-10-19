@@ -497,10 +497,18 @@ public class Class_ extends BaseClass_ {
 	}
 
 	public Integer getSectionNumber() {
-		return getSectionNumber(true);
+		return getSectionNumber(null, true);
+	}
+	
+	public Integer getSectionNumber(org.hibernate.Session hibSession) {
+		return getSectionNumber(hibSession, true);
 	}
 
-    public Integer getSectionNumber(boolean save) {
+	public Integer getSectionNumber(boolean save) {
+		return getSectionNumber(null, save);
+	}
+
+    public Integer getSectionNumber(org.hibernate.Session hibSession, boolean save) {
     	Integer sectionNumber = getSectionNumberCache();
     	if (sectionNumber!=null) return sectionNumber;
 
@@ -525,8 +533,12 @@ public class Class_ extends BaseClass_ {
 		setSectionNumberCache(sectionNumber);
 
     	if (save) {
-    		(new Class_DAO()).getSession().saveOrUpdate(this);
-    		(new Class_DAO()).getSession().flush();
+    		if (hibSession != null) {
+    			hibSession.saveOrUpdate(this);
+    		} else {
+        		(new Class_DAO()).getSession().saveOrUpdate(this);
+        		(new Class_DAO()).getSession().flush();
+    		}
     	}
 
     	return sectionNumber;
@@ -534,6 +546,10 @@ public class Class_ extends BaseClass_ {
 
     public String getSectionNumberString(){
     	return getSectionNumber()+getSchedulingSubpart().getSchedulingSubpartSuffix();
+    }
+
+    public String getSectionNumberString(org.hibernate.Session hibSession){
+    	return getSectionNumber(hibSession)+getSchedulingSubpart().getSchedulingSubpartSuffix(hibSession);
     }
 
     public List<DepartmentalInstructor> getLeadInstructors() {
