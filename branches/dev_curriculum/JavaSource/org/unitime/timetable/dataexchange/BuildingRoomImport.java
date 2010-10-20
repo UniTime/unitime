@@ -156,6 +156,10 @@ public class BuildingRoomImport extends BaseImport {
 		if(feature.getName() == null)
 			throw new Exception("Room feature name for room " + room.getExternalUniqueId() + " not present.");
 		feature.setValue(element.attributeValue("value"));
+		if (feature.getValue() != null && feature.getValue().length() > 20) {
+			warn("Feature value " + feature.getValue() + " is too long, truncated to " + feature.getValue().substring(0, 20));
+			feature.setValue(feature.getValue().substring(0, 20));
+		}
 		feature.setRoom(room);
 		room.addToroomFeatures(feature);
 		getHibSession().save(feature);
