@@ -49,6 +49,7 @@ public class TimetableForm extends ActionForm {
 	private Vector iWeeks = new Vector();
 	private boolean iShowUselessTimes = false;
 	private boolean iShowInstructors = false;
+	private boolean iShowEvents = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -70,6 +71,7 @@ public class TimetableForm extends ActionForm {
 		iWeek = null;
 		iWeeks = new Vector();
 		iShowInstructors = false;
+		iShowEvents = false;
 	}
 	
 	public void load(HttpSession session) throws Exception {
@@ -90,6 +92,7 @@ public class TimetableForm extends ActionForm {
 		iWeek = new Integer(table.getWeek());
 		iShowUselessTimes = table.getShowUselessTimes();
 		iShowInstructors = table.getShowInstructors();
+		iShowEvents = table.getShowEvents();
 	}
 	
 	public void save(HttpSession session) throws Exception {
@@ -107,6 +110,7 @@ public class TimetableForm extends ActionForm {
 		table.setBgMode(getBgColorInt());
 		table.setShowUselessTimes(iShowUselessTimes);
 		table.setShowInstructors(iShowInstructors);
+		table.setShowEvents(iShowEvents);
 		if (iWeek!=null)
 			table.setWeek(iWeek.intValue());
 		table.save(session);
@@ -144,6 +148,9 @@ public class TimetableForm extends ActionForm {
 	
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
+
+	public boolean getShowEvents() { return iShowEvents; }
+	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
 
 	public String getFind() { return iFind; }
 	public void setFind(String find) { iFind = find; }

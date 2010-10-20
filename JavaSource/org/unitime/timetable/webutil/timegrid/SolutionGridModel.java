@@ -64,7 +64,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	private static final long serialVersionUID = -3207641071203870684L;
 	private transient Long iRoomId = null;
     
-	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
 		setName(room.getLabel());
 		setSize(room.getCapacity().intValue());
@@ -129,7 +129,7 @@ public class SolutionGridModel extends TimetableGridModel {
 					}
 				}
 		}
-		if (RoomAvailability.getInstance() != null) {
+		if (showEvents && RoomAvailability.getInstance() != null) {
 	        Calendar startDateCal = Calendar.getInstance(Locale.US);
 	        // Range can be limited to classes time using
 	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
@@ -184,14 +184,14 @@ public class SolutionGridModel extends TimetableGridModel {
 	        				cell =  new TimetableGridCell(
 	        						slot/Constants.SLOTS_PER_DAY,
 	        						slot%Constants.SLOTS_PER_DAY,
-	        						0, 
+	        						-1, 
 	        						room.getUniqueId(),
 	        						room.getLabel(),
 	        						time.getEventName(), 
 	        						null,
 	        						null,
 	        						null, 
-	        						time.getEventName(), 
+	        						time.getEventName() + " (" + time.getEventType() + ")", 
 	        						TimetableGridCell.sBgColorNotAvailable, 
 	        						length,
 	        						0, 
@@ -430,14 +430,16 @@ public class SolutionGridModel extends TimetableGridModel {
 					assignmentInfo.getNrStudentConflicts()+", " +
 					(roomPref-assignmentInfo.getBestRoomPreference());
 			
-			title = "timePref:"+(int)assignmentInfo.getNormalizedTimePreference()+", "+
-					"studConf:"+assignmentInfo.getNrStudentConflicts()+", "+
-					"roomPref:"+roomPref+", "+
-					"btbInstrPref:"+assignmentInfo.getBtbInstructorPreference()+", "+
-					(assignmentInfo.getInitialAssignment()!=null?"initial:"+(assignmentInfo.getIsInitial()?"this one":assignmentInfo.getInitialAssignment())+", ":"")+
-					(assignmentInfo.getInitialAssignment()!=null?"pert:"+Web.format(assignmentInfo.getPerturbationPenalty())+", ":"")+
-					"noConfPlacements:"+assignmentInfo.getNrPlacementsNoConf()+", "+
-					"deptBal:"+assignmentInfo.getDeptBalancPenalty();
+			title = "Time preference: " + (int)assignmentInfo.getNormalizedTimePreference()+"<br>"+
+					"Student conflicts: "+assignmentInfo.getNrStudentConflicts()+"<br>"+
+					"Room preference: "+roomPref+"<br>"+
+					"Back-to-back instructor pref.: "+assignmentInfo.getBtbInstructorPreference()+"<br>"+
+					(assignmentInfo.getInitialAssignment()!=null?"Initial assignment: "+(assignmentInfo.getIsInitial()?"<i>current assignment</i>":assignmentInfo.getInitialAssignment())+"<br>":"")+
+					(assignmentInfo.getInitialAssignment()!=null?"Perturbation penalty: "+Web.format(assignmentInfo.getPerturbationPenalty())+"<br>":"")+
+					"Non-conflicting placements: "+assignmentInfo.getNrPlacementsNoConf()+"<br>"+
+					"Department balance: "+assignmentInfo.getDeptBalancPenalty();
+		} else {
+			title = assignment.getClassName() + " (" + assignment.getSolution().getOwner().getName() + ")";
 		}
 		
 		if (bgMode==sBgModeDistributionConstPref) {
@@ -456,7 +458,7 @@ public class SolutionGridModel extends TimetableGridModel {
 						pref.addPreferenceProlog(PreferenceLevel.sProhibited);
 					pref.addPreferenceInt(Math.abs(PreferenceLevel.prolog2int(gcInfo.getPreference())));
 				}
-				title = title+", distrPref:"+pref.getPreferenceProlog();
+				title = title+"<br>Distribution preference: "+pref.getPreferenceProlog();
 				background=TimetableGridCell.pref2color(pref.getPreferenceProlog());
 			}
 		}
