@@ -153,7 +153,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         String q = "select s from Staff s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
+            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
         for (Iterator i=StaffDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
@@ -170,7 +170,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         String q = "select s from EventContact s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
+            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.emailAddress) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
         for (Iterator i=EventContactDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
@@ -187,7 +187,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         String q = "select s from Student s where s.session.uniqueId="+sessionId+" and ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
+            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
         for (Iterator i=StudentDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
@@ -204,7 +204,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         String q = "select s from TimetableManager s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
             String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
+            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.emailAddress) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
         for (Iterator i=TimetableManagerDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
@@ -232,11 +232,11 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
             ctls.setCountLimit(100);
             String filter = "";
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-                String t = stk.nextToken();
+                String t = stk.nextToken().replace('_', '*').replace('%', '*');
                 if (filter.length()==0)
-                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t);
+                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t);
                 else
-                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t)+")";
+                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t)+")";
             }
             for (NamingEnumeration<SearchResult> e=ctx.search(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name",""),filter,ctls);e.hasMore();) {
             	Attributes a = e.next().getAttributes();
