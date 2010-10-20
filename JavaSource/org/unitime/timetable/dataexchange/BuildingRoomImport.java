@@ -116,6 +116,13 @@ public class BuildingRoomImport extends BaseImport {
 		}
 		room.setIsInstructional(Boolean.valueOf(element.attributeValue("instructional")));
 		room.setRoomType(RoomType.findByReference(element.attributeValue("scheduledRoomType")));
+		if (room.getRoomType() == null) {
+			room.setRoomType(RoomType.findByReference(element.attributeValue("roomClassification")));
+			if (room.getRoomType() == null) {
+				warn("Invalid scheduled room type '" + element.attributeValue("scheduledRoomType", element.attributeValue("roomClassification")) + "' for room " + building.getAbbreviation() + " " + room.getRoomNumber() + ", using " + RoomType.findAll(true).first().getReference() + " instead.");
+				room.setRoomType(RoomType.findAll(true).first());
+			}
+		}
 		room.setBuilding(building);
 		room.setDisplayName(element.attributeValue("displayName"));
 		building.addTorooms(room);
