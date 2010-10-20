@@ -55,7 +55,7 @@ public class LdapExternalUidTranslation implements ExternalUidTranslation {
                 if (ctx!=null) ctx.close();
             }
         } catch (Exception e) {
-            Debug.error("Unable to translate uid to puid, "+e.getMessage());
+            Debug.error("Unable to translate uid to ext, "+e.getMessage());
         }
         return null;
     }
@@ -78,7 +78,7 @@ public class LdapExternalUidTranslation implements ExternalUidTranslation {
                 if (ctx!=null) ctx.close();
             }
         } catch (Exception e) {
-            Debug.error("Unable to translate uid to puid, "+e.getMessage());
+            Debug.error("Unable to translate ext to uid, "+e.getMessage());
         }
         return null;
     }
