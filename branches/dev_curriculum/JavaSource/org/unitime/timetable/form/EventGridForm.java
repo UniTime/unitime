@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -103,6 +104,9 @@ public class EventGridForm extends EventAddForm {
         session.setAttribute("EventGrid.RoomGroups", getRoomGroups());
         session.setAttribute("EventGrid.RoomFeatures", getRoomFeatures());
         session.setAttribute("EventGrid.Mode", getMode());
+		for (Map.Entry<Long, Long> entry: iNonUniversityLocationId.entrySet()) {
+			session.setAttribute("EventGrid.LocationId[" + entry.getKey() + "]", entry.getValue());
+		}
     }
     
     public void load (HttpSession session) {
@@ -121,6 +125,13 @@ public class EventGridForm extends EventAddForm {
         setRoomGroups((Long[]) session.getAttribute("EventGrid.RoomGroups"));
         setRoomFeatures((Long[]) session.getAttribute("EventGrid.RoomFeatures"));
         setMode((String)session.getAttribute("EventGrid.Mode"));
+		iNonUniversityLocationId.clear();
+		if (getRoomTypes() != null)
+			for (Long roomType: getRoomTypes()) {
+				Long id = (Long)session.getAttribute("EventGrid.LocationId[" + roomType + "]");
+				if (id != null)
+					iNonUniversityLocationId.put(roomType, id);
+			}
     }
     
     public String getDatesTable() {

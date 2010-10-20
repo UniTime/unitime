@@ -289,10 +289,28 @@
 						</logic:empty>
 						<logic:iterate name="eventAddForm" property="allRoomTypes" id="rf" indexId="rfIdx">
 							<td nowrap>
-								<html:multibox property="roomTypes">
-								<bean:write name="rf" property="uniqueId"/>
-								</html:multibox>
-								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								<logic:equal name="rf" property="room" value="true">
+									<html:multibox property="roomTypes">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								</logic:equal>
+								<logic:equal name="rf" property="room" value="false">
+								    <bean:define id="rfId" name="rf" property="uniqueId"/>
+									<html:multibox property="roomTypes" onchange="<%="document.getElementById('nul" + rfId + "').style.display = (this.checked ? null : 'none');"%>" styleId="<%="chnul" + rfId%>">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/><span id="<%="nul"+rfId%>">:&nbsp;
+									<html:select name="eventAddForm" property="<%="nonUniversityLocation[" + rfId + "]"%>"
+										onfocus="setUp();" 
+    									onkeypress="return selectSearch(event, this);" 
+										onkeydown="return checkKey(event, this);">
+										<html:option value="-1">Select...</html:option>
+										<html:optionsCollection name="eventAddForm" property="<%="nonUniversityLocations[" + rfId + "]"%>" label="label" value="uniqueId"/>
+									</html:select>
+									</span>
+									<script>document.getElementById('nul<%=rfId%>').style.display = (document.getElementById('chnul<%=rfId%>').checked ? null : 'none');</script>
+								</logic:equal>
 							</td>
 							<% if (rfIdx%4==3) { %>
 								</tr><tr>
@@ -316,14 +334,6 @@
 			&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations
 			</TD>
 		</TR>
-		<!-- 
-		<TR>
-			<TD> &nbsp; </TD>
-			<TD>
-				<html:checkbox property="lookAtNearLocations"/> Also look at other locations close by.
-			</TD>
-		</TR>
-		-->
 		<TR>
 			<TD> 
 				Room Capacity:

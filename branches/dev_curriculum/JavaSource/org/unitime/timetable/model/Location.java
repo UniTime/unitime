@@ -708,18 +708,24 @@ public abstract class Location extends BaseLocation implements Comparable {
         }
     }
     
-    public static List findAll(Long sessionId) {
-        return new LocationDAO().getSession().createQuery(
+    public static List<Location> findAll(Long sessionId) {
+        return (List<Location>)new LocationDAO().getSession().createQuery(
                 "select l from Location l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
 
-    public static List findAllRooms(Long sessionId) {
-        return new LocationDAO().getSession().createQuery(
+    public static List<Room> findAllRooms(Long sessionId) {
+        return (List<Room>)new LocationDAO().getSession().createQuery(
                 "select l from Room l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
     
+    public static List<NonUniversityLocation> findAllNonUniversityLocations(Long sessionId) {
+        return (List<NonUniversityLocation>) new LocationDAO().getSession().createQuery(
+                "select l from NonUniversityLocation l where l.session.uniqueId=:sessionId"
+                ).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
+
     public abstract RoomType getRoomType();
     public abstract void setRoomType(RoomType roomType);
     

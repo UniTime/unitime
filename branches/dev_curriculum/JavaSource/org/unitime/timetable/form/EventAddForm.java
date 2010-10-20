@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -52,6 +53,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
@@ -104,6 +106,7 @@ public class EventAddForm extends ActionForm {
 	private Long[] iRoomTypes = null;
 	private Long[] iRoomGroups = null;
 	private boolean iHasRole = false;
+	protected Hashtable<Long, Long> iNonUniversityLocationId = new Hashtable<Long, Long>();
 	
 	//if adding meetings to an existing event
 	private Long iEventId; 
@@ -250,6 +253,7 @@ public class EventAddForm extends ActionForm {
         iRoomFeatures = null;
         iRoomGroups = null;
         iRoomNumber = null;
+        iNonUniversityLocationId.clear();
 	}
 	
 	// load event info from session attribute Event
@@ -286,6 +290,13 @@ public class EventAddForm extends ActionForm {
 		iCapacity = (String)session.getAttribute("Event.Capacity");
 		iMaxRooms = (String)session.getAttribute("Event.MaxRooms");
 		if (iMaxRooms==null) { iMaxRooms = "10"; }
+		iNonUniversityLocationId.clear();
+		if (iRoomTypes != null)
+			for (Long roomType: iRoomTypes) {
+				Long id = (Long)session.getAttribute("Event.LocationId[" + roomType + "]");
+				if (id != null)
+					iNonUniversityLocationId.put(roomType, id);
+			}
 	}
 	
 	// save event parameters to session attribute Event
@@ -315,6 +326,9 @@ public class EventAddForm extends ActionForm {
         session.setAttribute("Event.RoomFeatures", iRoomFeatures);
         session.setAttribute("Event.Capacity", iCapacity);
         session.setAttribute("Event.MaxRooms", iMaxRooms);
+		for (Map.Entry<Long, Long> entry: iNonUniversityLocationId.entrySet()) {
+			session.setAttribute("Event.LocationId[" + entry.getKey() + "]", entry.getValue());
+		}
 	}
 	
 	
@@ -490,6 +504,54 @@ public class EventAddForm extends ActionForm {
         return ret;
     }
     
+    public Set<NonUniversityLocation> getNonUniversityLocations(long roomType) {
+    	return getNonUniversityLocations(new Long(roomType));
+    }
+    
+    public Set<NonUniversityLocation> getNonUniversityLocations(int roomType) {
+    	return getNonUniversityLocations(new Long(roomType));
+    }
+
+    public Set<NonUniversityLocation> getNonUniversityLocations(Long roomType) {
+        if (iSessionId==null) return null;
+        TreeSet<NonUniversityLocation> locations = new TreeSet<NonUniversityLocation>();
+        for (NonUniversityLocation location: Location.findAllNonUniversityLocations(iSessionId)) {
+        	if (roomType != null && !roomType.equals(location.getRoomType().getUniqueId())) continue;
+        	if (iAdmin || location.getRoomType().getOption(location.getSession()).canScheduleEvents())
+        		locations.add(location);
+        }
+        return locations;
+    }
+    
+    public Long getNonUniversityLocation(int roomType) {
+    	return getNonUniversityLocation(new Long(roomType));
+    }
+
+    public Long getNonUniversityLocation(long roomType) {
+    	return getNonUniversityLocation(new Long(roomType));
+    }
+
+    public Long getNonUniversityLocation(Long roomType) {
+    	return iNonUniversityLocationId.get(roomType);
+    }
+    
+    public void setNonUniversityLocation(int roomType, Long locationId) {
+    	setNonUniversityLocation(new Long(roomType), locationId);
+    }
+
+    public void setNonUniversityLocation(long roomType, Long locationId) {
+    	setNonUniversityLocation(new Long(roomType), locationId);
+    }
+
+    public void setNonUniversityLocation(Long roomType, Long locationId) {
+    	if (roomType == null) return;
+    	if (locationId == null)
+    		iNonUniversityLocationId.remove(roomType);
+    	else
+    		iNonUniversityLocationId.put(roomType, locationId);
+    }
+    
+
     public Long getBuildingId() { return iBuildingId;}
     public void setBuildingId(Long id) {iBuildingId = id;}
     
@@ -844,8 +906,15 @@ public class EventAddForm extends ActionForm {
             for (int i=0;i<iRoomTypes.length;i++) {
                 if (i>0) b+=",";
                 b+= iRoomTypes[i];
+                	
             }
             b+=")";
+            for (Long roomType: iRoomTypes) {
+                Long locationId = iNonUniversityLocationId.get(roomType);
+                if (locationId != null && locationId >= 0)
+                	b += " and r.uniqueId = " + locationId;
+            	
+            }
         }
         if (iLookAtNearLocations && iBuildingId!=null && iBuildingId>=0) {
             int d = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.events.nearByDistance","67"));
