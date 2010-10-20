@@ -2843,4 +2843,12 @@
 			where name = 'Curriculum.StudentCourseDemadsClass'
 		</sql>
 	</update>
+	<update version="61" date="20-Oct-2010" comment="Session holidays need to cover 13 months">
+		<plsql>
+			alter table %SCHEMA%.sessions modify holidays varchar2(400)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions modify holidays varchar(400) binary null
+		</mysql>
+	</update>
 </dbupdate>

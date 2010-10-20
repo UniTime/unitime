@@ -35,7 +35,6 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -175,11 +174,13 @@ public class SessionEditForm extends ActionForm {
                             }
                             int startYear = start.get(Calendar.YEAR);
                             int endYear = end.get(Calendar.YEAR);
-                            int startDay = DateUtils.getDayOfYear(1, start.get(Calendar.MONTH), startYear);
-                            int endDay = DateUtils.getDayOfYear(28, end.get(Calendar.MONTH) + (12 * (endYear - startYear)), startYear);
-                            int daysInSession = endDay - startDay;
-                            if (daysInSession > 366){
-                            	errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than 12 calendar months."));
+                            int startMonth = start.get(Calendar.MONTH);
+                            int endMonth = end.get(Calendar.MONTH);
+                            int startDay = start.get(Calendar.DAY_OF_MONTH);
+                            int endDay = end.get(Calendar.DAY_OF_MONTH);
+                            if (startYear < endYear) {
+                            	if (startYear + 1 < endYear || startMonth < endMonth || (startMonth == endMonth && startDay <= endDay))
+                            		errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than one year."));
                             }
 						}
 					}
