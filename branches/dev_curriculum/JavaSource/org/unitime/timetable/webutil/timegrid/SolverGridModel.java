@@ -55,7 +55,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super();
 	}
 	
-	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode) {
+	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeRoom, room.getResourceId());
 		if (room instanceof DiscouragedRoomConstraint)
 			setName("<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged)+"'>"+
@@ -90,7 +90,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
                 List<Placement> placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
                 if (placements!=null && !placements.isEmpty()) {
                     for (Placement p: placements) {
-                        if (done.add(p))
+                    	if ((showEvents || p.getAssignmentId() != null) && done.add(p))
                             init(solver, p, sBgModeNotAvailable, firstDay);
                     }
                 } else if (!room.isAvailable(i*Constants.SLOTS_PER_DAY+j)) {
@@ -342,13 +342,13 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	       		btbInstrPref += ic.getPreferenceCombination(placement);
 	       	}
 
-	       	title = "timePref:"+(int)placement.getTimeLocation().getNormalizedPreference()+", "+
-				"studConf:"+lecture.countStudentConflicts(placement)+", "+
-				"roomPref:"+roomPref+", "+
-				(lecture.getInstructorConstraints().isEmpty()?"":"btbInstrPref:"+btbInstrPref+", ")+
-				(lecture.getInitialAssignment()!=null?"initial:"+(lecture.getInitialAssignment().equals(placement)?"this one":lecture.getInitialAssignment().getName())+", ":"")+
-				(lecture.getInitialAssignment()!=null?"pert:"+Web.format(penalty)+", ":"")+
-				(deptConstraint==null?"":", deptBal:"+deptConstraint.getMaxPenalty(placement));
+	       	title = "Time preference: "+(int)placement.getTimeLocation().getNormalizedPreference() +"<br>"+
+				"Student conflicts: "+lecture.countStudentConflicts(placement)+"<br>"+
+				"Room preference: "+roomPref+
+				(lecture.getInstructorConstraints().isEmpty()?"":"<br>Back-to-back instructor pref.: "+btbInstrPref)+
+				(lecture.getInitialAssignment()!=null?"<br>Initial assignment: "+(lecture.getInitialAssignment().equals(placement)?"<i>current assignment</i>":lecture.getInitialAssignment().getName()):"")+
+				(lecture.getInitialAssignment()!=null?"<br>Perturbation penalty: "+Web.format(penalty):"")+
+				(deptConstraint==null?"":"<br>Department balance: "+deptConstraint.getMaxPenalty(placement));
 			
 			int gcPref = 0;
 			for (Constraint c: lecture.constraints()) {
@@ -359,7 +359,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				if (gc.getPreference()<0 && gc.getCurrentPreference()<0) continue;
 				gcPref = Math.max(gcPref,Math.abs(gc.getPreference()));
 			}
-			title = title+", distrPref:"+gcPref;
+			title = title+"<br>Distribution preference: "+gcPref;
 			if (bgMode==sBgModeDistributionConstPref)
 				background = TimetableGridCell.pref2color(gcPref);
 		}

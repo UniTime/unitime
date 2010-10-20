@@ -572,14 +572,14 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		return true;
 	}    
     
-    public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode) {
+    public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
     	Vector models = new Vector();
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		if (resourceType==TimetableGridModel.sResourceTypeRoom) {
     			for (RoomConstraint rc: model.getRoomConstraints()) {
     				if (!match(findString, rc.getName())) continue;
-    				models.add(new SolverGridModel(this,rc,startDay,bgMode));
+    				models.add(new SolverGridModel(this,rc,startDay,bgMode,showEvents));
     			}
     		} else if (resourceType==TimetableGridModel.sResourceTypeInstructor) {
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {

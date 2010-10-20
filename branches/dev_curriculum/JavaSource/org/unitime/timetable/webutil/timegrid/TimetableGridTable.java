@@ -130,6 +130,7 @@ public class TimetableGridTable {
 	private int iWeek = -100;
 	private boolean iShowUselessTimes = false;
 	private boolean iShowInstructors = false;
+	private boolean iShowEvents = false;
 	
 	private String iDefaultDatePatternName = null;
 	
@@ -154,6 +155,8 @@ public class TimetableGridTable {
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
+	public boolean getShowEvents() { return iShowEvents; }
+	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
 	public Vector getWeeks(HttpSession httpSession) throws Exception {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
@@ -332,14 +335,21 @@ public class TimetableGridTable {
     	if (cell==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
-        if (isDispModePerWeek()) {
+        if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
         	for (int i=0;i<cell.getNrMeetings();i++) {
         		onMouseOver.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='rgb(223,231,242)';");
         		onMouseOut.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
             }
+        } else {
+        	onMouseOver.append("this.style.backgroundColor='rgb(223,231,242)';");
+        	onMouseOut.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
         }
         if (changeMouse)
         	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
+        if (cell.getTitle() != null && !cell.getTitle().isEmpty()) {
+            onMouseOver.append("showGwtHint(this,'" + cell.getTitle() + "');");
+            onMouseOut.append("hideGwtHint();");
+        }
         onMouseOver.append("\" ");
         onMouseOut.append("\" ");
     }
@@ -400,7 +410,7 @@ public class TimetableGridTable {
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
 									onMouseOver + 
 									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -468,7 +478,7 @@ public class TimetableGridTable {
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
 									onMouseOver + 
 									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -532,7 +542,7 @@ public class TimetableGridTable {
                     				(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
                     				(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
                     				onMouseOver + onMouseOut +
-                    				(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+                    				//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                             		">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -586,7 +596,7 @@ public class TimetableGridTable {
 		SolverProxy solver = WebSolver.getSolver(session);
 		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getPatternStartMonth())-1);
 		if (solver!=null) {
-			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode());
+			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode(), getShowEvents());
 			Collections.sort(iModels,new TimetableGridModelComparator());
 			showUselessTimesIfDesired();
 			return true;
@@ -624,7 +634,7 @@ public class TimetableGridTable {
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					Location room = (Location)i.next();
 					if (!match(room.getLabel())) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession,startDay,getBgMode()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
                 String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
@@ -654,7 +664,7 @@ public class TimetableGridTable {
 					Department dept = (Department)i.next();
 					String name = dept.getAbbreviation();
 					if (!match(name)) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession,startDay,getBgMode()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession, startDay, getBgMode()));
 				}
 			}
 			if (tx!=null) tx.commit();
