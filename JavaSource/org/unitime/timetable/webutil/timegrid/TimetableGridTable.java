@@ -331,7 +331,7 @@ public class TimetableGridTable {
 		out.println("</tr>");
 	}
 	
-    private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, TimetableGridCell cell, String bgColor, boolean changeMouse) {
+    private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, StringBuffer onClick, TimetableGridCell cell, String bgColor) {
     	if (cell==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
@@ -344,8 +344,18 @@ public class TimetableGridTable {
         	onMouseOver.append("this.style.backgroundColor='rgb(223,231,242)';");
         	onMouseOut.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
         }
-        if (changeMouse)
+        if (cell.getOnClick() != null && !cell.getOnClick().isEmpty()) {
         	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
+        	onClick.append(" onclick=\"hideGwtHint();");
+            if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
+            	for (int i=0;i<cell.getNrMeetings();i++) {
+            		onClick.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+                }
+            } else {
+            	onClick.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            }
+            onClick.append(cell.getOnClick() + "\"");
+        }
         if (cell.getTitle() != null && !cell.getTitle().isEmpty()) {
             onMouseOver.append("showGwtHint(this,'" + cell.getTitle() + "');");
             onMouseOut.append("hideGwtHint();");
@@ -401,13 +411,14 @@ public class TimetableGridTable {
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							StringBuffer onMouseOver = new StringBuffer();
 							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
 							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									onClick + 
 									onMouseOver + 
 									onMouseOut +
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
@@ -469,13 +480,14 @@ public class TimetableGridTable {
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							StringBuffer onMouseOver = new StringBuffer();
 							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
 							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									onClick +
 									onMouseOver + 
 									onMouseOut +
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
@@ -533,15 +545,15 @@ public class TimetableGridTable {
                     		}
                     		StringBuffer onMouseOver = new StringBuffer();
                     		StringBuffer onMouseOut = new StringBuffer();
-                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
                     		boolean eol = (day==endDay());
                     		out.println("<td nowrap "+
                     				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
                     				"class='TimetableCell"+(slot==firstSlot()?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
                     				"colspan='"+colSpan+"' rowSpan='"+rowSpanDivStep+"' "+
-                    				(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
                     				(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
-                    				onMouseOver + onMouseOut +
+                    				onClick + onMouseOver + onMouseOut +
                     				//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                             		">");
 							out.print(cell.getName());
