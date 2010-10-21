@@ -128,6 +128,7 @@ public class UniTimePageLabel extends Composite {
 	}
 	
 	public void setPageName(String title) {
+		Window.setTitle("UniTime 3.2| " + title);
 		iName.setText(title);
 		iHelp.setTitle(title + " Help");
 		iHelp.setVisible(false);
