@@ -111,6 +111,11 @@
     	<servlet-class>org.unitime.timetable.gwt.server.LookupServlet</servlet-class>
     </servlet>
 
+	<servlet>
+    	<servlet-name>eventServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.EventServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
         <url-pattern>/unitime/sectioningService</url-pattern>
@@ -141,6 +146,11 @@
         <url-pattern>/unitime/lookupService</url-pattern>
     </servlet-mapping>
     
+    <servlet-mapping>
+        <servlet-name>eventServiceServlet</servlet-name>
+        <url-pattern>/unitime/eventService</url-pattern>
+    </servlet-mapping>
+
 	<!-- Servlet Mappings -->
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
