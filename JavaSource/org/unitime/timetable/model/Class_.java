@@ -1449,6 +1449,17 @@ public class Class_ extends BaseClass_ {
             
             oldAssignment.getSolution().getAssignments().remove(oldAssignment);
             
+            // Remove all related constraint infos to avoid hibernate cache issues 
+            // when an orphaned constraint info is automatically deleted
+            for (ConstraintInfo ci: oldAssignment.getConstraintInfo()) {
+            	for (Assignment a: ci.getAssignments()) {
+            		if (!a.equals(oldAssignment)) {
+            			a.getConstraintInfo().remove(ci);
+            		}
+            	}
+            	hibSession.delete(ci);
+            }
+            
         	hibSession.delete(oldAssignment);
         	
         	setCommittedAssignment(null);
@@ -1496,6 +1507,17 @@ public class Class_ extends BaseClass_ {
                 old = oldAssignment.getPlacement().getName();
                 
                 oldAssignment.getSolution().getAssignments().remove(oldAssignment);
+                
+                // Remove all related constraint infos to avoid hibernate cache issues 
+                // when an orphaned constraint info is automatically deleted
+                for (ConstraintInfo ci: oldAssignment.getConstraintInfo()) {
+                	for (Assignment a: ci.getAssignments()) {
+                		if (!a.equals(oldAssignment)) {
+                			a.getConstraintInfo().remove(ci);
+                		}
+                	}
+                	hibSession.delete(ci);
+                }
                 
             	hibSession.delete(oldAssignment);
             }
