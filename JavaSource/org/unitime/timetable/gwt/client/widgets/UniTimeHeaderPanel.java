@@ -87,6 +87,14 @@ public class UniTimeHeaderPanel extends Composite {
 		initWidget(iPanel);
 	}
 	
+	public void setHeaderTitle(String title) {
+		iTitle.setHTML(title);
+	}
+	
+	public String getHeaderTitle() {
+		return iTitle.getHTML();
+	}
+
 	public UniTimeHeaderPanel() {
 		this("&nbsp;");
 	}
