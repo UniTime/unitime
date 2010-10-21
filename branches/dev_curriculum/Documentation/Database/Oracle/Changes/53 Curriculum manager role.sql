@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-insert intoroles (role_id, reference, abbv) values (role_seq.nextval, 'Curriculum Mgr', 'Curriculum Manager');
+insert into roles (role_id, reference, abbv) values (role_seq.nextval, 'Curriculum Mgr', 'Curriculum Manager');
 
 /**
  * Update database version
