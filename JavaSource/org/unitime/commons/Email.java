@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Properties;
 
@@ -42,10 +43,13 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.struts.upload.FormFile;
 import org.unitime.timetable.ApplicationProperties;
 
 public class Email {
+	private static Log sLog = LogFactory.getLog(Email.class);
 	private javax.mail.Session iMailSession = null;
 	private MimeMessage iMail = null;
 	private Multipart iBody = null;
@@ -167,19 +171,28 @@ public class Email {
 	}
 
 	public void send() throws MessagingException, UnsupportedEncodingException {
-        setFrom(
-        		ApplicationProperties.getProperty("unitime.email.sender", 
-        				ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email"))),
-        		ApplicationProperties.getProperty("unitime.email.sender.name", 
-        				ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")))
-        		);
-        setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"),
-        		ApplicationProperties.getProperty("unitime.email.replyto.name"));
-        		
-        iMail.setSentDate(new Date());
-        iMail.setContent(iBody);
-        iMail.saveChanges();
-        Transport.send(iMail);
+		long t0 = System.currentTimeMillis();
+		try {
+	        setFrom(
+	        		ApplicationProperties.getProperty("unitime.email.sender", 
+	        				ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email"))),
+	        		ApplicationProperties.getProperty("unitime.email.sender.name", 
+	        				ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")))
+	        		);
+	        setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"),
+	        		ApplicationProperties.getProperty("unitime.email.replyto.name"));
+	        		
+	        iMail.setSentDate(new Date());
+	        iMail.setContent(iBody);
+	        iMail.saveChanges();
+	        Transport.send(iMail);
+		} finally {
+			long t = System.currentTimeMillis() - t0;
+			if (t > 30000)
+				sLog.warn("It took " + new DecimalFormat("0.00").format(t / 1000.0) + " seconds to send an email.");
+			else if (t > 5000)
+				sLog.info("It took " + new DecimalFormat("0.00").format(t / 1000.0) + " seconds to send an email.");
+		}
 	}
 
 }
