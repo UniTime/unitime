@@ -20,8 +20,11 @@
 package org.unitime.timetable.util;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpSession;
 
@@ -586,4 +589,26 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	return(offset);
     }
 
+    public static int getDayOfWeek(Date date) {
+    	Calendar c = Calendar.getInstance(Locale.US);
+    	c.setTime(date);
+		switch (c.get(Calendar.DAY_OF_WEEK)) {
+		case Calendar.MONDAY:
+			return DAY_MON;
+		case Calendar.TUESDAY:
+			return DAY_TUE;
+		case Calendar.WEDNESDAY:
+			return DAY_WED;
+		case Calendar.THURSDAY:
+			return DAY_THU;
+		case Calendar.FRIDAY:
+			return DAY_FRI;
+		case Calendar.SATURDAY:
+			return DAY_SAT;
+		case Calendar.SUNDAY:
+			return DAY_SUN;
+		default:
+			return DAY_MON;
+		}
+    }
 }
