@@ -20,15 +20,25 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class EventInterface implements IsSerializable {
+public class EventInterface implements Comparable<EventInterface>, IsSerializable {
 	private Long iEventId;
 	private String iEventName;
 	private String iEventType;
-	private List<MeetingInterface> iMeetings = null;
+	private TreeSet<MeetingInterface> iMeetings = null;
+	private String iSponsor, iInstructor, iContact;
+	
+	private List<String> iCourseNames = null;
+	private String iInstruction = null;
+	private Integer iInstructionType = null;
+	private List<String> iExternalIds = null;
 	
 	public static enum ResourceType {
 		ROOM("room", "Room Timetable"),
@@ -53,12 +63,59 @@ public class EventInterface implements IsSerializable {
 	public void setName(String name) { iEventName = name; }
 	public String getType() { return iEventType; }
 	public void setType(String type) { iEventType = type; }
+	public String getSponsor() { return iSponsor; }
+	public void setSponsor(String sponsor) { iSponsor = sponsor; }
+	public boolean hasSponsor() { return iSponsor != null && !iSponsor.isEmpty(); }
+	public String getInstructor() { return iInstructor; }
+	public void setInstructor(String instructor) { iInstructor = instructor; }
+	public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
+	public String getContact() { return iContact; }
+	public void setContact(String contact) { iContact = contact; }
+	public boolean hasContact() { return iContact != null && !iContact.isEmpty(); }
 	public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
 	public void addMeeting(MeetingInterface meeting) {
-		if (iMeetings == null) iMeetings = new ArrayList<MeetingInterface>();
+		if (iMeetings == null) iMeetings = new TreeSet<MeetingInterface>();
 		iMeetings.add(meeting);
 	}
-	public List<MeetingInterface> getMeetings() { return iMeetings; }
+	public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
+	
+	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
+	public void addCourseName(String name) {
+		if (iCourseNames == null) iCourseNames = new ArrayList<String>();
+		iCourseNames.add(name);
+	}
+	public List<String> getCourseNames() {
+		return iCourseNames;
+	}
+	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
+	public String getInstruction() { return iInstruction; }
+	public void setInstruction(String instruction) { iInstruction = instruction; }
+	public boolean hasInstructionType() { return iInstructionType != null; }
+	public Integer getInstructionType() { return iInstructionType; }
+	public void setInstructionType(Integer type) { iInstructionType = type; }
+	public boolean hasExternalIds() { return iExternalIds != null && !iExternalIds.isEmpty(); }
+	public List<String> getExternalIds() { return iExternalIds; }
+	public void addExternalId(String externalId) {
+		if (iExternalIds == null) iExternalIds = new ArrayList<String>();
+		iExternalIds.add(externalId);
+	}
+	
+	public int hashCode() { return getId().hashCode(); }
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof EventInterface)) return false;
+		return getId().equals(((EventInterface)o).getId());
+	}
+	public int compareTo(EventInterface event) {
+		int cmp = getType().compareTo(event.getType());
+		if (cmp != 0) return cmp;
+		if (hasInstructionType()) {
+			cmp = getInstructionType().compareTo(event.getInstructionType());
+			if (cmp != 0) return cmp;
+		}
+		cmp = getName().compareTo(event.getName());
+		if (cmp != 0) return cmp;
+		return getId().compareTo(event.getId());
+	}
 	
 	public static class ResourceInterface implements IsSerializable {
 		private ResourceType iResourceType;
@@ -66,6 +123,7 @@ public class EventInterface implements IsSerializable {
 		private String iResourceName;
 		private Long iSessionId;
 		private String iSessionName;
+		private List<WeekInterface> iWeeks = null;
 
 		public ResourceInterface() {}
 		
@@ -80,12 +138,34 @@ public class EventInterface implements IsSerializable {
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String sessionName) { iSessionName = sessionName; }
 		
+		public boolean hasWeeks() { return iWeeks != null && !iWeeks.isEmpty(); }
+		public List<WeekInterface> getWeeks() { return iWeeks; }
+		public void addWeek(WeekInterface week) {
+			if (iWeeks == null) iWeeks = new ArrayList<WeekInterface>();
+			iWeeks.add(week);
+		}
+		
 		public String toString() {
 			return getType().getLabel() + " " + getName();
 		}
 	}
 	
-	public static class MeetingInterface implements IsSerializable {
+	public static class WeekInterface implements IsSerializable {
+		private int iDayOfYear;
+		private List<String> iDayNames = new ArrayList<String>();
+		
+		public WeekInterface() {}
+		
+		public int getDayOfYear() { return iDayOfYear; }
+		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
+		
+		public void addDayName(String name) { iDayNames.add(name); }
+		public List<String> getDayNames() { return iDayNames; }
+		
+		public String getName() { return getDayNames().get(0) + " - " + getDayNames().get(getDayNames().size() - 1); }
+	}
+	
+	public static class MeetingInterface implements Comparable<MeetingInterface>, IsSerializable {
 		private ResourceInterface iLocation;
 		private Long iMeetingId;
 		private String iMeetingTime;
@@ -94,6 +174,8 @@ public class EventInterface implements IsSerializable {
 		private int iEndSlot;
 		private int iDayOfWeek;
 		private int iDayOfYear;
+		private boolean iPast;
+		private String iApprovalDate = null;
 		
 		public MeetingInterface() {}
 		
@@ -112,7 +194,127 @@ public class EventInterface implements IsSerializable {
 		public String getMeetingTime() { return iMeetingTime; }
 		public void setMeetingTime(String time) { iMeetingTime = time; }	
 		public ResourceInterface getLocation() { return iLocation; }
+		public String getLocationName() { return (iLocation == null ? "" : iLocation.getName()); }
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
+		public boolean isPast() { return iPast; }
+		public void setPast(boolean past) { iPast = past; }
+		public boolean isApproved() { return iApprovalDate != null; }
+		public String getApprovalDate() { return iApprovalDate; }
+		public void setApprovalDate(String date) {  iApprovalDate = date; }
+		
+		public int compareTo(MeetingInterface meeting) {
+			int cmp = new Integer(getDayOfYear()).compareTo(meeting.getDayOfYear());
+			if (cmp != 0) return cmp;
+			cmp = getLocationName().compareTo(meeting.getLocationName());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(meeting.getId());
+		}
+		
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof MeetingInterface)) return false;
+			return getId().equals(((MeetingInterface)o).getId());
+		}
 	}
+	
+    public static boolean equals(Object o1, Object o2) {
+        return (o1 == null ? o2 == null : o1.equals(o2));
+    }
+	
+	public static class MultiMeetingInterface implements Comparable<MultiMeetingInterface>, IsSerializable {
+	    private TreeSet<MeetingInterface> iMeetings;
+	    private boolean iPast = false;
+	    
+	    public MultiMeetingInterface(TreeSet<MeetingInterface> meetings, boolean past) {
+	        iMeetings = meetings;
+	        iPast = past;
+	    }
+	    
+	    public boolean isPast() { return iPast; }
+	    
+	    public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
+
+	    public int compareTo(MultiMeetingInterface m) {
+	        return getMeetings().first().compareTo(m.getMeetings().first());
+	    }
+	    
+	    public String getDays() {
+	        return getDays(new String[] {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"},
+	        		new String[] {"M", "T", "W", "Th", "F", "S", "Su"});
+	    }
+	    
+	    public String getDays(String[] dayNames, String[] shortDyNames) {
+	        int nrDays = 0;
+	        int dayCode = 0;
+	        for (MeetingInterface meeting : getMeetings()) {
+	        	int dc = (1 << meeting.getDayOfWeek());
+	            if ((dayCode & dc)==0) nrDays++;
+	            dayCode |= dc;
+	        }
+	        String ret = "";
+	        for (int i = 0; i < 7; i++) {
+	        	if ((dayCode & (1 << i)) != 0)
+	        		ret += (nrDays == 1 ? dayNames : shortDyNames)[i];
+	        }
+	        return ret;
+	    }
+	    
+	    public String getMeetingTime() {
+	    	return getDays() + " " + iMeetings.first().getMeetingTime();
+	    }
+	    
+	    public String getMeetingDates() {
+	    	if (iMeetings.size() == 1)
+	    		return iMeetings.first().getMeetingDate();
+	    	return iMeetings.first().getMeetingDate() + " - " + iMeetings.last().getMeetingDate();
+	    }
+	    
+	    public String getLocationName() {
+	    	return iMeetings.first().getLocationName();
+	    }
+	}
+	
+    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkApproval, boolean checkPast) {
+        TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();
+        HashSet<MeetingInterface> meetingSet = new HashSet<MeetingInterface>(meetings);
+        while (!meetingSet.isEmpty()) {
+            MeetingInterface meeting = null;
+            for (MeetingInterface m : meetingSet)
+                if (meeting==null || meeting.compareTo(m) > 0)
+                    meeting = m;
+            meetingSet.remove(meeting);
+            HashMap<Integer,MeetingInterface> similar = new HashMap<Integer, MeetingInterface>(); 
+            TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
+            for (MeetingInterface m : meetingSet) {
+            	if (m.getMeetingTime().equals(meeting.getMeetingTime()) &&
+            		m.getLocationName().equals(meeting.getLocationName()) &&
+            		(!checkPast || m.isPast() == meeting.isPast()) && 
+            		(!checkApproval || m.isApproved() == meeting.isApproved())) {
+                    dow.add(m.getDayOfWeek());
+                    similar.put(m.getDayOfYear(),m);
+                }
+            }
+            TreeSet<MeetingInterface> multi = new TreeSet<MeetingInterface>(); multi.add(meeting);
+            if (!similar.isEmpty()) {
+            	int w = meeting.getDayOfWeek();
+            	int y = meeting.getDayOfYear();
+            	while (true) {
+            		do {
+            			y ++;
+            			w = (w + 1) % 7;
+            		} while (!dow.contains(w));
+            		MeetingInterface m = similar.get(y);
+            		if (m == null) break;
+            		multi.add(m);
+            		meetingSet.remove(m);
+            	}
+            }
+            ret.add(new MultiMeetingInterface(multi, meeting.isPast()));
+        }
+        return ret;
+    }
 
 }

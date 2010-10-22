@@ -20,8 +20,11 @@
 package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -31,6 +34,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -69,26 +73,32 @@ public class TimeGrid extends Composite {
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
 	private ArrayList<Meeting>[][] iMeetingTable = new ArrayList[7][24 * 60 / 5];
-	private ArrayList<String[]> iColor = new ArrayList<String[]>();
 	
 	private int iCellWidth = 150;
 	private int iCellHeight = 60;
 	private int iNrDays = 5;
 	private int iStart = 0;
 	private int iEnd = 24;
+	private boolean iScroll = false;
 	
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
-	private ArrayList<EventInterface> iEvents = new ArrayList<EventInterface>();
+	private HashMap<Long, String> iColors = new HashMap<Long, String>();
+	
+	private boolean iOneWeek = false, iRoomResource = false;
 	
 	public TimeGrid() {
-		this(5, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
+		this(new HashMap<Long, String>(), 5, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
 	}
 	
-	public TimeGrid(int nrDays, int cellWidth, boolean print, boolean scroll, int start, int end) {
+	private List<Label> iDayLabels = new ArrayList<Label>();
+	
+	public TimeGrid(HashMap<Long, String> colors, int nrDays, int cellWidth, boolean print, boolean scroll, int start, int end) {
+		iColors = colors;
 		iNrDays = nrDays;
 		iCellWidth = cellWidth;
 		iStart = start;
 		iEnd = end;
+		iScroll = scroll;
 		
 		iContainer = new VerticalPanel();
 		iContainer.setStyleName("unitime-TimeGrid");
@@ -112,7 +122,9 @@ public class TimeGrid extends Composite {
 					sp.setWidget(iCalendar);
 			} else {
 				sp.setWidth(String.valueOf(iCellWidth));
-				sp.setWidget(new Label(CONSTANTS.longDays()[i]));
+				Label l = new Label(CONSTANTS.longDays()[i]);
+				iDayLabels.add(l);
+				sp.setWidget(l);
 			}
 			iHeader.add(sp);
 		}
@@ -126,7 +138,7 @@ public class TimeGrid extends Composite {
 		
 		iWorkingHours = new SimplePanel();
 		iWorkingHours.setStyleName("working-hours");
-		iWorkingHours.setSize(String.valueOf(2 + iCellWidth * 5), String.valueOf(500));
+		iWorkingHours.setSize(String.valueOf(2 + iCellWidth * 5), String.valueOf(iCellHeight * 10));
 		iGrid.add(iWorkingHours, 0, 15 * iCellHeight / 2 - (iCellHeight * iStart));
 		
 		for (int i = iStart; i < iEnd; i++) {
@@ -178,32 +190,50 @@ public class TimeGrid extends Composite {
         initWidget(iContainer);
 	}
 	
+	public boolean isOneWeek() { return iOneWeek; }
+	public void setOneWeek(boolean oneWeek) { iOneWeek = oneWeek; }
+	public boolean isRoomResource() { return iRoomResource; }
+	public void setRoomResource(boolean roomResource) { iRoomResource = roomResource; }
+	
 	public void setCalendarUrl(String url) {
 		iCalendar.setUrl(url);
 	}
 	
-	public Widget getPrintWidget() {
+	public TimeGrid getPrintWidget() {
 		int firstHour = firstSlot() / 12;
-		int lastHour = lastSlot() / 12;
-		TimeGrid tg = new TimeGrid(iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
-		int i = 0;
-		for (EventInterface e: iEvents)
-			for (Meeting m : tg.addEvent(e, i++)) {
-				m.setDummy();
-				m.addStyleName("meeting-selected-noshadow");
-			}
+		int lastHour = (11 + lastSlot()) / 12;
+		TimeGrid tg = new TimeGrid(iColors, iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+		tg.setOneWeek(isOneWeek());
+		tg.setRoomResource(isRoomResource());
 		return tg;
+	}
+	
+	public void addPrintEvent(EventInterface event) {
+		addPrintEvent(event, event.getMeetings());
+	}
+	
+	public void addPrintEvent(EventInterface event, Collection<MeetingInterface> meetings) {
+		for (Meeting m : addEvent(event, meetings)) {
+			m.setDummy();
+			m.addStyleName("meeting-selected-noshadow");
+		}
+	}
+	
+	public void labelDays(WeekInterface week) {
+		for (int i = 0; i < iDayLabels.size(); i++) {
+			iDayLabels.get(i).setText(CONSTANTS.longDays()[i] + (week == null ? "" : " " + week.getDayNames().get(i)));
+		}
 	}
 	
 	public void setNrDays(int days) {
 		if (iNrDays == days) return;
 		iNrDays = days;
 		iCellWidth = (int)(0.9 * Window.getClientWidth() / days);
-		iPanel.setWidth(String.valueOf(iNrDays * iCellWidth));
+		iPanel.setWidth(String.valueOf(iNrDays * iCellWidth + (iScroll ? 0 : 5)));
 		iWorkingHours.setWidth(String.valueOf(2 + iCellWidth * (iNrDays < 5 ? iNrDays : 5)));
-        iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + ToolBox.getScrollBarWidth()));
-		for (int day = 0; day < 7; day++) {
-			if (day < days) {
+        iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + (iScroll ? ToolBox.getScrollBarWidth() : 5)));
+		for (int day = 0; day < 7 + (iScroll ? 0 : 1); day++) {
+			if (day < days + (iScroll ? 0 : 1)) {
 				if (iSeparators[day] == null) {
 					iSeparators[day] = new SimplePanel();
 					iSeparators[day].setStyleName("day-separator");
@@ -218,6 +248,7 @@ public class TimeGrid extends Composite {
 			}
 		}
 		iHeader.clear();
+		iDayLabels.clear();
 		for (int i = -1; i < iNrDays; i++) {
 			SimplePanel sp = new SimplePanel();
 			sp.setStyleName("header-time-interval");
@@ -225,7 +256,9 @@ public class TimeGrid extends Composite {
 				sp.setWidth("30px");
 			else {
 				sp.setWidth(String.valueOf(iCellWidth));
-				sp.setWidget(new Label(CONSTANTS.longDays()[i]));
+				Label l = new Label(CONSTANTS.longDays()[i]);
+				iDayLabels.add(l);
+				sp.setWidget(l);
 			}
 			iHeader.add(sp);
 		}
@@ -248,7 +281,7 @@ public class TimeGrid extends Composite {
 		for (int slot = 24 * 60 / 5 - 1; slot >= 0; slot--) {
 			for (int day = 0; day < 7; day++) {
 				if (iMeetingTable[day][slot] != null && !iMeetingTable[day][slot].isEmpty())
-					return 1 + slot;
+					return slot;
 			}
 		}
 		return 0;
@@ -287,19 +320,18 @@ public class TimeGrid extends Composite {
 		for (int i = 0; i < iMeetingTable.length; i++)
 			for (int j = 0 ; j < iMeetingTable[i].length; j++)
 				if (iMeetingTable[i][j] != null) iMeetingTable[i][j].clear();
-		iColor.clear();
-		iEvents.clear();
 	}
 	
 	public String getColor(EventInterface event) {
-		for (String[] pair: iColor)
-			if (pair[0].equals(event.getId().toString())) return pair[1];
-		String color = CONSTANTS.meetingColors()[iColor.size() % CONSTANTS.meetingColors().length];
-		iColor.add(new String[] {event.getId().toString(), color});
+		String color = iColors.get(event.getId());
+		if (color == null) {
+			color = CONSTANTS.meetingColors()[iColors.size() % CONSTANTS.meetingColors().length];
+			iColors.put(event.getId(), color);
+		}
 		return color;
 	}
 	
-	protected Meeting addMeeting(int index, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, ArrayList<Meeting> meetings) {
+	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, ArrayList<Meeting> meetings) {
 		int col = -1;
 		for (int i = 0; i < length; i++) {
 			if (iMeetingTable[day][startSlot + i] != null) {
@@ -325,7 +357,7 @@ public class TimeGrid extends Composite {
 			for (int i = 0; i < cols - 1; i++)
 				if (!used[i]) {col = i; cols--; break; }
 		}
-        Meeting meeting = new Meeting(index, name, note, day, startSlot, length, col, cols, meetings);
+        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, meetings);
         meeting.addStyleName(color);
 
         meeting.setTitle(title);
@@ -341,18 +373,14 @@ public class TimeGrid extends Composite {
         return meeting;
 	}
 	
-	public ArrayList<Meeting> getMeetings(int index) {
-		for (ArrayList<Meeting> meetings: iMeetings)
-			for (Meeting meeting: meetings)
-				if (meeting.getIndex() == index) return meetings;
-		return null;
+	public ArrayList<Meeting> addEvent(EventInterface event) {
+		return addEvent(event, event.getMeetings());
 	}
 	
-	public ArrayList<Meeting> addEvent(EventInterface event, int index) {
-		iEvents.add(event);
+	public ArrayList<Meeting> addEvent(EventInterface event, Collection<MeetingInterface> eventMeetings) {
 		String color = getColor(event);
 		final ArrayList<Meeting> done = new ArrayList<Meeting>();
-		ArrayList<MeetingInterface> meetings = new ArrayList<MeetingInterface>(event.getMeetings());
+		ArrayList<MeetingInterface> meetings = new ArrayList<MeetingInterface>(eventMeetings);
 		while (!meetings.isEmpty()) {
 			MeetingInterface meeting = null;
 			TreeSet<MeetingInterface> dates = new TreeSet<MeetingInterface>(new Comparator<MeetingInterface>() {
@@ -400,17 +428,26 @@ public class TimeGrid extends Composite {
 			}
 			ArrayList<String> notes = new ArrayList<String>();
 			notes.add(meeting.getMeetingTime());
-			notes.add(dateString);
+			if (!iOneWeek)
+				notes.add(dateString);
 			String roomString = "";
 			for (String room: rooms) {
 				if (!roomString.isEmpty()) roomString += ", ";
 				roomString += room;
 			}
-			notes.add(roomString);
-			done.add(addMeeting(index,
+			if (!iRoomResource)
+				notes.add(roomString);
+			if (event.hasInstructor())
+				notes.add(event.getInstructor());
+			if (event.hasSponsor())
+				notes.add(event.getSponsor());
+			done.add(addMeeting(
+					event,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
-					event.getName() + " (" + event.getType() + ")", notes, event.getType() + " " + event.getName() + ": " + dateString + " " + meeting.getMeetingTime() + " " + roomString, color, done));
+					event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")", 
+					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
+					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, done));
 		}
 		iMeetings.add(done);
 		return done;
@@ -425,7 +462,7 @@ public class TimeGrid extends Composite {
 		MeetingClickEvent(Meeting meeting) {
 			iMeeting = meeting;
 		}
-		public int getRowIndex() { return iMeeting.getIndex(); }
+		public EventInterface getEvent() { return iMeeting.getEvent(); }
 	}
 	
 	public void addMeetingClickHandler(MeetingClickHandler h) {
@@ -433,16 +470,17 @@ public class TimeGrid extends Composite {
 	}
 
 	public class Meeting extends AbsolutePanel {
-		private int iIndex, iColumn, iDay, iNrColumns;
+		private EventInterface iEvent;
+		private int iColumn, iDay, iNrColumns;
 		private int iLeft, iWidth;
 		private ArrayList<Meeting> iMeetings;
 		private HorizontalPanel iHeaderPanel;
 		private boolean iDummy = false;
 		
-		private Meeting(int index, String name, ArrayList<String> note, int day, int start, int length, int column, int nrColumns, ArrayList<Meeting> meetings) {
+		private Meeting(EventInterface event, String name, ArrayList<String> note, int day, int start, int length, int column, int nrColumns, ArrayList<Meeting> meetings) {
 			super();
+			iEvent = event;
 			iMeetings = meetings;
-			iIndex = index;
 			iDay = day;
 			iColumn = column;
 			iNrColumns = nrColumns;
@@ -477,6 +515,10 @@ public class TimeGrid extends Composite {
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEMOVE);
 			sinkEvents(Event.ONMOUSEOUT);
+		}
+		
+		public EventInterface getEvent() {
+			return iEvent;
 		}
 		
 		public void addIcon(Widget image) {
@@ -538,10 +580,6 @@ public class TimeGrid extends Composite {
 				break;
 			}
 		    super.onBrowserEvent(event);
-		}
-		
-		public int getIndex() {
-			return iIndex;
 		}
 		
 		public void setNrColumns(int nrColumns) {
