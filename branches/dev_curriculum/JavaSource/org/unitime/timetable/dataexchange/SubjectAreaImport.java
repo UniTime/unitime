@@ -76,8 +76,8 @@ public class SubjectAreaImport  extends BaseImport {
                 subjectArea.setLongTitle(element.attributeValue("longTitle"));
                 subjectArea.setShortTitle(element.attributeValue("shortTitle"));
                 subjectArea.setExternalUniqueId(externalId);
-                subjectArea.setScheduleBookOnly(new Boolean(element.attributeValue("schedBookOnly").equalsIgnoreCase("T")));
-                subjectArea.setPseudoSubjectArea(new Boolean(element.attributeValue("pseudoSubjArea").equalsIgnoreCase("T")));
+                subjectArea.setScheduleBookOnly(new Boolean(element.attributeValue("schedBookOnly","F").equalsIgnoreCase("T")));
+                subjectArea.setPseudoSubjectArea(new Boolean(element.attributeValue("pseudoSubjArea","F").equalsIgnoreCase("T")));
 
                 String deptCode = element.attributeValue("department");
                 Department department = findByDeptCode(deptCode, session.getSessionId());
