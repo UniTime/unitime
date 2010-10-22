@@ -236,6 +236,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public TreeSet getUsage(Collection classes) {
 		TreeSet days = new TreeSet();
 		
+		int dowOffset = Constants.getDayOfWeek(DateUtils.getDate(1, 0, getSession().getSessionStartYear()));
 		int offset = getPatternOffset();
 		for (Iterator j=classes.iterator();j.hasNext();) {
 			Class_ clazz = (Class_)j.next();
@@ -248,8 +249,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 					
 					for (int x=0;x<getPattern().length();x++) {
 						if (getPattern().charAt(x)!='1') continue;
-						int dayOfWeek = (x+offset) % 7; //assuming semester starts on Monday
-						if ((dayCode&Constants.DAY_CODES[dayOfWeek])!=0)
+						int dayOfWeek = (x+offset+dowOffset) % 7;
+						if ((dayCode&Constants.DAY_CODES[dayOfWeek < 0 ? dayOfWeek + 7 : dayOfWeek])!=0)
 							days.add(new Integer(x+offset));
 					}
 				} else {
@@ -269,8 +270,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 						//System.out.println("      -- required "+dayCode);
     					for (int x=0;x<getPattern().length();x++) {
     						if (getPattern().charAt(x)!='1') continue;
-    						int dayOfWeek = (x+offset) % 7; //assuming semester starts on Monday
-    						if ((dayCode&Constants.DAY_CODES[dayOfWeek])!=0)
+    						int dayOfWeek = (x+offset+dowOffset) % 7;
+    						if ((dayCode&Constants.DAY_CODES[dayOfWeek < 0 ? dayOfWeek + 7 : dayOfWeek])!=0)
     							days.add(new Integer(x+offset));
     					}
 					}
@@ -288,8 +289,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     						//System.out.println("      -- not prohibited "+dayCode);
         					for (int x=0;x<getPattern().length();x++) {
         						if (getPattern().charAt(x)!='1') continue;
-        						int dayOfWeek = (x+offset) % 7; //assuming semester starts on Monday
-        						if ((dayCode&Constants.DAY_CODES[dayOfWeek])!=0)
+        						int dayOfWeek = (x+offset+dowOffset) % 7;
+        						if ((dayCode&Constants.DAY_CODES[dayOfWeek < 0 ? dayOfWeek + 7 : dayOfWeek])!=0)
         							days.add(new Integer(x+offset));
         					}
     					}
