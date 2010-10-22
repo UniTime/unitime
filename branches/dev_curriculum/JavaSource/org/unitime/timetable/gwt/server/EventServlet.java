@@ -19,10 +19,13 @@
 */
 package org.unitime.timetable.gwt.server;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,16 +38,26 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -70,6 +83,37 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			return sessions.get(0);
 		throw new EventException("Academic session " + session + " not found.");
 	}
+	
+	private void fillInSessionInfo(ResourceInterface resource, Session session) {
+		resource.setSessionId(session.getUniqueId());
+		resource.setSessionName(session.getLabel());
+		Calendar c = Calendar.getInstance(Locale.US);
+		c.setTime(session.getEventBeginDate());
+		while (c.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+			c.add(Calendar.DAY_OF_YEAR, -1);
+		}
+		int sessionYear = session.getSessionStartYear();
+		DateFormat df = new SimpleDateFormat("MM/dd");
+		while (c.getTime().before(session.getEventEndDate())) {
+			int dayOfYear = c.get(Calendar.DAY_OF_YEAR);
+			if (c.get(Calendar.YEAR) < sessionYear) {
+				Calendar x = Calendar.getInstance(Locale.US);
+			    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
+			    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
+			} else if (c.get(Calendar.YEAR) > sessionYear) {
+				Calendar x = Calendar.getInstance(Locale.US);
+			    x.set(sessionYear,11,31,0,0,0);
+			    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
+			}
+			WeekInterface week = new WeekInterface();
+			week.setDayOfYear(dayOfYear);
+			for (int i = 0; i < 7; i++) {
+				week.addDayName(df.format(c.getTime()));
+				c.add(Calendar.DAY_OF_YEAR, 1);
+			}
+			resource.addWeek(week);
+		}
+	}
 
 	@Override
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException {
@@ -88,8 +132,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setType(ResourceType.ROOM);
 						ret.setId(room.getUniqueId());
 						ret.setName(room.getLabel());
-						ret.setSessionId(room.getSession().getUniqueId());
-						ret.setSessionName(room.getSession().getLabel());
+						fillInSessionInfo(ret, room.getSession());
 						return ret;
 					}
 					List<NonUniversityLocation> locations = hibSession.createQuery("select l from NonUniversityLocation l where " +
@@ -101,8 +144,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setType(ResourceType.ROOM);
 						ret.setId(location.getUniqueId());
 						ret.setName(location.getLabel());
-						ret.setSessionId(location.getSession().getUniqueId());
-						ret.setSessionName(location.getSession().getLabel());
+						fillInSessionInfo(ret, location.getSession());
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -116,8 +158,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setType(ResourceType.SUBJECT);
 						ret.setId(subject.getUniqueId());
 						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
-						ret.setSessionId(subject.getSession().getUniqueId());
-						ret.setSessionName(subject.getSession().getLabel());
+						fillInSessionInfo(ret, subject.getSession());
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -131,8 +172,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setType(ResourceType.CURRICULUM);
 						ret.setId(curriculum.getUniqueId());
 						ret.setName(curriculum.getName());
-						ret.setSessionId(curriculum.getDepartment().getSession().getUniqueId());
-						ret.setSessionName(curriculum.getDepartment().getSession().getLabel());
+						fillInSessionInfo(ret, curriculum.getDepartment().getSession());
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -146,8 +186,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setType(ResourceType.DEPARTMENT);
 						ret.setId(department.getUniqueId());
 						ret.setName(department.getName());
-						ret.setSessionId(department.getSession().getUniqueId());
-						ret.setSessionName(department.getSession().getLabel());
+						fillInSessionInfo(ret, department.getSession());
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -173,6 +212,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(resource.getSessionId(), hibSession);
+				List<Long> curriculumCourses = null;
+				Department department = null;
 				switch (resource.getType()) {
 				case ROOM:
 					meetings = (List<Meeting>)hibSession.createQuery("select m from Meeting m, Location l where " +
@@ -233,6 +274,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					break;
 				case CURRICULUM:
+					curriculumCourses = (List<Long>)hibSession.createQuery("select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId")
+							.setLong("resourceId", resource.getId()).list();
 					meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join " +
 							"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc where " +
 							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId " +
@@ -293,8 +336,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					break;
 				case DEPARTMENT:
-					Department d = DepartmentDAO.getInstance().get(resource.getId(), hibSession);
-					if (d.isExternalManager()) {
+					department = DepartmentDAO.getInstance().get(resource.getId(), hibSession);
+					if (department.isExternalManager()) {
 						meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join e.clazz.managingDept d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= d.session.eventBeginDate and m.meetingDate <= d.session.eventEndDate")
 								.setLong("resourceId", resource.getId()).list();
@@ -353,6 +396,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					throw new EventException("Resource type " + resource.getType().getLabel() + " not supported.");
 				}
 				
+				Date now = new Date();
 				List<EventInterface> ret = new ArrayList<EventInterface>();
 				Hashtable<Long, EventInterface> events = new Hashtable<Long, EventInterface>();
 				for (Meeting m: meetings) {
@@ -364,6 +408,90 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						event.setType(m.getEvent().getEventTypeAbbv());
 						events.put(m.getEvent().getUniqueId(), event);
 						ret.add(event);
+						
+						if (m.getEvent().getMainContact() != null)
+							event.setContact(
+									(m.getEvent().getMainContact().getLastName() == null ? "" : m.getEvent().getMainContact().getLastName() + ", ") +
+									(m.getEvent().getMainContact().getFirstName() == null ? "" : m.getEvent().getMainContact().getFirstName()) + 
+									(m.getEvent().getMainContact().getMiddleName() == null ? "" : " " + m.getEvent().getMainContact().getMiddleName()));
+						
+						if (m.getEvent().getSponsoringOrganization() != null)
+							event.setSponsor(m.getEvent().getSponsoringOrganization().getName());
+						
+				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
+				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+				    		Class_ clazz = ce.getClazz();
+				    		if (clazz.getDisplayInstructor()) {
+				    			String instructor = "";
+				    			for (ClassInstructor i: clazz.getClassInstructors()) {
+				    				if (!instructor.isEmpty()) instructor += "<br>";
+				    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
+				    			}
+				    			event.setInstructor(instructor);
+				    		}
+				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+				    		switch (resource.getType()) {
+				    		case SUBJECT:
+			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+			    					CourseOffering co = i.next();
+			    					if (co.getSubjectArea().getUniqueId().equals(resource.getId())) {
+			    						if (!correctedOffering.getSubjectArea().getUniqueId().equals(resource.getId()))
+			    							correctedOffering = co;
+			    					} else {
+			    						i.remove();
+			    					}
+			    				}
+				    			break;
+				    		case DEPARTMENT:
+				    			if (department.isExternalManager()) break;
+			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+			    					CourseOffering co = i.next();
+			    					if (co.getSubjectArea().getDepartment().getUniqueId().equals(resource.getId())) {
+			    						if (!correctedOffering.getSubjectArea().getDepartment().getUniqueId().equals(resource.getId()))
+			    							correctedOffering = co;
+			    					} else {
+			    						i.remove();
+			    					}
+			    				}
+				    			break;
+				    		case CURRICULUM:
+			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+			    					CourseOffering co = i.next();
+			    					if (curriculumCourses.contains(co.getUniqueId())) {
+			    						if (!curriculumCourses.contains(correctedOffering.getUniqueId()))
+			    							correctedOffering = co;
+			    					} else {
+			    						i.remove();
+			    					}
+			    				}
+				    			break;
+				    		}
+				    		courses.remove(correctedOffering);
+				    		event.addCourseName(correctedOffering.getCourseName());
+				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+				    		String ext = clazz.getExternalId(correctedOffering);
+				    		event.addExternalId(ext == null ? clazz.getSectionNumberString(hibSession) : ext);
+				    		if (ext == null) {
+					    		event.setName(clazz.getClassLabel(correctedOffering));
+				    		} else {
+				    			event.setName(correctedOffering.getCourseName() + " " + ext);
+				    		}
+			    			for (CourseOffering co: courses) {
+					    		event.addCourseName(co.getCourseName());
+					    		ext = clazz.getExternalId(co);
+					    		event.addExternalId(ext == null ? "" : ext);
+			    			}
+				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
+				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+			    			String instructor = "";
+			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
+			    				if (!instructor.isEmpty()) instructor += "<br>";
+			    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
+			    			}
+			    			event.setInstructor(instructor);
+				    	}
 					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
@@ -386,6 +514,9 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					meeting.setStartSlot(m.getStartPeriod());
 					meeting.setEndSlot(m.getStopPeriod());
+					meeting.setPast(m.getStartTime().before(now));
+					if (m.isApproved())
+						meeting.setApprovalDate(new SimpleDateFormat("yy/MM/dd").format(m.getApprovedDate()));
 					if (resource.getType() == ResourceType.ROOM)
 						meeting.setLocation(resource);
 					else if (m.getLocation() != null) {
