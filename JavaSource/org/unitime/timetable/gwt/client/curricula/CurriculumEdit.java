@@ -229,9 +229,14 @@ public class CurriculumEdit extends Composite {
 			public void onChange(ChangeEvent event) {
 				if (iDefaultName || iDefaultAbbv) {
 					try {
-						AcademicAreaInterface area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex());
-						if (iDefaultAbbv) iCurriculumAbbv.getWidget().setText(area.getAbbv());
-						if (iDefaultName) iCurriculumName.getWidget().setText(area.getName());
+						if (iCurriculumArea.getWidget().getSelectedIndex() == 0) {
+							if (iDefaultAbbv) iCurriculumAbbv.getWidget().setText("");
+							if (iDefaultName) iCurriculumName.getWidget().setText("");
+						} else {
+							AcademicAreaInterface area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex() - 1);
+							if (iDefaultAbbv) iCurriculumAbbv.getWidget().setText(area.getAbbv());
+							if (iDefaultName) iCurriculumName.getWidget().setText(area.getName());
+						}
 					} catch (Exception e) {}
 				}
 				iCurriculumArea.clearHint();
@@ -251,7 +256,7 @@ public class CurriculumEdit extends Composite {
 			public void onChange(ChangeEvent event) {
 				try {
 					String defaultAbbv = "", defaultName = "";
-					AcademicAreaInterface area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex());
+					AcademicAreaInterface area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex() - 1);
 					defaultAbbv = area.getAbbv();
 					defaultName = area.getName();
 					String majors = "";
@@ -468,9 +473,11 @@ public class CurriculumEdit extends Composite {
 							String defaultAbbv = "", defaultName = "";
 							AcademicAreaInterface area = null;
 							try {
-								area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex());
-								defaultAbbv = area.getAbbv();
-								defaultName = area.getName();
+								if (iCurriculumArea.getWidget().getSelectedIndex() > 0) {
+									area = iAreas.get(iCurriculumArea.getWidget().getSelectedIndex() - 1);
+									defaultAbbv = area.getAbbv();
+									defaultName = area.getName();
+								}
 							} catch (Exception e) {}
 							
 							iMajors.clear(); iMajors.addAll(result);
@@ -576,8 +583,8 @@ public class CurriculumEdit extends Composite {
 		iCurriculum = new CurriculumInterface();
 		iCurriculum.setEditable(true);
 		if (iDepts.size() == 1) {
-			DepartmentInterface d = new DepartmentInterface();
-			d.setId(Long.valueOf(iCurriculumDept.getWidget().getValue(iCurriculumDept.getWidget().getSelectedIndex())));
+			DepartmentInterface d = iDepts.get(0);
+			iCurriculumDept.getWidget().setSelectedIndex(1);
 			iCurriculum.setDepartment(d);
 		}
 		loadCurriculum(Mode.ADD);
