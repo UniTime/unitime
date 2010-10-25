@@ -24,7 +24,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -186,6 +189,26 @@ public class UniTimeSideBar extends Composite {
 		Window.addWindowScrollHandler(new Window.ScrollHandler() {
 			@Override
 			public void onWindowScroll(Window.ScrollEvent event) {
+				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
+				int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
+				iDisclosurePanel.getAbsoluteTop();
+				if (fromTop <= fromBottom) {
+					iTop = fromTop;
+				} else {
+					if (fromBottom <= iTop && iTop <= fromTop) {
+					} else if (iTop > fromTop) {
+						iTop = fromTop;
+					} else {
+						iTop = fromBottom;
+					}
+				}
+				iScrollTimer.schedule(100);
+			}
+		});
+		
+		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
+			@Override
+			public void onChange(GwtPageChangeEvent event) {
 				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
 				int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
 				iDisclosurePanel.getAbsoluteTop();

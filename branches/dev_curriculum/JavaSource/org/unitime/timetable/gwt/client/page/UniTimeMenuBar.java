@@ -21,8 +21,11 @@ package org.unitime.timetable.gwt.client.page;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Pages;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.services.MenuService;
@@ -90,6 +93,13 @@ public class UniTimeMenuBar extends Composite {
 			Window.addWindowScrollHandler(new Window.ScrollHandler() {
 				@Override
 				public void onWindowScroll(ScrollEvent event) {
+					iMenu.setVisible(false);
+					showTimer.schedule(100);
+				}
+			});
+			Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
+				@Override
+				public void onChange(GwtPageChangeEvent event) {
 					iMenu.setVisible(false);
 					showTimer.schedule(100);
 				}
