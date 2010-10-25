@@ -203,17 +203,31 @@ A.l6 {
 }
 
 A.l7:hover {
-	font-size: 100%;
+	font-size: small;
 	color: blue;
 	font-family: sans-serif, verdana, arial;
 	text-decoration: underline
 }
 
 A.l7 {
-	font-size: 100%;
+	font-size: small;
 	color: blue;
 	font-family: sans-serif, verdana, arial;
 	text-decoration: none
+}
+
+A.l8:hover {
+	font-size: inherit;
+	color: inherit;
+	font-family: inherit;
+	text-decoration: underline;
+}
+
+A.l8 {
+	font-size: inherit;
+	color: inherit;
+	font-family: inherit;
+	text-decoration: none;
 }
 
 .H1 {
@@ -720,7 +734,7 @@ A.submenuLink {
 .WelcomeRowHead {
 	color: #35526F;
 	font-weight: bold;
-	font-size: 110%;
+	font-size: medium;
 	font-family: sans-serif, verdana, arial;
 	border-bottom: #35526F 1px solid;
 }
@@ -728,14 +742,14 @@ A.submenuLink {
 .WelcomeRowHeadNoLine {
 	color: #35526F;
 	font-weight: bold;
-	font-size: 110%;
+	font-size: medium;
 	font-family: sans-serif, verdana, arial;
 }
 
 .WelcomeRowHeadBlank {
 	color: #35526F;
 	font-weight: bold;
-	font-size: 110%;
+	font-size: medium;
 	font-family: sans-serif, verdana, arial;
 	border-bottom: #35526F 1px solid;
 }
@@ -753,11 +767,28 @@ A.submenuLink {
 }
 
 .WebTableHeader {
+	padding-top: 5px;
+	font-weight: bold;
 	color: #666666;
-	font-family: sans-serif, verdana, arial;
-	font-style: italic;		
+  	background: #e3e8f3 url(../images/header.png) repeat-x left top;
+  	border-bottom: 1px dashed #9CB0CE;
 }
-	
+
+.WebTableHeaderFirstRow {
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+  	background: #e3e8f3 url(../images/header.png) repeat-x left top;
+}
+
+.WebTableHeaderSecondRow {
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+  	background-color: #e3e8f3;
+  	border-bottom: 1px dashed #9CB0CE;
+}
+
 .ReservationRowHead {
 	color: #000000;
 	font-weight: bold;
@@ -1048,8 +1079,9 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-left: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	height: 35px;
 }
 
 .TimetableHeadCellVertical {
@@ -1057,7 +1089,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-left: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1067,7 +1099,7 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1075,7 +1107,7 @@ A.submenuLink {
 	border-top: #646464 1px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1083,7 +1115,7 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1091,8 +1123,9 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	height: 35px;
 }
 
 .TimetableCellVertical {
@@ -1100,14 +1133,14 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
 .TimetableCellIn {
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1115,7 +1148,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-left: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1123,7 +1156,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1131,7 +1164,7 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1140,7 +1173,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1149,7 +1182,7 @@ A.submenuLink {
 	border-right: #646464 2px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1158,7 +1191,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1166,7 +1199,7 @@ A.submenuLink {
 	border-right: #646464 2px solid;
 	border-bottom: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1174,7 +1207,7 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1184,14 +1217,14 @@ A.submenuLink {
 	border-bottom: #646464 1px solid;
 	border-right: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
 .TimetableHeadCellEOL {
 	border: #646464 1px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -1201,16 +1234,12 @@ A.submenuLink {
 	border-left: #646464 1px solid;
 	border-right: #646464 2px solid;
 	background-color: #FFFFFF;
-	font-size: 90%;
+	font-size: small;
 	font-family: sans-serif, verdana, arial;
 }
 
 .WebTableOrderArrow {
-	background-color: transparent;
-	margin-bottom: -7px;
-	margin-top: -5px;
-	margin-left: 5px;
-	margin-right: 5px;
+	vertical-align: top;
 }
 
 .bodyStyle {
@@ -1241,19 +1270,9 @@ A.noFancyLinks:link,A.noFancyLinks:visited,A.noFancyLinks:active,A.noFancyLinks:
     background-color : transparent;
 }
 
-A.sortHeader:link,A.sortHeader:visited,A.sortHeader:active {
+A.sortHeader:link,A.sortHeader:visited,A.sortHeader,A.sortHeader:active,A.sortHeader:hover {
 	text-decoration: none;
-	color: #009966;
-	border-bottom-style: dashed;
-	border-bottom-width: 1px;
-}
-
-A.sortHeader:hover {
-	text-decoration: none;
-	color: #ff0000;
-	border-bottom-style: dashed;
-	border-bottom-width: 1px;
-	border-bottom-color: #ff0000;
+	color: #666666;
 }
 
 .errorMessage {
