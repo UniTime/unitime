@@ -50,12 +50,9 @@ public class WebEventTableBuilder {
 	
 	//Colors
     protected static String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
-    protected static String oddRowBGColor = "#DFE7F2";
-    protected static String oddRowBGColorChild = "#EFEFEF";
+    protected static String oddRowBGColor = "#f1f3f9";
     protected static String oddRowMouseOverBGColor = "#8EACD0";
     protected static String evenRowMouseOverBGColor = "#8EACD0";
-    protected static String headerBGColor1 = "#E0E0E0";
-    protected static String headerBGColor2 = "#F4F4F4";
     protected String disabledColor = "gray";
 
     protected static String formName = "eventListForm";
@@ -111,6 +108,14 @@ public class WebEventTableBuilder {
     	cell.addContent("<font size=\"-1\">");
     	cell.addContent(content);
     	cell.addContent("</font>");
+		cell.setStyleClass("WebTableHeader");
+    	return(cell);
+     }
+
+    
+    protected TableHeaderCell headerCell(String content, int rowSpan, int colSpan, boolean firstRow){
+    	TableHeaderCell cell = headerCell(content, rowSpan, colSpan);
+		cell.setStyleClass("WebTableHeader" + (firstRow ? "FirstRow" : "SecondRow"));
     	return(cell);
      }
     
@@ -156,39 +161,32 @@ public class WebEventTableBuilder {
     
     protected void buildTableHeader(TableStream table, boolean mainContact){  
     	TableRow row = new TableRow();
-    	row.setBgColor(headerBGColor1);
     	TableRow row2 = new TableRow();
-    	row2.setBgColor(headerBGColor2);
      	TableHeaderCell cell = null;
-        cell = this.headerCell(LABEL, 1, 1);
+        cell = this.headerCell(LABEL, 1, 1, true);
         row.addContent(cell);
-        cell = this.headerCell(EMPTY, 1, 1);            
-        cell.setStyle("border-bottom: gray 1px solid");
+        cell = this.headerCell(EMPTY, 1, 1, false);
         row2.addContent(cell);
-        cell = this.headerCell(ENROLLMENT, 1, 1);
+        cell = this.headerCell(ENROLLMENT, 1, 1, true);
         cell.setAlign("right");
         row.addContent(cell);
-        cell = this.headerCell(EVENT_CAPACITY + "&nbsp;", 1, 1);
+        cell = this.headerCell(EVENT_CAPACITY + "&nbsp;", 1, 1, true);
         cell.setAlign("right");
         row.addContent(cell);
-        cell = this.headerCell(MEETING_DATE, 1, 2);
-        cell.setStyle("border-bottom: gray 1px solid");
+        cell = this.headerCell(MEETING_DATE, 1, 2, false);
         row2.addContent(cell);
-        cell = this.headerCell(SPONSORING_ORG, 1, 1);
+        cell = this.headerCell(SPONSORING_ORG, 1, 1, true);
         row.addContent(cell);
-        cell = this.headerCell(MEETING_TIME, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
+        cell = this.headerCell(MEETING_TIME, 1, 1, false);
         row2.addContent(cell);
-        cell = this.headerCell(EVENT_TYPE, 1, 1);
+        cell = this.headerCell(EVENT_TYPE, 1, 1, true);
         row.addContent(cell);
-        cell = this.headerCell(MEETING_LOCATION, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
+        cell = this.headerCell(MEETING_LOCATION, 1, 1, false);
         row2.addContent(cell);
     	if (mainContact) {
-    		cell = this.headerCell(MAIN_CONTACT, 1, 1);
+    		cell = this.headerCell(MAIN_CONTACT, 1, 1, true);
     		row.addContent(cell);
-    		cell = this.headerCell(APPROVED_DATE, 1, 1);
-        	cell.setStyle("border-bottom: gray 1px solid");
+    		cell = this.headerCell(APPROVED_DATE, 1, 1, false);
     		row2.addContent(cell);
     	}
     	table.addContent(row);
@@ -197,40 +195,29 @@ public class WebEventTableBuilder {
 
     protected void buildMeetingTableHeader(TableStream table, boolean mainContact){  
         TableRow row = new TableRow();
-        row.setBgColor(headerBGColor1);
         TableHeaderCell cell = null;
         cell = this.headerCell(LABEL, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(EVENT_TYPE, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(ENROLLMENT, 1, 1);
         cell.setAlign("right");
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(EVENT_CAPACITY, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         cell.setAlign("right");
         row.addContent(cell);
         cell = this.headerCell(SPONSORING_ORG, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(MEETING_DATE, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(MEETING_TIME, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         cell = this.headerCell(MEETING_LOCATION, 1, 1);
-        cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
         if (mainContact) {
             cell = this.headerCell(MAIN_CONTACT, 1, 1);
-            cell.setStyle("border-bottom: gray 1px solid");
             row.addContent(cell);
             cell = this.headerCell(APPROVED_DATE, 1, 1);
-            cell.setStyle("border-bottom: gray 1px solid");
             row.addContent(cell);
         }
         table.addContent(row);
@@ -242,7 +229,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildEventName(Event e) {
         TableCell cell = this.initCell(true, null, 1, true);    	
-        cell.addContent("<a name='A"+e.getUniqueId()+"'>"+(e.getEventName()==null?"&nbsp;":"<b>"+e.getEventName()+"</b>")+"</a>");
+        cell.addContent("<a name='A"+e.getUniqueId()+"' style='color:black;'>"+(e.getEventName()==null?"&nbsp;":"<b>"+e.getEventName()+"</b>")+"</a>");
         this.endCell(cell, true);
         return (cell);
     }
@@ -511,7 +498,7 @@ public class WebEventTableBuilder {
         row.setOnMouseOut(getRowMouseOut(bgColor));
         if (line && lastEvent!=null && !lastEvent.getUniqueId().equals(m.getEvent().getUniqueId())) {
             for (Iterator i=row.getContents().iterator();i.hasNext();)
-                ((TableCell)i.next()).setStyle("border-top: gray 1px solid;");
+                ((TableCell)i.next()).setStyle("border-top: 1px dashed #9CB0CE;");
         }
         table.addContent(row);
         if (printOverlaps) {

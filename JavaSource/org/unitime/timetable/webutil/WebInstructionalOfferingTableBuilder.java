@@ -86,7 +86,7 @@ public class WebInstructionalOfferingTableBuilder {
 	protected static DecimalFormat sRoomRatioFormat = new DecimalFormat("0.00");
 
     protected static String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
-    protected static String oddRowBGColor = "#DFE7F2";
+    protected static String oddRowBGColor = "#f1f3f9";
     protected static String oddRowBGColorChild = "#EFEFEF";
     protected static String oddRowMouseOverBGColor = "#8EACD0";
     protected static String evenRowMouseOverBGColor = "#8EACD0";
@@ -357,6 +357,7 @@ public class WebInstructionalOfferingTableBuilder {
     	cell.addContent("<font size=\"-1\">");
     	cell.addContent(content);
     	cell.addContent("</font>");
+		cell.setStyleClass("WebTableHeader");
     	return(cell);
      }
     
@@ -407,12 +408,10 @@ public class WebInstructionalOfferingTableBuilder {
     	TableHeaderCell cell = null;
     	if (isShowLabel()){
     		cell = this.headerCell(LABEL, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowDivSec()){
     		cell = this.headerCell(DIV_SEC, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}   	
     	if (isShowDemand()){
@@ -421,117 +420,111 @@ public class WebInstructionalOfferingTableBuilder {
     		} else {
         		cell = this.headerCell(("Last " + DEMAND), 2, 1);    			
     		}
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowProjectedDemand()){
     		cell = this.headerCell(PROJECTED_DEMAND, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowLimit()){
     		cell = this.headerCell(LIMIT, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowRoomRatio()){
     		cell = this.headerCell(ROOM_RATIO, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowManager()){
     		cell = this.headerCell(MANAGER, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowDatePattern()){
     		cell = this.headerCell(DATE_PATTERN, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowMinPerWk()){
     		cell = this.headerCell(MIN_PER_WK, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowTimePattern()){
     		cell = this.headerCell(TIME_PATTERN, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
     	if (isShowPreferences()){
-	    	row.addContent(headerCell("----" + PREFERENCES + "----", 1, PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1)));
+    		cell = headerCell("----" + PREFERENCES + "----", 1, PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1));
+    		cell.setStyleClass("WebTableHeaderFirstRow");
+    		cell.setAlign("center");
+	    	row.addContent(cell);
 	    	for(int j = 0; j < PREFERENCE_COLUMN_ORDER.length+(iDisplayDistributionPrefs?0:-1); j++){
-	    		row2.addContent(headerCell(PREFERENCE_COLUMN_ORDER[j] + "<hr>", 1, 1));     
+	    		cell = headerCell(PREFERENCE_COLUMN_ORDER[j], 1, 1);
+	    		cell.setStyleClass("WebTableHeaderSecondRow");
+	    		row2.addContent(cell);     
 	    	}
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(INSTRUCTOR, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-	    	row.addContent(headerCell("--------" + TIMETABLE + "--------", 1, TIMETABLE_COLUMN_ORDER.length));
+	    	cell = headerCell("--------" + TIMETABLE + "--------", 1, TIMETABLE_COLUMN_ORDER.length);
+	    	cell.setStyleClass("WebTableHeaderFirstRow");
+    		cell.setAlign("center");
+    		row.addContent(cell);
 	    	for(int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++){
 	    		cell = headerCell(TIMETABLE_COLUMN_ORDER[j], 1, 1);
-	    		cell.addContent("<hr>");
 	    		cell.setNoWrap(true);
+	    		cell.setStyleClass("WebTableHeaderSecondRow");
 	    		row2.addContent(cell);     
 	    	}   		
     	}
     	if (isShowTitle()){
     		cell = this.headerCell(TITLE, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowCredit()){
     		cell = this.headerCell(CREDIT, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowSubpartCredit()){
     		cell = this.headerCell(SCHEDULING_SUBPART_CREDIT, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowConsent()){
     		cell = this.headerCell(CONSENT, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowDesignatorRequired()){
     		cell = this.headerCell(DESIGNATOR_REQ, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowSchedulePrintNote()){
     		cell = this.headerCell(this.getSchedulePrintNoteLabel(), 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowNote()){
     		cell = this.headerCell(NOTE, 2, 1);
-    		cell.addContent("<hr>");
     		row.addContent(cell);    		
     	}
     	if (isShowExam()) {
     		cell = headerCell("-----------" + EXAM + "--------", 1, (isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
+	    	cell.setStyleClass("WebTableHeaderFirstRow");
+    		cell.setAlign("center");
     		cell.setNoWrap(true);
             row.addContent(cell);
             if (isShowExamName()) {
                 cell = headerCell(EXAM_NAME, 1, 1);
-                cell.addContent("<hr>");
                 cell.setNoWrap(true);
+	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
             }
             if (isShowExamTimetable()) {
                 cell = headerCell(EXAM_PER, 1, 1);
-                cell.addContent("<hr>");
                 cell.setNoWrap(true);
+	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
                 cell = headerCell(EXAM_ROOM, 1, 1);
-                cell.addContent("<hr>");
                 cell.setNoWrap(true);
+	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
                 
             }

@@ -279,14 +279,18 @@ public class WebTable {
                                         == null
                                 ? iHeaders[i]
                                 : "<A title=\"Order by this column.\" href=\""
-                                        + iRef + "\" class=\"sortHeader\">" + iHeaders[i] + "</A>"
-                                        + (i == Math.abs(ordCol) - 1
-                                                ? "<div class='WebTableOrderArrow'><img src='"
-                                                        + (asc
-                                                                ? IMG_ASC
-                                                                : IMG_DEC)
-                                                        + "' border='0'></div>"
-                                                : "")),
+                                	+ iRef + "\" class=\"sortHeader\">"
+                                	+ (i == Math.abs(ordCol) - 1 ? (asc ? "&uarr;" : "&darr;") : "")
+                                			/*
+                                            ? "<img class='WebTableOrderArrow' src='"
+                                                    + (asc
+                                                            ? IMG_ASC
+                                                            : IMG_DEC)
+                                                    + "' border='0'>"
+                                            : "") */ 
+                                    + iHeaders[i]
+                                    + "</A>"
+                                        ),
                                 "%%",
                                 String.valueOf(i == Math.abs(ordCol) - 1
                                 ? -ordCol
