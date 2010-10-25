@@ -46,6 +46,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	private String subjectAreaId;
     private String subjectArea;
     private String courseNbr;
+    private String courseTitle;
     private String parentSubpart;
     private String instructionalType;
     private String instructionalTypeLabel;
@@ -123,6 +124,14 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
      */
     public void setCourseNbr(String courseNbr) {
         this.courseNbr = courseNbr;
+    }
+    
+    public String getCourseTitle() {
+    	return this.courseTitle;
+    }
+    
+    public void setCourseTitle(String courseTitle) {
+    	this.courseTitle = courseTitle;
     }
     
     /**

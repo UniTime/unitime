@@ -281,6 +281,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setSubjectArea(co.getSubjectAreaAbbv());
         frm.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
         frm.setCourseNbr(co.getCourseNbr());
+        frm.setCourseTitle(co.getTitle());
 
     	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
     		frm.setSameItypeAsParent(new Boolean(true));

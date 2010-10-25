@@ -50,15 +50,15 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l7"
+						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=<bean:write name="<%=frmName%>" property="instrOfferingId"/>">
 							<bean:write name="<%=frmName%>" property="courseName"/>
-						</A>
+							- <bean:write name="<%=frmName%>" property="courseTitle"/></A>: 
 						<logic:empty name="<%=frmName%>" property="subpart">
 							<bean:write name="<%=frmName%>" property="itypeDesc"/>
 						</logic:empty>
 						<logic:notEmpty name="<%=frmName%>" property="subpart">
-							<A title="Scheduling Subpart Detail (Alt+S)" accesskey="S" class="l7"
+							<A title="Scheduling Subpart Detail (Alt+S)" accesskey="S" class="l8"
 								href="schedulingSubpartDetail.do?ssuid=<bean:write name="<%=frmName%>" property="subpart"/>">
 								<bean:write name="<%=frmName%>" property="itypeDesc"/>
 							</A>
