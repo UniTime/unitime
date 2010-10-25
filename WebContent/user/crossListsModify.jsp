@@ -111,7 +111,7 @@
 				<DIV class="WelcomeRowHead">
 					<A  title="Back to Instructional Offering List (Alt+I)"
 						accesskey="I"
-						class="l7"
+						class="l8"
 						href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="crossListsModifyForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="crossListsModifyForm" property="instrOfferingId" />"
 					><bean:write name="crossListsModifyForm" property="instrOfferingName" /></A>
 				</DIV>

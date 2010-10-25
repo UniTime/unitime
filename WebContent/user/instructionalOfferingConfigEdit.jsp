@@ -112,7 +112,7 @@
 					<tt:section-title>
 						<A  title="Back to Instructional Offering List (Alt+I)" 
 							accesskey="I"
-							class="l7" 
+							class="l8" 
 							href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<%=subjArea%>&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingConfigEditForm" property="courseOfferingId" />">
 						<B><bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingName" /></B></A>											
 					</tt:section-title>						
