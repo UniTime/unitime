@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.Client;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -234,6 +236,7 @@ public class CurriculaPage extends Composite {
 						iCurriculaPanel.setVisible(false);
 						iCurriculumPanel.setVisible(true);
 						hideLoading();
+						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
 				});
 			}
@@ -245,6 +248,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Add Curriculum");
 				iCurriculumPanel.addNew();
 				iCurriculumPanel.setVisible(true);
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
 		
@@ -256,6 +260,7 @@ public class CurriculaPage extends Composite {
 				iClassificationsEdit.setData(curricula);
 				UniTimePageLabel.getInstance().setPageName("Curriculum Requested Enrollments");
 				iClassificationsEdit.setVisible(true);
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
 		
@@ -267,6 +272,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 			
 			@Override
@@ -275,6 +281,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 			
 			@Override
@@ -283,6 +290,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
 		
@@ -294,6 +302,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 			
 			@Override
@@ -302,6 +311,7 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
 		

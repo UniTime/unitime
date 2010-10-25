@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 
@@ -32,6 +35,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint {
+	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
+	
 	public void onModuleLoad() {
 		// register triggers
 		GWT.runAsync(new RunAsyncCallback() {
@@ -118,5 +123,22 @@ public class Client implements EntryPoint {
 			public void onFailure(Throwable reason) {
 			}
 		});
+	}
+	
+	public static class GwtPageChangeEvent {
+		
+	}
+	
+	public interface GwtPageChangedHandler {
+		public void onChange(GwtPageChangeEvent event);
+	}
+	
+	public static void addGwtPageChangedHandler(GwtPageChangedHandler h) {
+		iGwtPageChangedHandlers.add(h);
+	}
+	
+	public static void fireGwtPageChanged(GwtPageChangeEvent event) {
+		for (GwtPageChangedHandler h: iGwtPageChangedHandlers)
+			h.onChange(event);
 	}
 }
