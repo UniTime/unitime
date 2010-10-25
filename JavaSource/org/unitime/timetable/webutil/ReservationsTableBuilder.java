@@ -102,7 +102,7 @@ public class ReservationsTableBuilder {
                     new String[] {"<u>Individual</u>", "Type", "Priority", "Expiration Date", "Add Student Over The Limit"},
                     new String[] {"left", "left", "center", "center", "center"},
                     new boolean[] {true, true, true, true, true} );
-            individualResvTbl.enableHR("#EFEFEF");
+            //individualResvTbl.enableHR("#EFEFEF");
         }
 
         String overLimit =  resv.isOverLimit().booleanValue()
@@ -134,7 +134,7 @@ public class ReservationsTableBuilder {
                     new String[] {"<u>Student Group</u>", "Type", "Priority", "Reserved", "Projected", "Last Term"},
                     new String[] {"left", "left", "center", "right", "right", "right"},
                     new boolean[] {true, true, true, true, true, true} );
-            stuGroupResvTbl.enableHR("#EFEFEF");
+            //stuGroupResvTbl.enableHR("#EFEFEF");
         }
 
         stuGroupResvTbl.addLine(
@@ -168,7 +168,7 @@ public class ReservationsTableBuilder {
                     new String[] {"<u>Academic Area</u>", "&nbsp;", "Type", "&nbsp;", "Reserved", "Requested", "Projected", "Last Term"},
                     new String[] {"left", "left", "left", "center", "right", "right", "right", "right"},
                     new boolean[] {true, true, true, true, true, true, true, true} );
-            acadAreaResvTbl.enableHR("#EFEFEF");
+            //acadAreaResvTbl.enableHR("#EFEFEF");
         }
 
         String acadArea = ((AcadAreaReservation)resv).getAcademicArea().getShortTitle();
@@ -210,7 +210,7 @@ public class ReservationsTableBuilder {
                     new String[] {"<u>POS Major</u>", "<u>Class</u>", "Type", "Priority", "Reserved", "Projected", "Last Term"},
                     new String[] {"left", "left", "left", "center", "right", "right", "right"},
                     new boolean[] {true, true, true, true, true, true, true} );
-            posResvTbl.enableHR("#EFEFEF");
+            //posResvTbl.enableHR("#EFEFEF");
         }
 
         String posMajor = ((PosReservation)resv).getPosMajor().getName();
@@ -257,7 +257,7 @@ public class ReservationsTableBuilder {
                    	: new String[] {"<u>Course</u>", "&nbsp;", "&nbsp;", "Reserved", "&nbsp;", "Projected", "Last Term"},
                    new String[] {"left", "left", "center", "right", "right", "right", "right"},
                    new boolean[] {true, true, true, true, true, true, true} );
-            courseOffrResvTbl.enableHR("#EFEFEF");
+            //courseOffrResvTbl.enableHR("#EFEFEF");
        }
 
        courseOffrResvTbl.addLine(
@@ -357,7 +357,7 @@ public class ReservationsTableBuilder {
         if (align==null || align.trim().length()==0)
             align = "left";
 
-        return "<TABLE border='0' " + width + " align='" + align + "' " + style + " cellpadding='2' cellspacing='4'>" +
+        return "<TABLE border='0' " + width + " align='" + align + "' " + style + " cellpadding='2' cellspacing='0'>" +
         		str + "</TABLE>";
     }
 
@@ -494,8 +494,8 @@ public class ReservationsTableBuilder {
             boolean includeCourse ) {
 
 		//Build Main Table
-		WebTable mainTbl = new WebTable(1, "", new String[] {""}, new String[] {"left"}, null);
-		mainTbl.enableHR("#ABABAB");
+		WebTable mainTbl = new WebTable(1, "", null, null, null);
+		//mainTbl.enableHR("#ABABAB");
 		mainTbl.setSuppressRowHighlight(true);
 
         if (subjectAreaId==null || subjectAreaId.length()==0) {
@@ -746,8 +746,8 @@ public class ReservationsTableBuilder {
             boolean includeCourse ) {
 
 		//Build Main Table
-		WebTable mainTbl = new WebTable(1, "Reservations", new String[] {""}, new String[] {"left"}, null);
-		mainTbl.enableHR("#ABABAB");
+		WebTable mainTbl = new WebTable(1, "Reservations", null, null, null);
+		//mainTbl.enableHR("#ABABAB");
 		mainTbl.setSuppressRowHighlight(true);
 
         boolean found = htmlTableForInstructionalOffering(
