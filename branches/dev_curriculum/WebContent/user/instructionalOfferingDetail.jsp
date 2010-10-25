@@ -99,7 +99,7 @@
 					<tt:section-title>
 							<A  title="Back to Instructional Offering List (Alt+I)" 
 								accesskey="I"
-								class="l7" 
+								class="l8" 
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
 							><bean:write name="instructionalOfferingDetailForm" property="instrOfferingName" /></A> 
 					</tt:section-title>						
@@ -225,11 +225,11 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader">Demands From</TD>
 						</logic:equal>
-						<TD align="center">&nbsp;</TD>
+						<TD align="center" >&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
 					<TR>
-						<TD align="center">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
+						<TD align="center" class="BottomBorderGray">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
 						<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
