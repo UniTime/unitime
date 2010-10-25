@@ -182,15 +182,20 @@ public class UniTimeHeaderPanel extends Composite {
 		clone.iMessage.setHTML(iMessage.getHTML());
 		clone.iMessage.setVisible(iMessage.isVisible());
 		clone.iMessage.setStyleName(iMessage.getStyleName());
-		for (Map.Entry<String,Integer> entry: iOperations.entrySet()) {
-			final Button button = (Button)iButtons.getWidget(entry.getValue());
+		for (int i = 0; i < iOperations.size(); i++) {
+			String op = null;
+			for (Map.Entry<String,Integer> entry: iOperations.entrySet())
+				if (entry.getValue() == i) op = entry.getKey();
+			if (op == null) continue;
+			final Button button = (Button)iButtons.getWidget(i);
 			String width = button.getElement().getStyle().getProperty("width");
-			clone.addButton(entry.getKey(), button.getHTML(), null, width, new ClickHandler() {
+			clone.addButton(op, button.getHTML(), null, width, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					button.click();
 				}
 			});
+			
 		}
 		return clone;
 	}
