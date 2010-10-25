@@ -81,6 +81,7 @@ public class ClassEditForm extends PreferencesForm {
     private String subjectAreaId;
     private String instrOfferingId;
     private String courseName;
+    private String courseTitle;
     private Boolean displayInstructor;
     private String schedulePrintNote;
     private String classSuffix;
@@ -239,6 +240,7 @@ public class ClassEditForm extends PreferencesForm {
         subpart = null;
         className = "";
         courseName = "";
+        courseTitle = "";
         parentClassName = "-";
         itypeDesc = "";
         datePattern = null;
@@ -689,7 +691,10 @@ public class ClassEditForm extends PreferencesForm {
     public String getCourseName() { return courseName; }
     public void setCourseName(String courseName) { this.courseName=courseName; }
 
-	public Integer getEnrollment() {
+    public String getCourseTitle() { return courseTitle; }
+    public void setCourseTitle(String courseTitle) { this.courseTitle=courseTitle; }
+
+    public Integer getEnrollment() {
 		return enrollment;
 	}
 

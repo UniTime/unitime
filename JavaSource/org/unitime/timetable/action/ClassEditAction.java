@@ -372,6 +372,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setInstrOfferingId(cco.getInstructionalOffering().getUniqueId().toString());
         frm.setSubpart(c.getSchedulingSubpart().getUniqueId());
         frm.setCourseName(cco.getInstructionalOffering().getCourseName());
+        frm.setCourseTitle(cco.getTitle());
         frm.setManagingDept(managingDept.getUniqueId());
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());

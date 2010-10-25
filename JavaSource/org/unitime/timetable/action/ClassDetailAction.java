@@ -307,6 +307,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        else
 	        	frm.setSubpart(null);
 	        frm.setCourseName(cco.getInstructionalOffering().getCourseName());
+	        frm.setCourseTitle(cco.getTitle());
 		    //TODO Reservations Bypass - to be removed later
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        // End Bypass

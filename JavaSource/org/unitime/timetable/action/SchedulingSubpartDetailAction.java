@@ -269,6 +269,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setSubjectArea(co.getSubjectAreaAbbv());
 	        frm.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
 	        frm.setCourseNbr(co.getCourseNbr());
+	        frm.setCourseTitle(co.getTitle());
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){

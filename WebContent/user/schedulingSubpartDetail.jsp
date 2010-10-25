@@ -67,11 +67,10 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l7"
+						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=<bean:write name="<%=frmName%>" property="instrOfferingId"/>">
 							<bean:write name="<%=frmName%>" property="subjectArea"/>
-							<bean:write name="<%=frmName%>" property="courseNbr"/>
-						</A> :
+							<bean:write name="<%=frmName%>" property="courseNbr"/> - <bean:write name="<%=frmName%>" property="courseTitle"/></A>:
 						<bean:write name="<%=frmName%>" property="parentSubpart" />
 						<bean:write name="<%=frmName%>" property="instructionalTypeLabel" />
 					</tt:section-title>
