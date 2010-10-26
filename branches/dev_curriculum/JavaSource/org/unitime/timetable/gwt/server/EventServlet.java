@@ -32,6 +32,7 @@ import java.util.Locale;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -208,6 +209,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
 			try {
 				
 				List<Meeting> meetings = null;
@@ -471,17 +473,16 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				    		event.addCourseName(correctedOffering.getCourseName());
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
-				    		String ext = clazz.getExternalId(correctedOffering);
-				    		event.addExternalId(ext == null ? clazz.getSectionNumberString(hibSession) : ext);
-				    		if (ext == null) {
+				    		String section = (suffix && clazz.getClassSuffix(correctedOffering) != null ? clazz.getClassSuffix(correctedOffering) : clazz.getSectionNumberString(hibSession));
+				    		event.addExternalId(section);
+				    		if (clazz.getClassSuffix(correctedOffering) == null) {
 					    		event.setName(clazz.getClassLabel(correctedOffering));
 				    		} else {
-				    			event.setName(correctedOffering.getCourseName() + " " + ext);
+				    			event.setName(correctedOffering.getCourseName() + " " + suffix);
 				    		}
 			    			for (CourseOffering co: courses) {
 					    		event.addCourseName(co.getCourseName());
-					    		ext = clazz.getExternalId(co);
-					    		event.addExternalId(ext == null ? "" : ext);
+					    		event.addExternalId(suffix && clazz.getClassSuffix(co) != null ? clazz.getClassSuffix(co) : clazz.getSectionNumberString(hibSession));
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
