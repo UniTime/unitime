@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.services.EventServiceAsync;
@@ -55,10 +56,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -72,6 +75,8 @@ public class EventResourceTimetable extends Composite {
 	private UniTimeTable<EventInterface> iTable;
 	private ResourceInterface iResource;
 	private List<EventInterface> iData;
+	private Button iPrevious, iNext;
+	private HorizontalPanel iWeekPanel;
 	
 	private final EventServiceAsync iEventService = GWT.create(EventService.class);
 	
@@ -80,8 +85,39 @@ public class EventResourceTimetable extends Composite {
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		iHeader = new UniTimeHeaderPanel();
 		iPanel.addHeaderRow(iHeader);
+		iWeekPanel = new HorizontalPanel();
+		iWeekPanel.setSpacing(2);
+		iPrevious = new Button("&larr;", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iWeek.getSelectedIndex() > 0) {
+					iWeek.setSelectedIndex(iWeek.getSelectedIndex() - 1);
+					weekChanged();
+				}
+			}
+		});
+		iPrevious.setEnabled(false);
+		iPrevious.setTitle("Previous week (Alt+p)");
+		iPrevious.setAccessKey('p');
+		iWeekPanel.add(iPrevious);
+		iWeekPanel.setCellVerticalAlignment(iPrevious, HasVerticalAlignment.ALIGN_MIDDLE);
 		iWeek = new ListBox();
-		iPanel.addRow(iWeek);
+		iWeekPanel.add(iWeek);
+		iNext = new Button("&rarr;", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iWeek.getSelectedIndex() + 1 < iWeek.getItemCount()) {
+					iWeek.setSelectedIndex(iWeek.getSelectedIndex() + 1);
+					weekChanged();
+				}
+			}
+		});
+		iNext.setTitle("Next week (Alt+n)");
+		iNext.setAccessKey('n');
+		iWeekPanel.add(iNext);
+		iWeekPanel.setCellVerticalAlignment(iNext, HasVerticalAlignment.ALIGN_MIDDLE);
+		iPanel.addRow(iWeekPanel);
+		iPanel.getRowFormatter().setVisible(1, false);
 		iPanel.getCellFormatter().setHorizontalAlignment(1, 0,  HasHorizontalAlignment.ALIGN_RIGHT);
 		final SimplePanel gridPanel = new SimplePanel();
 		iPanel.addRow(gridPanel);
@@ -295,6 +331,8 @@ public class EventResourceTimetable extends Composite {
 		}
 		iTimeGrid.labelDays(week);
 		iTimeGrid.shrink();
+		iPrevious.setEnabled(iWeek.getSelectedIndex() > 0);
+		iNext.setEnabled(iWeek.getSelectedIndex() < iWeek.getItemCount() - 1);
 	}
 	
 	private UniTimeTable<EventInterface> createEventTable() {
@@ -307,7 +345,6 @@ public class EventResourceTimetable extends Composite {
 		header.add(new UniTimeTableHeader("Time"));
 		header.add(new UniTimeTableHeader("Location"));
 		header.add(new UniTimeTableHeader("Instructor / Sponsor"));
-		header.add(new UniTimeTableHeader("Approved"));
 		header.get(0).addOperation(new Operation() {
 			@Override
 			public void execute() {
@@ -526,36 +563,6 @@ public class EventResourceTimetable extends Composite {
 				return "Sort by Instructor / Sponsor";
 			}
 		});
-		header.get(7).addOperation(new Operation() {
-			@Override
-			public void execute() {
-				table.sort(new Comparator<EventInterface>() {
-					@Override
-					public int compare(EventInterface o1, EventInterface o2) {
-						int cmp = (o1.getMeetings().first().isApproved() ? o1.getMeetings().first().getApprovalDate() : "").compareTo(
-								o2.getMeetings().first().isApproved() ? o2.getMeetings().first().getApprovalDate() : "");
-						if (cmp != 0) return cmp;
-						cmp = o1.getName().compareTo(o2.getName());
-						if (cmp != 0) return cmp;
-						cmp = o1.getType().compareTo(o2.getType());
-						if (cmp != 0) return cmp;
-						return o1.getId().compareTo(o2.getId());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return "Sort by Approval";
-			}
-		});
 		table.addRow(null, header);
 		return table;
 	}
@@ -567,26 +574,30 @@ public class EventResourceTimetable extends Composite {
 			if (event.hasCourseNames()) {
 				String name = "";
 				String section = "";
+				String prevCn = "", prevExt = "";
 				for (int i = 0; i < event.getCourseNames().size(); i++) {
 					String cn = event.getCourseNames().get(i);
 					String ext = event.getExternalIds().get(i);
 					if (name.isEmpty()) {
 						name += cn;
 						section += ext;
+					} else if (event.getInstruction() != null) {
+						name += "<br><span style='color:gray;'>" + (cn.equals(prevCn) ? "" : cn) + "</span>";
+						section += "<br><span style='color:gray;'>" + (ext.equals(prevExt) ? "" : ext) + "</span>";
 					} else {
-						name += "<br><span style='color:gray;'>" + cn + "</span>";
-						section += "<br><span style='color:gray;'>" + ext + "</span>";
+						name += "<br>" + (cn.equals(prevCn) ? "" : cn);
+						section += "<br>" + (ext.equals(prevExt) ? "" : ext);
 					}
+					prevCn = cn; prevExt = ext;
 				}
 				line.add(new HTML(name, false));
 				line.add(new NumberCell(section));
-				line.add(new Label(event.getInstruction(), false));
+				line.add(new Label(event.getInstruction() == null ? event.getType() : event.getInstruction(), false));
 			} else {
-				line.add(new Label(event.getName(), true));
-				line.add(new Label(""));
+				line.add(new DoubleCell(event.getName()));
 				line.add(new Label(event.getType(), false));
 			}
-			String date = "", time = "", room = "", approved = "";
+			String date = "", time = "", room = "";
 			TreeSet<MeetingInterface> meetings = null;
 			if (iWeek.getSelectedIndex() <= 0) {
 				meetings = event.getMeetings();
@@ -599,12 +610,18 @@ public class EventResourceTimetable extends Composite {
 			}
 			if (meetings.isEmpty()) continue;
 
+			String prevDate = "", prevTime = "", prevRoom = "";
+			boolean prevPast = false;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, false, false)) {
-				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; approved += "<br>"; }
-				date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingDates() + (m.isPast() ? "</span>" : "");
-				time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime() + (m.isPast() ? "</span>" : "");
-				room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationName() + (m.isPast() ? "</span>" : "");
-				approved += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + (m.getMeetings().first().isApproved() ? m.getMeetings().first().getApprovalDate() : "") + (m.isPast() ? "</span>" : "");
+				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; }
+				if (prevPast != m.isPast() || !prevDate.equals(m.getMeetingDates()))
+					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingDates() + (m.isPast() ? "</span>" : "");
+				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime()))
+					time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime() + (m.isPast() ? "</span>" : "");
+				if (prevPast != m.isPast() || !prevRoom.equals(m.getLocationName()))
+					room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationName() + (m.isPast() ? "</span>" : "");
+				prevPast = m.isPast();
+				prevDate = m.getMeetingDates(); prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
 			}
 			line.add(new HTML(date, false));
 			line.add(new HTML(time, false));
@@ -614,7 +631,6 @@ public class EventResourceTimetable extends Composite {
 			} else {
 				line.add(new Label(event.hasSponsor() ? event.getSponsor() : ""));
 			}
-			line.add(new HTML(approved, false));
 			int row = table.addRow(event, line);
 			table.getRowFormatter().setVerticalAlign(row, HasVerticalAlignment.ALIGN_TOP);
 		}
@@ -631,6 +647,17 @@ public class EventResourceTimetable extends Composite {
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
 			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
+	}
+	
+	public static class DoubleCell extends HTML implements HasColSpan {
+		public DoubleCell(String text) {
+			super(text, false);
+		}
+
+		@Override
+		public int getColSpan() {
+			return 2;
 		}
 	}
 
