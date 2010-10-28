@@ -133,7 +133,7 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
         setCc(UserData.getProperty(session,"EnrollmentAuditPdfReport.cc"));
         setBcc(UserData.getProperty(session,"EnrollmentAuditPdfReport.bcc"));
         setMessage(UserData.getProperty(session,"EnrollmentAuditPdfReport.message"));
-        setSubject(UserData.getProperty(session,"EnrollmentAuditPdfReport.subject","Examination Report"));
+        setSubject(UserData.getProperty(session,"EnrollmentAuditPdfReport.subject","Enrollment Audit"));
     }
     
     public void save(HttpSession session) {
