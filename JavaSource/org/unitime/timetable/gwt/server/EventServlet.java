@@ -439,19 +439,23 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 									(m.getEvent().getMainContact().getFirstName() == null ? "" : m.getEvent().getMainContact().getFirstName()) + 
 									(m.getEvent().getMainContact().getMiddleName() == null ? "" : " " + m.getEvent().getMainContact().getMiddleName()));
 						
-						if (m.getEvent().getSponsoringOrganization() != null)
+						if (m.getEvent().getSponsoringOrganization() != null) {
 							event.setSponsor(m.getEvent().getSponsoringOrganization().getName());
+							event.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
+						}
 						
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
 				    		if (clazz.getDisplayInstructor()) {
-				    			String instructor = "";
+				    			String instructor = "", email = "";
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
-				    				if (!instructor.isEmpty()) instructor += "<br>";
+				    				if (!instructor.isEmpty()) { instructor += "|"; email += "|"; }
 				    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
+				    				email += (i.getInstructor().getEmail() == null ? "" : i.getInstructor().getEmail());
 				    			}
 				    			event.setInstructor(instructor);
+				    			event.setEmail(email);
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
@@ -508,12 +512,14 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
-			    			String instructor = "";
+			    			String instructor = "", email = "";;
 			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
-			    				if (!instructor.isEmpty()) instructor += "<br>";
+			    				if (!instructor.isEmpty()) { instructor += "|"; email += "|"; }
 			    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
+			    				email += (i.getEmail() == null ? "" : i.getEmail());
 			    			}
 			    			event.setInstructor(instructor);
+			    			event.setEmail(email);
 			    			for (ExamOwner owner: xe.getExam().getOwners()) {
 			    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						    		switch (resource.getType()) {
@@ -537,12 +543,16 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				    				event.addExternalId(label.trim());
 			    				}
 			    			}
+			    			if (event.hasCourseNames() && event.getCourseNames().size() > 1)
+			    				event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
 				    	}
 					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
 					meeting.setMeetingDate(new SimpleDateFormat("MM/dd").format(m.getMeetingDate()));
 					meeting.setDayOfWeek(Constants.getDayOfWeek(m.getMeetingDate()));
+					meeting.setStartTime(m.getStartTime().getTime());
+					meeting.setStopTime(m.getStopTime().getTime());
 					Calendar c = Calendar.getInstance(Locale.US);
 					c.setTime(m.getMeetingDate());
 					int dayOfYear = c.get(Calendar.DAY_OF_YEAR);

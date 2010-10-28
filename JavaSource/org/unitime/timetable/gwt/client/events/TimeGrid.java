@@ -252,9 +252,11 @@ public class TimeGrid extends Composite {
 		for (int i = -1; i < iNrDays; i++) {
 			SimplePanel sp = new SimplePanel();
 			sp.setStyleName("header-time-interval");
-			if (i < 0)
+			if (i < 0) {
+				if (iCalendar != null) 
+					sp.setWidget(iCalendar);
 				sp.setWidth("30px");
-			else {
+			} else {
 				sp.setWidth(String.valueOf(iCellWidth));
 				Label l = new Label(CONSTANTS.longDays()[i]);
 				iDayLabels.add(l);
@@ -438,7 +440,7 @@ public class TimeGrid extends Composite {
 			if (!iRoomResource)
 				notes.add(roomString);
 			if (event.hasInstructor())
-				notes.add(event.getInstructor());
+				notes.add(event.getInstructor().replace("|", "<br>"));
 			if (event.hasSponsor())
 				notes.add(event.getSponsor());
 			done.add(addMeeting(
