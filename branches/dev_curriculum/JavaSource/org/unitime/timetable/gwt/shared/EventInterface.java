@@ -33,7 +33,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iEventName;
 	private String iEventType;
 	private TreeSet<MeetingInterface> iMeetings = null;
-	private String iSponsor, iInstructor, iContact;
+	private String iSponsor, iInstructor, iContact, iEmail;
 	
 	private List<String> iCourseNames = null;
 	private String iInstruction = null;
@@ -69,6 +69,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public String getInstructor() { return iInstructor; }
 	public void setInstructor(String instructor) { iInstructor = instructor; }
 	public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
+	public String getEmail() { return iEmail; }
+	public void setEmail(String email) { iEmail = email; }
 	public String getContact() { return iContact; }
 	public void setContact(String contact) { iContact = contact; }
 	public boolean hasContact() { return iContact != null && !iContact.isEmpty(); }
@@ -176,6 +178,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iDayOfYear;
 		private boolean iPast;
 		private String iApprovalDate = null;
+		private Long iStartTime, iStopTime;
 		
 		public MeetingInterface() {}
 		
@@ -201,6 +204,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isApproved() { return iApprovalDate != null; }
 		public String getApprovalDate() { return iApprovalDate; }
 		public void setApprovalDate(String date) {  iApprovalDate = date; }
+		
+		public Long getStopTime() { return iStopTime; }
+		public void setStopTime(Long stopTime) { iStopTime = stopTime; }
+		public Long getStartTime() { return iStartTime; }
+		public void setStartTime(Long startTime) { iStartTime = startTime; }
 		
 		public int compareTo(MeetingInterface meeting) {
 			int cmp = new Integer(getDayOfYear()).compareTo(meeting.getDayOfYear());

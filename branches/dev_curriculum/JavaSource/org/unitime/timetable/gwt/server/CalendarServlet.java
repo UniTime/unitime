@@ -55,6 +55,10 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -72,6 +76,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -130,6 +135,8 @@ public class CalendarServlet extends HttpServlet {
     	String meetingIds = params.get("mid");
     	String userId = params.get("uid");
     	if (q == null) userId = decode(userId);
+    	String type = params.get("type");
+    	String id = params.get("id");
    
 		response.setContentType("text/calendar");
 		response.setHeader( "Content-Disposition", "attachment; filename=\"schedule.ics\"" );
@@ -265,11 +272,81 @@ public class CalendarServlet extends HttpServlet {
                     }
                 }
             }
+            if (type != null && id != null) {
+            	ResourceInterface r = new ResourceInterface();
+            	r.setSessionId(sessionId);
+            	r.setId(Long.valueOf(id));
+            	r.setType(ResourceType.valueOf(type.toUpperCase()));
+            	if (r.getType() == ResourceType.ROOM)
+            		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
+        		for (EventInterface e: new EventServlet().findEvents(r))
+        			printEvent(e, out);
+            }
             out.println("END:VCALENDAR");
         	out.flush();
         } finally {
-        	hibSession.close();
+        	if (hibSession.isOpen()) 
+        		hibSession.close();
         	out.close();
+        }
+	}
+	
+	private void printEvent(EventInterface event, ServletOutputStream out) throws IOException {
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
+        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        
+        Hashtable<String, String> date2loc = new Hashtable<String, String>();
+        Hashtable<String, Boolean> approved = new Hashtable<String, Boolean>();
+        for (MeetingInterface m: event.getMeetings()) {
+        	Date startTime = new Date(m.getStartTime());
+        	Date stopTime = new Date(m.getStopTime());
+            String date = df.format(startTime) + "T" + tf.format(startTime) + "Z/" + df.format(stopTime) + "T" + tf.format(stopTime) + "Z";
+            String loc = m.getLocationName();
+            String l = date2loc.get(date);
+            date2loc.put(date, (l == null || l.isEmpty() ? "" : l + ", ") + loc);
+            Boolean a = approved.get(date);
+            approved.put(date, (a == null || a) && m.isApproved());
+        }
+        
+        String firstDate = null;
+        for (String date : new TreeSet<String>(date2loc.keySet())) {
+        	String loc = date2loc.get(date);
+        	String start = date.substring(0, date.indexOf('/'));
+        	String end = date.substring(date.indexOf('/') + 1);
+            out.println("BEGIN:VEVENT");
+            out.println("SEQUENCE:0");
+            out.println("UID:"+event.getId());
+            out.println("SUMMARY:"+event.getName());
+            out.println("DESCRIPTION:"+(event.getInstruction() != null ? event.getInstruction() : event.getType()));
+            out.println("DTSTART:" + start);
+            out.println("DTEND:" + end);
+            if (firstDate == null) {
+            	firstDate = date;
+            	String rdate = "";
+                for (String d : new TreeSet<String>(date2loc.keySet())) {
+                	if (d.equals(date)) continue;
+                	if (!rdate.isEmpty()) rdate += ",";
+                	rdate += d;
+            	}
+            	if (!rdate.isEmpty())
+            		out.println("RDATE;VALUE=PERIOD:" + rdate);
+            } else {
+    	        out.println("RECURRENCE-ID:" + start);
+            }
+            out.println("LOCATION:" + loc);
+            out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
+            if (event.hasInstructor()) {
+            	String[] instructor = event.getInstructor().split("\\|");
+            	String[] email = event.getEmail().split("\\|");
+            	for (int i = 0; i < instructor.length; ) {
+            		out.println((i == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor[i] + "\":MAILTO:" + email[i]);
+            	}
+            } else if (event.hasSponsor()) {
+            	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor() + "\":MAILTO:" + (event.getEmail() == null ? "" : event.getEmail()));
+            }
+            out.println("END:VEVENT");	
         }
 	}
 	
@@ -298,6 +375,13 @@ public class CalendarServlet extends HttpServlet {
         	String loc = date2loc.get(date);
         	String start = date.substring(0, date.indexOf('/'));
         	String end = date.substring(date.indexOf('/') + 1);
+            out.println("BEGIN:VEVENT");
+            out.println("SEQUENCE:0");
+            out.println("UID:"+event.getUniqueId());
+            out.println("SUMMARY:"+event.getEventName());
+            out.println("DESCRIPTION:"+event.getEventTypeLabel());
+            out.println("DTSTART:" + start);
+            out.println("DTEND:" + end);
             if (firstDate == null) {
             	firstDate = date;
             	String rdate = "";
@@ -306,31 +390,18 @@ public class CalendarServlet extends HttpServlet {
                 	if (!rdate.isEmpty()) rdate += ",";
                 	rdate += d;
             	}
-                out.println("BEGIN:VEVENT");
-                out.println("SEQUENCE:0");
-                out.println("UID:"+event.getUniqueId());
-                out.println("SUMMARY:"+event.getEventName());
-                out.println("DESCRIPTION:"+event.getEventTypeLabel());
-                out.println("DTSTART:" + start);
-                out.println("DTEND:" + end);
             	if (!rdate.isEmpty())
             		out.println("RDATE;VALUE=PERIOD:" + rdate);
-                out.println("LOCATION:" + loc);
-                out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
-                out.println("END:VEVENT");	
             } else {
-                out.println("BEGIN:VEVENT");
-                out.println("SEQUENCE:0");
-                out.println("UID:"+event.getUniqueId());
-                out.println("SUMMARY:"+event.getEventName());
-                out.println("DESCRIPTION:"+event.getEventTypeLabel());
     	        out.println("RECURRENCE-ID:" + start);
-                out.println("DTSTART:" + start);
-                out.println("DTEND:" + end);
-                out.println("LOCATION:" + loc);
-                out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
-                out.println("END:VEVENT");	
             }
+            if (event.getSponsoringOrganization() != null) {
+            	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsoringOrganization().getName() + "\":MAILTO:" +
+            			(event.getSponsoringOrganization().getEmail() == null ? "" : event.getSponsoringOrganization().getEmail()));
+            }
+            out.println("LOCATION:" + loc);
+            out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
+            out.println("END:VEVENT");	
         }
 	}
 	
@@ -551,10 +622,10 @@ public class CalendarServlet extends HttpServlet {
         	boolean org = false;
             for (ClassInstructor instructor: clazz.getClassInstructors()) {
 				if (!org) {
-					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\"" + ( instructor.getInstructor().getEmail() != null ? ":MAILTO:" + instructor.getInstructor().getEmail() : ""));
+					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\":MAILTO:" + ( instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
 					org = true;
 				} else {
-					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\"" + ( instructor.getInstructor().getEmail() != null ? ":MAILTO:" + instructor.getInstructor().getEmail() : ""));
+					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\":MAILTO:" + ( instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
 				}
     		}
         }
@@ -758,10 +829,10 @@ public class CalendarServlet extends HttpServlet {
 				String[] nameEmail = instructor.split("\\|");
 				//out.println("CONTACT:" + nameEmail[0] + (nameEmail[1].isEmpty() ? "" : " <" + nameEmail[1]) + ">");
 				if (!org) {
-					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\"" + ( nameEmail.length > 1 ? ":MAILTO:" + nameEmail[1] : ""));
+					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
 					org = true;
 				} else {
-					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\"" + ( nameEmail.length > 1 ? ":MAILTO:" + nameEmail[1] : ""));
+					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
 				}
 			}
 		}

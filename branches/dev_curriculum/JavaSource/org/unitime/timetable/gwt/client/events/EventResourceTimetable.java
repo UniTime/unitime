@@ -216,7 +216,7 @@ public class EventResourceTimetable extends Composite {
 								if (!eventIds.isEmpty()) eventIds += ",";
 								eventIds += event.getId();
 							}
-							iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?sid=" + iResource.getSessionId() + "&eid=" + eventIds);
+							iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?sid=" + iResource.getSessionId() + "&type=" + iResource.getType().toString().toLowerCase() + "&id=" + iResource.getId());
 							gridPanel.setWidget(iTimeGrid);
 							
 							iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iResource.getSessionName());
@@ -627,7 +627,7 @@ public class EventResourceTimetable extends Composite {
 			line.add(new HTML(time, false));
 			line.add(new HTML(room, false));
 			if (event.hasInstructor()) {
-				line.add(new HTML(event.getInstructor(), false));
+				line.add(new HTML(event.getInstructor().replace("|", "<br>"), false));
 			} else {
 				line.add(new Label(event.hasSponsor() ? event.getSponsor() : ""));
 			}
@@ -635,8 +635,14 @@ public class EventResourceTimetable extends Composite {
 			table.getRowFormatter().setVerticalAlign(row, HasVerticalAlignment.ALIGN_TOP);
 		}
 		table.getElement().getStyle().setWidth(100, Unit.PCT);
-		table.setColumnVisible(3, iWeek.getSelectedIndex() <= 0);
-		table.setColumnVisible(5, iResource.getType() != ResourceType.ROOM);
+		setColumnVisible(table, 3, iWeek.getSelectedIndex() <= 0);
+		setColumnVisible(table, 5, iResource.getType() != ResourceType.ROOM);
+	}
+	
+	public void setColumnVisible(UniTimeTable<EventInterface> table, int col, boolean visible) {
+		for (int r = 0; r < table.getRowCount(); r++) {
+			table.getCellFormatter().setVisible(r, col - (table.getFlexCellFormatter().getColSpan(r, 0) == 2 ? 1 : 0), visible);
+		}
 	}
 	
 	public static class NumberCell extends HTML implements HasCellAlignment {
