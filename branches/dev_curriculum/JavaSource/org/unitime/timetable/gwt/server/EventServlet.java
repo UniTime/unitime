@@ -45,6 +45,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
@@ -176,6 +177,27 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						fillInSessionInfo(ret, curriculum.getDepartment().getSession());
 						return ret;
 					}
+					List<CurriculumClassification> classifications = hibSession.createQuery("select f from CurriculumClassification f inner join f.curriculum c where " +
+							"c.department.session.uniqueId = :sessionId and (" +
+							"lower(c.abbv || '/' || f.name) = :name or lower(c.name || '/' || f.name) = :name or " +
+							"lower(c.abbv || '/' || f.academicClassification.code) = :name or lower(c.name || '/' || f.academicClassification.code) = :name or " + 
+							"lower(c.abbv || '/' || f.academicClassification.name) = :name or lower(c.name || '/' || f.academicClassification.name) = :name or " +
+							"lower(c.abbv || ' ' || f.name) = :name or lower(c.name || ' ' || f.name) = :name or " +
+							"lower(c.abbv || ' ' || f.academicClassification.code) = :name or lower(c.name || ' ' || f.academicClassification.code) = :name or " + 
+							"lower(c.abbv || ' ' || f.academicClassification.name) = :name or lower(c.name || ' ' || f.academicClassification.name) = :name or " +
+							"lower(c.abbv || f.name) = :name or lower(c.name || f.name) = :name or " +
+							"lower(c.abbv || f.academicClassification.code) = :name or lower(c.name || f.academicClassification.code) = :name or " + 
+							"lower(c.abbv || f.academicClassification.name) = :name or lower(c.name || f.academicClassification.name) = :name)")
+							.setString("name", name.toLowerCase()).setLong("sessionId", academicSession.getUniqueId()).list();
+					if (!classifications.isEmpty()) {
+						CurriculumClassification classification = classifications.get(0);
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.CURRICULUM);
+						ret.setId(classification.getUniqueId());
+						ret.setName(classification.getAcademicClassification().getName() + " " + classification.getCurriculum().getName());
+						fillInSessionInfo(ret, classification.getCurriculum().getDepartment().getSession());
+						return ret;
+					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case DEPARTMENT:
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and " +
@@ -220,7 +242,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				case ROOM:
 					meetings = (List<Meeting>)hibSession.createQuery("select m from Meeting m, Location l where " +
 							"l.uniqueId = :resourceId and m.locationPermanentId = l.permanentId " +
-							"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate")
+							"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).list();
 					break;
 				case SUBJECT:
@@ -228,169 +250,169 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 							"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.subjectArea.uniqueId = :resourceId " +
 							"and m.meetingDate >= co.subjectArea.session.eventBeginDate and " +
-							"m.meetingDate <= co.subjectArea.session.eventEndDate")
+							"m.meetingDate <= co.subjectArea.session.eventEndDate and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).list();
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:classType and o.ownerId = c.uniqueId")
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:classType and o.ownerId = c.uniqueId")
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg where " +
 							"co.subjectArea.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					break;
 				case CURRICULUM:
-					curriculumCourses = (List<Long>)hibSession.createQuery("select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId")
+					curriculumCourses = (List<Long>)hibSession.createQuery("select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
 							.setLong("resourceId", resource.getId()).list();
 					meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join " +
 							"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
 							"and m.meetingDate >= co.subjectArea.session.eventBeginDate and " +
-							"m.meetingDate <= co.subjectArea.session.eventEndDate")
+							"m.meetingDate <= co.subjectArea.session.eventEndDate and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).list();
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:classType and o.ownerId = c.uniqueId")
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:classType and o.ownerId = c.uniqueId")
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 					meetings.addAll(
 							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg, CurriculumCourse cc where " +
-							"co = cc.course and cc.classification.curriculum.uniqueId = :resourceId and " +
+							"co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) and " +
 							"m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-							"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					break;
 				case DEPARTMENT:
 					department = DepartmentDAO.getInstance().get(resource.getId(), hibSession);
 					if (department.isExternalManager()) {
 						meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join e.clazz.managingDept d where " +
-								"d.uniqueId = :resourceId and m.meetingDate >= d.session.eventBeginDate and m.meetingDate <= d.session.eventEndDate")
+								"d.uniqueId = :resourceId and m.meetingDate >= d.session.eventBeginDate and m.meetingDate <= d.session.eventEndDate and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).list();
 					} else {
 						meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join " +
 								"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d where " +
-								"d.uniqueId = :resourceId and m.meetingDate >= d.session.eventBeginDate and m.meetingDate <= d.session.eventEndDate")
+								"d.uniqueId = :resourceId and m.meetingDate >= d.session.eventBeginDate and m.meetingDate <= d.session.eventEndDate and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).list();
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+								"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+								"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 								"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:classType and o.ownerId = c.uniqueId")
+								"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
 								"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+								"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:courseType and o.ownerId = co.uniqueId")
+								"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId")
+								"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 								"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:classType and o.ownerId = c.uniqueId")
+								"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
 						meetings.addAll(
 								(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
 								"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg inner join co.subjectArea.department d where " +
 								"d.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
-								"o.ownerType=:configType and o.ownerId = cfg.uniqueId")
+								"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 								.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					}
 					break;
@@ -478,7 +500,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				    		if (clazz.getClassSuffix(correctedOffering) == null) {
 					    		event.setName(clazz.getClassLabel(correctedOffering));
 				    		} else {
-				    			event.setName(correctedOffering.getCourseName() + " " + suffix);
+				    			event.setName(correctedOffering.getCourseName() + " " + section);
 				    		}
 			    			for (CourseOffering co: courses) {
 					    		event.addCourseName(co.getCourseName());
@@ -492,6 +514,29 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
 			    			}
 			    			event.setInstructor(instructor);
+			    			for (ExamOwner owner: xe.getExam().getOwners()) {
+			    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+						    		switch (resource.getType()) {
+						    		case SUBJECT:
+						    			if (!course.getSubjectArea().getUniqueId().equals(resource.getId())) continue courses;
+						    			break;
+						    		case DEPARTMENT:
+						    			if (department.isExternalManager()) break courses;
+						    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(resource.getId())) continue courses;
+						    			break;
+						    		case CURRICULUM:
+						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+						    			break;
+						    		}
+				    				String courseName = owner.getCourse().getCourseName();
+				    				String label = owner.getLabel();
+				    				if (label.startsWith(courseName)) {
+				    					label = label.substring(courseName.length());
+				    				}
+				    				event.addCourseName(course.getCourseName());
+				    				event.addExternalId(label.trim());
+			    				}
+			    			}
 				    	}
 					}
 					MeetingInterface meeting = new MeetingInterface();
