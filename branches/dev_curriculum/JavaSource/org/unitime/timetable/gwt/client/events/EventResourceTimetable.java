@@ -216,7 +216,8 @@ public class EventResourceTimetable extends Composite {
 								if (!eventIds.isEmpty()) eventIds += ",";
 								eventIds += event.getId();
 							}
-							iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?sid=" + iResource.getSessionId() + "&type=" + iResource.getType().toString().toLowerCase() + "&id=" + iResource.getId());
+							if (iResource.hasCalendar())
+								iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + iResource.getCalendar());
 							gridPanel.setWidget(iTimeGrid);
 							
 							iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iResource.getSessionName());

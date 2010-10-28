@@ -126,6 +126,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Long iSessionId;
 		private String iSessionName;
 		private List<WeekInterface> iWeeks = null;
+		private String iCalendar;
 
 		public ResourceInterface() {}
 		
@@ -139,6 +140,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String sessionName) { iSessionName = sessionName; }
+		public boolean hasCalendar() { return iCalendar != null && !iCalendar.isEmpty(); }
+		public String getCalendar() { return iCalendar; }
+		public void setCalendar(String calendar) { iCalendar = calendar; }
 		
 		public boolean hasWeeks() { return iWeeks != null && !iWeeks.isEmpty(); }
 		public List<WeekInterface> getWeeks() { return iWeeks; }

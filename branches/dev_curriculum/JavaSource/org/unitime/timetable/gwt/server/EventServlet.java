@@ -116,6 +116,10 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			resource.addWeek(week);
 		}
 	}
+	
+	private void fillInCalendarUrl(ResourceInterface resource) {
+		resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&type=" + resource.getType().toString().toLowerCase() + "&id=" + resource.getId()));
+	}
 
 	@Override
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException {
@@ -135,6 +139,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(room.getUniqueId());
 						ret.setName(room.getLabel());
 						fillInSessionInfo(ret, room.getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					List<NonUniversityLocation> locations = hibSession.createQuery("select l from NonUniversityLocation l where " +
@@ -147,6 +152,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(location.getUniqueId());
 						ret.setName(location.getLabel());
 						fillInSessionInfo(ret, location.getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -161,6 +167,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(subject.getUniqueId());
 						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
 						fillInSessionInfo(ret, subject.getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -175,6 +182,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(curriculum.getUniqueId());
 						ret.setName(curriculum.getName());
 						fillInSessionInfo(ret, curriculum.getDepartment().getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					List<CurriculumClassification> classifications = hibSession.createQuery("select f from CurriculumClassification f inner join f.curriculum c where " +
@@ -196,6 +204,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(classification.getUniqueId());
 						ret.setName(classification.getAcademicClassification().getName() + " " + classification.getCurriculum().getName());
 						fillInSessionInfo(ret, classification.getCurriculum().getDepartment().getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
@@ -210,6 +219,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(department.getUniqueId());
 						ret.setName(department.getName());
 						fillInSessionInfo(ret, department.getSession());
+						fillInCalendarUrl(ret);
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");

@@ -340,7 +340,7 @@ public class CalendarServlet extends HttpServlet {
             if (event.hasInstructor()) {
             	String[] instructor = event.getInstructor().split("\\|");
             	String[] email = event.getEmail().split("\\|");
-            	for (int i = 0; i < instructor.length; ) {
+            	for (int i = 0; i < instructor.length; i++) {
             		out.println((i == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor[i] + "\":MAILTO:" + email[i]);
             	}
             } else if (event.hasSponsor()) {
