@@ -62,6 +62,8 @@
 
 <html:form action="/roomDetail">
 	<html:hidden property="id"/>
+	<html:hidden property="next"/>
+	<html:hidden property="previous"/>
 	<input type='hidden' name='confirm' value='y'/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
@@ -86,7 +88,7 @@
 					</html:submit>
 					&nbsp;
 					<html:submit property="doit" 
-							accesskey="P" styleClass="btn" titleKey="title.modifyRoomPreference"
+							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
 							>
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
@@ -119,9 +121,30 @@
 					<%}%>
 					&nbsp;
 					</logic:equal>
+					<logic:notEmpty name="<%=frmName%>" property="previous">
+						<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+						<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
+							<bean:message key="button.previousRoom" />
+						</html:submit>
+						&nbsp;
+						</logic:greaterEqual>
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="next">
+						<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
+						<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+							<bean:message key="button.nextRoom" />
+						</html:submit>
+						&nbsp;
+						</logic:greaterEqual>
+					</logic:notEmpty>
+					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+						<bean:write name="<%=frmName%>" property="id"/>
+					</tt:back>
+					<%--
 					<html:submit property="doit"  styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 						<bean:message key="button.returnToRoomList" />
 					</html:submit>
+					--%>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -397,7 +420,7 @@
 					</html:submit>
 					&nbsp;
 					<html:submit property="doit" 
-							accesskey="P" styleClass="btn" titleKey="title.modifyRoomPreference"
+							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
 							>
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
@@ -430,9 +453,30 @@
 					<%}%>
 					&nbsp;
 				</logic:equal>
+				<logic:notEmpty name="<%=frmName%>" property="previous">
+					<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+					<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
+						<bean:message key="button.previousRoom" />
+					</html:submit>
+					&nbsp;
+					</logic:greaterEqual>
+				</logic:notEmpty>
+				<logic:notEmpty name="<%=frmName%>" property="next">
+					<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
+					<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+						<bean:message key="button.nextRoom" />
+					</html:submit>
+					&nbsp;
+					</logic:greaterEqual>
+				</logic:notEmpty>
+				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+					<bean:write name="<%=frmName%>" property="id"/>
+				</tt:back>
+				<%--
 				<html:submit property="doit"  styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 					<bean:message key="button.returnToRoomList" />
 				</html:submit>
+				--%>
 			</TD>
 		</TR>
 

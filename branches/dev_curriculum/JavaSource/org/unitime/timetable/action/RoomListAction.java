@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -50,6 +51,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
@@ -78,6 +80,8 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -223,6 +227,7 @@ public class RoomListAction extends Action {
 		// build web table for university locations
 		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
 		
+		
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
 
@@ -245,7 +250,7 @@ public class RoomListAction extends Action {
 		if (rooms.size() == 0) {
 			errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
 			saveErrors(request, errors);
-		} else {		
+		} else {
 			User user = Web.getUser(httpSession);
 			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
@@ -755,22 +760,36 @@ public class RoomListAction extends Action {
 				    tables.get(location.getRoomType()).addLine(
 					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
-							comp);
+							comp,
+							location.getUniqueId().toString());
 				} else {
 				    tables.get(room.getRoomType()).addLine(
 	                        (editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
 	                        text, 
-	                        comp);
+	                        comp,
+	                        room.getUniqueId().toString());
 				}
 			}
 	
+			List<Long> ids = new ArrayList<Long>();
 			for (Map.Entry<RoomType,WebTable> entry: tables.entrySet()) {
 			    int ord = WebTable.getOrder(httpSession, entry.getKey().getReference()+".ord");
 			    if (ord>heading1.length) ord = 0;
 			    if (!entry.getValue().getLines().isEmpty()) {
 			        request.setAttribute(entry.getKey().getReference(), entry.getValue().printTable(ord));
 			    }
+			    if (!ids.isEmpty()) ids.add(-1l);
+			    for (Enumeration<WebTableLine> e = entry.getValue().getLines().elements(); e.hasMoreElements(); ) {
+			    	ids.add(Long.parseLong(e.nextElement().getUniqueId()));
+			    }
 			}
+			Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, ids);
+			
+			BackTracker.markForBack(
+	        		request,
+	        		"roomList.do",
+	        		"Rooms",
+	        		true, true);
 			
 			request.setAttribute("colspan", ""+colspan);
 		}

@@ -63,6 +63,8 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -148,6 +150,17 @@ public class RoomDetailAction extends Action {
 					|| doit.equals(rsc.getMessage("button.addRoomPreference"))) {
 				return mapping.findForward("showEditRoomPref");
 			}
+			
+            if (doit.equals(rsc.getMessage("button.nextRoom"))) {
+                response.sendRedirect(response.encodeURL("roomDetail.do?id="+roomDetailForm.getNext()));
+                return null;
+            }
+            
+            if (doit.equals(rsc.getMessage("button.previousRoom"))) {
+                response.sendRedirect(response.encodeURL("roomDetail.do?id="+roomDetailForm.getPrevious()));
+                return null;
+            }
+
 		}
 		
 		if (request.getParameter("id")==null && roomDetailForm.getId()==null)
@@ -163,6 +176,15 @@ public class RoomDetailAction extends Action {
 			roomDetailForm.setNonUniv(true);
 		}
 		
+        roomDetailForm.setPrevious(Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, id));
+        roomDetailForm.setNext(Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, id));
+        
+        BackTracker.markForBack(
+        		request,
+        		"roomDetail.do?id="+id,
+        		location.getLabel(),
+        		true, false);
+
 		//set roomSharingTable and user preference on location in form
 		User user = Web.getUser(webSession);
 		Session s = Session.getCurrentAcadSession(user);
