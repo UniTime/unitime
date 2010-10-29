@@ -44,7 +44,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		ROOM("room", "Room Timetable"),
 		SUBJECT("subject", "Subject Timetable"),
 		CURRICULUM("curriculum", "Curriculum Timetable"),
-		DEPARTMENT("department", "Departmental Timetable");
+		DEPARTMENT("department", "Departmental Timetable"),
+		PERSON("person", "Personal Timetable");
 		
 		private String iLabel;
 		private String iPageTitle;
@@ -122,6 +123,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class ResourceInterface implements IsSerializable {
 		private ResourceType iResourceType;
 		private Long iResourceId;
+		private String iExternalId;
 		private String iResourceName;
 		private Long iSessionId;
 		private String iSessionName;
@@ -134,6 +136,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setType(ResourceType type) { iResourceType = type; }
 		public Long getId() { return iResourceId; }
 		public void setId(Long id) { iResourceId = id; }
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String id) { iExternalId = id; }
 		public String getName() { return iResourceName; }
 		public void setName(String name) { iResourceName = name; }
 		public Long getSessionId() { return iSessionId; }

@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -177,7 +178,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				List<MenuInterface> menu = new ArrayList<MenuInterface>();
 				if (iRoot == null) throw new MenuException("menu is not configured properly");
 				
-				UserInfo user = new UserInfo();
+				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
 				
 				for (Iterator<Element> i = iRoot.elementIterator(); i.hasNext(); ) {
 					Element element = i.next();
@@ -296,13 +297,13 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		return true;
 	}
 	
-	private class UserInfo {
+	public static class UserInfo {
 		User iUser = null;
 		Session iSession = null;
 		TimetableManager iManager = null;
 
-		public UserInfo() {
-			iUser = Web.getUser(getThreadLocalRequest().getSession());
+		public UserInfo(HttpSession session) {
+			iUser = Web.getUser(session);
 			if (iUser != null) {
 				Long sessionId = (Long) iUser.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 				if (sessionId != null) {
@@ -324,7 +325,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				UserInfo user = new UserInfo();
+				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
 				if (user.getUser() == null) 
 					return null;
 				
@@ -375,7 +376,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				UserInfo user = new UserInfo();
+				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
 		 		if (user.getSession() == null)
 		 			return null;
 		 		

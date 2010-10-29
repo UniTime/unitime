@@ -23,7 +23,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +35,7 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -49,12 +52,17 @@ import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -83,6 +91,13 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				setString("term", session).list();
 		if (!sessions.isEmpty())
 			return sessions.get(0);
+		if ("current".equalsIgnoreCase(session)) {
+			sessions = hibSession.createQuery("select s from Session s where " +
+					"s.eventBeginDate <= :today and s.eventEndDate >= :today").
+					setDate("today",new Date()).list();
+			if (!sessions.isEmpty())
+				return sessions.get(0);
+		}
 		throw new EventException("Academic session " + session + " not found.");
 	}
 	
@@ -118,7 +133,13 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	}
 	
 	private void fillInCalendarUrl(ResourceInterface resource) {
-		resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&type=" + resource.getType().toString().toLowerCase() + "&id=" + resource.getId()));
+		switch (resource.getType()) {
+		case PERSON:
+			resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&uid=" + resource.getExternalId()));
+			break;
+		default:
+			resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&type=" + resource.getType().toString().toLowerCase() + "&id=" + resource.getId()));
+		}
 	}
 
 	@Override
@@ -126,7 +147,19 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
-				Session academicSession = findSession(hibSession, session);
+				Session academicSession = null;
+				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				if (session != null && !session.isEmpty()) {
+					academicSession = findSession(hibSession, session);
+				} else if (userInfo.getSession() != null) {
+					academicSession = userInfo.getSession();
+				} else {
+					throw new EventException("Academic session not provided.");
+				}
+				
+				if (type == null)
+					type = ResourceType.PERSON;
+				
 				switch (type) {
 				case ROOM:
 					List<Room> rooms = hibSession.createQuery("select r from Room r where r.session.uniqueId = :sessionId and (" +
@@ -223,6 +256,58 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						return ret;
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
+				case PERSON:
+					if (userInfo.getUser() == null) throw new EventException("Personal timetable is only available to authenticated users.");
+					if (!Roles.ADMIN_ROLE.equals(userInfo.getUser().getRole())) {
+						if (name != null && !name.isEmpty() && !name.equals(userInfo.getUser().getId()))
+							throw new EventException("It is not allowed to access a timetable of someone else.");
+						name = userInfo.getUser().getId();
+					} else if (name == null || name.isEmpty()) {
+						name = userInfo.getUser().getId();
+					}
+					List<Student> students = hibSession.createQuery("select s from Student s where s.session.uniqueId = :sessionId and " +
+							"s.externalUniqueId = :name or lower(s.email) = lower(:name)")
+							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
+					if (!students.isEmpty()) {
+						Student student = students.get(0);
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.PERSON);
+						ret.setId(student.getUniqueId());
+						ret.setName(student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						ret.setExternalId(student.getExternalUniqueId());
+						fillInSessionInfo(ret, student.getSession());
+						fillInCalendarUrl(ret);
+						return ret;
+					}
+					List<DepartmentalInstructor> instructors = hibSession.createQuery("select i from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and " +
+							"i.externalUniqueId = :name or lower(i.careerAcct) = lower(:name) or lower(i.email) = lower(:name)")
+							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
+					if (!instructors.isEmpty()) {
+						DepartmentalInstructor instructor = instructors.get(0);
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.PERSON);
+						ret.setId(instructor.getUniqueId());
+						ret.setName(instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						ret.setExternalId(instructor.getExternalUniqueId());
+						fillInSessionInfo(ret, instructor.getDepartment().getSession());
+						fillInCalendarUrl(ret);
+						return ret;
+					}
+					List<EventContact> contacts = hibSession.createQuery("select c from EventContact c where " +
+							"c.externalUniqueId = :name or lower(c.emailAddress) = lower(:name)")
+							.setString("name", name).list();
+					if (!contacts.isEmpty()) {
+						EventContact contact = contacts.get(0);
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.PERSON);
+						ret.setId(contact.getUniqueId());
+						ret.setName(contact.getName());
+						ret.setExternalId(contact.getExternalUniqueId());
+						fillInSessionInfo(ret, academicSession);
+						fillInCalendarUrl(ret);
+						return ret;
+					}
+					throw new EventException("No events found in " + academicSession.getLabel() + ".");
 				default:
 					throw new EventException("Resource type " + type.getLabel() + " not supported.");
 				}
@@ -246,7 +331,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(resource.getSessionId(), hibSession);
-				List<Long> curriculumCourses = null;
+				Collection<Long> curriculumCourses = null;
 				Department department = null;
 				switch (resource.getType()) {
 				case ROOM:
@@ -426,6 +511,90 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 								.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					}
 					break;
+				case PERSON:
+					curriculumCourses = new HashSet<Long>();
+					meetings = new ArrayList<Meeting>();
+					for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery("select i from DepartmentalInstructor i " +
+							"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId").
+							setLong("sessionId", resource.getSessionId()).setString("externalId", resource.getExternalId()).list()) {
+	                	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
+	                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
+		                	for (Exam exam: instructor.getExams(Exam.sExamTypeFinal)) {
+		                		if (exam.getEvent() != null)
+		                			meetings.addAll(exam.getEvent().getMeetings());
+		                	}
+	                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
+		                	for (Exam exam: instructor.getExams(Exam.sExamTypeMidterm)) {
+		                		if (exam.getEvent() != null)
+		                			meetings.addAll(exam.getEvent().getMeetings());
+		                	}
+                        for (ClassInstructor ci: instructor.getClasses()) {
+                        	if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass() && ci.getClassInstructing().getEvent() != null) {
+                        		meetings.addAll(ci.getClassInstructing().getEvent().getMeetings());
+                        	}
+                        	for (CourseOffering course: ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+                        		curriculumCourses.add(course.getUniqueId());
+                        	}
+                        }
+					}
+                    for (Student student: (List<Student>)hibSession.createQuery("select s from Student s where " +
+                    		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId").
+                    		setLong("sessionId", resource.getSessionId()).setString("externalId", resource.getExternalId()).list()) {
+                    	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
+                    	if (student.getSession().getStatusType().canNoRoleReportExamFinal()) {
+                    		for (Exam exam: student.getExams(Exam.sExamTypeFinal))
+                    			if (exam.getEvent() != null)
+                        			meetings.addAll(exam.getEvent().getMeetings());
+                    	}
+                    	if (student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
+                    		for (Exam exam: student.getExams(Exam.sExamTypeMidterm))
+                    			if (exam.getEvent() != null)
+                        			meetings.addAll(exam.getEvent().getMeetings());
+                    	}
+                        for (StudentClassEnrollment sce: student.getClassEnrollments()) {
+                        	if (student.getSession().getStatusType().canNoRoleReportClass() && sce.getClazz().getEvent() != null) {
+                    			meetings.addAll(sce.getClazz().getEvent().getMeetings());
+                        	}
+                			curriculumCourses.add(sce.getCourseOffering().getUniqueId());
+                        }
+    					meetings.addAll(
+    							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+    							"Student s inner join s.classEnrollments e where " +
+    							"s.uniqueId = :studentId and o.ownerType=:courseType and o.ownerId = e.courseOffering.uniqueId and m.approvedDate is not null")
+    							.setLong("studentId", student.getUniqueId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
+    					meetings.addAll(
+    							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+    							"Student s inner join s.classEnrollments e where " +
+    							"s.uniqueId = :studentId and o.ownerType=:offeringType and o.ownerId = e.courseOffering.instructionalOffering.uniqueId and m.approvedDate is not null")
+    							.setLong("studentId", student.getUniqueId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
+    					meetings.addAll(
+    							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+    							"Student s inner join s.classEnrollments e where " +
+    							"s.uniqueId = :studentId and o.ownerType=:offeringType and o.ownerId = e.clazz.uniqueId and m.approvedDate is not null")
+    							.setLong("studentId", student.getUniqueId()).setInteger("offeringType", ExamOwner.sOwnerTypeClass).list());
+    					meetings.addAll(
+    							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+    							"Student s inner join s.classEnrollments e where " +
+    							"s.uniqueId = :studentId and o.ownerType=:courseType and o.ownerId = e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and m.approvedDate is not null")
+    							.setLong("studentId", student.getUniqueId()).setInteger("courseType", ExamOwner.sOwnerTypeConfig).list());
+                    }
+                    meetings.addAll(
+                    		(List<Meeting>)hibSession.createQuery("select m from Meeting m, Session s where s.uniqueId = :sessionId and " +
+                    				"m.event.mainContact.externalUniqueId = :externalId and " +
+                    				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
+                    				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
+                    meetings.addAll(
+                    		(List<Meeting>)hibSession.createQuery("select m from Meeting m inner join m.event.additionalContacts c, Session s where s.uniqueId = :sessionId and " +
+                    				"c.externalUniqueId = :externalId and " +
+                    				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
+                    				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
+                    meetings.addAll(
+                    		(List<Meeting>)hibSession.createQuery("select distinct m from Meeting m, EventContact c, Session s where s.uniqueId = :sessionId and " +
+                    				"c.externalUniqueId = :externalId and c.emailAddress is not null and " +
+                    				"lower(m.event.email) like '%' || lower(c.emailAddress) || '%' and " +
+                    				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
+                    				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
+                    break;
 				default:
 					throw new EventException("Resource type " + resource.getType().getLabel() + " not supported.");
 				}
@@ -494,6 +663,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			    				}
 				    			break;
 				    		case CURRICULUM:
+				    		case PERSON:
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 			    					CourseOffering co = i.next();
 			    					if (curriculumCourses.contains(co.getUniqueId())) {
@@ -541,6 +711,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(resource.getId())) continue courses;
 						    			break;
 						    		case CURRICULUM:
+						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}

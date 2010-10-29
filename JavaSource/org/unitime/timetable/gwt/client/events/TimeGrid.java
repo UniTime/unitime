@@ -118,6 +118,7 @@ public class TimeGrid extends Composite {
 				iCalendar.setImage(new Image(RESOURCES.calendar()));
 				iCalendar.setTarget(null);
 				iCalendar.setTitle("Export in iCalendar format.");
+				iCalendar.setVisible(false);
 				if (!print)
 					sp.setWidget(iCalendar);
 			} else {
@@ -197,6 +198,11 @@ public class TimeGrid extends Composite {
 	
 	public void setCalendarUrl(String url) {
 		iCalendar.setUrl(url);
+		iCalendar.setVisible(true);
+	}
+	
+	public String getCalendarUrl() {
+		return iCalendar.getUrl();
 	}
 	
 	public TimeGrid getPrintWidget() {
