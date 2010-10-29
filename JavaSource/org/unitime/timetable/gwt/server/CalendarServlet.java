@@ -272,6 +272,9 @@ public class CalendarServlet extends HttpServlet {
             	ResourceInterface r = new ResourceInterface();
             	r.setSessionId(sessionId);
             	r.setId(Long.valueOf(id));
+            	String ext = params.get("ext");
+            	if (ext != null)
+            		r.setExternalId(ext);
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
             	if (r.getType() == ResourceType.ROOM)
             		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
