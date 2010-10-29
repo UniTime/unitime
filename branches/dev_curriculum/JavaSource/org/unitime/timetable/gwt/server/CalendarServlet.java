@@ -243,12 +243,8 @@ public class CalendarServlet extends HttpServlet {
                     		printExam(exam, out);
                     	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
-                        for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
-                            DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-                            for (Iterator j=di.getClasses().iterator();j.hasNext();) {
-                                ClassInstructor ci = (ClassInstructor)j.next();
-                                printClass(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering(), ci.getClassInstructing(), out);
-                            }
+                        for (ClassInstructor ci: instructor.getClasses()) {
+                            printClass(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering(), ci.getClassInstructing(), out);
                         }
                     }
                 }
