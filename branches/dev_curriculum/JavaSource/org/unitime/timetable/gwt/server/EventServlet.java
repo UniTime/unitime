@@ -133,6 +133,10 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	}
 	
 	private void fillInCalendarUrl(ResourceInterface resource) {
+		resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + 
+				"&type=" + resource.getType().toString().toLowerCase() + "&id=" + resource.getId() + 
+				(resource.getExternalId() == null ? "" : "&ext=" + resource.getExternalId())));
+		/*
 		switch (resource.getType()) {
 		case PERSON:
 			resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&uid=" + resource.getExternalId()));
@@ -140,6 +144,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 		default:
 			resource.setCalendar(CalendarServlet.encode("sid=" + resource.getSessionId() + "&type=" + resource.getType().toString().toLowerCase() + "&id=" + resource.getId()));
 		}
+		*/
 	}
 
 	@Override
