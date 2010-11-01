@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.IdValueInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 
@@ -31,4 +32,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface EventServiceAsync {
 	public void findResource(String session, ResourceType type, String name, AsyncCallback<ResourceInterface> callback) throws EventException;
 	public void findEvents(ResourceInterface resource, AsyncCallback<List<EventInterface>> callback) throws EventException;
+	public void findSessions(String session, AsyncCallback<List<IdValueInterface>> callback)  throws EventException;
+	public void findResources(String session, ResourceType type, String query, int limit, AsyncCallback<List<ResourceInterface>> callback) throws EventException;
+	public void canLookupPeople(AsyncCallback<Boolean> callback) throws EventException;
 }
