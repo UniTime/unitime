@@ -40,25 +40,27 @@ public class SimpleForm extends FlexTable {
 		this(2);
 	}
 	
-	public void addHeaderRow(Widget widget) {
+	public int addHeaderRow(Widget widget) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
 		getFlexCellFormatter().setStyleName(row, 0, "unitime-MainTableHeader");
 		getRowFormatter().setStyleName(row, "unitime-MainTableHeaderRow");
 		setWidget(row, 0, widget);
+		return row;
 	}
 	
-	public void addHeaderRow(String text) {
-		addHeaderRow(new Label(text, false));
+	public int addHeaderRow(String text) {
+		return addHeaderRow(new Label(text, false));
 	}
 
-	public void addRow(Widget widget) {
+	public int addRow(Widget widget) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
 		setWidget(row, 0, widget);
+		return row;
 	}
 	
-	protected void addBottomRow(Widget widget, boolean printable) {
+	protected int addBottomRow(Widget widget, boolean printable) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
 		getFlexCellFormatter().setStyleName(row, 0, "unitime-MainTableBottomHeader");
@@ -67,20 +69,22 @@ public class SimpleForm extends FlexTable {
 		getFlexCellFormatter().addStyleName(row, 0, "unitime-TopLine");
 		removeStyleName("unitime-NotPrintableBottomLine");
 		setWidget(row, 0, widget);
+		return row;
 	}
 	
-	public void addBottomRow(Widget widget) {
-		addBottomRow(widget, true);
+	public int addBottomRow(Widget widget) {
+		return addBottomRow(widget, true);
 	}
 
-	public void addNotPrintableBottomRow(Widget widget) {
-		addBottomRow(widget, false);
+	public int addNotPrintableBottomRow(Widget widget) {
+		return addBottomRow(widget, false);
 	}
 
-	public void addRow(String text, Widget widget) {
+	public int addRow(String text, Widget widget) {
 		int row = getRowCount();
 		setWidget(row, 0, new Label(text, false));
 		setWidget(row, 1, widget);
+		return row;
 	}
 	
 }
