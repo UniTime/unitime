@@ -120,13 +120,32 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		return getId().compareTo(event.getId());
 	}
 	
-	public static class ResourceInterface implements IsSerializable {
+	public static class IdValueInterface implements IsSerializable {
+		private String iId, iValue;
+		private boolean iSelected = false;
+
+		public IdValueInterface() {}
+		public IdValueInterface(String id, String value) {
+			iId = id; iValue = value;
+		}
+		public String getId() { return iId; }
+		public void setId(String id) { iId = id; }
+		public String getValue() { return iValue; }
+		public void setValue(String value) { iValue = value; }
+		public boolean isSelected() { return iSelected; }
+		public void setSelected(boolean selected) { iSelected = selected; }
+	}
+	
+	public static class ResourceInterface implements IsSerializable, Comparable<ResourceInterface> {
 		private ResourceType iResourceType;
 		private Long iResourceId;
 		private String iExternalId;
+		private String iAbbreviation;
 		private String iResourceName;
+		private String iTitle;
 		private Long iSessionId;
 		private String iSessionName;
+		private String iSessionAbbv;
 		private List<WeekInterface> iWeeks = null;
 		private String iCalendar;
 
@@ -138,15 +157,23 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setId(Long id) { iResourceId = id; }
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String id) { iExternalId = id; }
+		public boolean hasAbbreviation() { return iAbbreviation != null && !iAbbreviation.isEmpty(); }
+		public String getAbbreviation() { return iAbbreviation; }
+		public void setAbbreviation(String abbv) { iAbbreviation = abbv; }
 		public String getName() { return iResourceName; }
 		public void setName(String name) { iResourceName = name; }
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String sessionName) { iSessionName = sessionName; }
+		public String getSessionAbbv() { return iSessionAbbv; }
+		public void setSessionAbbv(String sessionAbbv) { iSessionAbbv = sessionAbbv; }
 		public boolean hasCalendar() { return iCalendar != null && !iCalendar.isEmpty(); }
 		public String getCalendar() { return iCalendar; }
 		public void setCalendar(String calendar) { iCalendar = calendar; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
 		
 		public boolean hasWeeks() { return iWeeks != null && !iWeeks.isEmpty(); }
 		public List<WeekInterface> getWeeks() { return iWeeks; }
@@ -157,6 +184,25 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public String toString() {
 			return getType().getLabel() + " " + getName();
+		}
+		
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof ResourceInterface)) return false;
+			return ((ResourceInterface)o).getId().equals(getId());
+		}
+		
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		public int compareTo(ResourceInterface r) {
+			if (hasAbbreviation()) {
+				int cmp = getAbbreviation().compareTo(r.getAbbreviation());
+				if (cmp != 0) return cmp;
+			}
+			int cmp = getName().compareTo(r.getName());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(r.getId());
 		}
 	}
 	

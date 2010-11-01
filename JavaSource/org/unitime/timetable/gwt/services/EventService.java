@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.IdValueInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 
@@ -33,4 +34,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface EventService extends RemoteService {
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException;
 	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException;
+	public List<IdValueInterface> findSessions(String session)  throws EventException;
+	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException;
+	public Boolean canLookupPeople() throws EventException;
 }

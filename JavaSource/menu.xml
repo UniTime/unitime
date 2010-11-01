@@ -209,6 +209,8 @@
 		<item name="Meetings" page="meetingList.do"/>
 		<item name="Add Event" page="eventAdd.do"/>
 		<item name="Room Availability" page="eventGrid.do"/>
+		<separator/>
+		<item name="Timetable" page="timetable" type="gwt" />
 	</menu>
 	<item name="Scheduling Assistant" page="sectioning" type="gwt">
 		<condition>

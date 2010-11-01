@@ -24,21 +24,26 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.IdValueInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -103,6 +108,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	
 	private void fillInSessionInfo(ResourceInterface resource, Session session) {
 		resource.setSessionId(session.getUniqueId());
+		resource.setSessionAbbv(session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative());
 		resource.setSessionName(session.getLabel());
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(session.getEventBeginDate());
@@ -154,6 +160,9 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			try {
 				Session academicSession = null;
 				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				if (userInfo.getUser() == null) throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() + 
+						type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
+
 				if (session != null && !session.isEmpty()) {
 					academicSession = findSession(hibSession, session);
 				} else if (userInfo.getSession() != null) {
@@ -175,6 +184,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.ROOM);
 						ret.setId(room.getUniqueId());
+						ret.setAbbreviation(room.getLabel());
 						ret.setName(room.getLabel());
 						fillInSessionInfo(ret, room.getSession());
 						fillInCalendarUrl(ret);
@@ -188,6 +198,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.ROOM);
 						ret.setId(location.getUniqueId());
+						ret.setAbbreviation(location.getLabel());
 						ret.setName(location.getLabel());
 						fillInSessionInfo(ret, location.getSession());
 						fillInCalendarUrl(ret);
@@ -203,6 +214,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.SUBJECT);
 						ret.setId(subject.getUniqueId());
+						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
 						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
 						fillInSessionInfo(ret, subject.getSession());
 						fillInCalendarUrl(ret);
@@ -218,6 +230,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.CURRICULUM);
 						ret.setId(curriculum.getUniqueId());
+						ret.setAbbreviation(curriculum.getAbbv());
 						ret.setName(curriculum.getName());
 						fillInSessionInfo(ret, curriculum.getDepartment().getSession());
 						fillInCalendarUrl(ret);
@@ -240,7 +253,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.CURRICULUM);
 						ret.setId(classification.getUniqueId());
-						ret.setName(classification.getAcademicClassification().getName() + " " + classification.getCurriculum().getName());
+						ret.setAbbreviation(classification.getCurriculum().getAbbv() + " " + classification.getAcademicClassification().getCode());
+						ret.setName(classification.getCurriculum().getName() + " " + classification.getAcademicClassification().getName());
 						fillInSessionInfo(ret, classification.getCurriculum().getDepartment().getSession());
 						fillInCalendarUrl(ret);
 						return ret;
@@ -255,6 +269,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.DEPARTMENT);
 						ret.setId(department.getUniqueId());
+						ret.setAbbreviation(department.getAbbreviation() == null ? department.getDeptCode() : department.getAbbreviation());
 						ret.setName(department.getName());
 						fillInSessionInfo(ret, department.getSession());
 						fillInCalendarUrl(ret);
@@ -262,7 +277,6 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case PERSON:
-					if (userInfo.getUser() == null) throw new EventException("Personal timetable is only available to authenticated users.");
 					if (!Roles.ADMIN_ROLE.equals(userInfo.getUser().getRole())) {
 						if (name != null && !name.isEmpty() && !name.equals(userInfo.getUser().getId()))
 							throw new EventException("It is not allowed to access a timetable of someone else.");
@@ -278,6 +292,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.PERSON);
 						ret.setId(student.getUniqueId());
+						ret.setAbbreviation(student.getName(DepartmentalInstructor.sNameFormatShort));
 						ret.setName(student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 						ret.setExternalId(student.getExternalUniqueId());
 						fillInSessionInfo(ret, student.getSession());
@@ -292,6 +307,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.PERSON);
 						ret.setId(instructor.getUniqueId());
+						ret.setAbbreviation(instructor.getName(DepartmentalInstructor.sNameFormatShort));
 						ret.setName(instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 						ret.setExternalId(instructor.getExternalUniqueId());
 						fillInSessionInfo(ret, instructor.getDepartment().getSession());
@@ -306,6 +322,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.PERSON);
 						ret.setId(contact.getUniqueId());
+						ret.setAbbreviation(contact.getName());
 						ret.setName(contact.getName());
 						ret.setExternalId(contact.getExternalUniqueId());
 						fillInSessionInfo(ret, academicSession);
@@ -593,12 +610,14 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
                     				"c.externalUniqueId = :externalId and " +
                     				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
                     				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
+                    /*
                     meetings.addAll(
                     		(List<Meeting>)hibSession.createQuery("select distinct m from Meeting m, EventContact c, Session s where s.uniqueId = :sessionId and " +
                     				"c.externalUniqueId = :externalId and c.emailAddress is not null and " +
                     				"lower(m.event.email) like '%' || lower(c.emailAddress) || '%' and " +
                     				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
                     				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
+                    */
                     break;
 				default:
 					throw new EventException("Resource type " + resource.getType().getLabel() + " not supported.");
@@ -781,6 +800,222 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException("Unable to find events for " + resource + ": " + e.getMessage());
+		}
+	}
+
+	@Override
+	public List<IdValueInterface> findSessions(String term) throws EventException {
+		try {
+			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+			try {
+				Session selected = null;
+				if (term != null) {
+					try {
+						selected = findSession(hibSession, term);
+					} catch (EventException e) {}
+				} else {
+					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+					if (userInfo.getSession() != null)
+						selected = userInfo.getSession();
+				}
+				if (selected == null)
+					try {
+						selected = findSession(hibSession, "current");
+					} catch (EventException e) {}
+				List<IdValueInterface> ret = new ArrayList<IdValueInterface>();
+				TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery(
+						"select distinct s from Session s, RoomTypeOption o where o.session = s and o.status = 1"
+						).list());
+				for (Session session: sessions) {
+					IdValueInterface idVal = new IdValueInterface(session.getUniqueId().toString(), session.getLabel()); 
+					if (session.equals(selected))
+						idVal.setSelected(true);
+					ret.add(idVal);
+				}
+				return ret;
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof EventException)
+				throw (EventException)e;
+			sLog.error(e.getMessage(), e);
+			throw new EventException("No academic session available: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException {
+		try {
+			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+			try {
+				Session academicSession = findSession(hibSession, session);
+				List<ResourceInterface> resources = new ArrayList<ResourceInterface>();
+				switch (type) {
+				case ROOM:
+					List<Room> rooms = hibSession.createQuery("select r from Room r, RoomTypeOption o where r.session.uniqueId = :sessionId and " +
+							"o.status = 1 and o.roomType = r.roomType and o.session = r.session and (" +
+							"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
+							"order by r.buildingAbbv, r.roomNumber")
+							.setString("name", query.toLowerCase() + "%").setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (Room room: rooms) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.ROOM);
+						ret.setId(room.getUniqueId());
+						ret.setAbbreviation(room.getLabel());
+						ret.setName(room.getLabel());
+						if (room.getDisplayName() != null && !room.getDisplayName().isEmpty()) {
+							ret.setTitle(room.getLabel() + " - " + room.getDisplayName());
+						} else {
+							ret.setTitle(room.getLabel() + " - " + room.getRoomTypeLabel() + (room.getCapacity() > 1 ? " (" + room.getCapacity() + " seats)" : ""));
+						}
+						fillInSessionInfo(ret, room.getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					List<NonUniversityLocation> locations = hibSession.createQuery("select l from NonUniversityLocation l, RoomTypeOption o where " +
+							"l.session.uniqueId = :sessionId and o.status = 1 and o.roomType = l.roomType and o.session = l.session and lower(l.name) like :name " +
+							"order by l.name")
+							.setString("name", query.toLowerCase() + "%").setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (NonUniversityLocation location: locations) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.ROOM);
+						ret.setId(location.getUniqueId());
+						ret.setAbbreviation(location.getLabel());
+						ret.setName(location.getLabel());
+						if (location.getDisplayName() != null && !location.getDisplayName().isEmpty()) {
+							ret.setTitle(location.getLabel() + " - " + location.getDisplayName());
+						} else {
+							ret.setTitle(location.getLabel() + " - " + location.getRoomTypeLabel() + (location.getCapacity() > 1 ? " (" + location.getCapacity() + " seats)" : ""));
+						}
+						fillInSessionInfo(ret, location.getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					Collections.sort(resources);
+					if (limit > 0 && resources.size() > limit) {
+						resources = new ArrayList<ResourceInterface>(resources.subList(0, limit));
+					}
+					break;
+				case SUBJECT:
+					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
+							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.shortTitle) like :title or lower(' ' || s.longTitle) like :title) " +
+							"order by s.subjectAreaAbbreviation")
+							.setString("name", query.toLowerCase() + "%").setString("title", "% " + query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (SubjectArea subject: subjects) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.SUBJECT);
+						ret.setId(subject.getUniqueId());
+						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
+						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
+						fillInSessionInfo(ret, subject.getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					break;
+				case CURRICULUM:
+					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and (" +
+							"lower(c.abbv) like :name or lower(c.name) like :title) order by c.abbv")
+							.setString("name", query.toLowerCase() + "%").setString("title", "%" + query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (Curriculum curriculum: curricula) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.CURRICULUM);
+						ret.setId(curriculum.getUniqueId());
+						ret.setAbbreviation(curriculum.getAbbv());
+						ret.setName(curriculum.getName());
+						fillInSessionInfo(ret, curriculum.getDepartment().getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					if (curricula.size() == 1) {
+						for (CurriculumClassification classification: new TreeSet<CurriculumClassification>(curricula.get(0).getClassifications())) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.CURRICULUM);
+							ret.setId(classification.getUniqueId());
+							ret.setAbbreviation(classification.getCurriculum().getAbbv() + " " + classification.getAcademicClassification().getCode());
+							ret.setName(classification.getCurriculum().getName() + " " + classification.getAcademicClassification().getName());
+							ret.setTitle("&nbsp;&nbsp;&nbsp;&nbsp;" + classification.getAcademicClassification().getCode() + " " + classification.getAcademicClassification().getName());
+							fillInSessionInfo(ret, classification.getCurriculum().getDepartment().getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+					} else if (curricula.isEmpty()) {
+						List<CurriculumClassification> classifications = hibSession.createQuery("select f from CurriculumClassification f inner join f.curriculum c where " +
+								"c.department.session.uniqueId = :sessionId and (" +
+								"lower(c.abbv || '/' || f.name) like :name or lower(c.name || '/' || f.name) like :title or " +
+								"lower(c.abbv || '/' || f.academicClassification.code) like :name or lower(c.name || '/' || f.academicClassification.code) like :title or " + 
+								"lower(c.abbv || '/' || f.academicClassification.name) like :name or lower(c.name || '/' || f.academicClassification.name) like :title or " +
+								"lower(c.abbv || ' ' || f.name) like :name or lower(c.name || ' ' || f.name) like :title or " +
+								"lower(c.abbv || ' ' || f.academicClassification.code) like :name or lower(c.name || ' ' || f.academicClassification.code) like :title or " + 
+								"lower(c.abbv || ' ' || f.academicClassification.name) like :name or lower(c.name || ' ' || f.academicClassification.name) like :title or " +
+								"lower(c.abbv || f.name) like :name or lower(c.name || f.name) like :title or " +
+								"lower(c.abbv || f.academicClassification.code) like :name or lower(c.name || f.academicClassification.code) like :title or " + 
+								"lower(c.abbv || f.academicClassification.name) like :name or lower(c.name || f.academicClassification.name) like :title) " +
+								"order by c.abbv, f.academicClassification.code")
+								.setString("name", query.toLowerCase() + "%").setString("title", "%" + query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setMaxResults(limit - resources.size()).list();
+						for (CurriculumClassification classification: classifications) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.CURRICULUM);
+							ret.setId(classification.getUniqueId());
+							ret.setAbbreviation(classification.getCurriculum().getAbbv() + " " + classification.getAcademicClassification().getCode());
+							ret.setName(classification.getCurriculum().getName() + " " + classification.getAcademicClassification().getName());
+							fillInSessionInfo(ret, classification.getCurriculum().getDepartment().getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+					}
+					if (limit > 0 && resources.size() > limit) {
+						resources = new ArrayList<ResourceInterface>(resources.subList(0, limit));
+					}
+					break;
+				case DEPARTMENT:
+					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and (" +
+							"lower(d.deptCode) like :name or lower(d.abbreviation) like :name or lower(d.name) like :title) " +
+							"order by d.abbreviation, d.deptCode")
+							.setString("name", query.toLowerCase() + "%").setString("title", "%" + query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (Department department: departments) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.DEPARTMENT);
+						ret.setId(department.getUniqueId());
+						ret.setAbbreviation(department.getAbbreviation() == null ? department.getDeptCode() : department.getAbbreviation());
+						ret.setName(department.getName());
+						fillInSessionInfo(ret, department.getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					break;
+				default:
+					throw new EventException("Resource type " + type.getLabel() + " not supported.");
+				}
+				if (resources.isEmpty())
+					throw new EventException("No " + type.getLabel() + " " + query + " found.");
+				return resources;
+			} finally {
+				hibSession.close();
+			}
+		} catch (Exception e) {
+			if (e instanceof EventException)
+				throw (EventException)e;
+			sLog.error(e.getMessage(), e);
+			throw new EventException("Failed to find resources: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public Boolean canLookupPeople() throws EventException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new EventException("not authenticated");
+			return Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch  (Exception e) {
+			if (e instanceof EventException) throw (EventException)e;
+			sLog.error(e.getMessage(), e);
+			throw new EventException(e.getMessage());
 		}
 	}
 
