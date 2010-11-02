@@ -1702,9 +1702,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				
-				HashMap<String, Vector<Calendar>> dates = elementDates(classElement);
 				DatePattern dp = null;
-				if (dates != null){
+				if (classElement.element("time") != null && classElement.element("time").attributeValue("datePattern") != null) {
+					dp = DatePattern.findByName(session, classElement.element("time").attributeValue("datePattern"));
+				}
+				HashMap<String, Vector<Calendar>> dates = elementDates(classElement);
+				if (dp == null && dates != null){
 					dp = findDatePattern(dates.get("startDates"), dates.get("endDates"), clazz);					
 				}
 				if (classElement.element("meeting") == null){
