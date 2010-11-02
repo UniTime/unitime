@@ -515,7 +515,9 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		CurCourse x1 = m.getCourse(c1.getCourseId());
     		if (x1 == null || x1.getNrStudents() != c1.getNrStudents()) return false;
     		for (CurCourse c2: getCourses())
-    			if (c1.getCourseId() < c2.getCourseId() && c1.getTargetShare(c2.getCourseId()) != x1.getTargetShare(c2.getCourseId())) return false;
+    			if (c1.getCourseId() < c2.getCourseId() && Math.abs(c1.getTargetShare(c2.getCourseId()) - x1.getTargetShare(c2.getCourseId())) > 0.001) {
+    				return false;
+    			}
     	}
     	return true;
     }
