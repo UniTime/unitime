@@ -106,8 +106,12 @@ public class BuildingRoomImport extends BaseImport {
 		room.setCoordinateX(element.attributeValue("locationX") == null ? building.getCoordinateX() : Double.valueOf(element.attributeValue("locationX")));
 		room.setCoordinateY(element.attributeValue("locationY") == null ? building.getCoordinateY() : Double.valueOf(element.attributeValue("locationY")));
 		room.setRoomNumber(element.attributeValue("roomNumber"));
-		room.setClassification(element.attributeValue("roomClassification"));
-		room.setCapacity(Integer.decode(element.attributeValue("capacity")));
+		room.setClassification(element.attributeValue("roomClassification", ""));
+		if (room.getClassification().length() > 20) {
+			warn("Room classification " + room.getClassification() + " is too long, truncated to " + room.getClassification().substring(0, 20));
+			room.setClassification(room.getClassification().substring(0, 20));
+		}
+		room.setCapacity(Integer.decode(element.attributeValue("capacity", "0")));
 		String examCapacityStr = element.attributeValue("examCapacity");
 		if (examCapacityStr != null && examCapacityStr.trim().length() > 0){
 			room.setExamCapacity(Integer.decode(examCapacityStr));
