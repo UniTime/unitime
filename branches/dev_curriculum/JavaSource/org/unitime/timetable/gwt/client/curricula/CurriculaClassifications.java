@@ -35,6 +35,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 
 public class CurriculaClassifications extends Composite {
 	
@@ -71,7 +72,7 @@ public class CurriculaClassifications extends Composite {
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {
 			col ++;
-			final UniTimeTextBox name = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT, true);
+			final UniTimeTextBox name = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, true);
 			name.setText(clasf.getCode());
 			name.setWidth("60px");
 			name.setMaxLength(20);
@@ -90,15 +91,15 @@ public class CurriculaClassifications extends Composite {
 			iTable.setWidget(1, col, new HTML(clasf.getName().replace(" ", "<br>")));
 			iTable.getCellFormatter().setHorizontalAlignment(1, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			UniTimeTextBox ll = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT, false);
+			UniTimeTextBox ll = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
 			iTable.setWidget(2, col, ll);
 			iTable.getCellFormatter().setHorizontalAlignment(2, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			UniTimeTextBox proj = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT, false);
+			UniTimeTextBox proj = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
 			iTable.setWidget(3, col, proj);
 			iTable.getCellFormatter().setHorizontalAlignment(3, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			final UniTimeTextBox expected = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT, true);
+			final UniTimeTextBox expected = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, true);
 			iTable.setWidget(4, col, expected);
 			iTable.getCellFormatter().setHorizontalAlignment(4, col, HasHorizontalAlignment.ALIGN_CENTER);
 			expected.addChangeHandler(new ChangeHandler() {
@@ -122,7 +123,7 @@ public class CurriculaClassifications extends Composite {
 				}
 			});
 			
-			UniTimeTextBox enrl = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT, false);
+			UniTimeTextBox enrl = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
 			iTable.setWidget(5, col, enrl);
 			iTable.getCellFormatter().setHorizontalAlignment(5, col, HasHorizontalAlignment.ALIGN_CENTER);
 		}

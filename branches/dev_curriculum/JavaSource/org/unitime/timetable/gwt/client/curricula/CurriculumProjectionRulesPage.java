@@ -68,7 +68,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 public class CurriculumProjectionRulesPage extends Composite {
@@ -609,7 +609,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			
 			iPanel = new HorizontalPanel();
 			
-			iTextBox = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT);
+			iTextBox = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -779,7 +779,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			
 			iPanel = new HorizontalPanel();
 			
-			iTextBox = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT);
+			iTextBox = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {

@@ -45,6 +45,8 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseGrou
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsInterface;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -53,7 +55,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -64,6 +65,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -1313,7 +1315,7 @@ public class CurriculaCourses extends Composite {
 		private Float iShare = null;
 		
 		public ShareTextBox(int column, Float share) {
-			super(6, TextBox.ALIGN_RIGHT);
+			super(6, ValueBoxBase.TextAlignment.RIGHT);
 			iColumn = column;
 			iShare = share;
 			addChangeHandler(new ChangeHandler() {
@@ -1844,7 +1846,7 @@ public class CurriculaCourses extends Composite {
 					iGrAssign.setVisible(false);
 					iGrDelete.setVisible(true);
 					iGrUpdate.setVisible(true);
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						@Override
 						public void execute() {
 							iGrName.setFocus(true);
@@ -1870,7 +1872,7 @@ public class CurriculaCourses extends Composite {
 			iGrAssign.setVisible(true);
 			iGrDelete.setVisible(false);
 			iGrUpdate.setVisible(false);
-			DeferredCommand.addCommand(new Command() {
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
 					iGrName.setFocus(true);

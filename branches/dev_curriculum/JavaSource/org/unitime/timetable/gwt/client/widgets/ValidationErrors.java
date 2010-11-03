@@ -20,13 +20,11 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -86,7 +84,6 @@ public class ValidationErrors extends Composite {
 				iErrorsPanel.remove(i);
 		iError.setText(null);
 		iDialog.center();
-		final Date d1 = new Date();
 		final Counter c = new Counter(iValidators.size());
 		for (Validator validator: iValidators) {
 			validator.validate(new AsyncCallback<String>() {
@@ -103,15 +100,12 @@ public class ValidationErrors extends Composite {
 					}
 					if (c.decrement(result!=null && !result.isEmpty())) {
 						if (iAutoHide) {
-							DeferredCommand.addCommand(new Command() {
+							new Timer() {
 								@Override
-								public void execute() {
-									do {
-										for (int i=0;i<100;i++) {}
-									} while (new Date().getTime() - d1.getTime() < 500);
+								public void run() {
 									iDialog.hide();
 								}
-							});
+							}.schedule(500);
 						}
 						if (c.isError()) iError.setText(iErrorMessage);
 						onResult.onSuccess(!c.isError());

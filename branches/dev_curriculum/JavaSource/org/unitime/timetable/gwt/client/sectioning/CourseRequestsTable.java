@@ -163,9 +163,9 @@ public class CourseRequestsTable extends Composite {
 				});
 				iGrid.setWidget(idx, 5, down);
 			}
-			c[0].setWidth("200");
-			c[1].setWidth("120");
-			c[2].setWidth("120");
+			c[0].setWidth("260px");
+			c[1].setWidth("170px");
+			c[2].setWidth("170px");
 			iGrid.setWidget(idx, 1, c[0]);
 			iGrid.setWidget(idx, 2, c[1]);
 			iGrid.setWidget(idx, 3, c[2]);
@@ -269,9 +269,9 @@ public class CourseRequestsTable extends Composite {
 				});
 				iGrid.setWidget(idx, 5, down);
 			}
-			c[0].setWidth("200");
-			c[1].setWidth("120");
-			c[2].setWidth("120");
+			c[0].setWidth("260px");
+			c[1].setWidth("170px");
+			c[2].setWidth("170px");
 			iGrid.setWidget(idx, 1, c[0]);
 			iGrid.setWidget(idx, 2, c[1]);
 			iGrid.setWidget(idx, 3, c[2]);

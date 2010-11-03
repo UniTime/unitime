@@ -60,6 +60,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ClassificationsEdit extends Composite {
@@ -530,7 +531,7 @@ public class ClassificationsEdit extends Composite {
 			
 			iPanel = new HorizontalPanel();
 			
-			iTextBox = new UniTimeTextBox(6, TextBox.ALIGN_RIGHT);
+			iTextBox = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {

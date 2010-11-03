@@ -37,11 +37,11 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -312,7 +312,8 @@ public class TimeGrid extends Composite {
 	
 	public void scrollDown() {
         iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + ToolBox.getScrollBarWidth()));
-        DeferredCommand.addCommand(new Command() {
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
 			public void execute() {
 				if (iScrollPanel instanceof ScrollPanel)
 					((ScrollPanel)iScrollPanel).setScrollPosition(350);

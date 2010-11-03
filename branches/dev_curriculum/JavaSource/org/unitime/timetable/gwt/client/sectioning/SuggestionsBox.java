@@ -103,7 +103,7 @@ public class SuggestionsBox extends DialogBox {
 			public void onFailure(Throwable caught) {
 				iSuggestions.clearData(true);
 				iSuggestions.setEmptyMessage("<font color='red'>" + caught.getMessage() + "</font>");
-				iMessages.setHTML(null);
+				iMessages.setHTML("");
 			}
 
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
@@ -344,7 +344,7 @@ public class SuggestionsBox extends DialogBox {
 		iSuggestions.setSelectedRow(-1);
 		iSuggestions.clearData(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
-		iMessages.setHTML(null);
+		iMessages.setHTML("");
 		iSectioningService.computeSuggestions(request, rows, index, iCallback);
 	}
 

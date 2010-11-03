@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.widgets;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
 
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 
 public class UniTimeTextBox extends TextBox implements HasFocus {
 	
@@ -30,19 +31,19 @@ public class UniTimeTextBox extends TextBox implements HasFocus {
 		setStyleName("unitime-TextBox");
 	}
 	
-	public UniTimeTextBox(int maxWidth, int width, TextAlignConstant align) {
+	public UniTimeTextBox(int maxWidth, int width, ValueBoxBase.TextAlignment align) {
 		this();
 		setWidth(width + "px");
 		setMaxLength(maxWidth);
 		if (align != null)
-			setTextAlignment(align);
+			setAlignment(align);
 	}
 	
 	public UniTimeTextBox(int maxWidth, int width) {
 		this(maxWidth, width, null);
 	}
 
-	public UniTimeTextBox(int maxWidth, TextAlignConstant align) {
+	public UniTimeTextBox(int maxWidth, ValueBoxBase.TextAlignment align) {
 		this(maxWidth, 10 * maxWidth, align);
 	}
 
@@ -55,7 +56,7 @@ public class UniTimeTextBox extends TextBox implements HasFocus {
 		setReadOnly(!editable);
 	}
 	
-	public UniTimeTextBox(int maxWidth, TextAlignConstant align, boolean editable) {
+	public UniTimeTextBox(int maxWidth, ValueBoxBase.TextAlignment align, boolean editable) {
 		this(maxWidth, align);
 		setReadOnly(!editable);
 	}

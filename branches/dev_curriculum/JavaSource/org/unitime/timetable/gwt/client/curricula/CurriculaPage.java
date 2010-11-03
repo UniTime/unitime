@@ -39,6 +39,8 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificati
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -48,7 +50,6 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -176,13 +177,13 @@ public class CurriculaPage extends Composite {
 			}
 		});
 		
-		DeferredCommand.addCommand(new Command() {
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
 				iFilter.setFocus(true);
 			}
 		});
-		
+
 		if (Window.Location.getParameter("q") != null) {
 			iFilter.setText(Window.Location.getParameter("q"));
 			loadCurricula();
