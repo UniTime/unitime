@@ -28,8 +28,8 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -53,7 +53,7 @@ public class Client implements EntryPoint {
 		// load page
 		if (RootPanel.get("UniTimeGWT:Body") != null) {
 			LoadingWidget.getInstance().show("Loading page ...");
-			DeferredCommand.addCommand(new Command() {
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
 					initPageAsync(Window.Location.getParameter("page"));
@@ -65,7 +65,7 @@ public class Client implements EntryPoint {
 		for (final Components c: Components.values()) {
 			final RootPanel p = RootPanel.get(c.id());
 			if (p != null) {
-				DeferredCommand.addCommand(new Command() {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
 					public void execute() {
 						initComponentAsync(p, c);

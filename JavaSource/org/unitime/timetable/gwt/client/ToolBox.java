@@ -23,6 +23,7 @@ import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
@@ -153,7 +154,7 @@ public class ToolBox {
     		"<table class=\"unitime-Footer\"><tr>" +
     		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.2 | University Timetabling Application</td>" +
     		"<td width=\"34%\" align=\"center\">&copy; 2010 UniTime.org</td>" +
-    		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getMediumDateTimeFormat().format(new Date()) + "</td>" +
+    		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
     		"</tr></table></td></tr></table>" +
     		"</body></html>";
     	printf(html);

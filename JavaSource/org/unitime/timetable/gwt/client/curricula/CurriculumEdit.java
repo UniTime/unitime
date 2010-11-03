@@ -54,6 +54,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 
 public class CurriculumEdit extends Composite {
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
@@ -198,7 +199,7 @@ public class CurriculumEdit extends Composite {
 		
 		iCurriculaTable.addHeaderRow(iTitleAndButtons);
 		
-		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(20, TextBox.ALIGN_LEFT));
+		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(20, ValueBoxBase.TextAlignment.LEFT));
 		iCurriculaTable.addRow("Abbreviation:", iCurriculumAbbv);
 		iCurriculumAbbv.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override

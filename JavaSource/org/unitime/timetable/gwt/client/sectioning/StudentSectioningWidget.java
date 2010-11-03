@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPabel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -37,6 +38,8 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -49,8 +52,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -64,7 +65,6 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class StudentSectioningWidget extends Composite {
@@ -81,7 +81,7 @@ public class StudentSectioningWidget extends Composite {
 	private HorizontalPanel iFooter;
 	private Button iPrev, iNext, iEnroll, iPrint, iExport;
 	private HTML iErrorMessage;
-	private TabPanel iAssignmentPanel;
+	private UniTimeTabPabel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
 	private ImageLink iCalendar;
 	
@@ -213,7 +213,7 @@ public class StudentSectioningWidget extends Composite {
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
 			));
 		
-		iAssignmentPanel = new TabPanel();
+		iAssignmentPanel = new UniTimeTabPabel();
 		HTML tab0 = new HTML(MESSAGES.tabClasses(), false);
 		iAssignmentPanel.add(iAssignments, tab0);
 		iAssignmentPanel.selectTab(0);
@@ -418,7 +418,8 @@ public class StudentSectioningWidget extends Composite {
 
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
 						public void execute() {
 							iAssignmentPanelWithFocus.setFocus(true);
 						}
@@ -560,7 +561,8 @@ public class StudentSectioningWidget extends Composite {
 			iExport.setVisible(true);
 			iNext.setVisible(false);
 			iAssignmentGrid.scrollDown();
-			DeferredCommand.addCommand(new Command() {
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+				@Override
 				public void execute() {
 					iAssignmentPanelWithFocus.setFocus(true);
 				}

@@ -26,13 +26,14 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -140,7 +141,8 @@ public class UserAuthentication extends Composite {
 		iUserName.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
 						public void execute() {
 							iUserPassword.selectAll();
 							iUserPassword.setFocus(true);
@@ -186,7 +188,8 @@ public class UserAuthentication extends Composite {
 	public void authenticate() {
 		iError.setVisible(false);
 		iDialog.center();
-		DeferredCommand.addCommand(new Command() {
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
 			public void execute() {
 				iUserName.selectAll();
 				iUserName.setFocus(true);
@@ -231,7 +234,8 @@ public class UserAuthentication extends Composite {
 					iUserPassword.setEnabled(true);
 					iLogIn.setEnabled(true);
 					iSkip.setEnabled(true);
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
 						public void execute() {
 							iUserName.selectAll();
 							iUserName.setFocus(true);

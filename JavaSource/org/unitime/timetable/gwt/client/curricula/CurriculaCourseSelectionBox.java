@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPabel;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -37,6 +38,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -60,8 +63,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -78,7 +79,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
@@ -107,7 +107,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	private Label iCoursesTip;
 	private CourseCurriculaTable iCurricula;
 	
-	private TabPanel iCourseDetailsTabPanel;
+	private UniTimeTabPabel iCourseDetailsTabPanel;
 	
 	private HTML iCourseDetails;
 	private ScrollPanel iCourseDetailsPanel, iClassesPanel, iCurriculaPanel;
@@ -200,14 +200,14 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			public void onKeyDown(KeyDownEvent event) {
 				if (!iTextField.isEnabled()) return;
 				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && event.isControlKeyDown()) {
-					iSuggest.hideSuggestionList();
+					hideSuggestionList();
 					openDialogAsync();
 				}
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ESCAPE) {
-					iSuggest.hideSuggestionList();
+					hideSuggestionList();
 				}
 				if ((event.getNativeEvent().getKeyCode()=='S' || event.getNativeEvent().getKeyCode()=='s') && event.isControlKeyDown()) {
-					iSuggest.showSuggestionList();
+					showSuggestionList();
 				}
 			}
 		});
@@ -284,7 +284,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
 					iImage.setResource(RESOURCES.search_picker());
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
 						public void execute() {
 							setFocus(true);
 						}
@@ -296,7 +297,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iCoursesPanel.setSize("780", "200");
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
 			
-			iCourseDetailsTabPanel = new TabPanel();
+			iCourseDetailsTabPanel = new UniTimeTabPabel();
 			
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
@@ -328,8 +329,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCourseDetailsTabPanel.add(iCurriculaPanel, new HTML("<u>C</u>urricula", false));
 			
-			iCourseDetailsTabPanel.getDeckPanel().setSize("780", "200");
-			iCourseDetailsTabPanel.getDeckPanel().setStyleName("unitime-TabPanel");
+			iCourseDetailsTabPanel.setDeckSize("780", "200");
+			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
 			
 			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 
@@ -374,7 +375,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 						}					
 						iDialog.hide();
 						iImage.setResource(RESOURCES.search_picker());
-						DeferredCommand.addCommand(new Command() {
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+							@Override
 							public void execute() {
 								setFocus(true);
 							}
@@ -424,7 +426,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 					CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), true);
 					for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 						h.onChange(e);
-					DeferredCommand.addCommand(new Command() {
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
 						public void execute() {
 							setFocus(true);
 						}
@@ -441,7 +444,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iFilter.addBlurHandler(new BlurHandler() {
 				public void onBlur(BlurEvent event) {
 					if (iDialog.isShowing()) {
-						DeferredCommand.addCommand(new Command() {
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+							@Override
 							public void execute() {
 								iFilter.setFocus(true);
 							}
@@ -460,7 +464,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 		iDialog.center();
-		DeferredCommand.addCommand(new Command() {
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
 			public void execute() {
 				iFilter.setFocus(true);
 			}
@@ -469,6 +474,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 		updateCourses();
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void hideSuggestionList() {
 		iSuggest.hideSuggestionList();
 	}
