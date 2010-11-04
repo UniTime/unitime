@@ -782,75 +782,91 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     public static Hashtable<Long,Set<Long>> findClassLocationTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Long>>();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	String permIds = "";
-    	for (Long permanentId: permanentIds) {
-    		if (permIds.length()>0) permIds += ",";
-    		permIds += permanentId;
+    	Hashtable<Long,Set<Long>> table = new Hashtable<Long,Set<Long>>();
+    	Iterator<Long> permanentIdIterator = permanentIds.iterator();
+    	while (permanentIdIterator.hasNext()){
+	    	String permIds = "";
+	    	Long permanentId;
+	    	int cntPermIds = 0;
+	    	while(permanentIdIterator.hasNext() && cntPermIds < 1000){
+	    		permanentId = permanentIdIterator.next();
+	    		if (permIds.length()>0) permIds += ",";
+	    		permIds += permanentId;
+	    		cntPermIds++;
+	    	}
+	    	Query q = LocationDAO.getInstance().getSession()
+	    	    .createQuery("select distinct m.locationPermanentId, e.clazz.uniqueId from " +
+	    	    		"ClassEvent e inner join e.meetings m where " +
+	            		"m.locationPermanentId in ("+permIds+") and " +
+	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+	            		"m.meetingDate in ("+datesStr+")") // and date
+	            .setInteger("startSlot", startSlot)
+	            .setInteger("endSlot", startSlot + length);
+	    	for (int i=0; i<dates.size(); i++) {
+	    		q.setDate("date"+i, dates.elementAt(i));
+	    	}
+	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
+	            Object[] o = (Object[])i.next();
+	            Set<Long> ids = table.get((Long)o[0]);
+	            if (ids==null) {
+	            	ids = new HashSet<Long>();
+	            	table.put((Long)o[0], ids);
+	            }
+	            ids.add((Long)o[1]);
+	        }
     	}
-    	Query q = LocationDAO.getInstance().getSession()
-    	    .createQuery("select distinct m.locationPermanentId, e.clazz.uniqueId from " +
-    	    		"ClassEvent e inner join e.meetings m where " +
-            		"m.locationPermanentId in ("+permIds+") and " +
-            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")") // and date
-            .setInteger("startSlot", startSlot)
-            .setInteger("endSlot", startSlot + length);
-    	for (int i=0; i<dates.size(); i++) {
-    		q.setDate("date"+i, dates.elementAt(i));
-    	}
-    	Hashtable<Long,Set<Long>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
-            Set<Long> ids = table.get((Long)o[0]);
-            if (ids==null) {
-            	ids = new HashSet<Long>();
-            	table.put((Long)o[0], ids);
-            }
-            ids.add((Long)o[1]);
-        }
         return table;
     }
 
     public static Hashtable<Long,Set<Event>> findEventTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Event>>();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	String permIds = "";
-    	for (Long permanentId: permanentIds) {
-    		if (permIds.length()>0) permIds += ",";
-    		permIds += permanentId;
+
+    	Hashtable<Long,Set<Event>> table = new Hashtable<Long,Set<Event>>();
+    	Iterator<Long> permanentIdIterator = permanentIds.iterator();
+    	while (permanentIdIterator.hasNext()){
+	    	String permIds = "";
+	    	Long permanentId;
+	    	int cntPermIds = 0;
+	    	while(permanentIdIterator.hasNext() && cntPermIds < 1000){
+	    		permanentId = permanentIdIterator.next();
+	    		if (permIds.length()>0) permIds += ",";
+	    		permIds += permanentId;
+	    		cntPermIds++;
+	    	}
+	
+	    	Query q = LocationDAO.getInstance().getSession()
+	    	    .createQuery("select distinct m.locationPermanentId, e from " +
+	    	    		"Event e inner join e.meetings m where " +
+	    	    		"e.class!=ClassEvent and "+
+	            		"m.locationPermanentId in ("+permIds+") and " +
+	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+	            		"m.meetingDate in ("+datesStr+")") // and date
+	            .setInteger("startSlot", startSlot)
+	            .setInteger("endSlot", startSlot + length);
+	    	for (int i=0; i<dates.size(); i++) {
+	    		q.setDate("date"+i, dates.elementAt(i));
+	    	}
+	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
+	            Object[] o = (Object[])i.next();
+	            Set<Event> events = table.get((Long)o[0]);
+	            if (events==null) {
+	            	events = new HashSet<Event>();
+	            	table.put((Long)o[0], events);
+	            }
+	            events.add((Event)o[1]);
+	        }
     	}
-    	Query q = LocationDAO.getInstance().getSession()
-    	    .createQuery("select distinct m.locationPermanentId, e from " +
-    	    		"Event e inner join e.meetings m where " +
-    	    		"e.class!=ClassEvent and "+
-            		"m.locationPermanentId in ("+permIds+") and " +
-            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")") // and date
-            .setInteger("startSlot", startSlot)
-            .setInteger("endSlot", startSlot + length);
-    	for (int i=0; i<dates.size(); i++) {
-    		q.setDate("date"+i, dates.elementAt(i));
-    	}
-    	Hashtable<Long,Set<Event>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
-            Set<Event> events = table.get((Long)o[0]);
-            if (events==null) {
-            	events = new HashSet<Event>();
-            	table.put((Long)o[0], events);
-            }
-            events.add((Event)o[1]);
-        }
         return table;
     }
     
