@@ -133,6 +133,19 @@ public class AcademicClassification extends BaseAcademicClassification {
          uniqueResult(); 
     }
     
+    public static AcademicClassification findByExternalId(Long sessionId, String externalId) {
+        return (AcademicClassification)new AcademicClassificationDAO().
+        getSession().
+        createQuery(
+                "select a from AcademicClassification a where "+
+                "a.session.uniqueId=:sessionId and "+
+                "a.externalUniqueId=:externalUniqueId").
+         setLong("sessionId", sessionId.longValue()).
+         setString("externalUniqueId", externalId).
+         setCacheable(true).
+         uniqueResult(); 
+    }
+
     public Object clone() {
     	AcademicClassification c = new AcademicClassification();
     	c.setExternalUniqueId(getExternalUniqueId());

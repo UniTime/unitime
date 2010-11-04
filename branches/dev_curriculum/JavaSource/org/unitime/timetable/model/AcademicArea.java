@@ -112,6 +112,19 @@ public class AcademicArea extends BaseAcademicArea {
              uniqueResult(); 
     }
     
+    public static AcademicArea findByExternalId(Long sessionId, String externalId) {
+        return (AcademicArea)new AcademicAreaDAO().
+            getSession().
+            createQuery(
+                    "select a from AcademicArea a where "+
+                    "a.session.uniqueId=:sessionId and "+
+                    "a.externalUniqueId=:externalId").
+             setLong("sessionId", sessionId.longValue()).
+             setString("externalId", externalId).
+             setCacheable(true).
+             uniqueResult(); 
+    }
+
     public Object clone() {
     	AcademicArea area = new AcademicArea();
     	area.setExternalUniqueId(getExternalUniqueId());

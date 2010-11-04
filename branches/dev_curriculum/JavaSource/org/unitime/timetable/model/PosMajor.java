@@ -93,6 +93,19 @@ public class PosMajor extends BasePosMajor {
          uniqueResult(); 
     }
 
+    public static PosMajor findByExternalId(Long sessionId, String externalId) {
+        return (PosMajor)new PosMajorDAO().
+        getSession().
+        createQuery(
+                "select a from PosMajor a where "+
+                "a.session.uniqueId=:sessionId and "+
+                "a.externalUniqueId=:externalUniqueId").
+         setLong("sessionId", sessionId.longValue()).
+         setString("externalUniqueId", externalId).
+         setCacheable(true).
+         uniqueResult(); 
+    }
+
     public static PosMajor findByCodeAcadAreaId(Long sessionId, String code, Long areaId) {
         if (areaId==null) return findByCode(sessionId, code);
         return (PosMajor)new PosMajorDAO().
