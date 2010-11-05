@@ -160,7 +160,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	    <table class="unitime-Page" width="100%">
 	    <tr><td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td rowspan="3"><a href='http://www.unitime.org' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>
+		   		<tr><td rowspan="3"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>
 		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px;">
 		   				<span id='UniTimeGWT:Title'><bean:write name="title" scope="request"/></span>
 		   			</td>
@@ -194,7 +194,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
     			<td width="33%" align="right" nowrap="nowrap">
-	<logic:notEmpty scope="request" name="TimeStamp"> 
+    				<logic:notEmpty scope="request" name="TimeStamp">
 <% 
 		double endTime = JProf.currentTimeSec();
 		double startTime = ((Double)request.getAttribute("TimeStamp")).doubleValue();
@@ -203,12 +203,19 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 		nf.setMaximumFractionDigits(2);	
 %>
 					Page generated in <%=nf.format(diff)%> sec.
-	</logic:notEmpty>
+					</logic:notEmpty>
     			</td>
-    			</tr>
+    		</tr>
+    		<tt:notHasProperty name="tmtbl.page.disclaimer">
+    			<tr>
+    				<td colspan="3" class="unitime-Disclaimer">
+    					<tt:registration/>
+    				</td>
+	    		</tr>
+    		</tt:notHasProperty>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
-    				<td colspan="3" align="center" style="color:#777777; max-width: 800px;">
+    				<td colspan="3" class="unitime-Disclaimer">
     					<tt:property name="tmtbl.page.disclaimer"/>
     				</td>
     			</tr>

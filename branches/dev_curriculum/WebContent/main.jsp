@@ -113,11 +113,15 @@
 	<TR>
 	<% 
 	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
-%>
-		<TD align="center" valign="top" width="100%" height="100%" <%=(sysMessage==null || sysMessage.trim().length() == 0 ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
+	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
+	%>
+	<tt:registration method="hasMessage">
+	<% showBackground = false; %>
+	</tt:registration>
+		<TD align="center" valign="top" width="100%" height="100%" <%=(showBackground ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
 		<TABLE width="100%" cellspacing="2" cellpadding="2" border="0">
 			<% 
-				if (sysMessage!=null && sysMessage.trim().length()>0) {
+				if (sysMessage != null && !sysMessage.trim().isEmpty()) {
 			%>
 			<TR>
 				<TD class="WelcomeRowHead" align="left">System Messages</TD>
@@ -134,22 +138,35 @@
 			<%
 				}
 			%>
+			<tt:registration method="hasMessage">
+				<TR>
+					<TD class="WelcomeRowHead" align="left">Messages from UniTime</TD>
+				</TR>
+				<TR>
+					<TD align="left">
+						&nbsp;<BR>
+						<FONT class="normalBlack">
+							<tt:registration method="message"/>
+						</FONT>
+						<BR>&nbsp;
+					</TD>
+				</TR>
+			</tt:registration>
 		</TABLE>
 		</TD>
 	</TR>
 </TABLE>
 	    </td></tr></table>
     </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer" style="max-width: 800px;">
+    	<table class="unitime-Footer" style="max-width: 800px;" cellpadding="0" cellspacing="0">
     		<tr>
-    			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
-    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
-    			<td width="33%" align="right" nowrap="nowrap">
-    			</td>
+    			<td width="33%" align="left" valign="top" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
+    			<td width="34%" align="center" valign="top" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
+    			<td width="33%" align="right" nowrap="nowrap"><tt:registration update="true"/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
-    				<td colspan="3" align="center" style="color:#777777; max-width: 800px;">
+    				<td colspan="3" class="unitime-Disclaimer">
     					<tt:property name="tmtbl.page.disclaimer"/>
     				</td>
     			</tr>
