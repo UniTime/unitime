@@ -23,7 +23,7 @@ alter table sessions modify holidays varchar(400) binary null;
  * Update database version
  */
 
-update application_config set value='60' where name='tmtbl.db.version';
+update application_config set value='61' where name='tmtbl.db.version';
 
 commit;
 		
