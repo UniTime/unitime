@@ -56,7 +56,7 @@
 	    <td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%" style="min-width: 800px">
 		   		<tr><td rowspan="3">
-	    			<a href='http://www.unitime.org'>
+	    			<a href='main.jsp'>
 	    				<img src="images/unitime.png" border="0"/>
 	    			</a>
 	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;">
@@ -83,11 +83,11 @@
     		<tr>
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2010 UniTime LLC</a></td>
-    			<td width="33%" align="right"></td>
+    			<td width="33%" align="right"><tt:registration/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
-    				<td colspan="3" align="center" style="color:#777777; max-width: 800px;">
+    				<td colspan="3" class="unitime-Disclaimer">
     					<tt:property name="tmtbl.page.disclaimer"/>
     				</td>
     			</tr>

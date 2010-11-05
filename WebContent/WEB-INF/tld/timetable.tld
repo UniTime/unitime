@@ -438,4 +438,22 @@
 		<tag-class>org.unitime.timetable.tags.NotHasMidtermExams</tag-class>
 		<body-content>JSP</body-content>
 	</tag>
+
+	<tag>
+		<name>registration</name>
+		<tag-class>org.unitime.timetable.tags.Registration</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>method</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>update</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Boolean</type>
+		</attribute>
+	</tag>
 </taglib>
