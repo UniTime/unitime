@@ -34,7 +34,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class AssignFirstAvailableTimePattern {
-    protected static Logger sLog = Logger.getLogger(ClassEnrollmentUpdater.class);
+    protected static Logger sLog = Logger.getLogger(AssignFirstAvailableTimePattern.class);
 
 	public static void main(String[] args) {
         try {
