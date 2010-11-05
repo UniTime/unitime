@@ -2851,4 +2851,13 @@
 			alter table %SCHEMA%.sessions modify holidays varchar(400) binary null
 		</mysql>
 	</update>
+	<update version="62" date="05-Nov-2010" comment="Add Index for Student External Id">
+		<plsql>
+			create index %SCHEMA%.idx_student_external_uid on %SCHEMA%.student(external_uid)
+		</plsql>
+		<mysql>
+			create index idx_student_external_uid on %SCHEMA%.student(external_uid)
+		</mysql>
+	</update>
+	
 </dbupdate>
