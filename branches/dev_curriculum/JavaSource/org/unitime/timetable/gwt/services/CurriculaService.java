@@ -35,7 +35,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("curriculaService")
+@RemoteServiceRelativePath("curricula.gwt")
 public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException;

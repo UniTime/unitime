@@ -1,7 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
- * as indicated by the @authors tag.
+ * Copyright (C) 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +16,29 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.gwt.services;
 
-import java.util.List;
 
-import org.unitime.timetable.gwt.shared.LookupException;
-import org.unitime.timetable.gwt.shared.PersonInterface;
+create table query_log (
+	uniqueid number(20,0) constraint nn_query_log_uniqueid not null,
+	time_stamp date constraint nn_query_log_time_stamp not null,
+	time_spent number(20,0) constraint nn_query_log_time_spent not null,
+	uri varchar2(255) constraint nn_query_log_uri not null,
+	type decimal(10,0) constraint nn_query_log_type not null,
+	session_id varchar2(32),
+	userid varchar2(40),
+	query clob,
+	exception clob
+);
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+alter table query_log add constraint pk_query_log primary key (uniqueid);
 
-@RemoteServiceRelativePath("lookup.gwt")
-public interface LookupService extends RemoteService {
-	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException;
-}
+create index idx_query_log on query_log(time_stamp, type);
+
+/**
+ * Update database version
+ */
+
+update application_config set value='63' where name='tmtbl.db.version';
+
+commit;
+		

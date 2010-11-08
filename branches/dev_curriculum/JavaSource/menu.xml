@@ -286,6 +286,7 @@
 			<item name="User Settings" page="settings.do"/>
 		</menu>
 		<menu name="Utilities">
+			<item name="Page Statistics" page="stats.do"/>
 			<item name="Hibernate Statistics" page="hibernateStats.do"/>
 			<item name="Test HQL" page="hibernateQueryTest.do"/>
 		</menu>

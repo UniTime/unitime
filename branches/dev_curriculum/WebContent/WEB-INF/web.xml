@@ -118,7 +118,7 @@
 
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
-        <url-pattern>/unitime/sectioningService</url-pattern>
+        <url-pattern>/unitime/sectioning.gwt</url-pattern>
     </servlet-mapping>
   
     <servlet-mapping>
@@ -128,27 +128,27 @@
 	
     <servlet-mapping>
         <servlet-name>curriculaServiceServlet</servlet-name>
-        <url-pattern>/unitime/curriculaService</url-pattern>
+        <url-pattern>/unitime/curricula.gwt</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>menuServiceServlet</servlet-name>
-        <url-pattern>/unitime/menuService</url-pattern>
+        <url-pattern>/unitime/menu.gwt</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>simpleEditServiceServlet</servlet-name>
-        <url-pattern>/unitime/simpleEditService</url-pattern>
+        <url-pattern>/unitime/simpleEdit.gwt</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>lookupServiceServlet</servlet-name>
-        <url-pattern>/unitime/lookupService</url-pattern>
+        <url-pattern>/unitime/lookup.gwt</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>eventServiceServlet</servlet-name>
-        <url-pattern>/unitime/eventService</url-pattern>
+        <url-pattern>/unitime/event.gwt</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->
@@ -167,33 +167,6 @@
 		</filter-class>
 	</filter>
 
-	<!-- Filter XSS characters and SQL injection -->
-	<!-- filter>
-		<filter-name>
-			XSS Filter
-		</filter-name>
-		<filter-class>
-			org.unitime.timetable.filter.XSSFilter
-		</filter-class>
-	</filter -->
-		<!-- 
-		<init-param>
-			<param-name>additional_chars</param-name>
-			<param-value>\=\/\+</param-value>
-			<description>
-				Additional Characters to be allowed besides the default
-			</description>
-		</init-param>
-		<init-param>
-			<param-name>replace_string</param-name>
-			<param-value>_</param-value>
-			<description>
-				The filtered characters will be replaced by this character.
-				Default value is underscore (_)
-			</description>
-		</init-param>
-		-->
-	
 	<filter>
 		<filter-name>
 			Admin Only Filter
@@ -248,6 +221,15 @@
 		</init-param>
 	</filter>
 
+	<filter>
+		<filter-name>
+			Query Log Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.QueryLogFilter
+		</filter-class>
+	</filter>
+
 	<!-- Filter Mappings -->
 	<filter-mapping>
 		<filter-name>Page Access Filter</filter-name>
@@ -264,11 +246,6 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
-	<!-- filter-mapping>
-		<filter-name>XSS Filter</filter-name>		
-		<url-pattern>/*</url-pattern>		
-	</filter-mapping -->
-
 	<filter-mapping>
 		<filter-name>Logged-in Only Filter</filter-name>		
 		<url-pattern>/solver/solver.jnlp</url-pattern>
@@ -279,14 +256,19 @@
 		<url-pattern>/temp/*</url-pattern>
 	</filter-mapping>
 
-	<!-- Use if needed to track sessions -->
-	<!-- 
-	<listener>
-		<listener-class>
-		org.unitime.timetable.listeners.SessionListener
-		</listener-class>
-	</listener>
-	-->
-	
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>/calendar</url-pattern>
+	</filter-mapping>
 </web-app>
 

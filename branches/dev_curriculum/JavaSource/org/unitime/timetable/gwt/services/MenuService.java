@@ -29,7 +29,7 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("menuService")
+@RemoteServiceRelativePath("menu.gwt")
 public interface MenuService extends RemoteService {
 	public List<MenuInterface> getMenu() throws MenuException;
 	public HashMap<String, String> getUserInfo() throws MenuException;

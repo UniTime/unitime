@@ -6,7 +6,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("simpleEditService")
+@RemoteServiceRelativePath("simpleEdit.gwt")
 public interface SimpleEditService extends RemoteService {
 	public SimpleEditInterface load(SimpleEditInterface.Type type) throws SimpleEditException;
 	public SimpleEditInterface save(SimpleEditInterface data) throws SimpleEditException;
