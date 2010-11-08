@@ -2058,7 +2058,7 @@ public class SessionRollForward {
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
         hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
-        		.setLong("toSessionId", toSession.getUniqueId().longValue());
+        		.setLong("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();;
         
         int total = 0;
         for (int i=0;i<query.length;i++) {
