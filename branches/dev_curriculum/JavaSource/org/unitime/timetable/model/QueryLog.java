@@ -42,17 +42,27 @@ public class QueryLog extends BaseQueryLog {
 		STRUCTS, GWT, OTHER
 	}
 	
-	public int get7dActiveSessions() {
+	public static int getNrSessions(int days) {
 		Calendar c = Calendar.getInstance(Locale.US);
-		c.add(Calendar.DAY_OF_YEAR, -7);
+		c.setTime(new Date());
+		c.add(Calendar.DAY_OF_YEAR, -days);
 		return ((Number)QueryLogDAO.getInstance().getSession().createQuery(
-				"select count(distinct q.sessionId) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri").
-				setTime("date", c.getTime()).uniqueResult()).intValue();
+				"select count(distinct q.sessionId) from QueryLog q where q.timeStamp > :date").
+				setTimestamp("date", c.getTime()).uniqueResult()).intValue();
 	}
 	
+	public static int getNrActiveUsers(int days) {
+		Calendar c = Calendar.getInstance(Locale.US);
+		c.setTime(new Date());
+		c.add(Calendar.DAY_OF_YEAR, -days);
+		return ((Number)QueryLogDAO.getInstance().getSession().createQuery(
+				"select count(distinct q.uid) from QueryLog q where q.timeStamp > :date").
+				setTimestamp("date", c.getTime()).uniqueResult()).intValue();
+	}
+
 	public static WebTable getTopQueries(int days) {
 		Calendar c = Calendar.getInstance(Locale.US);
+		c.setTime(new Date());
 		c.add(Calendar.DAY_OF_YEAR, -days);
 		WebTable table = new WebTable(8, "Page Statistics (last " + days + " days)", "stats.do?ord=%%",
 				new String[] {"URI", "Calls", "Calls [>10ms]", "Calls [>100ms]", "Calls [>1min]", "AvgTime [ms]", "MaxTime [s]", "Errors"},
@@ -62,31 +72,31 @@ public class QueryLog extends BaseQueryLog {
 		HashMap<String, Integer> errors = new HashMap<String, Integer>();
 		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri").setTime("date", c.getTime()).list()) {
+				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri").setTimestamp("date", c.getTime()).list()) {
 			errors.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> overMinutes = new HashMap<String, Integer>();
 		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri").setTime("date", c.getTime()).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri").setTimestamp("date", c.getTime()).list()) {
 			overMinutes.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over100mss = new HashMap<String, Integer>();
 		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri").setTime("date", c.getTime()).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri").setTimestamp("date", c.getTime()).list()) {
 			over100mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over10mss = new HashMap<String, Integer>();
 		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri").setTime("date", c.getTime()).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri").setTimestamp("date", c.getTime()).list()) {
 			over10mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 
 		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q), avg(q.timeSpent), max(q.timeSpent) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri").setTime("date", c.getTime()).list()) {
+				"QueryLog q where q.timeStamp > :date group by q.uri").setTimestamp("date", c.getTime()).list()) {
 			Integer nrErrors = errors.get((String)o[0]);
 			if (nrErrors == null) nrErrors = 0;
 			Integer overMinute = overMinutes.get((String)o[0]);
