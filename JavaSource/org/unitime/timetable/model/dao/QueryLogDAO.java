@@ -2,7 +2,7 @@
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,17 +17,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.gwt.services;
+package org.unitime.timetable.model.dao;
 
-import java.util.List;
+import org.unitime.timetable.model.base.BaseQueryLogDAO;
 
-import org.unitime.timetable.gwt.shared.LookupException;
-import org.unitime.timetable.gwt.shared.PersonInterface;
+public class QueryLogDAO extends BaseQueryLogDAO {
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+	public QueryLogDAO() {}
 
-@RemoteServiceRelativePath("lookup.gwt")
-public interface LookupService extends RemoteService {
-	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException;
 }

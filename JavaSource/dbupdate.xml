@@ -2859,5 +2859,39 @@
 			create index idx_student_external_uid on %SCHEMA%.student(external_uid)
 		</mysql>
 	</update>
-	
+	<update version="63" date="08-Nov-2010" comment="Query Log">
+		<mysql>
+			create table %SCHEMA%.query_log (
+				uniqueid decimal(20,0) primary key not null,
+				time_stamp datetime not null,
+				time_spent decimal(20,0) not null,
+				uri varchar(255) not null,
+				type decimal(10,0) not null,
+				session_id varchar(32) null,
+				uid varchar(40) null,
+				query longtext binary null,
+				exception longtext binary null,
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create index idx_query_log on %SCHEMA%.query_log(time_stamp)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.query_log (
+				uniqueid number(20,0) constraint nn_query_log_uniqueid not null,
+				time_stamp date constraint nn_query_log_time_stamp not null,
+				time_spent number(20,0) constraint nn_query_log_time_spent not null,
+				uri varchar2(255) constraint nn_query_log_uri not null,
+				type decimal(10,0) constraint nn_query_log_type not null,
+				session_id varchar2(32),
+				userid varchar2(40),
+				query clob,
+				exception clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.query_log add constraint pk_query_log primary key (uniqueid)</plsql>
+		<plsql>
+			create index %SCHEMA%.idx_query_log on %SCHEMA%.query_log(time_stamp, type)
+		</plsql>
+	</update>
 </dbupdate>

@@ -1,7 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
- * as indicated by the @authors tag.
+ * Copyright (C) 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +16,27 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.gwt.services;
 
-import java.util.List;
 
-import org.unitime.timetable.gwt.shared.LookupException;
-import org.unitime.timetable.gwt.shared.PersonInterface;
+create table query_log (
+	uniqueid decimal(20,0) primary key not null,
+	time_stamp datetime not null,
+	time_spent decimal(20,0) not null,
+	uri varchar(255) not null,
+	type decimal(10,0) not null,
+	session_id varchar(32) null,
+	uid varchar(40) null,
+	query longtext binary null,
+	exception longtext binary null,
+) engine = INNODB;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+create index idx_query_log on query_log(time_stamp);
 
-@RemoteServiceRelativePath("lookup.gwt")
-public interface LookupService extends RemoteService {
-	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException;
-}
+/**
+ * Update database version
+ */
+
+update application_config set value='63' where name='tmtbl.db.version';
+
+commit;
+		

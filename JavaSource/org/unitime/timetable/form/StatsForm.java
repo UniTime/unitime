@@ -2,7 +2,7 @@
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,17 +17,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.gwt.services;
+package org.unitime.timetable.form;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
-import org.unitime.timetable.gwt.shared.LookupException;
-import org.unitime.timetable.gwt.shared.PersonInterface;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+public class StatsForm extends ActionForm {
+	private static final long serialVersionUID = 4547002215980094349L;
 
-@RemoteServiceRelativePath("lookup.gwt")
-public interface LookupService extends RemoteService {
-	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException;
+	public void reset(ActionMapping mapping, HttpServletRequest request) {}
 }

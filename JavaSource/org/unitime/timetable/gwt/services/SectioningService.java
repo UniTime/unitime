@@ -29,7 +29,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("sectioningService")
+@RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException;
 	Collection<String[]> listAcademicSessions() throws SectioningException;

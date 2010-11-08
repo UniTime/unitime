@@ -30,7 +30,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("eventService")
+@RemoteServiceRelativePath("event.gwt")
 public interface EventService extends RemoteService {
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException;
 	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException;
