@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
@@ -43,6 +44,7 @@ import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.util.Constants;
 
 public class Registration extends BodyTagSupport {
@@ -66,7 +68,7 @@ public class Registration extends BodyTagSupport {
 	
 	private static long sLastRefresh = -1;
 	
-	private static synchronized void init() {
+	private synchronized void init() {
 		sLastRefresh = System.currentTimeMillis();
 		try {
 			File regFile = new File(ApplicationProperties.getDataFolder(), "unitime.reg");
@@ -85,8 +87,13 @@ public class Registration extends BodyTagSupport {
 			if (sKey != null)
 				registration.put("key", sKey);
 			else
-				sLog.info("No registration key found..." );
+				sLog.debug("No registration key found..." );
 			registration.put("version", Constants.VERSION + "." + Constants.BLD_NUMBER.replace("@build.number@", "?"));
+			registration.put("sessions", String.valueOf(QueryLog.getNrSessions(31)));
+			registration.put("users", String.valueOf(QueryLog.getNrActiveUsers(31)));
+			registration.put("url", pageContext.getRequest().getScheme()+"://"+pageContext.getRequest().getServerName()+":"+pageContext.getRequest().getServerPort()+
+					((HttpServletRequest)pageContext.getRequest()).getContextPath());
+			sLog.debug("Sending the following registration info: " + registration);
 			
 			Document input = DocumentHelper.createDocument();
 			Element regEl = input.addElement("registration");
@@ -94,7 +101,7 @@ public class Registration extends BodyTagSupport {
 				regEl.addElement(entry.getKey()).setText(entry.getValue());
 			}
 			
-			sLog.info("Contacting registration service..." );
+			sLog.debug("Contacting registration service..." );
 			ClientResource cr = new ClientResource("https://unitimereg.appspot.com/xml");
 			
 			StringWriter w = new StringWriter();
@@ -102,7 +109,7 @@ public class Registration extends BodyTagSupport {
 			w.flush(); w.close();
 
 			String result = cr.post(w.toString(), String.class);
-			sLog.info("Registration information received." );
+			sLog.debug("Registration information received." );
 
 			
 			StringReader r = new StringReader(result);
@@ -117,7 +124,7 @@ public class Registration extends BodyTagSupport {
 			String newKey = ret.get("key");
 			if (!newKey.equals(sKey)) {
 				sKey = newKey;
-				sLog.info("New registration key received..." );
+				sLog.debug("New registration key received..." );
 				Properties reg = new Properties();
 				reg.setProperty("key", sKey);
 				FileOutputStream out = new FileOutputStream(regFile);
@@ -137,20 +144,19 @@ public class Registration extends BodyTagSupport {
 		}
 	}
 	
-	static {
-		init();
-	}
-	
-	private static void refresh() {
-		if (System.currentTimeMillis() - sLastRefresh > 60 * 60 * 1000)
+	private void refresh() {
+		if ("1".equals(pageContext.getRequest().getParameter("refresh")) || System.currentTimeMillis() - sLastRefresh > 60 * 60 * 1000)
 			init();
 	}
 	
 	public int doStartTag() throws JspException {
+		if (sLastRefresh < 0) init();
 		switch (iMethod) {
 		case hasMessage:
+			if (!Web.getUser(pageContext.getSession()).isAdmin())
+				return SKIP_BODY;
 			try {
-				Registration.refresh();
+				refresh();
 				if (Registration.sNote != null && !Registration.sNote.isEmpty())
 					return EVAL_BODY_INCLUDE;
 			} catch (Exception e) {}
@@ -166,7 +172,7 @@ public class Registration extends BodyTagSupport {
 			return EVAL_PAGE;
 		case message:
 			try {
-				if (Registration.sNote != null)
+				if (Registration.sNote != null && Web.getUser(pageContext.getSession()).isAdmin())
 					pageContext.getOut().println(Registration.sNote);
 			} catch (Exception e) {}
 			return EVAL_PAGE;
@@ -180,7 +186,9 @@ public class Registration extends BodyTagSupport {
 								"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
 								"onClick=\"showGwtDialog('UniTime 3.2 Registration', 'https://unitimereg.appspot.com?key=" + sKey + "', '750px', '75%');\" " +
 								"title='UniTime 3.2 Registration'>here</a> to " +
-								(sRegistered ? "update the current registration." : "register.") +
+								(sRegistered ? "update the current registration" : "register") +
+								" [<a onClick=\"document.location='main.jsp?refresh=1';\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
+								"title='Refresh registration information.'>refresh</a>]." +
 								"</span>");
 					}
 				}
