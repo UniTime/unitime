@@ -1,6 +1,7 @@
-<%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +16,13 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
---%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.util.AccessDeniedException" %>
-<%
-	String appAccess = (String) session.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
-	if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
-		throw new AccessDeniedException("The application is temporarily unavailable.<br>Please try again after some time.");
+*/
+package org.unitime.timetable.util;
+
+public class AccessDeniedException extends RuntimeException {
+	private static final long serialVersionUID = 2565632362237022274L;
+
+	public AccessDeniedException(String message) {
+		super(message);
 	}
-%>
+}

@@ -72,18 +72,6 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar-setup.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/select.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/rtt.js"></script>
-	<%--
-	<script language="javascript"><!--
-		function doLoad() {
-			// Trick 1 to prevent use of back button
-			if(window.history.forward(1) != null)
-                 window.history.forward(1);
-
-            // Focus on frame 
-			self.focus();
-		}
-	// --></script>
-	--%>
 	<script type="text/javascript" language="javascript" src="<%=basePath%>unitime/unitime.nocache.js">--</script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
