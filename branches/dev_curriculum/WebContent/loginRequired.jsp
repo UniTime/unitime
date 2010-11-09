@@ -27,12 +27,6 @@
 	<META http-equiv="expires" content="0">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 	<link rel="shortcut icon" href="images/timetabling.ico" />
-	<SCRIPT language="javascript" type="text/javascript">
-           <!--
-           if(parent.frames.length!=0)
-	           top.location.href = '<%=request.getContextPath()%>/loginRequired.jsp?message=<%=request.getParameter("message")%>'
-           //-->
-     </SCRIPT>
      <meta http-equiv="X-UA-Compatible" content="chrome=1">
 </HEAD>
 

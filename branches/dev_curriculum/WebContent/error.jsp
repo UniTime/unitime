@@ -24,19 +24,23 @@
 <%@ page import="org.unitime.commons.Email" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@page import="org.unitime.timetable.util.AccessDeniedException"%>
 
-<%@ include file="/checkLogin.jspf"%>
-<%@ include file="/checkAccessLevel.jspf"%>
-
-<%	if (exception==null && session.getAttribute("exception")!=null) {
-		exception = (Exception)session.getAttribute("exception");
- 		session.removeAttribute("exception");
- 	}
- 	if (exception!=null && exception.getMessage()!=null && exception.getMessage().startsWith("Access Denied") ) { %>
- 		<jsp:forward page="/loginRequired.do">
+<%
+	try {
+		if (exception==null && session.getAttribute("exception")!=null) {
+			exception = (Exception)session.getAttribute("exception");
+			session.removeAttribute("exception");
+ 		}
+ 	} catch (IllegalStateException e) {}
+ 	if (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage())) {
+%>
+		<jsp:forward page="/loginRequired.do">
 			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
 		</jsp:forward>
-<%	}%>
+<%
+ 	}
+ %>
 <HTML>
 <HEAD>
 	<TITLE>UniTime 3.2| Error</TITLE>
@@ -53,7 +57,7 @@
 	    <td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
 		   		<tr><td rowspan="3">
-	    			<a href='http://www.unitime.org'>
+	    			<a href='main.jsp'>
 	    				<img src="images/unitime.png" border="0"/>
 	    			</a>
 	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;">

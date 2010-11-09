@@ -17,9 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.commons.web.Web" %>
+<%@page import="org.unitime.timetable.util.AccessDeniedException"%>
 <%@ include file="checkLogin.jspf" %>
-<%if (Web.getUser(session).getCurrentRole()==null) {%>
- 	<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="Insufficient user privileges."/>
-	</jsp:forward>
-<%}%>
+<%
+	if (Web.getUser(session).getCurrentRole()==null) {
+		throw new AccessDeniedException("Insufficient user privileges.");
+	} 
+%>
