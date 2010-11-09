@@ -2870,7 +2870,7 @@
 				session_id varchar(32) null,
 				uid varchar(40) null,
 				query longtext binary null,
-				exception longtext binary null,
+				exception longtext binary null
 			) engine = INNODB
 		</mysql>
 		<mysql>
