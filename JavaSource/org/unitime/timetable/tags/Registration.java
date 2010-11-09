@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,14 +182,13 @@ public class Registration extends BodyTagSupport {
 				if (sMessage != null) {
 					pageContext.getOut().println(sMessage);
 					if (isUpdate() && Web.getUser(pageContext.getSession()).isAdmin()) {
+						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
 						pageContext.getOut().println(
 								"<br><span style=\"font-size: x-small;\">Click <a "+
 								"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
-								"onClick=\"showGwtDialog('UniTime 3.2 Registration', 'https://unitimereg.appspot.com?key=" + sKey + "', '750px', '75%');\" " +
+								"onClick=\"showGwtDialog('UniTime 3.2 Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\" " +
 								"title='UniTime 3.2 Registration'>here</a> to " +
-								(sRegistered ? "update the current registration" : "register") +
-								" [<a onClick=\"document.location='main.jsp?refresh=1';\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
-								"title='Refresh registration information.'>refresh</a>]." +
+								(sRegistered ? "update the current registration" : "register") + "." +
 								"</span>");
 					}
 				}
