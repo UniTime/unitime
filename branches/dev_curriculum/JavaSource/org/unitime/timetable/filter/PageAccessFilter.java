@@ -134,7 +134,10 @@ public class PageAccessFilter implements Filter {
 				message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
 			}
 			if (exception!=null || (t1-t0)>dumpTime) {
-				User u = Web.getUser(r.getSession());
+				User u = null;
+				try {
+					u = (r.getSession() == null ? null : Web.getUser(r.getSession()));
+				} catch (IllegalStateException e) {}
 				if (u==null) {
 					message += "\n  User: no user";
 				} else {
@@ -146,13 +149,17 @@ public class PageAccessFilter implements Filter {
 					if ("password".equals(n)) continue;
 					message+="\n    "+n+"="+r.getParameter(n);
 				}
-				if (dumpSessionAttribues) {
-					message += "\n  Session attributes:";
-					for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
-						String n = (String)e.nextElement();
-						if (n.equals("userTrace")) continue;
-						message+="\n    "+n+"="+r.getSession().getAttribute(n);
+				try {
+					if (dumpSessionAttribues && r.getSession() != null) {
+						message += "\n  Session attributes:";
+						for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
+							String n = (String)e.nextElement();
+							if (n.equals("userTrace")) continue;
+							message+="\n    "+n+"="+r.getSession().getAttribute(n);
+						}
 					}
+				} catch (IllegalStateException e) {
+					message += "\n    INVALID SESSION";
 				}
 			} else {
 				User u = Web.getUser(r.getSession());

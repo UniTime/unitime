@@ -38,6 +38,18 @@ public class QueryLogFilter implements Filter {
 	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws ServletException, IOException {
 
+		String sessionId = null;
+		String userId = null;
+		try {
+			if (request instanceof HttpServletRequest) {
+				HttpServletRequest r = (HttpServletRequest)request;
+				sessionId = r.getSession().getId();
+				User user = Web.getUser(r.getSession());
+				if (user != null)
+					userId = user.getId();
+			}
+		} catch (IllegalStateException e) {}
+		
 		long t0 = JProf.currentTimeMillis();
 		Throwable exception = null;
 		try {
@@ -62,12 +74,17 @@ public class QueryLogFilter implements Filter {
 			q.setUri(uri);
 			q.setTimeStamp(new Date());
 			q.setTimeSpent(t1 - t0);
-			if (r.getSession() != null) {
-				q.setSessionId(r.getSession().getId());
-				User user = Web.getUser(r.getSession());
-				if (user != null)
-					q.setUid(user.getId());
-			}
+			q.setSessionId(sessionId);
+			q.setUid(userId);
+			try {
+				if (sessionId == null)
+					q.setSessionId(r.getSession().getId());
+				if (userId == null) {
+					User user = Web.getUser(r.getSession());
+					if (user != null)
+						q.setUid(user.getId());
+				}
+			} catch (IllegalStateException e) {}
 			String params = "";
 			for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
 				String n = (String)e.nextElement();
