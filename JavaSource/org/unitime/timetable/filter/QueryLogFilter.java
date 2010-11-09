@@ -143,7 +143,8 @@ public class QueryLogFilter implements Filter {
 
 	public void destroy() {
 		iActive = false;
-		iSaver.interrupt();
+		if (iSaver != null)
+			iSaver.interrupt();
 	}
 	
 	private class Saver extends Thread {
