@@ -473,9 +473,10 @@
 		<put name="showMenu" value="false" />
   	</definition>
 
-	<definition	name="statsTile" extends="pageLayoutDef">
+	<definition	name="hibrenateStatsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Hibernate Statistics"/>
 		<put name="body" value="/admin/hibernateStats.jsp" />
+		<put name="checkAdmin" value="true" />
   	</definition>
   	
   	<definition	name="classDetailTile" extends="pageLayoutDef">
@@ -1045,5 +1046,6 @@
  	<definition	name="statsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Page Statistics"/>
 		<put name="body" value="/admin/stats.jsp" />
+		<put name="checkAdmin" value="true" />
   	</definition>
 </tiles-definitions>

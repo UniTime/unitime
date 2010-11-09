@@ -260,22 +260,13 @@ public class QueryLog extends BaseQueryLog {
 				to.add(Calendar.MINUTE, + 15);
 			}				
 		}
+		double range[] = new double[] { 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000, 100000, 1000000, 10000000};
 		double step[] = new double[] { 1, 1};
 		for (int i = 0; i < max.length; i++) {
-			if (max[i] <= 5.0)
-				step[i] = 0.5;
-			else if (max[i] <= 20.0)
-				step[i] = 1;
-			else if (max[i] <= 200.0)
-				step[i] = 10;
-			else if (max[i] <= 2000.0)
-				step[i] = 100;
-			else if (max[i] <= 10000.0)
-				step[i] = 500;
-			else if (max[i] <= 20000.0)
-				step[i] = 1000;
-			else
-				step[i] = 10000;
+			if (max[i] <= 1.0) { max[i] = 1.0; step[i] = 0.1; break; }
+			int x = 0;
+			while (max[i] / range[x] > 16) x++;
+			step[i] = range[x];
 		}
 		switch (t) {
 		case USERS:
@@ -285,15 +276,15 @@ public class QueryLog extends BaseQueryLog {
 				"&chdl=Distinct+Users|Distinct+HTTP+Sessions|Pages+per+Minute|GWT+Calls+per+Minute&chco=0000FF,00FF00,FF0000,FFA500" +
 				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
 				"&chxl=4:||e|t|u|n|i|M|+|r|e|p|+|s|l|l|a|C||2:|s|n|o|i|s|s|e|s|+|s|r|e|s|u|+|f|o|+|r|b|N" +
-				"&chxs=3,FF0000|4,FFA500";
+				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
 		case TIME:
 			return "http://chart.apis.google.com/chart?" + 
 				"cht=lc&chd=t:" + data[1] + "|" + data[2] + "|" + data[3] + "|" + data[4] + 
 				"&chs=400x300&chl=" + data[0] + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
 				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) +
 				"&chdl=Average+Time+[ms]|Max+Time+[s]|GWT+Average+Time+[ms]|GWT+Max+Time+[s]&chco=0000FF,FF0000,00FF00,FFA500" + 
-				"&chxl=4:||e|m|i|T|+|e|g|a|r|e|v|A||2:|e|m|i|T|+|x|a|M" +
-				"&chxs=1,FF0000|2,FFA500|3,0000FF|4,00FF00";
+				"&chxl=2:||e|m|i|T|+|e|g|a|r|e|v|A||4:||e|m|i|T|+|x|a|M|" +
+				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
 		default:
 			return "";
 		}

@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@page import="org.unitime.timetable.model.QueryLog"%>
-<%@page import="org.unitime.commons.web.WebTable"%>
+<%@ page import="org.unitime.timetable.model.QueryLog"%>
+<%@ page import="org.unitime.commons.web.WebTable"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -27,8 +27,7 @@
 
 <tiles:importAttribute />
 
-<html:form action="/stats">
-	<table width="100%" cellpadding="10" cellspacing="0">
+<table width="100%" cellpadding="10" cellspacing="0">
 	<% for (QueryLog.ChartWindow ch: QueryLog.ChartWindow.values()) { %>
 		<tr><td colspan="<%=QueryLog.ChartType.values().length%>">
 			<tt:section-title><%=ch.getName()%></tt:section-title>
@@ -39,11 +38,8 @@
 		<% } %>
 		</tr>
 	<% } %>
-	</table>
-	<table width="100%" cellpadding="2" cellspacing="0">
-<% WebTable.setOrder(session,"pageStats.ord",request.getParameter("ord"), 1); %>
-<%=QueryLog.getTopQueries(7).printTable(WebTable.getOrder(session, "pageStats.ord"))%>
-	
-	</table>
-
-</html:form>
+</table>
+<table width="100%" cellpadding="2" cellspacing="0">
+	<% WebTable.setOrder(session,"pageStats.ord",request.getParameter("ord"), 1); %>
+	<%=QueryLog.getTopQueries(7).printTable(WebTable.getOrder(session, "pageStats.ord"))%>
+</table>
