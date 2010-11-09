@@ -27,7 +27,7 @@ create table query_log (
 	session_id varchar(32) null,
 	uid varchar(40) null,
 	query longtext binary null,
-	exception longtext binary null,
+	exception longtext binary null
 ) engine = INNODB;
 
 create index idx_query_log on query_log(time_stamp);
