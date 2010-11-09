@@ -25,7 +25,7 @@ create table query_log (
 	uri varchar(255) not null,
 	type decimal(10,0) not null,
 	session_id varchar(32) null,
-	uid varchar(40) null,
+	userid varchar(40) null,
 	query longtext binary null,
 	exception longtext binary null
 ) engine = INNODB;
