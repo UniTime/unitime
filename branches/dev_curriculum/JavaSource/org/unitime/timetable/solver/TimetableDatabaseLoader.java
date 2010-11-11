@@ -60,7 +60,6 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 
@@ -960,18 +959,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.incProgress();
     		if (lecture.getAssignment()!=null) continue;
     		Placement placement = (Placement)lecture.getInitialAssignment();
-            Hashtable conflictConstraints = getModel().conflictConstraints(placement);
+    		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
                 lecture.assign(0,placement);
             } else {
                 String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getName();
             	warn+="<br>&nbsp;&nbsp;Reason:";
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator i=vals.iterator();i.hasNext();) {
-                        Value v = (Value) i.next();
-                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel((Lecture)v.variable())+" = "+((Placement)v).getLongName();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                    for (Placement v: vals) {
+                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
                     }
                     warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.warn(warn);
@@ -1089,14 +1086,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+initialPlacement.getRoomLocation().getName()+" not available";
 	    		}
 	    	}
-            Hashtable conflictConstraints = getModel().conflictConstraints(initialPlacement);
+	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
             if (!conflictConstraints.isEmpty()) {
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator i=vals.iterator();i.hasNext();) {
-                        Placement p = (Placement) i.next();
-                        Lecture l = (Lecture)p.variable();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                    for (Placement p: vals) {
+                        Lecture l = p.variable();
                         if (l.isCommitted())
                         	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
                         if (p.equals(initialPlacement))
@@ -1107,18 +1102,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	iProgress.warn("Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName()+(reason.length()==0?".":":"+reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
-			Hashtable conflictConstraints = getModel().conflictConstraints(initialPlacement);
+			Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
         	if (conflictConstraints.isEmpty()) {
     	        lecture.assign(0,initialPlacement);
 	        } else {
                 String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getName();
                 warn += "<br>&nbsp;&nbsp;Reason:";
-	            for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-            	    Constraint c = (Constraint)ex.nextElement();
-        	        Collection vals = (Collection)conflictConstraints.get(c);
-    	            for (Iterator i=vals.iterator();i.hasNext();) {
-	                    Value v = (Value) i.next();
-                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel((Lecture)v.variable())+" = "+((Placement)v).getLongName();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                	for (Placement v: vals) {
+                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
             	    }
                     warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.warn(warn);
@@ -1631,8 +1624,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void createChildrenClassLimitConstraits(Lecture parentLecture) {
     	if (!parentLecture.hasAnyChildren()) return;
     	
-		for (Enumeration<Long> e = parentLecture.getChildrenSubpartIds(); e.hasMoreElements(); ) {
-			Long subpartId = e.nextElement();
+		for (Long subpartId: parentLecture.getChildrenSubpartIds()) {
         	List<Lecture> children = parentLecture.getChildren(subpartId);
 
         	ClassLimitConstraint clc = new ClassLimitConstraint(parentLecture, getClassLimitConstraitName(parentLecture));
@@ -1891,8 +1883,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (cannotAttendLectures.contains(lecture)) continue;
     		boolean canAttend = true;
     		if (lecture.hasAnyChildren()) {
-    			for (Enumeration f=lecture.getChildrenSubpartIds();f.hasMoreElements();) {
-    				Long subpartId = (Long)f.nextElement();
+    			for (Long subpartId: lecture.getChildrenSubpartIds()) {
     				if (!canAttend(cannotAttendLectures, lecture.getChildren(subpartId))) {
     					canAttend = false; break;
     				}
@@ -1906,8 +1897,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean canAttendConfigurations(Set<Lecture> cannotAttendLectures, List<Configuration> configurations) {
     	for (Configuration cfg: configurations) {
     		boolean canAttend = true;
-    		for (Enumeration f=cfg.getTopSubpartIds();f.hasMoreElements();) {
-    			Long subpartId = (Long)f.nextElement();
+    		for (Long subpartId: cfg.getTopSubpartIds()) {
     			if (!canAttend(cannotAttendLectures, cfg.getTopLectures(subpartId))) {
     				canAttend = false; break;
     			}
@@ -2958,14 +2948,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     							reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
     		    		}
     		    	}
-    	            Hashtable conflictConstraints = getModel().conflictConstraints(placement);
+    		    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
     	            if (!conflictConstraints.isEmpty()) {
-    	                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-    	                    Constraint c = (Constraint)ex.nextElement();
-    	                    Collection vals = (Collection)conflictConstraints.get(c);
-    	                    for (Iterator i=vals.iterator();i.hasNext();) {
-    	                        Placement p = (Placement) i.next();
-    	                        Lecture l = (Lecture)p.variable();
+    	                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+    	                	Set<Placement> vals = conflictConstraints.get(c);
+    	                    for (Placement p: vals) {
+    	                        Lecture l = p.variable();
     	                        if (l.isCommitted())
     	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
     	                        if (p.equals(placement))

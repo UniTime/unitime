@@ -22,10 +22,22 @@ package org.unitime.timetable.solver;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
+
+import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.ifs.util.Progress;
+import net.sf.cpsolver.ifs.util.ProgressListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,11 +66,6 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolver.StudentSolverDisposeListener;
 import org.unitime.timetable.tags.SolverWarnings;
 import org.unitime.timetable.util.Constants;
-
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressListener;
 
 /**
  * @author Tomas Muller

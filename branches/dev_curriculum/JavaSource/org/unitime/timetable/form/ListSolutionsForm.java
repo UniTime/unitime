@@ -20,9 +20,19 @@
 package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
+
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
@@ -46,8 +56,6 @@ import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
-
-import net.sf.cpsolver.ifs.util.Progress;
 
 /** 
  * @author Tomas Muller

@@ -128,8 +128,8 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	}
 	
 	@Override
-	public Hashtable<String, String> getInfo() {
-		Hashtable<String, String> ret = super.getInfo();
+	public Map<String, String> getInfo() {
+		Map<String, String> ret = super.getInfo();
 		ret.put("Students", String.valueOf(getStudents().size()));
 		ret.put("Courses", String.valueOf(getCourses().size()));
 		double avgEnrollment = ((double)variables().size()) / getCourses().size();

@@ -21,14 +21,18 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
-
-import org.dom4j.Element;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.solver.ui.TimetableInfo;
-import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
@@ -40,6 +44,11 @@ import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.extension.Assignment;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.model.Constraint;
+
+import org.dom4j.Element;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.solver.ui.TimetableInfo;
+import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 /**
  * @author Tomas Muller

@@ -24,13 +24,12 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
@@ -70,9 +69,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        Hashtable<Integer,String> times = new Hashtable();
-        Hashtable<Integer,String> fixedTimes = new Hashtable();
-        Hashtable<Integer,String> days = new Hashtable();
+        HashMap<Integer,String> times = new HashMap<Integer, String>();
+        HashMap<Integer,String> fixedTimes = new HashMap<Integer, String>();
+        HashMap<Integer,String> days = new HashMap<Integer, String>();
         for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             times.put(period.getStartSlot(), period.getStartTimeLabel());
@@ -94,10 +93,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         int lastDIdx = -1;
         boolean firstLine = true;
         for (int dIdx = 0; dIdx < days.size(); dIdx+=nrCols) {
-            for (Enumeration e=ToolBox.sortEnumeration(times.keys());e.hasMoreElements();) {
-                int time = ((Integer)e.nextElement()).intValue();
+            for (Integer time: new TreeSet<Integer>(times.keySet())) {
                 int offset = 0;
-                String timeStr = (String)times.get(new Integer(time));
+                String timeStr = times.get(time);
                 String header1 = "";
                 String header2 = "";
                 String header3 = "";
@@ -106,8 +104,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 String firstDay = null; int firstDayOffset = 0;
                 String lastDay = null;
                 nrCols = 0;
-                for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
-                    int day = ((Integer)f.nextElement()).intValue();
+                for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator();f.hasNext();idx++) {
+                	Integer day = f.next();
                     String dayStr = days.get(day);
                     if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==(iTotals?6:5)) continue;
                     if (firstDay==null) {
@@ -271,8 +269,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 println("Total Student Exams");
                 String line1 = "", line2 = "", line3 = "";
                 int idx = 0;
-                for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
-                    Integer day = (Integer)f.nextElement();
+                for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator(); f.hasNext(); idx++) {
+                    Integer day = f.next();
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     line1 += mpad((String)days.get(day),20)+"  ";
                     line2 += "=============== ====  ";

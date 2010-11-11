@@ -21,7 +21,12 @@ package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -603,7 +608,7 @@ public class ManageSolversAction extends Action {
 	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
 	                String status = (String)solver.getProgress().get("STATUS");
 	                
-	                Hashtable info = null;
+	                Map<String,String> info = null;
 	                try {
 	                	info = solver.currentSolutionInfo();
 	                } catch (Exception e) {}
@@ -728,7 +733,7 @@ public class ManageSolversAction extends Action {
                        onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
                    String status = (String)solver.getProgress().get("STATUS");
                    
-                   Hashtable info = null;
+                   Map<String,String> info = null;
                    try {
                 	   info = solver.currentSolutionInfo();
                    } catch (Exception e) {}

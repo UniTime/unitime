@@ -20,7 +20,9 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 import org.dom4j.Element;
 

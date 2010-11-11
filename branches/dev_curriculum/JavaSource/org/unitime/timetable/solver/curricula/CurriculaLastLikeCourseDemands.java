@@ -243,7 +243,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 							var.assign(0, val);
 						else {
 							sLog.debug("Unable to assign " + student + " to " + var);
-							Hashtable<Constraint<CurVariable, CurValue>, Set<CurValue>> conf = m.conflictConstraints(val);
+							Map<Constraint<CurVariable, CurValue>, Set<CurValue>> conf = m.conflictConstraints(val);
 							for (Map.Entry<Constraint<CurVariable, CurValue>, Set<CurValue>> entry: conf.entrySet()) {
 								sLog.debug(entry.getKey() + ": " + entry.getValue());
 							}

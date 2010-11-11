@@ -21,14 +21,23 @@ package org.unitime.timetable.solver.interactive;
 
 
 import java.io.Serializable;
-import java.util.*;
-
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.solver.interactive.Suggestion;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import net.sf.cpsolver.coursett.heuristics.TimetableComparator;
-import net.sf.cpsolver.coursett.model.*;
-import net.sf.cpsolver.ifs.solver.*;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.ifs.solver.Solver;
+
+import org.unitime.timetable.model.PreferenceLevel;
 
 /**
  * @author Tomas Muller

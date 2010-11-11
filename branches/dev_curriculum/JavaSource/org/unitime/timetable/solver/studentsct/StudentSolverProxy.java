@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.studentsct;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Map;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -46,8 +45,8 @@ public interface StudentSolverProxy {
     public void restoreBest();
     public void saveBest();
     public void clear();
-    public Hashtable currentSolutionInfo();
-    public Hashtable bestSolutionInfo();
+    public Map<String, String> currentSolutionInfo();
+    public Map<String, String> bestSolutionInfo();
     public boolean isWorking();
 
     public DataProperties getProperties();
