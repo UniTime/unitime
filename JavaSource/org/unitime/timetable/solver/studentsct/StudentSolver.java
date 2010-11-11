@@ -23,9 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -70,8 +68,8 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private long iLastTimeStamp = System.currentTimeMillis();
     private boolean iIsPassivated = false;
     private Map iProgressBeforePassivation = null;
-    private Hashtable iCurrentSolutionInfoBeforePassivation = null;
-    private Hashtable iBestSolutionInfoBeforePassivation = null;
+    private Map<String, String> iCurrentSolutionInfoBeforePassivation = null;
+    private Map<String, String> iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
     private Thread iWorkThread = null;
@@ -170,14 +168,14 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         return getClass().getMethod((String)cmd[0],types).invoke(this, args);
     }
     
-    public Hashtable currentSolutionInfo() {
+    public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
         }
     }
 
-    public Hashtable bestSolutionInfo() {
+    public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getBestInfo();
@@ -326,17 +324,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private void assign(Enrollment enrollment) {
-            Hashtable conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
+        	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
             if (conflictConstraints.isEmpty()) {
                 enrollment.variable().assign(0,enrollment);
             } else {
                 iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator j=vals.iterator();j.hasNext();) {
-                        Enrollment enrl = (Enrollment) j.next();
+                for (Constraint<Request, Enrollment> c: conflictConstraints.keySet()) {
+                	Set<Enrollment> vals = conflictConstraints.get(c);
+                    for (Enrollment enrl: vals) {
                         iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+enrl.getRequest().getName()+" = "+enrl.getName());
                     }
                     iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);

@@ -25,7 +25,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -471,7 +470,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				ret.put("7Version", version);
 				ret.put("6Session", SessionDAO.getInstance().get(properties.getPropertyLong("General.SessionId",null)).getLabel());
 				
-				Hashtable info = null;
+				Map<String,String> info = null;
 				
 				if (solver != null) {
 					info = solver.bestSolutionInfo();

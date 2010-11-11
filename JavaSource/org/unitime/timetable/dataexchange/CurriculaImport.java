@@ -19,13 +19,13 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.cpsolver.ifs.util.ArrayList;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.dom4j.Element;

@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.exam;
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
@@ -56,8 +55,8 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public void restoreBest();
     public void saveBest();
     public void clear();
-    public Hashtable currentSolutionInfo();
-    public Hashtable bestSolutionInfo();
+    public Map<String,String> currentSolutionInfo();
+    public Map<String,String> bestSolutionInfo();
     public boolean isWorking();
 
     public DataProperties getProperties();

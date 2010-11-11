@@ -126,8 +126,8 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	private boolean iIsPassivated = false;
 	private Map iProgressBeforePassivation = null;
 	private PropertiesInfo iGlobalInfoBeforePassivation = null;
-	private Hashtable iCurrentSolutionInfoBeforePassivation = null;
-	private Hashtable iBestSolutionInfoBeforePassivation = null;
+	private Map<String,String> iCurrentSolutionInfoBeforePassivation = null;
+	private Map<String,String> iBestSolutionInfoBeforePassivation = null;
 	private File iPassivationFolder = null;
 	private String iPassivationPuid = null;
 	private Thread iWorkThread = null;
@@ -403,14 +403,13 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		return new Placement(lecture,time,rooms);
     	}
     	private void assign(Placement placement) {
-            Hashtable conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+            Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
             	placement.variable().assign(0,placement);
             } else {
                 iProgress.warn("Unable to assign "+placement.variable().getName()+" := "+placement.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                     Collection vals = (Collection)conflictConstraints.get(c);
                     for (Iterator j=vals.iterator();j.hasNext();) {
                         Value v = (Value) j.next();
@@ -500,7 +499,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 
     public PropertiesInfo getGlobalInfo() {
     	if (isPassivated()) return iGlobalInfoBeforePassivation;
-    	Hashtable info = null;
+    	Map<String,String> info = null;
     	synchronized (super.currentSolution()) {
     		info = super.currentSolution().getBestInfo();
 			if (info==null)
@@ -701,14 +700,14 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		return conflictTable;
     }
     
-    public Hashtable currentSolutionInfo() {
+    public Map<String,String> currentSolutionInfo() {
     	if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
     	synchronized (super.currentSolution()) {
     		return super.currentSolution().getInfo();
     	}
     }
 
-    public Hashtable bestSolutionInfo() {
+    public Map<String,String> bestSolutionInfo() {
     	if (isPassivated()) return iBestSolutionInfoBeforePassivation;
     	synchronized (super.currentSolution()) {
     		return super.currentSolution().getBestInfo();

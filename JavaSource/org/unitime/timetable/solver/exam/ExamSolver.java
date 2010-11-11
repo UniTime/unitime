@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -66,7 +65,6 @@ import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.Extension;
 import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Callback;
@@ -89,8 +87,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     private long iLastTimeStamp = System.currentTimeMillis();
     private boolean iIsPassivated = false;
     private Map iProgressBeforePassivation = null;
-    private Hashtable iCurrentSolutionInfoBeforePassivation = null;
-    private Hashtable iBestSolutionInfoBeforePassivation = null;
+    private Map<String,String> iCurrentSolutionInfoBeforePassivation = null;
+    private Map<String,String> iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
     private Thread iWorkThread = null;
@@ -307,14 +305,14 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     }
 
     
-    public Hashtable currentSolutionInfo() {
+    public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
         }
     }
 
-    public Hashtable bestSolutionInfo() {
+    public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getBestInfo();
@@ -465,17 +463,15 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             return new ExamPlacement(exam,period,rooms);
         }
         private void assign(ExamPlacement placement) {
-            Hashtable conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+            Map<Constraint<Exam,ExamPlacement>, Set<ExamPlacement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
                 placement.variable().assign(0,placement);
             } else {
                 iProgress.warn("Unable to assign "+placement.variable().getName()+" := "+placement.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator j=vals.iterator();j.hasNext();) {
-                        Value v = (Value) j.next();
+                for (Constraint<Exam,ExamPlacement> c: conflictConstraints.keySet()) {
+                	Set<ExamPlacement> vals = conflictConstraints.get(c);
+                    for (ExamPlacement v: vals) {
                         iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getName());
                     }
                     iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);

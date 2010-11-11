@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.test;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -30,7 +31,6 @@ import java.util.Set;
 import net.sf.cpsolver.coursett.Constants;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.ArrayList;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.apache.log4j.Logger;

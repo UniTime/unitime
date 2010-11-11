@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.awt.Color;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -97,7 +98,7 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 		iDepartmentNames = new String[departments.size()];
 		iDepartmentColors = new Color[departments.size()];
 		iEditingDepartments = editingDepartmentIds;
-		iDepartmentIdx = new Hashtable();
+		iDepartmentIdx = new HashMap<Long, Integer>();
 		int idx = 0;
 		for (Iterator i=departments.iterator();i.hasNext();idx++) {
 			Object o = i.next();

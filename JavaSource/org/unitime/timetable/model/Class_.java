@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,7 +37,6 @@ import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.ifs.util.ArrayList;
 
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;

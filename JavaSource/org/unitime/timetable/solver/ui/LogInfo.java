@@ -20,12 +20,13 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.dom4j.Element;
-
-import net.sf.cpsolver.ifs.util.ArrayList;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller

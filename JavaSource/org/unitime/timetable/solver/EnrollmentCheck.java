@@ -19,12 +19,20 @@
 */
 package org.unitime.timetable.solver;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
+
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.model.Configuration;
+import net.sf.cpsolver.coursett.model.FinalSectioning;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -33,15 +41,6 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.FinalSectioning;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.util.ArrayList;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller
@@ -113,8 +112,7 @@ public class EnrollmentCheck {
         if (enrolled==null) {
             p.warn("Student "+s.getId()+" not enrolled in any class of subpart "+getSubpartLabel(subpartId)+".");
         } else if (enrolled.hasAnyChildren()) {
-            for (Enumeration e=enrolled.getChildrenSubpartIds();e.hasMoreElements();) {
-                Long sid = (Long)e.nextElement();
+            for (Long sid: enrolled.getChildrenSubpartIds()) {
                 checkEnrollment(p, s, sid, enrolled.getChildren(sid));
             }
         }
@@ -235,8 +233,7 @@ public class EnrollmentCheck {
             }
             for (Iterator j=student.getConfigurations().iterator();j.hasNext();) {
                 Configuration cfg = (Configuration)j.next();
-                for (Enumeration e=cfg.getTopSubpartIds();e.hasMoreElements();) {
-                    Long subpartId = (Long)e.nextElement();
+                for (Long subpartId: cfg.getTopSubpartIds()) {
                     checkEnrollment(p, student, subpartId, cfg.getTopLectures(subpartId));
                 }
             }

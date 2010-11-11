@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.exam;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -28,6 +29,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
+import net.sf.cpsolver.exam.model.Exam;
+import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
+import net.sf.cpsolver.exam.model.ExamInstructor;
+import net.sf.cpsolver.exam.model.ExamOwner;
+import net.sf.cpsolver.exam.model.ExamPeriod;
+import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
+import net.sf.cpsolver.exam.model.ExamPlacement;
+import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
+import net.sf.cpsolver.exam.model.ExamStudent;
+import net.sf.cpsolver.ifs.model.Constraint;
+import net.sf.cpsolver.ifs.util.Progress;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,24 +75,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
-
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamOwner;
-import net.sf.cpsolver.exam.model.ExamPeriod;
-import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamStudent;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.util.ArrayList;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

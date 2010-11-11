@@ -19,10 +19,20 @@
 */
 package org.unitime.commons.ant;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Hashtable;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
