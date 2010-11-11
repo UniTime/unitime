@@ -276,7 +276,6 @@ public class Assignment extends BaseAssignment {
 	}
 	
 	public String getClassName() {
-		if (getClazz() != null) return getClazz().getClassLabel();
 		if (super.getClassName()!=null) return super.getClassName();
 		return getClazz().getClassLabel();
 	}
