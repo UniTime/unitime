@@ -291,7 +291,7 @@
 
 	<target name="build-dist" depends="compile-war,help">
 		<tar destfile="${dist.dir}/unitime-3.2_bld${build.number}.tar">
-			<tarfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
+			<tarfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
 			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
 			<tarfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
 			<tarfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
@@ -331,7 +331,7 @@
 		<gzip zipfile="${dist.dir}/unitime-3.2_bld${build.number}.tar.gz" src="${dist.dir}/unitime-3.2_bld${build.number}.tar"/>
 		<delete file="${dist.dir}/unitime-3.2_bld${build.number}.tar"/>
 		<zip destfile="${dist.dir}/unitime-3.2_bld${build.number}.zip">
-			<zipfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
+			<zipfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
 			<zipfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
 			<zipfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
 			<zipfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
