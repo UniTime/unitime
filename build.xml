@@ -87,7 +87,7 @@
     </target>
 	
 	<target name="compile-java" depends="prepare">
-		<javac debug="${java.debug}" optimize="${java.optimize}" source="1.5" target="1.5" destdir="${build.dir}">
+		<javac debug="${java.debug}" optimize="${java.optimize}" source="1.5" target="1.5" destdir="${build.dir}" includeantruntime="false">
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
 		</javac>
