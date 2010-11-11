@@ -577,6 +577,10 @@ public class Class_ extends BaseClass_ {
 //    	return(getClassLabel(getSchedulingSubpart().getControllingCourseOffering()));
     }
 
+    public String getClassLabel(org.hibernate.Session hibSession) {
+    	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString(hibSession);
+    }
+
     public String getClassLabelWithTitle() {
     	return getCourseNameWithTitle()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
 //    	return(getClassLabelWithTitle(getSchedulingSubpart().getControllingCourseOffering()));
