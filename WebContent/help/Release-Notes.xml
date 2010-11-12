@@ -29,6 +29,23 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Bug fixes</name>
+			<description>
+				<line>Edit Date Pattern: fixed ArrayIndexOutOfBoundsException when pattern offset is negative, assumption about the days of weeks corrected</line>
+				<line>Class Assignment: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
+					<line>This should fix the ObjectNotFoundException on the Class Assignment page</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.284</version>
+	<release-date>Tuesday, 19 Oct 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>Data Exchange</name>
 			<description>
 				<line>Student enrollment import: when classes have no external ids, allow the given external id (in the XML file) to match on the class name.</line>
