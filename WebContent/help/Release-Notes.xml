@@ -65,6 +65,10 @@
 					<line>Use GWT-based dialog box instead of opening a new browser window</line>
 					<line>Suggestions, Class/Examination Assignment -- refresh the parent page when a new assignment is made</line>
 				</line>
+				<line>Event Timetable
+					<line>Timetable of a room, person, department, curriculum, subject area</line>
+					<line>Including all events, calendar-like time grid as well as list, export to iCalendar</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -106,7 +110,7 @@
 			<description>
 				<line>Update of underlying technologies
 					<line>Constraint Solver Library 1.2</line>
-					<line>Hibernate 3.5, Struts 1.3.10, iText 5.0.2</line>
+					<line>Hibernate 3.5, Struts 1.3.10, iText 5.0.2, GWT 2.1</line>
 				</line>
 				<line>Unified sending of emails</line>
 				<line>Replaced Hibernate Synchronizer with a home-made class</line>
@@ -128,6 +132,12 @@
 				<line>Timetable: added ability to show/hide non-class events</line>
 				<line>It is now possible to create an academic session over a whole year (but not longer than a year)</line>
 				<line>Events: when filtering rooms by non-university location room type, added ability to select the room from a drop down box</line>
+				<line>Rooms: added navigation</line>
+				<line>Added optional registration</line>
+				<line>License update to GNU General Public License, Version 3 (was Version 2)
+					<line>Added list of dependencies (including URLs, copyrights, and licenses)</line>
+				</line>
+				<line>Added query log (Page Statistics page)</line>
 			</description>
 		</item>
 		<item>
@@ -196,6 +206,10 @@
 				<line>Examination conflicts: query returning overlapping course meetings with required attendance improved</line>
 				<line>Add Event: fixed a problem with creating a course event with >1000 students</line>
 				<line>Enrollment Audits: Ensure the correct enrollment is used for the audit results when a student is enrolled in multiple names of a cross listed course.</line>
+				<line>Date Patterens: fixed ArrayIndexOutOfBoundsException when pattern offset is negative, assumption about the days of weeks corrected</line>
+				<line>Class Assignment page: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
+					<line>This should fix the ObjectNotFoundException on the Class Assignment page</line>
+				</line>
 			</description>
 		</item>
 	</category>
