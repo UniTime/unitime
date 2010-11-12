@@ -206,8 +206,8 @@
 				<line>Examination conflicts: query returning overlapping course meetings with required attendance improved</line>
 				<line>Add Event: fixed a problem with creating a course event with >1000 students</line>
 				<line>Enrollment Audits: Ensure the correct enrollment is used for the audit results when a student is enrolled in multiple names of a cross listed course.</line>
-				<line>Date Patterens: fixed ArrayIndexOutOfBoundsException when pattern offset is negative, assumption about the days of weeks corrected</line>
-				<line>Class Assignment page: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
+				<line>Edit Date Pattern: fixed ArrayIndexOutOfBoundsException when pattern offset is negative, assumption about the days of weeks corrected</line>
+				<line>Class Assignment: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
 					<line>This should fix the ObjectNotFoundException on the Class Assignment page</line>
 				</line>
 			</description>
