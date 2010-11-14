@@ -55,7 +55,7 @@ try {
 %>
    </select> <input type='submit' value='Update' accesskey="0"/><br><hr>
 <%
-	Vector timePatterns = TimePattern.findAll(sessionId,true);
+	List<TimePattern> timePatterns = TimePattern.findAll(sessionId,true);
 	for (Iterator i=timePatterns.iterator();i.hasNext();) {
 		TimePattern tp = (TimePattern)i.next();
 		if (tp.getType().intValue()==TimePattern.sTypeExtended) continue;
