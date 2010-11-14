@@ -32,7 +32,7 @@
 <%
 try {
 	Long sessionId = Session.defaultSession().getUniqueId();
-	Vector timePatterns = TimePattern.findAll(sessionId,true);
+	List<TimePattern> timePatterns = TimePattern.findAll(sessionId,true);
 	boolean canEdit = request.getParameter("canEdit")==null || "1".equals(request.getParameter("canEdit"));
 	for (Iterator i=timePatterns.iterator();i.hasNext();) {
 		TimePattern tp = (TimePattern)i.next();
