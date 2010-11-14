@@ -215,12 +215,11 @@
 		<TR>
 			<TD valign="top">Note:</TD><TD><html:textarea property="solverNote" rows="4" cols="80" disabled="<%=solver.isWorking()%>"/></TD>
 		</TR>
-<%		Hashtable info = solver.currentSolutionInfo();
-		Vector keys = new Vector(info.keySet());
+<%		Map<String,String> info = solver.currentSolutionInfo();
+		List<String> keys = new ArrayList<String>(info.keySet());
 		Collections.sort(keys,new ListSolutionsForm.InfoComparator());
-		for (Enumeration e=keys.elements();e.hasMoreElements();) {
-			String key = (String)e.nextElement();
-			String val = info.get(key).toString();
+		for (String key: keys) {
+			String val = info.get(key);
 %>
 			<TR><TD nowrap><%=key%>:</TD><TD><%=val%></TD></TR>
 <%

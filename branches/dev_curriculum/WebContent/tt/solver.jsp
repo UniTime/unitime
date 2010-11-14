@@ -309,7 +309,7 @@ try {
 				}
 			}
 		}
-		Hashtable info = solver.bestSolutionInfo();
+		Map<String,String> info = solver.bestSolutionInfo();
 		if (info!=null) {
 %>
 			<TR>
@@ -320,11 +320,10 @@ try {
 				</TD>
 			</TR>
 <%
-			Vector keys = new Vector(info.keySet());
+			List<String> keys = new ArrayList<String>(info.keySet());
 			Collections.sort(keys,new ListSolutionsForm.InfoComparator());
-			for (Enumeration e=keys.elements();e.hasMoreElements();) {
-				String key = (String)e.nextElement();
-				String val = info.get(key).toString();
+			for (String key: keys) {
+				String val = info.get(key);
 %>
 				<TR><TD><%=key%>:</TD><TD><%=val%></TD></TR>
 <%
@@ -375,11 +374,10 @@ try {
 		</TR>
 <%
 		info = solver.currentSolutionInfo();
-		Vector keys = new Vector(info.keySet());
+		List<String> keys = new ArrayList<String>(info.keySet());
 		Collections.sort(keys,new ListSolutionsForm.InfoComparator());
-		for (Enumeration e=keys.elements();e.hasMoreElements();) {
-			String key = (String)e.nextElement();
-			String val = info.get(key).toString();
+		for (String key: keys) {
+			String val = info.get(key);
 %>
 			<TR><TD><%=key%>:</TD><TD><%=val%></TD></TR>
 <%
