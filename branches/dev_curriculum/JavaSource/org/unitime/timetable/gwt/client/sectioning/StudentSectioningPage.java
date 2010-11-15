@@ -49,7 +49,7 @@ public class StudentSectioningPage extends Composite {
 		public boolean isSectioning() { return iSectioning; }
 	};
 	
-	public StudentSectioningPage(Mode mode) {
+	public StudentSectioningPage(final Mode mode) {
 		Grid titlePanel = new Grid(1, 3);
 		titlePanel.getCellFormatter().setWidth(0, 0, "33%");
 		titlePanel.getCellFormatter().setWidth(0, 1, "34%");
@@ -59,7 +59,7 @@ public class StudentSectioningPage extends Composite {
 		titlePanel.getCellFormatter().getElement(0, 2).getStyle().setPaddingLeft(10, Unit.PX);
 		titlePanel.setHTML(0, 0, "&nbsp;");
 		
-		final UserAuthentication userAuthentication = new UserAuthentication(true);
+		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning());
 		titlePanel.setWidget(0, 1, userAuthentication);
 		
 		iSectioningService.whoAmI(new AsyncCallback<String>() {
@@ -67,7 +67,19 @@ public class StudentSectioningPage extends Composite {
 				userAuthentication.authenticate();
 			}
 			public void onSuccess(String result) {
-				userAuthentication.authenticated(result);
+				if (!mode.isSectioning() && MESSAGES.userGuest().equals(result)) {
+					userAuthentication.authenticate();
+				} else {
+					userAuthentication.authenticated(result);
+				}
+			}
+		});
+		iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+			public void onFailure(Throwable caught) {
+			}
+
+			public void onSuccess(Boolean result) {
+				if (result) userAuthentication.setAllowLookup(true);
 			}
 		});
 		
@@ -83,6 +95,8 @@ public class StudentSectioningPage extends Composite {
 
 		userAuthentication.addUserAuthenticatedHandler(new UserAuthentication.UserAuthenticatedHandler() {
 			public void onLogIn(UserAuthenticatedEvent event) {
+				if (!mode.isSectioning())
+					sessionSelector.selectSession(null);
 				sessionSelector.selectSession();
 			}
 
