@@ -35,7 +35,8 @@ import com.google.gwt.user.client.ui.Widget;
 public enum Pages {
 	curricula("Curricula", new PageFactory() { public Widget create() { return new CurriculaPage(); } }),
 	curprojrules("Curriculum Projection Rules", new PageFactory() { public Widget create() { return new CurriculumProjectionRulesPage(); } }),
-	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(); } }),
+	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); } }),
+	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
 	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
 	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(); } });
 	

@@ -41,7 +41,15 @@ public class StudentSectioningPage extends Composite {
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
-	public StudentSectioningPage() {
+	public static enum Mode {
+		SECTIONING(true),
+		REQUESTS(false);
+		boolean iSectioning;
+		private Mode(boolean isSectioning) { iSectioning = isSectioning; }
+		public boolean isSectioning() { return iSectioning; }
+	};
+	
+	public StudentSectioningPage(Mode mode) {
 		Grid titlePanel = new Grid(1, 3);
 		titlePanel.getCellFormatter().setWidth(0, 0, "33%");
 		titlePanel.getCellFormatter().setWidth(0, 1, "34%");
@@ -63,13 +71,13 @@ public class StudentSectioningPage extends Composite {
 			}
 		});
 		
-		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector();
+		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(mode);
 		titlePanel.setWidget(0, 2, sessionSelector);
 		
 		RootPanel.get("UniTimeGWT:Header").clear();
 		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
 
-		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication, mode);
 		
 		initWidget(widget);
 
@@ -94,7 +102,7 @@ public class StudentSectioningPage extends Composite {
 			}
 		});
 		
-		iSectioningService.lastAcademicSession(new AsyncCallback<String[]>() {
+		iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<String[]>() {
 			public void onFailure(Throwable caught) {
 				if (!userAuthentication.isShowing())
 					sessionSelector.selectSession();

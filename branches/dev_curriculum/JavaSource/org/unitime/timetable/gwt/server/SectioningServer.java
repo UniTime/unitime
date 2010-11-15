@@ -151,6 +151,13 @@ public class SectioningServer {
 		return false;
 	}
 	
+	public static boolean isRegistrationEnabled() {
+		for (Session session: SessionDAO.getInstance().findAll()) {
+			if (!session.getStatusType().canSectioningStudents() && session.getStatusType().canPreRegisterStudents()) return true;
+		}
+		return false;
+	}
+	
 	private SectioningServer(Long sessionId) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {

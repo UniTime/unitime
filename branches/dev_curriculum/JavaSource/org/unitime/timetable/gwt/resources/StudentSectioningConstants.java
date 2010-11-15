@@ -51,8 +51,7 @@ public interface StudentSectioningConstants extends Constants {
 	String[] courseTips();
 
 	@DefaultStringArrayValue({
-		"Tip: Enter a free time (e.g., Monday 8am - 10am) or use the mouse to select it.",
-		"Tip: The numbers in the selected times counts the number of overlapping standard time patterns (3x50, 2x75, 1x150), try to avoid overlapping too many of those."})
+		"Tip: Enter a free time (e.g., Monday 8am - 10am) or use the mouse to select it."})
 	String[] freeTimeTips();
 
 	@DefaultStringValue("Free ")

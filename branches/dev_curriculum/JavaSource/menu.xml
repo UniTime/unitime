@@ -129,6 +129,11 @@
 				<isSectioningEnabled/>
 			</condition>
 		</item>
+		<item name="Course Requests" page="requests" type="gwt">
+			<condition>
+				<isRegistrationEnabled/>
+			</condition>
+		</item>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
 	</menu>
 	<menu name="Examinations">
@@ -230,6 +235,14 @@
 		<separator/>
 		<item name="Timetable" page="timetable" type="gwt" />
 	</menu>
+	<item name="Course Requests" page="requests" type="gwt">
+		<condition>
+			<and>
+				<isStudent/>
+				<isRegistrationEnabled/>
+			</and>
+		</condition>
+	</item>
 	<item name="Scheduling Assistant" page="sectioning" type="gwt">
 		<condition>
 			<and>
