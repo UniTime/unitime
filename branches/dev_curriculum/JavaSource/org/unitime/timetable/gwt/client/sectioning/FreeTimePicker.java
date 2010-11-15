@@ -139,22 +139,23 @@ public class FreeTimePicker extends Composite {
 	private CourseRequestInterface.FreeTime generateOneFreeTime(boolean[][] s) {
 		for (int p0=0; p0<CONSTANTS.freeTimePeriods().length - 1; p0++) {
 			for (int d0=0; d0<CONSTANTS.freeTimeDays().length; d0++) {
-				if (!s[d0][p0]) continue;
-				int lastP1 = p0;
-				p1: for (int p1=p0+1; p1<CONSTANTS.freeTimePeriods().length - 1; p1++) {
-					for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
-						if (s[d][p0] && !s[d][p1]) break p1;
+				if (s[d0][p0]) {
+					int lastP1 = p0;
+					p1: for (int p1=p0+1; p1<CONSTANTS.freeTimePeriods().length - 1; p1++) {
+						for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
+							if (s[d][p0] && !s[d][p1]) break p1;
+						}
+						lastP1 = p1;
+						for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
+							if (s[d][p0]) s[d][p1] = false;
 					}
-					lastP1 = p1;
+					CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 					for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-						if (s[d][p0]) s[d][p1] = false;
+						if (s[d][p0]) { ft.addDay(d); s[d][p0] = false; }
+					ft.setStart(toSlot(p0));
+					ft.setLength(toSlot(lastP1 + 1) - toSlot(p0));
+					return ft;
 				}
-				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
-				for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-					if (s[d][p0]) { ft.addDay(d); s[d][p0] = false; }
-				ft.setStart(toSlot(p0));
-				ft.setLength(toSlot(lastP1 + 1) - toSlot(p0));
-				return ft;
 			}
 		}
 		return null;
@@ -186,9 +187,10 @@ public class FreeTimePicker extends Composite {
 		if (clearFirst) clearFreeTime();
 		for (CourseRequestInterface.FreeTime f: freeTimes) {
 			for (int day: f.getDays()) {
-				if (day >= CONSTANTS.freeTimeDays().length) continue;
-				for (int p = toPeriod(f.getStart()); p < toPeriod(f.getStart() + f.getLength()); p++)
-					iSelected[day][p] = true;
+				if (day < CONSTANTS.freeTimeDays().length) {
+					for (int p = toPeriod(f.getStart()); p < toPeriod(f.getStart() + f.getLength()); p++)
+						iSelected[day][p] = true;
+				}
 			}
 		}
 		generatePriorities();
@@ -198,65 +200,67 @@ public class FreeTimePicker extends Composite {
 	private boolean generateOnePriority(boolean[][] s, int priority) {
 		for (int p0=0; p0<CONSTANTS.freeTimePeriods().length - 1; p0++)
 			for (int d0=0; d0<CONSTANTS.freeTimeDays().length; d0++) {
-				if (!s[d0][p0]) continue;
-				boolean mwf0 = (d0 % 2 == 0);
-				boolean odd0 = (mwf0 ? p0 % 4 <= 1 : p0 % 6 > 2);
-				int first = 0;
-				for (int i=0; i<CONSTANTS.freeTimeOneDay150().length; i++)
-					if (Integer.parseInt(CONSTANTS.freeTimeOneDay150()[i]) <= p0) first = Integer.parseInt(CONSTANTS.freeTimeOneDay150()[i]);
-				if (mwf0) {
-					boolean hasM = false, hasF = false;
-					boolean hasS = false, hasT = false;
-					boolean allTheSame = true;
-					for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
-						if (s[0][p1]) hasM = true;
-						if (s[4][p1]) hasF = true;
-						if (p1 - first >= 2 && p1 - first < 4 && (s[0][p1] || s[2][p1] || s[4][p1])) hasS = true;
-						if (p1 - first >= 4 && (s[0][p1] || s[2][p1] || s[4][p1])) hasT = true;
-						if (d0!=0 && s[0][p1]) allTheSame = false;
-						if (d0!=2 && s[2][p1]) allTheSame = false;
-						if (d0!=4 && s[4][p1]) allTheSame = false;
-					}
-					if (((!hasM || !hasT || !hasF) && hasS && hasT) ||
-						(allTheSame && (hasS || hasT))) {
+				if (s[d0][p0]) {
+					boolean mwf0 = (d0 % 2 == 0);
+					boolean odd0 = (mwf0 ? p0 % 4 <= 1 : p0 % 6 > 2);
+					int first = 0;
+					for (int i=0; i<CONSTANTS.freeTimeOneDay150().length; i++)
+						if (Integer.parseInt(CONSTANTS.freeTimeOneDay150()[i]) <= p0) first = Integer.parseInt(CONSTANTS.freeTimeOneDay150()[i]);
+					if (mwf0) {
+						boolean hasM = false, hasF = false;
+						boolean hasS = false, hasT = false;
+						boolean allTheSame = true;
 						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
-							if (s[d0][p1]) {
-								iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
-								s[d0][p1] = false;
+							if (s[0][p1]) hasM = true;
+							if (s[4][p1]) hasF = true;
+							if (p1 - first >= 2 && p1 - first < 4 && (s[0][p1] || s[2][p1] || s[4][p1])) hasS = true;
+							if (p1 - first >= 4 && (s[0][p1] || s[2][p1] || s[4][p1])) hasT = true;
+							if (d0!=0 && s[0][p1]) allTheSame = false;
+							if (d0!=2 && s[2][p1]) allTheSame = false;
+							if (d0!=4 && s[4][p1]) allTheSame = false;
+						}
+						if (((!hasM || !hasT || !hasF) && hasS && hasT) ||
+							(allTheSame && (hasS || hasT))) {
+							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+								if (s[d0][p1]) {
+									iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
+									s[d0][p1] = false;
+								}
+							}
+							return true;
+						}
+					} else {
+						boolean allTheSame = true;
+						boolean hasT = false;
+						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+							if (p1 - first >= 4 && (s[1][p1] || s[3][p1])) hasT = true;
+							if (d0!=1 && s[1][p1]) allTheSame = false;
+							if (d0!=3 && s[3][p1]) allTheSame = false;
+						}
+						if (allTheSame || (hasT && 3 * (first / 3) != first)) {
+							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+								if (s[d0][p1]) {
+									iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
+									s[d0][p1] = false;
+								}
+							}
+							return true;
+						}
+					}
+					p1: for (int p1=p0; p1<CONSTANTS.freeTimePeriods().length - 1; p1++)
+						for (int d1=0; d1<CONSTANTS.freeTimeDays().length; d1++) {
+							boolean mwf1 = (d1 % 2 == 0);
+							boolean odd1 = (mwf1 ? p1 % 4 <= 1 : p1 % 6 > 2);
+							if (mwf0 == mwf1 && odd0 != odd1) break p1;
+							if (s[d1][p1]) {
+								if (mwf0 == mwf1 && odd0 == odd1) {
+									iGrid.setText(1 + d1, 1 + p1, String.valueOf(priority));
+									s[d1][p1] = false;
+								}
 							}
 						}
-						return true;
-					}
-				} else {
-					boolean allTheSame = true;
-					boolean hasT = false;
-					for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
-						if (p1 - first >= 4 && (s[1][p1] || s[3][p1])) hasT = true;
-						if (d0!=1 && s[1][p1]) allTheSame = false;
-						if (d0!=3 && s[3][p1]) allTheSame = false;
-					}
-					if (allTheSame || (hasT && 3 * (first / 3) != first)) {
-						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
-							if (s[d0][p1]) {
-								iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
-								s[d0][p1] = false;
-							}
-						}
-						return true;
-					}
+					return true;
 				}
-				p1: for (int p1=p0; p1<CONSTANTS.freeTimePeriods().length - 1; p1++)
-					for (int d1=0; d1<CONSTANTS.freeTimeDays().length; d1++) {
-						boolean mwf1 = (d1 % 2 == 0);
-						boolean odd1 = (mwf1 ? p1 % 4 <= 1 : p1 % 6 > 2);
-						if (mwf0 == mwf1 && odd0 != odd1) break p1;
-						if (!s[d1][p1]) continue;
-						if (mwf0 == mwf1 && odd0 == odd1) {
-							iGrid.setText(1 + d1, 1 + p1, String.valueOf(priority));
-							s[d1][p1] = false;
-						}
-					}
-				return true;
 			}
 		return false;
 	}
@@ -297,18 +301,20 @@ public class FreeTimePicker extends Composite {
 				boolean allSelected = true;
 				boolean mwfDown = (iDownDay % 2 == 0);
 				all: for (int d=d0; d<=d1; d++) {
-					if (d1 - d0 > 1 && (d % 2 == 0) != mwfDown) continue;
-					for (int p=p0; p<=p1; p++)
-						if (!iSelected[d][p]) {
-							allSelected = false; break all;
-						}
+					if (d1 - d0 <= 0 || (d % 2 == 0) == mwfDown) {
+						for (int p=p0; p<=p1; p++)
+							if (!iSelected[d][p]) {
+								allSelected = false; break all;
+							}
+					}
 				}
 				long ts = iTime++;
 				for (int d=d0; d<=d1; d++) {
-					if (d1 - d0 > 1 && (d % 2 == 0) != mwfDown) continue;
-					for (int p=p0; p<=p1; p++) {
-						iSelected[d][p] = !allSelected;
-						iLastSelectedTime[d][p] = ts;
+					if (d1 - d0 <= 1 || (d % 2 == 0) == mwfDown) {
+						for (int p=p0; p<=p1; p++) {
+							iSelected[d][p] = !allSelected;
+							iLastSelectedTime[d][p] = ts;
+						}
 					}
 				}
 			}
