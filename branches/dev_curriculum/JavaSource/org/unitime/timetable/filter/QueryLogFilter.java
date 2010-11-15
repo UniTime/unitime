@@ -123,6 +123,7 @@ public class QueryLogFilter implements Filter {
 					ex += clazz + ": " + t.getMessage();
 					if (t.getStackTrace() != null && t.getStackTrace().length > 0)
 						ex += " (at " + t.getStackTrace()[0].getFileName() + ":" + t.getStackTrace()[0].getLineNumber() + ")";
+					t = t.getCause();
 				}
 				if (!ex.isEmpty())
 					q.setException(ex);
