@@ -605,6 +605,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
                     }
                     meetings.addAll(
                     		(List<Meeting>)hibSession.createQuery("select m from Meeting m, Session s where s.uniqueId = :sessionId and " +
+                    				"m.event.class in (CourseEvent, SpecialEvent) and " +
                     				"m.event.mainContact.externalUniqueId = :externalId and " +
                     				"m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.approvedDate is not null")
                     				.setString("externalId", resource.getExternalId()).setLong("sessionId", resource.getSessionId()).list());
