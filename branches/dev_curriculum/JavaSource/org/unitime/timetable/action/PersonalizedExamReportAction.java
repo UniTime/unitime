@@ -150,6 +150,14 @@ public class PersonalizedExamReportAction extends Action {
             return mapping.findForward(back);
         }
         
+        if (request.getParameter("q") != null) {
+        	String[] params = CalendarServlet.decode(request.getParameter("q")).split(":");
+        	if (params != null && params.length == 2) {
+        		myForm.setUid(params[0]);
+        		myForm.setSessionId(Long.valueOf(params[1]));
+        	}
+        }
+        
         myForm.setAdmin(user.isAdmin());
         myForm.setLogout(!"back".equals(back));
         
@@ -568,7 +576,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getSessions(boolean html, HashSet<Session> sessions, String name, Long sessionId) {
         PdfWebTable table = new PdfWebTable( 5,
                 "Available Academic Sessions for "+name,
-                "personalSchedule.do?o0=%%",
+                "personalSchedule.do?o0=%%" + (sessionId == null ? "" : "&sessionId=" + sessionId),
                 new String[] {
                     "Term",
                     "Year",
@@ -597,7 +605,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getStudentExamSchedule(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         PdfWebTable table = new PdfWebTable( 5,
                 student.getSession().getLabel()+" Examination Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o1=%%&uid="+student.getExternalUniqueId(),
+                "personalSchedule.do?o1=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
                 new String[] {
                     "Class / Course",
                     "Meeting Time",
@@ -632,7 +640,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setWebTableTweakStyle(new WebTableTweakStyle() {
 			public String getStyleHtml(WebTableLine current, WebTableLine next, int order) {
-				if (next!=null && ((MultiComparable)current.getOrderBy()[Math.abs(order)]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[Math.abs(order)]).getContent()[0])!=0)
+				if (next!=null && ((MultiComparable)current.getOrderBy()[0]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[0]).getContent()[0])!=0)
 					return "border-bottom: rgb(81,81,81) 1px dashed";
 				return null;
 			}
@@ -644,7 +652,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Examinations for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o3=%%&uid="+student.getExternalUniqueId(),
+                "personalSchedule.do?o3=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -816,7 +824,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setWebTableTweakStyle(new WebTableTweakStyle() {
 			public String getStyleHtml(WebTableLine current, WebTableLine next, int order) {
-				if (next!=null && ((MultiComparable)current.getOrderBy()[Math.abs(order)]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[Math.abs(order)]).getContent()[0])!=0)
+				if (next!=null && ((MultiComparable)current.getOrderBy()[0]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[0]).getContent()[0])!=0)
 					return "border-bottom: rgb(81,81,81) 1px dashed";
 				return null;
 			}
@@ -829,7 +837,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o2=%%&uid="+instructor.getExternalUniqueId(),
+                "personalSchedule.do?o2=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":" + instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Class / Course",
                     "Enrollment",
@@ -871,7 +879,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setWebTableTweakStyle(new WebTableTweakStyle() {
 			public String getStyleHtml(WebTableLine current, WebTableLine next, int order) {
-				if (next!=null && ((MultiComparable)current.getOrderBy()[Math.abs(order)]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[Math.abs(order)]).getContent()[0])!=0)
+				if (next!=null && ((MultiComparable)current.getOrderBy()[0]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[0]).getContent()[0])!=0)
 					return "border-bottom: rgb(81,81,81) 1px dashed";
 				return null;
 			}
@@ -883,7 +891,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Examinations for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o4=%%&uid="+instructor.getExternalUniqueId(),
+                "personalSchedule.do?o4=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -1076,7 +1084,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setWebTableTweakStyle(new WebTableTweakStyle() {
 			public String getStyleHtml(WebTableLine current, WebTableLine next, int order) {
-				if (next!=null && ((MultiComparable)current.getOrderBy()[Math.abs(order)]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[Math.abs(order)]).getContent()[0])!=0)
+				if (next!=null && ((MultiComparable)current.getOrderBy()[0]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[0]).getContent()[0])!=0)
 					return "border-bottom: rgb(81,81,81) 1px dashed";
 				return null;
 			}
@@ -1088,7 +1096,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Conflicts for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o5=%%&uid="+instructor.getExternalUniqueId(),
+                "personalSchedule.do?o5=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Name",
                     "Type",
@@ -1303,7 +1311,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setWebTableTweakStyle(new WebTableTweakStyle() {
 			public String getStyleHtml(WebTableLine current, WebTableLine next, int order) {
-				if (next!=null && ((MultiComparable)current.getOrderBy()[Math.abs(order)]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[Math.abs(order)]).getContent()[0])!=0)
+				if (next!=null && ((MultiComparable)current.getOrderBy()[0]).getContent()[0].compareTo(((MultiComparable)next.getOrderBy()[0]).getContent()[0])!=0)
 					return "border-bottom: rgb(81,81,81) 1px solid";
 				return null;
 			}
@@ -1395,7 +1403,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Class Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o6=%%&uid="+student.getExternalUniqueId(),
+                "personalSchedule.do?o6=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":"+student.getSession().getUniqueId()),
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",
@@ -1444,7 +1452,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 instructor.getDepartment().getSession().getLabel()+" Class Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o7=%%&uid="+instructor.getExternalUniqueId(),
+                "personalSchedule.do?o7=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",
