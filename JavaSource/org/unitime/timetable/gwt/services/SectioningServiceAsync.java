@@ -48,4 +48,5 @@ public interface SectioningServiceAsync {
 	void lastResult(Long sessionId, AsyncCallback<ArrayList<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException;
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException;
 	void enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ArrayList<Long>> callback) throws SectioningException;
+	void isAdmin(AsyncCallback<Boolean> isAdmin) throws SectioningException;
 }

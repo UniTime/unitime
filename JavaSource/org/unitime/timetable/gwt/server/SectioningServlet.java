@@ -569,6 +569,27 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public String logIn(String userName, String password) throws SectioningException {
+		if ("LOOKUP".equals(userName)) {
+			if (!isAdmin())
+				throw new SectioningException(SectioningExceptionType.LOGIN_FAILED);
+			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
+			try {
+				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", password).list();
+				if (!student.isEmpty()) {
+					User user = Web.getUser(getThreadLocalRequest().getSession());
+					UniTimePrincipal principal = new UniTimePrincipal(user.getId(), user.getName());
+					for (Student s: student) {
+						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
+						principal.setName(s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+					}
+					getThreadLocalRequest().getSession().setAttribute("user", principal);
+					getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
+					return principal.getName();
+				}
+			} finally {
+				hibSession.close();
+			}			
+		}
 		Integer nrAttempts = (Integer)getThreadLocalRequest().getSession().getAttribute("login.nrAttempts");
 		if (nrAttempts == null) nrAttempts = 1; else nrAttempts ++;
 		getThreadLocalRequest().getSession().setAttribute("login.nrAttempts", nrAttempts);
@@ -727,6 +748,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public CourseRequestInterface lastRequest(Long sessionId) throws SectioningException {
 		CourseRequestInterface request = getLastRequest();
+		if (request != null && !request.getAcademicSessionId().equals(sessionId)) request = null;
+		if (request != null && request.getCourses().isEmpty() && request.getAlternatives().isEmpty()) request = null;
 		if (request == null) {
 			Long studentId = getStudentId(sessionId);
 			if (studentId == null) throw new SectioningException(SectioningExceptionType.NO_STUDENT);
@@ -1154,6 +1177,18 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 		} finally {
 			hibSession.close();
+		}
+	}
+
+	public Boolean isAdmin() throws SectioningException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "not authenticated");
+			return Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch  (Exception e) {
+			if (e instanceof SectioningException) throw (SectioningException)e;
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e.getMessage());
 		}
 	}
 

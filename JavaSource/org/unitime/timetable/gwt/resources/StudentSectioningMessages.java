@@ -362,6 +362,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Guest")
 	String buttonUserSkip();
 	
+	@DefaultMessage("Lookup")
+	String buttonUserLookup();
+
 	@DefaultMessage("Guest")
 	String userGuest();
 	

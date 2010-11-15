@@ -21,11 +21,13 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 
+import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -55,7 +57,7 @@ public class UserAuthentication extends Composite {
 	private Label iUserLabel;
 	private Label iHint;
 	
-	private Button iLogIn, iSkip;
+	private Button iLogIn, iSkip, iLookup;
 	
 	private TextBox iUserName;
 	private PasswordTextBox iUserPassword;
@@ -66,17 +68,19 @@ public class UserAuthentication extends Composite {
 	
 	private ArrayList<UserAuthenticatedHandler> iUserAuthenticatedHandlers = new ArrayList<UserAuthenticatedHandler>();
 	
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	
-	private AsyncCallback<String> iAuthenticateCallback = null;
+	private static AsyncCallback<String> sAuthenticateCallback = null;
 	
 	private boolean iLoggedIn = false;
 	private boolean iGuest = false;
 	private String iLastUser = null;
+	private boolean iAllowGuest = false;
 	
 	private Command iOnLoginCommand = null;
 
-	public UserAuthentication(boolean allowGuset) {
+	public UserAuthentication(boolean allowGuest) {
+		iAllowGuest = allowGuest;
 		iUserLabel = new Label(MESSAGES.userNotAuthenticated(), false);
 		iUserLabel.setStyleName("unitime-SessionSelector");
 		
@@ -128,6 +132,13 @@ public class UserAuthentication extends Composite {
 		
 		iSkip = new Button(MESSAGES.buttonUserSkip());
 		buttonPanel.add(iSkip);
+		iSkip.setVisible(iAllowGuest);
+		
+		Lookup.getInstance().setOptions("mustHaveExternalId");
+		Lookup.getInstance().setCallback(createLookupCallback());
+		iLookup = new Button(MESSAGES.buttonUserLookup());
+		buttonPanel.add(iLookup);
+		iLookup.setVisible(false);
 		
 		iSkip.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -138,6 +149,14 @@ public class UserAuthentication extends Composite {
 		iLogIn.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				logIn(false);
+			}
+		});
+		
+		iLookup.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iDialog.hide();
+				Lookup.getInstance().center();
 			}
 		});
 		
@@ -152,7 +171,7 @@ public class UserAuthentication extends Composite {
 						}
 					});
 				}
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE && iAllowGuest) {
 					logIn(true);
 				}
 			}
@@ -163,7 +182,7 @@ public class UserAuthentication extends Composite {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 					logIn(false);
 				}
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE && iAllowGuest) {
 					logIn(true);
 				}
 			}
@@ -182,6 +201,45 @@ public class UserAuthentication extends Composite {
 		iHint.addClickHandler(ch);
 		
 		initWidget(vertical);
+		
+		sAuthenticateCallback = new AsyncCallback<String>() {
+			public void onFailure(Throwable caught) {
+				iError.setText(caught.getMessage());
+				iError.setVisible(true);
+				iUserName.setEnabled(true);
+				iUserPassword.setEnabled(true);
+				iLogIn.setEnabled(true);
+				iSkip.setEnabled(true);
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iUserName.selectAll();
+						iUserName.setFocus(true);
+					}
+				});
+			}
+			public void onSuccess(String result) {
+				iUserName.setEnabled(true);
+				iUserPassword.setEnabled(true);
+				iLogIn.setEnabled(true);
+				iSkip.setEnabled(true);
+				iError.setVisible(false);
+				iDialog.hide();
+				iUserLabel.setText(MESSAGES.userLabel(result));
+				iLastUser = result;
+				iHint.setText(MESSAGES.userHintLogout());
+				iLoggedIn = true;
+				iGuest = false;
+				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
+				for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
+					h.onLogIn(e);
+				if (iOnLoginCommand != null) iOnLoginCommand.execute();
+			}
+		};
+	}
+	
+	public void setAllowLookup(boolean allow) {
+		iLookup.setVisible(allow);
 	}
 	
 	public boolean isShowing() {
@@ -212,7 +270,7 @@ public class UserAuthentication extends Composite {
 	private void logIn(boolean guest) {
 		iError.setVisible(false);
 		if (guest) {
-			iSectioningService.logOut(new AsyncCallback<Boolean>() {
+			sSectioningService.logOut(new AsyncCallback<Boolean>() {
 				public void onFailure(Throwable caught) { }
 				public void onSuccess(Boolean result) {
 					iLoggedIn = true; iGuest = true;
@@ -228,51 +286,15 @@ public class UserAuthentication extends Composite {
 			});
 			return;
 		}
-		if (iAuthenticateCallback == null) {
-			iAuthenticateCallback = new AsyncCallback<String>() {
-				public void onFailure(Throwable caught) {
-					iError.setText(caught.getMessage());
-					iError.setVisible(true);
-					iUserName.setEnabled(true);
-					iUserPassword.setEnabled(true);
-					iLogIn.setEnabled(true);
-					iSkip.setEnabled(true);
-					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-						@Override
-						public void execute() {
-							iUserName.selectAll();
-							iUserName.setFocus(true);
-						}
-					});
-				}
-				public void onSuccess(String result) {
-					iUserName.setEnabled(true);
-					iUserPassword.setEnabled(true);
-					iLogIn.setEnabled(true);
-					iSkip.setEnabled(true);
-					iError.setVisible(false);
-					iDialog.hide();
-					iUserLabel.setText(MESSAGES.userLabel(result));
-					iLastUser = result;
-					iHint.setText(MESSAGES.userHintLogout());
-					iLoggedIn = true;
-					iGuest = false;
-					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
-						h.onLogIn(e);
-					if (iOnLoginCommand != null) iOnLoginCommand.execute();
-				}
-			};
-		}
 		iUserName.setEnabled(false);
 		iUserPassword.setEnabled(false);
 		iLogIn.setEnabled(false);
 		iSkip.setEnabled(false);
-		iSectioningService.logIn(iUserName.getText(), iUserPassword.getText(), iAuthenticateCallback);
+		sSectioningService.logIn(iUserName.getText(), iUserPassword.getText(), sAuthenticateCallback);
 	}
 	
 	public void logOut() {
-		iSectioningService.logOut(new AsyncCallback<Boolean>() {
+		sSectioningService.logOut(new AsyncCallback<Boolean>() {
 			public void onFailure(Throwable caught) { }
 			public void onSuccess(Boolean result) {
 				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
@@ -325,5 +347,16 @@ public class UserAuthentication extends Composite {
 	public void addUserAuthenticatedHandler(UserAuthenticatedHandler h) {
 		iUserAuthenticatedHandlers.add(h);
 	}
+	
+	public static void personFound(String externalUniqueId) {
+		sSectioningService.logIn("LOOKUP", externalUniqueId, sAuthenticateCallback);
+	}
+	
+	private native JavaScriptObject createLookupCallback() /*-{
+		return function(person) {
+			@org.unitime.timetable.gwt.client.sectioning.UserAuthentication::personFound(Ljava/lang/String;)(person[0]);
+	    };
+	 }-*/;
+
 	
 }
