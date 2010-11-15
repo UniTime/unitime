@@ -210,6 +210,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					ret.add(course);
 				}
 			} catch (Exception e) {
+				if (e instanceof SectioningException) throw (SectioningException)e;
 				sLog.error(e.getMessage(), e);
 				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 			}
@@ -841,8 +842,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				}
 				throw new SectioningException(SectioningExceptionType.NO_STUDENT_REQUESTS);
 			} catch (Exception e) {
-				sLog.error(e.getMessage(), e);
 				if (e instanceof SectioningException) throw (SectioningException)e;
+				sLog.error(e.getMessage(), e);
 				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 			} finally {
 				hibSession.close();
