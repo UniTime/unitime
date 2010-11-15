@@ -58,8 +58,10 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
 	private Vector<AcademicSessionChangeHandler> iAcademicSessionChangeHandlers = new Vector<AcademicSessionChangeHandler>();
+	private StudentSectioningPage.Mode iMode;
 	
-	public AcademicSessionSelector() {
+	public AcademicSessionSelector(StudentSectioningPage.Mode mode) {
+		iMode = mode;
 		iSessionLabel = new Label(MESSAGES.sessionSelectorNoSession(), false);
 		iSessionLabel.setStyleName("unitime-SessionSelector");
 		
@@ -127,7 +129,7 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 	
 	public void selectSession() {
 		iDialog.setAutoHideEnabled(getAcademicSessionId()!=null);
-		iSectioningService.listAcademicSessions(new AsyncCallback<Collection<String[]>>() {
+		iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<String[]>>() {
 			public void onSuccess(Collection<String[]> result) {
 				WebTable.Row[] records = new WebTable.Row[result.size()];
 				int idx = 0;
@@ -162,7 +164,7 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		} else if (sessionId.equals(getAcademicSessionId())) {
 			callback.onSuccess(true);
 		} else {
-			iSectioningService.listAcademicSessions(new AsyncCallback<Collection<String[]>>() {
+			iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<String[]>>() {
 				public void onSuccess(Collection<String[]> result) {
 					for (String[] record: result) {
 						if (sessionId.toString().equals(record[0])) {

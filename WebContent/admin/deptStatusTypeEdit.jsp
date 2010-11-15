@@ -110,7 +110,9 @@
 			<TD><i>The examination timetabling manager can edit all examination data and create examination schedule.</i></TD></TR>
 		
 		<TR><TD colspan='3'><tt:section-title><br>Student Sectioning</tt:section-title></TD></TR>
-		<TR><TD nowrap>Enabled:</TD><TD><html:checkbox property="canSectioningStudents"/></TD>
+		<TR><TD nowrap>Registration:</TD><TD><html:checkbox property="canPreRegisterStudents"/></TD>
+			<TD><i>Students are able to use the Student Course Requests page to fill in their course and free time requests.</i></TD></TR>
+		<TR><TD nowrap>Assistant:</TD><TD><html:checkbox property="canSectioningStudents"/></TD>
 			<TD><i>Unauthenticated users and students are able to use the Student Scheduling Assistant.</i></TD></TR>
 
 		<TR><TD colspan='3'><tt:section-title><br>No-Role Reports</tt:section-title></TD></TR>

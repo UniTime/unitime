@@ -33,7 +33,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface SectioningServiceAsync {
 	void listCourseOfferings(Long sessionId, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException;
-	void listAcademicSessions(AsyncCallback<Collection<String[]>> callback) throws SectioningException;
+	void listAcademicSessions(boolean sectioning, AsyncCallback<Collection<String[]>> callback) throws SectioningException;
 	void retrieveCourseDetails(Long sessionId, String course, AsyncCallback<String> callback) throws SectioningException;
 	void listClasses(Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws IllegalArgumentException;
 	void retrieveCourseOfferingId(Long sessionId, String course, AsyncCallback<Long> callback) throws SectioningException;
@@ -43,7 +43,7 @@ public interface SectioningServiceAsync {
 	void logIn(String userName, String password, AsyncCallback<String> callback) throws SectioningException;
 	void logOut(AsyncCallback<Boolean> callback) throws SectioningException;
 	void whoAmI(AsyncCallback<String> callback) throws SectioningException;
-	void lastAcademicSession(AsyncCallback<String[]> callback) throws SectioningException;
+	void lastAcademicSession(boolean sectioning, AsyncCallback<String[]> callback) throws SectioningException;
 	void lastRequest(Long sessionId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException;
 	void lastResult(Long sessionId, AsyncCallback<ArrayList<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException;
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException;

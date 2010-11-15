@@ -35,7 +35,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException;
-	Collection<String[]> listAcademicSessions() throws SectioningException;
+	Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException;
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws IllegalArgumentException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException;
@@ -45,7 +45,7 @@ public interface SectioningService extends RemoteService {
 	String logIn(String userName, String password) throws SectioningException;
 	Boolean logOut() throws SectioningException;
 	String whoAmI() throws SectioningException;
-	String[] lastAcademicSession() throws SectioningException;
+	String[] lastAcademicSession(boolean sectioning) throws SectioningException;
 	CourseRequestInterface lastRequest(Long sessionId) throws SectioningException;
 	ArrayList<ClassAssignmentInterface.ClassAssignment> lastResult(Long sessionId) throws SectioningException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException;

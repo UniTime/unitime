@@ -82,7 +82,7 @@ public class StudentSectioningWidget extends Composite {
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
-	private Button iPrev, iNext, iEnroll, iPrint, iExport;
+	private Button iPrev, iNext, iEnroll, iPrint, iExport, iSave;
 	private HTML iErrorMessage;
 	private UniTimeTabPabel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
@@ -99,7 +99,7 @@ public class StudentSectioningWidget extends Composite {
 	private int iAssignmentTab = 0;
 	private boolean iInRestore = false;
 
-	public StudentSectioningWidget(AcademicSessionSelector sessionSelector, UserAuthentication userAuthentication) {
+	public StudentSectioningWidget(AcademicSessionSelector sessionSelector, UserAuthentication userAuthentication, StudentSectioningPage.Mode mode) {
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		
@@ -132,7 +132,14 @@ public class StudentSectioningWidget extends Composite {
 		iNext.setWidth("75");
 		iNext.setAccessKey('n');
 		rightFooterPanel.add(iNext);
+		iNext.setVisible(mode.isSectioning());
 		
+		iSave = new Button(MESSAGES.buttonSave());
+		iSave.setWidth("75");
+		iSave.setAccessKey('s');
+		rightFooterPanel.add(iSave);
+		iSave.setVisible(!mode.isSectioning());
+
 		iEnroll = new Button(MESSAGES.buttonEnroll());
 		iEnroll.setWidth("75");
 		iEnroll.setAccessKey('e');
@@ -411,6 +418,45 @@ public class StudentSectioningWidget extends Composite {
 		iSessionSelector.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
 			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
 				addHistory();
+			}
+		});
+		
+		iSave.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				iCourseRequests.changeTip();
+				iErrorMessage.setHTML("");
+				iCourseRequests.getValidator().validate(new AsyncCallback<Boolean>() {
+					public void onSuccess(Boolean result) {
+						updateHistory();
+						if (result) {
+							iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
+								public void onSuccess(Boolean result) {
+									if (result) {
+										iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
+										iErrorMessage.setVisible(true);
+									}
+									iCourseRequests.getValidator().hide();
+								}
+								public void onFailure(Throwable caught) {
+									iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
+									iErrorMessage.setVisible(true);
+									iCourseRequests.getValidator().hide();
+								}
+							});
+						} else {
+							iErrorMessage.setHTML(MESSAGES.validationFailed());
+							iErrorMessage.setVisible(true);
+							iCourseRequests.getValidator().hide();
+							updateHistory();
+						}
+					}
+					public void onFailure(Throwable caught) {
+						iErrorMessage.setHTML(MESSAGES.validationFailed());
+						iErrorMessage.setVisible(true);
+						iCourseRequests.getValidator().hide();
+						updateHistory();
+					}
+				});
 			}
 		});
 	}

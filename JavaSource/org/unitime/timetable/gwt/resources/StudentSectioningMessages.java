@@ -294,6 +294,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 
+	@DefaultMessage("<u>S</u>ave")
+	String buttonSave();
+
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
 	
