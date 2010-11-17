@@ -103,6 +103,7 @@
 				<line>Student Sectioning Assistant
 					<line>Still more of a demo as it only allows for class assignment changes (with no rescheduling)</line>
 				</line>
+				<line>Student Course Requests page for collecting student pre-registration (must be enabled by session status)</line>
 			</description>
 		</item>
 		<item>
