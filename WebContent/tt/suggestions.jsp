@@ -136,7 +136,7 @@
 <logic:equal name="suggestionsForm" property="op" value="close">
 <script language="JavaScript" type="text/javascript">
 	parent.hideGwtDialog();
-	parent.location.reload(false);
+	parent.refreshPage();
 </script>
 </logic:equal>
 <%
