@@ -66,6 +66,9 @@ public class UniTimeMenuBar extends Composite {
 	private Timer iTimer = null;
 	private SimplePanel iSimple = null;
 	
+	private int iLastScrollLeft = 0, iLastScrollTop = 0, iLastClientWidth = 0;
+	private Timer iMoveTimer;
+	
 	private static UniTimeDialogBox sDialog = null;
 
 	public UniTimeMenuBar(boolean absolute) {
@@ -77,37 +80,38 @@ public class UniTimeMenuBar extends Composite {
 		
 		if (absolute) {
 			DOM.setStyleAttribute(iMenu.getElement(), "position", "absolute");
-			iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
+			move(false);
+			iMoveTimer = new Timer() {
+				@Override
+				public void run() {
+					move(true);
+				}
+			};
 			Window.addResizeHandler(new ResizeHandler() {
 				@Override
 				public void onResize(ResizeEvent event) {
-					iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
+					delayedMove();
 				}
 			});
-			final Timer showTimer = new Timer() {
-				@Override
-				public void run() {
-					iMenu.setWidth(String.valueOf(Window.getClientWidth() - 2));
-					DOM.setStyleAttribute(iMenu.getElement(), "left", String.valueOf(Window.getScrollLeft()));
-					DOM.setStyleAttribute(iMenu.getElement(), "top", String.valueOf(Window.getScrollTop()));
-					iMenu.setVisible(true);
-				}
-			};
 			Window.addWindowScrollHandler(new Window.ScrollHandler() {
 				@Override
 				public void onWindowScroll(ScrollEvent event) {
-					iMenu.setVisible(false);
-					showTimer.schedule(100);
+					delayedMove();
 				}
 			});
 			Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
 				@Override
 				public void onChange(GwtPageChangeEvent event) {
-					iMenu.setVisible(false);
-					showTimer.schedule(100);
+					delayedMove();
 				}
 			});
 			iSimple = new SimplePanel();
+			new Timer() {
+				@Override
+				public void run() {
+					delayedMove();
+				}
+			}.scheduleRepeating(5000);
 		}
 		
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
@@ -122,6 +126,28 @@ public class UniTimeMenuBar extends Composite {
 			public void onFailure(Throwable caught) {
 			}
 		});
+	}
+	
+	private void move(boolean show) {
+		iLastClientWidth = Window.getClientWidth();
+		iLastScrollLeft = Window.getScrollLeft();
+		iLastScrollTop = Window.getScrollTop();
+		iMenu.setWidth(String.valueOf(iLastClientWidth - 2));
+		DOM.setStyleAttribute(iMenu.getElement(), "left", String.valueOf(iLastScrollLeft));
+		DOM.setStyleAttribute(iMenu.getElement(), "top", String.valueOf(iLastScrollTop));
+		iMenu.setVisible(true);
+	}
+	
+	private boolean needsMove() {
+		return iLastClientWidth != Window.getClientWidth() ||
+			iLastScrollLeft != Window.getScrollLeft() || iLastScrollTop != Window.getScrollTop();
+	}
+	
+	private void delayedMove() {
+		if (needsMove()) {
+			iMenu.setVisible(false);
+			iMoveTimer.schedule(100);
+		}
 	}
 	
 	private void initMenu(MenuBar menu, List<MenuInterface> items, int level) {
