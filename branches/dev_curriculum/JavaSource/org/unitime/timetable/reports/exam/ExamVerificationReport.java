@@ -272,7 +272,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     lpad(maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" ":"")+
                     "         "+message);
             if (titleSeparateLine)
-                println(lpad("",11)+"  "+title);
+                println(lpad("",11)+"  "+(title.length()>120?title.substring(0,117)+"...":title));
             if (mwSeparateLine)
                 println(lpad("",11)+"  Meets with "+(cmw.length()>109?cmw.substring(0,106)+"...":cmw));
             iITypePrinted = !iNewPage;
@@ -392,7 +392,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         lpad(idx>0?"":String.valueOf(exam.getLength()),3)+time+room+mw
                         );
                 if (idx==0 && titleSeparateLine)
-                    println(lpad("",11)+"  "+title);
+                    println(lpad("",11)+"  "+(title.length()>120?title.substring(0,117)+"...":title));
                 if (idx==0 && mwSeparateLine)
                     println(lpad("",11)+"  Meets with "+(cmw.length()>109?cmw.substring(0,106)+"...":cmw));
             }
