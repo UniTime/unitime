@@ -56,14 +56,14 @@
     
     <target name="prepare" depends="init">
         <buildnumber/>
-        <echo message="Build number: ${build.number}"/>
+        <echo message="Build number: ${build.number}${build.tag}"/>
         <tstamp>
             <format property="build.date" pattern="EEE, d MMM yyyy" locale="en"/>
         </tstamp>
         <echo message="Build date: ${build.date}"/>
         <propertyfile file="build.date" comment="Build info">
             <entry  key="build.date" value="${build.date}"/>
-        	<entry  key="build.number" value="${build.number}"/>
+        	<entry  key="build.number" value="${build.number}${build.tag}"/>
         </propertyfile>
         <copy todir="${build.dir}" overwrite="Yes" preservelastmodified="Yes">
             <fileset dir="${src.dir}" includes="**/*.java"/>
