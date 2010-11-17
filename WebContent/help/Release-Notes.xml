@@ -138,6 +138,7 @@
 					<line>Added list of dependencies (including URLs, copyrights, and licenses)</line>
 				</line>
 				<line>Added query log (Page Statistics page)</line>
+				<line>Examinations: Added ability to automatically put a preference on an original building (i.e., building of a room in which the related class took place)</line>
 			</description>
 		</item>
 		<item>
