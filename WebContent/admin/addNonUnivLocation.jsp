@@ -198,20 +198,91 @@
 		draggable: true,
 		visible: false
 	});
-	google.maps.event.addListener(marker, 'position_changed', function() {
-		document.getElementById("coordX").value = '' + marker.getPosition().lat().toFixed(6);
-		document.getElementById("coordY").value = '' + marker.getPosition().lng().toFixed(6);
+
+    var searchBox = createGoogleSeachControl(map);
+	
+	function createGoogleSeachControl(map) {
+		var controlDiv = document.createElement('DIV');
+	    controlDiv.index = 1;
+		controlDiv.style.marginBottom = '15px';
+		var controlUI = document.createElement('DIV');
+		controlUI.style.backgroundColor = 'transparent';
+		controlUI.style.cursor = 'pointer';
+		controlUI.style.textAlign = 'center';
+		controlUI.title = "Seach";
+		controlDiv.appendChild(controlUI);
+		var controltxtbox = document.createElement('input');
+		controltxtbox.setAttribute("id", "txt_googleseach");
+		controltxtbox.setAttribute("type", "text");
+		controltxtbox.setAttribute("value", "");
+		controltxtbox.style.height = '22px';
+		controltxtbox.style.width = '450px';
+		controltxtbox.style.marginRight = '2px';
+		controlUI.appendChild(controltxtbox);
+		var controlbtn = document.createElement('input');
+		controlbtn.setAttribute("id", "btn_googleseach");
+		controlbtn.setAttribute("type", "button");
+		controlbtn.setAttribute("value", "Geocode");
+		controlUI.appendChild(controlbtn);
+		google.maps.event.addDomListener(controlbtn, 'click', function() {
+			geoceodeAddress(controltxtbox.value);
+		});
+		controltxtbox.onkeypress = function(e) {
+			var key = e.keyCode || e.which;
+			if (key == 13) {
+				geoceodeAddress(controltxtbox.value);
+				return false;
+			}
+			return true;
+		};
+		map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(controlDiv);
+		return controltxtbox;
+	}
+	
+	function geoceodeAddress(address) {
+		var address = document.getElementById("txt_googleseach").value;
+		geocoder.geocode({ 'address': address }, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				if (results[0]) {
+					marker.setPosition(results[0].geometry.location);
+					marker.setTitle(results[0].formatted_address);
+					marker.setVisible(true);
+					if (map.getZoom() <= 10) map.setZoom(16);
+					map.panTo(results[0].geometry.location);
+				} else {
+					marker.setVisible(false);
+				}
+			} else {
+				marker.setVisible(false);
+			}
+		});
+	}
+	
+	function geoceodeMarker() {
 		geocoder.geocode({'location': marker.getPosition()}, function(results, status) {
 			if (status == google.maps.GeocoderStatus.OK) {
 				if (results[0]) {
 					marker.setTitle(results[0].formatted_address);
+					if (searchBox != null)
+						searchBox.value = results[0].formatted_address;
 				} else {
 					marker.setTitle(null);
+					if (searchBox != null) searchBox.value = "";
 				}
 			} else {
 				marker.setTitle(null);
+				if (searchBox != null) searchBox.value = "";
 			}
 		});
+	}
+	
+	var t = null;	
+	
+	google.maps.event.addListener(marker, 'position_changed', function() {
+		document.getElementById("coordX").value = '' + marker.getPosition().lat().toFixed(6);
+		document.getElementById("coordY").value = '' + marker.getPosition().lng().toFixed(6);
+		if (t != null) clearTimeout(t);
+		t = setTimeout("geoceodeMarker()", 500);
 	});
 	google.maps.event.addListener(map, 'rightclick', function(event) {
 		marker.setPosition(event.latLng);
