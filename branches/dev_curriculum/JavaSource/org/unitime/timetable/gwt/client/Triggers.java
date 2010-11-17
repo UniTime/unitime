@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.page.Refresh;
 import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 
@@ -45,6 +46,11 @@ public enum Triggers {
 	loading(new Command() {
 		public void execute() {
 			LoadingWidget.createTriggers();
+		}
+	}),
+	refresh(new Command() {
+		public void execute() {
+			Refresh.createTriggers();
 		}
 	});
 	

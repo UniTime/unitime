@@ -40,7 +40,7 @@
 	<logic:equal name="classInfoForm" property="op" value="Close">
 		<script language="JavaScript" type="text/javascript">
 			parent.hideGwtDialog();
-			parent.location.reload(false);
+			parent.refreshPage();
 		</script>
 	</logic:equal>
 	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
