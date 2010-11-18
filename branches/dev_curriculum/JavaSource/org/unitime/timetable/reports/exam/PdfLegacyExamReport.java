@@ -550,9 +550,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             }
                             if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipient(s.nextToken(), null);
-                            if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                            if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientCC(s.nextToken(), null);
-                            if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                            if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
                             for (Map.Entry<String, File> entry : files.entrySet()) {
                             	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
@@ -578,9 +578,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                     if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(s.nextToken(), null);
-                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipientCC(s.nextToken(), null);
-                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipientBCC(s.nextToken(), null);
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                     	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
@@ -611,9 +611,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                 "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
                                 " (Univesity Timetabling Application, http://www.unitime.org).");
                         mail.addRecipient(email, null);
-                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientCC(s.nextToken(), null);
-                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
                     	mail.send();
@@ -644,9 +644,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                 "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
                                 " (Univesity Timetabling Application, http://www.unitime.org).");
                         mail.addRecipient(email, null);
-                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientCC(s.nextToken(), null);
-                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
                     	mail.send();
