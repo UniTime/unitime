@@ -572,9 +572,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         }
                         if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                         if (from!=null)
                             mail.setFrom(from);
@@ -610,9 +610,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 body.addBodyPart(text);
                 if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
                     mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                     mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                     mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                 if (from!=null)
                     mail.setFrom(from);
@@ -653,9 +653,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                     body.addBodyPart(text);
                     mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                     if (from!=null) mail.setFrom(from);
                     BodyPart attachement = new MimeBodyPart();
@@ -695,9 +695,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                     body.addBodyPart(text);
                     mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                     if (from!=null) mail.setFrom(from);
                     BodyPart attachement = new MimeBodyPart();
