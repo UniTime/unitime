@@ -20,8 +20,11 @@
 package org.unitime.timetable.test;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -30,6 +33,10 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -51,7 +58,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 
 public class MasarykDefaultPreferences {
     protected static Logger sLog = Logger.getLogger(MasarykDefaultPreferences.class);
-
+    
 	public static void main(String[] args) {
         try {
             Properties props = new Properties();
@@ -101,8 +108,19 @@ public class MasarykDefaultPreferences {
             	*/
             }
             
+            for (Department d: session.getDepartments()) {
+            	d.getDistributionPreferences().clear();
+            	hibSession.saveOrUpdate(d);
+            }
+            
+            Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
+            
+			DistributionType sameDaysType = (DistributionType)hibSession.createQuery(
+			"select d from DistributionType d where d.reference = :type").setString("type", "SAME_DAYS").uniqueResult();
+
+            
             for (SchedulingSubpart ss: (List<SchedulingSubpart>)hibSession.createQuery(
-            		"select s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+            		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
             		"co.subjectArea.department.session.uniqueId = :sessionId")
             		.setLong("sessionId", session.getUniqueId()).list()) {
             	
@@ -110,6 +128,38 @@ public class MasarykDefaultPreferences {
         			ss.getInstrOfferingConfig().setUnlimitedEnrollment(false);
         			ss.getInstrOfferingConfig().setLimit(0);
             		hibSession.saveOrUpdate(ss);
+        		}
+        		
+        		if (ss.getChildSubparts().isEmpty() && ss.getParentSubpart() != null) {
+        			boolean sameDay = false;
+        			classes: for (Class_ c: ss.getClasses()) {
+        				int dayCode = 0;
+        				while (c != null) {
+        					Assignment a = c.getCommittedAssignment();
+        					if (a != null) {
+        						if ((dayCode & a.getDays()) != 0) { sameDay = true; break classes; }
+        						dayCode |= a.getDays();
+        					}
+        					c = c.getParentClass();
+        				}
+        			}
+                	DistributionPref dp = new DistributionPref();
+                	dp.setDistributionType(sameDaysType);
+    				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(sameDay ? PreferenceLevel.sStronglyDiscouraged : PreferenceLevel.sProhibited));
+    				dp.setDistributionObjects(new HashSet<DistributionObject>());
+    				dp.setGrouping(DistributionPref.sGroupingProgressive);
+    				dp.setOwner(ss.getManagingDept());
+    				SchedulingSubpart x = ss;
+    				int index = 1;
+    				while (x != null) {
+        				DistributionObject o = new DistributionObject();
+        				o.setDistributionPref(dp);
+        				o.setPrefGroup(x);
+        				o.setSequenceNumber(index++);
+        				dp.getDistributionObjects().add(o);
+    					x = x.getParentSubpart();
+    				}
+    				hibSession.saveOrUpdate(dp);
         		}
         		
             	for (Class_ c: ss.getClasses()) {
@@ -129,6 +179,18 @@ public class MasarykDefaultPreferences {
             	for (Class_ c: ss.getClasses()) {
             		Assignment a = c.getCommittedAssignment();
             		if (a == null) continue;
+            		
+            		for (Location location: a.getRooms()) {
+            			if (!(location instanceof Room)) continue;
+                		String code = location.getUniqueId() + ":" + a.getDatePattern().getUniqueId() + ":" + a.getTimePattern().getUniqueId() + ":" + a.getDays() + ":" + a.getStartSlot();
+                		Set<Class_> classes = meetWith.get(code);
+                		if (classes == null) {
+                			classes = new HashSet<Class_>();
+                			meetWith.put(code, classes);
+                		}
+                		classes.add(c);
+            		}
+            		
             		// Reset room ratio
             		c.setRoomRatio(1f);
             		// Reset preferences
@@ -166,6 +228,14 @@ public class MasarykDefaultPreferences {
             							for (int dd = 0; dd < m.getNrDays(); dd++)
                     						m.setPreference(dd, tt, PreferenceLevel.sPreferred);
             						m.setPreference(d, t, PreferenceLevel.sStronglyPreferred);
+            						if (d == m.getNrDays() - 1) {
+            							for (int dd = 0; dd < m.getNrDays() - 1; dd++)
+            	            				for (int tt = 0; tt < m.getNrTimes(); tt++)
+            	            					m.setPreference(dd, tt, PreferenceLevel.sProhibited);
+            						} else {
+        	            				for (int tt = 0; tt < m.getNrTimes(); tt++)
+        	            					m.setPreference(m.getNrDays() - 1, tt, PreferenceLevel.sProhibited);
+            						}
             					}
             				}
                 		TimePref tp = new TimePref();
@@ -188,7 +258,6 @@ public class MasarykDefaultPreferences {
             				if (l.getRoomGroups().isEmpty()) {
                 				rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
             				} else if (l.getCapacity() == 0) {
-            					c.setRoomRatio(0f);
                 				rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
             				} else {            					
                 				rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sPreferred));
@@ -202,6 +271,8 @@ public class MasarykDefaultPreferences {
             				c.getPreferences().add(bp);
             				if (l.getCapacity() > 0 && l.getCapacity() < c.getClassLimit()) {
             					c.setRoomRatio(Math.round(100 * l.getCapacity() / c.getClassLimit()) / 100f);
+            				} else {
+            					c.setRoomRatio(0f);
             				}
             			}
             			for (RoomGroup rg: l.getRoomGroups()) {
@@ -242,6 +313,33 @@ public class MasarykDefaultPreferences {
             	}
         		hibSession.flush();
             }
+            hibSession.flush();
+            
+            
+			DistributionType meetWithType = (DistributionType)hibSession.createQuery(
+				"select d from DistributionType d where d.reference = :type").setString("type", "MEET_WITH").uniqueResult();
+
+            for (Set<Class_> classes: meetWith.values()) {
+            	if (classes.size() <= 1) continue;
+            	sLog.info("Adding meet with between: " + classes);
+            	DistributionPref dp = new DistributionPref();
+            	dp.setDistributionType(meetWithType);
+				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+				dp.setDistributionObjects(new HashSet<DistributionObject>());
+				dp.setGrouping(DistributionPref.sGroupingNone);
+				int index = 1;
+            	for (Class_ c: classes) {
+            		if (index == 1)
+            			dp.setOwner(c.getManagingDept());
+    				DistributionObject o = new DistributionObject();
+    				o.setDistributionPref(dp);
+    				o.setPrefGroup(c);
+    				o.setSequenceNumber(index++);
+    				dp.getDistributionObjects().add(o);
+            	}
+				hibSession.saveOrUpdate(dp);
+            }
+            
             hibSession.flush();
             
             sLog.info("All done.");
