@@ -208,6 +208,16 @@
 			</or>
 		</condition>
 	</item>
+	<item name="Timetable" page="timetable" type="gwt">
+		<condition>
+			<and>
+				<not>
+					<isAuthenticated/>
+				</not>
+				<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
+			</and>
+		</condition>
+	</item>
 	<menu name="Events">
 		<condition>
 			<or>

@@ -163,8 +163,10 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			try {
 				Session academicSession = null;
 				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
-				if (userInfo.getUser() == null) throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() + 
-						type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
+				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
+					userInfo.getUser() == null)
+						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
+								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
 
 				if (session != null && !session.isEmpty()) {
 					academicSession = findSession(hibSession, session);
@@ -280,6 +282,9 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case PERSON:
+					if (userInfo.getUser() == null)
+						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
+								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
 					if (!Roles.ADMIN_ROLE.equals(userInfo.getUser().getRole())) {
 						if (name != null && !name.isEmpty() && !name.equals(userInfo.getUser().getId()))
 							throw new EventException("It is not allowed to access a timetable of someone else.");
