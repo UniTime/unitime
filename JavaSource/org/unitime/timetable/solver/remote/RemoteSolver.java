@@ -356,6 +356,10 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			}
             
             properties.setProperty("connection.url", url);
+            
+            if (properties.getProperty("tmtbl.solver.connection.url")!=null) {
+            	properties.setProperty("connection.url", properties.getProperty("tmtbl.solver.connection.url"));
+            }
 
 			HibernateUtil.configureHibernate(properties);
 	        
