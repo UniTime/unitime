@@ -38,6 +38,7 @@ import org.hibernate.Session;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -304,12 +305,14 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		    query.append(" and co.courseNbr ");
 		    if (courseNbr.indexOf('*')>=0) {
 	            query.append(" like '");
-	            courseNbr = courseNbr.replace('*', '%').toUpperCase();
+	            courseNbr = courseNbr.replace('*', '%');
 		    }
 		    else {
 	            query.append(" = '");
 		    }
-            query.append(courseNbr.toUpperCase());
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+            	courseNbr = courseNbr.toUpperCase();
+            query.append(courseNbr);
             query.append("'  ");
         }
 

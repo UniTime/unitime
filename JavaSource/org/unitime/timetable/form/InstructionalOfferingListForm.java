@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Roles;
@@ -202,7 +203,9 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	 *            The courseNbr to set.
 	 */
 	public void setCourseNbr(String courseNbr) {
-		this.courseNbr = courseNbr.toUpperCase();
+        if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+        	courseNbr = courseNbr.toUpperCase();
+		this.courseNbr = courseNbr;
 	}
 
 	/**

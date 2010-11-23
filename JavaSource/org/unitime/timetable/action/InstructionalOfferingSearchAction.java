@@ -454,7 +454,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	    }
 
 	    // Convert to uppercase - e.g. 001d -> 001D
-	    courseNbr = courseNbr.toUpperCase();
+	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+	    	courseNbr = courseNbr.toUpperCase();
 	    instructionalOfferingListForm.setCourseNbr(courseNbr);
 	    
 	    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));
