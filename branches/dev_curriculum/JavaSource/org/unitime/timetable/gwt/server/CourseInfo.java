@@ -34,6 +34,8 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	private String iSubjectArea;
 	private String iCourseNbr;
 	private String iTitle;
+	private String iCourseNameLowerCase;
+	private String iTitleLowerCase;
 	private String iNote;
 	private String iDetails = null;
 	private boolean iHasUniqueName = true;
@@ -48,11 +50,14 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		iNote = course.getScheduleBookNote();
 		if (course.getInstructionalOffering().getConsentType() != null)
 			iConsent = course.getInstructionalOffering().getConsentType().getLabel();
+		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
+		iTitleLowerCase = (iTitle == null ? null : iTitle.toLowerCase());
 	}
 	
 	public CourseInfo(CourseOffering course, String courseNbr)  throws SectioningException {
 		this(course);
 		iCourseNbr = courseNbr;
+		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
 	}
 
 	public Long getUniqueId() { return iUniqueId; }
@@ -76,21 +81,16 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	}
 	
 	public boolean matchCourseName(String queryInLowerCase) {
-		if ((getSubjectArea()+" "+getCourseNbr()).toLowerCase().startsWith(queryInLowerCase)) return true;
-		if ((getSubjectArea()+" "+getCourseNbr()+" "+getTitle()).toLowerCase().startsWith(queryInLowerCase)) return true;
-		if ((getSubjectArea()+" "+getCourseNbr()+" - "+getTitle()).toLowerCase().startsWith(queryInLowerCase)) return true;
-		/*
-		if (queryInLowerCase.indexOf('-') > 0) {
-			String courseName = queryInLowerCase.substring(0, queryInLowerCase.indexOf('-') - 1).trim();
-			if ((getSubjectArea()+" "+getCourseNbr()).toLowerCase().equals(queryInLowerCase)) return true;
-		}
-		*/
+		if (iCourseNameLowerCase.startsWith(queryInLowerCase)) return true;
+		if (iTitleLowerCase == null) return false;
+		if ((iCourseNameLowerCase + " " + iTitleLowerCase).startsWith(queryInLowerCase)) return true;
+		if ((iCourseNameLowerCase + " - " + iTitleLowerCase).toLowerCase().startsWith(queryInLowerCase)) return true;
 		return false;
 	}
 	
 	public boolean matchTitle(String queryInLowerCase) {
-		if (matchCourseName(queryInLowerCase)) return false;
-		if (queryInLowerCase.length()>2 && getTitle()!=null && getTitle().toLowerCase().contains(queryInLowerCase)) return true;
+		if (iTitleLowerCase == null) return false;
+		if (!matchCourseName(queryInLowerCase) && iTitleLowerCase.contains(queryInLowerCase)) return true;
 		return false;
 	}
 
