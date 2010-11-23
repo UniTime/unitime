@@ -116,10 +116,10 @@ public class QueryLog extends BaseQueryLog {
 					nrErrors.toString()},
 					new Comparable[] {
 						(String)o[0],
+						((Number)o[1]).intValue(),
 						over10ms,
 						over100ms,
 						overMinute,
-						((Number)o[1]).intValue(),
 						((Number)o[2]).doubleValue(),
 						((Number)o[3]).doubleValue(),
 						nrErrors});
@@ -263,7 +263,7 @@ public class QueryLog extends BaseQueryLog {
 		double range[] = new double[] { 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000, 100000, 1000000, 10000000};
 		double step[] = new double[] { 1, 1};
 		for (int i = 0; i < max.length; i++) {
-			if (max[i] <= 1.0) { max[i] = 1.0; step[i] = 0.1; break; }
+			if (max[i] <= 1.0) { max[i] = 1.0; step[i] = 0.1; continue; }
 			int x = 0;
 			while (max[i] / range[x] > 16) x++;
 			step[i] = range[x];
