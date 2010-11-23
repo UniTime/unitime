@@ -63,6 +63,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -419,9 +420,16 @@ public class CourseSelectionBox extends Composite implements Validator {
 			
 			iDialog.setWidget(iDialogPanel);
 			
+			final Timer finderTimer = new Timer() {
+				@Override
+				public void run() {
+					updateCourses();
+				}
+			};
+			
 			iFilter.addKeyUpHandler(new KeyUpHandler() {
 				public void onKeyUp(KeyUpEvent event) {
-					updateCourses();
+					finderTimer.schedule(250);
 					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER || event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
 						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 							if (iCourses.getSelectedRow()>=0) {
