@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
+import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -129,11 +130,32 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             iProgress.warn("Student "+student.getId()+" not found.");
             return;
         }
-        for (Iterator i=s.getClassEnrollments().iterator();i.hasNext();) {
+        Iterator i = null;
+        try {
+        	i = s.getClassEnrollments().iterator();
+        } catch (LazyInitializationException e) {
+        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
+        	if (s == null) {
+                iProgress.warn("Student "+student.getId()+" not found.");
+                return;
+        	}
+        	i = s.getClassEnrollments().iterator();
+        }
+        while (i.hasNext()) {
             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
             hibSession.delete(sce); i.remove();
         }
-        for (Iterator i=s.getWaitlists().iterator();i.hasNext();) {
+        try {
+        	i = s.getWaitlists().iterator();
+        } catch (LazyInitializationException e) {
+        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
+        	if (s == null) {
+                iProgress.warn("Student "+student.getId()+" not found.");
+                return;
+        	}
+        	i = s.getWaitlists().iterator();
+        }
+        while (i.hasNext()) {
             WaitList wl = (WaitList)i.next();
             hibSession.delete(wl); i.remove();
         }
@@ -154,8 +176,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                 } else {
                     org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
                     if (cr==null) continue;
-                    for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
-                        Section section = (Section)i.next();
+                    for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
+                        Section section = (Section)j.next();
                         StudentClassEnrollment sce = new StudentClassEnrollment();
                         sce.setStudent(s);
                         sce.setClazz(iClasses.get(section.getId()));
