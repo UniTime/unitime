@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -99,6 +101,8 @@ public class SectioningServer {
 	
 	private CourseLoader iLoader = null;
 	private SectioningServerUpdater iUpdater = null;
+	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
+	private static ReentrantReadWriteLock sGlobalLock = new ReentrantReadWriteLock();
 	
 	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
 	
@@ -194,7 +198,8 @@ public class SectioningServer {
 	public AcademicSessionInfo getAcademicSession() { return iAcademicSession; }
 
 	public CourseInfo getCourseInfo(String course) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			if (course.indexOf('-') >= 0) {
 				String courseName = course.substring(0, course.indexOf('-')).trim();
 				String title = course.substring(course.indexOf('-') + 1).trim();
@@ -208,24 +213,33 @@ public class SectioningServer {
 				if (infos!= null && !infos.isEmpty()) return infos.first();
 				return null;
 			}
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 
 	public CourseInfo getCourseInfo(Long courseId) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			return iCourseForId.get(courseId);
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
 	public Student getStudent(Long studentId) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			return iStudentTable.get(studentId);
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void reloadStudent(org.unitime.timetable.model.Student s) {
-		synchronized (iCourseTable) {
+		iLock.writeLock().lock();
+		try {
 			Student student = iStudentTable.get(s.getUniqueId());
 			if (student != null) {
 				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
@@ -237,12 +251,17 @@ public class SectioningServer {
 			student = iLoader.loadStudent(s);
 			iModel.addStudent(student);
 			iLoader.assignStudent(student, s, false);
+		} finally {
+			iLock.writeLock().unlock();
 		}
 	}
 
 	public Course getCourse(Long courseId) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			return iCourseTable.get(courseId);
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 
@@ -251,42 +270,56 @@ public class SectioningServer {
 	}
 
 	public Collection<CourseInfo> findCourses(String query, Integer limit) {
-		synchronized (iCourseTable) {
-			List<CourseInfo> ret = new ArrayList<CourseInfo>();
+		iLock.readLock().lock();
+		try {
+			List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
 			String queryInLowerCase = query.toLowerCase();
 			for (CourseInfo c : iCourses) {
 				if (c.matchCourseName(queryInLowerCase)) ret.add(c);
 				if (limit != null && ret.size() == limit) return ret;
 			}
-			for (CourseInfo c : iCourses) {
-				if (c.matchTitle(queryInLowerCase)) ret.add(c);
-				if (limit != null && ret.size() == limit) return ret;
+			if (queryInLowerCase.length() > 2) {
+				for (CourseInfo c : iCourses) {
+					if (c.matchTitle(queryInLowerCase)) ret.add(c);
+					if (limit != null && ret.size() == limit) return ret;
+				}
 			}
 			return ret;
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
 	public static void createInstance(Long academicSessionId) {
-		synchronized (sInstances) {
+		sGlobalLock.writeLock().lock();
+		try {
 			SectioningServer s = new SectioningServer(academicSessionId);
 			sInstances.put(academicSessionId, s);
 			if (SectioningServer.sCustomSectionNames != null)
 				SectioningServer.sCustomSectionNames.update(s.getAcademicSession());
+		} finally {
+			sGlobalLock.writeLock().unlock();
 		}
 	}
 	
 	public static SectioningServer getInstance(final Long academicSessionId) throws SectioningException {
-		synchronized (sInstances) {
+		sGlobalLock.readLock().lock();
+		try {
 			return sInstances.get(academicSessionId);
+		} finally {
+			sGlobalLock.readLock().unlock();
 		}
 	}
 	
 	public static TreeSet<AcademicSessionInfo> getAcademicSessions() {
-		synchronized (sInstances) {
+		sGlobalLock.readLock().lock();
+		try {
 			TreeSet<AcademicSessionInfo> ret = new TreeSet<AcademicSessionInfo>();
 			for (SectioningServer s : sInstances.values())
 				ret.add(s.getAcademicSession());
 			return ret;
+		} finally {
+			sGlobalLock.readLock().unlock();
 		}
 	}
 	
@@ -389,7 +422,8 @@ public class SectioningServer {
 	}
 	
 	private void addRequest(StudentSectioningModel model, Student student, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			if (request.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime freeTime: request.getRequestedFreeTime()) {
 					int dayCode = 0;
@@ -399,8 +433,7 @@ public class SectioningServer {
 					}
 					TimeLocation freeTimeLoc = new TimeLocation(dayCode, freeTime.getStart(), freeTime.getLength(), 0, 0, 
 							-1l, "", iAcademicSession.getFreeTimePattern(), 0);
-					FreeTimeRequest r = new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
-					sLog.info(r);
+					new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
 				}
 			} else if (request.hasRequestedCourse()) {
 				CourseInfo courseInfo = getCourseInfo(request.getRequestedCourse());
@@ -423,10 +456,11 @@ public class SectioningServer {
 							if (x != null) cr.add(clone(x, student.getId(), updateFromCache));
 						}
 					}
-					CourseRequest r = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false);
-					sLog.info(r);
+					new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false);
 				}
 			}
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
@@ -453,7 +487,8 @@ public class SectioningServer {
 	
 	@SuppressWarnings("unchecked")
 	public Set<Long> getSavedClasses(Long studentId) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			if (studentId == null) return null;
 			Student student = (Student)iStudentTable.get(studentId);
 			if (student == null) return null;
@@ -465,6 +500,8 @@ public class SectioningServer {
 					ret.add(i.next().getId());
 			}
 			return ret;
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
@@ -812,7 +849,8 @@ public class SectioningServer {
 	
 	@SuppressWarnings("unchecked")
 	public List<Section> getSections(CourseInfo courseInfo) throws SectioningException {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			ArrayList<Section> sections = new ArrayList<Section>();
 			Course course = iCourseTable.get(courseInfo.getUniqueId());
 			if (course == null) return sections;
@@ -827,12 +865,15 @@ public class SectioningServer {
 				}
 			}
 			return sections;
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Section> getSections(String courseName) throws SectioningException {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			ArrayList<Section> sections = new ArrayList<Section>();
 			Course course = iCourseTable.get(courseName);
 			if (course == null) return sections;
@@ -847,6 +888,8 @@ public class SectioningServer {
 				}
 			}
 			return sections;
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
@@ -964,15 +1007,19 @@ public class SectioningServer {
 	}
 	
 	public Section getSection(Long classId) {
-		synchronized (iCourseTable) {
+		iLock.readLock().lock();
+		try {
 			return iClassTable.get(classId);
+		} finally {
+			iLock.readLock().unlock();
 		}
 	}
 	
 	protected void studentChanged(Collection<Long> studentIds) {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
 		sLog.info(studentIds.size() + " student schedules changed.");
-		synchronized (iCourseTable) {
+		iLock.writeLock().lock();
+		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				for (Long studentId: studentIds) {
@@ -998,12 +1045,15 @@ public class SectioningServer {
 			} finally {
 				hibSession.close();
 			}
+		} finally {
+			iLock.writeLock().unlock();
 		}
 	}
 	
 	protected void classChanged(Collection<Long> classIds) {
 		sLog.info(classIds.size() + " class assignments changed.");
-		synchronized (iCourseTable) {
+		iLock.writeLock().lock();
+		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				for (Long classId: classIds) {
@@ -1073,12 +1123,15 @@ public class SectioningServer {
 			} finally {
 				hibSession.close();
 			}
+		} finally {
+			iLock.writeLock().unlock();
 		}
 	}
 	
 	protected void allStudentsChanged() {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return;
-		synchronized (iCourseTable) {
+		iLock.writeLock().lock();
+		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				for (Student student: iStudentTable.values()) {
@@ -1105,21 +1158,33 @@ public class SectioningServer {
 			} finally {
 				hibSession.close();
 			}
+		} finally {
+			iLock.writeLock().unlock();
 		}
 	}
 	
 	public void unload() {
-		synchronized (sInstances) {
+		sGlobalLock.writeLock().lock();
+		try {
 			iUpdater.stopUpdating();
 			sInstances.remove(getAcademicSessionId());
+		} finally {
+			sGlobalLock.writeLock().unlock();
 		}
 	}
 	
 	public static void unloadAll() {
-		synchronized (sInstances) {
+		sGlobalLock.writeLock().lock();
+		try {
 			for (SectioningServer s: sInstances.values())
 				s.iUpdater.stopUpdating();
 			sInstances.clear();
+		} finally {
+			sGlobalLock.writeLock().unlock();
 		}
+	}
+	
+	public ReadWriteLock getLock() {
+		return iLock;
 	}
 }

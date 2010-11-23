@@ -1129,7 +1129,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return false;
 	}
 	
-	public synchronized ArrayList<Long> enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
+	public ArrayList<Long> enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
 		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 		if (principal == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AUTHENTICATED);
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
@@ -1137,47 +1137,52 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (studentId == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true")))
 			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
-		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
+		server.getLock().writeLock().lock();
 		try {
-			Student student = StudentDAO.getInstance().get(studentId, hibSession);
-			if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-			Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
-			for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
-				if (ca.isFreeTime() || ca.getClassId() == null) continue;
-				Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), hibSession);
-				if (!isAvailable(hibSession, student, clazz, server.getSection(ca.getClassId())))
-					throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
-				classes.put(clazz.getUniqueId(), clazz);
-			}
-			Hashtable<Long, CourseRequest> req = saveRequest(hibSession, student, request, false);
-			Date ts = new Date();
-			for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
-				if (ca.isFreeTime() || ca.getClassId() == null) continue;
-				Class_ clazz = classes.get(ca.getClassId());
-				CourseRequest cr = req.get(ca.getCourseId());
-				if (clazz == null || cr == null) continue;
-				StudentClassEnrollment enrl = new StudentClassEnrollment();
-				enrl.setClazz(clazz);
-				clazz.getStudentEnrollments().add(enrl);
-				enrl.setCourseOffering(cr.getCourseOffering());
-				enrl.setCourseRequest(cr);
-				enrl.setTimestamp(ts);
-				enrl.setStudent(student);
-				student.getClassEnrollments().add(enrl);
-			}
-			hibSession.save(student);
-			hibSession.flush();
-			hibSession.refresh(student);
-			server.reloadStudent(student);
-			ArrayList<Long> ret = new ArrayList<Long>();
-			ret.addAll(server.getSavedClasses(student.getUniqueId()));
-			return ret;
-		} catch (Exception e) {
-			if (e instanceof SectioningException) throw (SectioningException)e;
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
+			try {
+				Student student = StudentDAO.getInstance().get(studentId, hibSession);
+				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
+				for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
+					if (ca.isFreeTime() || ca.getClassId() == null) continue;
+					Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), hibSession);
+					if (!isAvailable(hibSession, student, clazz, server.getSection(ca.getClassId())))
+						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
+					classes.put(clazz.getUniqueId(), clazz);
+				}
+				Hashtable<Long, CourseRequest> req = saveRequest(hibSession, student, request, false);
+				Date ts = new Date();
+				for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
+					if (ca.isFreeTime() || ca.getClassId() == null) continue;
+					Class_ clazz = classes.get(ca.getClassId());
+					CourseRequest cr = req.get(ca.getCourseId());
+					if (clazz == null || cr == null) continue;
+					StudentClassEnrollment enrl = new StudentClassEnrollment();
+					enrl.setClazz(clazz);
+					clazz.getStudentEnrollments().add(enrl);
+					enrl.setCourseOffering(cr.getCourseOffering());
+					enrl.setCourseRequest(cr);
+					enrl.setTimestamp(ts);
+					enrl.setStudent(student);
+					student.getClassEnrollments().add(enrl);
+				}
+				hibSession.save(student);
+				hibSession.flush();
+				hibSession.refresh(student);
+				server.reloadStudent(student);
+				ArrayList<Long> ret = new ArrayList<Long>();
+				ret.addAll(server.getSavedClasses(student.getUniqueId()));
+				return ret;
+			} catch (Exception e) {
+				if (e instanceof SectioningException) throw (SectioningException)e;
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			} finally {
+				hibSession.close();
+			}			
 		} finally {
-			hibSession.close();
+			server.getLock().writeLock().unlock();
 		}
 	}
 
