@@ -283,7 +283,9 @@ public class CourseOfferingEditForm extends ActionForm {
 	}
 
 	public void setCourseNbr(String courseNbr) {
-		this.courseNbr = courseNbr.toUpperCase();
+        if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+        	courseNbr = courseNbr.toUpperCase();
+		this.courseNbr = courseNbr;
 	}
 
 	public Boolean getIsControl() {

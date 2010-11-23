@@ -49,6 +49,7 @@ import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
 import org.unitime.timetable.model.Assignment;
@@ -348,13 +349,14 @@ public class ClassSearchAction extends LookupDispatchAction {
 	            query.append(" and co2.courseNbr ");
 			    if (courseNbr.indexOf('*')>=0) {
 		            query.append(" like '");
-		            courseNbr = courseNbr.replace('*', '%').toUpperCase();
+		            courseNbr = courseNbr.replace('*', '%');
 			    }
 			    else {
 		            query.append(" = '");
 			    }
-	            
-	            query.append(courseNbr.toUpperCase());
+	            if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+	            	courseNbr = courseNbr.toUpperCase();
+	            query.append(courseNbr);
 	            query.append("'  ");
 	        }
 	        query.append(" and co2.isControl = true ) ");
