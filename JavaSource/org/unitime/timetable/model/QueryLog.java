@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -140,6 +141,25 @@ public class QueryLog extends BaseQueryLog {
 		USERS, TIME
 	}
 	
+	private static String sExtendedEncoding = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.";
+	private static int sExtendedEncodingMax = sExtendedEncoding.length() * sExtendedEncoding.length();
+	
+	private static String encode(List<Double> data, double max) {
+		StringBuffer ret = new StringBuffer();
+		for (Double val: data) {
+			int scaled = (int)Math.floor(sExtendedEncodingMax * val / max);
+			if (scaled >= sExtendedEncodingMax) {
+				ret.append("..");
+			} else if (scaled < 0) {
+				ret.append("__");
+			} else {
+				ret.append(sExtendedEncoding.charAt(scaled / sExtendedEncoding.length()));
+				ret.append(sExtendedEncoding.charAt(scaled % sExtendedEncoding.length()));
+			}
+		}
+		return ret.toString();
+	}
+	
 	public static String getChart(ChartWindow w, ChartType t) {
 		Date ts = new Date();
 		Calendar from = Calendar.getInstance(Locale.US);
@@ -152,7 +172,7 @@ public class QueryLog extends BaseQueryLog {
 			from.add(Calendar.DAY_OF_YEAR, - 7);
 			break;
 		case FIFTEEN_MINUTES:
-			from.add(Calendar.HOUR, - 24);
+			from.add(Calendar.DAY_OF_YEAR, - 1);
 			break;
 		}
 		Calendar to = Calendar.getInstance(Locale.US);
@@ -162,35 +182,32 @@ public class QueryLog extends BaseQueryLog {
 			to.add(Calendar.DAY_OF_YEAR, + 7);
 			break;
 		case THREE_HOUR:
-			to.add(Calendar.HOUR, + 3);
+			to.add(Calendar.HOUR_OF_DAY, + 3);
 			break;
 		case FIFTEEN_MINUTES:
 			to.add(Calendar.MINUTE, + 15);
 			break;
 		}
-		String data[] = new String[] {"", "", "", "", ""};
-		DecimalFormat df = new DecimalFormat("0.0");
+		String axe = "";
+		List<Double>[] data = new List[] { new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>()}; 
 		double max[] = new double[] { 0, 0};
+		int index = 0;
 		while (to.getTime().compareTo(ts) <= 0) {
-			if (!data[1].isEmpty()) {
-				data[0] += "|";
-				for (int i = 1; i < data.length; i++)
-					data[i] += ",";
+			if (index > 0) {
+				axe += "|";
 			}
 			switch (w) {
 			case SEVEN_DAYS:
 				if (from.get(Calendar.DAY_OF_MONTH) == 1)
-					data[0] += new SimpleDateFormat("MMM/dd").format(from.getTime());
+					axe += new SimpleDateFormat("MMM/dd").format(from.getTime());
 				break;
 			case THREE_HOUR:
 				if (from.get(Calendar.HOUR_OF_DAY) < 3)
-					data[0] += new SimpleDateFormat("MM/dd").format(from.getTime()).toLowerCase();
-				//else if (from.get(Calendar.HOUR_OF_DAY) == 7 || from.get(Calendar.HOUR_OF_DAY) == 12 || from.get(Calendar.HOUR_OF_DAY) == 17)
-				//	data[0] += new SimpleDateFormat("H").format(from.getTime()).toLowerCase();
+					axe += new SimpleDateFormat("MM/dd").format(from.getTime()).toLowerCase();
 				break;
 			case FIFTEEN_MINUTES:
 				if (from.get(Calendar.MINUTE) < 15)
-					data[0] += new SimpleDateFormat("H").format(from.getTime()).toLowerCase();
+					axe += new SimpleDateFormat("H").format(from.getTime()).toLowerCase();
 				break;
 			}
 			switch (t) {
@@ -201,11 +218,11 @@ public class QueryLog extends BaseQueryLog {
 				 double gwtCallsPerMinute = ((Number)QueryLogDAO.getInstance().getSession().createQuery(
 					"select count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and type = :type")
 					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult()).doubleValue();
-				 int distinctUsers = ((Number)o[0]).intValue();
-				 data[1] += distinctUsers;
-				 int distinctSessions = ((Number)o[1]).intValue();
-				 data[2] += distinctSessions;
-				 max[0] = Math.max(max[0], distinctSessions);
+				 double distinctUsers = ((Number)o[0]).doubleValue();
+				 data[0].add(distinctUsers);
+				 double distinctSessions = ((Number)o[1]).doubleValue();
+				 data[1].add(distinctSessions);
+				 max[0] = Math.max(max[0], Math.max(distinctUsers, distinctSessions));
 				 double callsPerMinute = ((Number)o[2]).doubleValue();
 				 switch (w) {
 				 case SEVEN_DAYS:
@@ -221,10 +238,9 @@ public class QueryLog extends BaseQueryLog {
 					 gwtCallsPerMinute /= 15;
 					break;
 				 }
-				 data[3] += df.format(callsPerMinute);
-				 max[1] = Math.max(max[1], callsPerMinute);
-				 data[4] += df.format(gwtCallsPerMinute);
-				 max[1] = Math.max(max[1], gwtCallsPerMinute);
+				 data[2].add(callsPerMinute);
+				 data[3].add(gwtCallsPerMinute);
+				 max[1] = Math.max(max[1], Math.max(callsPerMinute, gwtCallsPerMinute));
 				 break;
 			case TIME:
 				o = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
@@ -233,18 +249,16 @@ public class QueryLog extends BaseQueryLog {
 				Object[] p = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
 				"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and type = :type")
 				.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult();
-				int avgTime = (o[0] == null ? 0 : ((Number)o[0]).intValue());
-				data[1] += avgTime;
-				max[0] = Math.max(max[0], avgTime);
-				double maxTime = (o[1] == null ? 0 : ((Number)o[1]).intValue()) / 1000.0;
-				data[2] += maxTime;
-				max[1] = Math.max(max[1], maxTime);
-				int gwtAvgTime = (p[0] == null ? 0 : ((Number)p[0]).intValue());
-				data[3] += gwtAvgTime;
-				max[0] = Math.max(max[0], gwtAvgTime);
-				double gwtMaxTime = (p[1] == null ? 0 : ((Number)p[1]).intValue()) / 1000.0;
-				data[4] += gwtMaxTime;
-				max[1] = Math.max(max[1], gwtMaxTime);
+				double avgTime = (o[0] == null ? 0 : ((Number)o[0]).doubleValue());
+				double maxTime = (o[1] == null ? 0 : ((Number)o[1]).doubleValue()) / 1000.0;
+				double gwtAvgTime = (p[0] == null ? 0 : ((Number)p[0]).doubleValue());
+				double gwtMaxTime = (p[1] == null ? 0 : ((Number)p[1]).doubleValue()) / 1000.0;
+				data[0].add(avgTime);
+				data[1].add(maxTime);
+				data[2].add(gwtAvgTime);
+				data[3].add(gwtMaxTime);
+				max[0] = Math.max(max[0], Math.max(avgTime, gwtAvgTime));
+				max[1] = Math.max(max[1], Math.max(maxTime, gwtMaxTime));
 				break;			
 			}
 			switch (w) {
@@ -253,13 +267,15 @@ public class QueryLog extends BaseQueryLog {
 				to.add(Calendar.DAY_OF_YEAR, + 1);
 				break;
 			case THREE_HOUR:
-				from.add(Calendar.HOUR, +3);
-				to.add(Calendar.HOUR, + 3);
+				from.add(Calendar.HOUR_OF_DAY, +3);
+				to.add(Calendar.HOUR_OF_DAY, + 3);
 			case FIFTEEN_MINUTES:
 				from.add(Calendar.MINUTE, +15);
 				to.add(Calendar.MINUTE, + 15);
-			}				
+			}
+			index++;
 		}
+		DecimalFormat df = new DecimalFormat("0.0");
 		double range[] = new double[] { 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000, 100000, 1000000, 10000000};
 		double step[] = new double[] { 1, 1};
 		for (int i = 0; i < max.length; i++) {
@@ -271,16 +287,16 @@ public class QueryLog extends BaseQueryLog {
 		switch (t) {
 		case USERS:
 			return "http://chart.apis.google.com/chart?" + 
-				"cht=lc&chd=t:" + data[1] + "|" + data[2] + "|" + data[3] + "|" + data[4] +
-				"&chs=400x300&chl=" + data[0] + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
+				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[1], max[0]) + "," + encode(data[2], max[1]) + "," + encode(data[3], max[1]) +
+				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
 				"&chdl=Distinct+Users|Distinct+HTTP+Sessions|Pages+per+Minute|GWT+Calls+per+Minute&chco=0000FF,00FF00,FF0000,FFA500" +
 				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
 				"&chxl=4:||e|t|u|n|i|M|+|r|e|p|+|s|l|l|a|C||2:|s|n|o|i|s|s|e|s|+|s|r|e|s|u|+|f|o|+|r|b|N" +
 				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
 		case TIME:
-			return "http://chart.apis.google.com/chart?" + 
-				"cht=lc&chd=t:" + data[1] + "|" + data[2] + "|" + data[3] + "|" + data[4] + 
-				"&chs=400x300&chl=" + data[0] + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
+			return "http://chart.apis.google.com/chart?" +
+				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[1], max[1]) + "," + encode(data[2], max[0]) + "," + encode(data[3], max[1]) +
+				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
 				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) +
 				"&chdl=Average+Time+[ms]|Max+Time+[s]|GWT+Average+Time+[ms]|GWT+Max+Time+[s]&chco=0000FF,FF0000,00FF00,FFA500" + 
 				"&chxl=2:||e|m|i|T|+|e|g|a|r|e|v|A||4:||e|m|i|T|+|x|a|M|" +
