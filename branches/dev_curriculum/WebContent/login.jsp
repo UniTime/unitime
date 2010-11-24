@@ -18,6 +18,8 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@page import="net.sf.cpsolver.ifs.util.JProf"%>
+<%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -112,20 +114,19 @@
 		
 		<%@ include file="/initializationError.jspf"%>
 		
-		<BR>
-		&nbsp;
-		<BR>
-		&nbsp;
-
-	<tt:hasProperty name="tmtbl.page.disclaimer">
-		<table align="center" class="unitime-Footer">
-			<tr>
-    			<td colspan="3" align="center" style="color:#777777;">
-    				<tt:property name="tmtbl.page.disclaimer"/>
-    			</td>
+    	<table class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
+    		<tr>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td align="center" nowrap="nowrap"><span id="UniTimeGWT:Version"></span><tt:copy/></td>
     		</tr>
+			<tt:hasProperty name="tmtbl.page.disclaimer">
+				<tr>
+    				<td align="center" style="color:#777777;">
+    					<tt:property name="tmtbl.page.disclaimer"/>
+    				</td>
+    			</tr>
+    		</tt:hasProperty>
     	</table>
-    </tt:hasProperty>
 		
 
 		<% if (ApplicationProperties.getProperty("tmtbl.footer.external", "").trim().length()>0) { %>

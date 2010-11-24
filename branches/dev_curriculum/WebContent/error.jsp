@@ -17,6 +17,7 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.commons.web.Web"%>
@@ -47,6 +48,7 @@
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
+    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 </HEAD>
 <BODY class="bodyMain">
@@ -115,10 +117,11 @@
     </td></tr><tr><td>
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%" align="left"></td>
-    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2010 UniTime.org</a></td>
-    			<td width="33%" align="right"></td>
-    			</tr>
+    			<td width="33%" align="left" valign="top"><span id="UniTimeGWT:Version"></span></td>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
+    		</tr>
     	</table>
 	</td></tr></table>
   </body>

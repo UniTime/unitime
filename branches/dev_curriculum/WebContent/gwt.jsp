@@ -81,9 +81,10 @@
     </td></tr><tr><td valign="top">
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
-    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2010 UniTime LLC</a></td>
-    			<td width="33%" align="right" nowrap="nowrap"><tt:registration/></td>
+    			<td width="33%" align="left" nowrap="nowrap" valign="top"><span id="UniTimeGWT:Version"></span></td>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
