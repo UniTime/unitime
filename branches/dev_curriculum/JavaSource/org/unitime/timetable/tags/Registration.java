@@ -43,6 +43,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.QueryLog;
@@ -154,7 +155,8 @@ public class Registration extends BodyTagSupport {
 		if (sLastRefresh < 0) init();
 		switch (iMethod) {
 		case hasMessage:
-			if (!Web.getUser(pageContext.getSession()).isAdmin())
+			User user = Web.getUser(pageContext.getSession());
+			if (user == null || !user.isAdmin())
 				return SKIP_BODY;
 			try {
 				refresh();
@@ -173,7 +175,8 @@ public class Registration extends BodyTagSupport {
 			return EVAL_PAGE;
 		case message:
 			try {
-				if (Registration.sNote != null && Web.getUser(pageContext.getSession()).isAdmin())
+				User user = Web.getUser(pageContext.getSession());
+				if (Registration.sNote != null && user != null && user.isAdmin())
 					pageContext.getOut().println(Registration.sNote);
 			} catch (Exception e) {}
 			return EVAL_PAGE;
@@ -181,7 +184,8 @@ public class Registration extends BodyTagSupport {
 			try {
 				if (sMessage != null) {
 					pageContext.getOut().println(sMessage);
-					if (isUpdate() && Web.getUser(pageContext.getSession()).isAdmin()) {
+					User user = Web.getUser(pageContext.getSession());
+					if (isUpdate() && user != null && user.isAdmin()) {
 						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
 						pageContext.getOut().println(
 								"<br><span style=\"font-size: x-small;\">Click <a "+
