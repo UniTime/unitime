@@ -83,7 +83,7 @@
 	</tt:hasProperty>
 
 <div id="contentMain">
-	<table align="center" >
+	<table align="center">
     <tr>
     <td valign="top" rowspan="2">
     	<logic:equal name="showMenu" value="true">
@@ -108,8 +108,8 @@
 	    			<span id='UniTimeGWT:Header'></span>
 	    		</td></tr>
 	    	</table>
-	    </td></tr><tr><td style="min-width: 800px">
-<TABLE width="800" height="600" align="center">
+	    </td></tr><tr><td>
+<TABLE width="800px" height="600px" align="center">
 	<TR>
 	<% 
 	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
@@ -161,8 +161,14 @@
     	<table class="unitime-Footer" style="max-width: 800px;" cellpadding="0" cellspacing="0">
     		<tr>
     			<td width="33%" align="left" valign="top" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
-    			<td width="34%" align="center" valign="top" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
-    			<td width="33%" align="right" nowrap="nowrap"><tt:registration update="true"/></td>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration update="true"/></td>
+    		</tr>
+    		<tr>
+    			<td colspan='3' align='center'>
+    				
+    			</td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>

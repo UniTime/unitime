@@ -20,7 +20,7 @@
 <%@page import="org.unitime.timetable.InitServlet"%>
 <%@page import="org.unitime.timetable.util.Constants"%>
 <% if (InitServlet.getInitializationException() != null) { %>
-	<table align="center" class="unitime-Footer">
+	<table align="center" class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
 		<tr>
 			<td align="center" style="color:red;">
 				UniTime <%=(Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?")%> failed to start up properly, please check the application log for more details.<br/>

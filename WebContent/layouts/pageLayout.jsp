@@ -179,9 +179,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     </td></tr><tr><td valign="top">
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
-    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime LLC</a></td>
-    			<td width="33%" align="right" nowrap="nowrap">
+    			<td width="33%" align="left" nowrap="nowrap" valign="top"><span id="UniTimeGWT:Version"></span>
     				<logic:notEmpty scope="request" name="TimeStamp">
 <% 
 		double endTime = JProf.currentTimeSec();
@@ -193,14 +191,10 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 					Page generated in <%=nf.format(diff)%> sec.
 					</logic:notEmpty>
     			</td>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
     		</tr>
-    		<tt:notHasProperty name="tmtbl.page.disclaimer">
-    			<tr>
-    				<td colspan="3" class="unitime-Disclaimer">
-    					<tt:registration/>
-    				</td>
-	    		</tr>
-    		</tt:notHasProperty>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
     				<td colspan="3" class="unitime-Disclaimer">
