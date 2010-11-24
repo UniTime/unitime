@@ -35,6 +35,9 @@
 				<line>Class Assignment: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
 					<line>This should fix the ObjectNotFoundException on the Class Assignment page</line>
 				</line>
+				<line>Student sectioning: check for LazyInitializationException during save</line>
+				<line>Remote solver server: added ability to override database connection string by the tmtbl.solver.connection.url property</line>
+				<line>Examination verification report: limit the length of the scheduling note to fit within one line</line>
 			</description>
 		</item>
 	</category>
