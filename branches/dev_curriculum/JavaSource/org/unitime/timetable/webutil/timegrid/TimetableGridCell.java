@@ -20,10 +20,17 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.DateUtils;
 
 
 /**
@@ -160,13 +167,91 @@ public class TimetableGridCell implements Serializable, Comparable {
     }
     
     public boolean hasDays() {
-    	return iWeekCode!=null;
+    	return iWeekCode != null && iDatePatternName != null;
     }
     
-    public String getDays() {
-    	return iDatePatternName;
-    }
+    public String getDays() { return iDatePatternName; }
+    public void setDays(String days) { iDatePatternName = days; }
     
     public int getDay() { return iDay; }
     public int getSlot() { return iSlot; }
+    
+    public static String formatDatePattern(DatePattern dp, int dayCode) {
+    	if (dp == null || dp.isDefault()) return null;
+    	// if (dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	BitSet weekCode = dp.getPatternBitSet();
+    	if (weekCode.isEmpty()) return dp.getName();
+    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+    	Date dpFirstDate = DateUtils.getDate(1, dp.getSession().getPatternStartMonth(), dp.getSession().getSessionStartYear());
+    	cal.setTime(dpFirstDate);
+    	int idx = weekCode.nextSetBit(0);
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date first = null;
+    	while (idx < weekCode.size() && first == null) {
+    		if (weekCode.get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((dayCode & DayCode.MON.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((dayCode & DayCode.TUE.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((dayCode & DayCode.WED.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((dayCode & DayCode.THU.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((dayCode & DayCode.FRI.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((dayCode & DayCode.SAT.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((dayCode & DayCode.SUN.getCode()) != 0) first = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
+    	}
+    	if (first == null) return dp.getName();
+    	cal.setTime(dpFirstDate);
+    	idx = weekCode.length() - 1;
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date last = null;
+    	while (idx >= 0 && last == null) {
+    		if (weekCode.get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((dayCode & DayCode.MON.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((dayCode & DayCode.TUE.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((dayCode & DayCode.WED.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((dayCode & DayCode.THU.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((dayCode & DayCode.FRI.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((dayCode & DayCode.SAT.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((dayCode & DayCode.SUN.getCode()) != 0) last = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
+    	}
+    	if (last == null) return dp.getName();
+        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+    	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    }
 }

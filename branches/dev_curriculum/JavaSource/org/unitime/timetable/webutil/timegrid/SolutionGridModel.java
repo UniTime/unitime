@@ -317,8 +317,10 @@ public class SolutionGridModel extends TimetableGridModel {
 			
 			if (cell==null)
 				cell = createCell(j,start,hibSession, assignment, bgMode);
-			else
+			else {
 				cell = cell.copyCell(j,cell.getMeetingNumber()+1);
+				cell.setDays(TimetableGridCell.formatDatePattern(assignment.getDatePattern(), Constants.DAY_CODES[j]));
+			}
 			addCell(j,start,cell);
 		}
 	}
@@ -489,7 +491,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				length, 
 				0, 
 				nrMeetings,
-				assignment.getDatePattern().getName(),
+				TimetableGridCell.formatDatePattern(assignment.getDatePattern(), Constants.DAY_CODES[day]),
 				assignment.getDatePattern().getPatternBitSet(),
 				instructors);
 	}
