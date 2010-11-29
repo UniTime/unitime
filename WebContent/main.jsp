@@ -37,32 +37,6 @@
 </head>
 <BODY class="unitime-Body">
 
-  <!--[if IE]>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
-    
-    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
-      <tr><td class="reqMsg" width='5'>&nbsp;</td>
-      	  <td class="reqMsg">
-      	  	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
-      </tr>
-    </table>
-    
-    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
-    
-    <script>
-     function ie_no_chrome() {
-       document.getElementById('__ie_no_chrome').style.display = 'block';
-     }
-     window.attachEvent("onload", function() {
-       CFInstall.check({
-         mode: "inline",
-         node: "__ie_chrome_plugin",
-         onmissing: ie_no_chrome
-       });
-     });
-    </script>
-  <![endif]-->
-
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
@@ -81,9 +55,35 @@
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
+	
+	<!--[if IE]>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+    
+    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
+      <tr><td class="reqMsg" width='5'>&nbsp;</td>
+      	  <td class="reqMsg">
+      	  	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
+      </tr>
+    </table>
+    
+    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
+    
+    <script>
+     function ie_no_chrome() {
+       document.getElementById('__ie_no_chrome').style.display = 'table';
+     }
+     window.attachEvent("onload", function() {
+       CFInstall.check({
+         mode: "inline",
+         node: "__ie_chrome_plugin",
+         onmissing: ie_no_chrome
+       });
+     });
+    </script>
+  	<![endif]-->
 
 <div id="contentMain">
-	<table align="center">
+	<table align="center" width="900px">
     <tr>
     <td valign="top" rowspan="2">
     	<logic:equal name="showMenu" value="true">
@@ -109,7 +109,7 @@
 	    		</td></tr>
 	    	</table>
 	    </td></tr><tr><td>
-<TABLE width="800px" height="600px" align="center">
+<TABLE width="100%" height="600px" align="center" >
 	<TR>
 	<% 
 	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
@@ -158,17 +158,12 @@
 </TABLE>
 	    </td></tr></table>
     </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer" style="max-width: 800px;" cellpadding="0" cellspacing="0">
+    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
     		<tr>
     			<td width="33%" align="left" valign="top" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
-    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration update="true"/></td>
-    		</tr>
-    		<tr>
-    			<td colspan='3' align='center'>
-    				
-    			</td>
+    			<td width="34%" align="center" valign="top"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top"><tt:registration update="true"/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
