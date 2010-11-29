@@ -55,6 +55,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.hibernate.util.PrettyFormatter;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -110,6 +111,7 @@ public class HibernateQueryTestAction extends Action {
         
         if(errors.size()==0) {
             try {
+            	int limit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.test_hql.max_line", "100"));
 		        String query = frm.getQuery();	        
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();	        
@@ -119,7 +121,7 @@ public class HibernateQueryTestAction extends Action {
 	                StringBuffer s = new StringBuffer();
 	                int line = 0;
 	                for (Iterator i=l.iterator();i.hasNext();line++) {
-	                    if (line>=100) {
+	                    if (limit > 0 && line >= limit) {
 	                        s.append("<tr><td>...</td></tr>"); break;
 	                    }
 	                    Object o = i.next();
