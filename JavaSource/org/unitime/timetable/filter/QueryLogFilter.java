@@ -28,6 +28,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,11 +61,17 @@ public class QueryLogFilter implements Filter {
 	private List<QueryLog> iQueries = new Vector<QueryLog>();
 	private boolean iActive = false;
 	private Saver iSaver;
+	private HashSet<String> iExclude = new HashSet<String>();
 
 	public void init(FilterConfig cfg) throws ServletException {
 		iActive = true;
 		Saver iSaver = new Saver();
 		iSaver.start();
+		String exclude = cfg.getInitParameter("exclude");
+		if (exclude != null) {
+			for (String x: exclude.split(","))
+				iExclude.add(x);
+		}
 	}
 	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws ServletException, IOException {
@@ -157,7 +164,9 @@ public class QueryLogFilter implements Filter {
 				if (!ex.isEmpty())
 					q.setException(ex);
 			}
-			synchronized (iQueries) { iQueries.add(q); }
+			if (!iExclude.contains(q.getUri()) || q.getException() != null) {
+				synchronized (iQueries) { iQueries.add(q); }
+			}
 		}
 		
 		if (exception!=null) {

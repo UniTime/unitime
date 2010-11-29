@@ -228,6 +228,10 @@
 		<filter-class>
 			org.unitime.timetable.filter.QueryLogFilter
 		</filter-class>
+		<init-param>
+			<param-name>exclude</param-name>
+			<param-value>menu.gwt: MenuService#getSolverInfo</param-value>
+		</init-param>
 	</filter>
 
 	<!-- Filter Mappings -->
@@ -259,15 +263,7 @@
 	<filter-mapping>
 		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Query Log Filter</filter-name>
-		<url-pattern>*.gwt</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Query Log Filter</filter-name>
+        <url-pattern>*.gwt</url-pattern>
 		<url-pattern>/calendar</url-pattern>
 	</filter-mapping>
 </web-app>
