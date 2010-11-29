@@ -40,6 +40,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
@@ -131,6 +132,7 @@ public class TimetableGridTable {
 	private boolean iShowUselessTimes = false;
 	private boolean iShowInstructors = false;
 	private boolean iShowEvents = false;
+	private org.unitime.timetable.gwt.server.Query iQuery = null;
 	
 	private String iDefaultDatePatternName = null;
 	
@@ -146,7 +148,10 @@ public class TimetableGridTable {
 	public int getResourceType() { return iResourceType; }
 	public void setResourceType(int resourceType) { iResourceType = resourceType; }
 	public String getFindString() { return iFindStr; }
-	public void setFindString(String findSrt) { iFindStr = findSrt;}
+	public void setFindString(String findSrt) {
+		iFindStr = findSrt;
+		iQuery = (findSrt == null ? null : new org.unitime.timetable.gwt.server.Query(findSrt));
+	}
 	public int getOrderBy() { return iOrderBy; }
 	public void setOrderBy(int orderBy) { iOrderBy = orderBy; }
 	public int getWeek() { return iWeek; }
@@ -576,7 +581,25 @@ public class TimetableGridTable {
 		}
 	}
 	
-	private boolean match(String name) {
+	private boolean match(final String name) {
+		return iQuery == null || iQuery.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(name, " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return name.matches(term);
+				} else if ("find".equals(attr)) {
+					return name.toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				}
+				return false;
+			}
+		});
+		/*
 		if (getFindString()==null || getFindString().trim().length()==0) return true;
 		StringTokenizer stk = new StringTokenizer(getFindString().toUpperCase()," ,");
 		String n = name.toUpperCase();
@@ -585,7 +608,7 @@ public class TimetableGridTable {
 			if (token.length()==0) continue;
 			if (n.indexOf(token)<0) return false;
 		}
-		return true;
+		return true;*/
 	}
 	
 	private void showUselessTimesIfDesired() {
