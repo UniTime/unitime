@@ -207,6 +207,8 @@ public class Query {
 		private String iAttr, iBody;
 		
 		public AtomTerm(String attr, String body) {
+			if (body.startsWith("\"") && body.endsWith("\""))
+				body = body.substring(1, body.length() - 1);
 			iAttr = attr; iBody = body;
 		}
 		
