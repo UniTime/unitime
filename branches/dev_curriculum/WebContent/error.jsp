@@ -49,7 +49,7 @@
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </HEAD>
 <BODY class="bodyMain">
 	<table align="center">

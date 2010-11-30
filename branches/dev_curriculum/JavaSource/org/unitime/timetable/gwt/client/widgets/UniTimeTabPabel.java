@@ -35,8 +35,12 @@ public class UniTimeTabPabel extends TabPanel {
 		super();
 	}
 
-	public void add(Widget w, Widget tabWidget) {
-		super.add(w, tabWidget);
+	public void add(Widget w, String tabText, boolean asHTML) {
+		super.add(w, tabText, asHTML);
+	}
+	
+	public void insert(Widget widget, String tabText, boolean asHTML, int beforeIndex) {
+		super.insert(widget, tabText, asHTML, beforeIndex);
 	}
 	
 	public void setDeckSize(String width, String height) {
@@ -54,5 +58,13 @@ public class UniTimeTabPabel extends TabPanel {
 	
 	public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
 		return super.addSelectionHandler(handler);
+	}
+	
+	public int getTabCount() {
+		return getTabBar().getTabCount();
+	}
+	
+	public int getSelectedTab() {
+		return getTabBar().getSelectedTab();
 	}
 }

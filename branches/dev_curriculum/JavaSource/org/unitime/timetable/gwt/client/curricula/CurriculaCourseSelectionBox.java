@@ -64,6 +64,7 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -248,7 +249,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	}
 	
 	private void openDialog() {
+		final boolean ie = "Microsoft Internet Explorer".equals(Window.Navigator.getAppName());
 		if (iDialog == null) {
+
 			iDialog = new UniTimeDialogBox(true, true);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
@@ -297,7 +300,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			});
 					
 			iCoursesPanel = new ScrollPanel(iCourses);
-			iCoursesPanel.setSize("780", "200");
+			iCoursesPanel.setSize("780px", "200px");
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
 			
 			iCourseDetailsTabPanel = new UniTimeTabPabel();
@@ -305,7 +308,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
 			iCourseDetailsPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iCourseDetailsPanel, new HTML(MESSAGES.courseSelectionDetails()));
+			iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
@@ -324,19 +327,14 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iClassesPanel, new HTML("C<u>l</u>asses", false));
+			iCourseDetailsTabPanel.add(iClassesPanel, "C<u>l</u>asses", true);
 			
 			iCurricula = new CourseCurriculaTable(false, false);
 			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iCurriculaPanel = new ScrollPanel(iCurricula);
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iCurriculaPanel, new HTML("<u>C</u>urricula", false));
-			
-			iCourseDetailsTabPanel.setDeckSize("780", "200");
-			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
-			
-			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
-
+			iCourseDetailsTabPanel.add(iCurriculaPanel, (ie ? "Cu<u>r</u>ricula" : "<u>C</u>urricula"), true);
+						
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
 			ToolBox.disableTextSelectInternal(iCoursesTip.getElement());
@@ -349,7 +347,18 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 				}
 			});
 			
-			iDialogPanel.add(iCoursesPanel);
+			if (ie) {
+				iCoursesPanel.setSize("780px", "400px");
+				iCourseDetailsPanel.setSize("780px", "400px");
+				iClassesPanel.setSize("780px", "400px");
+				iCurriculaPanel.setSize("780px", "400px");
+				iCoursesPanel.setStyleName("unitime-ScrollPanel-inner");
+				iCourseDetailsTabPanel.insert(iCoursesPanel, MESSAGES.courseSelectionCourses(), true, 0);
+			} else {
+				iCourseDetailsTabPanel.setDeckSize("780", "200");
+				iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+				iDialogPanel.add(iCoursesPanel);
+			}
 			iDialogPanel.add(iCourseDetailsTabPanel);
 			iDialogPanel.add(iCoursesTip);
 			
@@ -395,16 +404,20 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 						scrollToSelectedRow();
 						updateCourseDetails();
 					}
+					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C')) {
+						iCourseDetailsTabPanel.selectTab(ie ? 0 : 2);
+						event.preventDefault();
+					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
-						iCourseDetailsTabPanel.selectTab(0);
+						iCourseDetailsTabPanel.selectTab(ie ? 1 : 0);
 						event.preventDefault();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
-						iCourseDetailsTabPanel.selectTab(1);
+						iCourseDetailsTabPanel.selectTab(ie ? 2 : 1);
 						event.preventDefault();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C')) {
-						iCourseDetailsTabPanel.selectTab(2);
+					if (ie && event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='r' || event.getNativeKeyCode()=='R')) {
+						iCourseDetailsTabPanel.selectTab(3);
 						event.preventDefault();
 					}
 				}
@@ -584,6 +597,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 					WebTable.Row[] records = new WebTable.Row[result.size()];
 					int idx = 0;
 					boolean hasProj = false, hasEnrl = false, hasLastLike = false;
+					int selectRow = -1;
 					for (ClassAssignmentInterface.CourseAssignment record: result) {
 						records[idx] = new WebTable.Row(
 								record.getSubject(),
@@ -597,14 +611,17 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 						if (!hasProj && !record.getProjectedString().isEmpty()) hasProj = true;
 						if (!hasLastLike && !record.getLastLikeString().isEmpty()) hasLastLike = true;
 						records[idx].setId(record.getCourseId().toString());
+						if (iFilter.getText().equalsIgnoreCase(record.getSubject() + " " + record.getCourseNbr()))
+							selectRow = idx;
 						idx++;
 					}
 					iCourses.setData(records);
 					iCourses.setColumnVisible(5, hasProj);
 					iCourses.setColumnVisible(6, hasEnrl);
 					iCourses.setColumnVisible(7, hasLastLike);
-					if (records.length == 1) {
-						iCourses.setSelectedRow(0);
+					if (records.length == 1) selectRow = 0;
+					if (selectRow >= 0) {
+						iCourses.setSelectedRow(selectRow);
 						updateCourseDetails();
 					}
 				}

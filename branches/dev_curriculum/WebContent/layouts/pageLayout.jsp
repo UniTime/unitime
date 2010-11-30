@@ -55,7 +55,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	<style type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime.css">
@@ -179,7 +179,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     </td></tr><tr><td valign="top">
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%" align="left" nowrap="nowrap" valign="top"><span id="UniTimeGWT:Version"></span>
+    			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span>
     				<logic:notEmpty scope="request" name="TimeStamp">
 <% 
 		double endTime = JProf.currentTimeSec();
@@ -192,8 +192,8 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 					</logic:notEmpty>
     			</td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
-    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
+    			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
+    			<td width="33%" align="right" class="unitime-FooterText"><tt:registration/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>

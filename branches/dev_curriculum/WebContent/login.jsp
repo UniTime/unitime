@@ -31,7 +31,7 @@
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime 3.2| Log In</TITLE>
-	    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 	
@@ -117,7 +117,7 @@
     	<table class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
     		<tr>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td align="center" nowrap="nowrap"><span id="UniTimeGWT:Version"></span><tt:copy/></td>
+    			<td align="center" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span><tt:copy br="false"/></td>
     		</tr>
 			<tt:hasProperty name="tmtbl.page.disclaimer">
 				<tr>

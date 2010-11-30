@@ -191,6 +191,14 @@ public class WebTable extends Composite {
 			iTable.removeRow(row);
 		}
 		iRows = null;
+		if (showEmptyMessage)
+			setEmptyMessage(iEmptyMessage);
+	}
+	
+	public void clearData(int keepRows) {
+		for (int row = iTable.getRowCount() - 1; row >= getHeaderRowsCount() + keepRows; row--) {
+			iTable.removeRow(row);
+		}
 	}
 	
 	public void setData(Row... rows) {
@@ -199,7 +207,7 @@ public class WebTable extends Composite {
 			clearData(true);
 			return;
 		}
-		clearData(false);
+		clearData(rows.length);
 		iRows = rows;
 		for (int i=0; i<iRows.length; i++) {
 			if (iRows[i] == null) continue;
@@ -219,6 +227,9 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i+getHeaderRowsCount(), j, cell.getHorizontalAlignment());
+			}
+			for (int j=iTable.getCellCount(i+getHeaderRowsCount()) - 1; j >= iRows[i].getNrCells(); j--) {
+				iTable.clearCell(i+getHeaderRowsCount(), j);
 			}
 		}
 	}
@@ -418,6 +429,7 @@ public class WebTable extends Composite {
 			iPanel.add(iIcon);
 			iPanel.add(iLabel);
 			iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
+			iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 		}
 		
 		public String getValue() { return iLabel.getText(); }
@@ -500,7 +512,9 @@ public class WebTable extends Composite {
 							}
 						});
 						p.add(a);
+						p.setCellVerticalAlignment(a, HasVerticalAlignment.ALIGN_MIDDLE);
 						HTML h = new HTML(text, false);
+						h.getElement().getStyle().setMarginLeft(2, Unit.PX);
 						p.add(h);
 						iPanel.add(p);
 						iContent.add(h);

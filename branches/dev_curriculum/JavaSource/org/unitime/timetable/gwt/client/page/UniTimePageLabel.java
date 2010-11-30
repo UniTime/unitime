@@ -19,30 +19,22 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
@@ -59,7 +51,6 @@ public class UniTimePageLabel extends Composite {
 	private Image iHelp;
 	
 	private String iUrl = null;
-	private Timer iTimer = null;
 	
 	private static UniTimePageLabel sInstance = null;
 	
@@ -77,39 +68,12 @@ public class UniTimePageLabel extends Composite {
 		iPanel.setCellVerticalAlignment(iHelp, HasVerticalAlignment.ALIGN_TOP);
 				
 		initWidget(iPanel);
-		
-		final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
-		dialog.setEscapeToHide(true);
-		final Frame frame = new MyFrame();
-		frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-		dialog.setWidget(frame);
-		
-		iTimer = new Timer() {
-			@Override
-			public void run() {
-				if (LoadingWidget.getInstance().isShowing())
-					LoadingWidget.getInstance().fail(iName.getText() + " Help does not seem to load, " +
-							"please check <a href='" + iUrl + "' style='white-space: nowrap;'>" + iUrl + "</a> for yourself.");
-			}
-		};
-
-		dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-			@Override
-			public void onClose(CloseEvent<PopupPanel> event) {
-				if (LoadingWidget.getInstance().isShowing())
-					LoadingWidget.getInstance().hide();
-			}
-		});
-		
+				
 		iHelp.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iUrl == null) return;
-				dialog.setText(iName.getText() + " Help");
-				frame.setUrl(iUrl);
-				frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
-				dialog.center();
-				iTimer.schedule(30000);
+				UniTimeFrameDialog.openDialog(iName.getText() + " Help", iUrl);
 			}
 		});
 		
@@ -148,26 +112,4 @@ public class UniTimePageLabel extends Composite {
 			}
 		});		
 	}
-
-	public static void notifyFrameLoaded() {
-		LoadingWidget.getInstance().hide();
-	}
-	
-	public class MyFrame extends Frame {
-		public MyFrame() {
-			super();
-			hookFremaLoaded((FrameElement)getElement().cast());
-		}
-		
-		public void onLoad() {
-			super.onLoad();
-			LoadingWidget.getInstance().show("Loading " + iName.getText() + " Help ...");
-		}
-	}
-	
-	public native void hookFremaLoaded(FrameElement element) /*-{
-		element.onload = function() {
-			@org.unitime.timetable.gwt.client.page.UniTimePageLabel::notifyFrameLoaded()();
-		}
-	}-*/;
 }

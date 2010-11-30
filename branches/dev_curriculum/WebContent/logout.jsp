@@ -39,7 +39,7 @@
 				location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
-	    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+	    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	</HEAD>
 	<BODY onload="closeWin();">
 		<BLOCKQUOTE>

@@ -27,17 +27,13 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
-import com.google.gwt.dom.client.FrameElement;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
@@ -47,12 +43,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -63,14 +57,11 @@ public class UniTimeMenuBar extends Composite {
 	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
 	
 	private MenuBar iMenu;
-	private Timer iTimer = null;
 	private SimplePanel iSimple = null;
 	
 	private int iLastScrollLeft = 0, iLastScrollTop = 0, iLastClientWidth = 0;
 	private Timer iMoveTimer;
 	
-	private static UniTimeDialogBox sDialog = null;
-
 	public UniTimeMenuBar(boolean absolute) {
 		iMenu = new MenuBar();
 		iMenu.setVisible(false);
@@ -201,34 +192,7 @@ public class UniTimeMenuBar extends Composite {
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {
-			final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
-			dialog.setEscapeToHide(true);
-			final Frame frame = new MyFrame(name);
-			frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-			dialog.setWidget(frame);
-			dialog.setText(name);
-			frame.setUrl(url);
-			frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
-			
-			iTimer = new Timer() {
-				@Override
-				public void run() {
-					if (LoadingWidget.getInstance().isShowing())
-						LoadingWidget.getInstance().fail(name + " does not seem to load, " +
-								"please check <a href='" + url + "' style='white-space: nowrap;'>" + url + "</a> for yourself.");
-				}
-			};
-
-			dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-				@Override
-				public void onClose(CloseEvent<PopupPanel> event) {
-					if (LoadingWidget.getInstance().isShowing())
-						LoadingWidget.getInstance().hide();
-				}
-			});
-
-			dialog.center();
-			iTimer.schedule(30000);
+			UniTimeFrameDialog.openDialog(name, url);
 		} else if ("download".equals(target)) {
 			ToolBox.open(url);
 		} else {
@@ -286,82 +250,5 @@ public class UniTimeMenuBar extends Composite {
 			panel.add(iSimple);
 		}
 	}
-	
-	public static void notifyFrameLoaded() {
-		LoadingWidget.getInstance().hide();
-	}
-	
-	public static class MyFrame extends Frame {
-		private String iName;
-		
-		public MyFrame(String name) {
-			super();
-			iName = name;
-			hookFremaLoaded((FrameElement)getElement().cast());
-		}
-		
-		public void onLoad() {
-			super.onLoad();
-			LoadingWidget.getInstance().show("Loading " + iName + " ...");
-		}
-	}
-	
-	public static native void hookFremaLoaded(FrameElement element) /*-{
-		element.onload = function() {
-			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::notifyFrameLoaded()();
-		}
-	}-*/;
-	
-	public static native void createTriggers()/*-{
-		$wnd.showGwtDialog = function(title, source, width, height) {
-			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::openDialog(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(title, source, width, height);
-		};
-		$wnd.hideGwtDialog = function() {
-			@org.unitime.timetable.gwt.client.page.UniTimeMenuBar::hideDialog()();
-		};
-		if ($wnd.onGwtLoad) {
-			$wnd.onGwtLoad();
-		}
-	}-*/;
-	
-	public static void openDialog(final String title, final String source, String width, String height) {
-		sDialog = new UniTimeDialogBox(true, true);
-		sDialog.setEscapeToHide(true);
-		final Frame frame = new MyFrame(title);
-		frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-		sDialog.setWidget(frame);
-		sDialog.setText(title);
-		frame.setUrl(source);
-		String w = (width == null || width.isEmpty() ? String.valueOf(Window.getClientWidth() * 3 / 4) : width);
-		String h = (height == null || height.isEmpty() ? String.valueOf(Window.getClientHeight() * 3 / 4) : height);
-		if (w.endsWith("%")) w = String.valueOf(Integer.parseInt(w.substring(0, w.length() - 1)) * Window.getClientWidth() / 100);
-		if (h.endsWith("%")) h = String.valueOf(Integer.parseInt(h.substring(0, h.length() - 1)) * Window.getClientHeight() / 100);
-		frame.setSize(w, h);
-
-		Timer timer = new Timer() {
-			@Override
-			public void run() {
-				if (LoadingWidget.getInstance().isShowing())
-					LoadingWidget.getInstance().fail(title + " does not seem to load, " +
-							"please check <a href='" + source + "' style='white-space: nowrap;'>" + source + "</a> for yourself.");
-			}
-		};
-
-		sDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-			@Override
-			public void onClose(CloseEvent<PopupPanel> event) {
-				if (LoadingWidget.getInstance().isShowing())
-					LoadingWidget.getInstance().hide();
-			}
-		});
-
-		sDialog.center();
-		timer.schedule(30000);
-	}
-	
-	public static void hideDialog() {
-		if (sDialog != null && sDialog.isShowing()) sDialog.hide();
-	}
-
 
 }
