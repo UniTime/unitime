@@ -64,6 +64,7 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -110,7 +111,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 	private FreeTimePicker iFreeTimePicker;
 	private Label iFreeTimeError = null, iCoursesTip, iFreeTimeTip;
 	
-	private UniTimeTabPabel iTabPanel, iCourseDetailsTabPanel;
+	private UniTimeTabPabel iTabPanel, iCourseDetailsTabPanel = null;
 	
 	private HTML iCourseDetails;
 	private ScrollPanel iCourseDetailsPanel, iClassesPanel;
@@ -139,7 +140,6 @@ public class CourseSelectionBox extends Composite implements Validator {
 		
 	public CourseSelectionBox(AcademicSessionProvider acadSession, String name, boolean enabled, boolean allowFreeTime) {
 		iAcademicSessionProvider = acadSession;
-		
 		iAllowFreeTime = allowFreeTime;
 		
 		SuggestOracle courseOfferingOracle = new SuggestOracle() {
@@ -288,6 +288,8 @@ public class CourseSelectionBox extends Composite implements Validator {
 	
 	private void openDialog() {
 		if (iDialog == null) {
+			boolean ie = "Microsoft Internet Explorer".equals(Window.Navigator.getAppName());
+			
 			iDialog = new UniTimeDialogBox(true, true);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
@@ -308,10 +310,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 			iDialogPanel.setSpacing(5);
 			iDialogPanel.add(iFilter);
 			iDialogPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
-			
-			iCoursesTab = new VerticalPanel();
-			iCoursesTab.setSpacing(10);
-			
+						
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
 					iImage.setResource(RESOURCES.search_picker());
@@ -324,17 +323,12 @@ public class CourseSelectionBox extends Composite implements Validator {
 			});
 					
 			iCoursesPanel = new ScrollPanel(iCourses);
-			iCoursesPanel.setSize("780", "200");
+			iCoursesPanel.setSize("780px", "200px");
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
-			
-			iCoursesTab.add(iCoursesPanel);
-			
-			iCourseDetailsTabPanel = new UniTimeTabPabel();
 			
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
 			iCourseDetailsPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iCourseDetailsPanel, new HTML(MESSAGES.courseSelectionDetails()));
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
@@ -353,14 +347,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iClassesPanel, new HTML(MESSAGES.courseSelectionClasses(), false));
-			iCourseDetailsTabPanel.setDeckSize("780", "200");
-			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
-			
-			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 
-			iCoursesTab.add(iCourseDetailsTabPanel);
-			
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
 			ToolBox.disableTextSelectInternal(iCoursesTip.getElement());
@@ -372,10 +359,34 @@ public class CourseSelectionBox extends Composite implements Validator {
 					} while (oldText.equals(iCoursesTip.getText()));
 				}
 			});
-			iCoursesTab.add(iCoursesTip);
 			
 			iTabPanel = new UniTimeTabPabel();	
-			iTabPanel.add(iCoursesTab, new HTML(MESSAGES.courseSelectionCourses()));
+			if (ie) {
+				iCoursesPanel.setSize("780px", "400px");
+				iCoursesPanel.setStyleName("unitime-ScrollPanel-inner");
+				iTabPanel.add(iCoursesPanel, MESSAGES.courseSelectionCourses(), true);
+				iCourseDetailsPanel.setSize("780px", "400px");
+				iTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
+				iClassesPanel.setSize("780px", "400px");
+				iTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
+			} else {
+				iCourseDetailsTabPanel = new UniTimeTabPabel();
+				iCourseDetailsTabPanel.setDeckSize("780", "200");
+				iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+				iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
+				iCourseDetailsTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
+				iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+					public void onSelection(SelectionEvent<Integer> event) {
+						sLastSelectedCourseDetailsTab = event.getSelectedItem();
+					}
+				});
+				iCoursesTab = new VerticalPanel();
+				iCoursesTab.setSpacing(10);
+				iCoursesTab.add(iCoursesPanel);
+				iCoursesTab.add(iCourseDetailsTabPanel);
+				iCoursesTab.add(iCoursesTip);
+				iTabPanel.add(iCoursesTab, MESSAGES.courseSelectionCourses(), true);
+			}
 			
 			iFreeTimeTab = new VerticalPanel();
 			iFreeTimeTab.setSpacing(10);
@@ -407,12 +418,15 @@ public class CourseSelectionBox extends Composite implements Validator {
 			iFreeTimeError.setVisible(false);
 			iFreeTimeTab.add(iFreeTimeError);
 			
-			iTabPanel.add(iFreeTimeTab, new HTML(MESSAGES.courseSelectionFreeTime(), false));
-			iTabPanel.selectTab(0);
-
 			if (iAllowFreeTime)
+				iTabPanel.add(iFreeTimeTab, MESSAGES.courseSelectionFreeTime(), true);
+
+			if (ie) {
 				iDialogPanel.add(iTabPanel);
-			else {
+				iDialogPanel.add(iCoursesTip);
+			} else if (iAllowFreeTime) {
+				iDialogPanel.add(iTabPanel);
+			} else {
 				iDialogPanel.add(iCoursesPanel);
 				iDialogPanel.add(iCourseDetailsTabPanel);
 				iDialogPanel.add(iCoursesTip);
@@ -472,16 +486,22 @@ public class CourseSelectionBox extends Composite implements Validator {
 						iTabPanel.selectTab(0);
 						event.preventDefault();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T')) {
-						iTabPanel.selectTab(1);
+					if (iAllowFreeTime && event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T')) {
+						iTabPanel.selectTab(iCourseDetailsTabPanel == null ? 1 : 3);
 						event.preventDefault();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
-						iCourseDetailsTabPanel.selectTab(0);
+						if (iCourseDetailsTabPanel == null)
+							iTabPanel.selectTab(1);
+						else
+							iCourseDetailsTabPanel.selectTab(0);
 						event.preventDefault();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
-						iCourseDetailsTabPanel.selectTab(1);
+						if (iCourseDetailsTabPanel == null)
+							iTabPanel.selectTab(2);
+						else
+							iCourseDetailsTabPanel.selectTab(1);
 						event.preventDefault();
 					}
 				}
@@ -491,12 +511,6 @@ public class CourseSelectionBox extends Composite implements Validator {
 					updateCourses();
 				}
 			});
-			iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
-				public void onSelection(SelectionEvent<Integer> event) {
-					sLastSelectedCourseDetailsTab = event.getSelectedItem();
-				}
-			});
-			
 			iCourses.addRowDoubleClickHandler(new WebTable.RowDoubleClickHandler() {
 				public void onRowDoubleClick(RowDoubleClickEvent event) {
 					WebTable.Row r = event.getRow();
@@ -540,15 +554,15 @@ public class CourseSelectionBox extends Composite implements Validator {
 		iTabPanel.selectTab(0);
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iFreeTimeTip.setText(CONSTANTS.freeTimeTips()[(int)(Math.random() * CONSTANTS.freeTimeTips().length)]);
-		iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
+		if (iCourseDetailsTabPanel != null)
+			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 		iDialog.center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			public void execute() {
 				iFilter.setFocus(true);
+				updateCourses();
 			}
 		});
-
-		updateCourses();
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -746,7 +760,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 				iFreeTimePicker.clearFreeTime();
 				iFreeTimePicker.setFreeTime(parseFreeTime(iFilter.getText()), false);
 				iFreeTimeError.setVisible(false);
-				iTabPanel.selectTab(1);
+				iTabPanel.selectTab(iTabPanel.getTabCount() - 1);
 			} catch (IllegalArgumentException e) {
 				iFreeTimeError.setText(e.getMessage());
 				iFreeTimeError.setVisible(true);
@@ -761,20 +775,25 @@ public class CourseSelectionBox extends Composite implements Validator {
 				public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
 					WebTable.Row[] records = new WebTable.Row[result.size()];
 					int idx = 0;
+					int selectRow = -1;
 					for (ClassAssignmentInterface.CourseAssignment record: result) {
 						records[idx] = new WebTable.Row(
 								record.getSubject(),
 								record.getCourseNbr(),
-								record.getTitle(),
-								record.getNote());
+								(record.getTitle() == null ? "" : record.getTitle()),
+								(record.getNote() == null ? "" : record.getNote()));
 						records[idx].setId(record.hasUniqueName() ? "true" : "false");
-						if (result.size()==1 && iFilter.getText().equalsIgnoreCase(record.getSubject() + " " + record.getCourseNbr()))
-							iTabPanel.selectTab(0);
+						if (iFilter.getText().equalsIgnoreCase(record.getSubject() + " " + record.getCourseNbr()))
+							selectRow = idx;
 						idx++;
 					}
 					iCourses.setData(records);
-					if (records.length == 1) {
-						iCourses.setSelectedRow(0);
+					if (records.length == 1)
+						selectRow = 0;
+					if (selectRow >= 0) {
+						iCourses.setSelectedRow(selectRow);
+						if (iTabPanel.getSelectedTab() != 0)
+							iTabPanel.selectTab(0);
 						updateCourseDetails();
 					}
 				}

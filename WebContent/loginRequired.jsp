@@ -27,7 +27,7 @@
 	<META http-equiv="expires" content="0">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 	<link rel="shortcut icon" href="images/timetabling.ico" />
-     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </HEAD>
 
 <BODY class="bodyMain">

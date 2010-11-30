@@ -29,16 +29,14 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -58,13 +56,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DisclosurePanel;
-import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.StackPanel;
@@ -79,7 +75,6 @@ public class UniTimeSideBar extends Composite {
 
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	
-	private Timer iTimer = null;
 	private Timer iScrollTimer = null;
 
 	private SimplePanel iPanel;
@@ -368,65 +363,13 @@ public class UniTimeSideBar extends Composite {
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {
-			final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
-			dialog.setEscapeToHide(true);
-			final Frame frame = new MyFrame(name);
-			frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
-			dialog.setWidget(frame);
-			dialog.setText(name);
-			frame.setUrl(url);
-			frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
-			
-			iTimer = new Timer() {
-				@Override
-				public void run() {
-					if (LoadingWidget.getInstance().isShowing())
-						LoadingWidget.getInstance().fail(name + " does not seem to load, " +
-								"please check <a href='" + url + "' style='white-space: nowrap;'>" + url + "</a> for yourself.");
-				}
-			};
-
-			dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-				@Override
-				public void onClose(CloseEvent<PopupPanel> event) {
-					if (LoadingWidget.getInstance().isShowing())
-						LoadingWidget.getInstance().hide();
-				}
-			});
-
-			dialog.center();
-			iTimer.schedule(30000);
+			UniTimeFrameDialog.openDialog(name, url);
 		} else if ("download".equals(target)) {
 			ToolBox.open(url);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
 	}
-
-	public static void notifyFrameLoaded() {
-		LoadingWidget.getInstance().hide();
-	}
-	
-	public class MyFrame extends Frame {
-		private String iName;
-		
-		public MyFrame(String name) {
-			super();
-			iName = name;
-			hookFremaLoaded((FrameElement)getElement().cast());
-		}
-		
-		public void onLoad() {
-			super.onLoad();
-			LoadingWidget.getInstance().show("Loading " + iName + " ...");
-		}
-	}
-	
-	public native void hookFremaLoaded(FrameElement element) /*-{
-		element.onload = function() {
-			@org.unitime.timetable.gwt.client.page.UniTimeSideBar::notifyFrameLoaded()();
-		}
-	}-*/;
 	
 	public class MyStackPanel extends StackPanel {
 		private Element body = null;

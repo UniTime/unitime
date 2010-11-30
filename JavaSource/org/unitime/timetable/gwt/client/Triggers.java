@@ -20,8 +20,8 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.page.Refresh;
-import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 
 import com.google.gwt.user.client.Command;
 
@@ -40,7 +40,7 @@ public enum Triggers {
 	}),
 	gwtDialog(new Command() {
 		public void execute() {
-			UniTimeMenuBar.createTriggers();
+			UniTimeFrameDialog.createTriggers();
 		}
 	}),
 	loading(new Command() {

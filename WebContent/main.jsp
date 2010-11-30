@@ -33,7 +33,7 @@
     </tt:hasProperty>
     <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </head>
 <BODY class="unitime-Body">
 
@@ -160,10 +160,10 @@
     </td></tr><tr><td valign="top">
     	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
     		<tr>
-    			<td width="33%" align="left" valign="top" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
+    			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span></td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" valign="top"><tt:copy/></td>
-    			<td width="33%" align="right" valign="top"><tt:registration update="true"/></td>
+    			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
+    			<td width="33%" align="right" class="unitime-FooterText"><tt:registration update="true"/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>

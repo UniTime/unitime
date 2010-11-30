@@ -224,13 +224,11 @@ public class StudentSectioningWidget extends Composite {
 			));
 		
 		iAssignmentPanel = new UniTimeTabPabel();
-		HTML tab0 = new HTML(MESSAGES.tabClasses(), false);
-		iAssignmentPanel.add(iAssignments, tab0);
+		iAssignmentPanel.add(iAssignments, MESSAGES.tabClasses(), true);
 		iAssignmentPanel.selectTab(0);
 		
 		iAssignmentGrid = new TimeGrid();
-		HTML tab1 = new HTML(MESSAGES.tabTimetable(), false);
-		iAssignmentPanel.add(iAssignmentGrid, tab1);
+		iAssignmentPanel.add(iAssignmentGrid, MESSAGES.tabTimetable(), true);
 		iAssignmentPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			public void onSelection(SelectionEvent<Integer> event) {
 				iAssignmentTab = event.getSelectedItem();

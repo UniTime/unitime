@@ -25,6 +25,10 @@ import org.unitime.commons.Debug;
 
 public class Copyright extends BodyTagSupport {
 	private static final long serialVersionUID = -4463420165596054395L;
+	private boolean iBr = true;
+	
+	public void setBr(boolean br) { iBr = br; }
+	public boolean isBr() { return iBr; }
 
 	public int doStartTag() throws JspException {
         return EVAL_BODY_BUFFERED;
@@ -33,8 +37,10 @@ public class Copyright extends BodyTagSupport {
     public int doEndTag() throws JspException {
     	// WARNING: Changing or removing the following copyright notice will violate the license terms.
     	// If you need a different licensing, please contact us at support@unitime.org
-    	String body = "<a class='unitime-FooterLink' href='http://www.unitime.org'>&copy;&nbsp;2008&nbsp;-&nbsp;2010&nbsp;UniTime&nbsp;LLC</a>";
-		body += ", <a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php'>distributed&nbsp;under&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License.</a>";
+    	String body = 
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org'>&copy;&nbsp;2008&nbsp;-&nbsp;2010&nbsp;UniTime&nbsp;LLC</a>," + 
+    		(isBr() ? "<br>" : " ") + 
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php'>distributed&nbsp;under&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License.</a>";
         try {
             pageContext.getOut().print(body);
         }

@@ -34,7 +34,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.Style.VerticalAlign;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
@@ -377,8 +377,8 @@ public class TimeGrid extends Composite {
 					if (email != null && !email.isEmpty()) {
 						ImageLink il = new ImageLink(new Image(RESOURCES.email()), "mailto:" + email);
 						il.setTitle(MESSAGES.sendEmail(row.getInstructors().get(i)));
-						il.getElement().getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
 						il.setStyleName("A.unitime-SimpleLink");
+						il.getElement().getStyle().setMarginRight(1, Unit.PX);
 						instructors += DOM.toString(il.getElement()) + row.getInstructors().get(i) + (i + 1 < row.getInstructors().size() ? ", " : "");
 					} else {
 						instructors += row.getInstructors().get(i) + (i + 1 < row.getInstructors().size() ? ", " : "");

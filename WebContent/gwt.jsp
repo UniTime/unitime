@@ -23,6 +23,9 @@
   <head>
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <!--[if IE]>
+	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
+    <![endif]-->
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime 3.2| University Timetabling Application</title>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
@@ -41,6 +44,38 @@
     	<span id='UniTimeGWT:TopMenu' style="display: none;" ></span>
     </tt:propertyEquals>
 
+	<tt:hasProperty name="tmtbl.global.warn">
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="unitime-MessageYellow" width='5'>&nbsp;</td><td class="unitime-MessageYellow" >
+			<tt:property name="tmtbl.global.warn"/>
+		</td></tr></table>
+	</tt:hasProperty>
+
+	<!--[if IE]>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+    
+    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
+      <tr><td class="unitime-MessageBlue" width='5'>&nbsp;</td>
+      	  <td class="unitime-MessageBlue">
+      	  	<a class='unitime-NoFancyLink' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
+      </tr>
+    </table>
+    
+    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
+    
+    <script>
+     function ie_no_chrome() {
+       document.getElementById('__ie_no_chrome').style.display = 'table';
+     }
+     window.attachEvent("onload", function() {
+       CFInstall.check({
+         mode: "inline",
+         node: "__ie_chrome_plugin",
+         onmissing: ie_no_chrome
+       });
+     });
+    </script>
+  	<![endif]-->
+  	
     <table align="center">
     <tr>
     <td valign="top" rowspan="2">
@@ -81,10 +116,10 @@
     </td></tr><tr><td valign="top">
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%" align="left" nowrap="nowrap" valign="top"><span id="UniTimeGWT:Version"></span></td>
+    			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span></td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
-    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
+    			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
+    			<td width="33%" align="right" class="unitime-FooterText"><tt:registration/></td>
     		</tr>
     		<tt:hasProperty name="tmtbl.page.disclaimer">
     			<tr>
