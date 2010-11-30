@@ -89,6 +89,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	protected DistributionType canShareRoomType = null;
 	boolean useMeetsWithElement = false;
 	boolean useCanShareRoomElement = false;
+	boolean incremental = false;
 	PreferenceLevel requiredPrefLevel = null;
 	MakeAssignmentsForClassEvents assignmentHelper = null;
 	protected String rootElementName;
@@ -112,13 +113,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        	throw new Exception("Given XML file is not a Course Offerings load file.");
 	        }
 	        beginTransaction();
+	        
+	        incremental = "true".equalsIgnoreCase(rootElement.attributeValue("incremental", "false"));
+	        if (incremental)
+	        	info("Incremental mode.");
 
 	        initializeLoad(rootElement, rootElementName);
 			preLoadAction();
 	        loadOfferings(rootElement);
 	        
-	        deleteUnmatchedInstructionalOfferings();
-	        deleteUnmatchedCourseOfferings();
+	        if (!incremental) {
+		        deleteUnmatchedInstructionalOfferings();
+		        deleteUnmatchedCourseOfferings();
+	        }
 	        deleteUnmatchedClasses();
 	        commitTransaction();
 	        
@@ -336,8 +343,15 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
            	addNote("Deleted Classes that were not in the input file:");
     	for(Iterator<Long> cIt = deleteClasses.iterator(); cIt.hasNext(); ){
         		Long uniqueId = (Long) cIt.next();
-	        	Class_ unusedC = findClassForUniqueId(uniqueId) ; 
+	        	Class_ unusedC = findClassForUniqueId(uniqueId);
 	        	if (unusedC != null){
+	        		if (incremental) {
+	        			try {
+		        			if (existingInstructionalOfferings.contains(unusedC.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()) ||
+		        				existingCourseOfferings.contains(unusedC.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()))
+		        				continue;
+	        			} catch (NullPointerException e) {}
+	        		}
 	        		addNote("\tDeleted: " + unusedC.getClassLabel());
 		        	deleteClass(unusedC);
 		        	changeCount++;
