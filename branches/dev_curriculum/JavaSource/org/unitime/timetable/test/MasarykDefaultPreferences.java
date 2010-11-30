@@ -21,10 +21,9 @@ package org.unitime.timetable.test;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -79,7 +78,7 @@ public class MasarykDefaultPreferences {
             
             Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "FF"),
-                    ApplicationProperties.getProperty("year","2010"),
+                    ApplicationProperties.getProperty("year","2011"),
                     ApplicationProperties.getProperty("term","Jaro")
                     );
             
@@ -90,19 +89,21 @@ public class MasarykDefaultPreferences {
                 sLog.info("Session: "+session);
             }
             
+            MakeAssignmentsForClassEvents makePattern = new MakeAssignmentsForClassEvents(session, hibSession);
+            
             for (ExactTimeMins x: ExactTimeMinsDAO.getInstance().findAll(hibSession)) {
             	x.setNrSlots(x.getMinsPerMtgMax() / 5);
             	x.setBreakTime(5);
             	hibSession.saveOrUpdate(x);
             }
             
-            RoomGroup poc = null; //, mult = null, bez = null;
+            RoomGroup poc = null, mult = null; //, bez = null;
             for (RoomGroup rg: (Collection<RoomGroup>)RoomGroup.getAllGlobalRoomGroups()) {
             	if (rg.getAbbv().equals("POČ"))
             		poc = rg;
-            	/*
             	else if (rg.getAbbv().equals("MULT"))
             		mult = rg;
+            	/*
             	else if (rg.getAbbv().equals("BĚŽ"))
             		bez = rg;
             	*/
@@ -113,7 +114,7 @@ public class MasarykDefaultPreferences {
             	hibSession.saveOrUpdate(d);
             }
             
-            Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
+            // Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
             
 			DistributionType sameDaysType = (DistributionType)hibSession.createQuery(
 			"select d from DistributionType d where d.reference = :type").setString("type", "SAME_DAYS").uniqueResult();
@@ -124,6 +125,23 @@ public class MasarykDefaultPreferences {
             		"co.subjectArea.department.session.uniqueId = :sessionId")
             		.setLong("sessionId", session.getUniqueId()).list()) {
             	
+            	boolean hasPreferences = false;
+            	if (!ss.getPreferences().isEmpty()) hasPreferences = true;
+            	for (Class_ c: ss.getClasses()) {
+            		if (c.getPreferences().size() > c.getPreferences(TimePref.class).size()) hasPreferences = true;
+            		else for (Iterator i = c.getPreferences(TimePref.class).iterator(); !hasPreferences && i.hasNext(); ) {
+            			TimePref t = (TimePref)i.next();
+            			TimePatternModel m = t.getTimePatternModel();
+            			if (!m.isExactTime() && !m.isDefault()) {
+            				hasPreferences = true;
+            			}
+            		}
+            	}
+            	if (hasPreferences) {
+            		continue;
+            	}
+        		sLog.info("Setting " + ss.getSchedulingSubpartLabel() + " ...");
+
         		if (ss.getInstrOfferingConfig().isUnlimitedEnrollment()) {
         			ss.getInstrOfferingConfig().setUnlimitedEnrollment(false);
         			ss.getInstrOfferingConfig().setLimit(0);
@@ -180,6 +198,11 @@ public class MasarykDefaultPreferences {
             		Assignment a = c.getCommittedAssignment();
             		if (a == null) continue;
             		
+            		if (c.effectiveDatePattern().getName().startsWith("import")) {
+            			c.setDatePattern(makePattern.getDatePattern(c.getEvent()));
+            		}
+            		
+            		/*
             		for (Location location: a.getRooms()) {
             			if (!(location instanceof Room)) continue;
                 		String code = location.getUniqueId() + ":" + a.getDatePattern().getUniqueId() + ":" + a.getTimePattern().getUniqueId() + ":" + a.getDays() + ":" + a.getStartSlot();
@@ -190,6 +213,7 @@ public class MasarykDefaultPreferences {
                 		}
                 		classes.add(c);
             		}
+            		*/
             		
             		// Reset room ratio
             		c.setRoomRatio(1f);
@@ -245,6 +269,15 @@ public class MasarykDefaultPreferences {
                 		c.getPreferences().add(tp);
             		}
             		// Room preferences
+            		boolean reqMult = false;
+            		if ("MM".equals(c.getSchedulePrintNote())) {
+            			reqMult = true;
+    					RoomGroupPref gp = new RoomGroupPref();
+    					gp.setOwner(c);
+    					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+    					gp.setRoomGroup(mult);
+        				c.getPreferences().add(gp);
+            		}
             		for (Location l: a.getRooms()) {
             			if (l instanceof NonUniversityLocation) {
             				RoomPref rp = new RoomPref();
@@ -277,6 +310,7 @@ public class MasarykDefaultPreferences {
             			}
             			for (RoomGroup rg: l.getRoomGroups()) {
             				if (rg.isGlobal() && rg.getAbbv().equals("MULT")) {
+            					if (reqMult) continue; // already have required MULT
             					RoomGroupPref gp = new RoomGroupPref();
             					gp.setOwner(c);
             					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
@@ -316,6 +350,7 @@ public class MasarykDefaultPreferences {
             hibSession.flush();
             
             
+            /*
 			DistributionType meetWithType = (DistributionType)hibSession.createQuery(
 				"select d from DistributionType d where d.reference = :type").setString("type", "MEET_WITH").uniqueResult();
 
@@ -341,6 +376,7 @@ public class MasarykDefaultPreferences {
             }
             
             hibSession.flush();
+            */
             
             sLog.info("All done.");
         } catch (Exception e) {
