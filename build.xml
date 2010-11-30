@@ -118,7 +118,7 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
-				<attribute name="Class-Path" value="antlr-2.7.6.jar backport-util-concurrent.jar commons-collections-3.2.1.jar commons-dbcp-1.4.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-all-1.2.jar dom4j-1.6.1.jar ehcache-1.5.0.jar hibernate3.jar javassist-3.9.0.GA.jar jta-1.1.jar log4j-1.2.15.jar mysql-connector-java-5.1.11-bin.jar ojdbc6.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar jsp-api.jar servlet-api.jar" />
+				<attribute name="Class-Path" value="antlr-2.7.6.jar backport-util-concurrent.jar commons-collections-3.2.1.jar commons-dbcp-1.4.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-all-1.2.jar dom4j-1.6.1.jar ehcache-1.5.0.jar hibernate3.jar javassist-3.9.0.GA.jar jta-1.1.jar log4j-1.2.15.jar mysql-connector-java-5.1.11-bin.jar ojdbc6.jar ojdbc5.jar ojdbc14.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar jsp-api.jar servlet-api.jar" />
 				<attribute name="Timetabling-Version" value="3.2_bld${build.number}"/>
 			</manifest>
 		</jar>
@@ -314,7 +314,6 @@
 				<include name="commons-dbcp-1.4.jar"/> <!-- Connection pool -->
 				<include name="commons-pool-1.5.4.jar"/> <!-- Connection pool required dependency -->
 				<include name="mysql-connector-java-5.1.11-bin.jar"/> <!-- MySQL connector classes -->
-				<include name="ojdbc6.jar"/> <!-- Oracle connector classes -->
 				<include name="commons-logging-1.1.1.jar"/> <!-- UniTime Logging -->
 				<include name="slf4j-api-1.5.8.jar"/> <!-- Hibernate Logging -->
 				<include name="slf4j-log4j12-1.5.8.jar"/> <!-- Hibernate Logging -->
@@ -354,7 +353,6 @@
 				<include name="commons-dbcp-1.4.jar"/> <!-- Connection pool -->
 				<include name="commons-pool-1.5.4.jar"/> <!-- Connection pool required dependency -->
 				<include name="mysql-connector-java-5.1.11-bin.jar"/> <!-- MySQL connector classes -->
-				<include name="ojdbc6.jar"/> <!-- Oracle connector classes -->
 				<include name="commons-logging-1.1.1.jar"/> <!-- UniTime Logging -->
 				<include name="slf4j-api-1.5.8.jar"/> <!-- Hibernate Logging -->
 				<include name="slf4j-log4j12-1.5.8.jar"/> <!-- Hibernate Logging -->
