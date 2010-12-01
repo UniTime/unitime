@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="PosMinor"
+		table="POS_MINOR"
+		mutable="false">
+
+ 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+
+        <id
+            name="uniqueId"
+            column="UNIQUEID"
+            type="java.lang.Long"
+        >
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">PREF_GROUP_SEQ</param>
+            </generator>
+        </id>
+
+
+		<property
+			name="externalUniqueId"
+			column="EXTERNAL_UID"
+			type="java.lang.String"
+			not-null="false"
+			length="40"
+		/>
+
+		<property
+			name="code"
+			column="CODE"
+			type="java.lang.String"
+			not-null="true"
+			length="10"
+		/>
+
+		<property
+			name="name"
+			column="NAME"
+			type="java.lang.String"
+			not-null="true"
+			length="50"
+		/>
+
+		<many-to-one 
+			name="session" 
+			class="Session" 
+			column="SESSION_ID" 
+			foreign-key="FK_STUDENT_SESSION"
+			not-null="true"
+		/>
+
+		<set name="academicAreas" table="POS_ACAD_AREA_MINOR" inverse="false" lazy="true">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="MINOR_ID"/> 
+			<many-to-many class="org.unitime.timetable.model.AcademicArea" 
+				column="ACADEMIC_AREA_ID" 
+				foreign-key="FK_ACAD_AREA_MINOR_AREA"
+				/>
+		</set>
+	</class>
+</hibernate-mapping>

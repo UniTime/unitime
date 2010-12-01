@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="Meeting"
+		abstract="false"
+		table="MEETING">
+
+		<cache include="non-lazy" usage="read-write"/>
+
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">PREF_GROUP_SEQ</param>
+			</generator>
+            
+        </id>
+        
+		<many-to-one 
+			name="event" 
+			class="Event" 
+			column="EVENT_ID" 
+			foreign-key="fk_meeting_event"
+			not-null="true"
+		/>
+
+		<property
+			name="meetingDate"
+			column="MEETING_DATE"
+			type="java.sql.Timestamp"
+			not-null="true"
+		/>
+		
+ 		<property
+			name="startPeriod"
+			column="START_PERIOD"
+			type="java.lang.Integer"
+			not-null="true"
+			length="10"
+		/>
+
+ 		<property
+			name="startOffset"
+			column="START_OFFSET"
+			type="java.lang.Integer"
+			not-null="false"
+			length="10"
+		/>
+
+		<property
+			name="stopPeriod"
+			column="STOP_PERIOD"
+			type="java.lang.Integer"
+			not-null="true"
+			length="10"
+		/>
+
+ 		<property
+			name="stopOffset"
+			column="STOP_OFFSET"
+			type="java.lang.Integer"
+			not-null="false"
+			length="10"
+		/>
+		
+ 		<property
+			name="locationPermanentId"
+			column="location_perm_id"
+			type="java.lang.Long"
+			not-null="false"
+			length="20"
+		/>
+		
+		<property
+			name="classCanOverride"
+			column="CLASS_CAN_OVERRIDE"
+			type="java.lang.Boolean"
+			not-null="true"
+		/>
+
+		<property
+			name="approvedDate"
+			column="APPROVED_DATE"
+			type="java.sql.Timestamp"
+			not-null="false"
+		/>
+			
+		
+	</class>
+</hibernate-mapping>

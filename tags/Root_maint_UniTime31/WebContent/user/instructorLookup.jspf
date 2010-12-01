@@ -1,0 +1,172 @@
+<%--
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+--%>
+<%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.model.Session" %>
+<%@ page import="org.unitime.timetable.model.Staff" %>
+
+<logic:notEmpty name="<%=frmName%>" property="matchFound">
+			<logic:equal name="<%=frmName%>" property="matchFound" value="true">
+
+				<TR>
+					<TD valign="middle" colspan='2' align='right'>
+						<tt:section-header>		
+							<tt:section-title>	
+								Search Results	
+							</tt:section-title>
+							<html:submit property="op" 
+								styleClass="btn" accesskey="E" titleKey="title.selectInstructor" >
+								<bean:message key="button.selectInstructor" />
+							</html:submit> 
+							<html:submit property="op" 
+								styleClass="btn" accesskey="C" titleKey="title.cancel" >
+								<bean:message key="button.cancel" />
+							</html:submit> 
+						</tt:section-header>		
+					</TD>
+				</TR>
+				
+				<logic:notEmpty name="<%=frmName%>" property="i2a2Match">
+				<bean:define id="i2a2" name="<%=frmName%>" property="i2a2Match" />
+				<TR>
+					<TD valign="middle" colspan='2'>
+					&nbsp;
+					</TD>
+				</TR>
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					External Lookup Match
+					</TD>
+				</TR>				
+				<TR>
+					<TD valign="middle" colspan='2'>
+						<table align='left' border='0'>
+							<tr>
+								<td></td>
+								<td><i>External Id</i></td>
+								<td><i>Name</i></td>
+								<td><i>Login</i></td>
+							</tr>
+							<tr>
+								<td>
+									<html:radio property="searchSelect" value="i2a2"/>
+								</td>
+								<td>
+									<bean:write name="i2a2" property="id" /> &nbsp;
+								</td>
+								<td>
+									<bean:write name="i2a2" property="name" /> &nbsp;
+								</td>
+								<td>
+									<bean:write name="i2a2" property="login" />  
+								</td>
+							</tr>
+						</table>
+					</TD>
+				</TR>
+				</logic:notEmpty>
+				
+				<logic:notEmpty name="<%=frmName%>" property="staffMatch">
+				<TR>
+					<TD valign="middle" colspan='2'>
+					&nbsp;
+					</TD>
+				</TR>
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					Staff File Matches
+					</TD>
+				</TR>
+				
+				<% 
+					Long sessionId = Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId();
+				 %>
+
+				<TR>
+					<TD valign="middle" colspan='2' class='BottomBorderGray'>
+						<table align='left' border='0'>
+							<tr>
+								<td></td>
+								<td><i>External Id</i></td>
+								<td><i>Name</i></td>
+								<td><i>Department</i></td>
+								<td><i>Position</i></td>
+							</tr>
+							<logic:iterate id="staff" name="<%=frmName%>" property="staffMatch">
+								<bean:define id="staffUid" name="staff" property="uniqueId" />
+								<tr>
+									<td>
+										<html:radio property="searchSelect" value="${staffUid}"/>
+									</td>
+									<td>
+										<bean:write name="staff" property="externalUniqueId" /> &nbsp;
+									</td>
+									<td>
+										<bean:write name="staff" property="name" /> &nbsp;
+									</td>
+									<td>
+										<%=((Staff)staff).getDeptName(sessionId)%> &nbsp;
+									</td>
+									<td>
+										<logic:notEmpty name="staff" property="positionCode">
+											<bean:define id="positionCode" name="staff" property="positionCode" />
+											<bean:define id="positionType" name="positionCode" property="positionType" />
+											<bean:write name="positionType" property="label" />
+										</logic:notEmpty>
+										<logic:empty name="staff" property="positionCode">
+											N/A
+										</logic:empty>
+									</td>
+								</tr>
+							</logic:iterate>
+						</table>
+					</TD>
+				</TR>
+				</logic:notEmpty>
+				
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					&nbsp;
+					</TD>
+				</TR>
+				
+				<TR>
+					<TD valign="middle" colspan='2' align='right'>
+						<html:hidden name="<%=frmName%>" property="careerAcct" />
+						<html:hidden name="<%=frmName%>" property="fname" />
+						<html:hidden name="<%=frmName%>" property="mname" />
+						<html:hidden name="<%=frmName%>" property="lname" />
+						<html:hidden name="<%=frmName%>" property="posType" />
+						<html:hidden name="<%=frmName%>" property="note" />
+						<html:hidden name="<%=frmName%>" property="deptName" />
+						<html:hidden name="<%=frmName%>" property="puId" />
+						
+						<html:submit property="op" 
+							styleClass="btn" accesskey="E" titleKey="title.selectInstructor" >
+							<bean:message key="button.selectInstructor" />
+						</html:submit> 
+						<html:submit property="op" 
+							styleClass="btn" accesskey="C" titleKey="title.cancel" >
+							<bean:message key="button.cancel" />
+						</html:submit> 
+					</TD>
+				</TR>
+				
+			</logic:equal>
+		</logic:notEmpty>
+
