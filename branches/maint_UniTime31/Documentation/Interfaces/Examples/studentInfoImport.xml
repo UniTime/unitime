@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE students PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Student.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+	<!-- student                 ==> Required:  externalId, firstName, lastName
+	                                 Optional:  middleName, email
+	       studentAcadAreaClass  ==> [1 ==> N entries]
+	         acadAreaClass       ==> Required:  academicArea, academicClass
+	       studentMajors         ==> [1 ==> N entries]  
+	         major               ==> Required:  academicArea, code
+	       studentMinors         ==> [0 ==> N entries]  
+	         minor               ==> Required:  academicArea, code
+	       studentGroups         ==> [0 ==> N entries]  
+	         studentGroup        ==> Required:  group
+	       studentAccomodations  ==> [0 ==> N entries]  
+	         studentAccomodation ==> Required:  accomodation
+	-->
+<students campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<student externalId="99999111110" firstName="JO DEAN" middleName="KAY" lastName="TIPTON">
+   		<studentAcadAreaClass>
+   			<acadAreaClass academicArea="CFS" academicClass="08"/>
+  		</studentAcadAreaClass>
+  		<studentMajors>
+   			<major academicArea="CFS" code="314"/>
+  		</studentMajors>
+  		<studentMinors>
+   			<minor academicArea="CFS" code="349"/>
+  		</studentMinors>
+	</student>
+	<student externalId="99999111111" firstName="KRISTY" middleName="N" lastName="DERUITER">
+ 		<studentAcadAreaClass>
+   			<acadAreaClass academicArea="GR" academicClass="M"/>
+  		</studentAcadAreaClass>
+  		<studentMajors>
+   			<major academicArea="GR" code="D30"/>
+  		</studentMajors>
+	</student>
+	<student externalId="99999111112" firstName="TAUNA" middleName="STARBUCK" lastName="SISCO" email="tssisco@msn.com">
+  		<studentAcadAreaClass>
+   			<acadAreaClass academicArea="GR" academicClass="A"/>
+  		</studentAcadAreaClass>
+  		<studentMajors>
+   			<major academicArea="GR" code="J77"/>
+  		</studentMajors>
+		<studentGroups>
+		    <studentGroup group="AgEd"/>
+		</studentGroups>
+		<studentAccomodations>
+		    <studentAccomodation accomodation="Visual"/>
+		    <studentAccomodation accomodation="WChair"/>
+		</studentAccomodations>
+	</student>
+	<student externalId="99999111113" firstName="LAUREN" middleName="DAKE" lastName="O NEIL">
+   		<studentAcadAreaClass>
+   			<acadAreaClass academicArea="LA" academicClass="07"/>
+			<acadAreaClass academicArea="ME" academicClass="9"/>
+   		</studentAcadAreaClass>
+   		<studentMajors>
+  			<major academicArea="LA" code="466"/>
+			<major academicArea="ME" code="331"/>
+   		</studentMajors>
+   	</student>
+</students>
