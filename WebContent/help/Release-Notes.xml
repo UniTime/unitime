@@ -142,6 +142,19 @@
 				<line>Examinations: Added ability to automatically put a preference on an original building (i.e., building of a room in which the related class took place)</line>
 				<line>Course timetabling solver: handling of meet with constraint improved</line>
 				<line>Course offerings: course number can be in lower case (automatic conversion to upper case is disabled when tmtbl.courseNumber.upperCase property is set to false)</line>
+				<line>Course offering import: allow for incremental mode
+					<line>Set by attribute incremental on the root element (boolean, defalts to false)</line>
+					<line>If incremental, course offerings / courses that are not included in the file are left untouched (i.e., not deleted at the end)</line>
+				</line>
+				<line>Timetable: Allow for boolean expressions in the filter (e.g., ME or ENAD will match all rooms from ME or ENAD buildings)
+					<line>Also allow for regular expressions (e.g., regex:"ME .*[A-Za-z]" will match all ME rooms ending with a character)</line>
+					<line>By default, the name must contain all the terms (e.g., ME 200 will only match ME 200 room and not ME 2001)</line>
+					<line>Partial matches can be done by using find: attribute (e.g., find:"ME 200")</line>
+					<line>Term matches are case insensitive (me will match ME building)</line>
+					<line>Also, when displaying save solution, display dates instead of extended date pattern names.</line>
+				</line>
+				<line>Test HQL: Allow to change the maximal number of displayed lines by setting the tmtbl.test_hql.max_line application property.</line>
+				<line>XML imports: Ensure that the user that initiated the import is used for the change-log and also for sending emails in the course offering import.</line>
 			</description>
 		</item>
 		<item>
