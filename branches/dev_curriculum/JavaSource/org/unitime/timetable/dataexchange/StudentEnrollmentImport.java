@@ -35,7 +35,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.test.UpdateExamConflicts;
 
@@ -83,12 +82,8 @@ public class StudentEnrollmentImport extends BaseImport {
 			}
 	        debug("classes loaded");
 	        
-	        TimetableManager manger = getManager();
-	        if (manger == null)
-	        	manger = findDefaultManager();
-
 	        if (created != null)
-				ChangeLog.addChange(getHibSession(), manger, session, session, created, ChangeLog.Source.DATA_IMPORT_STUDENT_ENROLLMENTS, ChangeLog.Operation.UPDATE, null, null);
+				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_STUDENT_ENROLLMENTS, ChangeLog.Operation.UPDATE, null, null);
          
 	        Hashtable<String, Student> students = new Hashtable<String, Student>();
 	        for (Student student: StudentDAO.getInstance().findBySession(getHibSession(), session.getUniqueId())) {
