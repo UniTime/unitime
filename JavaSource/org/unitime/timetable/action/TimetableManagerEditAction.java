@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,24 +14,21 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -47,6 +44,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimetableManagerForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
@@ -97,7 +95,6 @@ public class TimetableManagerEditAction extends Action {
 		  throw new Exception ("Access Denied.");
 		}
 
-        HttpSession httpSession = request.getSession();
         MessageResources rsc = getResources(request);
         User user = Web.getUser(request.getSession());        
         TimetableManagerForm frm = (TimetableManagerForm) form;
@@ -290,26 +287,22 @@ public class TimetableManagerEditAction extends Action {
         String id = frm.getExternalId();
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
             
-        	HashMap attributes = new HashMap();
-        	attributes.put(ExternalUidLookup.SEARCH_ID, id);
-        	
         	String className = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.class");        	
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
-       		Map results = lookup.doLookup(attributes);
-            if (results==null)
-                throw new Exception (lookup.getErrorMessage());
-			frm.setExternalId((String)results.get(ExternalUidLookup.EXTERNAL_ID));
-			frm.setLookupResult((String)results.get(ExternalUidLookup.USERNAME));
+       		UserInfo results = lookup.doLookup(id);
+       		if (results == null) return;
+			frm.setExternalId(results.getExternalId());
+			frm.setLookupResult(results.getUserName());
 			if (frm.getFirstName() == null || frm.getFirstName().trim().length() == 0){
-				frm.setFirstName((String)results.get(ExternalUidLookup.FIRST_NAME));
+				frm.setFirstName(results.getFirstName());
 			}
 			if (frm.getMiddleName() == null || frm.getMiddleName().trim().length() == 0){
-				frm.setMiddleName((String)results.get(ExternalUidLookup.MIDDLE_NAME));
+				frm.setMiddleName(results.getMiddleName());
 			}
 			if (frm.getLastName() == null || frm.getLastName().trim().length() == 0){
-				frm.setLastName((String)results.get(ExternalUidLookup.LAST_NAME));
+				frm.setLastName(results.getLastName());
 			}
-			frm.setEmail((String)results.get(ExternalUidLookup.EMAIL));
+			frm.setEmail(results.getEmail());
         }
     }
 

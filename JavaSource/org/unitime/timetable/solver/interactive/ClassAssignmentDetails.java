@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,19 +14,19 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.interactive;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -59,7 +59,6 @@ import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
@@ -70,7 +69,6 @@ import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
@@ -80,8 +78,6 @@ import net.sf.cpsolver.ifs.solver.Solver;
  */
 public class ClassAssignmentDetails implements Serializable, Comparable {
 	private static final long serialVersionUID = 1L;
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	public static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	public static DecimalFormat sJenrDF = new DecimalFormat("0",new java.text.DecimalFormatSymbols(Locale.US));
 	private ClassInfo iClass = null;
@@ -99,7 +95,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	private Vector iStudentConflicts = new Vector();
 	private Vector iGroupConstraintInfos = new Vector();
 	private Vector iBtbInstructorInfos = new Vector();
-	private int iYear = -1;
 	
 	public ClassInfo getClazz() { return iClass; }
 	public TimeInfo getTime() { return iTime; }
@@ -115,7 +110,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			getAssignedTime().equals(getInitialTime()) && 
 			getAssignedRoom().equals(getInitialRoom());
 	}
-	public void setAssigned(AssignmentPreferenceInfo info, Vector roomIds, int days, int slot) {
+	public void setAssigned(AssignmentPreferenceInfo info, List<Long> roomIds, int days, int slot) {
 		iAssignedTime = null; 
 		if (days>=0 && slot>=0) {
 			for (Enumeration e=iTimes.elements();e.hasMoreElements();) {
@@ -129,12 +124,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		if (roomIds!=null) {
 			int idx = 0;
 			iAssignedRoom = new RoomInfo[roomIds.size()];
-			for (Enumeration e=roomIds.elements();e.hasMoreElements();idx++) {
-				Long roomId = (Long)e.nextElement();
+			for (Long roomId: roomIds) {
 				for (Enumeration f=iRooms.elements();f.hasMoreElements();) {
 					RoomInfo room = (RoomInfo)f.nextElement();
 					if (room.getId().equals(roomId)) {
-						iAssignedRoom[idx] = room; break;
+						iAssignedRoom[idx++] = room; break;
 					}
 				}
 			}
@@ -160,14 +154,13 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solver solver, Lecture lecture, Placement placement, boolean includeConstraints) {
-		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),SolverGridModel.hardConflicts2pref(lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
 		if (placement!=null) {
 			if (placement.isMultiRoom()) {
 				iRoom = new RoomInfo[placement.getRoomLocations().size()];
 				int idx = 0;
-				for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();idx++) {
-					RoomLocation room = (RoomLocation)e.nextElement(); 
+				for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();idx++) {
+					RoomLocation room = e.next(); 
 					iRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
 				}
 			} else {
@@ -180,7 +173,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (!lecture.getInstructorConstraints().isEmpty()) {
 				iInstructor = new InstructorInfo[lecture.getInstructorConstraints().size()];
 				for (int i=0;i<lecture.getInstructorConstraints().size();i++) {
-					InstructorConstraint ic = (InstructorConstraint)lecture.getInstructorConstraints().elementAt(i);
+					InstructorConstraint ic = (InstructorConstraint)lecture.getInstructorConstraints().get(i);
 					iInstructor[i] = new InstructorInfo(ic.getName(),ic.getResourceId());
 				}
 			}
@@ -191,8 +184,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (initialPlacement.isMultiRoom()) {
 				iInitialRoom = new RoomInfo[initialPlacement.getRoomLocations().size()];
 				int idx = 0;
-				for (Enumeration e=initialPlacement.getRoomLocations().elements();e.hasMoreElements();idx++) {
-					RoomLocation room = (RoomLocation)e.nextElement(); 
+				for (Iterator<RoomLocation> e=initialPlacement.getRoomLocations().iterator();e.hasNext();idx++) {
+					RoomLocation room = e.next(); 
 					iInitialRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
 				}
 			} else {
@@ -203,13 +196,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
 			iInitialTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId());
 		}
-		for (Enumeration e=lecture.timeLocations().elements();e.hasMoreElements();) {
-			TimeLocation time = (TimeLocation)e.nextElement();
+		for (TimeLocation time: lecture.timeLocations()) {
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
 			iTimes.add(new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()),min,time.getDatePatternName(),time.getTimePatternId()));
 		}
-		for (Enumeration e=lecture.roomLocations().elements();e.hasMoreElements();) {
-			RoomLocation room = (RoomLocation)e.nextElement();
+		for (RoomLocation room: lecture.roomLocations()) {
 			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())));
 		}
 		if (includeConstraints) {
@@ -227,13 +218,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
     				iStudentConflicts.add(new StudentConflictInfo(assignmentId,jInfo,StudentConflictInfo.OTHER_ASSIGNMENT_CONFLICT_TYPE));
     			}
 			}
-			for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-				Constraint c = (Constraint)e.nextElement();
+			for (Constraint c: lecture.constraints()) {
 				if (c instanceof GroupConstraint) {
 					GroupConstraint gc = (GroupConstraint)c;
 					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
-					for (Enumeration f=gc.variables().elements();f.hasMoreElements();) {
-						Lecture another = (Lecture)f.nextElement();
+					for (Lecture another: gc.variables()) {
 						if (another.equals(lecture)) continue;
 						dist.addClass(another.getClassId());
 					}
@@ -241,10 +230,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				}
 			}
 			if (!lecture.getInstructorConstraints().isEmpty() && placement!=null) {
-				for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-					InstructorConstraint ic = (InstructorConstraint)e.nextElement();
-				    for (Enumeration f=ic.variables().elements();f.hasMoreElements();) {
-				        Lecture other = (Lecture)f.nextElement();
+				for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
+				    for (Lecture other: ic.variables()) {
 				        if (other.equals(lecture) || other.getAssignment()==null) continue;
 				        int pref = ic.getDistancePreference(placement, (Placement)other.getAssignment());
 				        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
@@ -256,10 +243,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solution solution, Assignment assignment, boolean includeConstraints, Session hibSession, String instructorNameFormat) throws Exception {
-		//TODO: checked OK, tested OK
-		iYear = solution.getSession().getSessionStartYear();
-		int sessionStartDay = DateUtils.getDayOfYear(solution.getSession().getSessionBeginDateTime());
-		int sessionEndDay = DateUtils.getDayOfYear(solution.getSession().getSessionEndDateTime());
 		if (assignment!=null) {
 			iAssignmentInfo = (AssignmentPreferenceInfo)assignment.getAssignmentInfo("AssignmentInfo");
 			if (iAssignmentInfo==null) iAssignmentInfo = new AssignmentPreferenceInfo();
@@ -438,7 +421,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public String toHtml(boolean link, boolean newWindow) {
 			if (link) {
 				if (newWindow) {
-					return "<a class='noFancyLinks' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" onClick=\"window.open('suggestions.do?id="+iClassId+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
+					return "<a class='noFancyLinks' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+iClassId+"&op=Reset','900','90%');\"><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				} else {
 					return "<a class='noFancyLinks' href='suggestions.do?id="+iClassId+"&op=Select'><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				}
@@ -669,6 +652,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        		sb.append(getOther().getRoom()[i].toHtml(false,false));
 		        	}
 		        sb.append(props.isEmpty()?"":" <i>"+props+"</i>");
+		        sb.append(" <i>" + iInfo.getCurriculumText() + "</i>");
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);
@@ -744,7 +728,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				sb.append("<input type='hidden' name='curRoom' value='0'/>");
 				sb.append("<input type='hidden' name='roomState' value='0'/>");
 				for (int i=0;i<getClazz().nrRooms();i++)
-					sb.append("<input type='hidden' name='room"+i+"' value='"+(selection==null?iRoom==null?"":iRoom[i].getId().toString():selection.getRoomIds().elementAt(i).toString())+"'/>");
+					sb.append("<input type='hidden' name='room"+i+"' value='"+(selection==null?iRoom==null?"":iRoom[i].getId().toString():selection.getRoomIds().get(i).toString())+"'/>");
 			}
 			for (Enumeration e=elements();e.hasMoreElements();) {
 				RoomInfo room = (RoomInfo)e.nextElement();

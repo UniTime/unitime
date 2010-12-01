@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,15 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -67,12 +66,12 @@ public class CsvClassAssignmentExport {
 		
 		for (Iterator i=classes.iterator();i.hasNext();) {
 			Class_ clazz = (Class_)i.next();
-			Vector leads = clazz.getLeadInstructors();
+			List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 			StringBuffer leadsSb = new StringBuffer();
-			for (Enumeration e=leads.elements();e.hasMoreElements();) {
-				DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+			for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+				DepartmentalInstructor instructor = e.next();
 				leadsSb.append(instructor.getName(instructorFormat));
-				if (e.hasMoreElements()) leadsSb.append("\n");
+				if (e.hasNext()) leadsSb.append("\n");
 			}
             String divSec = clazz.getDivSecNumber();
             if (divSec==null)
@@ -122,7 +121,6 @@ public class CsvClassAssignmentExport {
 
     public static CSVFile exportCsv2(User user, Collection classes, ClassAssignmentProxy proxy) {
         CSVFile file = new CSVFile();
-        String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         file.setSeparator(",");
         file.setQuotationMark("\"");
         file.setHeader(new CSVField[] {
@@ -149,21 +147,21 @@ public class CsvClassAssignmentExport {
         int idx = 1;
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ clazz = (Class_)i.next();
-            Vector leads = clazz.getLeadInstructors();
+            List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
             StringBuffer lastNameSb = new StringBuffer();
             StringBuffer firstNameSb = new StringBuffer();
             StringBuffer midNameSb = new StringBuffer();
             StringBuffer iniSb = new StringBuffer();
             StringBuffer rankSb = new StringBuffer();
-            for (Enumeration e=leads.elements();e.hasMoreElements();) {
-                DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+            for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+                DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
                 lastNameSb.append(instructor.getLastName()==null?"":instructor.getLastName().trim().substring(0,1)+instructor.getLastName().trim().substring(1).toLowerCase());
                 firstNameSb.append(instructor.getFirstName()==null?"":instructor.getFirstName().trim().substring(0,1)+instructor.getFirstName().trim().substring(1).toLowerCase());
                 midNameSb.append(instructor.getMiddleName()==null?"":instructor.getMiddleName().trim());
                 iniSb.append(instructor.getFirstName()==null || instructor.getFirstName().length()==0?"":instructor.getFirstName().substring(0,1));
                 iniSb.append(instructor.getMiddleName()==null || instructor.getMiddleName().length()==0?"":" "+instructor.getMiddleName().substring(0,1));
                 rankSb.append(instructor.getPositionType().getLabel());
-                if (e.hasMoreElements()) {
+                if (e.hasNext()) {
                     lastNameSb.append("\n");
                     firstNameSb.append("\n");
                     midNameSb.append("\n");
@@ -209,12 +207,12 @@ public class CsvClassAssignmentExport {
                 StringBuffer roomSb = new StringBuffer();
                 StringBuffer bldgSb = new StringBuffer();
                 if (placement.isMultiRoom()) {
-                    for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-                        RoomLocation r = (RoomLocation)e.nextElement();
-                        String room = (placement.getRoomLocation()==null?"":placement.getRoomLocation().getName());
+                    for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();) {
+                        RoomLocation r = e.next();
+                        String room = r.getName();
                         bldgSb.append(room.substring(0,room.lastIndexOf(' ')));
                         roomSb.append(room.substring(room.lastIndexOf(' ')+1));
-                        if (e.hasMoreElements()) {
+                        if (e.hasNext()) {
                             roomSb.append('\n');
                             bldgSb.append('\n');
                         }

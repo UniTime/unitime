@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,12 +14,10 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.ui;
-
-import java.util.Enumeration;
 
 import org.unitime.timetable.solver.TimetableSolver;
 
@@ -31,12 +29,13 @@ import net.sf.cpsolver.coursett.model.Lecture;
  */
 public class SolverUnassignedClassesModel extends UnassignedClassesModel {
 	
+	private static final long serialVersionUID = -6094708695678612559L;
+
 	public SolverUnassignedClassesModel(TimetableSolver solver) {
 		super();
-		for (Enumeration e=solver.currentSolution().getModel().unassignedVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: solver.currentSolution().getModel().unassignedVariables()) {
 			String name = lecture.getName();
-			String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+			String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+lecture.getClassId()+"&op=Reset','900','90%');";
 			String instructorName = lecture.getInstructorName();
 			int nrStudents = lecture.students().size();
 			String initial = "";

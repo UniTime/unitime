@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -55,7 +55,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 public class ExamEditForm extends PreferencesForm {
-    private String examId;
+	private static final long serialVersionUID = -5083087578026654516L;
+	private String examId;
     private String label;
     private String name;
     private String note;
@@ -69,12 +70,10 @@ public class ExamEditForm extends PreferencesForm {
     
     private List instructors;
     
-    private List objectType;
     private List subjectArea;
     private List courseNbr;
     private List itype;
     private List classNumber;
-    private List messages;
     private Collection subjectAreas;
     
     private Integer examType;

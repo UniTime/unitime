@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -77,24 +77,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	 */
 	public Solution (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public Solution (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverGroup owner,
-		java.util.Date created,
-		java.lang.Boolean valid,
-		java.lang.Boolean commited) {
-
-		super (
-			uniqueId,
-			owner,
-			created,
-			valid,
-			commited);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -342,7 +324,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         return false;
     }
 
-	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
+	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
 		List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",getOwner())).list();
 		Solution uncommittedSolution = null;
 		for (Iterator i=solutions.iterator();i.hasNext();) {
@@ -386,7 +368,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
 					Assignment b=(Assignment)k.next();
 					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.addElement("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
+						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
 						isOK=false;
 					}
 				}
@@ -422,7 +404,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
 					Assignment b=(Assignment)k.next();
 					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.addElement("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
+						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
 						isOK=false;
 					}
 				}
@@ -513,9 +495,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return true;
 	}
 	
-	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, Vector messages) {
+	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, List<String> messages) {
 		try {
-			if (!"true".equalsIgnoreCase((String)ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true")))
+			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.notif.commit", ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true"))))
 				return; //email notification disabled
 
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy hh:mmaa");
@@ -532,8 +514,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	mail += "\r\n";
         	if (messages!=null && !messages.isEmpty()) {
         		mail += "Message(s): ----------------- \r\n";
-        		for (Enumeration e=messages.elements();e.hasMoreElements();) {
-        			String m = (String)e.nextElement();
+        		for (String m: messages) {
         			mail += m + "\r\n";
         		}
             	mail += "\r\n";
@@ -577,7 +558,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	}
         	
         	TimetableManager mgr = TimetableManager.findByExternalId(puid);
-        	Session session = owner.getSession();
         	
         	mail += "Manager info -------------- \r\n";
         	mail += "Name: "+mgr.getName()+"\r\n";
@@ -598,17 +578,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	mail += "TimeStamp: "+(new Date());
         	
         	Email email = new Email();
-        	
-        	email.sendMail(
-        			(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-        			(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-        			(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-        			mgr.getEmailAddress(), 
-        			(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-        			"Timetabling (Solution commit): "+subject, 
-        			mail, 
-        			new Vector());
-        	
+        	email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+        	email.addNotifyCC();
+        	email.setSubject("UniTime (Solution Commit): "+subject);
+        	email.setText(mail);
+        	email.send();
 		} catch (Exception e) {
 			sLog.error("Unable to send solution commit/uncommit notification, reason: "+e.getMessage(),e);
 		}
@@ -659,12 +633,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			if (o instanceof Assignment) {
 				Assignment assignment = (Assignment)o;
 				Class_ clazz = assignment.getClazz();
-				Vector leads = clazz.getLeadInstructors();
+				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
-				for (Enumeration e=leads.elements();e.hasMoreElements();) {
-					DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+				for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+					DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
 					leadsSb.append(instructor.getName(instructorFormat));
-					if (e.hasMoreElements()) leadsSb.append(";");
+					if (e.hasNext()) leadsSb.append(";");
 				}
 				Placement placement = assignment.getPlacement();
 				if (isCommited().booleanValue()) {
@@ -699,12 +673,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				}
 			} else {
 				Class_ clazz = (Class_)o;
-				Vector leads = clazz.getLeadInstructors();
+				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
-				for (Enumeration e=leads.elements();e.hasMoreElements();) {
-					DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+				for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
+					DepartmentalInstructor instructor = (DepartmentalInstructor)e.next();
 					leadsSb.append(instructor.getName(instructorFormat));
-					if (e.hasMoreElements()) leadsSb.append(";");
+					if (e.hasNext()) leadsSb.append(";");
 				}
 				if (isCommited().booleanValue()) {
 					file.addLine(new CSVField[] {
@@ -1317,11 +1291,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         
         HashSet subparts2fix = new HashSet();
     	
-    	HashSet classes2update = new HashSet();
     	for (Iterator i=classes.iterator();i.hasNext();) {
     		Class_ clazz = (Class_)i.next();
     		
-    		int divNum = Integer.parseInt(clazz.getClassSuffix().substring(0,3));
     		clazz.setClassSuffix(null);
             
             subparts2fix.add(clazz.getSchedulingSubpart());
@@ -1449,16 +1421,16 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         SolutionDAO dao = new SolutionDAO();
         org.hibernate.Session hibSession = dao.getSession(); 
         SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
-        hibSessionFactory.evict(Solution.class, solutionId);
-        hibSessionFactory.evictCollection(Solution.class.getName()+".parameters", solutionId);
-        hibSessionFactory.evictCollection(Solution.class.getName()+".assignments", solutionId);
+        hibSessionFactory.getCache().evictEntity(Solution.class, solutionId);
+        hibSessionFactory.getCache().evictCollection(Solution.class.getName()+".parameters", solutionId);
+        hibSessionFactory.getCache().evictCollection(Solution.class.getName()+".assignments", solutionId);
         for (Iterator i=hibSession.createQuery("select c.uniqueId from "+
                     "Class_ c, Solution s where s.uniqueId=:solutionId and "+
                     "c.managingDept.uniqueId in elements (s.owner.departments)").
                     setLong("solutionId", solutionId.longValue()).iterate(); i.hasNext();) {
             Number classId = (Number)i.next();
-            hibSession.getSessionFactory().evict(Class_.class, classId);
-            hibSessionFactory.evictCollection(Class_.class.getName()+".assignments", classId);
+            hibSessionFactory.getCache().evictEntity(Class_.class, classId);
+            hibSessionFactory.getCache().evictCollection(Class_.class.getName()+".assignments", classId);
         }
    }
     

@@ -1,10 +1,10 @@
 <%-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.form.SectioningDemoForm" %>
@@ -267,7 +267,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 <script language="javascript">displayLoading();</script>
 
 	<logic:messagesPresent>
-		<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<TR>
 				<TD colspan="2" align="left" class="errorCell">
 					<B><U>ERRORS</U></B><BR>
@@ -289,7 +289,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 	<html:hidden property="nrAltRequests" />
 	<input type='hidden' name='reqIdx' value='-1'>
 	<input type='hidden' name='op2' value=''>
-	<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+	<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 		<tr>
 			<td colspan="2" valign="middle">
 				<tt:section-header>
@@ -321,7 +321,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 		</tr>
 	</table>
 	<br>		
-	<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+	<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 		<tr>
 			<td colspan="7" valign="middle">
 				<tt:section-header>

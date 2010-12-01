@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.util;
 
@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -64,12 +65,12 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.util.Constants;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
@@ -81,11 +82,8 @@ public class PdfWorksheet {
     private boolean iUseCommitedAssignments = true;
     private static int sNrChars = 133;
     private static int sNrLines = 50;
-    private File iFolder = null;
-    private File iFile = null;
     private FileOutputStream iOut = null;
     private Document iDoc = null;
-    private PdfWriter iWriter = null;
     private SubjectArea iSubjectArea = null;
     private String iCourseNumber = null;
     private int iPageNo = 0;
@@ -97,13 +95,12 @@ public class PdfWorksheet {
         iUseCommitedAssignments = "true".equals(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.useCommitedAssignments","true"));
         iSubjectArea = sa;
         iCourseNumber = courseNumber;
-        iFile = file;
         if (iCourseNumber!=null && (iCourseNumber.trim().length()==0 || "*".equals(iCourseNumber.trim().length())))
             iCourseNumber = null;
         iDoc = new Document(PageSize.LETTER.rotate());
 
         iOut = new FileOutputStream(file);
-        iWriter = PdfWriter.getInstance(iDoc, iOut);
+        PdfWriter.getInstance(iDoc, iOut);
 
         iDoc.addTitle(sa.getSubjectAreaAbbreviation()+(iCourseNumber==null?"":" "+iCourseNumber)+" Worksheet");
         iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER+", www.unitime.org"));
@@ -241,11 +238,11 @@ public class PdfWorksheet {
     private String[] room(Class_ clazz) {
         Assignment assgn = (iUseCommitedAssignments?clazz.getCommittedAssignment():null);
         if (assgn==null || assgn.getRoomLocations().isEmpty()) {
-            Vector roomLocations = TimetableDatabaseLoader.computeRoomLocations(clazz);
+            List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(clazz);
             if (roomLocations.size()==clazz.getNbrRooms().intValue()) {
                 String[] rooms = new String[roomLocations.size()];
                 for (int x=0;x<roomLocations.size();x++) {
-                    RoomLocation r = (RoomLocation)roomLocations.elementAt(x); 
+                    RoomLocation r = (RoomLocation)roomLocations.get(x); 
                     rooms[x] = r.getName();
                 }
                 return rooms;
@@ -294,20 +291,18 @@ public class PdfWorksheet {
     }
     
     private String[] instructor(Class_ clazz) {
-        Vector leads = clazz.getLeadInstructors();
+        List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
         String[] instr = new String[leads.size()];
         for (int x=0;x<clazz.getLeadInstructors().size();x++) {
-            DepartmentalInstructor in = (DepartmentalInstructor)leads.elementAt(x); 
+            DepartmentalInstructor in = (DepartmentalInstructor)leads.get(x); 
             instr[x] = in.nameShort();
         }
         return instr;
     }
     
     protected void print(CourseOffering co) throws DocumentException {
-        //System.out.println("  Printing "+co.getCourseName()+" ...");
         if (iLineNo+5>=sNrLines) newPage();
         iCourseOffering = co;
-        String session = lpad(co.getSubjectArea().getSession().getAcademicTerm()+" "+co.getSubjectArea().getSession().getAcademicYear(),17);
         int courseLimit = -1;
         InstructionalOffering offering = co.getInstructionalOffering();
         for (Iterator i=offering.getCourseReservations().iterator();i.hasNext();) {
@@ -435,7 +430,6 @@ public class PdfWorksheet {
                 boolean same = false;
                 for (Iterator k=classes.iterator();k.hasNext();) {
                     Class_ clazz = (Class_)k.next();
-                    Assignment assgn = (Assignment)clazz.getCommittedAssignment();
                     String[] time = time(clazz);
                     String[] rooms = room(clazz);
                     String[] instr = instructor(clazz);
@@ -523,19 +517,7 @@ public class PdfWorksheet {
         if (s.length()>len) return s.substring(0,len);
         return rpad(s,' ',len);
     }
-    
-    private String mpad(String s, char ch, int len) {
-        if (s==null) s="";
-        if (s.length()>len) return s.substring(0,len);
-        while (s.length()<len) 
-            if (s.length()%2==0) s = s + ch; else s = ch + s;
-        return s;
-    }
 
-    private String mpad(String s, int len) {
-        return mpad(s,' ',len);
-    }
-    
     private String mpad(String s1, String s2, char ch, int len) {
         String m = "";
         while ((s1+m+s2).length()<len) m += ch;

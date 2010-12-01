@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,24 +14,31 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.timegrid;
 
+import java.text.SimpleDateFormat;
 import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -47,17 +54,17 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.RoomAvailability;
 
 
 /**
  * @author Tomas Muller
  */
 public class SolutionGridModel extends TimetableGridModel {
+	private static final long serialVersionUID = -3207641071203870684L;
 	private transient Long iRoomId = null;
-    private transient int iStartDay = 0;
-    private transient int iEndDay = 0;
     
-	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
 		setName(room.getLabel());
 		setSize(room.getCapacity().intValue());
@@ -77,8 +84,6 @@ public class SolutionGridModel extends TimetableGridModel {
 				deptIds.add(d.getUniqueId());
 			}
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
 		q.setInteger("resourceId", room.getUniqueId().intValue());
 		q.setCacheable(true);
@@ -124,6 +129,84 @@ public class SolutionGridModel extends TimetableGridModel {
 					}
 				}
 		}
+		if (showEvents && RoomAvailability.getInstance() != null) {
+	        Calendar startDateCal = Calendar.getInstance(Locale.US);
+	        // Range can be limited to classes time using
+	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
+	        // endDateCal.setTime(room.getSession().getClassesEndDateTime());
+	        startDateCal.setTime(DateUtils.getDate(1, room.getSession().getStartMonth(), room.getSession().getSessionStartYear()));
+	        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+	        startDateCal.set(Calendar.MINUTE, 0);
+	        startDateCal.set(Calendar.SECOND, 0);
+	        Calendar endDateCal = Calendar.getInstance(Locale.US);
+	        endDateCal.setTime(DateUtils.getDate(0, room.getSession().getEndMonth() + 1, room.getSession().getSessionStartYear()));
+	        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+	        endDateCal.set(Calendar.MINUTE, 59);
+	        endDateCal.set(Calendar.SECOND, 59);
+			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(room, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
+			if (times != null) {
+				int sessionYear = room.getSession().getSessionStartYear();
+		        int firstDOY = room.getSession().getDayOfYear(1, room.getSession().getPatternStartMonth());
+		        int lastDOY = room.getSession().getDayOfYear(0, room.getSession().getPatternEndMonth()+1);
+		        Calendar c = Calendar.getInstance(Locale.US);
+		        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+				for (TimeBlock time: times) {
+					if (time.getEndTime().before(startDateCal.getTime()) || time.getStartTime().after(endDateCal.getTime())) continue;
+	                int dayCode = 0;
+	                c.setTime(time.getStartTime());
+	                int m = c.get(Calendar.MONTH);
+	                int d = c.get(Calendar.DAY_OF_MONTH);
+	                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+	                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
+	                BitSet weekCode = new BitSet(lastDOY - firstDOY);
+	                int offset = room.getSession().getDayOfYear(d,m) - firstDOY;
+	                weekCode.set(offset);
+	                switch (c.get(Calendar.DAY_OF_WEEK)) {
+	                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+	                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+	                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+	                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+	                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+	                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+	                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+	                }
+	                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                c.setTime(time.getEndTime());
+	                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                int length = endSlot - startSlot;
+	                if (length<=0) continue;
+	                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+	        		TimetableGridCell cell = null;
+	        		for (Enumeration<Integer> f=timeLocation.getStartSlots();f.hasMoreElements();) {
+	        			int slot = f.nextElement();
+	        			if (firstDay>=0 && !timeLocation.getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+	        			if (cell==null) {
+	        				cell =  new TimetableGridCell(
+	        						slot/Constants.SLOTS_PER_DAY,
+	        						slot%Constants.SLOTS_PER_DAY,
+	        						-1, 
+	        						room.getUniqueId(),
+	        						room.getLabel(),
+	        						time.getEventName(), 
+	        						null,
+	        						null,
+	        						null, 
+	        						time.getEventName() + " (" + time.getEventType() + ")", 
+	        						TimetableGridCell.sBgColorNotAvailable, 
+	        						length,
+	        						0, 
+	        						1,
+	        						df.format(time.getStartTime()),
+	        						weekCode,
+	        						null);
+	        			} else {
+	        				cell = cell.copyCell(slot/Constants.SLOTS_PER_DAY,cell.getMeetingNumber()+1);
+	        			}
+	        			addCell(slot,cell);
+	        		}
+				}
+			}
+		}
         setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
 	}
 	
@@ -140,8 +223,6 @@ public class SolutionGridModel extends TimetableGridModel {
 			if (ownerIds.length()>0) ownerIds += ",";
 			ownerIds += solution.getOwner().getUniqueId();
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		List commitedAssignments = null;
 		
 		if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
@@ -202,8 +283,6 @@ public class SolutionGridModel extends TimetableGridModel {
 			if (ownerIds.length()>0) ownerIds += ",";
 			ownerIds += solution.getOwner().getUniqueId();
 		}
-		iStartDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(firstSolution.getSession().getSessionEndDateTime());
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and d.uniqueId=:resourceId and " +
 				"o.isControl=true");
@@ -238,8 +317,10 @@ public class SolutionGridModel extends TimetableGridModel {
 			
 			if (cell==null)
 				cell = createCell(j,start,hibSession, assignment, bgMode);
-			else
+			else {
 				cell = cell.copyCell(j,cell.getMeetingNumber()+1);
+				cell.setDays(TimetableGridCell.formatDatePattern(assignment.getDatePattern(), Constants.DAY_CODES[j]));
+			}
 			addCell(j,start,cell);
 		}
 	}
@@ -272,7 +353,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		}
 		String shortComment = null;
 		String shortCommentNoColor = null;
-		String onClick = "window.open('suggestions.do?id="+assignment.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+		String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+assignment.getClassId()+"&op=Reset','900','90%');";
 		String background = null;
 		StringBuffer roomName = new StringBuffer();
 		for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
@@ -351,14 +432,16 @@ public class SolutionGridModel extends TimetableGridModel {
 					assignmentInfo.getNrStudentConflicts()+", " +
 					(roomPref-assignmentInfo.getBestRoomPreference());
 			
-			title = "timePref:"+(int)assignmentInfo.getNormalizedTimePreference()+", "+
-					"studConf:"+assignmentInfo.getNrStudentConflicts()+", "+
-					"roomPref:"+roomPref+", "+
-					"btbInstrPref:"+assignmentInfo.getBtbInstructorPreference()+", "+
-					(assignmentInfo.getInitialAssignment()!=null?"initial:"+(assignmentInfo.getIsInitial()?"this one":assignmentInfo.getInitialAssignment())+", ":"")+
-					(assignmentInfo.getInitialAssignment()!=null?"pert:"+Web.format(assignmentInfo.getPerturbationPenalty())+", ":"")+
-					"noConfPlacements:"+assignmentInfo.getNrPlacementsNoConf()+", "+
-					"deptBal:"+assignmentInfo.getDeptBalancPenalty();
+			title = "Time preference: " + (int)assignmentInfo.getNormalizedTimePreference()+"<br>"+
+					"Student conflicts: "+assignmentInfo.getNrStudentConflicts()+"<br>"+
+					"Room preference: "+roomPref+"<br>"+
+					"Back-to-back instructor pref.: "+assignmentInfo.getBtbInstructorPreference()+"<br>"+
+					(assignmentInfo.getInitialAssignment()!=null?"Initial assignment: "+(assignmentInfo.getIsInitial()?"<i>current assignment</i>":assignmentInfo.getInitialAssignment())+"<br>":"")+
+					(assignmentInfo.getInitialAssignment()!=null?"Perturbation penalty: "+Web.format(assignmentInfo.getPerturbationPenalty())+"<br>":"")+
+					"Non-conflicting placements: "+assignmentInfo.getNrPlacementsNoConf()+"<br>"+
+					"Department balance: "+assignmentInfo.getDeptBalancPenalty();
+		} else {
+			title = assignment.getClassName() + " (" + assignment.getSolution().getOwner().getName() + ")";
 		}
 		
 		if (bgMode==sBgModeDistributionConstPref) {
@@ -377,7 +460,7 @@ public class SolutionGridModel extends TimetableGridModel {
 						pref.addPreferenceProlog(PreferenceLevel.sProhibited);
 					pref.addPreferenceInt(Math.abs(PreferenceLevel.prolog2int(gcInfo.getPreference())));
 				}
-				title = title+", distrPref:"+pref.getPreferenceProlog();
+				title = title+"<br>Distribution preference: "+pref.getPreferenceProlog();
 				background=TimetableGridCell.pref2color(pref.getPreferenceProlog());
 			}
 		}
@@ -408,7 +491,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				length, 
 				0, 
 				nrMeetings,
-				assignment.getDatePattern().getName(),
+				TimetableGridCell.formatDatePattern(assignment.getDatePattern(), Constants.DAY_CODES[day]),
 				assignment.getDatePattern().getPatternBitSet(),
 				instructors);
 	}

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,13 +14,54 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import net.sf.cpsolver.coursett.TimetableLoader;
+import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
+import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
+import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
+import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
+import net.sf.cpsolver.coursett.constraint.RoomConstraint;
+import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
+import net.sf.cpsolver.coursett.model.Configuration;
+import net.sf.cpsolver.coursett.model.InitialSectioning;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
+import net.sf.cpsolver.ifs.model.Constraint;
+import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,7 +88,6 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -60,7 +100,6 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -72,37 +111,13 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.RoomAvailability;
-
-import net.sf.cpsolver.coursett.TimetableLoader;
-import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.InitialSectioning;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
-import net.sf.cpsolver.ifs.util.FastVector;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller
@@ -117,22 +132,26 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private SolverGroup[] iSolverGroup;
 	private Long[] iSolutionId;
 	
-	private Hashtable iRooms = new Hashtable();
-	private Hashtable iInstructors = new Hashtable();
-	private Hashtable iLectures = new Hashtable();
-	private Hashtable iSubparts = new Hashtable();
-	private Hashtable iStudents = new Hashtable();
-	private Hashtable iDeptNames = new Hashtable();
-	private Hashtable iPatterns = new Hashtable();
-	private Hashtable iClasses = new Hashtable();
-	private Set iAllUsedDatePatterns = new HashSet();
-	private Set iAllClasses = null;
-	
+	private Hashtable<Long, RoomConstraint> iRooms = new Hashtable<Long, RoomConstraint>();
+	private Hashtable<Object, InstructorConstraint> iInstructors = new Hashtable<Object, InstructorConstraint>();
+	private Hashtable<Long, Lecture> iLectures = new Hashtable<Long, Lecture>();
+	private Hashtable<Long, SchedulingSubpart> iSubparts = new Hashtable<Long, SchedulingSubpart>();
+	private Hashtable<Long, Student> iStudents = new Hashtable<Long, Student>();
+	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
+	private Hashtable<Integer, List<TimePattern>> iPatterns = new Hashtable<Integer, List<TimePattern>>();
+	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
+	private Set<DatePattern> iAllUsedDatePatterns = new HashSet<DatePattern>();
+	private Set<Class_> iAllClasses = null;
+	private Hashtable<InstructionalOffering, List<Configuration>> iAltConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
+	private Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> iOfferings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
+    private Hashtable<CourseOffering, Set<Student>> iCourse2students = new Hashtable<CourseOffering, Set<Student>>();
+
     private boolean iDeptBalancing = true;
     private boolean iMppAssignment = true;
     private boolean iInteractiveMode = false;
     private boolean iSpread = true;
     private boolean iAutoSameStudents = true;
+    private boolean iLoadCommittedAssignments = false;
 
     private double iFewerSeatsDisouraged = 0.01;
     private double iFewerSeatsStronglyDisouraged = 0.02;
@@ -145,10 +164,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private Progress iProgress = null;
     
-    private int iStartDay = 0;
-    private int iEndDay = 0;
-    
-    //private Set iAvailableRooms = new HashSet();
     private boolean iLoadStudentEnrlsFromSolution = false;
     private boolean iFixMinPerWeek = false;
     private boolean iAssignSingleton = true;
@@ -158,9 +173,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private String iInstructorFormat = null;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
-    private boolean iWeighStudents = true;
     
-    private boolean iIgnoreCommittedStudentConflicts = false;
+    private CommittedStudentConflictsMode iCommittedStudentConflictsMode = CommittedStudentConflictsMode.Load;
+    
+    private StudentCourseDemands iStudentCourseDemands = null;
+    
+    public static enum CommittedStudentConflictsMode {
+    		Ignore,
+    		Load,
+    		Compute};
     
     public TimetableDatabaseLoader(TimetableModel model) {
         super(model);
@@ -204,10 +225,30 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iAutoSameStudentsConstraint = getModel().getProperties().getProperty("General.AutoSameStudentsConstraint",iAutoSameStudentsConstraint);
         
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
+                
+        try {
+        	String studentCourseDemandsClassName = getModel().getProperties().getProperty("Curriculum.StudentCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
+        	if (studentCourseDemandsClassName.indexOf(' ') >= 0) studentCourseDemandsClassName = studentCourseDemandsClassName.replace(" ", "");
+        	if (studentCourseDemandsClassName.indexOf('.') < 0) studentCourseDemandsClassName = "org.unitime.timetable.solver.curricula." + studentCourseDemandsClassName;
+            Class studentCourseDemandsClass = Class.forName(studentCourseDemandsClassName);
+            iStudentCourseDemands = (StudentCourseDemands)studentCourseDemandsClass.getConstructor(DataProperties.class).newInstance(getModel().getProperties());
+        } catch (Exception e) {
+        	iProgress.warn("Failed to load custom student course demands class, using last-like course demands instead.",e);
+        	iStudentCourseDemands = new LastLikeStudentCourseDemands(getModel().getProperties());
+        }
+        getModel().getProperties().setProperty("General.SaveStudentEnrollments", iStudentCourseDemands.isMakingUpStudents() ? "false" : "true");
         
-        iWeighStudents = getModel().getProperties().getPropertyBoolean("General.WeightStudents", iWeighStudents);
-        
-        iIgnoreCommittedStudentConflicts = getModel().getProperties().getPropertyBoolean("General.IgnoreCommittedStudentConflicts", iIgnoreCommittedStudentConflicts);
+        iCommittedStudentConflictsMode = CommittedStudentConflictsMode.valueOf(getModel().getProperties().getProperty("General.CommittedStudentConflicts",
+        		iCommittedStudentConflictsMode.name()));
+        iLoadCommittedAssignments = getModel().getProperties().getPropertyBoolean("General.LoadCommittedAssignments", iLoadCommittedAssignments);
+        if (iCommittedStudentConflictsMode == CommittedStudentConflictsMode.Load && iStudentCourseDemands.isMakingUpStudents()) {
+        	iCommittedStudentConflictsMode = CommittedStudentConflictsMode.Compute;
+        	getModel().getProperties().setProperty("General.CommittedStudentConflicts", iCommittedStudentConflictsMode.name());
+        }
+        if (iLoadStudentEnrlsFromSolution && iStudentCourseDemands.isMakingUpStudents()) {
+        	iLoadStudentEnrlsFromSolution = false;
+        	getModel().getProperties().setProperty("Global.LoadStudentEnrlsFromSolution", "false");
+        }
     }
     
     private String getClassLabel(Class_ clazz) {
@@ -232,11 +273,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private Hashtable iRoomPreferences = null;
     
     private PreferenceLevel getRoomPreference(Long deptId, Long locationId) {
-    	/**FOR TESTING  
-    	if (locationId.intValue()==3798) return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged); //BRNG B222
-    	if (locationId.intValue()==3852) return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged); //ME 118
-    	if (locationId.intValue()==3713) return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged); //CIVL 2108
-    	*/
     	if (iRoomPreferences == null) {
     		iRoomPreferences = new Hashtable();
     		for (int i=0;i<iSolverGroup.length;i++) {
@@ -256,11 +292,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return (PreferenceLevel)roomPreferencesThisDept.get(locationId);
     }
     
-    public static Vector computeRoomLocations(Class_ clazz) {
+    public static List<RoomLocation> computeRoomLocations(Class_ clazz) {
     	return computeRoomLocations(clazz, false, 0.01, 0.02);
     }
     
-    public static Vector computeRoomLocations(Class_ clazz, boolean interactiveMode, double fewerSeatsDisouraged, double fewerSeatsStronglyDisouraged) {
+    public static List<RoomLocation> computeRoomLocations(Class_ clazz, boolean interactiveMode, double fewerSeatsDisouraged, double fewerSeatsStronglyDisouraged) {
     	int minClassLimit = clazz.getExpectedCapacity().intValue();
     	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
     	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
@@ -269,7 +305,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         int discouragedCapacity = (int)Math.round((1.0-fewerSeatsStronglyDisouraged) * roomCapacity);
         int stronglyDiscouragedCapacity = (int)Math.round((1.0-fewerSeatsStronglyDisouraged) * roomCapacity);
 
-        Vector roomLocations = new Vector();
+        List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
         boolean reqRoom = false;
         boolean reqBldg = false;
         boolean reqGroup = false;
@@ -311,8 +347,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
             	reqGroup=true; 
                 if (interactiveMode) {
-                    for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                        RoomLocation r = (RoomLocation)e.nextElement();
+                    for (RoomLocation r: roomLocations) {
                         r.setPreference(r.getPreference()+100);
                     }
                 } else roomLocations.clear();
@@ -368,8 +403,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
                 reqRoom=true; 
                 if (interactiveMode) {
-                    for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                        RoomLocation r = (RoomLocation)e.nextElement();
+                    for (RoomLocation r: roomLocations) {
                         r.setPreference(r.getPreference()+100);
                     }
                 } else roomLocations.clear();
@@ -406,8 +440,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
                 reqBldg = true;
                 if (interactiveMode) {
-                    for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                        RoomLocation r = (RoomLocation)e.nextElement();
+                    for (RoomLocation r: roomLocations) {
                         r.setPreference(r.getPreference()+100);
                     }
                 } else roomLocations.clear();
@@ -460,15 +493,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             
             if (!add) continue;
             
-            roomLocations.addElement(
+            roomLocations.add(
             		new RoomLocation(
             				room.getUniqueId(),
             				room.getLabel(),
             				(bldg==null?null:bldg.getUniqueId()),
             				prefInt,
             				room.getCapacity().intValue(),
-            				(room.getCoordinateX()==null?-1:room.getCoordinateX().intValue()),
-            				(room.getCoordinateY()==null?-1:room.getCoordinateY().intValue()),
+            				room.getCoordinateX(),
+            				room.getCoordinateY(),
             				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
             				null));
         }
@@ -476,8 +509,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private Lecture loadClass(Class_ clazz, org.hibernate.Session hibSession) {
-    	Vector timeLocations = new Vector();
-    	Vector roomLocations = new Vector();
+    	List<TimeLocation> timeLocations = new ArrayList<TimeLocation>();
+    	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
     	
     	iProgress.debug("loading class "+getClassLabel(clazz));
     	
@@ -490,16 +523,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
     	float room2limitRatio = clazz.getRoomRatio().floatValue();
     	int roomCapacity = (int)Math.ceil(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
-    	
-    	/**FOR TESTING
-    	if (clazz.getCourseName().equals("A&AE 001")) {
-    		minClassLimit = clazz.getRoomCapacity().intValue();
-    		maxClassLimit = clazz.getExpectedCapacity().intValue();
-    		room2limitRatio = 1.0;
-    		roomCapacity = (int)Math.ceil(minClassLimit*room2limitRatio);
-    		iProgress.debug("Tweaking "+getClassLabel(clazz)+": classLimit="+minClassLimit+".."+maxClassLimit+", room2limitRatio="+room2limitRatio);
-    	}
-    	*/
     	
     	iProgress.trace("class limit: ["+minClassLimit+","+maxClassLimit+"]");
     	iProgress.trace("room2limitRatio: "+room2limitRatio);
@@ -578,8 +601,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 	iProgress.trace("group is required, removing all previous rooms (they are not required)");
                 	reqGroup=true; 
                     if (iInteractiveMode) {
-                        for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                            RoomLocation r = (RoomLocation)e.nextElement();
+                        for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
                     } else roomLocations.clear();
@@ -635,8 +657,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 	iProgress.trace("room is required, removing all previous rooms (they are not required)");
                     reqRoom=true; 
                     if (iInteractiveMode) {
-                        for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                            RoomLocation r = (RoomLocation)e.nextElement();
+                        for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
                     } else roomLocations.clear();
@@ -677,8 +698,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 	iProgress.trace("building is required, removing all previous rooms (they are not required)");
                     reqBldg = true;
                     if (iInteractiveMode) {
-                        for (Enumeration e=roomLocations.elements();e.hasMoreElements();) {
-                            RoomLocation r = (RoomLocation)e.nextElement();
+                        for (RoomLocation r: roomLocations) {
                             r.setPreference(r.getPreference()+100);
                         }
                     } else roomLocations.clear();
@@ -737,15 +757,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 
                 if (!add) continue;
                 
-                roomLocations.addElement(
+                roomLocations.add(
                 		new RoomLocation(
                 				room.getUniqueId(),
                 				room.getLabel(),
                 				(bldg==null?null:bldg.getUniqueId()),
                 				prefInt,
                 				room.getCapacity().intValue(),
-                				(room.getCoordinateX()==null?-1:room.getCoordinateX().intValue()),
-                				(room.getCoordinateY()==null?-1:room.getCoordinateY().intValue()),
+                				room.getCoordinateX(),
+                				room.getCoordinateY(),
                 				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
                 				getRoomConstraint(clazz.getManagingDept(),room,hibSession)));
             }
@@ -780,7 +800,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
                 TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
                 loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                timeLocations.addElement(loc);
+                timeLocations.add(loc);
                 continue;
         	}
         	
@@ -810,7 +830,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     	iProgress.trace("time is not required :-(");
                     	continue;
                     }
-                    Iterator startSlotsIterator = pattern.getStartSlots(day,time).iterator();
                     TimeLocation  loc = new TimeLocation(
                             pattern.getDayCode(day),
                             pattern.getStartSlot(time),
@@ -832,25 +851,22 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         loc.setPreference(PreferenceLevel.sIntLevelProhibited);
                         loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
                     }
-                    timeLocations.addElement(loc);
+                    timeLocations.add(loc);
                 }
             }
         }
         if (iInteractiveMode) {
-        	Vector allPatterns = (Vector)iPatterns.get(new Integer(minPerWeek));
+        	List<TimePattern> allPatterns = iPatterns.get(new Integer(minPerWeek));
         	if (allPatterns==null) {
         		allPatterns = TimePattern.findByMinPerWeek(iSession,false,false,false,minPerWeek,clazz.getManagingDept());
         		iPatterns.put(new Integer(minPerWeek),allPatterns);
         	}
-        	for (Enumeration e1=allPatterns.elements();e1.hasMoreElements();) {
-        		TimePattern pattern = (TimePattern)e1.nextElement();
+        	for (TimePattern pattern: allPatterns) {
         		if (patterns.contains(pattern)) continue;
         		TimePatternModel model = pattern.getTimePatternModel();
         		iProgress.trace("adding prohibited pattern "+model.getName());
                 for (int time=0;time<model.getNrTimes(); time++) {
                     for (int day=0;day<model.getNrDays(); day++) {
-                        PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited);
-                        Iterator startSlotsIterator = model.getStartSlots(day,time).iterator();
                         TimeLocation  loc = new TimeLocation(
                                 model.getDayCode(day),
                                 model.getStartSlot(time),
@@ -864,7 +880,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         loc.setTimePatternId(model.getTimePattern().getUniqueId());
                         loc.setPreference(1000);
                         loc.setNormalizedPreference(1000.0);
-                        timeLocations.addElement(loc);
+                        timeLocations.add(loc);
                     }
                 }
         	}
@@ -875,7 +891,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             return null;
         }
     	
-    	Vector instructors = clazz.getLeadInstructors();
+    	List<DepartmentalInstructor> instructors = clazz.getLeadInstructors();
     	
     	String className = clazz.getClassLabel();
 
@@ -894,8 +910,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (clazz.getManagingDept()!=null)
     		lecture.setScheduler(clazz.getManagingDept().getUniqueId());
     	lecture.setDepartment(dept.getUniqueId());
-    	for (Enumeration e=instructors.elements();e.hasMoreElements();) {
-    		DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+    	for (DepartmentalInstructor instructor: instructors) {
     		getInstructorConstraint(instructor,hibSession).addVariable(lecture);
     	}
 
@@ -907,8 +922,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	    iProgress.error("Class "+getClassLabel(lecture)+" has too many possible placements ("+estNrValues+"). " +
     	    		"The class was not loaded in order to prevent out of memory exception. " +
     	    		"Please restrict the number of available rooms and/or times for this class.");
-            for (Enumeration e=instructors.elements();e.hasMoreElements();) {
-                DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+            for (DepartmentalInstructor instructor: instructors) {
                 getInstructorConstraint(instructor,hibSession).removeVariable(lecture);
             }
     	    return null;
@@ -921,8 +935,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (lecture.values().isEmpty()) {
         	if (!iInteractiveMode) {
         		iProgress.warn("Class "+getClassLabel(lecture)+" has no available placement (class not loaded).");
-            	for (Enumeration e=instructors.elements();e.hasMoreElements();) {
-            		DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+                for (DepartmentalInstructor instructor: instructors) {
             		getInstructorConstraint(instructor,hibSession).removeVariable(lecture);
             	}
         		return null;
@@ -932,20 +945,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iLectures.put(clazz.getUniqueId(),lecture);
         getModel().addVariable(lecture);
 
-        for (Enumeration e1=roomLocations.elements(); e1.hasMoreElements();) {
-        	RoomLocation r = (RoomLocation)e1.nextElement();
+        for (RoomLocation r: roomLocations) {
             r.getRoomConstraint().addVariable(lecture);
         }
-        
-        /*
-        for (Iterator i1=clazz.effectivePreferences(DistributionPref.class, false).iterator();i1.hasNext();) {
-        	DistributionPref pref = (DistributionPref)i1.next();
-        	iProgress.trace("Dist. constraint "+pref.getPrefLevel().getPrefName()+" "+pref.getDistributionType().getLabel()+" added for class "+lecture.getName()); 
-        	Constraint constraint = getGroupConstraint(pref);
-        	if (constraint!=null)
-        		constraint.addVariable(lecture);
-        }
-        */
         
         return lecture;
     }
@@ -953,23 +955,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void assignCommited() {
     	if (!getModel().hasConstantVariables()) return;
     	iProgress.setPhase("Assigning committed classes ...", getModel().constantVariables().size());
-    	for (Enumeration e=getModel().constantVariables().elements();e.hasMoreElements();) {
-    		Lecture lecture = (Lecture)e.nextElement();
+    	for (Lecture lecture: getModel().constantVariables()) {
     		iProgress.incProgress();
     		if (lecture.getAssignment()!=null) continue;
     		Placement placement = (Placement)lecture.getInitialAssignment();
-            Hashtable conflictConstraints = getModel().conflictConstraints(placement);
+    		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
                 lecture.assign(0,placement);
             } else {
                 String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getName();
             	warn+="<br>&nbsp;&nbsp;Reason:";
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator i=vals.iterator();i.hasNext();) {
-                        Value v = (Value) i.next();
-                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel((Lecture)v.variable())+" = "+((Placement)v).getLongName();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                    for (Placement v: vals) {
+                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
                     }
                     warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.warn(warn);
@@ -981,28 +980,24 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void purgeInvalidValues() {
     	iProgress.setPhase("Purging invalid placements ...", getModel().variables().size());
     	HashSet alreadyEmpty = new HashSet();
-    	for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-    		Lecture lecture = (Lecture)e.nextElement();
+    	for (Lecture lecture: getModel().variables()) {
     		if (lecture.values().isEmpty()) 
     			alreadyEmpty.add(lecture);
     	}
-    	for (Enumeration e=(new Vector(getModel().variables())).elements();e.hasMoreElements();) {
-    		Lecture lecture = (Lecture)e.nextElement();
-    		Vector oldValues = new Vector(lecture.values());
+    	for (Lecture lecture: new ArrayList<Lecture>(getModel().variables())) {
+    		List<Placement> oldValues = new ArrayList<Placement>(lecture.values());
     		lecture.purgeInvalidValues(iInteractiveMode);
     		if (lecture.values().isEmpty()) {
     			if (!alreadyEmpty.contains(lecture)) {
                     String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
-	    			for (Enumeration f=oldValues.elements();f.hasMoreElements();) {
-	    				Placement p = (Placement)f.nextElement();
+	    			for (Placement p: oldValues) {
                         warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason();
 	    			}
                     iProgress.warn(warn);
     			}
     			if (!iInteractiveMode) {
     				getModel().removeVariable(lecture);
-    				for (Enumeration f=(new Vector(lecture.constraints())).elements();f.hasMoreElements();) {
-    					Constraint c = (Constraint)f.nextElement();
+    				for (Constraint c: new ArrayList<Constraint>(lecture.constraints())) {
     					c.removeVariable(lecture);
     					if (c.variables().isEmpty())
     						getModel().removeConstraint(c);
@@ -1022,7 +1017,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	int dayCode = assignment.getDays().intValue();
     	int startSlot = assignment.getStartSlot().intValue();
     	Long patternId = assignment.getTimePattern().getUniqueId();
-    	Set rooms = assignment.getRooms();
+    	Set<Location> rooms = assignment.getRooms();
 
     	if (lecture==null) return;
     	Placement initialPlacement = null;
@@ -1041,18 +1036,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (initialPlacement==null) {
     		TimeLocation timeLocation = null;
-        	for (Enumeration e2=lecture.timeLocations().elements();e2.hasMoreElements();) {
-        		TimeLocation t = (TimeLocation)e2.nextElement();
+        	for (TimeLocation t: lecture.timeLocations()) {
         		if (t.getDayCode()!=dayCode) continue;
         		if (t.getStartSlot()!=startSlot) continue;
         		if (!t.getTimePatternId().equals(patternId)) continue;
         		timeLocation = t; break;
         	}
-        	Vector roomLocations = new Vector();
-    		for (Iterator i=rooms.iterator();i.hasNext();) {
-    			Location room = (Location)i.next();
-            	for (Enumeration e2=lecture.roomLocations().elements();e2.hasMoreElements();) {
-            		RoomLocation r = (RoomLocation)e2.nextElement();
+        	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
+    		for (Location room: rooms) {
+            	for (RoomLocation r: lecture.roomLocations()) {
             		if (r.getId().equals(room.getUniqueId()))
             			roomLocations.add(r);
             	}
@@ -1063,8 +1055,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (initialPlacement==null) {
     		StringBuffer sb = new StringBuffer(assignment.getTimeLocation().getName()+" ");
-    		for (Iterator i=rooms.iterator();i.hasNext();) {
-    			sb.append(((Location)i.next()).getLabel());
+    		for (Iterator<Location> i=rooms.iterator();i.hasNext();) {
+    			sb.append(i.next().getLabel());
     			if (i.hasNext()) sb.append(", ");
     		}
     		if (!assignment.getInstructors().isEmpty()) {
@@ -1079,15 +1071,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
         if (!initialPlacement.isValid()) {
 			String reason = "";
-           	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-           		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     			if (!ic.isAvailable(lecture, initialPlacement))
     				reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;instructor "+ic.getName()+" not available";
            	}
 	    	if (lecture.getNrRooms()>0) {
 	    		if (initialPlacement.isMultiRoom()) {
-	    			for (Enumeration f=initialPlacement.getRoomLocations().elements();f.hasMoreElements();) {
-	    				RoomLocation roomLocation = (RoomLocation)f.nextElement();
+	    			for (RoomLocation roomLocation: initialPlacement.getRoomLocations()) {
 	    				if (!roomLocation.getRoomConstraint().isAvailable(lecture,initialPlacement.getTimeLocation(),lecture.getScheduler()))
 	    					reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+roomLocation.getName()+" not available";
 	    			}
@@ -1096,14 +1086,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+initialPlacement.getRoomLocation().getName()+" not available";
 	    		}
 	    	}
-            Hashtable conflictConstraints = getModel().conflictConstraints(initialPlacement);
+	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
             if (!conflictConstraints.isEmpty()) {
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator i=vals.iterator();i.hasNext();) {
-                        Placement p = (Placement) i.next();
-                        Lecture l = (Lecture)p.variable();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                    for (Placement p: vals) {
+                        Lecture l = p.variable();
                         if (l.isCommitted())
                         	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
                         if (p.equals(initialPlacement))
@@ -1114,18 +1102,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	iProgress.warn("Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName()+(reason.length()==0?".":":"+reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
-			Hashtable conflictConstraints = getModel().conflictConstraints(initialPlacement);
+			Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
         	if (conflictConstraints.isEmpty()) {
     	        lecture.assign(0,initialPlacement);
 	        } else {
                 String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getName();
                 warn += "<br>&nbsp;&nbsp;Reason:";
-	            for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-            	    Constraint c = (Constraint)ex.nextElement();
-        	        Collection vals = (Collection)conflictConstraints.get(c);
-    	            for (Iterator i=vals.iterator();i.hasNext();) {
-	                    Value v = (Value) i.next();
-                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel((Lecture)v.variable())+" = "+((Placement)v).getLongName();
+                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+                	Set<Placement> vals = conflictConstraints.get(c);
+                	for (Placement v: vals) {
+                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
             	    }
                     warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.warn(warn);
@@ -1163,8 +1149,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						buildingId,
     						location.getCapacity().intValue(), 
     						sharingModel, 
-    						(location.getCoordinateX()==null?-1:location.getCoordinateX().intValue()),
-    						(location.getCoordinateY()==null?-1:location.getCoordinateY().intValue()),
+    						location.getCoordinateX(),
+    						location.getCoordinateY(),
     						(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue()),
     						(location.isIgnoreRoomCheck()==null?true:!location.isIgnoreRoomCheck().booleanValue())
     				)
@@ -1175,8 +1161,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						buildingId,
     						location.getCapacity().intValue(), 
     						sharingModel, 
-    						(location.getCoordinateX()==null?-1:location.getCoordinateX().intValue()),
-    						(location.getCoordinateY()==null?-1:location.getCoordinateY().intValue()),
+    						location.getCoordinateX(),
+    						location.getCoordinateY(),
     						(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue()),
     						(location.isIgnoreRoomCheck()==null?true:!location.isIgnoreRoomCheck().booleanValue())
     				)
@@ -1195,10 +1181,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private InstructorConstraint getInstructorConstraint(DepartmentalInstructor instructor, org.hibernate.Session hibSession) {
     	if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
     		InstructorConstraint ic = (InstructorConstraint)iInstructors.get(instructor.getExternalUniqueId());
-    		/*
-    		if (ic!=null && !ic.getResourceId().equals(instructor.getUniqueId()))
-    			iProgress.debug("Instructor "+instructor.getName(iInstructorFormat)+" (puid:"+instructor.getExternalUniqueId()+") is interesting :)");
-    		*/
     		if (ic!=null) return ic;
     	}
     	InstructorConstraint ic = (InstructorConstraint)iInstructors.get(instructor.getUniqueId());
@@ -1213,23 +1195,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			iInstructors.put(instructor.getExternalUniqueId(),ic);
     	}
     	return ic;
-    }
-    
-    private void loadInstructorAvailability(DepartmentalInstructor instructor, InstructorConstraint ic, org.hibernate.Session hibSession) {
-    	if (instructor.getExternalUniqueId()==null || instructor.getExternalUniqueId().length()==0) return;
-    	Query q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a " +
-    			"where i.externalUniqueId=:puid and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
-    	q.setString("puid", instructor.getExternalUniqueId());
-		q.setLong("sessionId",iSessionId.longValue());
-		for (Iterator i=q.iterate();i.hasNext();) {
-			Assignment a = (Assignment)i.next();
-			Placement p = a.getPlacement();
-			ic.setNotAvailable(p);
-			if (!iLectures.containsKey(a.getClassId())) {
-				iLectures.put(a.getClassId(), p.variable());
-				getModel().addVariable(p.variable());
-			}
-		}
     }
     
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession, String puids) {
@@ -1268,22 +1233,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (puids.length()>0) loadInstructorAvailabilities(hibSession, puids.toString());
     	iProgress.incProgress();
-    }
-    
-    private void loadRoomAvailability(Location location, RoomConstraint rc, org.hibernate.Session hibSession) {
-		Query q = hibSession.createQuery("select distinct a from Location r inner join r.assignments as a "+
-			"where r.uniqueId=:roomId and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
-		q.setInteger("roomId",location.getUniqueId().intValue());
-		q.setLong("sessionId",iSessionId.longValue());
-		for (Iterator i=q.iterate();i.hasNext();) {
-			Assignment a = (Assignment)i.next();
-			Placement p = a.getPlacement();
-			rc.setNotAvailable(p);
-			if (!iLectures.containsKey(a.getClassId())) {
-				iLectures.put(a.getClassId(), p.variable());
-				getModel().addVariable(p.variable());
-			}
-		}
     }
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession, String roomids) {
@@ -1390,11 +1339,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return lecture;
     }
     
-    private void addGroupConstraint(Constraint gc) {
+    private void addGroupConstraint(Constraint<Lecture, Placement> gc) {
     	if (gc.variables().isEmpty()) return;
     	boolean allVariablesAreCommitted = true;
-    	for (Enumeration e=gc.variables().elements();e.hasMoreElements();) {
-    		Lecture lecture = (Lecture)e.nextElement();
+    	for (Lecture lecture: gc.variables()) {
     		if (!lecture.isCommitted()) {
     			allVariablesAreCommitted = false;
     			break;
@@ -1402,8 +1350,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (allVariablesAreCommitted) {
     		iProgress.debug("Not created constraint "+gc.getName()+" between "+gc.variables()+" (all variables are committed)");
-			for (Enumeration e=(new Vector(gc.variables())).elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: new ArrayList<Lecture>(gc.variables())) {
 				gc.removeVariable(lecture);
 			}
     		return;
@@ -1430,7 +1377,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			if (gc[i]==null) return;
     			gcClasses[i]=new HashSet();
     		}
-    		Vector allLectureOfCorrectOrder = new Vector();
+    		List<Lecture> allLectureOfCorrectOrder = new ArrayList<Lecture>();
     		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
     			DistributionObject distributionObject = (DistributionObject)i.next();
         		if (distributionObject.getPrefGroup() instanceof Class_) {
@@ -1439,19 +1386,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			if (lecture!=null)  allLectureOfCorrectOrder.add(lecture);
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
-        	    	Vector classes = new Vector(subpart.getClasses());
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-        	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
-        	    		Class_ clazz = (Class_)e.nextElement();
+        	    	for (Class_ clazz: classes) {
             			Lecture lecture = getLecture(clazz);
             			if (lecture!=null)  allLectureOfCorrectOrder.add(lecture);
         	    	}
         		}
         	}
-    		Vector distributionObjects = new Vector(pref.getDistributionObjects());
+    		List<DistributionObject> distributionObjects = new ArrayList<DistributionObject>(pref.getDistributionObjects());
     		Collections.sort(distributionObjects, new ChildrenFirstDistributionObjectComparator());
-        	for (Enumeration e=distributionObjects.elements();e.hasMoreElements();) {
-        		DistributionObject distributionObject = (DistributionObject)e.nextElement();
+        	for (DistributionObject distributionObject: distributionObjects) {
         		if (distributionObject.getPrefGroup() instanceof Class_) {
         			Class_ clazz = (Class_)distributionObject.getPrefGroup();
         			Lecture lecture = (Lecture)getLecture(clazz);
@@ -1464,14 +1409,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			}
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
-        	    	Vector classes = new Vector(subpart.getClasses());
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	for (int j=0;j<gc.length;j++) {
         	    		Class_ clazz = null;
         	    		for (Iterator k=gcClasses[j].iterator();k.hasNext() && clazz==null;) {
         	    			clazz = getParentClass((Class_)k.next(),subpart);
         	    		}
-        	    		if (clazz==null) clazz = (Class_)classes.elementAt(j%classes.size());
+        	    		if (clazz==null) clazz = (Class_)classes.get(j%classes.size());
         	    		
             			Lecture lecture = getLecture(clazz);
             			if (lecture==null) {
@@ -1493,7 +1438,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			}
     		}
     	} else if (groupingType==DistributionPref.sGroupingPairWise) {
-    		Vector lectures = new Vector();
+    		List<Lecture> lectures = new ArrayList<Lecture>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();
         		if (distributionObject.getPrefGroup() instanceof Class_) {
@@ -1505,10 +1450,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			lectures.add(lecture);
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
-        	    	Vector classes = new Vector(subpart.getClasses());
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-        	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
-        	    		Class_ clazz = (Class_)e.nextElement();
+        	    	for (Class_ clazz: classes) {
             			Lecture lecture = getLecture(clazz);
             			if (lecture==null) {
             				errorAddGroupConstraintNotFound(pref, clazz); continue;
@@ -1523,9 +1467,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		iProgress.warn("Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to less than two classes");
         	} else {
         		for (int idx1=0;idx1<lectures.size()-1;idx1++) {
-        			Lecture l1 = (Lecture)lectures.elementAt(idx1);
+        			Lecture l1 = lectures.get(idx1);
         			for (int idx2=idx1+1;idx2<lectures.size();idx2++) {
-        				Lecture l2 = (Lecture)lectures.elementAt(idx2);
+        				Lecture l2 = lectures.get(idx2);
         				Constraint gc = createGroupConstraint(pref);
         	    		if (gc==null) return;
         	    		gc.addVariable(l1);
@@ -1553,10 +1497,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		}
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
-        	    	Vector classes = new Vector(subpart.getClasses());
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-        	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
-        	    		Class_ clazz = (Class_)e.nextElement();
+        	    	for (Class_ clazz: classes) {
             			Lecture lecture = getLecture(clazz);
             			if (lecture==null) {
             				errorAddGroupConstraintNotFound(pref, clazz); continue;
@@ -1590,6 +1533,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (allExternallyManaged) return;
     	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
+    		if (!classInstructor.isLead()) continue;
    			Class_ clazz = (Class_)classInstructor.getClassInstructing();
    			Lecture lecture = getLecture(clazz);
    			if (lecture==null) {
@@ -1629,12 +1573,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		return getParentClass(clazz.getParentClass(), parentSubpart);
 	}
     
-    private static class ChildrenFirstDistributionObjectComparator implements Comparator {
+    private static class ChildrenFirstDistributionObjectComparator implements Comparator<DistributionObject> {
     	
-    	public int compare(Object o1, Object o2) {
-    		DistributionObject d1 = (DistributionObject)o1;
-    		DistributionObject d2 = (DistributionObject)o2;
-    		
+    	public int compare(DistributionObject d1, DistributionObject d2) {
     		if (d1.getPrefGroup() instanceof Class_) {
     			if (d2.getPrefGroup() instanceof Class_)
     				return d1.compareTo(d2);
@@ -1682,45 +1623,38 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void createChildrenClassLimitConstraits(Lecture parentLecture) {
     	if (!parentLecture.hasAnyChildren()) return;
-		for (Enumeration e1=parentLecture.getChildrenSubpartIds();e1.hasMoreElements();) {
-			Long subpartId = (Long) e1.nextElement();
-        	Vector children = parentLecture.getChildren(subpartId);
+    	
+		for (Long subpartId: parentLecture.getChildrenSubpartIds()) {
+        	List<Lecture> children = parentLecture.getChildren(subpartId);
 
         	ClassLimitConstraint clc = new ClassLimitConstraint(parentLecture, getClassLimitConstraitName(parentLecture));
 
         	boolean isMakingSense = false;
-        	for (Enumeration e=children.elements();e.hasMoreElements();) {
-        		Lecture lecture = (Lecture)e.nextElement();
-        		if (lecture.minClassLimit()!=lecture.maxClassLimit()) {
-        			isMakingSense=true; break;
-        		}
+        	for (Lecture lecture: children) {
+        		createChildrenClassLimitConstraits(lecture);
+        		if (!lecture.isCommitted() && lecture.minClassLimit() != lecture.maxClassLimit())
+        			isMakingSense=true;
         	} 
         	
         	if (!isMakingSense) continue;
-
-        	for (Enumeration e=children.elements();e.hasMoreElements();) {
-        		Lecture lecture = (Lecture)e.nextElement();
-        		clc.addVariable(lecture);
-        		createChildrenClassLimitConstraits(lecture);
+        	
+        	for (Lecture lecture: children) {
+        		if (!lecture.isCommitted())
+        			clc.addVariable(lecture);
+        		else
+        			clc.setClassLimitDelta(clc.getClassLimitDelta() - iClasses.get(lecture.getClassId()).getClassLimit());
         	}
+        	
+        	if (clc.variables().isEmpty()) continue;
 
-    		for (Iterator i=((SchedulingSubpart)iSubparts.get(subpartId)).getClasses().iterator();i.hasNext();) {
-    			Class_ clazz = (Class_)i.next();
-    			if (iLectures.get(clazz.getUniqueId())==null)
-    				clc.setClassLimitDelta(clc.getClassLimitDelta()-clazz.getClassLimit());
+    		for (Class_ clazz: iSubparts.get(subpartId).getClasses()) {
+    			if (iLectures.get(clazz.getUniqueId()) == null)
+    				clc.setClassLimitDelta(clc.getClassLimitDelta() - clazz.getClassLimit());
     		}
 
     		iProgress.trace("Added constraint "+clc.getName()+" between "+clc.variables());
        		getModel().addConstraint(clc);
         }
-    }
-    
-    private Lecture getEnrollment(Student student, Vector lectures) {
-		for (Enumeration e=lectures.elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
-			if (student.getLectures().contains(lecture)) return lecture;
-		}
-    	return null;
     }
     
     public void load() {
@@ -1758,14 +1692,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	Lecture lecture = getLecture(clazz);
 		if (lecture==null) return false;
 		
-		Vector variables = new Vector();
-		variables.addElement(lecture);
+		List<Lecture> variables = new ArrayList<Lecture>();
+		variables.add(lecture);
 		
 		Class_ parent = clazz;
 		while ((parent=parent.getParentClass())!=null) {
 			Lecture parentLecture = getLecture(parent);
 			if (parentLecture!=null)
-				variables.addElement(parentLecture);
+				variables.add(parentLecture);
 		}
 
     	for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator();i.hasNext();) {
@@ -1774,14 +1708,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		Class_ singleClazz = (Class_)subpart.getClasses().iterator().next();
     		Lecture singleLecture = getLecture(singleClazz);
 			if (singleLecture!=null && !variables.contains(singleLecture))
-				variables.addElement(singleLecture);
+				variables.add(singleLecture);
     	}
 
     	if (variables.size()==1) return false;
     	
     	GroupConstraint gc = new GroupConstraint(null,type,PreferenceLevel.sRequired);
-		for (Enumeration e=variables.elements();e.hasMoreElements();)
-			gc.addVariable((Lecture)e.nextElement());
+		for (Lecture var: variables)
+			gc.addVariable(var);
     	
     	addGroupConstraint(gc);
 		return true;
@@ -1795,8 +1729,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		parentLecture = (Lecture)iLectures.get(c.getUniqueId());
     	}
     	if (parentLecture!=null && !parentLecture.isCommitted()) {
-    		for (Enumeration e=parentLecture.sameSubpartLectures().elements();e.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: parentLecture.sameSubpartLectures()) {
     			if (!lecture.equals(parentLecture) && !lecture.isCommitted()) {
     				//iProgress.debug("[A] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+clazz.getClassLabel());
     				for (Iterator i=students.iterator();i.hasNext();) {
@@ -1836,47 +1769,28 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     }
     
-    private void loadCommittedStudentConflicts(org.hibernate.Session hibSession) {
+    private void loadCommittedStudentConflicts(org.hibernate.Session hibSession, Set<Long> offeringsToAvoid) {
         //Load all committed assignment - student relations that may be relevant
-        /*
-    	Query q = null;
-        if (iSolverGroup.length>1 || iSolverGroup[0].isExternalManager()) {
-        	q = hibSession.createQuery(
-        			"select distinct a, e.studentId from "+
-        			"Solution s inner join s.assignments a inner join s.studentEnrollments e "+
-        			"where "+
-        			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner not in ("+iSolverGroupIds+") and "+
-        			"a.clazz=e.clazz");
-        } else {
-        	q = hibSession.createQuery(
-        			"select distinct a, e.studentId from "+
-        			"Solution s inner join s.assignments a inner join s.studentEnrollments e, "+
-        			"LastLikeCourseDemand d inner join d.subjectArea sa "+
-        			"where "+
-        			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner.uniqueId!=:ownerId and "+
-        			"a.clazz=e.clazz and e.studentId=d.student.uniqueId and sa.department.uniqueId in ("+iDepartmentIds+")");
-        	q.setLong("ownerId",iSolverGroup[0].getUniqueId().longValue());
-        }
-		q.setLong("sessionId", iSessionId.longValue());
-		*/
-		List assignmentEnrollments = hibSession.createQuery(
-    			"select distinct a, e.studentId from "+
-    			"Solution s inner join s.assignments a inner join s.studentEnrollments e "+
+		List<Object[]> assignmentEnrollments = (List<Object[]>)hibSession.createQuery(
+    			"select distinct a, e.studentId, io.uniqueId from "+
+    			"Solution s inner join s.assignments a inner join s.studentEnrollments e inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering io "+
     			"where "+
     			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner not in ("+iSolverGroupIds+") and "+
     			"a.clazz=e.clazz").setLong("sessionId", iSessionId.longValue()).list();
 
+    	
 		// Filter out relevant relations (relations that are for loaded students)
-		Hashtable assignments = new Hashtable();
-		for (Iterator i1=assignmentEnrollments.iterator(); i1.hasNext();) {
-			Object[] result = (Object[])i1.next();
+		Hashtable<Assignment, Set<Student>> assignments = new Hashtable<Assignment, Set<Student>>();
+		for (Object[] result: assignmentEnrollments) {
     		Assignment assignment = (Assignment)result[0];
 			Long studentId = (Long)result[1];
+			Long offeringId = (Long)result[2];
+			if (offeringsToAvoid.contains(offeringId)) continue;
     		Student student = (Student)iStudents.get(studentId);
     		if (student!=null) {
-    			HashSet students = (HashSet)assignments.get(assignment);
+    			Set<Student> students = assignments.get(assignment);
     			if (students==null) {
-    				students = new HashSet();
+    				students = new HashSet<Student>();
     				assignments.put(assignment, students);
     			}
     			students.add(student);
@@ -1924,14 +1838,52 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
     }
     
-    private boolean canAttend(Set cannotAttendLectures, Collection lectures) {
+    private boolean somehowEnroll(Student student, CourseOffering course, float weight) {
+    	if (course.getInstructionalOffering().isNotOffered()) return false;
+    	boolean hasSomethingCommitted = false;
+    	config: for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+    		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+    			for (Class_ clazz: subpart.getClasses()) {
+    				if (clazz.getCommittedAssignment() != null) {
+    					hasSomethingCommitted = true;
+    					break config;
+    				}
+    			}
+    		}
+    	}
+    	if (!hasSomethingCommitted) return false;
+    	if (!iOfferings.containsKey(course.getInstructionalOffering()))
+			iOfferings.put(course.getInstructionalOffering(), loadOffering(course.getInstructionalOffering()));
+    	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight);
+        Set<Student> students = iCourse2students.get(course);
+        if (students==null) {
+            students = new HashSet<Student>();
+            iCourse2students.put(course,students);
+        }
+        students.add(student);
+        return true;
+    }
+    
+    private void makeupCommittedStudentConflicts(Set<Long> offeringsToAvoid) {
+        iProgress.setPhase("Creating student conflicts with commited solutions ...", iStudents.size());
+    	for (Student student: iStudents.values()) {
+    		Set<WeightedCourseOffering> courses = iStudentCourseDemands.getCourses(student.getId());
+    		iProgress.incProgress();
+    		if (courses == null) continue;
+    		for (WeightedCourseOffering course: courses) {
+    			if (offeringsToAvoid.contains(course.getCourseOffering().getInstructionalOffering().getUniqueId())) continue;
+    			if (!somehowEnroll(student, course.getCourseOffering(), course.getWeight())) offeringsToAvoid.add(course.getCourseOffering().getInstructionalOffering().getUniqueId());
+    		}
+    	}
+    }
+    
+    private boolean canAttend(Set<Lecture> cannotAttendLectures, Collection<Lecture> lectures) {
     	for (Iterator e=lectures.iterator();e.hasNext();) {
     		Lecture lecture = (Lecture)e.next();
     		if (cannotAttendLectures.contains(lecture)) continue;
     		boolean canAttend = true;
     		if (lecture.hasAnyChildren()) {
-    			for (Enumeration f=lecture.getChildrenSubpartIds();f.hasMoreElements();) {
-    				Long subpartId = (Long)f.nextElement();
+    			for (Long subpartId: lecture.getChildrenSubpartIds()) {
     				if (!canAttend(cannotAttendLectures, lecture.getChildren(subpartId))) {
     					canAttend = false; break;
     				}
@@ -1942,12 +1894,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return false;
     }
     
-    private boolean canAttendConfigurations(Set cannotAttendLectures, Vector configurations) {
-    	for (Enumeration e=configurations.elements();e.hasMoreElements();) {
-    		Configuration cfg = (Configuration)e.nextElement();
+    private boolean canAttendConfigurations(Set<Lecture> cannotAttendLectures, List<Configuration> configurations) {
+    	for (Configuration cfg: configurations) {
     		boolean canAttend = true;
-    		for (Enumeration f=cfg.getTopSubpartIds();f.hasMoreElements();) {
-    			Long subpartId = (Long)f.nextElement();
+    		for (Long subpartId: cfg.getTopSubpartIds()) {
     			if (!canAttend(cannotAttendLectures, cfg.getTopLectures(subpartId))) {
     				canAttend = false; break;
     			}
@@ -1957,7 +1907,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return false;
     }
     
-    private void checkReservation(CourseOffering course, Set cannotAttendLectures, Vector configurations) {
+    private void checkReservation(CourseOffering course, Set<Lecture> cannotAttendLectures, List<Configuration> configurations) {
     	if (canAttendConfigurations(cannotAttendLectures, configurations)) return;
     	iProgress.warn("Inconsistent course reservations for course "+getOfferingLabel(course));
     }
@@ -1995,18 +1945,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	propagateUpCannotAttend(parentClasses, cannotAttendLectures);
     }
     
-    private Set computeCannotAttendLectures(Set reservedClassIds) {
-    	HashSet cannotAttendLectures = new HashSet();
-    	HashSet parentClasses = new HashSet();
-    	for (Iterator i=reservedClassIds.iterator();i.hasNext();) {
-    		Long classId = (Long)i.next();
+    private Set<Lecture> computeCannotAttendLectures(Collection<Long> reservedClassIds) {
+    	HashSet<Lecture> cannotAttendLectures = new HashSet<Lecture>();
+    	HashSet<Class_> parentClasses = new HashSet<Class_>();
+    	for (Long classId: reservedClassIds) {
     		Class_ cx = (Class_)iClasses.get(classId);
     		if (cx==null) cx = (new Class_DAO()).get(classId);
     		if (cx==null) continue;
-    		if (cx.getParentClass()!=null)
+    		if (cx.getParentClass() != null)
     			parentClasses.add(cx.getParentClass());
-    		for (Iterator j=cx.getSchedulingSubpart().getClasses().iterator();j.hasNext();) {
-    			Class_ clazz = (Class_)j.next();
+    		for (Class_ clazz: cx.getSchedulingSubpart().getClasses()) {
     			if (reservedClassIds.contains(clazz.getUniqueId())) continue;
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
     			if (lecture!=null && !lecture.isCommitted())
@@ -2016,6 +1964,86 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	propagateUpCannotAttend(parentClasses, cannotAttendLectures);
     	return cannotAttendLectures;
+    }
+    
+    private Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> loadOffering(InstructionalOffering offering) {
+    	// solver group ids for fast check
+    	HashSet<Long> solverGroupIds = new HashSet<Long>();
+    	for (Long solverGroupId: iSolverGroupId)
+    		solverGroupIds.add(solverGroupId);
+    	
+    	Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> cfg2topSubparts = new Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>();
+    	
+    	// alternative configurations
+    	List<Configuration> altCfgs = new ArrayList<Configuration>();
+		iAltConfigurations.put(offering, altCfgs);
+    	
+    	for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+    		
+    		// create a configuration, set alternative configurations
+    		Configuration cfg = new Configuration(offering.getUniqueId(), config.getUniqueId(), config.getLimit().intValue());
+			Set<SchedulingSubpart> topSubparts = new HashSet<SchedulingSubpart>();
+    		
+    		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+    			
+    			for (Class_ clazz: subpart.getClasses()) {
+    				Lecture lecture = iLectures.get(clazz.getUniqueId());
+    				if (lecture == null) {
+        				if (solverGroupIds.contains(clazz.getManagingDept().getSolverGroup().getUniqueId())) continue; // only classes of other problems
+        				if (clazz.getCommittedAssignment() == null) continue; // only committed classes
+        	   			if (iLectures.containsKey(clazz.getUniqueId())) continue; // already loaded
+
+        	   			Placement committedPlacement = clazz.getCommittedAssignment().getPlacement();
+        	   			lecture = committedPlacement.variable();
+           				iLectures.put(clazz.getUniqueId(), lecture);
+           				iClasses.put(lecture.getClassId(), clazz);
+           				iSubparts.put(subpart.getUniqueId(), subpart);
+    	    			getModel().addVariable(lecture);
+    				}
+    			}
+    		}
+    		
+    		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+				List<Lecture> sameSubpart = new ArrayList<Lecture>();
+
+    			for (Class_ clazz: subpart.getClasses()) {
+    				Lecture lecture = iLectures.get(clazz.getUniqueId());
+    				if (lecture == null) continue;
+    				
+    				// set parent lecture
+    				Class_ parentClazz = clazz.getParentClass();
+    				if (parentClazz!=null) {
+    					Lecture parentLecture = null; Class_ c = clazz;
+    					while (parentLecture == null && c.getParentClass() != null) {
+    						c = c.getParentClass();
+    						parentLecture = iLectures.get(c.getUniqueId());
+    					}
+    					if (parentLecture != null)
+    						lecture.setParent(parentLecture);
+    				}
+    				
+    				// set same subpart lectures
+    				sameSubpart.add(lecture);
+    				lecture.setSameSubpartLectures(sameSubpart);
+    				
+    				if (lecture.getParent() == null) {
+        				// set configuration
+        				lecture.setConfiguration(cfg);
+
+    					// top subparts
+    					topSubparts.add(subpart);
+    				}
+    			}
+    		}
+    		
+    		if (!cfg.getTopLectures().isEmpty()) { // skip empty configurations
+        		altCfgs.add(cfg);
+    			cfg.setAltConfigurations(altCfgs);
+    			cfg2topSubparts.put(config, topSubparts);
+    		}
+    	}
+    	
+    	return cfg2topSubparts;
     }
     
     private void load(org.hibernate.Session hibSession) throws Exception {
@@ -2054,10 +2082,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	getModel().getProperties().setProperty("General.DepartmentIds",iDepartmentIds);
 		
-        Hashtable solutions = null;
+        Hashtable<Long, Solution> solutions = null;
         if (iSolutionId!=null && iSolutionId.length>0) {
-        	solutions = new Hashtable();
-        	//iLoadStudentEnrlsFromSolution = true;
+        	solutions = new Hashtable<Long, Solution>();
         	String note="";
         	for (int i=0;i<iSolutionId.length;i++) {
         		Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
@@ -2071,15 +2098,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			note += solution.getNote();
         		}
         		solutions.put(solution.getOwner().getUniqueId(),solution);
-        		if (!solution.isCommited().booleanValue()) iLoadStudentEnrlsFromSolution = false;
         	}
-        	for (int i=0;iLoadStudentEnrlsFromSolution && i<iSolverGroupId.length;i++)
-        		if (!solutions.containsKey(iSolverGroupId[i]))
-        			iLoadStudentEnrlsFromSolution = false;
         	getModel().getProperties().setProperty("General.Note",note);
             String solutionIdStr = "";
         	for (int i=0;i<iSolverGroupId.length;i++) {
-        		Solution solution = (Solution)solutions.get(iSolverGroupId[i]);
+        		Solution solution = solutions.get(iSolverGroupId[i]);
         		if (solution!=null) {
         			if (solutionIdStr.length()>0) solutionIdStr += ",";
         			solutionIdStr += solution.getUniqueId().toString();
@@ -2098,9 +2121,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
 		getModel().getProperties().setProperty("Data.Term",iSession.getAcademicYearTerm());
 		getModel().getProperties().setProperty("Data.Initiative",iSession.getAcademicInitiative());
-		iStartDay = DateUtils.getDayOfYear(iSession.getSessionBeginDateTime());
-		iEndDay = DateUtils.getDayOfYear(iSession.getSessionEndDateTime());
-		//TODO: checked OK, tested OK
 		getModel().setYear(iSession.getSessionStartYear());
 		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
@@ -2152,15 +2172,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		iProgress.setPhase("Loading classes ...",iAllClasses.size());
-		Hashtable subparts = new Hashtable();
-		Hashtable offerings = new Hashtable();
-		Hashtable configurations = new Hashtable();
-		Hashtable altConfigurations = new Hashtable();
-		Hashtable io2lectures = new Hashtable();
 		int ord = 0;
+		HashSet<SchedulingSubpart> subparts = new HashSet<SchedulingSubpart>();
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 			Class_ clazz = (Class_)i1.next();
 			Lecture lecture = loadClass(clazz,hibSession);
+			subparts.add(clazz.getSchedulingSubpart());
 			if (lecture!=null) 
 				lecture.setOrd(ord++);
 			iClasses.put(clazz.getUniqueId(),clazz);
@@ -2171,12 +2188,33 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		loadRoomAvailabilities(hibSession);
 		
+		iProgress.setPhase("Loading offerings ...", iAllClasses.size());
+    	Set<Long> loadedOfferings = new HashSet<Long>();
+		for (Class_ clazz: iAllClasses) {
+			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
+			iProgress.incProgress();
+			
+			if (lecture==null) continue; //skip classes that were not loaded
+			
+			InstructionalOffering offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
+			if (!loadedOfferings.add(offering.getUniqueId())) continue; // already loaded
+			
+			iOfferings.put(offering, loadOffering(offering));
+		}
+		
+		/*
+		// old code, replaced by Loading offerings ... part
 		iProgress.setPhase("Setting parent classes ...",iLectures.size());
+		Hashtable<SchedulingSubpart, List<Lecture>> subparts = new Hashtable<SchedulingSubpart, List<Lecture>>();
+		Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> offerings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
+		Hashtable<InstrOfferingConfig, Configuration> configurations = new Hashtable<InstrOfferingConfig, Configuration>();
+		Hashtable<InstructionalOffering, List<Configuration>> altConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 			Class_ clazz = (Class_)i1.next();
 			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-			if (lecture==null) continue;
-
+			
+			if (lecture==null) continue; //skip classes that were not loaded
+			
 			Class_ parentClazz = clazz.getParentClass();
 			if (parentClazz!=null) {
 				Lecture parentLecture = null; Class_ c = clazz;
@@ -2190,60 +2228,54 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			SchedulingSubpart subpart = clazz.getSchedulingSubpart();
 			InstrOfferingConfig config = subpart.getInstrOfferingConfig();
 			InstructionalOffering offering = config.getInstructionalOffering();
-			
-			HashSet lectures = (HashSet)io2lectures.get(offering.getUniqueId());
-			if (lectures==null) {
-				lectures = new HashSet();
-				io2lectures.put(offering.getUniqueId(), lectures);
-			}
-			lectures.add(lecture);
-			
+						
 			iSubparts.put(subpart.getUniqueId(),subpart);
 
 			if (lecture.getParent()==null) {
-				Configuration cfg = (Configuration)configurations.get(config);
+				Configuration cfg = configurations.get(config);
 				if (cfg==null) {
 					cfg = new Configuration(offering.getUniqueId(), config.getUniqueId(), config.getLimit().intValue());
 					configurations.put(config, cfg);
-					Vector altCfgs = (Vector)altConfigurations.get(offering);
+					List<Configuration> altCfgs = altConfigurations.get(offering);
 					if (altCfgs==null) {
-						altCfgs = new FastVector();
+						altCfgs = new ArrayList<Configuration>();
 						altConfigurations.put(offering, altCfgs);
 					}
-					altCfgs.addElement(cfg);
+					altCfgs.add(cfg);
 					cfg.setAltConfigurations(altCfgs);
 				}
 
 				lecture.setConfiguration(cfg);
 			
-				Hashtable topSubparts = (Hashtable)offerings.get(offering);
+				Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = offerings.get(offering);
 				
 				if (topSubparts==null) {
 					topSubparts = new Hashtable();
 					offerings.put(offering,topSubparts);
 				}
-				HashSet topSubpartsThisConfig = (HashSet)topSubparts.get(config);
+				Set<SchedulingSubpart> topSubpartsThisConfig = topSubparts.get(config);
 				if (topSubpartsThisConfig==null) {
-					topSubpartsThisConfig = new HashSet();
+					topSubpartsThisConfig = new HashSet<SchedulingSubpart>();
 					topSubparts.put(config, topSubpartsThisConfig);
 				}
 
 				topSubpartsThisConfig.add(clazz.getSchedulingSubpart());
 			}
 			
-			Vector sameSubpart = (Vector)subparts.get(clazz.getSchedulingSubpart());
+			List<Lecture> sameSubpart = subparts.get(clazz.getSchedulingSubpart());
 			if (sameSubpart==null) {
-				sameSubpart = new FastVector();
+				sameSubpart = new ArrayList<Lecture>();
 				subparts.put(clazz.getSchedulingSubpart(), sameSubpart);
 			}
-			sameSubpart.addElement(lecture);
+			sameSubpart.add(lecture);
 			
 			lecture.setSameSubpartLectures(sameSubpart);
 			
 			iProgress.incProgress();
 		}
+		*/
 
-		Vector distPrefs = new Vector();
+		List<DistributionPref> distPrefs = new ArrayList<DistributionPref>();
 		for (int i=0;i<iSolverGroup.length;i++) {
 			distPrefs.addAll(iSolverGroup[i].getDistributionPreferences());
 		}
@@ -2288,79 +2320,69 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		assignCommited();
 		
-    	iProgress.setPhase("Posting class limit constraints ...", offerings.size());
-    	for (Iterator i1=offerings.entrySet().iterator();i1.hasNext();) {
-    		Map.Entry entry = (Map.Entry)i1.next();
-    		InstructionalOffering offering = (InstructionalOffering)entry.getKey();
-    		Hashtable topSubparts = (Hashtable)entry.getValue();
-    		for (Iterator i2=topSubparts.entrySet().iterator();i2.hasNext();) {
-    			Map.Entry subpartEntry = (Map.Entry)i2.next();
-    			InstrOfferingConfig config = (InstrOfferingConfig)subpartEntry.getKey();
-    			Set topSubpartsThisConfig = (Set)subpartEntry.getValue();
-    			for (Iterator i3=topSubpartsThisConfig.iterator();i3.hasNext();) {
-        			SchedulingSubpart subpart = (SchedulingSubpart)i3.next();
-        			Vector lectures = (Vector)subparts.get(subpart);
-    			
-        			boolean isMakingSense = false;
-        			for (Enumeration e4=lectures.elements();e4.hasMoreElements();) {
-        				Lecture lecture = (Lecture)e4.nextElement();
-        				if (lecture.minClassLimit()!=lecture.maxClassLimit()) {
-        					isMakingSense=true; break;
-        				}
+    	iProgress.setPhase("Posting class limit constraints ...", iOfferings.size());
+    	for (Map.Entry<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> entry: iOfferings.entrySet()) {
+    		Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = entry.getValue();
+    		for (Map.Entry<InstrOfferingConfig, Set<SchedulingSubpart>> subpartEntry: topSubparts.entrySet()) {
+    			InstrOfferingConfig config = subpartEntry.getKey();
+    			Set<SchedulingSubpart> topSubpartsThisConfig = subpartEntry.getValue();
+    			for (SchedulingSubpart subpart: topSubpartsThisConfig) {
+
+    				boolean isMakingSense = false;
+    				for (Class_ clazz: subpart.getClasses()) {
+    					Lecture lecture = iLectures.get(clazz.getUniqueId());
+    					if (lecture == null) continue;
+    					createChildrenClassLimitConstraits(lecture);
+    					if (!lecture.isCommitted() && lecture.minClassLimit() != lecture.maxClassLimit())
+        					isMakingSense=true;
         			}
-        			
-        			if (!isMakingSense) continue;
-        			
+    				
+    				if (!isMakingSense) continue;
+    				
         			if (subpart.getParentSubpart()==null) {
-            			ClassLimitConstraint clc = new ClassLimitConstraint(config.getLimit().intValue(), getClassLimitConstraitName(subpart));
+        				
+            			ClassLimitConstraint clc = new ClassLimitConstraint(config.getLimit(), getClassLimitConstraitName(subpart));
             			
-            			for (Enumeration e4=lectures.elements();e4.hasMoreElements();) {
-            				Lecture lecture = (Lecture)e4.nextElement();
+            			for (Class_ clazz: subpart.getClasses()) {
+            				Lecture lecture = iLectures.get(clazz.getUniqueId());
+            				if (lecture == null || lecture.isCommitted()) {
+            					clc.setClassLimitDelta(clc.getClassLimitDelta() - clazz.getClassLimit());
+            					continue;
+            				}
             				clc.addVariable(lecture);
-            				createChildrenClassLimitConstraits(lecture);
             			}
             			
-            			for (Iterator i4=subpart.getClasses().iterator();i4.hasNext();) {
-            				Class_ clazz = (Class_)i4.next();
-            				if (iLectures.get(clazz.getUniqueId())==null)
-            					clc.setClassLimitDelta(clc.getClassLimitDelta()-clazz.getClassLimit());
-            			}
+            			if (clc.variables().isEmpty()) continue;
             			
            	    		iProgress.trace("Added constraint "+clc.getName()+" between "+clc.variables());
            	    		getModel().addConstraint(clc);
+        			
         			} else {
-        				Hashtable clcs = new Hashtable();
+        			
+        				Hashtable<Long, ClassLimitConstraint> clcs = new Hashtable<Long, ClassLimitConstraint>();
         				
-            			for (Enumeration e4=lectures.elements();e4.hasMoreElements();) {
-            				Lecture lecture = (Lecture)e4.nextElement();
-            				Class_ clazz = (Class_)iClasses.get(lecture.getClassId());
+            			for (Class_ clazz: subpart.getClasses()) {
+            				Lecture lecture = iLectures.get(clazz.getUniqueId());
+
             				Class_ parentClazz = clazz.getParentClass();
             				
-            				ClassLimitConstraint clc = (ClassLimitConstraint)clcs.get(parentClazz.getUniqueId());
-            				if (clc==null) {
+            				ClassLimitConstraint clc = clcs.get(parentClazz.getUniqueId());
+            				if (clc == null) {
             					clc = new ClassLimitConstraint(parentClazz.getClassLimit(), parentClazz.getClassLabel());
             					clcs.put(parentClazz.getUniqueId(), clc);
             				}
             				
-            				clc.addVariable(lecture);
-            				createChildrenClassLimitConstraits(lecture);
-            			}
-            			
-            			for (Iterator i4=subpart.getClasses().iterator();i4.hasNext();) {
-            				Class_ clazz = (Class_)i4.next();
-            				
-            				if (iLectures.get(clazz.getUniqueId())==null) {
-            					Class_ parentClazz = clazz.getParentClass();
-            					ClassLimitConstraint clc = (ClassLimitConstraint)clcs.get(parentClazz.getUniqueId());
-            					if (clc!=null)
-            						clc.setClassLimitDelta(clc.getClassLimitDelta()-clazz.getClassLimit());
+            				if (lecture == null || lecture.isCommitted()) {
+        						clc.setClassLimitDelta(clc.getClassLimitDelta()-clazz.getClassLimit());
+            				} else {
+                				clc.addVariable(lecture);
             				}
             			}
-            			
-            			for (Iterator i4=clcs.values().iterator();i4.hasNext();) {
-            				ClassLimitConstraint clc = (ClassLimitConstraint)i4.next();
-            				iProgress.trace("Added constraint "+clc.getName()+" between "+clc.variables());
-            				getModel().addConstraint(clc);
+            			for (ClassLimitConstraint clc: clcs.values()) {
+            				if (!clc.variables().isEmpty()) {
+                				iProgress.trace("Added constraint "+clc.getName()+" between "+clc.variables());
+                				getModel().addConstraint(clc);
+            				}
             			}
         			}
         			
@@ -2369,74 +2391,30 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.incProgress();
     	}
 		
+		iStudentCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
-		Hashtable demands = new Hashtable();
-		Hashtable demandsPermId = new Hashtable();
-		StringBuffer subjectAreas = new StringBuffer();
-		for (int i=0;i<iSolverGroup.length;i++) {
-			for (Iterator j=iSolverGroup[i].getDepartments().iterator();j.hasNext();) {
-				Department dept = (Department)j.next();
-				for (Iterator k=dept.getSubjectAreas().iterator();k.hasNext();) {
-					SubjectArea sa = (SubjectArea)k.next();
-					if (subjectAreas.length()>0)
-						subjectAreas.append(",");
-					subjectAreas.append(sa.getUniqueId());
-					demands.put(sa.getUniqueId(),new Hashtable());
-				}
-			}
-		}
-			
-		if (subjectAreas.length()>0) {
-			Query q = hibSession.createQuery("select d.subjectArea.uniqueId, d.courseNbr, d.student.uniqueId, d.coursePermId "+
-					"from LastLikeCourseDemand d where d.subjectArea.uniqueId in ("+subjectAreas+")");
-			for (Iterator i=q.iterate();i.hasNext();) {
-				Object[] d = (Object[])i.next();
-				Long subjectAreaId = (Long)d[0];
-				String courseNbr = (String)d[1];
-				Long studentId = (Long)d[2];
-				String coursePermId = (String)d[3];
-				
-				Hashtable demandsThisSubjArea = (Hashtable)demands.get(subjectAreaId);
-				HashSet studentIds = (HashSet)demandsThisSubjArea.get(courseNbr);
-				if (studentIds==null) {
-					studentIds = new HashSet();
-					demandsThisSubjArea.put(courseNbr, studentIds);
-				}
-				studentIds.add(studentId);
-				
-				if (coursePermId!=null) {
-				    studentIds = (HashSet)demandsPermId.get(coursePermId);
-	                if (studentIds==null) {
-	                    studentIds = new HashSet();
-	                    demandsPermId.put(coursePermId, studentIds);
-	                }
-	                studentIds.add(studentId);
-				}
-			}
-		}			
-			
-    	iProgress.setPhase("Loading students ...",offerings.size());
-    	Hashtable offering2students = new Hashtable();
-    	for (Enumeration e1=offerings.keys();e1.hasMoreElements();) {
-    		InstructionalOffering offering = (InstructionalOffering)e1.nextElement();
+    	iProgress.setPhase("Loading students ...",iOfferings.size());
+    	for (InstructionalOffering offering: iOfferings.keySet()) {
     		
     		int totalCourseLimit = 0;
     		
-    		for (Iterator i2=offering.getCourseOfferings().iterator();i2.hasNext();) {
-        		CourseOffering course = (CourseOffering)i2.next();
-
+    		for (CourseOffering course: offering.getCourseOfferings()) {
         		int courseLimit = -1;
-        		for (Iterator i3=offering.getCourseReservations().iterator();i3.hasNext();) {
-        			CourseOfferingReservation r = (CourseOfferingReservation)i3.next();
+        		for (CourseOfferingReservation r: offering.getCourseReservations()) {
         			if (r.getCourseOffering().equals(course))
         				courseLimit = r.getReserved().intValue();
         		}
-        		if (courseLimit<0) {
-        			if (offering.getCourseOfferings().size()==1)
-        				courseLimit = offering.getLimit().intValue();
+        		if (courseLimit < 0) {
+        			if (offering.getCourseOfferings().size() == 1)
+        				courseLimit = offering.getLimit();
         			else {
         				iProgress.warn("Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
-        				courseLimit = course.getDemand().intValue() + (course.getDemandOffering()==null?0:course.getDemandOffering().getDemand().intValue());
+        				if (course.getProjectedDemand() != null)
+        					courseLimit = course.getProjectedDemand();
+        				else if (course.getDemand() != null)
+        					courseLimit = course.getDemand();
+        				else
+        					courseLimit = 0;
         			}
         		}
         		
@@ -2445,138 +2423,97 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		Double factor = null;
     		
-    		if (totalCourseLimit<offering.getLimit().intValue())
+    		if (totalCourseLimit < offering.getLimit())
     			iProgress.warn("Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offering.getLimit().intValue()+").");
 
-    		if (totalCourseLimit>offering.getLimit().intValue())
-    			iProgress.warn("Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
+    		if (totalCourseLimit > offering.getLimit().intValue())
+    			iProgress.info("Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
     		
-    		if (totalCourseLimit==0) continue;
+    		if (totalCourseLimit == 0) continue;
     		
-    		if (totalCourseLimit!=offering.getLimit().intValue())
-    			factor = new Double(((double)offering.getLimit().intValue())/totalCourseLimit);
+    		if (totalCourseLimit != offering.getLimit())
+    			factor = new Double(((double)offering.getLimit()) / totalCourseLimit);
     		
-            Hashtable computedCourseReservations = new Hashtable();
-            Hashtable course2students = new Hashtable();
+            Hashtable<CourseOffering, Hashtable<SchedulingSubpart, Set<Class_>>> computedCourseReservations = new Hashtable<CourseOffering, Hashtable<SchedulingSubpart,Set<Class_>>>();
     		
-        	for (Iterator i2=offering.getCourseOfferings().iterator();i2.hasNext();) {
-        		CourseOffering course = (CourseOffering)i2.next();
-
-        		Set studentIds = null;
-                Hashtable demandsThisSubjArea = (Hashtable)demands.get(course.getSubjectArea().getUniqueId());
-                if (demandsThisSubjArea!=null) {
-                    if (course.getPermId()!=null && demandsPermId.containsKey(course.getPermId()))
-                        studentIds = (Set)demandsPermId.get(course.getPermId());
-                    else
-                        studentIds = (Set)demandsThisSubjArea.get(course.getCourseNbr());
-                } else {
-                    List courseDemands = course.getCourseOfferingDemands();
-                    if (!courseDemands.isEmpty()) {
-                        studentIds = new HashSet(courseDemands.size());
-                        for (Iterator i3=courseDemands.iterator();i3.hasNext();) {
-                            LastLikeCourseDemand demand = (LastLikeCourseDemand)i3.next();
-                            studentIds.add(demand.getStudent().getUniqueId());
-                        }
-                    }
-                }
-        		if (course.getDemandOffering()!=null) {
-                    demandsThisSubjArea = (Hashtable)demands.get(course.getDemandOffering().getSubjectArea().getUniqueId());
-                    if (demandsThisSubjArea!=null) {
-                        if (studentIds==null) studentIds = new HashSet();
-                        if (course.getDemandOffering().getPermId()!=null && demandsPermId.containsKey(course.getDemandOffering().getPermId())) {
-                            studentIds.addAll((Set)demandsPermId.get(course.getDemandOffering().getPermId()));
-                        } else {
-                            studentIds.addAll((Set)demandsThisSubjArea.get(course.getDemandOffering().getCourseNbr()));
-                        }
-                    } else {
-                        List courseDemands = course.getDemandOffering().getCourseOfferingDemands();
-                        if (!courseDemands.isEmpty()) {
-                            if (studentIds==null)
-                                studentIds = new HashSet(courseDemands.size());
-                            for (Iterator i3=courseDemands.iterator();i3.hasNext();) {
-                                LastLikeCourseDemand demand = (LastLikeCourseDemand)i3.next();
-                                studentIds.add(demand.getStudent().getUniqueId());
-                            }
-                        }
-                    }
-        		}
+        	for (CourseOffering course: offering.getCourseOfferings()) {
+        		Set<WeightedStudentId> studentIds = iStudentCourseDemands.getDemands(course);
         		
+				float studentWeight = 0.0f;
+				if (studentIds != null)
+					for (WeightedStudentId studentId: studentIds)
+						studentWeight += studentId.getWeight();
+
         		int courseLimit = -1;
-        		for (Iterator i3=offering.getCourseReservations().iterator();i3.hasNext();) {
-        			CourseOfferingReservation r = (CourseOfferingReservation)i3.next();
+        		for (CourseOfferingReservation r: offering.getCourseReservations()) {
         			if (r.getCourseOffering().equals(course))
         				courseLimit = r.getReserved().intValue();
         		}
-        		if (courseLimit<0) {
-        			if (offering.getCourseOfferings().size()==1)
+        		if (courseLimit < 0) {
+        			if (offering.getCourseOfferings().size() == 1)
         				courseLimit = offering.getLimit().intValue();
         			else {
-        				courseLimit = studentIds.size();
+        				courseLimit = Math.round(studentWeight);
         			}
         		}
         		
         		if (factor!=null)
-        			courseLimit = (int)Math.round(courseLimit*factor.doubleValue());
+        			courseLimit = (int)Math.round(courseLimit * factor);
         		
-        		if (studentIds==null || studentIds.isEmpty()) {
+        		if (studentIds == null || studentIds.isEmpty()) {
         			iProgress.info("No student enrollments for offering "+getOfferingLabel(course)+".");
         			continue;
         		}
         		
-        		if (courseLimit==0) {
+        		if (courseLimit == 0) {
         			iProgress.warn("No reserved space for students of offering "+getOfferingLabel(course)+".");
         		}
         		
-        		double weight = (!iWeighStudents || courseLimit==0?1.0:(double)courseLimit / studentIds.size());
+        		double weight = (iStudentCourseDemands.isWeightStudentsToFillUpOffering() && courseLimit != 0 ? (double)courseLimit / studentWeight : 1.0);
         		
-        		Set cannotAttendLectures = null;
+        		Set<Lecture> cannotAttendLectures = null;
         		
-        		if (offering.getCourseOfferings().size()>1) {
-            		HashSet reservedClasses = new HashSet(
-        				hibSession.
+        		if (offering.getCourseOfferings().size() > 1) {
+            		List<Long> reservedClasses = (List<Long>)hibSession.
         				createQuery("select distinct r.owner from CourseOfferingReservation r "+
         						"where r.courseOffering.uniqueId=:courseId and r.ownerClassId='C'").
         				setLong("courseId", course.getUniqueId().longValue()).
-        				list());
+        				list();
 
             		if (!reservedClasses.isEmpty()) {
         				iProgress.debug("Course requests for course "+getOfferingLabel(course)+" are "+reservedClasses);
         				cannotAttendLectures = computeCannotAttendLectures(reservedClasses);
         				iProgress.debug("Prohibited lectures for course "+getOfferingLabel(course)+" are "+cannotAttendLectures);
-        				checkReservation(course, cannotAttendLectures, (Vector)altConfigurations.get(offering));
+        				checkReservation(course, cannotAttendLectures, iAltConfigurations.get(offering));
         			}
                     
-                    Hashtable totalClassLimit = new Hashtable();
-                    for (Iterator i=reservedClasses.iterator();i.hasNext();) {
-                        Long classId = (Long)i.next();
+                    Hashtable<SchedulingSubpart, Integer> totalClassLimit = new Hashtable<SchedulingSubpart, Integer>();
+                    for (Long classId: reservedClasses) {
                         Class_ clazz = (Class_)iClasses.get(classId);
                         if (clazz==null) clazz = (new Class_DAO()).get(classId);
                         if (clazz==null) continue;
-                        Integer tcl = (Integer)totalClassLimit.get(clazz.getSchedulingSubpart());
-                        totalClassLimit.put(clazz.getSchedulingSubpart(), new Integer((tcl==null?0:tcl.intValue())+clazz.getMaxExpectedCapacity().intValue()));
-        		}
-                    for (Iterator i=totalClassLimit.entrySet().iterator();i.hasNext();) {
-                        Map.Entry entry = (Map.Entry)i.next();
-                        SchedulingSubpart subpart = (SchedulingSubpart)entry.getKey();
-                        int limit = ((Integer)entry.getValue()).intValue();
-                        if (courseLimit>=limit) {
-                            if (courseLimit>limit)
+                        Integer tcl = totalClassLimit.get(clazz.getSchedulingSubpart());
+                        totalClassLimit.put(clazz.getSchedulingSubpart(), (tcl == null ? 0 : tcl) + clazz.getMaxExpectedCapacity());
+                    }
+                    for (Map.Entry<SchedulingSubpart, Integer> entry: totalClassLimit.entrySet()) {
+                        SchedulingSubpart subpart = entry.getKey();
+                        int limit = entry.getValue();
+                        if (courseLimit >= limit) {
+                            if (courseLimit > limit)
                                 iProgress.warn("Too little space reserved in "+getSubpartLabel(subpart)+" for course "+getOfferingLabel(course)+" ("+limit+"<"+courseLimit+").");
-                            for (Iterator j=offering.getCourseOfferings().iterator();j.hasNext();) {
-                                CourseOffering co = (CourseOffering)j.next();
+                            for (CourseOffering co: offering.getCourseOfferings()) {
                                 if (co.equals(course)) continue;
-                                Hashtable cannotAttendClasses = (Hashtable)computedCourseReservations.get(co);
+                                Hashtable<SchedulingSubpart, Set<Class_>> cannotAttendClasses = computedCourseReservations.get(co);
                                 if (cannotAttendClasses==null) {
-                                    cannotAttendClasses = new Hashtable();
+                                    cannotAttendClasses = new Hashtable<SchedulingSubpart, Set<Class_>>();
                                     computedCourseReservations.put(co, cannotAttendClasses);
                                 }
-                                HashSet cannotAttendClassesThisSubpart = (HashSet)cannotAttendClasses.get(subpart);
+                                Set<Class_> cannotAttendClassesThisSubpart = cannotAttendClasses.get(subpart);
                                 if (cannotAttendClassesThisSubpart==null) {
-                                    cannotAttendClassesThisSubpart = new HashSet();
+                                    cannotAttendClassesThisSubpart = new HashSet<Class_>();
                                     cannotAttendClasses.put(subpart, cannotAttendClassesThisSubpart);
                                 }
-                                for (Iterator k=reservedClasses.iterator();k.hasNext();) {
-                                    Long classId = (Long)k.next();
+                                for (Long classId: reservedClasses) {
                                     Class_ clazz = (Class_)iClasses.get(classId);
                                     if (clazz==null) clazz = (new Class_DAO()).get(classId);
                                     if (clazz==null) continue;
@@ -2588,62 +2525,55 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     }
         		}
 
-    			for (Iterator i3=studentIds.iterator();i3.hasNext();) {
-    				Long studentId = (Long)i3.next();
-        			Student student = (Student)iStudents.get(studentId);
+    			for (WeightedStudentId studentId: studentIds) {
+        			Student student = iStudents.get(studentId.getStudentId());
         			if (student==null) {
-        				student = new Student(studentId);
+        				student = new Student(studentId.getStudentId());
+        				student.setAcademicArea(studentId.getArea());
+        				student.setAcademicClassification(studentId.getClasf());
+        				student.setMajor(studentId.getMajor());
+        				student.setCurriculum(studentId.getCurriculum());
         				getModel().addStudent(student);
-        				iStudents.put(studentId, student);
+        				iStudents.put(studentId.getStudentId(), student);
         			}
-        			student.addOffering(offering.getUniqueId(), weight);
-        			Set students = (Set)offering2students.get(offering);
-        			if (students==null) {
-        				students = new HashSet();
-        				offering2students.put(offering,students);
-        			}
-        			students.add(student);
+        			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight());
         			
-                    Set cstudents = (Set)course2students.get(course);
-                    if (cstudents==null) {
-                        cstudents = new HashSet();
-                        course2students.put(course,cstudents);
+                    Set<Student> students = iCourse2students.get(course);
+                    if (students==null) {
+                        students = new HashSet<Student>();
+                        iCourse2students.put(course,students);
                     }
-                    cstudents.add(student);
+                    students.add(student);
 
         			student.addCanNotEnroll(offering.getUniqueId(), cannotAttendLectures);
         		}
         	}
     		
-            for (Iterator i1=computedCourseReservations.entrySet().iterator();i1.hasNext();) {
-                Map.Entry entry1 = (Map.Entry)i1.next();
-                CourseOffering course = (CourseOffering)entry1.getKey();
-                Hashtable cannotAttendClasses = (Hashtable)entry1.getValue();
-                HashSet reservedClasses = new HashSet();
-                for (Iterator i2=cannotAttendClasses.entrySet().iterator();i2.hasNext();) {
-                    Map.Entry entry2 = (Map.Entry)i2.next();
-                    SchedulingSubpart subpart = (SchedulingSubpart)entry2.getKey();
-                    HashSet cannotAttendClassesThisSubpart = (HashSet)entry2.getValue();
-                    for (Iterator i3=subpart.getClasses().iterator();i3.hasNext();) {
-                        Class_ clazz = (Class_) i3.next();
+            for (Map.Entry<CourseOffering, Hashtable<SchedulingSubpart, Set<Class_>>> entry1: computedCourseReservations.entrySet()) {
+                CourseOffering course = entry1.getKey();
+                Hashtable<SchedulingSubpart, Set<Class_>> cannotAttendClasses = entry1.getValue();
+                HashSet<Long> reservedClasses = new HashSet<Long>();
+                for (Map.Entry<SchedulingSubpart, Set<Class_>> entry2: cannotAttendClasses.entrySet()) {
+                    SchedulingSubpart subpart = entry2.getKey();
+                    Set<Class_> cannotAttendClassesThisSubpart = entry2.getValue();
+                    for (Class_ clazz: subpart.getClasses()) {
                         if (cannotAttendClassesThisSubpart.contains(clazz)) continue;
                         reservedClasses.add(clazz.getUniqueId());
                     }
                 }
                 if (!reservedClasses.isEmpty()) {
-                    Set students = (Set)course2students.get(course);
+                    Set<Student> students = iCourse2students.get(course);
                     if (students==null || students.isEmpty()) continue;
                     iProgress.debug("Course requests for course "+getOfferingLabel(course)+" are "+reservedClasses);
-                    Set cannotAttendLectures = computeCannotAttendLectures(reservedClasses);
+                    Set<Lecture> cannotAttendLectures = computeCannotAttendLectures(reservedClasses);
                     if (cannotAttendLectures.isEmpty()) continue;
                     boolean first = true;
-                    for (Iterator i2=students.iterator();i2.hasNext();) {
-                        Student student = (Student)i2.next();
+                    for (Student student: students) {
                         student.addCanNotEnroll(offering.getUniqueId(), cannotAttendLectures);
                         if (first) {
-                            Set allCannotAttendLectures = (Set)student.canNotEnrollSections().get(offering.getUniqueId());
+                            Set<Lecture> allCannotAttendLectures = student.canNotEnrollSections().get(offering.getUniqueId());
                             iProgress.debug("Prohibited lectures for course "+getOfferingLabel(course)+" are "+allCannotAttendLectures);
-                            checkReservation(course, allCannotAttendLectures, (Vector)altConfigurations.get(offering));
+                            checkReservation(course, allCannotAttendLectures, iAltConfigurations.get(offering));
                         }
                         first = false;
                     }
@@ -2658,23 +2588,26 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
 
-    	if (!iIgnoreCommittedStudentConflicts)
-    		loadCommittedStudentConflicts(hibSession);
+    	if (iCommittedStudentConflictsMode == CommittedStudentConflictsMode.Load && !iStudentCourseDemands.isMakingUpStudents())
+    		loadCommittedStudentConflicts(hibSession, loadedOfferings);
+    	else if (iCommittedStudentConflictsMode != CommittedStudentConflictsMode.Ignore)
+    		makeupCommittedStudentConflicts(loadedOfferings);
     	
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
 
-    	if (solutions!=null && iLoadStudentEnrlsFromSolution) {
-        	for (int idx=0;idx<iSolverGroupId.length;idx++) {
-        		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
-        		List studentEnrls = hibSession
-        			.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.uniqueId=:solutionId")
-        			.setInteger("solutionId", solution.getUniqueId().intValue())
-        			.list();
-        		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
-        		Hashtable subpart2students = new Hashtable();
-            	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
-            		Object o[] = (Object[])i1.next();
+    	Hashtable<Student, Set<Lecture>> iPreEnrollments = new Hashtable<Student, Set<Lecture>>();
+    	if (iLoadStudentEnrlsFromSolution) {
+    		if (iStudentCourseDemands.canUseStudentClassEnrollmentsAsSolution()) {
+    			// Load real student enrollments (not saved last-like)
+    			List<Object[]> enrollments = (List<Object[]>)hibSession.createQuery(
+    					"select distinct e.student.uniqueId, e.clazz.uniqueId from " +
+    					"StudentClassEnrollment e, Class_ c where " + 
+    					"e.courseOffering.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
+    					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
+    			iProgress.setPhase("Loading current student enrolments  ...", enrollments.size());
+    			int totalEnrollments = 0;
+    			for (Object[] o: enrollments) {
             		Long studentId = (Long)o[0];
             		Long clazzId = (Long)o[1];
             		
@@ -2683,15 +2616,105 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     
                     Lecture lecture = (Lecture)iLectures.get(clazzId);
                     if (lecture!=null) {
-                    	if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+
+                		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                		if (preEnrollments == null) {
+                			preEnrollments = new HashSet<Lecture>();
+                			iPreEnrollments.put(student, preEnrollments);
+                		}
+                		preEnrollments.add(lecture);
+                		
+                		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                     		student.addLecture(lecture);
                     		lecture.addStudent(student);
+                    		totalEnrollments ++;
                     	}
                     }
-                    
-                    iProgress.incProgress();
+
+    				iProgress.incProgress();
+    			}
+    			iProgress.info("Loaded " + totalEnrollments + " enrollments of " + iPreEnrollments.size() + " students.");
+    		} else {
+    			// Load enrollments from selected / committed solutions
+            	for (int idx=0;idx<iSolverGroupId.length;idx++) {
+            		Solution solution = (solutions == null ? null : solutions.get(iSolverGroupId[idx]));
+            		List studentEnrls = null;
+            		if (solution != null) {
+            			studentEnrls = hibSession
+            				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.uniqueId=:solutionId")
+            				.setLong("solutionId", solution.getUniqueId())
+            				.list();
+            		} else {
+            			studentEnrls = hibSession
+        				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.owner.uniqueId=:sovlerGroupId and e.solution.commited = true")
+        				.setLong("sovlerGroupId", iSolverGroupId[idx])
+        				.list();
+            		}
+            		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
+                	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
+                		Object o[] = (Object[])i1.next();
+                		Long studentId = (Long)o[0];
+                		Long clazzId = (Long)o[1];
+                		
+                        Student student = (Student)iStudents.get(studentId);
+                        if (student==null) continue;
+                        
+                        Lecture lecture = (Lecture)iLectures.get(clazzId);
+                        if (lecture!=null) {
+                    		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                    		if (preEnrollments == null) {
+                    			preEnrollments = new HashSet<Lecture>();
+                    			iPreEnrollments.put(student, preEnrollments);
+                    		}
+                    		preEnrollments.add(lecture);
+
+                        	if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+                        		student.addLecture(lecture);
+                        		lecture.addStudent(student);
+                        	}
+                        }
+                        
+                        iProgress.incProgress();
+                	}
             	}
-        	}
+            	
+            	if (getModel().getProperties().getPropertyBoolean("Global.LoadOtherCommittedStudentEnrls", true)) {
+                	// Other committed enrollments
+        			List<Object[]> enrollments = (List<Object[]>)hibSession.createQuery(
+        					"select distinct e.studentId, e.clazz.uniqueId from " +
+        					"StudentEnrollment e, Class_ c where " + 
+        					"e.solution.commited = true and e.solution.owner.uniqueId not in (" + iSolverGroupIds + ") and " +
+        					"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
+        					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
+        			iProgress.setPhase("Loading other committed student enrolments  ...", enrollments.size());
+
+        			for (Object[] o: enrollments) {
+                		Long studentId = (Long)o[0];
+                		Long clazzId = (Long)o[1];
+                		
+                        Student student = (Student)iStudents.get(studentId);
+                        if (student==null) continue;
+                        
+                        Lecture lecture = (Lecture)iLectures.get(clazzId);
+                        if (lecture!=null) {
+
+                    		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
+                    		if (preEnrollments == null) {
+                    			preEnrollments = new HashSet<Lecture>();
+                    			iPreEnrollments.put(student, preEnrollments);
+                    		}
+                    		preEnrollments.add(lecture);
+                    		
+                    		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
+                        		student.addLecture(lecture);
+                        		lecture.addStudent(student);
+                        	}
+                        }
+
+        				iProgress.incProgress();
+        			}
+        		}
+    		}
     	}
     	
     	if (!hibSession.isOpen())
@@ -2702,32 +2725,51 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (!hibSession.isOpen())
             iProgress.fatal("Hibernate session not open.");
 
-    	iProgress.setPhase("Initial sectioning ...", offerings.size());
-        for (Enumeration e1=offerings.keys();e1.hasMoreElements();) {
-    		InstructionalOffering offering = (InstructionalOffering)e1.nextElement();
-    		Set students = (Set)offering2students.get(offering);
-    		if (students==null) continue;
+    	iProgress.setPhase("Initial sectioning ...", iOfferings.size());
+        for (InstructionalOffering offering: iOfferings.keySet()) {
+    		Set<Student> students = new HashSet<Student>();
+			for (CourseOffering course: offering.getCourseOfferings()) {
+				Set<Student> courseStudents = iCourse2students.get(course);
+				if (courseStudents != null)
+					students.addAll(courseStudents);
+			}
+    		if (students.isEmpty()) continue;
     		
-    		InitialSectioning.initialSectioningCfg(iProgress, offering.getUniqueId(), offering.getCourseName(), students, (Vector)altConfigurations.get(offering));
-    		
-    		/*
-    		Hashtable topSubparts = (Hashtable)entry.getValue();
-    		for (Iterator i2=topSubparts.entrySet().iterator();i2.hasNext();) {
-    			Map.Entry subpartEntry = (Map.Entry)i2.next();
-    			InstrOfferingConfig config = (InstrOfferingConfig)subpartEntry.getKey();
-    			Set topSubpartsThisConfig = (Set)subpartEntry.getValue();
-    			for (Iterator i3=topSubpartsThisConfig.iterator();i3.hasNext();) {
-        			SchedulingSubpart subpart = (SchedulingSubpart)i3.next();
-        			Vector lectures = (Vector)subparts.get(subpart);
-        			initialSectioning(offering.getUniqueId(), offering.getCourseName(),students,lectures);
-    			}
-    		}
-    		*/
+    		InitialSectioning.initialSectioningCfg(iProgress, offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
     		
     		iProgress.incProgress();
     	}
+
     	for (Enumeration e=iStudents.elements();e.hasMoreElements();) {
     		((Student)e.nextElement()).clearDistanceCache();
+    	}
+    	
+    	if (!iPreEnrollments.isEmpty()) {
+        	iProgress.setPhase("Checking loaded enrollments ....", iPreEnrollments.size());
+        	for (Map.Entry<Student, Set<Lecture>> entry: iPreEnrollments.entrySet()) {
+        		iProgress.incProgress();
+        		Student student = entry.getKey();
+        		Set<Lecture> lectures = entry.getValue();
+        		for (Lecture lecture: lectures) {
+        			if (!lecture.students().contains(student)) {
+        				iProgress.warn("Student " + student.getId() + " is supposed to be enrolled to " + getClassLabel(lecture));
+        			}
+        		}
+        		for (Lecture lecture: student.getLectures()) {
+        			if (!lectures.contains(lecture)) {
+        				Lecture instead = null;
+        				if (lecture.sameStudentsLectures() != null) {
+            				for (Lecture other: lecture.sameStudentsLectures()) {
+            					if (lectures.contains(other)) instead = other;
+            				}
+        				}
+        				if (instead != null)
+            				iProgress.warn("Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ", he/she should have " + getClassLabel(instead) + " instead.");
+        				else
+            				iProgress.info("Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ".");
+        			}
+        		}
+        	}
     	}
         
     	if (!hibSession.isOpen())
@@ -2747,9 +2789,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     JenrlConstraint jenrl = (JenrlConstraint)x.get(l2);
                     if (jenrl==null) {
                         jenrl = new JenrlConstraint();
+                        getModel().addConstraint(jenrl);
                         jenrl.addVariable(l1);
                         jenrl.addVariable(l2);
-                        getModel().addConstraint(jenrl);
                         x.put(l2, jenrl);
                     }
                     jenrl.incJenrl(st);
@@ -2772,15 +2814,23 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		iProgress.incProgress();
             	}
         	}
+        } else if (iLoadCommittedAssignments) {
+        	iProgress.setPhase("Creating initial assignment ...", getModel().variables().size());
+        	for (Lecture lecture: getModel().variables()) {
+        		if (lecture.isCommitted()) continue;
+        		Class_ clazz = iClasses.get(lecture.getClassId());
+        		if (clazz != null && clazz.getCommittedAssignment() != null)
+        			loadAssignment(clazz.getCommittedAssignment());
+        		iProgress.incProgress();
+        	}
         }
         
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
 
     	if (iSpread) {
-    		iProgress.setPhase("Posting automatic spread constraints ...",subparts.size());
-    		for (Enumeration e1=subparts.keys();e1.hasMoreElements();) {
-    			SchedulingSubpart subpart = (SchedulingSubpart)e1.nextElement();
+    		iProgress.setPhase("Posting automatic spread constraints ...", subparts.size());
+    		for (SchedulingSubpart subpart: subparts) {
     			if (subpart.getClasses().size()<=1) {
     				iProgress.incProgress();
     				continue;
@@ -2790,42 +2840,25 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				iProgress.incProgress();
     				continue;
     			}
-    			/*
-    			if (subpart.getClasses().size()<=5) {
-    				GroupConstraint gc = new GroupConstraint(new Long(-1),GroupConstraint.TYPE_DIFF_TIME,PreferenceLevel.sStronglyPreferred);
-    				for (Iterator i2=subpart.getClasses().iterator();i2.hasNext();) {
-    					Class_ clazz = (Class_)i2.next();
-    					Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-    					if (lecture==null) continue;
-    					gc.addVariable(lecture);
-    				}
-    				getModel().addConstraint(gc);
-    			} else {
-    			*/
-    				SpreadConstraint spread = new SpreadConstraint(getModel().getProperties(),subpart.getCourseName()+" "+subpart.getItypeDesc().trim());
-    				for (Iterator i2=subpart.getClasses().iterator();i2.hasNext();) {
-    					Class_ clazz = (Class_)i2.next();
-    					Lecture lecture = (Lecture)getLecture(clazz);
-    					if (lecture==null) continue;
-    					spread.addVariable(lecture);
-    				}
-    				if (spread.variables().isEmpty())
-    					iProgress.warn("No class for course "+getSubpartLabel(subpart));
-    				else
-    					getModel().addConstraint(spread);
-    			/*
-    			}
-    			*/
-    			//iProgress.trace("Constraint "+spread+" added.");
+				SpreadConstraint spread = new SpreadConstraint(getModel().getProperties(),subpart.getCourseName()+" "+subpart.getItypeDesc().trim());
+				for (Iterator i2=subpart.getClasses().iterator();i2.hasNext();) {
+					Class_ clazz = (Class_)i2.next();
+					Lecture lecture = (Lecture)getLecture(clazz);
+					if (lecture==null) continue;
+					spread.addVariable(lecture);
+				}
+				if (spread.variables().isEmpty())
+					iProgress.warn("No class for course "+getSubpartLabel(subpart));
+				else
+					getModel().addConstraint(spread);
     			iProgress.incProgress();
     		}
 		}
 		
 		if (iDeptBalancing) {
         	iProgress.setPhase("Creating dept. spread constraints ...",getModel().variables().size());
-            Hashtable depSpreadConstraints = new Hashtable();
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                Lecture lecture = (Lecture)e.nextElement();
+            Hashtable<Long, DepartmentSpreadConstraint> depSpreadConstraints = new Hashtable<Long, DepartmentSpreadConstraint>();
+            for (Lecture lecture: getModel().variables()) {
                 if (lecture.getDepartment()==null) continue;
                 DepartmentSpreadConstraint deptConstr = (DepartmentSpreadConstraint)depSpreadConstraints.get(lecture.getDepartment());
                 if (deptConstr==null) {
@@ -2840,8 +2873,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		purgeInvalidValues();
 		
-		for (Enumeration e=getModel().constraints().elements();e.hasMoreElements();) {
-			Constraint c = (Constraint)e.nextElement();
+		for (Constraint c: getModel().constraints()) {
 			if (c instanceof SpreadConstraint)
 				((SpreadConstraint)c).init();
 			if (c instanceof DiscouragedRoomConstraint)
@@ -2853,8 +2885,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		iProgress.setPhase("Checking for inconsistencies...", getModel().variables().size());
-		for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: getModel().variables()) {
 			
 			iProgress.incProgress();
     		for (Iterator i=lecture.students().iterator();i.hasNext();) {
@@ -2865,14 +2896,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		//check same instructor constraint
     		if (!lecture.values().isEmpty() && lecture.timeLocations().size()==1 && !lecture.getInstructorConstraints().isEmpty()) {
-        		for (Enumeration f=getModel().variables().elements();f.hasMoreElements();) {
-        			Lecture other = (Lecture)f.nextElement();
+        		for (Lecture other: getModel().variables()) {
         			if (other.values().isEmpty() || other.timeLocations().size()!=1 || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
-        			Placement p1 = (Placement)lecture.values().firstElement();
-        			Placement p2 = (Placement)other.values().firstElement();
+        			Placement p1 = lecture.values().get(0);
+        			Placement p2 = other.values().get(0);
         			if (!other.getInstructorConstraints().isEmpty()) {
-        	           	for (Enumeration g=lecture.getInstructorConstraints().elements();g.hasMoreElements();) {
-        	           		InstructorConstraint ic = (InstructorConstraint)g.nextElement();
+        	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         	           		if (!other.getInstructorConstraints().contains(ic)) continue;
         	           		if (p1.canShareRooms(p2) && p1.sameRooms(p2)) continue;
         	           		if (p1.getTimeLocation().hasIntersection(p2.getTimeLocation())) {
@@ -2880,7 +2909,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
         	           		} else if (ic.getDistancePreference(p1,p2)==PreferenceLevel.sIntLevelProhibited && lecture.roomLocations().size()==1 && other.roomLocations().size()==1) {
-        	           			iProgress.warn("Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistance(p1,p2))+"m) required:"+
+        	           			iProgress.warn("Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2))+"m) required:"+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
         	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
         	           		}
@@ -2890,11 +2919,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     		
 			if (!lecture.isSingleton()) continue;
-    		for (Enumeration f=getModel().variables().elements();f.hasMoreElements();) {
-    			Lecture other = (Lecture)f.nextElement();
+    		for (Lecture other: getModel().variables()) {
     			if (!other.isSingleton() || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
-    			Placement p1 = (Placement)lecture.values().firstElement();
-    			Placement p2 = (Placement)other.values().firstElement();
+    			Placement p1 = lecture.values().get(0);
+    			Placement p2 = other.values().get(0);
     			if (p1.shareRooms(p2) && p1.getTimeLocation().hasIntersection(p2.getTimeLocation()) && !p1.canShareRooms(p2)) {
     				iProgress.warn("Same room and overlapping time required:"+
     						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
@@ -2902,18 +2930,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			}
     		}
     		if (lecture.getAssignment()==null) {
-    			Placement placement = (Placement)lecture.values().firstElement();
+    			Placement placement = lecture.values().get(0);
     			if (!placement.isValid()) {
     				String reason = "";
-    	           	for (Enumeration g=lecture.getInstructorConstraints().elements();g.hasMoreElements();) {
-    	           		InstructorConstraint ic = (InstructorConstraint)g.nextElement();
+    	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     	           		if (!ic.isAvailable(lecture, placement))
     	           			reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;instructor "+ic.getName()+" not available";
     	           	}
     		    	if (lecture.getNrRooms()>0) {
     		    		if (placement.isMultiRoom()) {
-    		    			for (Enumeration f=placement.getRoomLocations().elements();f.hasMoreElements();) {
-    		    				RoomLocation roomLocation = (RoomLocation)f.nextElement();
+    		    			for (RoomLocation roomLocation: placement.getRoomLocations()) {
     		    				if (!roomLocation.getRoomConstraint().isAvailable(lecture,placement.getTimeLocation(),lecture.getScheduler()))
     		    					reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+roomLocation.getName()+" not available";
     		    			}
@@ -2922,14 +2948,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     							reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
     		    		}
     		    	}
-    	            Hashtable conflictConstraints = getModel().conflictConstraints(placement);
+    		    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
     	            if (!conflictConstraints.isEmpty()) {
-    	                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-    	                    Constraint c = (Constraint)ex.nextElement();
-    	                    Collection vals = (Collection)conflictConstraints.get(c);
-    	                    for (Iterator i=vals.iterator();i.hasNext();) {
-    	                        Placement p = (Placement) i.next();
-    	                        Lecture l = (Lecture)p.variable();
+    	                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+    	                	Set<Placement> vals = conflictConstraints.get(c);
+    	                    for (Placement p: vals) {
+    	                        Lecture l = p.variable();
     	                        if (l.isCommitted())
     	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
     	                        if (p.equals(placement))
@@ -2943,9 +2967,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
 		}
 
-		new EnrollmentCheck(getModel()).checkStudentEnrollments(iProgress);
+		if (getModel().getProperties().getPropertyBoolean("General.EnrollmentCheck", true))
+			new EnrollmentCheck(getModel()).checkStudentEnrollments(iProgress);
 		
-		if (!getModel().assignedVariables().isEmpty() && !iLoadStudentEnrlsFromSolution)
+		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && !getModel().assignedVariables().isEmpty() && !iLoadStudentEnrlsFromSolution)
 			getModel().switchStudents();
 		
  		iProgress.setPhase("Done",1);iProgress.incProgress();            
@@ -2953,8 +2978,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public static class ObjectsByGivenOrderComparator implements Comparator {
-    	Vector iOrderedSet = null;
-    	public ObjectsByGivenOrderComparator(Vector orderedSetOfLectures) {
+    	List<?> iOrderedSet = null;
+    	public ObjectsByGivenOrderComparator(List<?> orderedSetOfLectures) {
     		iOrderedSet = orderedSetOfLectures;
     	}
     	public int compare(Object o1, Object o2) {
@@ -3015,8 +3040,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.SECOND, 59);
         roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
         iProgress.setPhase("Loading room availability...", iRooms.size());
-        int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth()-3);
-        int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+3+1);
+        int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
+        int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
@@ -3053,10 +3078,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 int length = endSlot - startSlot;
                 if (length<=0) continue;
                 TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
-                Vector timeLocations = new Vector(1); timeLocations.addElement(timeLocation);
+                List<TimeLocation> timeLocations = new ArrayList<TimeLocation>(1); timeLocations.add(timeLocation);
                 RoomLocation roomLocation = new RoomLocation(room.getResourceId(), room.getName(), room.getBuildingId(), 0, room.getCapacity(), room.getPosX(), room.getPosY(),
                         room.getIgnoreTooFar(), room);
-                Vector roomLocations = new Vector(1); roomLocations.add(roomLocation);
+                List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1); roomLocations.add(roomLocation);
                 Lecture lecture = new Lecture(
                         new Long(--id), null, null, time.getEventName(), 
                         timeLocations, roomLocations, 1, 

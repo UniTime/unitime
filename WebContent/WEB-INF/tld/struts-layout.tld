@@ -36,6 +36,26 @@
     </attribute>
  </tag>
 	
+ <tag>
+    <name>javascriptImageTag</name>    
+	<tagclass>fr.improve.struts.taglib.layout.JavascriptImageTag</tagclass>
+    <bodycontent>JSP</bodycontent>  
+    <attribute>
+        <name>styleClass</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+        <name>reqCode</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+        <name>href</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+ </tag>
 	
 	<tag>
 	<name>layer</name>
@@ -191,6 +211,232 @@
   <tag>
     <name>text</name>
     <tagclass>fr.improve.struts.taglib.layout.field.TextFieldTag</tagclass>
+    <bodycontent>JSP</bodycontent>
+    <attribute>
+      <name>accesskey</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>arg0</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>arg1</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>arg2</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>arg3</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>arg4</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>bundle</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>cols</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>editType</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+      <name>disabled</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>hint</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>isRequired</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>key</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>layout</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+      <name>layoutId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>maxlength</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>mode</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>model</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>name</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+		<name>onblur</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onchange</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onclick</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>ondblclick</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onfocus</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onkeydown</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onkeypress</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onkeyup</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onmousedown</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onmousemove</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onmouseout</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onmouseover</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>onmouseup</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>	
+    <attribute>
+      <name>policy</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>property</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+      <name>readonly</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>rows</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>size</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+      <name>styleId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>styleClass</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+		<name>tabindex</name>
+		<required>false</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>    
+    <attribute>
+      <name>tooltip</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>type</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>	            
+    <attribute>
+      <name>value</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+  </tag>
+  
+  <tag>
+    <name>number</name>
+    <tagclass>fr.improve.struts.taglib.layout.field.NumberFieldTag</tagclass>
     <bodycontent>JSP</bodycontent>
     <attribute>
       <name>accesskey</name>
@@ -968,6 +1214,11 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
+      <name>styleId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>    
+    <attribute>
       <name>isRequired</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
@@ -1087,30 +1338,20 @@
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>       
+    <attribute>
+      <name>filter</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
   </tag>
   
   <tag>
     <name>password</name>
     <tagclass>fr.improve.struts.taglib.layout.field.PasswordFieldTag</tagclass>
-    <bodycontent>JSP</bodycontent>
+    <bodycontent>JSP</bodycontent>                        
     <attribute>
-      <name>cols</name>
+      <name>accesskey</name>
       <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>
-    <attribute>
-      <name>rows</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>
-    <attribute>
-      <name>bundle</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>
-    <attribute>
-      <name>key</name>
-      <required>true</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>    
     <attribute>
@@ -1139,12 +1380,122 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
-      <name>accesskey</name>
+      <name>bundle</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
-      <attribute>
+    <attribute>
+      <name>cols</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>hint</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>isRequired</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>	        		    
+    <attribute>
+      <name>key</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>layout</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+      <name>layoutId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>    
+    <attribute>
+      <name>maxlength</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>  	
+    <attribute>
+      <name>mode</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
       <name>name</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+	<attribute>
+	  <name>onblur</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onchange</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onclick</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>ondblclick</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onfocus</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onkeydown</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onkeypress</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onkeyup</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onmousedown</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onmousemove</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onmouseout</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onmouseover</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+	  <name>onmouseup</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
+	</attribute>              
+    <attribute>
+      <name>policy</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
@@ -1154,129 +1505,44 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
+      <name>redisplay</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>rows</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
       <name>size</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
-    </attribute>     
-    <attribute>
-      <name>maxlength</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>     
+    </attribute>
     <attribute>
       <name>styleClass</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
-      <name>isRequired</name>
+      <name>styleId</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
-    </attribute>	
-    <attribute>
-      <name>redisplay</name>
+    </attribute>    
+	<attribute>
+      <name>tabindex</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
-    </attribute>
-    <attribute>
-      <name>mode</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>		
-    <attribute>
-            <name>onblur</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onchange</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onclick</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>ondblclick</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onfocus</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onkeydown</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onkeypress</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onkeyup</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onmousedown</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onmousemove</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onmouseout</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onmouseover</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>onmouseup</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>tabindex</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>    
-    <attribute>
-      <name>policy</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>	        
-    <attribute>
-      <name>hint</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>	 
-    <attribute>
+    </attribute>    
+    <attribute>    
       <name>tooltip</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>	 
 	<attribute>
-      <name>layoutId</name>
-      <required>false</required>
-      <rtexprvalue>true</rtexprvalue>
-    </attribute>  
-	<attribute>
-		<name>value</name>
-		<required>false</required>
-		<rtexprvalue>true</rtexprvalue>
+	  <name>value</name>
+	  <required>false</required>
+	  <rtexprvalue>true</rtexprvalue>
 	</attribute>
   </tag>
  
@@ -1455,10 +1721,20 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>   
     <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
       <name>styleClass</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>    
+    <attribute>
+      <name>styleId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
   <attribute>
       <name>tabindex</name>
       <required>false</required>
@@ -1807,6 +2083,16 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>styleId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
       <name>tooltip</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
@@ -1978,6 +2264,11 @@
       <rtexprvalue>true</rtexprvalue>
     </attribute>        	        	 
     <attribute>
+      <name>styleId</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>        	        	     
+    <attribute>
       <name>tooltip</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
@@ -2145,7 +2436,7 @@
     </attribute>
     <attribute>
       <name>key</name>
-      <required>true</required>
+      <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
     <attribute>
@@ -2384,6 +2675,11 @@
     	<required>false</required>
     	<rtexprvalue>true</rtexprvalue>
     </attribute>         
+	<attribute>
+    	<name>layout</name>
+    	<required>false</required>
+    	<rtexprvalue>true</rtexprvalue>
+    </attribute>             
   </tag>  	
  <tag>
     <name>collection</name>
@@ -2406,6 +2702,11 @@
     </attribute>
     <attribute>
       <name>id</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>oddId</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
@@ -2713,7 +3014,7 @@
     <bodycontent>JSP</bodycontent>   
     <attribute>
       <name>title</name>
-      <required>true</required>
+      <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
 	<attribute>
@@ -2978,19 +3279,29 @@
   </tag>
 
  <tag>
-        <name>form</name>
-        <tagclass>fr.improve.struts.taglib.layout.FormTag</tagclass>
-        <bodycontent>JSP</bodycontent>
+   <name>form</name>
+   <tagclass>fr.improve.struts.taglib.layout.FormTag</tagclass>
+   <bodycontent>JSP</bodycontent>
 	<attribute>
 	    <name>arg0</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
 	<attribute>
 	    <name>width</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+    <attribute>
+	    <name>acceptCharset</name>
+        <required>false</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
+     <attribute>
+        <name>action</name>
+        <required>true</required>
+        <rtexprvalue>true</rtexprvalue>
+    </attribute>
 	<attribute>
 	    <name>align</name>
             <required>false</required>
@@ -3004,11 +3315,6 @@
 		<attribute>
             <name>key</name>
             <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
-            <name>action</name>
-            <required>true</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
@@ -3032,12 +3338,22 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
+            <name>layout</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
+        <attribute>
             <name>method</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
             <name>name</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>model</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
@@ -3057,6 +3373,11 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
+            <name>scheme</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
             <name>scope</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
@@ -3071,6 +3392,11 @@
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
+        <attribute>
+            <name>styleId</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
         <attribute>
             <name>target</name>
             <required>false</required>
@@ -3239,6 +3565,11 @@
 	    <required>false</required>
 	    <rtexprvalue>true</rtexprvalue>
 	</attribute>
+	<attribute>
+	    <name>height</name>
+	    <required>false</required>
+	    <rtexprvalue>true</rtexprvalue>
+	</attribute>	
 	<attribute>
 	    <name>align</name>
 	    <required>false</required>
@@ -3777,6 +4108,11 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
+            <name>styleId</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
+        <attribute>
             <name>tabindex</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
@@ -4306,7 +4642,12 @@
       <name>bundle</name>
       <required>false</required>
       <rtexprvalue>true</rtexprvalue>
-    </attribute>    
+    </attribute>
+    <attribute>
+      <name>model</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+    </attribute>
     </tag>
 
     <tag>
@@ -4469,6 +4810,11 @@
 	    <name>message</name>
 	    <tagclass>fr.improve.struts.taglib.layout.MessageTag</tagclass>
 	    <bodycontent>empty</bodycontent>
+	    <attribute>
+	      <name>bundle</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
 	    <attribute>
 	      <name>key</name>
 	      <required>true</required>
@@ -4645,6 +4991,11 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
+            <name>scheme</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
             <name>scope</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
@@ -4765,8 +5116,18 @@
 	    <name>column</name>
 	    <tagclass>fr.improve.struts.taglib.layout.ColumnTag</tagclass>
 	    <bodycontent>JSP</bodycontent>
-	    <attribute>
+   	    <attribute>
+	      <name>style</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+   	    <attribute>
 	      <name>styleClass</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>styleId</name>
 	      <required>false</required>
 	      <rtexprvalue>true</rtexprvalue>
 	    </attribute>
@@ -4810,6 +5171,11 @@
 	    <name>cell</name>
 	    <tagclass>fr.improve.struts.taglib.layout.CellTag</tagclass>
 	    <bodycontent>JSP</bodycontent>
+	    <attribute>
+	      <name>align</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
 	    <attribute>
 	      <name>colspan</name>
 	      <required>false</required>
@@ -4924,6 +5290,11 @@
 	      <rtexprvalue>true</rtexprvalue>
 	    </attribute>
 	    <attribute>
+	      <name>id</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
 	      <name>styleClass</name>
 	      <required>false</required>
 	      <rtexprvalue>true</rtexprvalue>
@@ -5018,6 +5389,36 @@
 	    </attribute>
 	</tag>	    
 	
+		<tag>
+	    <name>datagridText</name>
+	    <tagclass>fr.improve.struts.taglib.layout.datagrid.DatagridTextTag</tagclass>
+	    <bodycontent>JSP</bodycontent>
+	    <attribute>
+	      <name>mode</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>property</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>title</name>
+	      <required>true</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+		<attribute>
+	      <name>width</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onnewrow</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	</tag>	    
 	
 	<tag>
 	    <name>ol</name>
@@ -5072,6 +5473,11 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
+            <name>action</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
+        <attribute>
             <name>align</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
@@ -5122,15 +5528,15 @@
             <rtexprvalue>true</rtexprvalue>
         </attribute>
         <attribute>
-            <name>lowsrc</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
-        <attribute>
             <name>name</name>
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
+        <attribute>
+            <name>onclick</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
         <attribute>
             <name>onkeydown</name>
             <required>false</required>
@@ -5211,6 +5617,11 @@
             <required>false</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>
+        <attribute>
+            <name>styleId</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>        
         <attribute>
             <name>usemap</name>
             <required>false</required>
@@ -5439,5 +5850,253 @@
 		<rtexprvalue>true</rtexprvalue>
 	</attribute>
   </tag>
+  
+  <tag>
+  	<name>fieldArea</name>
+  	<tagclass>fr.improve.struts.taglib.layout.field.AreaFieldTag</tagclass>
+  	<bodycontent>JSP</bodycontent>
+	<attribute>
+		<name>key</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>styleClass</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>	
+  </tag>
+  
+  <tag>
+  	<name>popup</name>
+  	<tagclass>fr.improve.struts.taglib.layout.PopupTag</tagclass>
+  	<bodycontent>JSP</bodycontent>
+	<attribute>
+		<name>key</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>styleClass</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+	<attribute>
+		<name>styleId</name>
+		<required>true</required>
+		<rtexprvalue>true</rtexprvalue>
+	</attribute>
+  </tag>
+  
+  	<tag>
+	    <name>selectDependent</name>
+	    <tagclass>fr.improve.struts.taglib.layout.field.ajax.select.SelectDependentTag</tagclass>
+	    <bodycontent>JSP</bodycontent>    
+	    <attribute>
+	      <name>targetName</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   
+	     <attribute>
+	      <name>fillDropDownAction</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   
+	    <attribute>
+	      <name>doubleCombo</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>     
+	    <attribute>
+	      <name>arg0</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>arg1</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>arg2</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>arg3</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>arg4</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	    <attribute>
+	      <name>accesskey</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	    <attribute>
+	      <name>bundle</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>disabled</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+		<attribute>
+	    	<name>filter</name>
+	    	<required>false</required>
+	    	<rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	    <attribute>
+	      <name>hint</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>isRequired</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>	 
+	    <attribute>
+	      <name>key</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   	     
+	    <attribute>
+	      <name>layout</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+		<attribute>
+	      <name>layoutId</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+		<attribute>
+	      <name>maxlength</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   
+	    <attribute>
+	      <name>mode</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	       <name>multiple</name>
+	       <required>false</required>
+	       <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+		<attribute>
+	      <name>name</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>        
+		<attribute>
+	      <name>onblur</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onchange</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onclick</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>ondblclick</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onfocus</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onkeydown</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onkeypress</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onkeyup</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onmousedown</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onmousemove</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onmouseout</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onmouseover</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	    <attribute>
+	      <name>onmouseup</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   
+	    <attribute>
+	      <name>policy</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>	            
+	    <attribute>
+	      <name>property</name>
+	      <required>true</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	 <attribute>
+	      <name>size</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>   
+	    <attribute>
+	      <name>styleClass</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	  <attribute>
+	      <name>tabindex</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	    <attribute>
+	      <name>tooltip</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>	 
+	    <attribute>
+	      <name>value</name>
+	      <required>false</required>
+	      <rtexprvalue>true</rtexprvalue>
+	    </attribute>    
+	  </tag>
 	
 </taglib>

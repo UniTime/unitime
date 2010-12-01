@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -636,7 +636,6 @@ public class DistributionPrefsAction extends Action {
         HttpSession httpSession = request.getSession();
         String distPrefId = frm.getDistPrefId();
         List saList = frm.getSubjectArea();
-        List cnList = frm.getCourseNbr();
         List suList = frm.getItype();
         List clList = frm.getClassNumber();            
         
@@ -673,7 +672,7 @@ public class DistributionPrefsAction extends Action {
             dp.setGrouping(new Integer(frm.getGroupingInt()));
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
-        	Department owningDept = null; boolean sameOwningDept = true;
+        	Department owningDept = null;
         	User user = Web.getUser(httpSession);
         	Session session = Session.getCurrentAcadSession(user);
         	String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
@@ -714,7 +713,6 @@ public class DistributionPrefsAction extends Action {
     	        			if (!currentMgr.getDepartments().contains(owningDept) && currentMgr.getDepartments().contains(clazz.getManagingDept()))
     	        				owningDept = clazz.getManagingDept();
     	        		}
-    	        		sameOwningDept = false;
     	        	}
 	            	
                     relatedInstructionalOfferings.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering());

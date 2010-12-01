@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  * <bean:write name="eventDetailForm" property="additionalInfo"/> 
 --%>
 
@@ -33,7 +33,7 @@
 <html:form action="/eventGrid">
 	<input type="hidden" name="op2" value="">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-		<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD nowrap>Academic Session: </TD>
 			<TD>
@@ -85,10 +85,28 @@
 					<tr>
 						<logic:iterate name="eventGridForm" property="allRoomTypes" id="rf" indexId="rfIdx">
 							<td nowrap>
-								<html:multibox property="roomTypes">
-								<bean:write name="rf" property="uniqueId"/>
-								</html:multibox>
-								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								<logic:equal name="rf" property="room" value="true">
+									<html:multibox property="roomTypes">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								</logic:equal>
+								<logic:equal name="rf" property="room" value="false">
+								    <bean:define id="rfId" name="rf" property="uniqueId"/>
+									<html:multibox property="roomTypes" onchange="<%="document.getElementById('nul" + rfId + "').style.display = (this.checked ? null : 'none');"%>" styleId="<%="chnul" + rfId%>">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/><span id="<%="nul"+rfId%>">:&nbsp;
+									<html:select name="eventGridForm" property="<%="nonUniversityLocation[" + rfId + "]"%>"
+										onfocus="setUp();" 
+    									onkeypress="return selectSearch(event, this);" 
+										onkeydown="return checkKey(event, this);">
+										<html:option value="-1">Select...</html:option>
+										<html:optionsCollection name="eventGridForm" property="<%="nonUniversityLocations[" + rfId + "]"%>" label="label" value="uniqueId"/>
+									</html:select>
+									</span>
+									<script>document.getElementById('nul<%=rfId%>').style.display = (document.getElementById('chnul<%=rfId%>').checked ? null : 'none');</script>
+								</logic:equal>
 							</td>
 							<% if (rfIdx%4==3) { %>
 								</tr><tr>
@@ -188,7 +206,7 @@
 		</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" property="op" accesskey="A" value="Add Event" title="Add Event (Alt+A)"/>
@@ -199,7 +217,7 @@
 		</TABLE>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
 	<logic:messagesPresent>
-		<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	    <html:messages id="error">
 			<TR><TD class="errorCell">
 				${error}
@@ -215,7 +233,7 @@
 			new EventGridTable(myForm).printTable(out);
 		} else {
 		%>
-		<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR><TD class="errorCell">
 				<b>Please refine your Room Availablity query to return fewer rooms or dates or try generating a PDF.</b>
 			</TD></TR>
@@ -224,7 +242,6 @@
 		}
 	}
 	 %>
-    </TABLE>
 	<logic:notEmpty scope="request" name="hash">
 		<SCRIPT type="text/javascript" language="javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';

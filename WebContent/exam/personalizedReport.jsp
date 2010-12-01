@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -24,14 +24,15 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 <html:form action="/personalSchedule">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<html:hidden property="sessionId" />
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
 				<html:hidden property="uid" styleId="uid" onchange="submit();"/>
 				<html:hidden property="fname" styleId="fname"/>
 				<html:hidden property="mname" styleId="mname"/>
 				<html:hidden property="lname" styleId="lname"/>
-				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
@@ -50,57 +51,57 @@
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="sessions">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="sessions" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="iclsschd">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="iclsschd" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="ischedule">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="ischedule" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="iconf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="iconf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="sconf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="sconf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="clsschd">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="clsschd" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="schedule">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="schedule" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="conf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="conf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD><tt:section-title/></TD></TR>
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
-				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
@@ -111,4 +112,17 @@
 			</logic:equal>
 		</TD></TR>
 	</TABLE>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((fname.value + ' ' + lname.value).trim(), function(person) {
+			if (person) {
+				uid.value = person[0];
+				fname.value = person[1];
+				mname.value = person[2];
+				lname.value = person[3];
+				document.forms[0].submit();
+			}
+		}, "mustHaveExternalId");
+	}
+</script>
 </html:form>

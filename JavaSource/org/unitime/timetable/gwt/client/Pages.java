@@ -1,0 +1,53 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+package org.unitime.timetable.gwt.client;
+
+import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
+import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
+import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
+import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
+import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
+
+import com.google.gwt.user.client.ui.Widget;
+
+/**
+ * Register GWT pages here.
+ * @author Tomas Muller
+ *
+ */
+public enum Pages {
+	curricula("Curricula", new PageFactory() { public Widget create() { return new CurriculaPage(); } }),
+	curprojrules("Curriculum Projection Rules", new PageFactory() { public Widget create() { return new CurriculumProjectionRulesPage(); } }),
+	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); } }),
+	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
+	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
+	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(); } });
+	
+	private String iTitle;
+	private PageFactory iFactory;
+	
+	Pages(String title, PageFactory factory) { iTitle = title; iFactory = factory; }
+	public String title() { return iTitle; }
+	public Widget widget() { return iFactory.create(); }
+	
+	public interface PageFactory {
+		Widget create();
+	}
+}

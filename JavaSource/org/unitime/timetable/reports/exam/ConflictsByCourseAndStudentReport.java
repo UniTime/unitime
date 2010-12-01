@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
@@ -11,7 +30,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -22,7 +40,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
@@ -72,7 +90,6 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                 ExamSectionInfo section = j.next();
                 ExamAssignmentInfo exam = section.getExamAssignmentInfo();
                 if (exam==null || exam.getPeriod()==null) continue;
-                ExamPeriod period = exam.getPeriod();
                 iCoursePrinted = false;
                 Vector<Long> students = new Vector<Long>(section.getStudentIds());
                 Collections.sort(students,new Comparator<Long>() {

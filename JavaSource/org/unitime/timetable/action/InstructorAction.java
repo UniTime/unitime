@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,10 +33,10 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -114,14 +112,14 @@ public class InstructorAction extends Action {
         
 	    String login = frm.getCareerAcct();
 	    if (login!=null && login.trim().length()>0 && frm.getLookupEnabled()) {
-	    	Map results = lookupInstructor(frm);
-	    	if (results!=null && results.size()>0) {
-				frm.setPuId((String)results.get(ExternalUidLookup.EXTERNAL_ID));
-				frm.setCareerAcct((String)results.get(ExternalUidLookup.USERNAME));
-				frm.setFname((String)results.get(ExternalUidLookup.FIRST_NAME));
-				frm.setMname((String)results.get(ExternalUidLookup.MIDDLE_NAME));
-				frm.setLname((String)results.get(ExternalUidLookup.LAST_NAME));
-	    		frm.setEmail((String)results.get(ExternalUidLookup.EMAIL));
+	    	UserInfo results = lookupInstructor(frm);
+	    	if (results != null) {
+				frm.setPuId(results.getExternalId());
+				frm.setCareerAcct(results.getUserName());
+				frm.setFname(results.getFirstName());
+				frm.setMname(results.getMiddleName());
+				frm.setLname(results.getLastName());
+	    		frm.setEmail(results.getEmail());
 	    	}
 	    }	    
     }
@@ -144,21 +142,12 @@ public class InstructorAction extends Action {
 
 	    // Check I2A2
 	    if (login!=null && login.trim().length()>0 && frm.getLookupEnabled()) {
-	    	Map results = lookupInstructor(frm);
-	    	if (results!=null && results.size()>0) {
-
-				String fname1 = ((String)results.get(ExternalUidLookup.FIRST_NAME));
-				String mname1 = ((String)results.get(ExternalUidLookup.MIDDLE_NAME));
-				String lname1 = ((String)results.get(ExternalUidLookup.LAST_NAME));				
-
+	    	UserInfo results = lookupInstructor(frm);
+	    	if (results!=null) {
 				User user = new User();
-				user.setId((String)results.get(ExternalUidLookup.EXTERNAL_ID));
-				user.setLogin((String)results.get(ExternalUidLookup.USERNAME));
-				user.setName(Constants.toInitialCase(
-							((lname1==null?"":lname1.trim())+", "+
-							 (fname1==null?"":fname1.trim())+
-							 (mname1==null?"":" "+mname1.trim()))));
-				
+				user.setId(results.getExternalId());
+				user.setLogin(results.getUserName());
+				user.setName(Constants.toInitialCase(results.getName()));
 				frm.setI2a2Match(user);
 	    		frm.setMatchFound(Boolean.TRUE);
 	    	}
@@ -176,20 +165,14 @@ public class InstructorAction extends Action {
      * Lookup instructor details 
      * @param frm
      */
-    private Map lookupInstructor(InstructorEditForm frm) throws Exception{
-    	Map results = null;
+    private UserInfo lookupInstructor(InstructorEditForm frm) throws Exception {
         String id = frm.getCareerAcct();
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
-            
-        	HashMap attributes = new HashMap();
-        	attributes.put(ExternalUidLookup.SEARCH_ID, id);
-        	
-        	String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");        	
+        	String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
-       		results = lookup.doLookup(attributes);
+       		return lookup.doLookup(id);
         }
-        
-        return results;
+        return null;
     }
 
     
@@ -210,8 +193,6 @@ public class InstructorAction extends Action {
 			tx = hibSession.beginTransaction();
 			
 			HttpSession httpSession = request.getSession();
-			User user = Web.getUser(httpSession);	
-			Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 			
 			DepartmentalInstructor inst = null;
 			String instrId = frm.getInstructorId();

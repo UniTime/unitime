@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -46,7 +46,6 @@ import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.ExamDistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -62,7 +61,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -360,11 +358,8 @@ public class ExamDistributionPrefsAction extends Action {
             dp.setGrouping(-1);
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
-        	Department owningDept = null; boolean sameOwningDept = true;
         	User user = Web.getUser(httpSession);
         	Session session = Session.getCurrentAcadSession(user);
-        	String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        	TimetableManager currentMgr = new TimetableManagerDAO().get(new Long(ownerId), hibSession);
         	
         	dp.setOwner(session);
         

@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -87,10 +87,10 @@
 			<TD>External Id:</TD>
 			<TD>
 				<tt:propertyEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
-					<html:text property="puId" maxlength="40" size="10"/> 
+					<html:text property="puId" maxlength="40" size="10" styleId="uid"/> 
 				</tt:propertyEquals>
 				<tt:propertyNotEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
-					<bean:write name="<%=frmName%>"  property="puId" />	
+					<bean:write name="<%=frmName%>"  property="puId"/>	
 					<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
 				</tt:propertyNotEquals>
 			<TD>
@@ -107,7 +107,7 @@
 			<TD>First Name:</TD>
 			<TD>
 				<html:text property="fname" maxlength="100" size="30" styleId="fname" />
-				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
 			<TD>
 		</TR>	
 		
@@ -216,3 +216,16 @@
 			</TD>
 		</TR>
 		
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = person[0];
+				document.getElementById('fname').value = person[1];
+				document.getElementById('mname').value = person[2];
+				document.getElementById('lname').value = person[3];
+				document.getElementById('email').value = person[4];
+			}
+		}, "mustHaveExternalId");
+	}
+</script>

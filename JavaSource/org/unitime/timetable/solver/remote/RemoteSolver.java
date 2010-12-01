@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.remote;
 
@@ -343,6 +343,14 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 		
 		try {
 			System.out.println("configure "+properties.getProperty("General.Output","."));
+			// remove unitime logger
+			for (Iterator<Map.Entry<Object, Object>> i = properties.entrySet().iterator(); i.hasNext(); ) {
+				Map.Entry<Object, Object> entry = i.next();
+				String name = entry.getKey().toString();
+				if (name.startsWith("log4j.appender.unitime") ||
+						(name.startsWith("log4j.logger.") && entry.getValue().toString().endsWith(", unitime")))
+						i.remove();
+			}
 			String logFile = ToolBox.configureLogging(properties.getProperty("General.Output","."),properties);
 			if (SolverTray.isInitialized())
 				SolverTray.getInstance().setLogFile(logFile);
@@ -378,7 +386,6 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        classLoader.loadClass("net.sf.cpsolver.coursett.TimetableXMLSaver");
 	        classLoader.loadClass("org.dom4j.DocumentHelper");
 	        classLoader.loadClass("org.unitime.commons.ToolBox");
-	        classLoader.loadClass("org.unitime.commons.ToolBox$LineOutputStream");
 	        classLoader.loadClass("org.dom4j.io.XMLWriter");
 	        classLoader.loadClass("org.hibernate.proxy.HibernateProxy"); 
 	        
@@ -387,7 +394,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        sLog.info("Solver ready.");
 	        sInitialized = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			sLog.fatal("Solver initialization failed", e);
 			throw e;
 		}
 	}

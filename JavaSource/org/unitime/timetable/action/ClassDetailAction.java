@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -196,10 +195,6 @@ public class ClassDetailAction extends PreferencesAction {
         	initPrefs(user, frm, c, null, false);
 		    timePatterns = c.effectiveTimePatterns();
 
-	        // Dist Prefs are not editable by Sched Dpty Asst
-	        String currentRole = user.getCurrentRole();
-	        boolean editable = true;
-
 		    // Display distribution Prefs
 	        DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
 	        String html = tbl.getDistPrefsTableForClass(request, c, true);
@@ -312,6 +307,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        else
 	        	frm.setSubpart(null);
 	        frm.setCourseName(cco.getInstructionalOffering().getCourseName());
+	        frm.setCourseTitle(cco.getTitle());
 		    //TODO Reservations Bypass - to be removed later
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        // End Bypass
@@ -356,15 +352,14 @@ public class ClassDetailAction extends PreferencesAction {
 	        	request.setAttribute(Reservation.RESV_REQUEST_ATTR, resvHtml);
 
 	        if (c.getNbrRooms().intValue()>0) {
-	        	Vector roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
+	        	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
 	        	StringBuffer rooms = new StringBuffer();
 	        	if (roomLocations.isEmpty()) {
 	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR,
 	        				"<font color='red'><b>No rooms are available.</b></font>");
 	        	} else {
 	        		int idx = 0;
-	        		for (Enumeration e=roomLocations.elements();e.hasMoreElements();idx++) {
-	        			RoomLocation rl = (RoomLocation)e.nextElement();
+	        		for (RoomLocation rl: roomLocations) {
 	        			if (idx>0) rooms.append(", ");
 	    				if (idx==4)
 	    					rooms.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">...</a></span><span id='room_rest' style='display:none'>");
@@ -373,6 +368,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        					"<font color='"+PreferenceLevel.int2color(rl.getPreference())+"'>"+
 	        					rl.getName()+
 	        					"</font></span>");
+	        			idx++;
 	        		}
 	        		if (idx>=4) rooms.append("</span>");
 		        	if (roomLocations.size()<c.getNbrRooms().intValue()) {

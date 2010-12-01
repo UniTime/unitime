@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.dataexchange;
 
@@ -224,7 +224,7 @@ public class StudentSectioningImport extends BaseImport {
                 String majorCode = majorElement.attributeValue("code");
                 PosMajor major = PosMajor.findByCodeAcadAreaId(student.getSession().getUniqueId(), majorCode, area.getUniqueId());
                 if (major==null) {
-                    warn("Major "+code+" not found."); continue;
+                    warn("Major "+majorCode+" not found."); continue;
                 }
                 student.getPosMajors().add(major);
             }
@@ -233,7 +233,7 @@ public class StudentSectioningImport extends BaseImport {
                 String minorCode = minorElement.attributeValue("code");
                 PosMinor minor = PosMinor.findByCodeAcadAreaId(student.getSession().getUniqueId(), minorCode, area.getUniqueId());
                 if (minor==null) {
-                    warn("Major "+code+" not found."); continue;
+                    warn("Major "+minorCode+" not found."); continue;
                 }
                 student.getPosMinors().add(minor);
             }
@@ -283,10 +283,8 @@ public class StudentSectioningImport extends BaseImport {
             }
         }
         int startSlot = (((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
-        int breakTime = 0;
         int nrSlots = 0;
         if (length!=null) {
-            breakTime = Integer.parseInt(length) - ((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) + ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100);
             nrSlots = Integer.parseInt(length) / Constants.SLOT_LENGTH_MIN; 
         } else {
             nrSlots = ((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) - ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) / Constants.SLOT_LENGTH_MIN;

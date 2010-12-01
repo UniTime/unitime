@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.commons.hibernate.util;
 
@@ -33,6 +33,8 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
@@ -96,21 +98,6 @@ public class HibernateUtil {
         }
 	}
     
-    private static String getProperty(org.w3c.dom.Document document, String name, String defaultValue) {
-        org.w3c.dom.Element hibConfiguration = (org.w3c.dom.Element)document.getElementsByTagName("hibernate-configuration").item(0);
-        org.w3c.dom.Element sessionFactoryConfig = (org.w3c.dom.Element)hibConfiguration.getElementsByTagName("session-factory").item(0);
-        NodeList properties = sessionFactoryConfig.getElementsByTagName("property");
-        for (int i=0;i<properties.getLength();i++) {
-            org.w3c.dom.Element property = (org.w3c.dom.Element)properties.item(i);
-            if (name.equals(property.getAttribute("name"))) {
-                Text text = (Text)property.getFirstChild();
-                if (text==null || text.getData()==null) return defaultValue;
-                return text.getData();
-            }
-        }
-        return defaultValue;
-    }
-
     public static void configureHibernate(String connectionUrl) throws Exception {
         Properties properties = ApplicationProperties.getProperties();
         properties.setProperty("connection.url", connectionUrl);
@@ -119,8 +106,14 @@ public class HibernateUtil {
     
     public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
-        if (value!=null) return value;
-        return ApplicationProperties.getProperty(name);
+        if (value!=null) {
+            sLog.debug("   -- " + name + "=" + value);
+        	return value;
+        }
+        sLog.debug("   -- using application properties for " + name);
+        value = ApplicationProperties.getProperty(name);
+        sLog.debug("     -- " + name + "=" + value);
+        return value;
     }
     
     public static void fixSchemaInFormulas(Configuration cfg) {
@@ -242,8 +235,8 @@ public class HibernateUtil {
         sLog.debug("  -- session factory created");
         (new _BaseRootDAO() {
     		void setSF(SessionFactory fact, Configuration cfg) {
-    			_BaseRootDAO.sessionFactory = fact;
-    			_BaseRootDAO.configuration = cfg;
+    			_BaseRootDAO.sSessionFactory = fact;
+    			_BaseRootDAO.sConfiguration = cfg;
     		}
     		protected Class getReferenceClass() { return null; }
     	}).setSF(sSessionFactory, cfg);
@@ -367,11 +360,11 @@ public class HibernateUtil {
                 String className = (String)entry.getKey();
                 ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
                 try {
-                    hibSessionFactory.evict(Class.forName(className));
+                    hibSessionFactory.getCache().evictEntityRegion(Class.forName(className));
                     for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
                         if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
                             try {
-                                hibSessionFactory.evictCollection(className+"."+classMetadata.getPropertyNames()[j]);
+                                hibSessionFactory.getCache().evictCollectionRegion(className+"."+classMetadata.getPropertyNames()[j]);
                             } catch (MappingException e) {}
                         }
                     }
@@ -379,23 +372,35 @@ public class HibernateUtil {
             }
         } else {
             ClassMetadata classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
-            hibSessionFactory.evict(persistentClass);
+            hibSessionFactory.getCache().evictEntityRegion(persistentClass);
             if (classMetadata!=null) {
                 for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
                     if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
                         try {
-                            hibSessionFactory.evictCollection(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
+                            hibSessionFactory.getCache().evictCollectionRegion(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
                         } catch (MappingException e) {}
                     }
                 }
             }
         }
         if (evictQueries)
-            hibSessionFactory.evictQueries();
+            hibSessionFactory.getCache().evictQueryRegions();
+    }
+    
+    public static Class<?> getDialect() {
+    	try {
+    		return Class.forName(_RootDAO.getConfiguration().getProperty("dialect"));
+    	} catch (ClassNotFoundException e) {
+    		return null;
+    	}
     }
     
     public static boolean isMySQL() {
-        return "org.hibernate.dialect.MySQLInnoDBDialect".equals(_RootDAO.getConfiguration().getProperty("dialect"));
+    	return MySQLDialect.class.isAssignableFrom(getDialect());
+    }
+    
+    public static boolean isOracle() {
+    	return Oracle8iDialect.class.isAssignableFrom(getDialect());
     }
     
     public static String addDate(String dateSQL, String incrementSQL) {
@@ -403,5 +408,12 @@ public class HibernateUtil {
             return "adddate("+dateSQL+","+incrementSQL+")";
         else
             return dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL;
+    }
+    
+    public static String dayOfWeek(String field) {
+    	if (isOracle())
+    		return "to_char(" + field + ",'D')";
+    	else
+    		return "dayofweek(" + field + ")";
     }
 }

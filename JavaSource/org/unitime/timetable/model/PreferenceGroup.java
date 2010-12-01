@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -206,25 +203,35 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		TimePref tp = (TimePref)i.next();
     		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment);
         	if (gridAsText) {
-    			String title = tp.getTimePattern().getName();
-    			if (assignment!=null)
-    				title += ", assigned "+assignment.getPlacement().getName();
-        		sb.append("<span title='"+title+"'>"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
+    			String hint = null;
+    			try {
+    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+    			} catch (IOException ex) {
+        			hint = "'" + tp.getTimePattern().getName();
+        			if (assignment!=null)
+        				hint += ", assigned "+assignment.getPlacement().getName();
+        			hint += "'";
+    				Debug.error(ex);
+    			}
+        		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
     			File imageFileName = null;
+    			String hint = null;
     			try {
     				imageFileName = rtt.createImage(timeVertical);
+    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
     			} catch (IOException ex) {
-    				ex.printStackTrace();
+        			hint = "'" + rtt.getModel().toString();
+        			if (assignment!=null)
+        				hint += ", assigned "+assignment.getPlacement().getName();
+        			hint += "'";
+    				Debug.error(ex);
     			}
-    			String title = rtt.getModel().toString();
-    			if (assignment!=null)
-    				title += ", assigned "+assignment.getPlacement().getName();
     			if (imageFileName!=null)
-    				sb.append("<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>&nbsp;");
+    				sb.append("<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
     			else
-    				sb.append("<span title='"+title+"'>"+rtt.getModel().toString()+"</span>");
+    				sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString()+"</span>");
         	}
 			if (i.hasNext()) sb.append("<br>");
     	}
@@ -253,29 +260,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
     }
 
-    /*
-    public Set effectivePreferences(){
-    	return(this.getPreferences());
-    }
-    */
-    
-    private HashMap timePrefHash(Collection timePrefList){
-    	HashMap hm = new HashMap();
-    	Iterator it = timePrefList.iterator();
-    	TimePref t = null;
-    	while (it.hasNext()){
-    		t = (TimePref) it.next();
-    		if (hm.containsKey(t.getTimePattern())){
-    			((ArrayList) hm.get(t.getTimePattern())).add(t);
-    		} else {
-    			ArrayList a = new ArrayList();
-    			a.add(t);
-    			hm.put(t.getTimePattern(),a);
-    		}
-    	}
-    	return(hm);
-    }
-    
     protected abstract boolean canUserEdit(User user);
     
     protected abstract boolean canUserView(User user);

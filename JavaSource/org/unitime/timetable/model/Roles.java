@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -49,20 +49,6 @@ public class Roles extends BaseRoles {
 		super(roleId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Roles (
-		java.lang.Long roleId,
-		java.lang.String reference,
-		java.lang.String abbv) {
-
-		super (
-			roleId,
-			reference,
-			abbv);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static String ADMIN_ROLE = "Administrator";
@@ -70,6 +56,7 @@ public class Roles extends BaseRoles {
 	public static String VIEW_ALL_ROLE = "View All";
 	public static String EXAM_MGR_ROLE = "Exam Mgr";
 	public static String EVENT_MGR_ROLE = "Event Mgr";
+	public static String CURRICULUM_MGR_ROLE = "Curriculum Mgr";
 	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
@@ -123,10 +110,8 @@ public class Roles extends BaseRoles {
         
 
         RolesDAO rdao = new RolesDAO();
-        Vector orderList = new Vector();
-        orderList.addElement(Order.asc("abbv"));
 
-        List l = rdao.findAll(orderList);
+        List l = rdao.findAll(Order.asc("abbv"));
         rolesList = new Vector(l);
         return rolesList;
     }

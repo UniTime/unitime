@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -29,7 +29,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
+
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
+import net.sf.cpsolver.exam.model.Exam;
+import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
+import net.sf.cpsolver.exam.model.ExamInstructor;
+import net.sf.cpsolver.exam.model.ExamOwner;
+import net.sf.cpsolver.exam.model.ExamPeriod;
+import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
+import net.sf.cpsolver.exam.model.ExamPlacement;
+import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
+import net.sf.cpsolver.exam.model.ExamStudent;
+import net.sf.cpsolver.ifs.model.Constraint;
+import net.sf.cpsolver.ifs.util.Progress;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,23 +75,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
-
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamOwner;
-import net.sf.cpsolver.exam.model.ExamPeriod;
-import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamStudent;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -190,8 +189,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     location.getLabel(),
                     location.getCapacity(),
                     location.getExamCapacity(),
-                    (location.getCoordinateX()==null?-1:location.getCoordinateX()),
-                    (location.getCoordinateY()==null?-1:location.getCoordinateY()));
+                    location.getCoordinateX(),
+                    location.getCoordinateY());
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
             iRooms.put(room.getId(),room);
@@ -220,11 +219,10 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
             
-            Vector periodPlacements = new Vector();
+            List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
             boolean hasReqPeriod = false;
             Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
-            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements(); ) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: getModel().getPeriods()) {
                 if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
                 String pref = null;
                 for (Iterator j=periodPrefs.iterator();j.hasNext();) {
@@ -267,7 +265,6 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             
             int minSize = 0;
-            Vector<ExamOwner> owners = new Vector();
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
                 ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
@@ -287,8 +284,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     continue;
                 }
                 boolean hasAssignment = false;
-                for (Enumeration ep=x.getPeriodPlacements().elements();!hasAssignment && ep.hasMoreElements();) {
-                    ExamPeriodPlacement period = (ExamPeriodPlacement)ep.nextElement();
+                for (Iterator<ExamPeriodPlacement> ep=x.getPeriodPlacements().iterator();!hasAssignment && ep.hasNext();) {
+                    ExamPeriodPlacement period = ep.next();
                     if (x.findRoomsRandom(period)!=null) hasAssignment = true;
                 }
                 if (!hasAssignment) {
@@ -378,8 +375,8 @@ public class ExamDatabaseLoader extends ExamLoader {
         return (ExamInstructor)iInstructors.get(instructor.getUniqueId());
     }
 
-    protected Vector<ExamRoomPlacement> findRooms(org.unitime.timetable.model.Exam exam) {
-        Vector<ExamRoomPlacement> rooms = new Vector();
+    protected List<ExamRoomPlacement> findRooms(org.unitime.timetable.model.Exam exam) {
+        List<ExamRoomPlacement> rooms = new ArrayList<ExamRoomPlacement>();
         boolean reqRoom = false;
         boolean reqBldg = false;
         boolean reqGroup = false;
@@ -491,10 +488,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             
             if (!add) continue;
             
-            boolean canBeUsed = false;
             boolean hasStrongDisc = false, allStrongDisc = true;
-            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements();) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: getModel().getPeriods()) {
                 if (roomEx.isAvailable(period))
                     if (roomEx.getPenalty(period)==4) hasStrongDisc = true;
                     else allStrongDisc = false;
@@ -572,8 +567,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
-            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
-                ExamOwner owner = (ExamOwner)e.nextElement();
+            for (ExamOwner owner: exam.getOwners()) {
                 if (owner.getId()==ownerId) owner.getStudents().add(student);
             }
         }
@@ -852,9 +846,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     protected void assignInitial() {
         if (iLoadSolution) {
             iProgress.setPhase("Assigning loaded solution...", getModel().variables().size());
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+            for (Exam exam: getModel().variables()) {
                 iProgress.incProgress();
-                Exam exam = (Exam)e.nextElement();
                 ExamPlacement placement = (ExamPlacement)exam.getInitialAssignment();
                 if (placement==null) continue;
                 Set conf = getModel().conflictValues(placement);
@@ -884,17 +877,16 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void checkConsistency() {
         iProgress.setPhase("Checking consistency...", getModel().variables().size());
-        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+        for (Exam exam: getModel().variables()) {
             iProgress.incProgress();
-            Exam exam = (Exam)e.nextElement();
-            if (exam.getPeriodPlacements().isEmpty()) {
+           if (exam.getPeriodPlacements().isEmpty()) {
                 iProgress.error("Exam "+getExamLabel(exam)+" has no period available.");
                 continue;
             }
             if (exam.getMaxRooms()>0) {
                 int capacity = 0;
                 for (int i = 0; i < Math.min(exam.getMaxRooms(), exam.getRoomPlacements().size()); i++) {
-                    ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().elementAt(i);
+                    ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().get(i);
                     capacity += r.getSize(exam.hasAltSeating());
                 }
                 if (capacity<exam.getSize()) {
@@ -902,8 +894,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     continue;
                 }
                 boolean hasValue = false;
-                for (Enumeration f=exam.getPeriodPlacements().elements();!hasValue && f.hasMoreElements();) {
-                    ExamPeriodPlacement period = (ExamPeriodPlacement)f.nextElement();
+                for (Iterator<ExamPeriodPlacement> f=exam.getPeriodPlacements().iterator();!hasValue && f.hasNext();) {
+                    ExamPeriodPlacement period = f.next();
                     if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
                 }
                 if (!hasValue) {
@@ -994,11 +986,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     private boolean sameOwners(Exam x1, Exam x2) {
         if (x1.getOwners().isEmpty() || x1.getOwners().size()!=x2.getOwners().size()) return false;
-        owners: for (Enumeration e=x1.getOwners().elements();e.hasMoreElements();) {
-            ExamOwner o1 = (ExamOwner)e.nextElement();
+        owners: for (ExamOwner o1: x1.getOwners()) {
             org.unitime.timetable.model.ExamOwner w1 = iOwners.get(o1.getId());
-            for (Enumeration f=x2.getOwners().elements();f.hasMoreElements();) {
-                ExamOwner o2 = (ExamOwner)f.nextElement();
+            for (ExamOwner o2: x2.getOwners()) {
                 org.unitime.timetable.model.ExamOwner w2 = iOwners.get(o2.getId());
                 if (w1.getOwnerType().equals(w2.getOwnerType()) && w1.getOwnerId().equals(w2.getOwnerId())) continue owners; 
             }
@@ -1010,11 +1000,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     public void makeupSameRoomConstraints() {
         iProgress.setPhase("Posting same rooms...", getModel().variables().size());
         long dc = 0;
-        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-            Exam first = (Exam)e.nextElement();
+        for (Exam first: getModel().variables()) {
             iProgress.incProgress();
-            for (Enumeration f=getModel().variables().elements();f.hasMoreElements();) {
-                Exam second = (Exam)f.nextElement();
+            for (Exam second: getModel().variables()) {
                 if (first.getId()>=second.getId() || !sameOwners(first,second)) continue;
                 iProgress.debug("Posting same room constraint between "+first.getName()+" and "+second.getName());
                 ExamDistributionConstraint constraint = new ExamDistributionConstraint(--dc, ExamDistributionConstraint.sDistSameRoom, false, 4);

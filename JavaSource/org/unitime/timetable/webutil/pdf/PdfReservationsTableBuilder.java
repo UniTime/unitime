@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,12 +14,11 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.pdf;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,14 +52,13 @@ import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.ReservationsTableBuilder;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Graphic;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
 
 
 /**
@@ -72,7 +70,6 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	
 	/** Pdf document objects **/
     private Document pdfDoc = null;
-    private PdfWriter pdfWriter = null;
 
     /** Colors to indicate and increase/decrease in actual reserved from requested **/
     private final String colorIncrease = "339933";
@@ -138,7 +135,7 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	        pdfDoc.setPageSize(PageSize.LETTER);
 	        
 	        // Create writer instance
-	        pdfWriter = PdfEventHandler.initFooter(pdfDoc, out);
+	        PdfEventHandler.initFooter(pdfDoc, out);
 	        
 	        // Set metadata
 	        pdfDoc.addTitle("Reservations");
@@ -153,7 +150,7 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	
 	    	Set instrOfferings = super.getInstructionalOfferings(subjectAreaId, courseNbr);
 			if (instrOfferings==null || instrOfferings.size()==0) {
-				this.pdfDoc.add(new Paragraph("There are no reservations for this subject area / course number.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, Color.RED)));
+				this.pdfDoc.add(new Paragraph("There are no reservations for this subject area / course number.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, BaseColor.RED)));
 			    result = true;
 			}
 			else {
@@ -366,12 +363,13 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
 	    }
 	    
 	    if (found) {
-	    	Graphic g = new Graphic();
-	    	g.setHorizontalLine(1, 100, new Color(200, 200, 200));
+	    	//FIXME: do not know how to do this with the new iText lib
+	    	// Graphic g = new Graphic();
+	    	// g.setHorizontalLine(1, 100, new BaseColor(200, 200, 200));
 	    	Paragraph p1 = new Paragraph();
 	    	p1.setIndentationLeft(-20);
 	    	p1.add("\n");
-	    	p1.add(g);
+	    	p1.add("-----");
 	    	p1.add("\n");
 	    	pdfDoc.add(p1);
 	    }    	
@@ -666,7 +664,7 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
     }
     
     /**
-     * Color format reservation total
+     * BaseColor format reservation total
      * @param oRequest
      * @param oReserved
      * @return
@@ -710,10 +708,10 @@ public class PdfReservationsTableBuilder extends ReservationsTableBuilder {
         		limitStr = " ( " + limit.toString() + " )";
     	}
     	
-    	Font black = FontFactory.getFont(FontFactory.HELVETICA, Font.DEFAULTSIZE, Font.BOLD, new Color(0x00, 0x00, 0x00));
+    	Font black = FontFactory.getFont(FontFactory.HELVETICA, Font.DEFAULTSIZE, Font.BOLD, new BaseColor(0x00, 0x00, 0x00));
     	Chunk c1 = new Chunk(name, black);
 		
-    	Font navyBlue = FontFactory.getFont(FontFactory.HELVETICA, Font.DEFAULTSIZE, Font.BOLD, new Color(0x00, 0x00, 0x80));
+    	Font navyBlue = FontFactory.getFont(FontFactory.HELVETICA, Font.DEFAULTSIZE, Font.BOLD, new BaseColor(0x00, 0x00, 0x80));
     	Chunk c2 = new Chunk( limitStr, navyBlue );
     	
     	Paragraph p = new Paragraph(c1);

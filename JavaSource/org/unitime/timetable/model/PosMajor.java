@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -42,22 +42,6 @@ public class PosMajor extends BasePosMajor {
 	 */
 	public PosMajor (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public PosMajor (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String code,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			session,
-			code,
-			name);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -109,6 +93,19 @@ public class PosMajor extends BasePosMajor {
          uniqueResult(); 
     }
 
+    public static PosMajor findByExternalId(Long sessionId, String externalId) {
+        return (PosMajor)new PosMajorDAO().
+        getSession().
+        createQuery(
+                "select a from PosMajor a where "+
+                "a.session.uniqueId=:sessionId and "+
+                "a.externalUniqueId=:externalUniqueId").
+         setLong("sessionId", sessionId.longValue()).
+         setString("externalUniqueId", externalId).
+         setCacheable(true).
+         uniqueResult(); 
+    }
+
     public static PosMajor findByCodeAcadAreaId(Long sessionId, String code, Long areaId) {
         if (areaId==null) return findByCode(sessionId, code);
         return (PosMajor)new PosMajorDAO().
@@ -137,5 +134,13 @@ public class PosMajor extends BasePosMajor {
          setString("code", code).
          setCacheable(true).
          uniqueResult(); 
+    }
+    
+    public Object clone() {
+    	PosMajor m = new PosMajor();
+    	m.setExternalUniqueId(getExternalUniqueId());
+    	m.setCode(getCode());
+    	m.setName(getName());
+    	return m;
     }
 }

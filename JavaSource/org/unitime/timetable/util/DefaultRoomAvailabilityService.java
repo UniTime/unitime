@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.util;
 
 import java.text.SimpleDateFormat;
@@ -10,8 +29,6 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.Location;
@@ -20,7 +37,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface {
-    private static Log sLog = LogFactory.getLog(DefaultRoomAvailabilityService.class);
     private Vector<CacheElement> iCache = new Vector<CacheElement>();
     
     public String getTimeStamp(Date startTime, Date endTime, String excludeType) {
@@ -199,7 +215,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     }
     
     public static class MeetingTimeBlock implements TimeBlock, Comparable<TimeBlock> {
-        Long iMeetingId;
+		private static final long serialVersionUID = -5557707709984628517L;
+		Long iMeetingId;
         String iEventName, iEventType;
         Date iStart, iEnd;
         public MeetingTimeBlock(Meeting m) {

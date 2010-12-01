@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -63,12 +63,12 @@ import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
@@ -395,35 +395,6 @@ public class RoomFeatureListAction extends Action {
 			request.removeAttribute("roomFeaturesDepartment");
 	}
 	
-	/**
-	 * 
-	 * @param request
-	 * @param roomFeatureEditForm
-	 * @throws Exception 
-	 */
-	private String getDeptCode(HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));  
-		Set departments = new TreeSet(manager.departmentsForSession(sessionId));
-        
-        //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	return d.getDeptCode();
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	String code = webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString();
-        	return code;
-		} else {
-			return null;
-		}
-	}
-	
-
 	public static void buildPdfFeatureTable(HttpServletRequest request, RoomFeatureListForm roomFeatureListForm) throws Exception {
     	FileOutputStream out = null;
     	try {
@@ -533,8 +504,6 @@ public class RoomFeatureListAction extends Action {
     			DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
     			Department rfOwner = Department.findByDeptCode(drf.getDeptCode(), sessionId);
 
-    			boolean isOwner = isAdmin || owner.getDepartments().contains(rfOwner);
-    			boolean isEditable = rfOwner.isEditableBy(user);
     			String ownerName = "@@ITALIC Not defined";
     			if (rfOwner != null) {
     				ownerName = rfOwner.getShortLabel();

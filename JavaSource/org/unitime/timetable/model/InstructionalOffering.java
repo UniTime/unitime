@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -38,6 +38,7 @@ import org.hibernate.Session;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -69,24 +70,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	 */
 	public InstructionalOffering (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public InstructionalOffering (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.Integer instrOfferingPermId,
-		java.lang.Boolean notOffered,
-		java.lang.Boolean designatorRequired) {
-
-		super (
-			uniqueId,
-			session,
-			instrOfferingPermId,
-			notOffered,
-			designatorRequired);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -163,13 +146,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	    return(isNotOffered());
 	}
 
-
-	/**
-	 * Return the value associated with the column: instrOfferingConfigs
-	 */
-	public java.util.Set getInstrOfferingConfigs () {
-		return super.getInstrOfferingConfigs();
-	}
 
 	public Department getDepartment() {
 		return (this.getControllingCourseOffering().getDepartment());
@@ -329,12 +305,14 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		    query.append(" and co.courseNbr ");
 		    if (courseNbr.indexOf('*')>=0) {
 	            query.append(" like '");
-	            courseNbr = courseNbr.replace('*', '%').toUpperCase();
+	            courseNbr = courseNbr.replace('*', '%');
 		    }
 		    else {
 	            query.append(" = '");
 		    }
-            query.append(courseNbr.toUpperCase());
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+            	courseNbr = courseNbr.toUpperCase();
+            query.append(courseNbr);
             query.append("'  ");
         }
 
@@ -801,6 +779,16 @@ public class InstructionalOffering extends BaseInstructionalOffering {
             setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
+    }
+    
+    public Integer getProjectedDemand() {
+    	int demand = 0;
+    	for (Iterator<CourseOffering> i = getCourseOfferings().iterator(); i.hasNext(); ) {
+    		CourseOffering course = i.next();
+    		if (course.getProjectedDemand() != null) 
+    			demand += course.getProjectedDemand();
+    	}
+    	return demand;
     }
 
 }

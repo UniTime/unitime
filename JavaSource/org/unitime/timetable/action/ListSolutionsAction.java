@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -246,7 +245,6 @@ public class ListSolutionsAction extends Action {
         if ("Load".equals(op) || "Load Empty Solution".equals(op)) {
         	SolverProxy solver = WebSolver.getSolver(request.getSession());
         	if (solver!=null && solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-            ActionMessages errors = myForm.validate(mapping, request);
         	Long sessionId = null;
         	Long settingsId = null;
         	Long[] ownerId = null;
@@ -387,11 +385,8 @@ public class ListSolutionsAction extends Action {
         return mapping.findForward("showSolutions");
 	}
 	
-	private static Hashtable sNames = new Hashtable();
-	
     private void getSolutions(HttpServletRequest request, boolean listAll, boolean committedOnly, ListSolutionsForm myForm) throws Exception {
-    	Transaction tx = null;
-		try {
+    	try {
 			WebTable.setOrder(request.getSession(),"listSolutions.ord",request.getParameter("ord"),1);
 			
 			WebTable webTable = new WebTable( 16,

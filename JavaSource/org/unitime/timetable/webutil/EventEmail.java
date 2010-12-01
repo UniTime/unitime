@@ -1,27 +1,37 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.mail.Authenticator;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.struts.upload.FormFile;
+import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -37,6 +47,7 @@ public class EventEmail {
     private TreeSet<MultiMeeting> iMeetings = null;
     private String iNote = null;
     private int iAction = sActionCreate;
+    private FormFile iAttachement = null;
     
     public static final int sActionCreate = 0;
     public static final int sActionApprove = 1;
@@ -44,12 +55,14 @@ public class EventEmail {
     public static final int sActionAddMeeting = 3;
     public static final int sActionUpdate = 4;
     public static final int sActionDelete = 5;
+    public static final int sActionInquire = 6;
     
-    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note) {
+    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note, FormFile attachement) {
         iEvent = event;
         iAction = action;
         iMeetings = meetings;
         iNote = note;
+        iAttachement = attachement;
     }
     
     public void send(HttpServletRequest request) {
@@ -58,7 +71,7 @@ public class EventEmail {
         try {
             User user = Web.getUser(request.getSession());
             if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-                if (iAction!=sActionReject && iAction!=sActionApprove) return;
+                if (iAction!=sActionReject && iAction!=sActionApprove && iAction!=sActionInquire) return;
             }
             
             switch (iAction) {
@@ -80,9 +93,12 @@ public class EventEmail {
             case sActionDelete : 
                 subject = "Event "+iEvent.getEventName()+" updated (one or more meetings deleted).";
                 break;
+            case sActionInquire : 
+                subject = "Event "+iEvent.getEventName()+" inquiry.";
+                break;
             }
 
-            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))) {
+            if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
                 request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
                 return;
             }
@@ -100,7 +116,7 @@ public class EventEmail {
             		"A:hover    { color: blue; text-decoration: none; }" +
             		"-->";
             message += "</style></head><body bgcolor='#ffffff' style='font-size: 10pt; font-family: arial;'>";
-            message += "<table border='0' width='95%' align='center' cellspacing='10'>";
+            message += "<table border='0' width='100%' align='center' cellspacing='10'>";
             
             message += "<tr><td colspan='2' style='border-bottom: 2px #2020FF solid;'><font size='+2'>";
             message += iEvent.getEventName();
@@ -149,6 +165,9 @@ public class EventEmail {
                 case sActionDelete :
                     message += "Following meetings were deleted by you or on your behalf";
                     break;
+                case sActionInquire :
+                    message += "Following meetings are in question";
+                    break;
                 }
                 message += "</font>";
                 message += "</td></tr><tr><td colspan='2'>";
@@ -169,7 +188,7 @@ public class EventEmail {
             
             if (iNote!=null && iNote.length()>0) {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
-                message += "<br><font size='+1'>Notes</font>";
+                message += "<br><font size='+1'>" + (iAction == sActionInquire ? "Inquiry" : "Notes" ) + "</font>";
                 message += "</td></tr><tr><td colspan='2' >";
                 message += iNote.replaceAll("\n", "<br>");
                 message += "</td></tr>";
@@ -177,7 +196,7 @@ public class EventEmail {
             
             if (iAction!=sActionCreate) {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
-                message += "<br><font size='+1'>All Meetings of "+iEvent.getEventName()+"</font>";
+                message += "<br><font size='+1'>History of "+iEvent.getEventName()+"</font>";
                 message += "</td></tr>";
                 if (iEvent.getMeetings().isEmpty()) {
                     message += "<tr><td colspan='2' style='background-color:';>";
@@ -235,34 +254,10 @@ public class EventEmail {
             message += "</td></tr></table>";
             message += "</body></html>";
             
-            Properties p = ApplicationProperties.getProperties();
-            if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-            
-            Authenticator a = null;
-            if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
-                p.setProperty("mail.smtp.auth", "true");
-                a = new Authenticator() {
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(
-                                ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                    }
-                };
-            }
-            javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
-            MimeMessage mail = new MimeMessage(mailSession);
+            Email mail = new Email();
             mail.setSubject(subject);
             
-            InternetAddress from = 
-                new InternetAddress(
-                        ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                        ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
-            mail.setFrom(from);
-
-            MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
-            Multipart body = new MimeMultipart(); body.addBodyPart(text);
+            mail.setHTML(message);
 
             conf = ApplicationProperties.getTempFile("email", "html");
             PrintWriter pw = null;
@@ -275,27 +270,27 @@ public class EventEmail {
             
             String to = "";
             if (iEvent.getMainContact()!=null && iEvent.getMainContact().getEmailAddress()!=null) {
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName()));
+                mail.addRecipient(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName());
                 to = "<a href='mailto:"+iEvent.getMainContact().getEmailAddress()+"'>"+iEvent.getMainContact().getShortName()+"</a>";
             }
             if (iEvent.getEmail()!=null && iEvent.getEmail().length()>0) {
                 for (StringTokenizer stk = new StringTokenizer(iEvent.getEmail(),";:,\n\r\t");stk.hasMoreTokens();) {
                     String email = stk.nextToken();
-                    mail.addRecipient(RecipientType.CC, new InternetAddress(email));
+                    mail.addRecipientCC(email, null);
                     if (to.length()>0) to+=", ";
                     to += email;
                 }
             }
             if (iEvent.getSponsoringOrganization()!=null && iEvent.getSponsoringOrganization().getEmail()!=null && iEvent.getSponsoringOrganization().getEmail().length()>0) {
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getSponsoringOrganization().getEmail(),iEvent.getSponsoringOrganization().getName()));
+                mail.addRecipient(iEvent.getSponsoringOrganization().getEmail(),iEvent.getSponsoringOrganization().getName());
                 if (to.length()>0) to+=", ";
                 to += "<a href='mailto:"+iEvent.getSponsoringOrganization().getEmail()+"'>"+iEvent.getSponsoringOrganization().getName()+"</a>";
             }
             
-            mail.setSentDate(new Date());
-            mail.setContent(body);
+            if (iAttachement != null && iAttachement.getFileSize() > 0)
+            	mail.addAttachement(iAttachement);
             
-            Transport.send(mail);
+            mail.send();
             
             request.getSession().setAttribute(Constants.REQUEST_MSSG, 
                     (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+

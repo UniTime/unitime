@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.util;
 
@@ -48,7 +48,7 @@ public class DateUtils {
 		    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
 		    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
 		} else if (c.get(Calendar.YEAR)>year) {
-			Calendar x = Calendar.getInstance(Locale.US);
+		    Calendar x = Calendar.getInstance(Locale.US);
 		    x.set(year,11,31,0,0,0);
 		    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
 		}
@@ -68,6 +68,7 @@ public class DateUtils {
 		c.set(year,1,1,0,0,0);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
+		c.add(Calendar.DAY_OF_YEAR, 1);
 		return c.getTime();
     }
     public static Date getEndDate(int year, int week) {
@@ -75,6 +76,7 @@ public class DateUtils {
 		c.set(year,1,1,0,0,0);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
+		c.add(Calendar.DAY_OF_YEAR, 1);
 		return c.getTime();
     }
     public static int getEndMonth(Date sessionEnd, int year, int excessDays) {
@@ -120,7 +122,6 @@ public class DateUtils {
         int idx = cal.get(Calendar.DAY_OF_YEAR);
         if (month < 0 || month >= 12) {
         	int actualYear = calculateActualYear(month, year);
-            //TODO: checked OK, tested OK
         	if (month < 0){
         		while (actualYear < year){
         			cal.set(actualYear, 11, 31);

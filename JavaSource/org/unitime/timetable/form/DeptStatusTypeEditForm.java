@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -39,7 +39,8 @@ import org.unitime.timetable.util.IdValue;
  * @author Tomas Muller
  */
 public class DeptStatusTypeEditForm extends ActionForm {
-    private String iOp;
+	private static final long serialVersionUID = -684686223274367430L;
+	private String iOp;
     private Long iUniqueId;
     private String iReference;
     private String iLabel;
@@ -60,6 +61,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanNoRoleReportExamFin = false;
     private boolean iCanNoRoleReportExamMid = false;
     private boolean iCanNoRoleReportClass   = false;
+    private boolean iCanSectioningStudents = false;
+    private boolean iCanPreRegisterStudents = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -105,6 +108,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanNoRoleReportExamFin = false;
         iCanNoRoleReportExamMid = false;
         iCanNoRoleReportClass   = false;
+        iCanSectioningStudents = false;
+        iCanPreRegisterStudents = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -157,6 +162,11 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanNoRoleReportExamMid() { return iCanNoRoleReportExamMid; }
     public void setCanNoRoleReportClass(boolean canNoRoleReportClass) { iCanNoRoleReportClass = canNoRoleReportClass; }
     public boolean getCanNoRoleReportClass() { return iCanNoRoleReportClass; }
+    public void setCanSectioningStudents(boolean canSectioningStudents) { iCanSectioningStudents = canSectioningStudents; }
+    public boolean getCanSectioningStudents() { return iCanSectioningStudents; }
+    public void setCanPreRegisterStudents(boolean canPreRegisterStudents) { iCanPreRegisterStudents = canPreRegisterStudents; }
+    public boolean getCanPreRegisterStudents() { return iCanPreRegisterStudents; }
+
     public int getRights() {
         int rights = 0;
         if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
@@ -174,6 +184,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.sCanNoRoleReportExamFin;
         if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.sCanNoRoleReportExamMid;
         if (getCanNoRoleReportClass()) rights += DepartmentStatusType.sCanNoRoleReportClass;
+        if (getCanSectioningStudents()) rights += DepartmentStatusType.sCanSectioningStudents;
+        if (getCanPreRegisterStudents()) rights += DepartmentStatusType.sCanPreRegisterStudents;
         return rights;
     }
     public void setRights(int rights) {
@@ -192,6 +204,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanNoRoleReportExamFin((rights&DepartmentStatusType.sCanNoRoleReportExamFin)==DepartmentStatusType.sCanNoRoleReportExamFin);
         setCanNoRoleReportExamMid((rights&DepartmentStatusType.sCanNoRoleReportExamMid)==DepartmentStatusType.sCanNoRoleReportExamMid);
         setCanNoRoleReportClass((rights&DepartmentStatusType.sCanNoRoleReportClass)==DepartmentStatusType.sCanNoRoleReportClass);
+        setCanSectioningStudents((rights&DepartmentStatusType.sCanSectioningStudents)==DepartmentStatusType.sCanSectioningStudents);
+        setCanPreRegisterStudents((rights&DepartmentStatusType.sCanPreRegisterStudents)==DepartmentStatusType.sCanPreRegisterStudents);
     }
 	
 	public void load(DepartmentStatusType s) {

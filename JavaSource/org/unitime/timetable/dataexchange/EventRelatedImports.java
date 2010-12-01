@@ -1,10 +1,10 @@
 /* 
  * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2009, UniTime LLC
+ * Copyright (C) 2009 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,13 +13,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  */ 
 
 package org.unitime.timetable.dataexchange;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,7 +33,6 @@ import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -48,7 +46,6 @@ public abstract class EventRelatedImports extends BaseImport {
 	protected Vector<String> changeList = new Vector<String>();
 	protected TreeSet<String> missingLocations = new TreeSet<String>();
 	protected Vector<String> notes = new Vector<String>();
-	protected TimetableManager manager = null;
 	protected String dateFormat = null;
 	protected boolean trimLeadingZerosFromExternalId = false;
 	protected Session session = null;
@@ -99,26 +96,24 @@ public abstract class EventRelatedImports extends BaseImport {
 	}
 	
 	protected void mailLoadResults(){
-       	Email email = new Email();
-       	
-       	String subject = getEmailSubject(); //"Course Offering Import Results";
-       	String mail = "";
-       	for (Iterator<String> it = changeList.iterator(); it.hasNext(); ){
-       		mail += (String) it.next() + "\n";
-       	}
-    	
     	try {
-			email.sendMail(
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-					(manager != null?manager.getEmailAddress():(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu")), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-					"Timetabling (Data Import): "+subject, 
-					mail, 
-					new Vector<Object>());
-		} catch (IOException e) {
-			e.printStackTrace();
+    		Email email = new Email();
+    		email.setSubject("UniTime (Data Import): " + getEmailSubject());
+           	
+           	String mail = "";
+           	for (Iterator<String> it = changeList.iterator(); it.hasNext(); ){
+           		mail += (String) it.next() + "\n";
+           	}
+           	email.setText(mail);
+           	
+        	email.addRecipient(getManager().getEmailAddress(), getManager().getName());
+           	
+        	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
+        		email.addNotifyCC();
+           	
+           	email.send();
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
 		}
 	}
 

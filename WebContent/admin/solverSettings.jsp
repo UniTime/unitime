@@ -1,10 +1,10 @@
 <%-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.model.dao.SolverParameterGroupDAO" %>
@@ -45,7 +45,7 @@
 	SolverSettingsForm frm = (SolverSettingsForm)request.getAttribute(frmName);
 	if (request.getAttribute("SolverSettings.table")!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="4">
 				<tt:section-header>
@@ -74,7 +74,7 @@
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<input type='hidden' name='op2' value=''>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
@@ -207,12 +207,12 @@
 %>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
 					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false">
-						<html:options property='<%="enum("+def.getType()+")"%>'/>
+						<html:options property='<%=def.getType()%>'/>
 					</html:select>
 				</logic:equal>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
 					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true">
-						<html:options property='<%="enum("+def.getType()+")"%>'/>
+						<html:options property='<%=def.getType()%>'/>
 					</html:select>
 				</logic:equal>
 <%

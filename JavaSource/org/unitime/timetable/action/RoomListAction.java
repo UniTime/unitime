@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -44,13 +45,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
@@ -79,15 +80,17 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
@@ -224,6 +227,7 @@ public class RoomListAction extends Action {
 		// build web table for university locations
 		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
 		
+		
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
 
@@ -239,7 +243,6 @@ public class RoomListAction extends Action {
 	 */
 	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
 		
-		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		HttpSession httpSession = request.getSession();
 		
@@ -247,7 +250,7 @@ public class RoomListAction extends Action {
 		if (rooms.size() == 0) {
 			errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
 			saveErrors(request, errors);
-		} else {		
+		} else {
 			User user = Web.getUser(httpSession);
 			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
@@ -259,7 +262,6 @@ public class RoomListAction extends Action {
 	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 			Set ownerDepts = owner.departmentsForSession(sessionId);
-			Set externalDepartments = Department.findAllExternal(sessionId);
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				if (isAdmin) {
@@ -514,7 +516,7 @@ public class RoomListAction extends Action {
 					text[idx] = 
 						(editable?"":"<font color='gray'>")+
 						(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-						bldg.getAbbreviation()+
+						"<span onmouseover=\"showGwtHint(this, '" + bldg.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + bldg.getAbbreviation() + "</span>"+
 						(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 						(editable?"":"</font>");
 					comp[0] = location.getLabel();
@@ -524,7 +526,7 @@ public class RoomListAction extends Action {
 				text[idx] = 
 					(editable?"":"<font color='gray'>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-					(room==null?location.getLabel():room.getRoomNumber())+
+					(room==null?location.getLabelWithHint():"<span onmouseover=\"showGwtHint(this, '" + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + room.getRoomNumber() + "</span>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 					(editable?"":"</font>");
 				comp[idx] = location.getLabel();
@@ -556,15 +558,17 @@ public class RoomListAction extends Action {
 	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            px.load(location);
 	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+	                            String hint = null;
 	                            File imageFileName = null;
 	                            try {
 	                                imageFileName = rtt.createImage(timeVertical);
+	                				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
 	                            } catch (IOException ex) {
-	                                ex.printStackTrace();
+	                            	hint = "'" + rtt.getModel().toString() + "'";
+	                            	Debug.error(ex);
 	                            }
-	                            String title = rtt.getModel().toString();
 	                            if (imageFileName!=null)
-	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
 	                            else
 	                                text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                        }
@@ -581,16 +585,16 @@ public class RoomListAction extends Action {
 	                    if (room==null) {
 	                        text[0] =
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+location.getLabel()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+location.getLabel()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    } else {
 	                        text[0] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +(bldg == null ? roomPref.getPrefName() + " " + location.getHtmlHint() : bldg.getHtmlHint()) + "');\" onmouseout=\"hideGwtHint();\">"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                        text[1] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+room.getRoomNumber()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+room.getRoomNumber()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    }
 	                }
@@ -611,18 +615,28 @@ public class RoomListAction extends Action {
 	                RequiredTimeTable rtt = location.getRoomSharingTable();
 	                rtt.getModel().setDefaultSelection(timeGridSize);
 	                if (gridAsText) {
-	                    text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                    String hint = null;
+	                    try {
+            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                    } catch (IOException ex) {
+                        	hint = "'" + rtt.getModel().toString() + "'";
+                        	Debug.error(ex);
+	                    }
+                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                } else {
 	                    File imageFileName = null;
+	                    String hint = null;
 	                    try {
 	                        imageFileName = rtt.createImage(timeVertical);
+            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
 	                    } catch (IOException ex) {
-	                        ex.printStackTrace();
+                        	hint = "'" + rtt.getModel().toString() + "'";
+                        	Debug.error(ex);
 	                    }
 	                    if (imageFileName!=null){
-	                        text[idx] = ("<img border='0' title='"+rtt.getModel().toString()+"' src='temp/"+(imageFileName.getName())+"'>&nbsp;");
+	                        text[idx] = ("<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='temp/"+(imageFileName.getName())+"'>&nbsp;");
 	                    } else {
-	                        text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                    }
 	                }
 	                comp[idx]=null;
@@ -746,22 +760,36 @@ public class RoomListAction extends Action {
 				    tables.get(location.getRoomType()).addLine(
 					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
-							comp);
+							comp,
+							location.getUniqueId().toString());
 				} else {
 				    tables.get(room.getRoomType()).addLine(
 	                        (editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
 	                        text, 
-	                        comp);
+	                        comp,
+	                        room.getUniqueId().toString());
 				}
 			}
 	
+			List<Long> ids = new ArrayList<Long>();
 			for (Map.Entry<RoomType,WebTable> entry: tables.entrySet()) {
 			    int ord = WebTable.getOrder(httpSession, entry.getKey().getReference()+".ord");
 			    if (ord>heading1.length) ord = 0;
 			    if (!entry.getValue().getLines().isEmpty()) {
 			        request.setAttribute(entry.getKey().getReference(), entry.getValue().printTable(ord));
 			    }
+			    if (!ids.isEmpty()) ids.add(-1l);
+			    for (Enumeration<WebTableLine> e = entry.getValue().getLines().elements(); e.hasMoreElements(); ) {
+			    	ids.add(Long.parseLong(e.nextElement().getUniqueId()));
+			    }
 			}
+			Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, ids);
+			
+			BackTracker.markForBack(
+	        		request,
+	        		"roomList.do",
+	        		"Rooms",
+	        		true, true);
 			
 			request.setAttribute("colspan", ""+colspan);
 		}
@@ -780,14 +808,12 @@ public class RoomListAction extends Action {
 			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
 			Set deptRoomFeatures = new TreeSet();
-			int colspan=0;
 			
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			TimetableManagerDAO tdao = new TimetableManagerDAO();
 	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 			Set ownerDepts = owner.departmentsForSession(sessionId);
-			Set externalDepartments = Department.findAllExternal(sessionId);
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				if (isAdmin) {
@@ -897,7 +923,6 @@ public class RoomListAction extends Action {
 				alignment1[i] = fixedHeading1[i][1];
 				sorted1[i] = (Boolean.valueOf(fixedHeading1[i][2])).booleanValue();
 			}
-			colspan = fixedHeading1.length;
 			
 			if (!featuresOneColumn) {
 				int i = fixedHeading1.length;
@@ -920,7 +945,6 @@ public class RoomListAction extends Action {
 					sorted1[i] = true;
 					i++;
 				}
-			    colspan = i;
 			}			
 			
 			//build headings for non-univ locations

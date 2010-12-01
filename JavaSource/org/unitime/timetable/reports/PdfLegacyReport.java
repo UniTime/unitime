@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports;
 
 import java.io.File;
@@ -9,20 +28,21 @@ import java.util.Date;
 
 import org.unitime.timetable.util.Constants;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 
+/**
+ * @author Tomas Muller
+ */
 public class PdfLegacyReport {
     protected int iNrChars = 133;
     protected int iNrLines = 50;
-    private File iFile = null;
     private FileOutputStream iOut = null;
     private Document iDoc = null;
-    private PdfWriter iWriter = null;
     private StringBuffer iBuffer = new StringBuffer();
     private PrintWriter iPrint = null;
     private String iTitle, iTitle2, iSubject;
@@ -35,14 +55,12 @@ public class PdfLegacyReport {
     private String iFooter = null;
     
     private boolean iEmpty = true;
-    private int iMode = 0;
     
     public static final int sModeNormal = 0;
     public static final int sModeLedger = 1;
     public static final int sModeText   = 2;
     
     public PdfLegacyReport(int mode, File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
-        iFile = file;
         iTitle = title;
         iTitle2 = title2;
         iSubject = subject;
@@ -60,7 +78,7 @@ public class PdfLegacyReport {
             iNrLines = (mode==sModeLedger?116:50);
             iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
-            iWriter = PdfWriter.getInstance(iDoc, iOut);
+            PdfWriter.getInstance(iDoc, iOut);
 
             iDoc.addTitle(iTitle);
             iDoc.addAuthor("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
@@ -185,7 +203,8 @@ public class PdfLegacyReport {
         if (iPrint!=null) {
             iPrint.print(iBuffer);
         } else {
-            Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
+        	//FIXME: For some reason when a line starts with space, the line is shifted by one space in the resulting PDF (when using iText 5.0.2)
+            Paragraph p = new Paragraph(iBuffer.toString().replace("\n ", "\n  "), FontFactory.getFont(FontFactory.COURIER, 9));
             p.setLeading(9.5f); //was 13.5f
             iDoc.add(p);
         }

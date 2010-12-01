@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -47,7 +47,6 @@ import org.unitime.timetable.util.DateUtils;
 
 public class DatePattern extends BaseDatePattern implements Comparable {
 	private static final long serialVersionUID = 1L;
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 
     public static final int sTypeStandard = 0;
     public static final int sTypeAlternate = 1;
@@ -67,22 +66,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	 */
 	public DatePattern (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public DatePattern (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String pattern,
-		java.lang.Integer offset) {
-
-		super (
-			uniqueId,
-			session,
-			pattern,
-			offset);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -119,9 +102,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public BitSet getPatternBitSet() {
 		if (iCachedPatternBitSet!=null) return iCachedPatternBitSet;
 		if (getPattern()==null || getOffset()==null) return null;
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
-		//TODO: checked OK, tested OK
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int size = getSession().getDayOfYear(0,endMonth+1)-getSession().getDayOfYear(1,startMonth);
 		iCachedPatternBitSet = new BitSet(size);
 		int offset = getPatternOffset() - getSession().getDayOfYear(1,startMonth);
@@ -134,27 +116,24 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	
 	public boolean isOffered(int day, int month) {
 		if (getPattern()==null || getOffset()==null) return false;
-		// TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(day, month)-getPatternOffset();
 		if (idx<0 || idx>=getPattern().length()) return false;
 		return (getPattern().charAt(idx)=='1');
 	}
 	
 	public boolean isUsed(int day, int month, Set usage) {
-		//TODO: checked OK, tested OK
 		if (usage==null || getPattern()==null || getOffset()==null) return false;
 		return usage.contains(new Integer(getSession().getDayOfYear(day, month)));
 	}
 
 	public String getPatternArray() {
 		StringBuffer sb = new StringBuffer("[");
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int year = getSession().getSessionStartYear();
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				if (d>1) sb.append(",");
@@ -192,7 +171,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return sb.toString();
 	}
 	
-	//TODO: checked OK, tested OK
 	public HashMap getPatternDateStringHashMaps() {
 		Calendar startDate = Calendar.getInstance(Locale.US);
 		startDate.setTime(getStartDate());
@@ -346,17 +324,15 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public String getBorderArray(Long uniqueId) {
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int dayOfYear = 0;
 		int year = getSession().getSessionStartYear();
-		Set classes = null;
 		Set usage = (uniqueId!=null?getUsage(uniqueId):null);
 		StringBuffer sb = new StringBuffer("[");
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				dayOfYear++;
@@ -383,17 +359,16 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     public String getPatternHtml(boolean editable, Long uniqueId) {
         return getPatternHtml(editable, uniqueId, true);
     }
-
+    
 	public String getPatternHtml(boolean editable, Long uniqueId, boolean includeScript) {
 		StringBuffer sb = new StringBuffer(); 
         if (includeScript)
             sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
-		//TODO: checked OK, tested OK
 		sb.append(
 			"calGenerate("+getSession().getSessionStartYear()+","+
-				(getSession().getStartMonth() - 3) +","+
-				(getSession().getEndMonth() + 3)+","+
+				(getSession().getPatternStartMonth()) +","+
+				(getSession().getPatternEndMonth())+","+
 				getPatternArray()+","+
 				"['1','0'],"+
 				"['Classes offered','Classes not offered'],"+
@@ -405,19 +380,16 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public void setPatternAndOffset(HttpServletRequest request) {
-		int startMonth = getSession().getStartMonth() - 3;
-		int endMonth = getSession().getEndMonth() + 3;
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
 		int firstOne = 0, lastOne = 0;
 		int year = getSession().getSessionStartYear();
 		StringBuffer sb = null;
-		//TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(1,startMonth);
 		for (int m=startMonth;m<=endMonth;m++) {
-			//TODO: checked OK, tested OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			int yr = DateUtils.calculateActualYear(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
-				//TODO: checked OK, tested OK
 				String offered = request.getParameter("cal_val_"+yr+"_"+((12+m)%12)+"_"+d);
 				if (offered!=null) {
 					if (sb!=null || !offered.equals("0")) {
@@ -513,15 +485,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		for (int i=0;i<getPattern().length();i++)
 			if ('1'==getPattern().charAt(i)) size++;
 		return size;
-	}
-	
-	private int first() {
-		if (getPattern()==null) return 0;
-		for (int i=0;i<getPattern().length();i++)
-			if ('1'==getPattern().charAt(i)) {
-				return i-getOffset().intValue();
-			}
-		return 0;
 	}
 	
 	public int compareTo(Object o) {

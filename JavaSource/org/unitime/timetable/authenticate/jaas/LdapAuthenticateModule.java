@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.authenticate.jaas;
 
@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -37,6 +39,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
+import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
@@ -46,6 +49,7 @@ import org.unitime.timetable.model.TimetableManager;
  * @author Tomas Muller
  */
 public class LdapAuthenticateModule extends AuthenticateModule {
+	private static Logger sLog = Logger.getLogger(LdapAuthenticateModule.class);
 	private String iExternalUid;
 	
 	/**
@@ -97,13 +101,13 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 
             // Check at least one role is found
             if (p.getRoles().isEmpty() && !"true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false"))) {
-                if (isDebug()) System.out.println("Role not found. Access Denied to User: " + getUser());
+                sLog.debug("Role not found. Access Denied to User: " + getUser());
                 throw new LoginException ("Role not found. Access Denied to User: " + getUser());
             }
         
             // Create user principal
-            if (isDebug()) System.out.println("User Roles: " + p.getRoles());
-            if (isDebug()) System.out.println("User Depts: " + p.getDepartments());
+            sLog.debug("User Roles: " + p.getRoles());
+            sLog.debug("User Depts: " + p.getDepartments());
 
 
             // Add user object to subjects public credentials
@@ -133,7 +137,7 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 		// Skip this module when LDAP provider is not set
 		if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider") == null) return false;
 
-		if (isDebug()) System.out.println("Performing ldap authentication ... ");
+		sLog.debug("Performing ldap authentication ... ");
 
 		// Get callback parameters
 		if (getCallbackHandler() == null)
@@ -156,12 +160,12 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 			if (doAuthenticate(userProps)) return true;
 			
 			// Authentication failed
-			if (isDebug()) System.out.println("Ldap authentication failed ... ");
+			sLog.debug("Ldap authentication failed ... ");
 			setAuthSucceeded(false);
 			return false;
 		} 
 		catch (Exception ex) {
-			if (isDebug()) System.out.println("Ldap authentication failed ... " + ex.getMessage());
+			sLog.debug("Ldap authentication failed ... " + ex.getMessage(), ex);
 			setAuthSucceeded(false);
 			return false;
 		}
@@ -182,21 +186,9 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 		iExternalUid = null;
 		super.reset();
 	}
-
-	/**
-	 * Perform actual authentication the user
-	 */
-	public boolean doAuthenticate(HashMap userProps) throws Exception {
-        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider")==null) throw new Exception("Ldap provider is not set.");
-        String principal = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.principal");
-        if (principal==null) throw new Exception("Ldap principal is not set.");
-        String query = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.query");
-        if (query==null) throw new Exception("Ldap query is not set.");
-
-        String n = (String) userProps.get("username");
-		String p = (String) userProps.get("password");
-		
-		Hashtable env = new Hashtable();
+	
+	private static Hashtable<String,String> getEnv() {
+        Hashtable<String,String> env = new Hashtable();
         env.put(Context.INITIAL_CONTEXT_FACTORY, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ctxFactory","com.sun.jndi.ldap.LdapCtxFactory"));
         env.put(Context.PROVIDER_URL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider"));
         env.put(Context.REFERRAL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.referral","ignore"));
@@ -214,18 +206,40 @@ public class LdapAuthenticateModule extends AuthenticateModule {
         if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword")!=null)
             System.setProperty("javax.net.ssl.trustStorePassword", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword"));
         if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType")!=null)
-            System.setProperty("javax.net.ssl.trustStoreType", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType"));
+            System.setProperty("javax.net.ssl.trustStoreType", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType"));  
+        return env;
+	}
+	
+    public static DirContext getDirContext() throws NamingException {
+        return new InitialDirContext(getEnv());
+    }
+
+	/**
+	 * Perform actual authentication the user
+	 */
+	public boolean doAuthenticate(HashMap userProps) throws Exception {
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider")==null) throw new Exception("Ldap provider is not set.");
+        
+        String principal = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.principal");
+        if (principal==null) throw new Exception("Ldap principal is not set.");
+        
+        String query = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.query");
+        if (query==null) throw new Exception("Ldap query is not set.");
+
+        String n = (String) userProps.get("username");
+		String p = (String) userProps.get("password");
+		
+		Hashtable<String, String> env = getEnv();
         env.put(Context.SECURITY_PRINCIPAL, principal.replaceAll("%", n));
-        //if (isDebug()) System.out.println("env:"+ToolBox.dict2string(env, 2));
         env.put(Context.SECURITY_CREDENTIALS, p);
 		InitialDirContext cx = new InitialDirContext(env);
-		//if (isDebug()) System.out.println("cx:"+cx);
+
 		String idAttributeName = ApplicationProperties.getProperty("tmtbl.authenticate.ldap.externalId","uid");
 		Attributes attributes = cx.getAttributes(query.replaceAll("%", n),new String[] {idAttributeName});
-		//if (isDebug()) System.out.println("attr:"+attributes);
-        Attribute idAttribute = attributes.get(idAttributeName);
+		
+		Attribute idAttribute = attributes.get(idAttributeName);
         if (idAttribute!=null) {
-            if (isDebug()) System.out.println("Ldap authentication passed ... ");
+            sLog.debug("Ldap authentication passed ... ");
             setAuthSucceeded(true);
             iExternalUid = (String)idAttribute.get();
             try {

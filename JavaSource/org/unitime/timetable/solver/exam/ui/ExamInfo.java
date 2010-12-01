@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam.ui;
 
@@ -46,7 +46,8 @@ import org.unitime.timetable.model.dao.ExamOwnerDAO;
  * @author Tomas Muller
  */
 public class ExamInfo implements Serializable, Comparable<ExamInfo> {
-    protected String iExamLabel = null;
+	private static final long serialVersionUID = -4407299089673481581L;
+	protected String iExamLabel = null;
     protected Long iExamId = null;
     protected transient Exam iExam = null;
     protected int iExamType;
@@ -72,8 +73,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iSeatingType = (exam.hasAltSeating()?Exam.sSeatingTypeExam:Exam.sSeatingTypeNormal);
         if (!exam.getOwners().isEmpty()) {
             iSections = new Vector();
-            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
-                net.sf.cpsolver.exam.model.ExamOwner ecs = (net.sf.cpsolver.exam.model.ExamOwner)e.nextElement();
+            for (net.sf.cpsolver.exam.model.ExamOwner ecs: exam.getOwners()) {
                 HashSet<Long> studentIds = new HashSet<Long>();
                 for (Iterator i=ecs.getStudents().iterator();i.hasNext();) 
                     studentIds.add(((ExamStudent)i.next()).getId());
@@ -81,8 +81,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             }
         }
         iInstructors = new Vector();
-        for (Enumeration e=exam.constraints().elements();e.hasMoreElements();) {
-            Constraint c = (Constraint)e.nextElement();
+        for (Constraint c: exam.constraints()) {
             if (c instanceof ExamInstructor) {
                 ExamInstructor instructor = (ExamInstructor)c;
                 iInstructors.add(new ExamInstructorInfo(instructor.getId(), null, instructor.getName()));
@@ -98,7 +97,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iMaxRooms = exam.getMaxNbrRooms();
         iExam = exam;
         iLength = exam.getLength();
-        iNrStudents = -1;
+        iNrStudents = (exam.getExamSize() == null ? -1 : exam.getExamSize());
         iSeatingType = exam.getSeatingType().intValue();
         iPrintOffset = exam.examOffset();
     }
@@ -296,7 +295,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public class ExamSectionInfo implements Serializable, Comparable<ExamSectionInfo> {
-        protected Long iId;
+		private static final long serialVersionUID = 6052996415395186994L;
+		protected Long iId;
         protected String iName;
         protected int iNrStudents = -1;
         protected transient ExamOwner iOwner = null;
@@ -402,7 +402,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public class ExamInstructorInfo implements Serializable, Comparable<ExamInstructorInfo> {
-        protected Long iId;
+		private static final long serialVersionUID = -6843290015053081071L;
+		protected Long iId;
         protected String iExternalUniqueId = null;
         protected String iName = null;
         protected transient DepartmentalInstructor iInstructor;

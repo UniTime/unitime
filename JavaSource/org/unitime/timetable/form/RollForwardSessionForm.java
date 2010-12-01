@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -34,6 +34,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseRequestDAO;
+import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
@@ -96,7 +97,9 @@ public class RollForwardSessionForm extends ActionForm {
 	private String subpartLocationPrefsAction;
 	private String subpartTimePrefsAction;
 	private String classPrefsAction;
-
+	private Boolean rollForwardCurricula;
+	private Long sessionToRollCurriculaForwardFrom;
+	
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -223,6 +226,12 @@ public class RollForwardSessionForm extends ActionForm {
                         CourseRequestDAO.getInstance().getQuery("from CourseRequest r where r.courseOffering.subjectArea.session.uniqueId = " + s.getUniqueId().toString()).list());
 		    }
 		}
+		
+		if (getRollForwardCurricula().booleanValue()){
+			CurriculumDAO curDao = new CurriculumDAO();
+			validateRollForward(errors, s, getSessionToRollCurriculaForwardFrom(), "Curricula", curDao.getQuery("from Curriculum c where c.department.session.uniqueId = " + s.getUniqueId().toString()).list());			
+		}
+
 
 	}
 	
@@ -267,6 +276,8 @@ public class RollForwardSessionForm extends ActionForm {
 		subpartLocationPrefsAction = null;
 		subpartTimePrefsAction = null;
 		classPrefsAction = null;
+		rollForwardCurricula = false;
+		sessionToRollCurriculaForwardFrom = null;
 	}
 
 	/** 
@@ -591,6 +602,22 @@ public class RollForwardSessionForm extends ActionForm {
     public void setRollForwardStudentsMode(Integer rollForwardStudentsMode) {
         this.rollForwardStudentsMode = rollForwardStudentsMode;
     }
+    
+    public Boolean getRollForwardCurricula() {
+    	return rollForwardCurricula;
+    }
+    
+    public void setRollForwardCurricula(Boolean rollForwardCurricula) {
+    	this.rollForwardCurricula = rollForwardCurricula;
+    }
+    
+    public Long getSessionToRollCurriculaForwardFrom() {
+    	return sessionToRollCurriculaForwardFrom;
+    }
+    
+    public void setSessionToRollCurriculaForwardFrom(Long sessionToRollCurriculaForwardFrom) {
+    	this.sessionToRollCurriculaForwardFrom = sessionToRollCurriculaForwardFrom;
+    }
 
 
 	/**
@@ -638,5 +665,54 @@ public class RollForwardSessionForm extends ActionForm {
 	 */
 	public void setClassPrefsAction(String classPrefsAction) {
 		this.classPrefsAction = classPrefsAction;
+	}
+	
+	public void copyTo(RollForwardSessionForm form) {
+		form.subjectAreas = subjectAreas;
+		form.subjectAreaIds = subjectAreaIds;
+		form.buttonAction = buttonAction;
+		form.isAdmin = isAdmin;
+		form.toSessions = toSessions;
+		form.fromSessions = fromSessions;
+		form.sessionToRollForwardTo = sessionToRollForwardTo;
+		form.rollForwardDatePatterns = rollForwardDatePatterns;
+		form.sessionToRollDatePatternsForwardFrom = sessionToRollDatePatternsForwardFrom;
+		form.rollForwardTimePatterns = rollForwardTimePatterns;
+		form.sessionToRollTimePatternsForwardFrom = sessionToRollTimePatternsForwardFrom;
+		form.rollForwardDepartments = rollForwardDepartments;
+		form.sessionToRollDeptsFowardFrom = sessionToRollDeptsFowardFrom;
+		form.rollForwardManagers = rollForwardManagers;
+		form.sessionToRollManagersForwardFrom = sessionToRollManagersForwardFrom;
+		form.rollForwardRoomData = rollForwardRoomData;
+		form.sessionToRollRoomDataForwardFrom = sessionToRollRoomDataForwardFrom;
+		form.rollForwardSubjectAreas = rollForwardSubjectAreas;
+		form.sessionToRollSubjectAreasForwardFrom = sessionToRollSubjectAreasForwardFrom;
+		form.rollForwardInstructorData = rollForwardInstructorData;
+		form.sessionToRollInstructorDataForwardFrom = sessionToRollInstructorDataForwardFrom;
+		form.rollForwardCourseOfferings = rollForwardCourseOfferings;
+		form.sessionToRollCourseOfferingsForwardFrom = sessionToRollCourseOfferingsForwardFrom;
+		form.availableRollForwardSubjectAreas = availableRollForwardSubjectAreas;
+		form.rollForwardSubjectAreaIds = rollForwardSubjectAreaIds;
+		form.rollForwardClassInstructors = rollForwardClassInstructors;
+		form.rollForwardClassInstrSubjectIds = rollForwardClassInstrSubjectIds;
+		form.addNewCourseOfferings = addNewCourseOfferings;
+		form.addNewCourseOfferingsSubjectIds = addNewCourseOfferingsSubjectIds;
+		form.rollForwardExamConfiguration = rollForwardExamConfiguration;
+		form.sessionToRollExamConfigurationForwardFrom = sessionToRollExamConfigurationForwardFrom;
+		form.rollForwardMidtermExams = rollForwardMidtermExams;
+		form.rollForwardFinalExams = rollForwardFinalExams;
+		form.rollForwardStudents = rollForwardStudents;
+		form.rollForwardStudentsMode = rollForwardStudentsMode;
+		form.subpartLocationPrefsAction = subpartLocationPrefsAction;
+		form.subpartTimePrefsAction = subpartTimePrefsAction;
+		form.classPrefsAction = classPrefsAction;
+		form.rollForwardCurricula = rollForwardCurricula;
+		form.sessionToRollCurriculaForwardFrom = sessionToRollCurriculaForwardFrom;
+	}
+	
+	public Object clone() {
+		RollForwardSessionForm form = new RollForwardSessionForm();
+		copyTo(form);
+		return form;
 	}
 }

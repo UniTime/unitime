@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,13 +14,11 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,7 +49,6 @@ import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
 public class CourseOffering extends BaseCourseOffering implements Comparable {
 	private static final long serialVersionUID = 1L;
-	private String courseName;
 	
 	/** Request attribute name for list of course offerings */
     public static final String CRS_OFFERING_LIST_ATTR_NAME = "crsOfferingList";
@@ -67,29 +64,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public CourseOffering (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseOffering (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
-		java.lang.Boolean isControl,
-		java.lang.Integer nbrExpectedStudents,
-		java.lang.Integer demand,
-		java.lang.String courseNbr) {
-
-		super (
-			uniqueId,
-			subjectArea,
-			instructionalOffering,
-			isControl,
-			nbrExpectedStudents,
-			demand,
-			courseNbr);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String getCourseName() {
@@ -196,9 +171,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 */
 	public static synchronized CourseOffering addNew(String subjAreaId, String courseNbr) throws Exception {
 	    
-	    Statement stmt = null;
-	    ResultSet rs = null;
-
 	    CourseOffering co = null; 
 	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	    Session hibSession = idao.getSession();

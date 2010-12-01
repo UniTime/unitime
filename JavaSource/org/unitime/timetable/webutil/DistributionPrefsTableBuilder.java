@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil;
 
@@ -23,9 +23,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -61,12 +61,12 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
@@ -159,10 +159,9 @@ public class DistributionPrefsTableBuilder {
 		Set prefs = clazz.effectiveDistributionPreferences(null); 
 			//DistributionPref.getPreferences(clazz.getSessionId(), clazz.getManagingDept().getUniqueId(), false, clazz.getUniqueId());
 
-		Vector leadInstructors = clazz.getLeadInstructors();
+		List<DepartmentalInstructor> leadInstructors = clazz.getLeadInstructors();
 		if (!leadInstructors.isEmpty()) {
-			for (Enumeration e=leadInstructors.elements();e.hasMoreElements();) {
-				DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+			for (DepartmentalInstructor instructor: leadInstructors) {
 				prefs.addAll(instructor.getDistributionPreferences());
 			}
 		}
@@ -455,9 +454,6 @@ public class DistributionPrefsTableBuilder {
              
         	String distType = dp.getDistributionType().getLabel();
             String prefLevel = dp.getPrefLevel().getPrefName();
-            String prefColor = dp.getPrefLevel().prefcolor();
-        	if (PreferenceLevel.sNeutral.equals(dp.getPrefLevel().getPrefProlog()))
-        		prefColor = "gray";
             String onClick = null;
             
             tbl.addLine(

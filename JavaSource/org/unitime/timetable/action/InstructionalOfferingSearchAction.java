@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -293,8 +293,6 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
         User user = Web.getUser(httpSession);
         Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
         
-        boolean singleCourseSelection = (form.getCourseNbr()!=null && form.getCourseNbr().length()>0);
-        
         boolean fetchStructure = true;
         boolean fetchCredits = false;//singleCourseSelection || form.getCredit().booleanValue();
         boolean fetchInstructors = false;//singleCourseSelection || form.getInstructor().booleanValue();
@@ -456,7 +454,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	    }
 
 	    // Convert to uppercase - e.g. 001d -> 001D
-	    courseNbr = courseNbr.toUpperCase();
+	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+	    	courseNbr = courseNbr.toUpperCase();
 	    instructionalOfferingListForm.setCourseNbr(courseNbr);
 	    
 	    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));

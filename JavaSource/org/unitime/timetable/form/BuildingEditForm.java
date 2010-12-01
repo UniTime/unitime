@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -42,7 +42,8 @@ import org.unitime.timetable.model.dao.BuildingDAO;
  * 
  */
 public class BuildingEditForm extends ActionForm {
-    private Long iUniqueId = null;
+	private static final long serialVersionUID = -4104780400760573687L;
+	private Long iUniqueId = null;
 	private String iOp = null;
     private String iExternalId = null;
     private String iName = null;
@@ -113,8 +114,8 @@ public class BuildingEditForm extends ActionForm {
         setExternalId(building.getExternalUniqueId());
         setName(building.getName());
         setAbbreviation(building.getAbbreviation());
-        setCoordX(building.getCoordinateX()==null || building.getCoordinateX()<0? null: building.getCoordinateX().toString());
-        setCoordY(building.getCoordinateY()==null || building.getCoordinateY()<0? null: building.getCoordinateY().toString());
+        setCoordX(building.getCoordinateX()==null ? null : building.getCoordinateX().toString());
+        setCoordY(building.getCoordinateY()==null ? null : building.getCoordinateY().toString());
     }
     
     public void saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession, Session session) throws Exception {
@@ -124,8 +125,8 @@ public class BuildingEditForm extends ActionForm {
         building.setName(getName());
         building.setAbbreviation(getAbbreviation());
         building.setExternalUniqueId(getExternalId()!=null && getExternalId().length()==0?null:getExternalId());
-        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0?-1:Integer.parseInt(getCoordX()));
-        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0?-1:Integer.parseInt(getCoordY()));
+        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0 ? null : Double.valueOf(getCoordX()));
+        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0 ? null : Double.valueOf(getCoordY()));
         building.setSession(session);
         hibSession.saveOrUpdate(building);
         ChangeLog.addChange(

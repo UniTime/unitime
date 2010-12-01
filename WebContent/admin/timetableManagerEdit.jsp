@@ -1,10 +1,10 @@
 <%-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.commons.web.Web" %>
@@ -55,14 +55,14 @@
 </SCRIPT>
 <tiles:importAttribute />
 
-	<html:form method="post" action="timetableManagerEdit.do">
+<html:form method="post" action="timetableManagerEdit.do">
 	<html:hidden name="mgrForm" property="uniqueId" />
 	<html:hidden name="mgrForm" property="op1" />
 	<html:hidden name="mgrForm" property="isExternalManager" />
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -127,7 +127,7 @@
 				<TD>First Name:</TD>
 				<TD>
 					<html:text name="mgrForm" property="firstName" size="50" maxlength="100" styleId="fname"></html:text>
-					<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+firstName.value+' '+lastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+					<input type='button' value='Lookup' onclick="lookup();" style="btn">
 				</TD>
 			</TR>
 			<TR>
@@ -392,4 +392,17 @@
 			</TD>
 		</TR>
 	</TABLE>
-	</html:form>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = person[0];
+				document.getElementById('fname').value = person[1];
+				document.getElementById('mname').value = person[2];
+				document.getElementById('lname').value = person[3];
+				document.getElementById('email').value = person[4];
+			}
+		}, "mustHaveExternalId");
+	}
+</script>
+</html:form>

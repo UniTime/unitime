@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  -->
 <web-app 
 	version="2.4"
@@ -28,7 +28,7 @@
 	</display-name>
 	
 	<description>
-		University Course Timetabling &amp; Student Sectioning Application
+		University Timetabling Application
 	</description>
 	
 	<welcome-file-list>
@@ -78,6 +78,78 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
+	<!--  GWT Servlets -->
+	<servlet>
+    	<servlet-name>sectioningServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.SectioningServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+    </servlet>
+  
+	<servlet>
+    	<servlet-name>calendarServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.CalendarServlet</servlet-class>
+    </servlet>
+
+	<servlet>
+    	<servlet-name>curriculaServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.CurriculaServlet</servlet-class>
+    	<load-on-startup>2</load-on-startup>
+    </servlet>
+
+	<servlet>
+    	<servlet-name>menuServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.MenuServlet</servlet-class>
+    </servlet>
+
+	<servlet>
+    	<servlet-name>simpleEditServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.SimpleEditServlet</servlet-class>
+    </servlet>
+
+	<servlet>
+    	<servlet-name>lookupServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.LookupServlet</servlet-class>
+    </servlet>
+
+	<servlet>
+    	<servlet-name>eventServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.EventServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>sectioningServiceServlet</servlet-name>
+        <url-pattern>/unitime/sectioning.gwt</url-pattern>
+    </servlet-mapping>
+  
+    <servlet-mapping>
+      <servlet-name>calendarServlet</servlet-name>
+      <url-pattern>/calendar</url-pattern>
+    </servlet-mapping>
+	
+    <servlet-mapping>
+        <servlet-name>curriculaServiceServlet</servlet-name>
+        <url-pattern>/unitime/curricula.gwt</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>menuServiceServlet</servlet-name>
+        <url-pattern>/unitime/menu.gwt</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>simpleEditServiceServlet</servlet-name>
+        <url-pattern>/unitime/simpleEdit.gwt</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>lookupServiceServlet</servlet-name>
+        <url-pattern>/unitime/lookup.gwt</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>eventServiceServlet</servlet-name>
+        <url-pattern>/unitime/event.gwt</url-pattern>
+    </servlet-mapping>
 
 	<!-- Servlet Mappings -->
 	<servlet-mapping>
@@ -95,33 +167,6 @@
 		</filter-class>
 	</filter>
 
-	<!-- Filter XSS characters and SQL injection -->
-	<!-- filter>
-		<filter-name>
-			XSS Filter
-		</filter-name>
-		<filter-class>
-			org.unitime.timetable.filter.XSSFilter
-		</filter-class>
-	</filter -->
-		<!-- 
-		<init-param>
-			<param-name>additional_chars</param-name>
-			<param-value>\=\/\+</param-value>
-			<description>
-				Additional Characters to be allowed besides the default
-			</description>
-		</init-param>
-		<init-param>
-			<param-name>replace_string</param-name>
-			<param-value>_</param-value>
-			<description>
-				The filtered characters will be replaced by this character.
-				Default value is underscore (_)
-			</description>
-		</init-param>
-		-->
-	
 	<filter>
 		<filter-name>
 			Admin Only Filter
@@ -176,6 +221,19 @@
 		</init-param>
 	</filter>
 
+	<filter>
+		<filter-name>
+			Query Log Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.QueryLogFilter
+		</filter-class>
+		<init-param>
+			<param-name>exclude</param-name>
+			<param-value>menu.gwt: MenuService#getSolverInfo</param-value>
+		</init-param>
+	</filter>
+
 	<!-- Filter Mappings -->
 	<filter-mapping>
 		<filter-name>Page Access Filter</filter-name>
@@ -192,11 +250,6 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
-	<!-- filter-mapping>
-		<filter-name>XSS Filter</filter-name>		
-		<url-pattern>/*</url-pattern>		
-	</filter-mapping -->
-
 	<filter-mapping>
 		<filter-name>Logged-in Only Filter</filter-name>		
 		<url-pattern>/solver/solver.jnlp</url-pattern>
@@ -207,14 +260,11 @@
 		<url-pattern>/temp/*</url-pattern>
 	</filter-mapping>
 
-	<!-- Use if needed to track sessions -->
-	<!-- 
-	<listener>
-		<listener-class>
-		org.unitime.timetable.listeners.SessionListener
-		</listener-class>
-	</listener>
-	-->
-	
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+        <url-pattern>*.gwt</url-pattern>
+		<url-pattern>/calendar</url-pattern>
+	</filter-mapping>
 </web-app>
 

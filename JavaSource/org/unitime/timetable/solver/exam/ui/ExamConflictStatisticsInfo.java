@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,22 +14,25 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
-
-import org.dom4j.Element;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.solver.ui.TimetableInfo;
-import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
@@ -42,11 +45,15 @@ import net.sf.cpsolver.ifs.extension.Assignment;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.dom4j.Element;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.solver.ui.TimetableInfo;
+import org.unitime.timetable.webutil.timegrid.ExamGridTable;
+
 /**
  * @author Tomas Muller
  */
 public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	private static final long serialVersionUID = 7L;
 	public static int sVersion = 7; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;
@@ -551,7 +558,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('examInfo.do?examId="+variable.getId()+"&op=Reset','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+variable.getId()+"&op=Reset','900','90%');\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -568,7 +575,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";	
+    		onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -616,7 +623,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	}
     	String onClick = null;
     	if (clickable)
-    	    onClick = "onclick=\"window.open('examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    	    onClick = "onclick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     

@@ -1,6 +1,24 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.dataexchange;
 
-import java.io.PrintWriter;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -18,7 +36,7 @@ public class DataExchangeHelper {
     public static String sLogLevelWarn = "WARN";
     public static String sLogLevelError = "ERROR";
     public static String sLogLevelFatal = "FATAL";
-    protected PrintWriter iTextLog;
+    protected LogWriter iTextLog;
     protected org.hibernate.Session iHibSession = null;
     protected org.hibernate.Transaction iTx = null;
     protected int iFlushIfNeededCounter = 0;
@@ -32,6 +50,7 @@ public class DataExchangeHelper {
         sExportRegister.put("exams", CourseOfferingExport.class);
         sExportRegister.put("offerings", CourseOfferingExport.class);
         sExportRegister.put("timetable", CourseTimetableExport.class);
+        sExportRegister.put("curricula", CurriculaExport.class);
         sImportRegister = new Hashtable<String, Class>();
         sImportRegister.put("academicAreaReservations", AcadAreaReservationImport.class);
         sImportRegister.put("academicAreas",AcademicAreaImport.class);
@@ -51,15 +70,16 @@ public class DataExchangeHelper {
         sImportRegister.put("subjectAreas",SubjectAreaImport.class);
         sImportRegister.put("request",StudentSectioningImport.class);
         sImportRegister.put("events",EventImport.class);
+        sImportRegister.put("curricula",CurriculaImport.class);
     }
     
     public DataExchangeHelper() {
     }
     
-    public void setLog(PrintWriter out) {
+    public void setLog(LogWriter out) {
         iTextLog = out;
     }
-    public PrintWriter getLog() {
+    public LogWriter getLog() {
         return iTextLog;
     }
     public void log(String level, String message, Throwable t) {
@@ -194,16 +214,20 @@ public class DataExchangeHelper {
         return (BaseExport)sExportRegister.get(type).getConstructor().newInstance();
     }
     
-    public static void importDocument(Document document, TimetableManager manager, PrintWriter log) throws Exception {
+    public static void importDocument(Document document, TimetableManager manager, LogWriter log) throws Exception {
         BaseImport imp = createImportBase(document.getRootElement().getName());
         imp.setLog(log);
         imp.setManager(manager);
         imp.loadXml(document.getRootElement());
     }
     
-    public static Document exportDocument(String rootName, Session session, Properties parameters, PrintWriter log) throws Exception {
+    public static Document exportDocument(String rootName, Session session, Properties parameters, LogWriter log) throws Exception {
         BaseExport exp = createExportBase(rootName);
         exp.setLog(log);
         return exp.saveXml(session, parameters);
+    }
+    
+    public interface LogWriter {
+    	public void println(String message);
     }
 }

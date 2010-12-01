@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -27,7 +27,7 @@
 <html:form action="/roomAvailability">
 	<html:hidden property="showSections"/>
 	<html:hidden property="subjectArea" />
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
@@ -79,7 +79,7 @@
 
 	<BR><BR>
 	<logic:empty name="roomAvailabilityForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				<logic:equal name="roomAvailabilityForm" property="examType" value="-1">
 					Examination problem not selected.
@@ -91,7 +91,7 @@
 		</table>
 	</logic:empty>
 	<logic:notEmpty name="roomAvailabilityForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:write name="roomAvailabilityForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
@@ -101,7 +101,7 @@
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
 	</logic:notEmpty>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>
 			<tt:section-title/>

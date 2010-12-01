@@ -1,8 +1,26 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,30 +37,16 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -65,7 +69,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected static Logger sLog = Logger.getLogger(PdfLegacyExamReport.class);
@@ -354,7 +358,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     	if (time == null || time.getWeekCode().isEmpty()) return null;
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	if (iSessionFirstDate == null)
-    		iSessionFirstDate = DateUtils.getDate(1, iSession.getStartMonth() - 3, iSession.getSessionStartYear());
+    		iSessionFirstDate = DateUtils.getDate(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear());
     	cal.setTime(iSessionFirstDate);
     	int idx = time.getWeekCode().nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);
@@ -498,32 +502,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             return clazz.getSchedulingSubpart().getItypeDesc();
     }
     
-    public static void sendEmails(String prefix, Hashtable<String,File> output, Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject, Hashtable<ExamInstructorInfo,File> ireports, Hashtable<Student,File> sreports) throws MessagingException, UnsupportedEncodingException {
-        String managerExternalId = System.getProperty("sender");
-        TimetableManager mgr = (managerExternalId==null?null:TimetableManager.findByExternalId(managerExternalId));
-        InternetAddress from = null;
-        if (System.getProperty("email.from")!=null)
-            from = new InternetAddress(System.getProperty("email.from"), System.getProperty("email.from.name"));
-        else
-            from = new InternetAddress(
-                            ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                            ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
-        
+    public static void sendEmails(String prefix, Hashtable<String,File> output, Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject, Hashtable<ExamInstructorInfo,File> ireports, Hashtable<Student,File> sreports) {
         sLog.info("Sending email(s)...");
-        Properties p = ApplicationProperties.getProperties();
-        if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-            p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-        Authenticator a = null;
-        if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-            a = new Authenticator() {
-                public PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(
-                            ApplicationProperties.getProperty("tmtbl.mail.user"),
-                            ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                }
-            };
-        }
-        javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
         if (!outputPerSubject.isEmpty() && "true".equals(System.getProperty("email.deputies","false"))) {
                 Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
                 for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
@@ -549,46 +529,36 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         Hashtable<String,File> files = files2send.get(manager);
                         managers.remove(manager);
                         sLog.info("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
-                        MimeMessage mail = new MimeMessage(mailSession);
-                        mail.setSubject(System.getProperty("email.subject","Examination Report"));
-                        Multipart body = new MimeMultipart();
-                        BodyPart text = new MimeBodyPart();
-                        String message = System.getProperty("email.body");
-                        String url = System.getProperty("email.url");
-                        text.setText((message==null?"":message+"\r\n\r\n")+
-                                (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
-                                "This email was automatically generated by "+
-                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                                " (Univesity Timetabling Application, http://www.unitime.org).");
-                        body.addBodyPart(text);
-                        mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress(),manager.getName()));
-                        for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
-                            TimetableManager m = (TimetableManager)i.next();
-                            if (files.equals(files2send.get(m))) {
-                                sLog.info("  Including "+m.getName()+" ("+m.getEmailAddress()+")");
-                                mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress(),m.getName()));
-                                i.remove();
-                            }
-                        }
-                        if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                        if (from!=null)
-                            mail.setFrom(from);
-                        for (Map.Entry<String, File> entry : files.entrySet()) {
-                            BodyPart attachement = new MimeBodyPart();
-                            attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                            attachement.setFileName(prefix+"_"+entry.getKey());
-                            body.addBodyPart(attachement);
-                            sLog.info("  Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
-                        }
-                        mail.setSentDate(new Date());
-                        mail.setContent(body);
                         try {
-                            Transport.send(mail);
+                            Email mail = new Email();
+                            mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                            String message = System.getProperty("email.body");
+                            String url = System.getProperty("email.url");
+                            mail.setText((message==null?"":message+"\r\n\r\n")+
+                                    (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                                    "This email was automatically generated by "+
+                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            mail.addRecipient(manager.getEmailAddress(),manager.getName());
+                            for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
+                                TimetableManager m = (TimetableManager)i.next();
+                                if (files.equals(files2send.get(m))) {
+                                    sLog.info("  Including "+m.getName()+" ("+m.getEmailAddress()+")");
+                                    mail.addRecipient(m.getEmailAddress(), m.getName());
+                                    i.remove();
+                                }
+                            }
+                            if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipient(s.nextToken(), null);
+                            if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientCC(s.nextToken(), null);
+                            if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientBCC(s.nextToken(), null);
+                            for (Map.Entry<String, File> entry : files.entrySet()) {
+                            	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
+                                sLog.info("  Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
+                            }
+                            mail.send();
                             sLog.info("Email sent.");
                         } catch (Exception e) {
                             sLog.error("Unable to send email: "+e.getMessage());
@@ -596,36 +566,26 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     }
                 }
             } else {
-                MimeMessage mail = new MimeMessage(mailSession);
-                mail.setSubject(System.getProperty("email.subject","Examination Report"));
-                Multipart body = new MimeMultipart();
-                BodyPart text = new MimeBodyPart();
-                String message = System.getProperty("email.body");
-                String url = System.getProperty("email.url");
-                text.setText((message==null?"":message+"\r\n\r\n")+
-                        (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
-                        "This email was automatically generated by "+
-                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                        " (Univesity Timetabling Application, http://www.unitime.org).");
-                body.addBodyPart(text);
-                if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
-                    mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
-                    mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
-                    mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                if (from!=null)
-                    mail.setFrom(from);
-                for (Map.Entry<String, File> entry : output.entrySet()) {
-                    BodyPart attachement = new MimeBodyPart();
-                    attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                    attachement.setFileName(prefix+"_"+entry.getKey());
-                    body.addBodyPart(attachement);
-                }
-                mail.setSentDate(new Date());
-                mail.setContent(body);
                 try {
-                    Transport.send(mail);
+                    Email mail = new Email();
+                    mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                    String message = System.getProperty("email.body");
+                    String url = System.getProperty("email.url");
+                    mail.setText((message==null?"":message+"\r\n\r\n")+
+                            (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                            "This email was automatically generated by "+
+                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                            " (Univesity Timetabling Application, http://www.unitime.org).");
+                    if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipient(s.nextToken(), null);
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipientCC(s.nextToken(), null);
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipientBCC(s.nextToken(), null);
+                    for (Map.Entry<String, File> entry : output.entrySet()) {
+                    	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
+                    }
+                	mail.send();
                     sLog.info("Email sent.");
                 } catch (Exception e) {
                     sLog.error("Unable to send email: "+e.getMessage());
@@ -640,32 +600,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         sLog.warn("Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.");
                         continue;
                     }
-                    MimeMessage mail = new MimeMessage(mailSession);
-                    mail.setSubject(System.getProperty("email.subject","Examination Report"));
-                    Multipart body = new MimeMultipart();
-                    BodyPart text = new MimeBodyPart();
-                    String message = System.getProperty("email.body");
-                    String url = System.getProperty("email.url");
-                    text.setText((message==null?"":message+"\r\n\r\n")+
-                            (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
-                            "This email was automatically generated by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                    body.addBodyPart(text);
-                    mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                    if (from!=null) mail.setFrom(from);
-                    BodyPart attachement = new MimeBodyPart();
-                    attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                    attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
-                    body.addBodyPart(attachement);
-                    mail.setSentDate(new Date());
-                    mail.setContent(body);
                     try {
-                        Transport.send(mail);
+                        Email mail = new Email();
+                        mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                        String message = System.getProperty("email.body");
+                        String url = System.getProperty("email.url");
+                        mail.setText((message==null?"":message+"\r\n\r\n")+
+                                (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        mail.addRecipient(email, null);
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientCC(s.nextToken(), null);
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientBCC(s.nextToken(), null);
+                        mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    	mail.send();
                         sLog.info("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                     } catch (Exception e) {
                         sLog.error("Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- "+e.getMessage());
@@ -682,32 +633,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         sLog.warn("  Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.");
                         continue;
                     }
-                    MimeMessage mail = new MimeMessage(mailSession);
-                    mail.setSubject(System.getProperty("email.subject","Examination Report"));
-                    Multipart body = new MimeMultipart();
-                    BodyPart text = new MimeBodyPart();
-                    String message = System.getProperty("email.body");
-                    String url = System.getProperty("email.url");
-                    text.setText((message==null?"":message+"\r\n\r\n")+
-                            (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
-                            "This email was automatically generated by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                    body.addBodyPart(text);
-                    mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                    if (from!=null) mail.setFrom(from);
-                    BodyPart attachement = new MimeBodyPart();
-                    attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                    attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
-                    body.addBodyPart(attachement);
-                    mail.setSentDate(new Date());
-                    mail.setContent(body);
                     try {
-                        Transport.send(mail);
+                        Email mail = new Email();
+                        mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                        String message = System.getProperty("email.body");
+                        String url = System.getProperty("email.url");
+                        mail.setText((message==null?"":message+"\r\n\r\n")+
+                                (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        mail.addRecipient(email, null);
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.cc"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientCC(s.nextToken(), null);
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientBCC(s.nextToken(), null);
+                        mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    	mail.send();
                         sLog.info(" An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                     } catch (Exception e) {
                         sLog.error("Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- "+e.getMessage()+".");
@@ -927,7 +869,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         if (assgn && eventConf && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(examType==Exam.sExamTypeFinal?"final":"midterm"),"true"))) {
             sLog.info("  Loading overlapping class meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
@@ -935,8 +877,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                ClassEvent event = (ClassEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);
@@ -945,7 +886,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
             sLog.info("  Loading overlapping course meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
@@ -953,8 +894,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                CourseEvent event = (CourseEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);

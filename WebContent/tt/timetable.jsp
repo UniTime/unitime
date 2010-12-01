@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.webutil.timegrid.TimetableGridTable" %>
@@ -31,7 +31,7 @@
 try {
 %>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD>Week:</TD>
 			<TD>
@@ -43,7 +43,7 @@ try {
 		<TR>
 			<TD>Resource:</TD>
 			<TD>
-				<html:select property="resource" onchange="document.getElementById('show_instructors').style.display=(this.value=='Room'?'':'none');">
+				<html:select property="resource" onchange="document.getElementById('show_instructors').style.display=(this.value=='Room'?'':'none'); document.getElementById('show_events').style.display=(this.value=='Room'?'':'none');">
 					<html:options name="timetableForm" property="resources"/>
 				</html:select>
 			</TD>
@@ -98,6 +98,12 @@ try {
 				<html:checkbox property="showInstructors"/>
 			</TD>
 		</TR>
+		<TR id="show_events">
+			<TD>Show events:</TD>
+			<TD>
+				<html:checkbox property="showEvents"/>
+			</TD>
+		</TR>
 		<TR>
 			<TD>Order By:</TD>
 			<TD>
@@ -116,9 +122,10 @@ try {
 	</TABLE>
 	<logic:notEqual name="timetableForm" property="resource" value="Room">
 		<script language="JavaScript">document.getElementById('show_instructors').style.display='none';</script>
+		<script language="JavaScript">document.getElementById('show_events').style.display='none';</script>
 	</logic:notEqual>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
@@ -130,7 +137,7 @@ try {
 	
 	<br><br>
 	<a name='timetable'/>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -171,7 +178,7 @@ try {
 		
 	<BR>
 	<a name='legend'/>
-	<TABLE width="90%" border="0" >
+	<TABLE width="100%" border="0" >
 		<TR>
 			<TD colspan="3">
 				<tt:section-header>

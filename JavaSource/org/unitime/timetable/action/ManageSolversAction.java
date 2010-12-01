@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,19 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -81,11 +86,25 @@ public class ManageSolversAction extends Action {
         	return mapping.findForward("showSolver");
         }
         
+        if ("Unload".equals(op) && request.getParameter("puid")!=null) {
+        	String puid = request.getParameter("puid");
+        	request.getSession().setAttribute("ManageSolver.puid", puid);
+        	request.getSession().removeAttribute("SolverProxy");
+        	WebSolver.removeSolver(request.getSession());
+        }
+
         if ("Select".equals(op) && request.getParameter("examPuid")!=null) {
             String puid = request.getParameter("examPuid");
             request.getSession().setAttribute("ManageSolver.examPuid", puid);
             request.getSession().removeAttribute("ExamSolverProxy");
             return mapping.findForward("showExamSolver");
+        }
+
+        if ("Unload".equals(op) && request.getParameter("examPuid")!=null) {
+            String puid = request.getParameter("examPuid");
+            request.getSession().setAttribute("ManageSolver.examPuid", puid);
+            request.getSession().removeAttribute("ExamSolverProxy");
+            WebSolver.removeExamSolver(request.getSession());
         }
 
         if ("Select".equals(op) && request.getParameter("sectionPuid")!=null) {
@@ -95,6 +114,13 @@ public class ManageSolversAction extends Action {
             return mapping.findForward("showStudentSolver");
         }
 
+        if ("Unload".equals(op) && request.getParameter("sectionPuid")!=null) {
+            String puid = request.getParameter("sectionPuid");
+            request.getSession().setAttribute("ManageSolver.sectionPuid", puid);
+            request.getSession().removeAttribute("StudentSolverProxy");
+            WebSolver.removeStudentSolver(request.getSession());
+        }
+        
         if ("Deselect".equals(op)) {
         	request.getSession().removeAttribute("ManageSolver.puid");
         	request.getSession().removeAttribute("SolverProxy");
@@ -210,10 +236,10 @@ public class ManageSolversAction extends Action {
 		try {
 			WebTable.setOrder(request.getSession(),"manageSolvers.ord",request.getParameter("ord"),1);
 			
-			WebTable webTable = new WebTable( 18,
+			WebTable webTable = new WebTable( 19,
 					"Manage Course Solvers", "manageSolvers.do?ord=%%",
-					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
+					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
@@ -303,6 +329,13 @@ public class ManageSolversAction extends Action {
             		bgColor = "rgb(168,187,225)";
                 
                 String host = solver.getHostLabel();
+                
+                String op = "";
+                op += 
+                	"<input type=\"button\" value=\"Unload\" onClick=\"" +
+                	"if (confirm('Do you really want to unload this solver?')) " +
+                	"document.location='manageSolvers.do?op=Unload&puid=" + properties.getProperty("General.OwnerPuid")+ "';" +
+                	" event.cancelBubble=true;\">";
 
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
@@ -322,7 +355,8 @@ public class ManageSolversAction extends Action {
 							tooBig,
 							useless,
 							pertPen,
-							note},
+							note,
+							op},
 						new Comparable[] {
 							(loaded==null?new Date():loaded),
 							(lastUsed==null?new Date():lastUsed),
@@ -341,7 +375,8 @@ public class ManageSolversAction extends Action {
 							tooBig,
 							useless,
 							pertPen,
-							(solver.getNote()==null?"":solver.getNote())}).setBgColor(bgColor);
+							(solver.getNote()==null?"":solver.getNote()),
+							null}).setBgColor(bgColor);
 					nrLines++;
 			}
 			if (nrLines==0)
@@ -539,10 +574,10 @@ public class ManageSolversAction extends Action {
 	        try {
 	            WebTable.setOrder(request.getSession(),"manageSolvers.ord3",request.getParameter("ord3"),1);
 	            
-	            WebTable webTable = new WebTable( 19,
+	            WebTable webTable = new WebTable( 20,
 	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
-	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert"},
-	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
+	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 	                    null );
 	            webTable.setRowStyle("white-space:nowrap");
 	            
@@ -573,7 +608,7 @@ public class ManageSolversAction extends Action {
 	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
 	                String status = (String)solver.getProgress().get("STATUS");
 	                
-	                Hashtable info = null;
+	                Map<String,String> info = null;
 	                try {
 	                	info = solver.currentSolutionInfo();
 	                } catch (Exception e) {}
@@ -600,6 +635,13 @@ public class ManageSolversAction extends Action {
                     String bgColor = null;
                     if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
                         bgColor = "rgb(168,187,225)";
+                    
+                    String op = "";
+                    op += 
+                    	"<input type=\"button\" value=\"Unload\" onClick=\"" +
+                    	"if (confirm('Do you really want to unload this solver?')) " +
+                    	"document.location='manageSolvers.do?op=Unload&examPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
+                    	" event.cancelBubble=true;\">";
 	                
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
@@ -620,7 +662,8 @@ public class ManageSolversAction extends Action {
 	                            (rsz==null?"N/A":rsz.indexOf(' ')>=0?rsz.substring(0,rsz.indexOf(' ')):rsz),
 	                            (dp==null?"N/A":dp.indexOf(' ')>=0?dp.substring(0,dp.indexOf(' ')):dp),
 	                            (erp==null?"N/A":erp.indexOf(' ')>=0?erp.substring(0,erp.indexOf(' ')):erp),
-	                            (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert)},
+	                            (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert),
+	                            op},
 	                        new Comparable[] {
 	                            (loaded==null?new Date():loaded),
 	                            (lastUsed==null?new Date():lastUsed),
@@ -640,7 +683,8 @@ public class ManageSolversAction extends Action {
                                 (rsz==null?"":rsz),
                                 (dp==null?"":dp), 
                                 (erp==null?"":erp), 
-                                (pert==null?"":pert)}).setBgColor(bgColor);
+                                (pert==null?"":pert),
+                                null}).setBgColor(bgColor);
 	                    nrLines++;
 	            }
 	            if (nrLines==0)
@@ -656,10 +700,10 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(request.getSession(),"manageSolvers.ord4",request.getParameter("ord4"),1);
                
-               WebTable webTable = new WebTable( 12,
+               WebTable webTable = new WebTable( 13,
                        "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
-                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "CompSched", "DistConf", "Pert"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
                        null );
                webTable.setRowStyle("white-space:nowrap");
                
@@ -689,7 +733,7 @@ public class ManageSolversAction extends Action {
                        onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
                    String status = (String)solver.getProgress().get("STATUS");
                    
-                   Hashtable info = null;
+                   Map<String,String> info = null;
                    try {
                 	   info = solver.currentSolutionInfo();
                    } catch (Exception e) {}
@@ -705,6 +749,13 @@ public class ManageSolversAction extends Action {
                    if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
                        bgColor = "rgb(168,187,225)";
                    
+                   String op = "";
+                   op += 
+                   	"<input type=\"button\" value=\"Unload\" onClick=\"" +
+                   	"if (confirm('Do you really want to unload this solver?')) " +
+                   	"document.location='manageSolvers.do?op=Unload&sectionPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
+                   	" event.cancelBubble=true;\">";
+                   
                    webTable.addLine(onClick, new String[] {
                                (loaded==null?"N/A":sDF.format(loaded)),
                                (lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -717,7 +768,8 @@ public class ManageSolversAction extends Action {
                                (totVal==null?"N/A":totVal),
                                (compSch==null?"N/A":compSch), 
                                (distConf==null?"N/A":distConf),
-                               (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert)},
+                               (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert),
+                               op},
                            new Comparable[] {
                                (loaded==null?new Date():loaded),
                                (lastUsed==null?new Date():lastUsed),
@@ -730,7 +782,8 @@ public class ManageSolversAction extends Action {
                                (totVal==null?"":totVal),
                                (compSch==null?"":compSch), 
                                (distConf==null?"":distConf),
-                               (pert==null?"":pert)}).setBgColor(bgColor);
+                               (pert==null?"":pert),
+                               null}).setBgColor(bgColor);
                        nrLines++;
                }
                if (nrLines==0)

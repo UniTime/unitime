@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,10 +14,15 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -37,33 +42,13 @@ public class UserData extends BaseUserData {
 		super();
 	}
 
-	/**
-	 * Constructor for primary name
-	 */
-	public UserData (
-		java.lang.String externalUniqueId,
-		java.lang.String name) {
-
-		super (
-			externalUniqueId,
-			name);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public UserData (
-		java.lang.String externalUniqueId,
-		java.lang.String name,
-		java.lang.String value) {
-
-		super (
-			externalUniqueId,
-			name,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public UserData(String externalUniqueId, String name) {
+		setExternalUniqueId(externalUniqueId);
+		setName(name);
+		initialize();
+	}
 
 	public static void setProperty(String externalUniqueId, String name, String value) {
 		UserDataDAO dao = new UserDataDAO();
@@ -111,6 +96,26 @@ public class UserData extends BaseUserData {
 	public static String getProperty(HttpSession session, String name, String defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?value:defaultValue);
+	}
+	
+	public static HashMap<String,String> getProperties(HttpSession session, Collection<String> names) {
+		User user = Web.getUser(session);
+		if (user==null || user.getId()==null) return null;
+		return getProperties(user.getId(), names);
+	}
+
+	public static HashMap<String,String> getProperties(String externalUniqueId, Collection<String> names) {
+		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId and u.name in (";
+		for (Iterator<String> i = names.iterator(); i.hasNext(); ) {
+			q += "'" + i.next() + "'";
+			if (i.hasNext()) q += ",";
+		}
+		q += ")";
+		HashMap<String,String> ret = new HashMap<String, String>();
+		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setString("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
+			ret.put(u.getName(), u.getValue());
+		}
+		return ret;
 	}
 
 	public static void removeProperty(HttpSession session, String name) {

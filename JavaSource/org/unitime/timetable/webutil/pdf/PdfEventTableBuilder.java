@@ -1,6 +1,24 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil.pdf;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,24 +38,30 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
 import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.WebEventTableBuilder;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 public class PdfEventTableBuilder extends WebEventTableBuilder {
@@ -45,20 +69,24 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     protected Document iDocument = null;
     protected PdfPTable iPdfTable = null;
 
-    protected Color iBgColor = Color.WHITE;
+    protected BaseColor iBgColor = BaseColor.WHITE;
     protected boolean iUnderline = false;
     protected boolean iOverline = false;
 
-    protected Color iTextColor = Color.BLACK;
+    protected BaseColor iTextColor = BaseColor.BLACK;
     protected boolean iTextItalic = false;
 
     public PdfEventTableBuilder() {
     	super();
     }
     
+    public int getMaxResults() {
+    	return 1500;
+    }
+    
     public PdfPCell createCell() {
         PdfPCell cell = new PdfPCell();
-        cell.setBorderColor(Color.BLACK);
+        cell.setBorderColor(BaseColor.BLACK);
         cell.setPadding(3);
         cell.setBorderWidth(0);
         cell.setVerticalAlignment(Element.ALIGN_TOP);
@@ -81,7 +109,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         addText(cell, text, false, iTextItalic, orientation, iTextColor, true);
     }
     
-    public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, Color color, boolean newLine) {
+    public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, BaseColor color, boolean newLine) {
         if (text==null) return;
         if (cell.getPhrase()==null) {
             Chunk ch = new Chunk(text, FontFactory.getFont(FontFactory.HELVETICA, 10, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color));
@@ -106,13 +134,13 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     protected void pdfBuildTableHeader(boolean events, boolean mainContact, int numEventsOrMeetings) {
         if (events) {
         	PdfPCell c;
-        	if (numEventsOrMeetings >= 1501) {
+        	if (numEventsOrMeetings > getMaxResults()) {
             	c = createCell();
-                addText(c, "**Warning: More than 1500 events match your search criteria. Only the first 1500 events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                addText(c, "**Warning: More than " + getMaxResults() + " events match your search criteria. Only the first " + getMaxResults() + " events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
                 c.setColspan(mainContact?6:5);
                 iPdfTable.addCell(c);
             }
-            iBgColor = new Color(224,224,224);
+            iBgColor = new BaseColor(224,224,224);
             //first line
             c = createCell();
             addText(c, LABEL, true, Element.ALIGN_LEFT);
@@ -135,7 +163,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 iPdfTable.addCell(c);
             }
             //second line
-            iBgColor = new Color(244,244,244);
+            iBgColor = new BaseColor(244,244,244);
             iUnderline = true;
             c = createCell();
             iPdfTable.addCell(c);
@@ -154,20 +182,20 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            if (numEventsOrMeetings < 1501){
+            if (numEventsOrMeetings <= getMaxResults()){
             	iPdfTable.setHeaderRows(2);
             } else {
                 iPdfTable.setHeaderRows(3);
             }
         } else {
             PdfPCell c;
-            if (numEventsOrMeetings >= 1501){
+            if (numEventsOrMeetings > getMaxResults()){
             	c = createCell();
-                addText(c, "**Warning: More than 1500 meetings match your search criteria. Only the first 1500 meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                addText(c, "**Warning: More than " + getMaxResults() + " meetings match your search criteria. Only the first " + getMaxResults() + " meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
                 c.setColspan(mainContact?10:9);
                 iPdfTable.addCell(c);
             }
-            iBgColor = new Color(224,224,224);
+            iBgColor = new BaseColor(224,224,224);
             //first line
             iUnderline = true;
             c = createCell();
@@ -202,7 +230,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            if (numEventsOrMeetings < 1501){
+            if (numEventsOrMeetings <= getMaxResults()){
             	iPdfTable.setHeaderRows(1);
             } else {
              	iPdfTable.setHeaderRows(2);
@@ -210,7 +238,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
 
             
         }
-        iBgColor = Color.WHITE; iUnderline = false;
+        iBgColor = BaseColor.WHITE; iUnderline = false;
    }
     
     private PdfPCell pdfBuildEventName(Event e) {
@@ -246,6 +274,15 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
 			} else {
 				addText(cell, "0", Element.ALIGN_RIGHT);
 			}
+		} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
+			ExamEvent ee = new ExamEventDAO().get(e.getUniqueId());
+			addText(cell, String.valueOf(ee.getExam().countStudents()), Element.ALIGN_RIGHT);
+		} else if (Event.sEventTypeCourse == e.getEventType()) {
+			CourseEvent ce = new CourseEventDAO().get(e.getUniqueId());
+			int enrl = 0;
+			for (RelatedCourseInfo rci: ce.getRelatedCourses())
+				enrl += rci.countStudents();
+			addText(cell, String.valueOf(enrl), Element.ALIGN_RIGHT);
     	} 
     	return (cell);
     }
@@ -253,12 +290,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     private PdfPCell pdfBuildSponsoringOrg(Event e) {
         PdfPCell cell = createCell();
         addText(cell, e.getSponsoringOrganization()==null?"":e.getSponsoringOrganization().getName());
-    	return cell;
-    }
-
-    private PdfPCell pdfBuildEventType(Event e) {
-        PdfPCell cell = createCell();
-    	addText(cell, e.getEventTypeLabel());
     	return cell;
     }
     
@@ -275,11 +306,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     	                (e.getMainContact().getLastName()==null?"":(e.getMainContact().getLastName()+", "))+
     	    			(e.getMainContact().getFirstName()==null?"":e.getMainContact().getFirstName()));
     	return cell;
-    }
-    
-    private PdfPCell pdfBuildEmptyEventInfo() {
-        PdfPCell cell = createCell();
-        return cell;
     }
     
     private PdfPCell pdfBuildEmptyMeetingInfo() {
@@ -347,9 +373,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             if (!meeting.isPast()) { allPast = false; break; }
         }
         if (allPast) {
-            iTextColor = Color.GRAY; iTextItalic = true;
+            iTextColor = BaseColor.GRAY; iTextItalic = true;
         }
-        iBgColor = new Color(223, 231, 242);
+        iBgColor = new BaseColor(223, 231, 242);
         iPdfTable.addCell(pdfBuildEventName(e));
         iPdfTable.addCell(pdfBuildEventEnrollment(e));
         iPdfTable.addCell(pdfBuildEventCapacity(e));
@@ -357,18 +383,18 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         iPdfTable.addCell(pdfBuildEventTypeAbbv(e));
         if (mainContact)
             iPdfTable.addCell(pdfBuildMainContactName(e));
-        iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE;
+        iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE;
     }
     
     private void pdfAddMeetingRowsToTable (MultiMeeting mm, boolean mainContact, boolean printOverlaps) {
         Meeting m = mm.getMeetings().first();
         if (mm.isPast()) {
-            iTextColor = Color.GRAY; iTextItalic = true;
+            iTextColor = BaseColor.GRAY; iTextItalic = true;
         } else {
             if (m.isApproved()) {
                 //bgColor = "#DDFFDD";
             } else {
-                iBgColor = new Color(255,255,221);
+                iBgColor = new BaseColor(255,255,221);
             }
         }
         iPdfTable.addCell(pdfBuildEmptyMeetingInfo());
@@ -379,7 +405,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         iPdfTable.addCell(pdfBuildLocation(m));
         if (mainContact)
             iPdfTable.addCell(mm.getMeetings().size()==1?pdfBuildApproved(m):pdfBuildApproved(mm));
-        iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE;
+        iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE;
         if (printOverlaps) {
             TreeSet<Meeting> overlaps = new TreeSet();
             for (Meeting mx: mm.getMeetings()) {
@@ -395,9 +421,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     private void pdfAddOverlappingMeetingToTable(MultiMeeting mm, boolean mainContact) {
         Meeting m = mm.getMeetings().first();
         if (mm.isPast()) {
-            iTextColor = Color.GRAY; iTextItalic = true;
+            iTextColor = BaseColor.GRAY; iTextItalic = true;
         }        
-        iBgColor = new Color(255,215,215);
+        iBgColor = new BaseColor(255,215,215);
         PdfPCell cell = createCell();
         addText(cell,"   Conf/w "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
         iPdfTable.addCell(cell);
@@ -406,20 +432,19 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         iPdfTable.addCell(cell);
         iPdfTable.addCell(pdfBuildTime(m));
         iPdfTable.addCell(pdfBuildLocation(m));
-        String bgColor = null;
         if (mainContact)
             iPdfTable.addCell(mm.getMeetings().size()==1?pdfBuildApproved(m):pdfBuildApproved(mm));
-        iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE;
+        iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE;
     }
     
     private void pdfAddMeetingRowsToTable (Meeting m, boolean mainContact, Event lastEvent, Date now, boolean line, boolean printOverlaps) {
         if (m.getStartTime().before(now)) {
-            iTextColor = Color.GRAY; iTextItalic = true;
+            iTextColor = BaseColor.GRAY; iTextItalic = true;
         } else {
             if (m.isApproved()) {
                 //bgColor = "#DDFFDD";
             } else {
-                iBgColor = new Color(255,255,221);
+                iBgColor = new BaseColor(255,255,221);
             }
         }
         if (line && lastEvent!=null && !lastEvent.getUniqueId().equals(m.getEvent().getUniqueId())) {
@@ -451,7 +476,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             }
             iPdfTable.addCell(pdfBuildApproved(m));
         }
-        iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE; iOverline = false;
+        iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE; iOverline = false;
         if (printOverlaps) {
             TreeSet<Meeting> overlaps = new TreeSet(m.getTimeRoomOverlaps());
             if (!overlaps.isEmpty()) {
@@ -463,9 +488,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     
     private void pdfAddOverlappingMeetingToTable(Meeting m, boolean mainContact, Date now) {
         if (m.getStartTime().before(now)) {
-            iTextColor = Color.GRAY; iTextItalic = true;
+            iTextColor = BaseColor.GRAY; iTextItalic = true;
         }
-        iBgColor = new Color(255,215,215);
+        iBgColor = new BaseColor(255,215,215);
         PdfPCell cell = createCell();
         addText(cell, "   Conf/w "+(m.getEvent().getEventName()==null?"":m.getEvent().getEventName())+" ("+m.getEvent().getEventTypeAbbv()+")");
         cell.setColspan(2);
@@ -480,7 +505,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             iPdfTable.addCell(pdfBuildMainContactName(m.getEvent()));
             iPdfTable.addCell(pdfBuildApproved(m));
         }
-        iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE;
+        iTextColor = BaseColor.BLACK; iTextItalic = false; iBgColor = BaseColor.WHITE;
     }    
     
     public File pdfTableForEvents (EventListForm form){
@@ -595,7 +620,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         
     protected TableStream initTable(JspWriter outputStream){
     	TableStream table = new TableStream(outputStream);
-        table.setWidth("90%");
+        table.setWidth("100%");
         table.setBorder(0);
         table.setCellSpacing(0);
         table.setCellPadding(3);

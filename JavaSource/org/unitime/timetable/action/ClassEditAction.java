@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -107,7 +107,6 @@ public class ClassEditAction extends PreferencesAction {
 								: request.getParameter("cid");
 
         String reloadCause = request.getParameter("reloadCause");
-        String deleteType = request.getParameter("deleteType");
         String op = frm.getOp();
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
         	op = request.getParameter("op2");
@@ -373,6 +372,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setInstrOfferingId(cco.getInstructionalOffering().getUniqueId().toString());
         frm.setSubpart(c.getSchedulingSubpart().getUniqueId());
         frm.setCourseName(cco.getInstructionalOffering().getCourseName());
+        frm.setCourseTitle(cco.getTitle());
         frm.setManagingDept(managingDept.getUniqueId());
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());

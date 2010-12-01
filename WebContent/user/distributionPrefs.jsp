@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.form.DistributionPrefsForm" %>
@@ -48,7 +48,7 @@
 	<INPUT type="hidden" name="op2" value="">
 	<html:hidden property="distPrefId"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
 		
 		<TR>
@@ -120,12 +120,12 @@
 		
 		<TR>
 			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>
-			<TD colspan='2' width='95%'>
+			<TD colspan='2' width='100%'>
 				<html:select style="width:300;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 				</html:select>
-				<span id='distTypeDesc' style='display:block;padding:3px'>
+				<span id='distTypeDesc' style='display:block;padding:3px; max-width: 800px;'>
 					<bean:write name="distributionPrefsForm" property="description" filter="false"/>
 				</span>
 			</TD>
@@ -138,7 +138,7 @@
 					<html:option value="-">-</html:option>
 					<html:options name="distributionPrefsForm" property="groupings"/>
 				</html:select>
-				<span id='groupingDesc' style='display:block;padding:3px'>
+				<span id='groupingDesc' style='display:block;padding:3px; max-width: 800px;'>
 					<bean:write name="distributionPrefsForm" property="groupingDescription" filter="false"/>
 				</span>
 			</TD>

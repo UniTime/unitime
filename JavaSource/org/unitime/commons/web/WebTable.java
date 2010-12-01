@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,18 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.commons.web;
 
 
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
@@ -279,14 +283,18 @@ public class WebTable {
                                         == null
                                 ? iHeaders[i]
                                 : "<A title=\"Order by this column.\" href=\""
-                                        + iRef + "\" class=\"sortHeader\">" + iHeaders[i] + "</A>"
-                                        + (i == Math.abs(ordCol) - 1
-                                                ? "<div class='WebTableOrderArrow'><img src='"
-                                                        + (asc
-                                                                ? IMG_ASC
-                                                                : IMG_DEC)
-                                                        + "' border='0'></div>"
-                                                : "")),
+                                	+ iRef + "\" class=\"sortHeader\">"
+                                	+ (i == Math.abs(ordCol) - 1 ? (asc ? "&uarr;" : "&darr;") : "")
+                                			/*
+                                            ? "<img class='WebTableOrderArrow' src='"
+                                                    + (asc
+                                                            ? IMG_ASC
+                                                            : IMG_DEC)
+                                                    + "' border='0'>"
+                                            : "") */ 
+                                    + iHeaders[i]
+                                    + "</A>"
+                                        ),
                                 "%%",
                                 String.valueOf(i == Math.abs(ordCol) - 1
                                 ? -ordCol

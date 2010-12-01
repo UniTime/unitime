@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.util.queue;
 
@@ -25,33 +25,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -111,8 +97,8 @@ public class PdfExamReportQueueItem extends QueueItem {
 
 	@Override
 	public void execute() {
-        Logger repLog = Logger.getLogger("org.unitime.timetable.reports.exam");
         /*
+        Logger repLog = Logger.getLogger("org.unitime.timetable.reports.exam");
         Appender myAppender = new AppenderSkeleton() {
 			
 			@Override
@@ -186,17 +172,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (class)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                            "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                            "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                             "Exam x inner join x.owners o, "+
                             "StudentClassEnrollment e inner join e.clazz c "+
                             "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
                             "o.ownerId=c.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                                 Object[] o = (Object[])i.next();
-                                Long examId = (Long)o[0];
-                                Long ownerId = (Long)o[1];
-                                Long studentId = (Long)o[2];
-                                Long courseId = (Long)o[3];
+                                Long ownerId = (Long)o[0];
+                                Long studentId = (Long)o[1];
+                                Long courseId = (Long)o[2];
                                 Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                                 if (course2students == null) {
                                 	course2students = new Hashtable<Long, Set<Long>>();
@@ -212,7 +197,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (config)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.clazz c " +
                                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -220,10 +205,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
                                     "o.ownerId=ioc.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -239,17 +223,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (course)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering co " +
                                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
                                     "o.ownerId=co.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -265,17 +248,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                         setStatus("  Loading students (offering)...");
                         for (Iterator i=
                             hibSession.createQuery(
-                                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
+                                    "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
                                     "o.ownerId=io.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
-                            Long examId = (Long)o[0];
-                            Long ownerId = (Long)o[1];
-                            Long studentId = (Long)o[2];
-                            Long courseId = (Long)o[3];
+                            Long ownerId = (Long)o[0];
+                            Long studentId = (Long)o[1];
+                            Long courseId = (Long)o[2];
                             Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
                             if (course2students == null) {
                             	course2students = new Hashtable<Long, Set<Long>>();
@@ -392,33 +374,12 @@ public class PdfExamReportQueueItem extends QueueItem {
                 }
             }
         	iProgress = 0.9;
-            TimetableManager mgr = getOwner();
             byte[] buffer = new byte[32*1024];
             int len = 0;
             if (output.isEmpty())
                 log("<font color='orange'>No report generated.</font>");
             else if (iForm.getEmail()) {
-                InternetAddress from = 
-                    (mgr.getEmailAddress()==null?
-                            new InternetAddress(
-                                    ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                                    ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")):
-                            new InternetAddress(mgr.getEmailAddress(),mgr.getName()));
                 setStatus("Sending email(s)...");
-                Properties p = ApplicationProperties.getProperties();
-                if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                    p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-                Authenticator a = null;
-                if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                    a = new Authenticator() {
-                        public PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(
-                                    ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                    ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                        }
-                    };
-                }
-                javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
                 if (iForm.getEmailDeputies()) {
                     Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
                     for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
@@ -454,45 +415,35 @@ public class PdfExamReportQueueItem extends QueueItem {
                             Hashtable<String,File> files = files2send.get(manager);
                             managers.remove(manager);
                             log("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
-                            MimeMessage mail = new MimeMessage(mailSession);
-                            mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
-                            Multipart body = new MimeMultipart();
-                            BodyPart text = new MimeBodyPart();
-                            text.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                    "For an up-to-date report, please visit "+
-                                    iUrl+"/\r\n\r\n"+
-                                    "This email was automatically generated by "+
-                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                                    " (Univesity Timetabling Application, http://www.unitime.org).");
-                            body.addBodyPart(text);
-                            mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress(),manager.getName()));
-                            for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
-                                TimetableManager m = (TimetableManager)i.next();
-                                if (files.equals(files2send.get(m))) {
-                                    log("&nbsp;&nbsp;Including "+m.getName()+" ("+m.getEmailAddress()+")");
-                                    mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress(),m.getName()));
-                                    i.remove();
-                                }
-                            }
-                            if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                                mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                            if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
-                                mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                            if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                                mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                            if (from!=null)
-                                mail.setFrom(from);
-                            for (Map.Entry<String, File> entry : files.entrySet()) {
-                                BodyPart attachement = new MimeBodyPart();
-                                attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                                attachement.setFileName(session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
-                                body.addBodyPart(attachement);
-                                log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
-                            }
-                            mail.setSentDate(new Date());
-                            mail.setContent(body);
                             try {
-                                Transport.send(mail);
+                                Email mail = new Email();
+                                mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                                mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
+                                        "For an up-to-date report, please visit "+
+                                        iUrl+"/\r\n\r\n"+
+                                        "This email was automatically generated by "+
+                                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                        " (Univesity Timetabling Application, http://www.unitime.org).");
+                                mail.addRecipient(manager.getEmailAddress(), manager.getName());
+                                for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
+                                    TimetableManager m = (TimetableManager)i.next();
+                                    if (files.equals(files2send.get(m))) {
+                                        log("&nbsp;&nbsp;Including "+m.getName()+" ("+m.getEmailAddress()+")");
+                                        mail.addRecipient(m.getEmailAddress(),m.getName());
+                                        i.remove();
+                                    }
+                                }
+                                if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipient(s.nextToken(), null);
+                                if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipientCC(s.nextToken(), null);
+                                if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipientBCC(s.nextToken(), null);
+                                for (Map.Entry<String, File> entry : files.entrySet()) {
+                                	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
+                                    log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
+                                }
+                                mail.send();
                                 log("Email sent.");
                             } catch (Exception e) {
                                 log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
@@ -501,35 +452,25 @@ public class PdfExamReportQueueItem extends QueueItem {
                         }
                     }
                 } else {
-                    MimeMessage mail = new MimeMessage(mailSession);
-                    mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
-                    Multipart body = new MimeMultipart();
-                    MimeBodyPart text = new MimeBodyPart();
-                    text.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                            "For an up-to-date report, please visit "+
-                            iUrl+"/\r\n\r\n"+
-                            "This email was automatically generated by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                    body.addBodyPart(text);
-                    if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                    if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                    if (from!=null)
-                        mail.setFrom(from);
-                    for (Map.Entry<String, File> entry : output.entrySet()) {
-                        BodyPart attachement = new MimeBodyPart();
-                        attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                         attachement.setFileName(session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
-                        body.addBodyPart(attachement);
-                    }
-                    mail.setSentDate(new Date());
-                    mail.setContent(body);
                     try {
-                        Transport.send(mail);
+                    	Email mail = new Email();
+                        mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                        mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
+                                "For an up-to-date report, please visit "+
+                                iUrl+"/\r\n\r\n"+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(s.nextToken(), null);
+                        if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientCC(s.nextToken(), null);
+                        if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientBCC(s.nextToken(), null);
+                        for (Map.Entry<String, File> entry : output.entrySet()) {
+                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
+                        }
+                        mail.send();
                         log("Email sent.");
                     } catch (Exception e) {
                         log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
@@ -545,31 +486,22 @@ public class PdfExamReportQueueItem extends QueueItem {
                             log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.</font>");
                             continue;
                         }
-                        MimeMessage mail = new MimeMessage(mailSession);
-                        mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
-                        Multipart body = new MimeMultipart();
-                        MimeBodyPart text = new MimeBodyPart();
-                        text.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                "For an up-to-date report, please visit "+
-                                iUrl+"/exams.do\r\n\r\n"+
-                                "This email was automatically generated by "+
-                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                                " (Univesity Timetabling Application, http://www.unitime.org).");
-                        body.addBodyPart(text);
-                        mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                        if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                        if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                        if (from!=null) mail.setFrom(from);
-                        BodyPart attachement = new MimeBodyPart();
-                        attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                        attachement.setFileName(session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
-                        body.addBodyPart(attachement);
-                        mail.setSentDate(new Date());
-                        mail.setContent(body);
                         try {
-                            Transport.send(mail);
+                        	Email mail = new Email();
+                            mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                            mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
+                                    "For an up-to-date report, please visit "+
+                                    iUrl+"/exams.do\r\n\r\n"+
+                                    "This email was automatically generated by "+
+                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            mail.addRecipient(email, null);
+                            if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientCC(s.nextToken(), null);
+                            if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientBCC(s.nextToken(), null);
+                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                         } catch (Exception e) {
                             log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- "+e.getMessage()+".</font>");
@@ -587,31 +519,22 @@ public class PdfExamReportQueueItem extends QueueItem {
                             log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.</font>");
                             continue;
                         }
-                        MimeMessage mail = new MimeMessage(mailSession);
-                        mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
-                        Multipart body = new MimeMultipart();
-                        MimeBodyPart text = new MimeBodyPart();
-                        text.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                "For an up-to-date report, please visit "+
-                                iUrl+"/exams.do\r\n\r\n"+
-                                "This email was automatically generated by "+
-                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                                " (Univesity Timetabling Application, http://www.unitime.org).");
-                        body.addBodyPart(text);
-                        mail.addRecipient(RecipientType.TO, new InternetAddress(email));
-                        if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                        if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                        if (from!=null) mail.setFrom(from);
-                        BodyPart attachement = new MimeBodyPart();
-                        attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                        attachement.setFileName(session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
-                        body.addBodyPart(attachement);
-                        mail.setSentDate(new Date());
-                        mail.setContent(body);
                         try {
-                            Transport.send(mail);
+                            Email mail = new Email();
+                            mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                            mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
+                                    "For an up-to-date report, please visit "+
+                                    iUrl+"/exams.do\r\n\r\n"+
+                                    "This email was automatically generated by "+
+                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            mail.addRecipient(email, null);
+                            if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientCC(s.nextToken(), null);
+                            if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipientBCC(s.nextToken(), null);
+                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                         } catch (Exception e) {
                             log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- "+e.getMessage()+".</font>");
