@@ -33,7 +33,6 @@ import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -47,7 +46,6 @@ public abstract class EventRelatedImports extends BaseImport {
 	protected Vector<String> changeList = new Vector<String>();
 	protected TreeSet<String> missingLocations = new TreeSet<String>();
 	protected Vector<String> notes = new Vector<String>();
-	protected TimetableManager manager = null;
 	protected String dateFormat = null;
 	protected boolean trimLeadingZerosFromExternalId = false;
 	protected Session session = null;
@@ -108,8 +106,7 @@ public abstract class EventRelatedImports extends BaseImport {
            	}
            	email.setText(mail);
            	
-        	if (manager != null)
-        		email.addRecipient(manager.getEmailAddress(), manager.getName());
+        	email.addRecipient(getManager().getEmailAddress(), getManager().getName());
            	
         	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
         		email.addNotifyCC();

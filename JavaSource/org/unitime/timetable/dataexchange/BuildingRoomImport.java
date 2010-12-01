@@ -29,7 +29,6 @@ import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 
 
 /**
@@ -38,9 +37,7 @@ import org.unitime.timetable.model.TimetableManager;
  *
  */
 public class BuildingRoomImport extends BaseImport {
-
-    TimetableManager manager = null;
-   private static int BATCH_SIZE = 100;
+	private static int BATCH_SIZE = 100;
 
 	public BuildingRoomImport() {
 	}
@@ -57,11 +54,8 @@ public class BuildingRoomImport extends BaseImport {
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
-	        if (manager == null){
-	        	manager = findDefaultManager();
-	        }
 	        if (created != null) {
-				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_EXT_BUILDING_ROOM, ChangeLog.Operation.UPDATE, null, null);
+				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_EXT_BUILDING_ROOM, ChangeLog.Operation.UPDATE, null, null);
 	        }
            /* 
              * Remove all buildings and rooms for the given session and reload them using the xml 

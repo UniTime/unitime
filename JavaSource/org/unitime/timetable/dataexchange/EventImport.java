@@ -96,16 +96,13 @@ public class EventImport extends EventRelatedImports {
 
 	        beginTransaction();
 	
-	        if (manager == null){
-	        	manager = findDefaultManager();
-	        }
 	        if (session == null){
 	        	// Use the session for the academicInitiative that is effective for events now as the session to use for logging changes
 	        	session = findDefaultSession(academicInitiative, new Date());
 	        }
 	        if (created != null) {
 		        addNote("Loading Events XML file created on: " + created);
-				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_EVENTS, ChangeLog.Operation.CREATE, null, null);
+				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_EVENTS, ChangeLog.Operation.CREATE, null, null);
 				updateChangeList(true);
 	        }
 	        for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
