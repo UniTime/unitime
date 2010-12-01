@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -59,22 +59,6 @@ public class Assignment extends BaseAssignment {
 	 */
 	public Assignment (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public Assignment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.TimePattern timePattern,
-		org.unitime.timetable.model.Solution solution,
-		org.unitime.timetable.model.Class_ clazz) {
-
-		super (
-			uniqueId,
-			timePattern,
-			solution,
-			clazz);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -243,8 +227,8 @@ public class Assignment extends BaseAssignment {
 					(room instanceof Room? ((Room)room).getBuilding().getUniqueId() : null),
 					0,
 					room.getCapacity().intValue(),
-					room.getCoordinateX().intValue(),
-					room.getCoordinateY().intValue(),
+					room.getCoordinateX(),
+					room.getCoordinateY(),
 					room.isIgnoreTooFar().booleanValue(),
 					null);
 			ret.addElement(roomLocation);
@@ -262,6 +246,7 @@ public class Assignment extends BaseAssignment {
 		if (getClazz()!=null)
 			lecture.setNote(getClazz().getNotes());
 		iPlacement = (Placement)lecture.getInitialAssignment();
+		iPlacement.setVariable(lecture);
 		iPlacement.setAssignmentId(getUniqueId());
 		lecture.setBestAssignment(iPlacement);
 		if (getSolution()!=null && getSolution().isCommited()!=null)
@@ -295,7 +280,7 @@ public class Assignment extends BaseAssignment {
 		return getClazz().getClassLabel();
 	}
 	
-	public Set getRooms() {
+	public Set<Location> getRooms() {
 		try {
 			return super.getRooms();
 		} catch (LazyInitializationException e) {

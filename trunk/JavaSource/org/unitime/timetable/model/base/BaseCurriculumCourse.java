@@ -1,248 +1,103 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.CurriculumCourse;
+import org.unitime.timetable.model.CurriculumCourseGroup;
 
-/**
- * This is an object that contains data related to the curricula_course table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="curricula_course"
- */
+public abstract class BaseCurriculumCourse implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCurriculumCourse  implements Serializable {
+	private Long iUniqueId;
+	private Float iPercShare;
+	private Integer iOrd;
 
-	public static String REF = "CurriculumCourse";
-	public static String PROP_PERC_SHARE = "percShare";
-	public static String PROP_LL_SHARE = "llShare";
-	public static String PROP_GROUP = "group";
+	private CurriculumClassification iClassification;
+	private CourseOffering iCourse;
+	private Set<CurriculumCourseGroup> iGroups;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_PR_SHARE = "percShare";
 	public static String PROP_ORD = "ord";
-	public static String PROP_LL_ENROLLMENT = "llEnrollment";
 
-
-	// constructors
-	public BaseCurriculumCourse () {
+	public BaseCurriculumCourse() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCurriculumCourse (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCurriculumCourse(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCurriculumCourse (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CurriculumClassification classification,
-		org.unitime.timetable.model.CourseOffering course,
-		java.lang.Float percShare,
-		java.lang.Integer ord) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setClassification(classification);
-		this.setCourse(course);
-		this.setPercShare(percShare);
-		this.setOrd(ord);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Float getPercShare() { return iPercShare; }
+	public void setPercShare(Float percShare) { iPercShare = percShare; }
+
+	public Integer getOrd() { return iOrd; }
+	public void setOrd(Integer ord) { iOrd = ord; }
+
+	public CurriculumClassification getClassification() { return iClassification; }
+	public void setClassification(CurriculumClassification classification) { iClassification = classification; }
+
+	public CourseOffering getCourse() { return iCourse; }
+	public void setCourse(CourseOffering course) { iCourse = course; }
+
+	public Set<CurriculumCourseGroup> getGroups() { return iGroups; }
+	public void setGroups(Set<CurriculumCourseGroup> groups) { iGroups = groups; }
+	public void addTogroups(CurriculumCourseGroup curriculumCourseGroup) {
+		if (iGroups == null) iGroups = new HashSet<CurriculumCourseGroup>();
+		iGroups.add(curriculumCourseGroup);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Float percShare;
-	private java.lang.Float llShare;
-	private java.lang.String group;
-	private java.lang.Integer ord;
-	private java.lang.Integer llEnrollment;
-
-	// many to one
-	private org.unitime.timetable.model.CurriculumClassification classification;
-	private org.unitime.timetable.model.CourseOffering course;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="uniqueid"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CurriculumCourse)) return false;
+		if (getUniqueId() == null || ((CurriculumCourse)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CurriculumCourse)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: pr_share
-	 */
-	public java.lang.Float getPercShare () {
-		return percShare;
+	public String toString() {
+		return "CurriculumCourse["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: pr_share
-	 * @param percShare the pr_share value
-	 */
-	public void setPercShare (java.lang.Float percShare) {
-		this.percShare = percShare;
+	public String toDebugString() {
+		return "CurriculumCourse[" +
+			"\n	Classification: " + getClassification() +
+			"\n	Course: " + getCourse() +
+			"\n	Ord: " + getOrd() +
+			"\n	PercShare: " + getPercShare() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: ll_share
-	 */
-	public java.lang.Float getLlShare () {
-		return llShare;
-	}
-
-	/**
-	 * Set the value related to the column: ll_share
-	 * @param llShare the ll_share value
-	 */
-	public void setLlShare (java.lang.Float llShare) {
-		this.llShare = llShare;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: group_nr
-	 */
-	public java.lang.String getGroup () {
-		return group;
-	}
-
-	/**
-	 * Set the value related to the column: group_nr
-	 * @param group the group_nr value
-	 */
-	public void setGroup (java.lang.String group) {
-		this.group = group;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ord
-	 */
-	public java.lang.Integer getOrd () {
-		return ord;
-	}
-
-	/**
-	 * Set the value related to the column: ord
-	 * @param ord the ord value
-	 */
-	public void setOrd (java.lang.Integer ord) {
-		this.ord = ord;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: llEnrollment
-	 */
-	public java.lang.Integer getLlEnrollment () {
-		return llEnrollment;
-	}
-
-	/**
-	 * Set the value related to the column: llEnrollment
-	 * @param llEnrollment the llEnrollment value
-	 */
-	public void setLlEnrollment (java.lang.Integer llEnrollment) {
-		this.llEnrollment = llEnrollment;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: cur_clasf_id
-	 */
-	public org.unitime.timetable.model.CurriculumClassification getClassification () {
-		return classification;
-	}
-
-	/**
-	 * Set the value related to the column: cur_clasf_id
-	 * @param classification the cur_clasf_id value
-	 */
-	public void setClassification (org.unitime.timetable.model.CurriculumClassification classification) {
-		this.classification = classification;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: course_id
-	 */
-	public org.unitime.timetable.model.CourseOffering getCourse () {
-		return course;
-	}
-
-	/**
-	 * Set the value related to the column: course_id
-	 * @param course the course_id value
-	 */
-	public void setCourse (org.unitime.timetable.model.CourseOffering course) {
-		this.course = course;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CurriculumCourse)) return false;
-		else {
-			org.unitime.timetable.model.CurriculumCourse curriculumCourse = (org.unitime.timetable.model.CurriculumCourse) obj;
-			if (null == this.getUniqueId() || null == curriculumCourse.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculumCourse.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

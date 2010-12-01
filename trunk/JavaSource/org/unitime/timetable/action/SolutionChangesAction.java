@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -83,7 +83,7 @@ public class SolutionChangesAction extends Action {
 
         SolverProxy solver = WebSolver.getSolver(request.getSession());
         if (solver==null) {
-        	request.setAttribute("SolutionChanges.message","No timetable is loaded. However, you can load one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here</a>.");
+        	request.setAttribute("SolutionChanges.message","No timetable is loaded. However, you can load one <a href='listSolutions.do'>here</a>.");
         	return mapping.findForward("showSolutionChanges");
         }
         
@@ -99,7 +99,7 @@ public class SolutionChangesAction extends Action {
     	} else if (myForm.getReferenceInt()==SolutionChangesForm.sReferenceSelected) {
     		String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
     		if (solutionIdsStr==null || solutionIdsStr.length()==0) {
-    			request.setAttribute("SolutionChanges.message","No solution selected. However, you can select one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here");
+    			request.setAttribute("SolutionChanges.message","No solution selected. However, you can select one <a href='listSolutions.do'>here");
     			return mapping.findForward("showSolutionChanges");
     		} 
     		changes = new Vector();
@@ -189,7 +189,7 @@ public class SolutionChangesAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    if (simple)
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?"+link+"&op=Try','900','90%');\"":null),
             	    		new String[] {
             	    			className,
             	    			dates,
@@ -205,7 +205,7 @@ public class SolutionChangesAction extends Action {
             	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine((link!=null?"onClick=\"window.open('suggestions.do?"+link+"&op=Try','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"":null),
+            	    webTable.addLine((link!=null?"onClick=\"showGwtDialog('Suggestions', 'suggestions.do?"+link+"&op=Try','900','90%');\"":null),
             	    		new String[] {
         	    				className,
         	    				dates,

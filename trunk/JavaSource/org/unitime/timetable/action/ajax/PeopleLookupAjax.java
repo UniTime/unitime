@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action.ajax;
 
@@ -123,7 +123,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from Staff s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -138,7 +138,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from EventContact s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -154,7 +154,7 @@ public class PeopleLookupAjax extends Action {
         if (session==null || session.length()==0) return people; 
         String q = "select s from Student s where s.session.uniqueId="+session+" and ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -169,7 +169,7 @@ public class PeopleLookupAjax extends Action {
         TreeSet<Person> people = new TreeSet();
         String q = "select s from TimetableManager s where ";
         for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken();
+            String t = stk.nextToken().replace("'", "''");
             q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%')";
             if (stk.hasMoreTokens()) q += " and ";
         }
@@ -198,9 +198,9 @@ public class PeopleLookupAjax extends Action {
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
                 String t = stk.nextToken();
                 if (filter.length()==0)
-                    filter = "(|(|(sn="+t+"*)(uid="+t+"))(givenName="+t+"*))";
+                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t);
                 else
-                    filter = "(&"+filter+"(|(|(sn="+t+"*)(uid="+t+"))(givenName="+t+"*)))";
+                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*))").replaceAll("%", t)+")";
             }
             for (NamingEnumeration<SearchResult> e=ctx.search(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name",""),filter,ctls);e.hasMore();)
                 people.add(new Person(e.next().getAttributes()));
@@ -232,18 +232,6 @@ public class PeopleLookupAjax extends Action {
             iFName = fname; iMName = mname; iLName = lname;
             if (iMName!=null && iFName!=null && iMName.indexOf(iFName)>=0) iMName = iMName.replaceAll(iFName+" ?", "");
             if (iMName!=null && iLName!=null && iMName.indexOf(iLName)>=0) iMName = iMName.replaceAll(" ?"+iLName, "");
-            iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
-            //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
-        }
-        private Person(String id, String cname, String email, String phone, String dept, String pos, String source) {
-            iId = id; iSource = source;
-            iLName = cname;
-            if (iLName!=null && iLName.indexOf(' ')>0) {
-                iFName = iLName.substring(0, iLName.indexOf(' ')); iLName = iLName.substring(iLName.indexOf(' ')+1);
-            }
-            if (iLName!=null && iLName.indexOf(' ')>0) {
-                iMName = iLName.substring(0, iLName.lastIndexOf(' ')); iLName = iLName.substring(iLName.lastIndexOf(' ')+1);
-            }
             iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
             //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }

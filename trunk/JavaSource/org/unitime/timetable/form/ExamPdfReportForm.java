@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.Email;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.TimetableManager;
@@ -51,7 +52,8 @@ import org.unitime.timetable.reports.exam.StudentExamReport;
  * @author Tomas Muller
  */
 public class ExamPdfReportForm extends ExamReportForm {
-    protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
+	private static final long serialVersionUID = 4349609058043519671L;
+	protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
     private String[] iReports = null; 
     private String iMode = null;
     private boolean iAll = false;
@@ -241,10 +243,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setCc(String cc) { iCc = cc; }
     public String getBcc() { return iBcc; }
     public void setBcc(String bcc) { iBcc = bcc; }
-    public boolean getCanEmail() { 
-        return ApplicationProperties.getProperty("tmtbl.smtp.host")!=null &&
-            ApplicationProperties.getProperty("tmtbl.smtp.host").trim().length()>0;
-    }
+    public boolean getCanEmail() { return Email.isEnabled(); }
     public String getMessage() { return iMessage; }
     public void setMessage(String message) { iMessage = message; }
     public String getSubject() { return iSubject; }

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -1086,6 +1086,49 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     pref.setPrefLevel(originalPref);
                     pref.setOwner(this);
                     pref.setRoom(location);
+                    getPreferences().add(pref);
+                }
+            }
+        }
+        
+        //Prefer original building
+        PreferenceLevel originalBuildingPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
+                "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".originalBuilding.pref",
+                (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sPreferred)));
+        boolean examRoomsOnly = "true".equals(ApplicationProperties.getProperty(
+                "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".originalBuilding.onlyForExaminationRooms", "false"));
+        if (!PreferenceLevel.sNeutral.equals(originalBuildingPref.getPrefProlog()) && (override || getPreferences(BuildingPref.class).isEmpty())) {
+            HashSet<Building> buildings = new HashSet<Building>();
+            for (Iterator i=getOwners().iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                if (ExamOwner.sOwnerTypeClass!=owner.getOwnerType()) continue;
+                Event event = ((Class_)owner.getOwnerObject()).getEvent();
+                if (event==null) continue;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting meeting = (Meeting)j.next();
+                    Location location = meeting.getLocation();
+                    if (location == null || !(location instanceof Room)) continue;
+                    if (examRoomsOnly && !location.isExamEnabled(getExamType())) continue;
+            		buildings.add(((Room)location).getBuilding());
+                }
+            }
+            if (!buildings.isEmpty()) {
+                for (Iterator i=getPreferences(BuildingPref.class).iterator();i.hasNext();) {
+                	BuildingPref pref = (BuildingPref)i.next();
+                    if (buildings.contains(pref.getBuilding())) {
+                    	buildings.remove(pref.getBuilding());
+                        if (!pref.getPrefLevel().equals(originalBuildingPref)) {
+                            pref.setPrefLevel(originalBuildingPref);
+                        }
+                    } else {
+                        getPreferences().remove(pref);
+                    }
+                }
+                for (Building building : buildings) {
+                	BuildingPref pref = new BuildingPref();
+                    pref.setPrefLevel(originalBuildingPref);
+                    pref.setOwner(this);
+                    pref.setBuilding(building);
                     getPreferences().add(pref);
                 }
             }

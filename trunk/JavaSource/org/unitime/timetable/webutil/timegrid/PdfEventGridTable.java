@@ -1,13 +1,30 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil.timegrid;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.TreeSet;
@@ -20,23 +37,22 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 
 public class PdfEventGridTable extends EventGridTable {
-    private PdfWriter iWriter = null;
     private Document iDocument = null;
     
-    private static Color sBorderColor = new Color(100,100,100);
-    private static Color sNotAvailableColor = new Color(224,224,224);
+    private static BaseColor sBorderColor = new BaseColor(100,100,100);
+    private static BaseColor sNotAvailableColor = new BaseColor(224,224,224);
     private static int sDefaultNumberOfColumns = 10;
     
     public PdfEventGridTable(EventGridForm form) {
@@ -51,7 +67,7 @@ public class PdfEventGridTable extends EventGridTable {
             iDocument = new Document(new Rectangle(1100f, 750f), 30,30,30,30);
             
             out = new FileOutputStream(file);
-            iWriter = PdfEventHandler.initFooter(iDocument, out);
+            PdfEventHandler.initFooter(iDocument, out);
             iDocument.open();
             
             printTable();
@@ -85,7 +101,6 @@ public class PdfEventGridTable extends EventGridTable {
     public void printTable() throws IOException, DocumentException {
         DateFormat df1 = new SimpleDateFormat("EEEE");
         DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
-        DateFormat df3 = new SimpleDateFormat("MM/dd");
 
         if (iDates.size()>1) {
             for (TableModel m : iModel) {
@@ -201,7 +216,6 @@ public class PdfEventGridTable extends EventGridTable {
             for (TableModel m : iModel)
                 table.addColumn(m.getColSpan(date), m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+" seats)\n" + m.getLocation().getRoomTypeLabel(), split);
             table.newLine();
-            HashSet<Meeting> rendered = new HashSet();
             int lastCol = (iEndSlot-iStartSlot)/iStep;
             TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
             for (int col = 0; col<lastCol; col++) {
@@ -322,7 +336,7 @@ public class PdfEventGridTable extends EventGridTable {
             if (iNext!=null) iNext.addRow(name);
         }
         
-        public void addEmptyCell(boolean hMiddle, boolean vMiddle, boolean left, Color color) {
+        public void addEmptyCell(boolean hMiddle, boolean vMiddle, boolean left, BaseColor color) {
             if (iIndex<iNrCols) {
                 PdfPCell c = createCell(0,(hMiddle?0:1),(left?1:0),(vMiddle?0:1));
                 if (color!=null) c.setBackgroundColor(color);
@@ -336,7 +350,7 @@ public class PdfEventGridTable extends EventGridTable {
             addCell(middle, top, left, name, bold, null);
         }
 
-        public void addCell(boolean middle, boolean top, boolean left, String name, boolean bold, Color color) {
+        public void addCell(boolean middle, boolean top, boolean left, String name, boolean bold, BaseColor color) {
             if (iIndex<iNrCols) {
                 PdfPCell c = createCell((top?1:0),(middle?0:1),(left?1:0),1);
                 if (name!=null) addText(c, name, bold);

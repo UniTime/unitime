@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -44,6 +44,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -162,7 +163,6 @@ public class SessionEditAction extends LookupDispatchAction {
         
         Session current = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
         
-		SessionEditForm sessionEditForm = (SessionEditForm) form;		
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
 		
         if (current!=null && id.equals(current.getUniqueId())) {
@@ -172,7 +172,6 @@ public class SessionEditAction extends LookupDispatchAction {
             return mapping.findForward("showEdit");
         }
 
-        Session sessn = Session.getSessionById(id);
 		Session.deleteSessionById(id);
 		return mapping.findForward("showSessionList");
 	}
@@ -189,7 +188,6 @@ public class SessionEditAction extends LookupDispatchAction {
 		  throw new Exception ("Access Denied.");
 		}
 
-		SessionEditForm sessionEditForm = (SessionEditForm) form;
 		return mapping.findForward("showAdd");
 	}
 	
@@ -205,13 +203,14 @@ public class SessionEditAction extends LookupDispatchAction {
 		  throw new Exception ("Access Denied.");
 		}
         
+        SessionEditForm sessionEditForm = (SessionEditForm) form;
+
         Transaction tx = null;
         org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
         
         try {
             tx = hibSession.beginTransaction();
 
-            SessionEditForm sessionEditForm = (SessionEditForm) form;
             Session sessn = sessionEditForm.getSession();
             
             if (sessionEditForm.getSessionId()!=null && sessn.getSessionId().intValue()!=0) 
@@ -277,12 +276,15 @@ public class SessionEditAction extends LookupDispatchAction {
                     null, 
                     null);
             
+            if (sessionEditForm.getSessionId() != null)
+            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionEditForm.getSessionId(), false);
+            
             tx.commit() ;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             throw e;
         }
-        
+                
 		return mapping.findForward("showSessionList");
 	}
 
@@ -299,7 +301,6 @@ public class SessionEditAction extends LookupDispatchAction {
 		
 		if (errors.size()==0) {			
 			setSessionData(request, sessionEditForm, sessn);
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());		
 		}
 		else

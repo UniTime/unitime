@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam.ui;
 
@@ -65,7 +65,8 @@ import net.sf.cpsolver.exam.model.ExamStudent;
  * @author Tomas Muller
  */
 public class ExamAssignmentInfo extends ExamAssignment implements Serializable  {
-    private TreeSet<DirectConflict> iDirects = new TreeSet();
+	private static final long serialVersionUID = 6610082675208799753L;
+	private TreeSet<DirectConflict> iDirects = new TreeSet();
     private TreeSet<BackToBackConflict> iBackToBacks = new TreeSet();
     private TreeSet<MoreThanTwoADayConflict> iMoreThanTwoADays = new TreeSet();
     private TreeSet<DirectConflict> iInstructorDirects = new TreeSet();
@@ -82,8 +83,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         if (placement!=null) {
             ExamModel model = (ExamModel)exam.getModel();
             Hashtable<Exam,DirectConflict> directs = new Hashtable();
-            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-                ExamStudent student = (ExamStudent)e.nextElement();
+            for (ExamStudent student: exam.getStudents()) {
                 for (Iterator i=student.getExams(placement.getPeriod()).iterator();i.hasNext();) {
                     Exam other = (Exam)i.next();
                     if (other.equals(exam)) continue;
@@ -96,17 +96,16 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 }
             }
             iDirects.addAll(directs.values());
-            int btbDist = model.getBackToBackDistance();
+            double btbDist = model.getBackToBackDistance();
             Hashtable<Exam,BackToBackConflict> backToBacks = new Hashtable();
-            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-                ExamStudent student = (ExamStudent)e.nextElement();
+            for (ExamStudent student: exam.getStudents()) {
                 if (placement.getPeriod().prev()!=null) {
                     if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
                         Set exams = student.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = backToBacks.get(other);
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
@@ -124,7 +123,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
                             BackToBackConflict btb = backToBacks.get(other);
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
                                         (btbDist<0?false:distance>btbDist), distance);
@@ -137,8 +136,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iBackToBacks.addAll(backToBacks.values());
             Hashtable<String,MoreThanTwoADayConflict> m2ds = new Hashtable();
-            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-                ExamStudent student = (ExamStudent)e.nextElement();
+            for (ExamStudent student: exam.getStudents()) {
                 Set exams = student.getExamsADay(placement.getPeriod());
                 int nrExams = exams.size() + (exams.contains(exam)?0:1);
                 if (nrExams<=2) continue;
@@ -160,8 +158,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iMoreThanTwoADays.addAll(m2ds.values());
 
             Hashtable<Exam,DirectConflict> idirects = new Hashtable();
-            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+            for (ExamInstructor instructor: exam.getInstructors()) {
                 for (Iterator i=instructor.getExams(placement.getPeriod()).iterator();i.hasNext();) {
                     Exam other = (Exam)i.next();
                     if (other.equals(exam)) continue;
@@ -176,15 +173,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iInstructorDirects.addAll(idirects.values());
 
             Hashtable<Exam,BackToBackConflict> ibackToBacks = new Hashtable();
-            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+            for (ExamInstructor instructor: exam.getInstructors()) {
                 if (placement.getPeriod().prev()!=null) {
                     if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
                         Set exams = instructor.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = ibackToBacks.get(other);
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
@@ -202,7 +198,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                             Exam other = (Exam)i.next();
                             if (other.equals(exam)) continue;
                             BackToBackConflict btb = ibackToBacks.get(other);
-                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            double distance = placement.getDistanceInMeters((ExamPlacement)other.getAssignment());
                             if (btb==null) {
                                 btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
                                         (btbDist<0?false:distance>btbDist), distance);
@@ -215,8 +211,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iInstructorBackToBacks.addAll(ibackToBacks.values());
             Hashtable<String,MoreThanTwoADayConflict> im2ds = new Hashtable();
-            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+            for (ExamInstructor instructor: exam.getInstructors()) {
                 Set exams = instructor.getExamsADay(placement.getPeriod());
                 int nrExams = exams.size() + (exams.contains(exam)?0:1);
                 if (nrExams<=2) continue;
@@ -237,8 +232,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iInstructorMoreThanTwoADays.addAll(im2ds.values());
             computeUnavailablility(exam, model.getUnavailabilities(placement.getPeriod()));
-            for (Enumeration e=exam.getDistributionConstraints().elements();e.hasMoreElements();) {
-                ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+            for (ExamDistributionConstraint dc: exam.getDistributionConstraints()) {
                 if (dc.isHard()) {
                     if (dc.inConflict(placement))
                         iDistributions.add(new DistributionConflict(dc,exam));
@@ -343,15 +337,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         if (unavailabilities==null || unavailabilities.isEmpty()) return;
         for (ExamResourceUnavailability unavailability : unavailabilities) {
             Vector<Long> commonStudents = new Vector();
-            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-                ExamStudent student = (ExamStudent)e.nextElement();
+            for (ExamStudent student: exam.getStudents()) {
                 if (unavailability.getStudentIds().contains(student.getId())) commonStudents.add(student.getId());
             }
             if (!commonStudents.isEmpty())
                 iDirects.add(new DirectConflict(unavailability, commonStudents));
             Vector<Long> commonInstructors = new Vector();
-            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+            for (ExamInstructor instructor: exam.getInstructors()) {
                 if (unavailability.getInstructorIds().contains(instructor.getId())) commonInstructors.add(instructor.getId());
             }
             if (!commonInstructors.isEmpty())
@@ -853,7 +845,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Students</i></td>";
@@ -874,7 +866,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getConflictInfoTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Conflict</i></td>";
@@ -897,7 +889,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getDistributionConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Preference</i></td>";
@@ -914,7 +906,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getDistributionInfoConflictTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Preference</i></td>";
         ret += "<td><i>Distribution</i></td>";
@@ -1010,7 +1002,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getInstructorConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Instructors</i></td>";
@@ -1031,7 +1023,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getInstructorConflictInfoTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Conflict</i></td>";
@@ -1052,7 +1044,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     
     public static class DirectConflict implements Serializable, Comparable<DirectConflict> {
-        protected ExamAssignment iOtherExam = null;
+		private static final long serialVersionUID = 1300925620564937810L;
+		protected ExamAssignment iOtherExam = null;
         protected int iNrStudents = 1;
         protected Vector<Long> iStudents = new Vector();
         protected String iOtherEventName = null;
@@ -1196,7 +1189,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public static class BackToBackConflict implements Serializable, Comparable<BackToBackConflict> {
-        protected ExamAssignment iOtherExam;
+		private static final long serialVersionUID = 4953777429653205613L;
+		protected ExamAssignment iOtherExam;
         protected int iNrStudents = 1;
         protected boolean iIsDistance = false; 
         protected Vector<Long> iStudents = new Vector();
@@ -1274,7 +1268,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
 
     public static class MoreThanTwoADayConflict implements Serializable, Comparable<MoreThanTwoADayConflict> {
-        protected TreeSet<ExamAssignment> iOtherExams;
+		private static final long serialVersionUID = -8320516715119699996L;
+		protected TreeSet<ExamAssignment> iOtherExams;
         protected int iNrStudents = 1;
         protected Vector<Long> iStudents = new Vector();
         
@@ -1374,7 +1369,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public static class DistributionConflict implements Serializable, Comparable<DistributionConflict> {
-        protected TreeSet<ExamInfo> iOtherExams;
+		private static final long serialVersionUID = -1985853750381140103L;
+		protected TreeSet<ExamInfo> iOtherExams;
         protected String iPreference;
         protected Long iId;
         protected String iType;
@@ -1389,8 +1385,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iId = dc.getId();
             iType = dc.getTypeString();
             iOtherExams = new TreeSet();
-            for (Enumeration e=dc.variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: dc.variables()) {
                 if (exam.equals(exclude)) continue;
                 iOtherExams.add(exam.getAssignment()==null?new ExamInfo(exam):new ExamAssignment(exam,(ExamPlacement)exam.getAssignment()));
             }
@@ -1513,7 +1508,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Parameters(Long sessionId, int examType) {
             iPeriods = ExamPeriod.findAll(sessionId, examType); 
             
-            boolean btbDayBreak = false;
             SolverParameterDef btbDistDef = SolverParameterDef.findByName("Exams.BackToBackDistance");
             if (btbDistDef!=null && btbDistDef.getDefault()!=null)
                 iBtbDistance = Integer.parseInt(btbDistDef.getDefault());

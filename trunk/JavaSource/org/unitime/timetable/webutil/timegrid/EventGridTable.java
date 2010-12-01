@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.IOException;
@@ -57,7 +76,7 @@ public class EventGridTable {
                 for (Date date : iDates) 
                     if (m.getColSpan(date)>1) split = true;
                 out.println("<tr valign='top' align='center'>");
-                out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
+                out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabelWithHint()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
                 DateFormat df1 = new SimpleDateFormat("EEEE");
                 DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
                 DateFormat df3 = new SimpleDateFormat("MM/dd");
@@ -166,7 +185,7 @@ public class EventGridTable {
             int row = 0;
             for (TableModel m : iModel) {
                 boolean last = iModel.last().equals(m);
-                out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
+                out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabelWithHint()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
                 row++;
             }
             out.println("</tr>");
@@ -273,17 +292,16 @@ public class EventGridTable {
                 "m.locationPermanentId = :locationId and "+
                 "m.startPeriod < :endSlot and :startSlot < m.stopPeriod and "+
                 "m.meetingDate in (";
-            int idx = 0;
-            for (Date date : iDates) {
+            for (int idx = 0; idx < iDates.size(); idx++) {
                 if (idx>0) q+=",";
-                q+=":d"+(idx++);
+                q+=":d"+idx;
             }
             q += ")";
             Query query = MeetingDAO.getInstance().getSession().createQuery(q);
             query.setLong("locationId", iLocation.getPermanentId());
             query.setInteger("startSlot", iStartSlot);
             query.setInteger("endSlot", iEndSlot);
-            idx = 0;
+            int idx = 0;
             for (Date date : iDates) {
                 query.setDate("d"+(idx++), date);
             }
@@ -294,7 +312,6 @@ public class EventGridTable {
             for (int row = 0; row<iTable.length; row++) {
                 Calendar date = Calendar.getInstance(Locale.US);
                 date.setTime(iDates.elementAt(row));
-                boolean cellEdit = allowPast || !date.before(now);
                 for (int col = 0; col<iTable[row].length; col++) {
                     iTable[row][col] = new TableCell();
                     int stopTime = (iStartSlot + (1+col)*iStep)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
@@ -397,7 +414,6 @@ public class EventGridTable {
         private Meeting iMeeting;
         private int iStart = -1, iLength = 0, iCol = -1;
         private int iPrinted = 0;
-        private boolean iEdit = false;
         
         public MeetingCell(Meeting meeting) {
             iMeeting = meeting;

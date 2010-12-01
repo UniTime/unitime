@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseRoomTypeOption;
@@ -12,35 +31,13 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 		super();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public RoomTypeOption (
-		org.unitime.timetable.model.RoomType roomType,
-		org.unitime.timetable.model.Session session) {
-
-		super (
-			roomType,
-			session);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomTypeOption (
-		org.unitime.timetable.model.RoomType roomType,
-		org.unitime.timetable.model.Session session,
-		java.lang.Integer status,
-		java.lang.String message) {
-
-		super (
-			roomType,
-			session,
-			status,
-			message);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public RoomTypeOption(RoomType roomType, Session session) {
+		setRoomType(roomType);
+		setSession(session);
+		initialize();
+	}
 
 	public static final int sStatusNoOptions = 0;
 	public static final int sStatusScheduleEvents = 1;

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.commons.hibernate.id;
 
@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.Configurable;
@@ -38,11 +39,13 @@ public class UniqueIdGenerator implements IdentifierGenerator, Configurable {
     IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
+    private static ObjectNameNormalizer sNormalizer = null;
     
     public static void configure(Configuration config) {
         sGenClass = config.getProperty("tmtbl.uniqueid.generator");
         if (sGenClass==null) sGenClass = "org.hibernate.id.SequenceGenerator";
         sDefaultSchema = config.getProperty("default_schema");
+        sNormalizer = config.createMappings().getObjectNameNormalizer();
     }
     
     public IdentifierGenerator getGenerator() throws HibernateException {
@@ -64,8 +67,10 @@ public class UniqueIdGenerator implements IdentifierGenerator, Configurable {
     
     public void configure(Type type, Properties params, Dialect d) throws MappingException {
         if (getGenerator() instanceof Configurable) {
-            if (params.getProperty("schema")==null && sDefaultSchema!=null)
+            if (params.getProperty("schema") == null && sDefaultSchema != null)
                 params.setProperty("schema", sDefaultSchema);
+            if (params.get("identifier_normalizer") == null && sNormalizer != null)
+            	params.put("identifier_normalizer", sNormalizer);
             ((Configurable)getGenerator()).configure(type, params, d);
         }
     }

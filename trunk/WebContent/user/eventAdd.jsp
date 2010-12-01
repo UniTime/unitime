@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  * <bean:write name="eventDetailForm" property="additionalInfo"/> 
 --%>
 
@@ -31,7 +31,7 @@
 	<input type="hidden" name="op2" value="">
 	<html:hidden property="isAddMeetings"/>
 	<html:hidden property="eventId"/>
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -146,7 +146,7 @@
 					<i>No relation defined for this event.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="EventAddMeetings.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="EventAddMeetings.table" filter="false"/>
 					</table>
 				</logic:notEmpty>
@@ -289,10 +289,28 @@
 						</logic:empty>
 						<logic:iterate name="eventAddForm" property="allRoomTypes" id="rf" indexId="rfIdx">
 							<td nowrap>
-								<html:multibox property="roomTypes">
-								<bean:write name="rf" property="uniqueId"/>
-								</html:multibox>
-								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								<logic:equal name="rf" property="room" value="true">
+									<html:multibox property="roomTypes">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								</logic:equal>
+								<logic:equal name="rf" property="room" value="false">
+								    <bean:define id="rfId" name="rf" property="uniqueId"/>
+									<html:multibox property="roomTypes" onchange="<%="document.getElementById('nul" + rfId + "').style.display = (this.checked ? null : 'none');"%>" styleId="<%="chnul" + rfId%>">
+										<bean:write name="rf" property="uniqueId"/>
+									</html:multibox>
+									<bean:write name="rf" property="label"/><span id="<%="nul"+rfId%>">:&nbsp;
+									<html:select name="eventAddForm" property="<%="nonUniversityLocation[" + rfId + "]"%>"
+										onfocus="setUp();" 
+    									onkeypress="return selectSearch(event, this);" 
+										onkeydown="return checkKey(event, this);">
+										<html:option value="-1">Select...</html:option>
+										<html:optionsCollection name="eventAddForm" property="<%="nonUniversityLocations[" + rfId + "]"%>" label="label" value="uniqueId"/>
+									</html:select>
+									</span>
+									<script>document.getElementById('nul<%=rfId%>').style.display = (document.getElementById('chnul<%=rfId%>').checked ? null : 'none');</script>
+								</logic:equal>
 							</td>
 							<% if (rfIdx%4==3) { %>
 								</tr><tr>
@@ -316,14 +334,6 @@
 			&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations
 			</TD>
 		</TR>
-		<!-- 
-		<TR>
-			<TD> &nbsp; </TD>
-			<TD>
-				<html:checkbox property="lookAtNearLocations"/> Also look at other locations close by.
-			</TD>
-		</TR>
-		-->
 		<TR>
 			<TD> 
 				Room Capacity:

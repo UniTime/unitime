@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.reports.enrollment;
 
@@ -31,7 +31,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 /**
  * @author says
@@ -49,7 +49,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 
 	@Override
 	public void printReport() throws DocumentException {
-        int n = iNrLines - 3;
         setHeader(buildHeaderString());
         List results = getAuditResults(getSubjectAreas());
         Vector<String> lines = new Vector<String>();
@@ -163,7 +162,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	}
 
 	private class MultipleCourseEnrollmentsAuditResult extends EnrollmentAuditResult {
-		private String itype;
 		private Long studentUniqueId;
 		private Long subpartId;
 		private java.util.Vector<String> classes = new java.util.Vector<String>();
@@ -172,7 +170,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		public MultipleCourseEnrollmentsAuditResult(Object[] result) {
 			super(result);
 			if (result[7] != null) this.studentUniqueId = new Long(result[7].toString());
-			if (result[8] != null) this.itype = result[8].toString();
 			if (result[9] != null) this.subpartId = new Long(result[9].toString());
 			findClasses();
 		}
@@ -193,9 +190,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 				classes.add(className);
 			}
 			
-		}
-		public String itypeString(){
-			return(itype);
 		}
 		
 		public String classesListStr(){

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -29,9 +29,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.ifs.util.DistanceMetric;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -53,28 +56,6 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 */
 	public Location (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public Location (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
-
-		super (
-			uniqueId,
-			permanentId,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -319,15 +300,21 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * 
 	 * @return
 	 */
-	public Collection getGlobalRoomFeatures() {
-		Collection grfs = new HashSet();
-		for (Iterator iter = getFeatures().iterator(); iter.hasNext();) {
-			RoomFeature rf = (RoomFeature) iter.next();
+	public TreeSet<GlobalRoomFeature> getGlobalRoomFeatures() {
+		TreeSet<GlobalRoomFeature> grfs = new TreeSet<GlobalRoomFeature>();
+		for (RoomFeature rf: getFeatures())
 			if (rf instanceof GlobalRoomFeature) {
-				grfs.add(rf);
+				grfs.add((GlobalRoomFeature)rf);
 			}
+		return grfs;
+	}
+	
+	TreeSet<RoomGroup> getGlobalRoomGroups() {
+		TreeSet<RoomGroup> grgs = new TreeSet<RoomGroup>();
+		for (RoomGroup rg: getRoomGroups()) {
+			if (rg.isGlobal()) grgs.add(rg);
 		}
-		return (new TreeSet(grfs));
+		return grgs;
 	}
 	
 	/**
@@ -473,14 +460,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (getUniqueId().equals(other.getUniqueId())) return 0.0;
     	if (this instanceof Location && isIgnoreTooFar()!=null && isIgnoreTooFar().booleanValue()) return 0.0;
     	if (other instanceof Location && other.isIgnoreTooFar()!=null && other.isIgnoreTooFar().booleanValue()) return 0.0;
-    	int x1 = (getCoordinateX()==null?-1:getCoordinateX().intValue());
-    	int y1 = (getCoordinateY()==null?-1:getCoordinateY().intValue());
-    	int x2 = (other.getCoordinateX()==null?-1:other.getCoordinateX().intValue());
-    	int y2 = (other.getCoordinateY()==null?-1:other.getCoordinateY().intValue());
-    	if (x1<0 || x2<0 || y1<0 || y2<0) return 10000.0;
-		long x = x1-x2;
-		long y = y1-y2;
-		return Math.sqrt((x*x)+(y*y));
+    	DistanceMetric m = new DistanceMetric(
+				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+    	return m.getDistanceInMeters(getCoordinateX(), getCoordinateY(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	
 	public Department getControllingDepartment() {
@@ -726,18 +708,24 @@ public abstract class Location extends BaseLocation implements Comparable {
         }
     }
     
-    public static List findAll(Long sessionId) {
-        return new LocationDAO().getSession().createQuery(
+    public static List<Location> findAll(Long sessionId) {
+        return (List<Location>)new LocationDAO().getSession().createQuery(
                 "select l from Location l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
 
-    public static List findAllRooms(Long sessionId) {
-        return new LocationDAO().getSession().createQuery(
+    public static List<Room> findAllRooms(Long sessionId) {
+        return (List<Room>)new LocationDAO().getSession().createQuery(
                 "select l from Room l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
     
+    public static List<NonUniversityLocation> findAllNonUniversityLocations(Long sessionId) {
+        return (List<NonUniversityLocation>) new LocationDAO().getSession().createQuery(
+                "select l from NonUniversityLocation l where l.session.uniqueId=:sessionId"
+                ).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
+
     public abstract RoomType getRoomType();
     public abstract void setRoomType(RoomType roomType);
     
@@ -794,75 +782,128 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     public static Hashtable<Long,Set<Long>> findClassLocationTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Long>>();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	String permIds = "";
-    	for (Long permanentId: permanentIds) {
-    		if (permIds.length()>0) permIds += ",";
-    		permIds += permanentId;
+    	Hashtable<Long,Set<Long>> table = new Hashtable<Long,Set<Long>>();
+    	Iterator<Long> permanentIdIterator = permanentIds.iterator();
+    	while (permanentIdIterator.hasNext()){
+	    	String permIds = "";
+	    	Long permanentId;
+	    	int cntPermIds = 0;
+	    	while(permanentIdIterator.hasNext() && cntPermIds < 1000){
+	    		permanentId = permanentIdIterator.next();
+	    		if (permIds.length()>0) permIds += ",";
+	    		permIds += permanentId;
+	    		cntPermIds++;
+	    	}
+	    	Query q = LocationDAO.getInstance().getSession()
+	    	    .createQuery("select distinct m.locationPermanentId, e.clazz.uniqueId from " +
+	    	    		"ClassEvent e inner join e.meetings m where " +
+	            		"m.locationPermanentId in ("+permIds+") and " +
+	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+	            		"m.meetingDate in ("+datesStr+")") // and date
+	            .setInteger("startSlot", startSlot)
+	            .setInteger("endSlot", startSlot + length);
+	    	for (int i=0; i<dates.size(); i++) {
+	    		q.setDate("date"+i, dates.elementAt(i));
+	    	}
+	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
+	            Object[] o = (Object[])i.next();
+	            Set<Long> ids = table.get((Long)o[0]);
+	            if (ids==null) {
+	            	ids = new HashSet<Long>();
+	            	table.put((Long)o[0], ids);
+	            }
+	            ids.add((Long)o[1]);
+	        }
     	}
-    	Query q = LocationDAO.getInstance().getSession()
-    	    .createQuery("select distinct m.locationPermanentId, e.clazz.uniqueId from " +
-    	    		"ClassEvent e inner join e.meetings m where " +
-            		"m.locationPermanentId in ("+permIds+") and " +
-            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")") // and date
-            .setInteger("startSlot", startSlot)
-            .setInteger("endSlot", startSlot + length);
-    	for (int i=0; i<dates.size(); i++) {
-    		q.setDate("date"+i, dates.elementAt(i));
-    	}
-    	Hashtable<Long,Set<Long>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
-            Set<Long> ids = table.get((Long)o[0]);
-            if (ids==null) {
-            	ids = new HashSet<Long>();
-            	table.put((Long)o[0], ids);
-            }
-            ids.add((Long)o[1]);
-        }
         return table;
     }
 
     public static Hashtable<Long,Set<Event>> findEventTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Event>>();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	String permIds = "";
-    	for (Long permanentId: permanentIds) {
-    		if (permIds.length()>0) permIds += ",";
-    		permIds += permanentId;
+
+    	Hashtable<Long,Set<Event>> table = new Hashtable<Long,Set<Event>>();
+    	Iterator<Long> permanentIdIterator = permanentIds.iterator();
+    	while (permanentIdIterator.hasNext()){
+	    	String permIds = "";
+	    	Long permanentId;
+	    	int cntPermIds = 0;
+	    	while(permanentIdIterator.hasNext() && cntPermIds < 1000){
+	    		permanentId = permanentIdIterator.next();
+	    		if (permIds.length()>0) permIds += ",";
+	    		permIds += permanentId;
+	    		cntPermIds++;
+	    	}
+	
+	    	Query q = LocationDAO.getInstance().getSession()
+	    	    .createQuery("select distinct m.locationPermanentId, e from " +
+	    	    		"Event e inner join e.meetings m where " +
+	    	    		"e.class!=ClassEvent and "+
+	            		"m.locationPermanentId in ("+permIds+") and " +
+	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+	            		"m.meetingDate in ("+datesStr+")") // and date
+	            .setInteger("startSlot", startSlot)
+	            .setInteger("endSlot", startSlot + length);
+	    	for (int i=0; i<dates.size(); i++) {
+	    		q.setDate("date"+i, dates.elementAt(i));
+	    	}
+	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
+	            Object[] o = (Object[])i.next();
+	            Set<Event> events = table.get((Long)o[0]);
+	            if (events==null) {
+	            	events = new HashSet<Event>();
+	            	table.put((Long)o[0], events);
+	            }
+	            events.add((Event)o[1]);
+	        }
     	}
-    	Query q = LocationDAO.getInstance().getSession()
-    	    .createQuery("select distinct m.locationPermanentId, e from " +
-    	    		"Event e inner join e.meetings m where " +
-    	    		"e.class!=ClassEvent and "+
-            		"m.locationPermanentId in ("+permIds+") and " +
-            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")") // and date
-            .setInteger("startSlot", startSlot)
-            .setInteger("endSlot", startSlot + length);
-    	for (int i=0; i<dates.size(); i++) {
-    		q.setDate("date"+i, dates.elementAt(i));
-    	}
-    	Hashtable<Long,Set<Event>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
-            Set<Event> events = table.get((Long)o[0]);
-            if (events==null) {
-            	events = new HashSet<Event>();
-            	table.put((Long)o[0], events);
-            }
-            events.add((Event)o[1]);
-        }
         return table;
+    }
+    
+    public String getHtmlHint() {
+    	String hint = getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
+    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
+    		hint += "<br><img src=\\'" + 
+    			minimap.replace("%x", getCoordinateX().toString()).replace("%y", getCoordinateY().toString()) +
+    			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
+    	}
+    	hint += "<table width=\\'300px;\\'>";
+    	hint += "<tr><td>Capacity:</td><td width=\\'99%\\'>" + getCapacity();
+    	if (getExamCapacity() != null && getExamCapacity() > 0 && !getExamCapacity().equals(getCapacity()) &&
+    			(isExamEnabled(Exam.sExamTypeFinal) || isExamEnabled(Exam.sExamTypeMidterm))) {
+    		hint += " (" + getExamCapacity() + " for" +
+    				(isExamEnabled(Exam.sExamTypeFinal) ? isExamEnabled(Exam.sExamTypeMidterm) ? "" : " final" : " midterm") +
+    				" examinations)";
+    	}
+    	hint += "</td></tr>";
+    	String features = "";
+    	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {
+    		if (!features.isEmpty()) features += ", ";
+    		features += f.getLabel();
+    	}
+    	if (!features.isEmpty()) hint += "<tr><td>Features:</td><td>" + features + "</td></tr>";
+    	String groups = "";
+    	for (RoomGroup g: getGlobalRoomGroups()) {
+    		if (!groups.isEmpty()) groups += ", ";
+    		groups += g.getName();
+    	}
+    	if (!groups.isEmpty()) hint += "<tr><td>Groups:</td><td>" + groups + "</td></tr>";
+    	hint += "</table>";
+    	return hint;
+    }
+    
+    public String getLabelWithHint() {
+    	return "<span onmouseover=\"showGwtHint(this, '" + getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
     }
 }

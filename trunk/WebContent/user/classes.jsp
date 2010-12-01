@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -26,7 +26,7 @@
 <tiles:importAttribute />
 <html:form action="/classes">
 	<logic:notEmpty name="classesForm" property="sessions">
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<html:hidden property="op"/>
 	<TR>
 		<TD nowspan>
@@ -61,7 +61,7 @@
 	<BR>
 	
 	<logic:empty name="classesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td style='color:red;font-weight:bold;'>
 				<logic:empty name="classesForm" property="session">
 					There are no classes available at the moment. 
@@ -89,7 +89,7 @@
 	</logic:empty>
 	
 	<logic:notEmpty name="classesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:write name="classesForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
@@ -98,7 +98,7 @@
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
 		<a name="login"></a>
-		<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD nowspan>
 				<tt:section-title>Personal Schedule</tt:section-title>

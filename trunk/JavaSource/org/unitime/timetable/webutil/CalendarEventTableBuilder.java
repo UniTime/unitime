@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil;
 
 import java.io.File;
@@ -13,6 +32,7 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
+import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.util.Constants;
@@ -20,6 +40,10 @@ import org.unitime.timetable.util.Constants;
 public class CalendarEventTableBuilder extends WebEventTableBuilder {
     SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
     SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
+    
+    public int getMaxResults() {
+    	return 100;
+    }
     
     public CalendarEventTableBuilder() {
         super();
@@ -69,11 +93,35 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         out.println("END:VEVENT");
     }
     
+    public String calendarUrlForEvents(EventListForm form) {
+        List events = loadEvents(form);
+        if (events.isEmpty()) return null;
+
+        String eventIds = "";
+        Long sid = null;
+        for (Iterator it = events.iterator();it.hasNext();){
+            Event event = (Event) it.next();
+            if (form.getMode()==EventListForm.sModeEvents4Approval) {
+                boolean myApproval = false;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting m = (Meeting)j.next();
+                    if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        myApproval = true; break;
+                    }
+                }
+                if (!myApproval) continue;
+            }
+            if (!eventIds.isEmpty()) eventIds += ",";
+            eventIds += event.getUniqueId();
+            if (sid == null) sid = event.getSession().getUniqueId();
+        }
+        
+        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&eid=" + eventIds);
+    }
+    
     public File calendarTableForEvents (EventListForm form){
         List events = loadEvents(form);
         if (events.isEmpty()) return null;
-        
-        boolean mainContact = form.isAdmin() || form.isEventManager();
         
         PrintWriter out = null;
         try {
@@ -104,7 +152,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                 for (Meeting meeting : (Set<Meeting>)event.getMeetings()) printMeeting(out, meeting);
             }
 
-            out.println("END:VEVENT");
+            out.println("END:VCALENDAR");
             out.flush(); out.close(); out = null;
             
             return file;
@@ -115,13 +163,27 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         }
         return null;
     }
+    
+    public String calendarUrlForMeetings(MeetingListForm form) {
+        List meetings = loadMeetings(form);
+        if (meetings.isEmpty()) return null;
+
+        String meetingIds = "";
+        Long sid = null;
+        for (Iterator it = meetings.iterator();it.hasNext();){
+            Meeting meeting = (Meeting) it.next();
+            if (!meetingIds.isEmpty()) meetingIds += ",";
+            meetingIds += meeting.getUniqueId();
+            if (sid == null) sid = meeting.getEvent().getSession().getUniqueId();
+        }
+        
+        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&mid=" + meetingIds);
+    }
 
     public File calendarTableForMeetings (MeetingListForm form){
         List meetings = loadMeetings(form);
         
         if (meetings.isEmpty()) return null;
-        
-        boolean mainContact = form.isAdmin() || form.isEventManager();
         
         PrintWriter out = null;
         try {
@@ -142,7 +204,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                 printMeeting(out, meeting);
             }
 
-            out.println("END:VEVENT");
+            out.println("END:VCALENDAR");
             out.flush(); out.close(); out = null;
             
             return file;

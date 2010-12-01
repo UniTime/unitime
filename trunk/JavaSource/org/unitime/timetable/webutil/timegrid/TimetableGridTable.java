@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.timegrid;
 
@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
@@ -39,6 +40,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -53,6 +56,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
@@ -127,6 +131,8 @@ public class TimetableGridTable {
 	private int iWeek = -100;
 	private boolean iShowUselessTimes = false;
 	private boolean iShowInstructors = false;
+	private boolean iShowEvents = false;
+	private org.unitime.timetable.gwt.server.Query iQuery = null;
 	
 	private String iDefaultDatePatternName = null;
 	
@@ -142,7 +148,10 @@ public class TimetableGridTable {
 	public int getResourceType() { return iResourceType; }
 	public void setResourceType(int resourceType) { iResourceType = resourceType; }
 	public String getFindString() { return iFindStr; }
-	public void setFindString(String findSrt) { iFindStr = findSrt;}
+	public void setFindString(String findSrt) {
+		iFindStr = findSrt;
+		iQuery = (findSrt == null ? null : new org.unitime.timetable.gwt.server.Query(findSrt));
+	}
 	public int getOrderBy() { return iOrderBy; }
 	public void setOrderBy(int orderBy) { iOrderBy = orderBy; }
 	public int getWeek() { return iWeek; }
@@ -151,14 +160,16 @@ public class TimetableGridTable {
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
-	public Vector getWeeks(HttpSession httpSession) throws Exception { 
+	public boolean getShowEvents() { return iShowEvents; }
+	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
+	public Vector getWeeks(HttpSession httpSession) throws Exception {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
         Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
-		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime())-(Session.sNrExcessDays/7);
+		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime()) - (Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0"))/7);
 		Calendar endCal = Calendar.getInstance(Locale.US);
 		endCal.setTime(session.getSessionEndDateTime());
-		endCal.add(Calendar.DAY_OF_YEAR, Session.sNrExcessDays);
+		endCal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
 		int week = startWeek;
 		while (DateUtils.getStartDate(session.getSessionStartYear(),week).compareTo(endCal.getTime()) <= 0) {
 			weeks.addElement(new IdValue(new Long(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
@@ -304,7 +315,7 @@ public class TimetableGridTable {
 		if (isDispModePerWeekVertical()) {
 			for (int day=startDay(); day<=endDay(); day++) {
 				boolean eol = (day==endDay());
-				out.println("<th width='40' height='40' colspan='"+(1+model.getMaxIdxForDay(day,firstSlot(),lastSlot()))+"'class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
+				out.println("<th colspan='"+(1+model.getMaxIdxForDay(day,firstSlot(),lastSlot()))+"'class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
 				out.println(Constants.DAY_NAME[day]);
 				out.println("</th>");
 			}
@@ -314,7 +325,7 @@ public class TimetableGridTable {
 					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 					boolean eod = (slot+sNrSlotsPerPeriod-1==lastSlot());
 					boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
-					out.println("<th width='40' height='40' colspan='"+sNrSlotsPerPeriod+"' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
+					out.println("<th colspan='"+sNrSlotsPerPeriod+"' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
 					if (isDispModeInRow())
 						out.println(Constants.DAY_NAME[day]+"<br>");
 					out.println(Constants.toTime(time));
@@ -325,18 +336,35 @@ public class TimetableGridTable {
 		out.println("</tr>");
 	}
 	
-    private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, TimetableGridCell cell, String bgColor, boolean changeMouse) {
+    private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, StringBuffer onClick, TimetableGridCell cell, String bgColor) {
     	if (cell==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
-        if (isDispModePerWeek()) {
+        if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
         	for (int i=0;i<cell.getNrMeetings();i++) {
         		onMouseOver.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='rgb(223,231,242)';");
         		onMouseOut.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
             }
+        } else {
+        	onMouseOver.append("this.style.backgroundColor='rgb(223,231,242)';");
+        	onMouseOut.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
         }
-        if (changeMouse)
+        if (cell.getOnClick() != null && !cell.getOnClick().isEmpty()) {
         	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
+        	onClick.append(" onclick=\"hideGwtHint();");
+            if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
+            	for (int i=0;i<cell.getNrMeetings();i++) {
+            		onClick.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+                }
+            } else {
+            	onClick.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            }
+            onClick.append(cell.getOnClick() + "\"");
+        }
+        if (cell.getTitle() != null && !cell.getTitle().isEmpty()) {
+            onMouseOver.append("showGwtHint(this,'" + cell.getTitle() + "');");
+            onMouseOut.append("hideGwtHint();");
+        }
         onMouseOver.append("\" ");
         onMouseOut.append("\" ");
     }
@@ -349,7 +377,7 @@ public class TimetableGridTable {
 		out.println("<tr valign='top'>");
 		if (isDispModeInRow()) {
 			int maxIdx = model.getMaxIdx(startDay(),endDay(),firstSlot(),lastSlot());
-			out.println("<th width='40' height='40' rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
+			out.println("<th rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
 			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
 			out.println("</th>");
 			for (int idx=0;idx<=maxIdx;idx++) {
@@ -388,16 +416,17 @@ public class TimetableGridTable {
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							StringBuffer onMouseOver = new StringBuffer();
 							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
 							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									onClick + 
 									onMouseOver + 
 									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -419,7 +448,7 @@ public class TimetableGridTable {
 				if (day>startDay())
 					out.println("</tr><tr valign='top'>");
 				int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot());
-				out.println("<th width='40' height='40' rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+Constants.DAY_NAME[day]+"</th>");
+				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+Constants.DAY_NAME[day]+"</th>");
 				for (int idx=0;idx<=maxIdx;idx++) {
 					if (idx>0)
 						out.println("</tr><tr valign='top'>");
@@ -456,16 +485,17 @@ public class TimetableGridTable {
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							StringBuffer onMouseOver = new StringBuffer();
 							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
 							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
 									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									onClick +
 									onMouseOver + 
 									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -489,9 +519,9 @@ public class TimetableGridTable {
 				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
                 int slotsToEnd = lastSlot()-slot+1;
                 if (((slot-firstSlot())%sNrSlotsPerPeriod) == 0) {
-                	out.println("<th width='40' height='40' class='TimetableHeadCell"+(slot==firstSlot()?"":"In")+"Vertical'>" + Constants.toTime(time) + "</th>");
+                	out.println("<th class='TimetableHeadCell"+(slot==firstSlot()?"":"In")+"Vertical'>" + Constants.toTime(time) + "</th>");
                 } else {
-                	out.println("<th width='40' height='40' class='TimetableHeadCellInVertical'>&nbsp;</th>");
+                	out.println("<th class='TimetableHeadCellInVertical'>&nbsp;</th>");
                 }
                 for (int day=startDay();day<=endDay();day++) {
                 	int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot());
@@ -520,16 +550,16 @@ public class TimetableGridTable {
                     		}
                     		StringBuffer onMouseOver = new StringBuffer();
                     		StringBuffer onMouseOut = new StringBuffer();
-                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							StringBuffer onClick = new StringBuffer();
+                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
                     		boolean eol = (day==endDay());
                     		out.println("<td nowrap "+
                     				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
                     				"class='TimetableCell"+(slot==firstSlot()?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
                     				"colspan='"+colSpan+"' rowSpan='"+rowSpanDivStep+"' "+
-                    				(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
                     				(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
-                    				onMouseOver + onMouseOut +
-                    				(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+                    				onClick + onMouseOver + onMouseOut +
+                    				//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                             		">");
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
@@ -551,7 +581,25 @@ public class TimetableGridTable {
 		}
 	}
 	
-	private boolean match(String name) {
+	private boolean match(final String name) {
+		return iQuery == null || iQuery.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(name, " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return name.matches(term);
+				} else if ("find".equals(attr)) {
+					return name.toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				}
+				return false;
+			}
+		});
+		/*
 		if (getFindString()==null || getFindString().trim().length()==0) return true;
 		StringTokenizer stk = new StringTokenizer(getFindString().toUpperCase()," ,");
 		String n = name.toUpperCase();
@@ -560,7 +608,7 @@ public class TimetableGridTable {
 			if (token.length()==0) continue;
 			if (n.indexOf(token)<0) return false;
 		}
-		return true;
+		return true;*/
 	}
 	
 	private void showUselessTimesIfDesired() {
@@ -574,16 +622,16 @@ public class TimetableGridTable {
 		return iDefaultDatePatternName;
 	}
 	
-	public boolean reload(HttpSession session) throws Exception {
+	public boolean reload(HttpServletRequest request) throws Exception {
 		if (iModels!=null) iModels.clear();
+		HttpSession session = request.getSession();
 		Session acadSession = Session.getCurrentAcadSession(Web.getUser(session));
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
 		SolverProxy solver = WebSolver.getSolver(session);
-		//TODO: checked OK, tested OK --- really ???? 
-		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1, acadSession.getStartMonth() - 3)-1);
+		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getPatternStartMonth())-1);
 		if (solver!=null) {
-			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode());
+			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode(), getShowEvents());
 			Collections.sort(iModels,new TimetableGridModelComparator());
 			showUselessTimesIfDesired();
 			return true;
@@ -598,6 +646,21 @@ public class TimetableGridTable {
 				tx = hibSession.beginTransaction();
 			
 			if (getResourceType()==TimetableGridModel.sResourceTypeRoom) {
+				if (RoomAvailability.getInstance() != null) {
+			        Calendar startDateCal = Calendar.getInstance(Locale.US);
+			        startDateCal.setTime(DateUtils.getDate(1, acadSession.getStartMonth(), acadSession.getSessionStartYear()));
+			        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+			        startDateCal.set(Calendar.MINUTE, 0);
+			        startDateCal.set(Calendar.SECOND, 0);
+			        Calendar endDateCal = Calendar.getInstance(Locale.US);
+			        endDateCal.setTime(DateUtils.getDate(0, acadSession.getEndMonth() + 1, acadSession.getSessionStartYear()));
+			        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+			        endDateCal.set(Calendar.MINUTE, 59);
+			        endDateCal.set(Calendar.SECOND, 59);
+			        RoomAvailability.getInstance().activate(acadSession, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType, false);
+		            RoomAvailability.setAvailabilityWarning(request, acadSession, true, true);
+				}
+				
 				Query q = hibSession.createQuery(
 						"select distinct r from "+
 						"Location as r inner join r.assignments as a where "+
@@ -606,7 +669,7 @@ public class TimetableGridTable {
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					Location room = (Location)i.next();
 					if (!match(room.getLabel())) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession,startDay,getBgMode()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
                 String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
@@ -636,7 +699,7 @@ public class TimetableGridTable {
 					Department dept = (Department)i.next();
 					String name = dept.getAbbreviation();
 					if (!match(name)) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession,startDay,getBgMode()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession, startDay, getBgMode()));
 				}
 			}
 			if (tx!=null) tx.commit();
@@ -691,72 +754,72 @@ public class TimetableGridTable {
 			out.println("<tr><td colspan='2'>Assigned classes:</td></tr>");
 		}
         if (iBgMode==TimetableGridModel.sBgModeTimePref) {
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required time</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred time</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred time</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No time preference</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged time</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged time</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No time preference</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged time</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited time</td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModeRoomPref) {
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No room preference</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No room preference</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited room</td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModeStudentConf) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = TimetableGridCell.conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student conflicts</td><td></td></tr>");
+                out.println("<tr><td width='40' style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student conflicts</td><td></td></tr>");
             }
         } else if (iBgMode==TimetableGridModel.sBgModeInstructorBtbPref) {
             out.println("<tr><td idth=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No instructor back-to-back preference <i>(distance=0)</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged back-to-back <i>(0&lt;distance&lt;=5)</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged back-to-back <i>(5&lt;distance&lt;=20)</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited back-to-back <i>(20&lt;distance)</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged back-to-back <i>(0&lt;distance&lt;=5)</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged back-to-back <i>(5&lt;distance&lt;=20)</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited back-to-back <i>(20&lt;distance)</i></td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModeDistributionConstPref) {
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No violated constraint<i>(distance=0)</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged/preferred constraint violated</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged/preferred constraint violated</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required/prohibited constraint violated</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No violated constraint<i>(distance=0)</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged/preferred constraint violated</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged/preferred constraint violated</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required/prohibited constraint violated</i></td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModePerturbations) {
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No change</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No initial assignment</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Room changed</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Time changed</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Both time and room changed</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No change</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No initial assignment</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Room changed</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Time changed</i></td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Both time and room changed</i></td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModePerturbationPenalty) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = TimetableGridCell.conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+(nrConflicts==0?"Zero perturbation penalty":nrConflicts==15?"Perturbation penalty above 15":"Perturbation penalty below or equal to "+nrConflicts)+"</td><td></td></tr>");
+                out.println("<tr><td width='40' style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+(nrConflicts==0?"Zero perturbation penalty":nrConflicts==15?"Perturbation penalty above 15":"Perturbation penalty below or equal to "+nrConflicts)+"</td><td></td></tr>");
             }
         } else if (iBgMode==TimetableGridModel.sBgModeHardConflicts) {
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required time and room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room with no hard conflict</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room (but there is a hard conflict), can be moved in time with no conflict</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room (but there is a hard conflict)</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in time with no hard conflict, cannot be moved in room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in time (but there is a hard conflict), cannot be moved in room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required time and room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room with no hard conflict</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room (but there is a hard conflict), can be moved in time with no conflict</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in room (but there is a hard conflict)</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in time with no hard conflict, cannot be moved in room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Can be moved in time (but there is a hard conflict), cannot be moved in room</td><td></td></tr>");
         } else if (iBgMode==TimetableGridModel.sBgModeDepartmentalBalancing) {
             for (int nrConflicts=0;nrConflicts<=3;nrConflicts++) {
                 String color = TimetableGridCell.conflicts2colorFast(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+(nrConflicts==0?"Zero penalty":nrConflicts==3?"Penalty equal or above 3":"Penalty equal to "+nrConflicts)+"</td><td></td></tr>");
+                out.println("<tr><td width='40' style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+(nrConflicts==0?"Zero penalty":nrConflicts==3?"Penalty equal or above 3":"Penalty equal to "+nrConflicts)+"</td><td></td></tr>");
             }
         } else if (iBgMode==TimetableGridModel.sBgModeTooBigRooms) {
-        	out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is smaller than room limit of a class</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is not more than 25% bigger than the smallest avaialable room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is not more than 50% bigger than the smallest avaialable room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is more than 50% bigger than the smallest avaialable room</td><td></td></tr>");
+        	out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is smaller than room limit of a class</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is not more than 25% bigger than the smallest avaialable room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is not more than 50% bigger than the smallest avaialable room</td><td></td></tr>");
+            out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Assigned room is more than 50% bigger than the smallest avaialable room</td><td></td></tr>");
         } 
         out.println("<tr><td colspan='2'>Free times:</td></tr>");
-        out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.sBgColorNotAvailable+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Time not available</td><td></td></tr>");
-        out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No preference</td><td></td></tr>");
+        out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.sBgColorNotAvailable+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Time not available</td><td></td></tr>");
+        out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No preference</td><td></td></tr>");
         if (iShowUselessTimes) {
-        	out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Standard (MWF or TTh) time pattern is broken (time cannot be used for MW, WF, MF or TTh class)</td><td></td></tr>");
-        	out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Useless half-hour</td><td></td></tr>");
-        	out.println("<tr><td width=40 style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Useless half-hour and broken standard time pattern</td><td></td></tr>");
+        	out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Standard (MWF or TTh) time pattern is broken (time cannot be used for MW, WF, MF or TTh class)</td><td></td></tr>");
+        	out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Useless half-hour</td><td></td></tr>");
+        	out.println("<tr><td width='40' style='background-color:"+TimetableGridCell.pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Useless half-hour and broken standard time pattern</td><td></td></tr>");
         }
     }
 }

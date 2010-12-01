@@ -1,10 +1,10 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 
 use mysql;
@@ -28,17 +28,6 @@ grant all on timetable.* to timetable;
 
 flush privileges;
 
--- MySQL 4
-/*
-delete from user where user='timetable';
-
-insert into user (host,user,password) values ('%', 'timetable', password('unitime'));
-
-grant all on timetable.* to timetable;
-
-flush privileges;
-*/
-
 -- ----------------------------------------------------------------------
 -- MySQL Migration Toolkit
 -- SQL Create Script
@@ -49,7 +38,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP DATABASE IF EXISTS `timetable`;
 
 CREATE DATABASE `timetable`
-  CHARACTER SET utf8;
+   CHARACTER SET utf8;
 
 USE `timetable`;
 -- -------------------------------------
@@ -64,6 +53,7 @@ CREATE TABLE `timetable`.`academic_area` (
   `long_title` VARCHAR(100) BINARY NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
+  INDEX `idx_academic_area_abbv` (`academic_area_abbreviation`(10), `session_id`),
   UNIQUE INDEX `uk_academic_area` (`session_id`, `academic_area_abbreviation`(10)),
   CONSTRAINT `fk_academic_area_session` FOREIGN KEY `fk_academic_area_session` (`session_id`)
     REFERENCES `timetable`.`sessions` (`uniqueid`)
@@ -80,6 +70,7 @@ CREATE TABLE `timetable`.`academic_classification` (
   `name` VARCHAR(50) BINARY NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
+  INDEX `idx_academic_clasf_code` (`code`(10), `session_id`),
   CONSTRAINT `fk_acad_class_session` FOREIGN KEY `fk_acad_class_session` (`session_id`)
     REFERENCES `timetable`.`sessions` (`uniqueid`)
     ON DELETE CASCADE
@@ -136,7 +127,7 @@ CREATE TABLE `timetable`.`assigned_instructors` (
   `assignment_id` DECIMAL(20, 0) NOT NULL,
   `instructor_id` DECIMAL(20, 0) NOT NULL,
   `last_modified_time` DATETIME NULL,
-  PRIMARY KEY (`instructor_id`, `assignment_id`),
+  PRIMARY KEY (`assignment_id`, `instructor_id`),
   INDEX `idx_assigned_instructors` (`assignment_id`),
   CONSTRAINT `fk_assigned_instrs_assignment` FOREIGN KEY `fk_assigned_instrs_assignment` (`assignment_id`)
     REFERENCES `timetable`.`assignment` (`uniqueid`)
@@ -154,7 +145,7 @@ CREATE TABLE `timetable`.`assigned_rooms` (
   `assignment_id` DECIMAL(20, 0) NOT NULL,
   `room_id` DECIMAL(20, 0) NOT NULL,
   `last_modified_time` DATETIME NULL,
-  PRIMARY KEY (`room_id`, `assignment_id`),
+  PRIMARY KEY (`assignment_id`, `room_id`),
   INDEX `idx_assigned_rooms` (`assignment_id`),
   CONSTRAINT `fk_assigned_rooms_assignment` FOREIGN KEY `fk_assigned_rooms_assignment` (`assignment_id`)
     REFERENCES `timetable`.`assignment` (`uniqueid`)
@@ -198,8 +189,8 @@ CREATE TABLE `timetable`.`building` (
   `session_id` DECIMAL(20, 0) NULL,
   `abbreviation` VARCHAR(10) BINARY NULL,
   `name` VARCHAR(100) BINARY NULL,
-  `coordinate_x` BIGINT(10) NULL,
-  `coordinate_y` BIGINT(10) NULL,
+  `coordinate_x` DOUBLE NULL,
+  `coordinate_y` DOUBLE NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
   UNIQUE INDEX `uk_building` (`session_id`, `abbreviation`(10)),
@@ -284,8 +275,8 @@ CREATE TABLE `timetable`.`class_` (
   `date_pattern_id` DECIMAL(20, 0) NULL,
   `managing_dept` DECIMAL(20, 0) NULL,
   `display_instructor` INT(1) NULL,
-  `sched_print_note` VARCHAR(40) BINARY NULL,
-  `class_suffix` VARCHAR(6) BINARY NULL,
+  `sched_print_note` VARCHAR(2000) BINARY NULL,
+  `class_suffix` VARCHAR(10) BINARY NULL,
   `display_in_sched_book` INT(1) NULL DEFAULT 1,
   `max_expected_capacity` INT(4) NULL,
   `room_ratio` DECIMAL(22, 0) NULL DEFAULT 1.0,
@@ -293,6 +284,7 @@ CREATE TABLE `timetable`.`class_` (
   `last_modified_time` DATETIME NULL,
   `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
+  `enrollment` INT(4) NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_class_datepatt` (`date_pattern_id`),
   INDEX `idx_class_managing_dept` (`managing_dept`),
@@ -395,8 +387,8 @@ CREATE TABLE `timetable`.`course_catalog` (
   `credit_type` VARCHAR(20) BINARY NULL,
   `credit_unit_type` VARCHAR(20) BINARY NULL,
   `credit_format` VARCHAR(20) BINARY NULL,
-  `fixed_min_credit` BIGINT(10) NULL,
-  `max_credit` BIGINT(10) NULL,
+  `fixed_min_credit` DOUBLE NULL,
+  `max_credit` DOUBLE NULL,
   `frac_credit_allowed` INT(1) NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_course_catalog` (`session_id`, `subject`(10), `course_nbr`(10))
@@ -424,8 +416,8 @@ CREATE TABLE `timetable`.`course_credit_unit_config` (
   `credit_unit_type` DECIMAL(20, 0) NULL,
   `defines_credit_at_course_level` INT(1) NULL,
   `fixed_units` DECIMAL(22, 0) NULL,
-  `min_units` DECIMAL(22, 0) NULL,
-  `max_units` DECIMAL(22, 0) NULL,
+  `min_units` DOUBLE NULL,
+  `max_units` DOUBLE NULL,
   `fractional_incr_allowed` INT(1) NULL,
   `instr_offr_id` DECIMAL(20, 0) NULL,
   `last_modified_time` DATETIME NULL,
@@ -500,6 +492,7 @@ CREATE TABLE `timetable`.`course_offering` (
   `last_modified_time` DATETIME NULL,
   `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
   `lastlike_demand` BIGINT(10) NULL DEFAULT 0,
+  `enrollment` BIGINT(10) NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_course_offering_control` (`is_control`),
   INDEX `idx_course_offering_demd_offr` (`demand_offering_id`),
@@ -594,8 +587,8 @@ CREATE TABLE `timetable`.`course_subpart_credit` (
   `credit_type` VARCHAR(20) BINARY NULL,
   `credit_unit_type` VARCHAR(20) BINARY NULL,
   `credit_format` VARCHAR(20) BINARY NULL,
-  `fixed_min_credit` BIGINT(10) NULL,
-  `max_credit` BIGINT(10) NULL,
+  `fixed_min_credit` DOUBLE NULL,
+  `max_credit` DOUBLE NULL,
   `frac_credit_allowed` INT(1) NULL,
   PRIMARY KEY (`uniqueid`),
   CONSTRAINT `fk_subpart_cred_crs` FOREIGN KEY `fk_subpart_cred_crs` (`course_catalog_id`)
@@ -613,6 +606,139 @@ CREATE TABLE `timetable`.`crse_credit_format` (
   `abbreviation` VARCHAR(10) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
   UNIQUE INDEX `uk_crse_credit_format_ref` (`reference`(20))
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum`;
+CREATE TABLE `timetable`.`curriculum` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `abbv` VARCHAR(20) BINARY NOT NULL,
+  `name` VARCHAR(60) BINARY NOT NULL,
+  `acad_area_id` DECIMAL(20, 0) NULL,
+  `dept_id` DECIMAL(20, 0) NOT NULL,
+  PRIMARY KEY (`uniqueid`),
+  UNIQUE INDEX `pk_curricula` (`uniqueid`),
+  CONSTRAINT `fk_curriculum_acad_area` FOREIGN KEY `fk_curriculum_acad_area` (`acad_area_id`)
+    REFERENCES `timetable`.`academic_area` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_curriculum_dept` FOREIGN KEY `fk_curriculum_dept` (`dept_id`)
+    REFERENCES `timetable`.`department` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_clasf`;
+CREATE TABLE `timetable`.`curriculum_clasf` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `curriculum_id` DECIMAL(20, 0) NOT NULL,
+  `name` VARCHAR(20) BINARY NOT NULL,
+  `acad_clasf_id` DECIMAL(20, 0) NULL,
+  `nr_students` BIGINT(10) NOT NULL,
+  `ord` BIGINT(10) NOT NULL,
+  `students` LONGTEXT BINARY NULL,
+  PRIMARY KEY (`uniqueid`),
+  UNIQUE INDEX `pk_curricula_clasf` (`uniqueid`),
+  CONSTRAINT `fk_curriculum_clasf_acad_clasf` FOREIGN KEY `fk_curriculum_clasf_acad_clasf` (`acad_clasf_id`)
+    REFERENCES `timetable`.`academic_classification` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_curriculum_clasf_curriculum` FOREIGN KEY `fk_curriculum_clasf_curriculum` (`curriculum_id`)
+    REFERENCES `timetable`.`curriculum` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_course`;
+CREATE TABLE `timetable`.`curriculum_course` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `course_id` DECIMAL(20, 0) NOT NULL,
+  `cur_clasf_id` DECIMAL(20, 0) NOT NULL,
+  `pr_share` DOUBLE NOT NULL,
+  `ord` BIGINT(10) NOT NULL,
+  PRIMARY KEY (`uniqueid`),
+  UNIQUE INDEX `pk_curricula_course` (`uniqueid`),
+  CONSTRAINT `fk_curriculum_course_clasf` FOREIGN KEY `fk_curriculum_course_clasf` (`cur_clasf_id`)
+    REFERENCES `timetable`.`curriculum_clasf` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_curriculum_course_course` FOREIGN KEY `fk_curriculum_course_course` (`course_id`)
+    REFERENCES `timetable`.`course_offering` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_course_group`;
+CREATE TABLE `timetable`.`curriculum_course_group` (
+  `group_id` DECIMAL(20, 0) NOT NULL,
+  `cur_course_id` DECIMAL(20, 0) NOT NULL,
+  PRIMARY KEY (`group_id`, `cur_course_id`),
+  CONSTRAINT `fk_cur_course_group_course` FOREIGN KEY `fk_cur_course_group_course` (`cur_course_id`)
+    REFERENCES `timetable`.`curriculum_course` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cur_course_group_group` FOREIGN KEY `fk_cur_course_group_group` (`group_id`)
+    REFERENCES `timetable`.`curriculum_group` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_group`;
+CREATE TABLE `timetable`.`curriculum_group` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `name` VARCHAR(20) BINARY NOT NULL,
+  `color` VARCHAR(20) BINARY NULL,
+  `type` BIGINT(10) NOT NULL,
+  `curriculum_id` DECIMAL(20, 0) NOT NULL,
+  PRIMARY KEY (`uniqueid`),
+  CONSTRAINT `fk_curriculum_group_curriculum` FOREIGN KEY `fk_curriculum_group_curriculum` (`curriculum_id`)
+    REFERENCES `timetable`.`curriculum` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_major`;
+CREATE TABLE `timetable`.`curriculum_major` (
+  `curriculum_id` DECIMAL(20, 0) NOT NULL,
+  `major_id` DECIMAL(20, 0) NOT NULL,
+  PRIMARY KEY (`curriculum_id`, `major_id`),
+  CONSTRAINT `fk_curriculum_major_curriculum` FOREIGN KEY `fk_curriculum_major_curriculum` (`curriculum_id`)
+    REFERENCES `timetable`.`curriculum` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_curriculum_major_major` FOREIGN KEY `fk_curriculum_major_major` (`major_id`)
+    REFERENCES `timetable`.`pos_major` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+)
+ENGINE = INNODB;
+
+DROP TABLE IF EXISTS `timetable`.`curriculum_rule`;
+CREATE TABLE `timetable`.`curriculum_rule` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `acad_area_id` DECIMAL(20, 0) NOT NULL,
+  `major_id` DECIMAL(20, 0) NULL,
+  `acad_clasf_id` DECIMAL(20, 0) NOT NULL,
+  `projection` DOUBLE NOT NULL,
+  PRIMARY KEY (`uniqueid`),
+  INDEX `idx_cur_rule_areadept` (`acad_area_id`, `acad_clasf_id`),
+  CONSTRAINT `fk_cur_rule_acad_area` FOREIGN KEY `fk_cur_rule_acad_area` (`acad_area_id`)
+    REFERENCES `timetable`.`academic_area` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cur_rule_acad_clasf` FOREIGN KEY `fk_cur_rule_acad_clasf` (`acad_clasf_id`)
+    REFERENCES `timetable`.`academic_classification` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cur_rule_major` FOREIGN KEY `fk_cur_rule_major` (`major_id`)
+    REFERENCES `timetable`.`pos_major` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
 )
 ENGINE = INNODB;
 
@@ -638,7 +764,7 @@ DROP TABLE IF EXISTS `timetable`.`date_pattern_dept`;
 CREATE TABLE `timetable`.`date_pattern_dept` (
   `dept_id` DECIMAL(20, 0) NOT NULL,
   `pattern_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`pattern_id`, `dept_id`),
+  PRIMARY KEY (`dept_id`, `pattern_id`),
   CONSTRAINT `fk_date_pattern_dept_date` FOREIGN KEY `fk_date_pattern_dept_date` (`pattern_id`)
     REFERENCES `timetable`.`date_pattern` (`uniqueid`)
     ON DELETE CASCADE
@@ -699,9 +825,9 @@ CREATE TABLE `timetable`.`departmental_instructor` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   `career_acct` VARCHAR(20) BINARY NULL,
-  `lname` VARCHAR(26) BINARY NULL,
-  `fname` VARCHAR(20) BINARY NULL,
-  `mname` VARCHAR(20) BINARY NULL,
+  `lname` VARCHAR(100) BINARY NULL,
+  `fname` VARCHAR(100) BINARY NULL,
+  `mname` VARCHAR(100) BINARY NULL,
   `pos_code_type` DECIMAL(20, 0) NULL,
   `note` VARCHAR(20) BINARY NULL,
   `department_uniqueid` DECIMAL(20, 0) NULL,
@@ -738,7 +864,7 @@ DROP TABLE IF EXISTS `timetable`.`dept_to_tt_mgr`;
 CREATE TABLE `timetable`.`dept_to_tt_mgr` (
   `timetable_mgr_id` DECIMAL(20, 0) NOT NULL,
   `department_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`department_id`, `timetable_mgr_id`),
+  PRIMARY KEY (`timetable_mgr_id`, `department_id`),
   CONSTRAINT `fk_dept_to_tt_mgr_dept` FOREIGN KEY `fk_dept_to_tt_mgr_dept` (`department_id`)
     REFERENCES `timetable`.`department` (`uniqueid`)
     ON DELETE CASCADE
@@ -885,10 +1011,10 @@ CREATE TABLE `timetable`.`event_contact` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `external_id` VARCHAR(40) BINARY NULL,
   `email` VARCHAR(200) BINARY NULL,
-  `phone` VARCHAR(10) BINARY NULL,
-  `firstname` VARCHAR(20) BINARY NULL,
-  `middlename` VARCHAR(20) BINARY NULL,
-  `lastname` VARCHAR(30) BINARY NULL,
+  `phone` VARCHAR(25) BINARY NULL,
+  `firstname` VARCHAR(100) BINARY NULL,
+  `middlename` VARCHAR(100) BINARY NULL,
+  `lastname` VARCHAR(100) BINARY NULL,
   PRIMARY KEY (`uniqueid`)
 )
 ENGINE = INNODB;
@@ -912,16 +1038,15 @@ DROP TABLE IF EXISTS `timetable`.`event_note`;
 CREATE TABLE `timetable`.`event_note` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `event_id` DECIMAL(20, 0) NOT NULL,
-  `note_id` DECIMAL(20, 0) NULL,
   `text_note` VARCHAR(1000) BINARY NULL,
+  `time_stamp` DATETIME NULL,
+  `note_type` BIGINT(10) NOT NULL DEFAULT 0,
+  `uname` VARCHAR(100) BINARY NULL,
+  `meetings` VARCHAR(2000) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
   CONSTRAINT `fk_event_note_event` FOREIGN KEY `fk_event_note_event` (`event_id`)
     REFERENCES `timetable`.`event` (`uniqueid`)
     ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_event_note_std_note` FOREIGN KEY `fk_event_note_std_note` (`note_id`)
-    REFERENCES `timetable`.`standard_event_note` (`uniqueid`)
-    ON DELETE SET NULL
     ON UPDATE NO ACTION
 )
 ENGINE = INNODB;
@@ -952,6 +1077,8 @@ CREATE TABLE `timetable`.`exam` (
   `exam_type` BIGINT(10) NULL DEFAULT 0,
   `avg_period` BIGINT(10) NULL,
   `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
+  `exam_size` BIGINT(10) NULL,
+  `print_offset` BIGINT(10) NULL,
   PRIMARY KEY (`uniqueid`),
   CONSTRAINT `fk_exam_period` FOREIGN KEY `fk_exam_period` (`assigned_period`)
     REFERENCES `timetable`.`exam_period` (`uniqueid`)
@@ -1030,6 +1157,8 @@ CREATE TABLE `timetable`.`exam_period` (
   `length` BIGINT(10) NOT NULL,
   `pref_level_id` DECIMAL(20, 0) NOT NULL,
   `exam_type` BIGINT(10) NULL DEFAULT 0,
+  `event_start_offset` BIGINT(10) NOT NULL DEFAULT 0,
+  `event_stop_offset` BIGINT(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`uniqueid`),
   CONSTRAINT `fk_exam_period_pref` FOREIGN KEY `fk_exam_period_pref` (`pref_level_id`)
     REFERENCES `timetable`.`preference_level` (`uniqueid`)
@@ -1064,7 +1193,7 @@ DROP TABLE IF EXISTS `timetable`.`exam_room_assignment`;
 CREATE TABLE `timetable`.`exam_room_assignment` (
   `exam_id` DECIMAL(20, 0) NOT NULL,
   `location_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`location_id`, `exam_id`),
+  PRIMARY KEY (`exam_id`, `location_id`),
   CONSTRAINT `fk_exam_room_exam` FOREIGN KEY `fk_exam_room_exam` (`exam_id`)
     REFERENCES `timetable`.`exam` (`uniqueid`)
     ON DELETE CASCADE
@@ -1078,8 +1207,8 @@ CREATE TABLE `timetable`.`external_building` (
   `session_id` DECIMAL(20, 0) NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   `abbreviation` VARCHAR(10) BINARY NULL,
-  `coordinate_x` BIGINT(10) NULL,
-  `coordinate_y` BIGINT(10) NULL,
+  `coordinate_x` DOUBLE NULL,
+  `coordinate_y` DOUBLE NULL,
   `display_name` VARCHAR(100) BINARY NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_external_building` (`session_id`, `abbreviation`(10))
@@ -1092,8 +1221,8 @@ CREATE TABLE `timetable`.`external_room` (
   `external_bldg_id` DECIMAL(20, 0) NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
   `room_number` VARCHAR(10) BINARY NULL,
-  `coordinate_x` BIGINT(10) NULL,
-  `coordinate_y` BIGINT(10) NULL,
+  `coordinate_x` DOUBLE NULL,
+  `coordinate_y` DOUBLE NULL,
   `capacity` BIGINT(10) NULL,
   `classification` VARCHAR(20) BINARY NULL,
   `instructional` INT(1) NULL,
@@ -1347,8 +1476,8 @@ CREATE TABLE `timetable`.`non_university_location` (
   `session_id` DECIMAL(20, 0) NULL,
   `name` VARCHAR(20) BINARY NULL,
   `capacity` BIGINT(10) NULL,
-  `coordinate_x` BIGINT(10) NULL,
-  `coordinate_y` BIGINT(10) NULL,
+  `coordinate_x` DOUBLE NULL,
+  `coordinate_y` DOUBLE NULL,
   `ignore_too_far` INT(1) NULL,
   `manager_ids` VARCHAR(200) BINARY NULL,
   `pattern` VARCHAR(350) BINARY NULL,
@@ -1408,7 +1537,7 @@ DROP TABLE IF EXISTS `timetable`.`offr_group_offering`;
 CREATE TABLE `timetable`.`offr_group_offering` (
   `offr_group_id` DECIMAL(20, 0) NOT NULL,
   `instr_offering_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`instr_offering_id`, `offr_group_id`),
+  PRIMARY KEY (`offr_group_id`, `instr_offering_id`),
   CONSTRAINT `fk_offr_group_instr_offr` FOREIGN KEY `fk_offr_group_instr_offr` (`instr_offering_id`)
     REFERENCES `timetable`.`instructional_offering` (`uniqueid`)
     ON DELETE CASCADE
@@ -1465,7 +1594,7 @@ DROP TABLE IF EXISTS `timetable`.`pos_acad_area_minor`;
 CREATE TABLE `timetable`.`pos_acad_area_minor` (
   `academic_area_id` DECIMAL(20, 0) NOT NULL,
   `minor_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`minor_id`, `academic_area_id`),
+  PRIMARY KEY (`academic_area_id`, `minor_id`),
   CONSTRAINT `fk_pos_acad_area_minor_area` FOREIGN KEY `fk_pos_acad_area_minor_area` (`academic_area_id`)
     REFERENCES `timetable`.`academic_area` (`uniqueid`)
     ON DELETE CASCADE
@@ -1485,6 +1614,7 @@ CREATE TABLE `timetable`.`pos_major` (
   `external_uid` VARCHAR(20) BINARY NULL,
   `session_id` DECIMAL(20, 0) NULL,
   PRIMARY KEY (`uniqueid`),
+  INDEX `idx_pos_major_code` (`code`(10), `session_id`),
   CONSTRAINT `fk_pos_major_session` FOREIGN KEY `fk_pos_major_session` (`session_id`)
     REFERENCES `timetable`.`sessions` (`uniqueid`)
     ON DELETE CASCADE
@@ -1604,8 +1734,8 @@ CREATE TABLE `timetable`.`room` (
   `building_id` DECIMAL(20, 0) NULL,
   `room_number` VARCHAR(10) BINARY NULL,
   `capacity` BIGINT(10) NULL,
-  `coordinate_x` BIGINT(10) NULL,
-  `coordinate_y` BIGINT(10) NULL,
+  `coordinate_x` DOUBLE NULL,
+  `coordinate_y` DOUBLE NULL,
   `ignore_too_far` INT(1) NULL,
   `manager_ids` VARCHAR(200) BINARY NULL,
   `pattern` VARCHAR(350) BINARY NULL,
@@ -1795,7 +1925,7 @@ CREATE TABLE `timetable`.`room_type_option` (
   `session_id` DECIMAL(20, 0) NOT NULL,
   `status` BIGINT(10) NOT NULL,
   `message` VARCHAR(200) BINARY NULL,
-  PRIMARY KEY (`session_id`, `room_type`),
+  PRIMARY KEY (`room_type`, `session_id`),
   CONSTRAINT `fk_rtype_option_session` FOREIGN KEY `fk_rtype_option_session` (`session_id`)
     REFERENCES `timetable`.`sessions` (`uniqueid`)
     ON DELETE CASCADE
@@ -1858,6 +1988,18 @@ CREATE TABLE `timetable`.`sectioning_info` (
 )
 ENGINE = INNODB;
 
+DROP TABLE IF EXISTS `timetable`.`sectioning_queue`;
+CREATE TABLE `timetable`.`sectioning_queue` (
+  `uniqueid` DECIMAL(20, 0) NOT NULL,
+  `session_id` DECIMAL(20, 0) NOT NULL,
+  `type` BIGINT(10) NOT NULL,
+  `time_stamp` DATETIME NOT NULL,
+  `message` LONGTEXT BINARY NULL,
+  PRIMARY KEY (`uniqueid`),
+  INDEX `idx_sect_queue_session_ts` (`session_id`, `time_stamp`)
+)
+ENGINE = INNODB;
+
 DROP TABLE IF EXISTS `timetable`.`sessions`;
 CREATE TABLE `timetable`.`sessions` (
   `academic_initiative` VARCHAR(20) BINARY NULL,
@@ -1872,6 +2014,8 @@ CREATE TABLE `timetable`.`sessions` (
   `academic_year` VARCHAR(4) BINARY NULL,
   `academic_term` VARCHAR(20) BINARY NULL,
   `exam_begin_date` DATETIME NULL,
+  `event_begin_date` DATETIME NULL,
+  `event_end_date` DATETIME NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_sessions_date_pattern` (`def_datepatt_id`),
   INDEX `idx_sessions_status_type` (`status_type`),
@@ -2064,8 +2208,8 @@ DROP TABLE IF EXISTS `timetable`.`staff`;
 CREATE TABLE `timetable`.`staff` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
-  `fname` VARCHAR(50) BINARY NULL,
-  `mname` VARCHAR(50) BINARY NULL,
+  `fname` VARCHAR(100) BINARY NULL,
+  `mname` VARCHAR(100) BINARY NULL,
   `lname` VARCHAR(100) BINARY NULL,
   `pos_code` VARCHAR(20) BINARY NULL,
   `dept` VARCHAR(50) BINARY NULL,
@@ -2087,8 +2231,8 @@ DROP TABLE IF EXISTS `timetable`.`student`;
 CREATE TABLE `timetable`.`student` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
-  `first_name` VARCHAR(50) BINARY NULL,
-  `middle_name` VARCHAR(50) BINARY NULL,
+  `first_name` VARCHAR(100) BINARY NULL,
+  `middle_name` VARCHAR(100) BINARY NULL,
   `last_name` VARCHAR(100) BINARY NULL,
   `email` VARCHAR(200) BINARY NULL,
   `free_time_cat` BIGINT(10) NULL DEFAULT 0,
@@ -2189,6 +2333,7 @@ CREATE TABLE `timetable`.`student_enrl` (
   `last_modified_time` DATETIME NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_student_enrl` (`solution_id`),
+  INDEX `idx_student_enrl_assignment` (`solution_id`, `class_id`),
   INDEX `idx_student_enrl_class` (`class_id`),
   CONSTRAINT `fk_student_enrl_class` FOREIGN KEY `fk_student_enrl_class` (`class_id`)
     REFERENCES `timetable`.`class_` (`uniqueid`)
@@ -2284,7 +2429,7 @@ DROP TABLE IF EXISTS `timetable`.`student_minor`;
 CREATE TABLE `timetable`.`student_minor` (
   `student_id` DECIMAL(20, 0) NOT NULL,
   `minor_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`minor_id`, `student_id`),
+  PRIMARY KEY (`student_id`, `minor_id`),
   CONSTRAINT `fk_student_minor_minor` FOREIGN KEY `fk_student_minor_minor` (`minor_id`)
     REFERENCES `timetable`.`pos_minor` (`uniqueid`)
     ON DELETE CASCADE
@@ -2379,9 +2524,9 @@ DROP TABLE IF EXISTS `timetable`.`timetable_manager`;
 CREATE TABLE `timetable`.`timetable_manager` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `external_uid` VARCHAR(40) BINARY NULL,
-  `first_name` VARCHAR(20) BINARY NULL,
-  `middle_name` VARCHAR(20) BINARY NULL,
-  `last_name` VARCHAR(30) BINARY NULL,
+  `first_name` VARCHAR(100) BINARY NULL,
+  `middle_name` VARCHAR(100) BINARY NULL,
+  `last_name` VARCHAR(100) BINARY NULL,
   `email_address` VARCHAR(200) BINARY NULL,
   `last_modified_time` DATETIME NULL,
   PRIMARY KEY (`uniqueid`),
@@ -2482,6 +2627,7 @@ CREATE TABLE `timetable`.`tmtbl_mgr_to_roles` (
   `role_id` DECIMAL(20, 0) NULL,
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `is_primary` INT(1) NULL,
+  `receive_emails` INT(1) NULL DEFAULT 1,
   PRIMARY KEY (`uniqueid`),
   UNIQUE INDEX `uk_tmtbl_mgr_to_roles_mgr_role` (`manager_id`, `role_id`),
   CONSTRAINT `fk_tmtbl_mgr_to_roles_manager` FOREIGN KEY `fk_tmtbl_mgr_to_roles_manager` (`manager_id`)
@@ -2547,7 +2693,7 @@ DROP TABLE IF EXISTS `timetable`.`xconflict_exam`;
 CREATE TABLE `timetable`.`xconflict_exam` (
   `conflict_id` DECIMAL(20, 0) NOT NULL,
   `exam_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`exam_id`, `conflict_id`),
+  PRIMARY KEY (`conflict_id`, `exam_id`),
   INDEX `idx_xconflict_exam` (`exam_id`),
   CONSTRAINT `fk_xconflict_ex_conf` FOREIGN KEY `fk_xconflict_ex_conf` (`conflict_id`)
     REFERENCES `timetable`.`xconflict` (`uniqueid`)
@@ -2564,7 +2710,7 @@ DROP TABLE IF EXISTS `timetable`.`xconflict_instructor`;
 CREATE TABLE `timetable`.`xconflict_instructor` (
   `conflict_id` DECIMAL(20, 0) NOT NULL,
   `instructor_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`instructor_id`, `conflict_id`),
+  PRIMARY KEY (`conflict_id`, `instructor_id`),
   CONSTRAINT `fk_xconflict_in_conf` FOREIGN KEY `fk_xconflict_in_conf` (`conflict_id`)
     REFERENCES `timetable`.`xconflict` (`uniqueid`)
     ON DELETE CASCADE

@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.filter;
 
 import java.io.IOException;
@@ -134,7 +153,10 @@ public class PageAccessFilter implements Filter {
 				message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
 			}
 			if (exception!=null || (t1-t0)>dumpTime) {
-				User u = Web.getUser(r.getSession());
+				User u = null;
+				try {
+					u = (r.getSession() == null ? null : Web.getUser(r.getSession()));
+				} catch (IllegalStateException e) {}
 				if (u==null) {
 					message += "\n  User: no user";
 				} else {
@@ -146,13 +168,17 @@ public class PageAccessFilter implements Filter {
 					if ("password".equals(n)) continue;
 					message+="\n    "+n+"="+r.getParameter(n);
 				}
-				if (dumpSessionAttribues) {
-					message += "\n  Session attributes:";
-					for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
-						String n = (String)e.nextElement();
-						if (n.equals("userTrace")) continue;
-						message+="\n    "+n+"="+r.getSession().getAttribute(n);
+				try {
+					if (dumpSessionAttribues && r.getSession() != null) {
+						message += "\n  Session attributes:";
+						for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
+							String n = (String)e.nextElement();
+							if (n.equals("userTrace")) continue;
+							message+="\n    "+n+"="+r.getSession().getAttribute(n);
+						}
 					}
+				} catch (IllegalStateException e) {
+					message += "\n    INVALID SESSION";
 				}
 			} else {
 				User u = Web.getUser(r.getSession());
@@ -181,5 +207,4 @@ public class PageAccessFilter implements Filter {
 
 	public void destroy() {
 	}
-
 }

@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
@@ -135,7 +135,8 @@
 <html:form action="/suggestions">
 <logic:equal name="suggestionsForm" property="op" value="close">
 <script language="JavaScript" type="text/javascript">
-window.close();
+	parent.hideGwtDialog();
+	parent.refreshPage();
 </script>
 </logic:equal>
 <%
@@ -150,7 +151,7 @@ try {
 	<html:hidden property="depth" /> 
 	<html:hidden property="timeout" /> 
 	<script language="JavaScript">blToggleHeader('Filter','dispSugFilter');blStart('dispSugFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width='10%'>Display conflict table:</TD>
 			<TD>
@@ -197,9 +198,8 @@ try {
 		</TR>
 		</table>
 	<script language="JavaScript">blEnd('dispSugFilter');blStartCollapsed('dispSugFilter');</script>
-		</table>
 	<script language="JavaScript">blEndCollapsed('dispSugFilter');</script>	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width="10%" nowrap>Allow placements:</TD>
 			<TD>
@@ -227,7 +227,7 @@ try {
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" title="Apply changes" value="Apply"/>
-				<html:button onclick="displayLoading();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close" onclick="window.close();"/>
+				<html:button onclick="displayLoading();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close" onclick="parent.hideGwtDialog();"/>
 			</TD>
 		</TR>
 		</TABLE>
@@ -235,7 +235,7 @@ try {
 	if (request.getAttribute("Suggestions.assignmentInfo")!=null) {
 %>
 		<br><br>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
@@ -256,7 +256,7 @@ try {
 %>
 	<logic:equal name="suggestionsForm" property="showFilter" value="false">
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
@@ -266,7 +266,7 @@ try {
 			</TR>
 			<TR>
 				<TD>
-					<I>No timetable is loaded. However, you can load one <a target='__idContentFrame' href='listSolutions.do' onclick='window.close();'>here</a>.</I>
+					<I>No timetable is loaded. However, you can load one <a href="" onclick="parent.hideGwtDialog(); parent.location='listSolutions.do';">here</a>.</I>
 				</TD>
 			</TR>
 		</TABLE>
@@ -285,7 +285,7 @@ try {
 	if (selectedAssignment!=null || selectedSuggestion!=null || conflictAssignments!=null) {
 %>
 		<BR><BR>	
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=(selectedAssignment==null?"":selectedAssignment)%>
 			<%=(selectedSuggestion==null?"":selectedSuggestion)%>
 			<%=(conflictAssignments==null?"":conflictAssignments)%>
@@ -294,7 +294,7 @@ try {
 		if (selectedInfo!=null) {
 %>
 			<BR>
-			<TABLE border="0" cellspacing="0" cellpadding="3" width="90%">
+			<TABLE border="0" cellspacing="0" cellpadding="3" width="100%">
 				<%=selectedInfo%>
 				<TR><TD align='right' colspan='3'>
 					<tt:section-header/>
@@ -311,7 +311,7 @@ try {
 	if (conftable!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=conftable%>
 		</TABLE>
 <%
@@ -321,10 +321,10 @@ try {
 	if (suggestions!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=suggestions%>
 		</TABLE>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD><I><%=(suggestionsMessage==null?"":suggestionsMessage)%></I></TD>
 				<TD align='right'>
@@ -342,13 +342,13 @@ try {
 	if (placements!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=placements%>
 		</TABLE>
 <%
 		if (placementsMessage!=null) {
 %>
-			<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 				<TR><TD><I><%=placementsMessage%></I></TD></TR>
 			</TABLE>
 <%
@@ -383,7 +383,7 @@ try {
 	if (cbs!=null && classId!=null && cbs.getCBS(classId)!=null) {
 %>
 	<BR>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">

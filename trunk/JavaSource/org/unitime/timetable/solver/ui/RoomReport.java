@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,18 +14,20 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
+import java.util.BitSet;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
@@ -44,26 +46,42 @@ public class RoomReport implements Serializable {
 	public static int[] sGroupSizes = new int[] {0, 10, 20, 40, 60, 80, 100, 150, 200, 400, Integer.MAX_VALUE};
 	private static final long serialVersionUID = 1L;
 	private HashSet iGroups = new HashSet();
-	private int iStartDay, iEndDay, iNrWeeks;
     private Long iRoomType = null;
+    private BitSet iSessionDays = null;
+    private int iStartDayDayOfWeek = 0;
+    private double iNrWeeks = 0.0;
 
-	public RoomReport(TimetableModel model, int startDay, int endDay, int nrWeeks, Long roomType) {
-		iStartDay = startDay; iEndDay = endDay;
-		iNrWeeks = nrWeeks;
+	public RoomReport(TimetableModel model, BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+		iSessionDays = sessionDays;
+		iStartDayDayOfWeek = startDayDayOfWeek;
         iRoomType = roomType;
+        
+		// count number of weeks as a number of working days / 5
+        // (this is to avoid problems when the default date pattern does not contain Saturdays and/or Sundays)
+		int dow = iStartDayDayOfWeek;
+		int nrDays[] = new int[] {0, 0, 0, 0, 0, 0, 0};
+		for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
+			if (iSessionDays.get(day)) nrDays[dow]++;
+			dow = (dow + 1) % 7;
+		}
+		iNrWeeks = 0.2 * (
+				nrDays[Constants.DAY_MON] +
+				nrDays[Constants.DAY_TUE] +
+				nrDays[Constants.DAY_WED] +
+				nrDays[Constants.DAY_THU] +
+				nrDays[Constants.DAY_FRI] );
+		
 		for (int i=0;i<sGroupSizes.length-1;i++) {
 			iGroups.add(new RoomAllocationGroup(sGroupSizes[i],sGroupSizes[i+1]));
 		}
-		for (Enumeration e=model.getRoomConstraints().elements();e.hasMoreElements();) {
-			RoomConstraint rc = (RoomConstraint)e.nextElement();
+		for (RoomConstraint rc: model.getRoomConstraints()) {
 			if (!ToolBox.equals(iRoomType,rc.getType())) continue;
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
 				g.add(rc);
 			}
 		}
-		for (Enumeration e=model.variables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: model.variables()) {
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
 				g.add(lecture);
@@ -135,8 +153,7 @@ public class RoomReport implements Serializable {
 			if (lecture.canShareRoom()) {
 				for (Iterator i=lecture.canShareRoomConstraints().iterator();i.hasNext();) {
 					GroupConstraint gc = (GroupConstraint)i.next();
-					for (Enumeration e=gc.variables().elements();e.hasMoreElements();) {
-						Lecture other = (Lecture)e.nextElement();
+					for (Lecture other: gc.variables()) {
 						if (other.getClassId().compareTo(lecture.getClassId())<0)
 							skip=true;
 					}
@@ -146,8 +163,7 @@ public class RoomReport implements Serializable {
             
             skip = true;
 			boolean canUse = false, mustUse = true, mustUseThisSizeOrBigger = true;
-			for (Enumeration e=lecture.roomLocations().elements();e.hasMoreElements();) {
-				RoomLocation r = (RoomLocation)e.nextElement();
+			for (RoomLocation r: lecture.roomLocations()) {
                 if (r.getRoomConstraint()==null) continue;
                 if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 				if (PreferenceLevel.sProhibited.equals(PreferenceLevel.int2prolog(r.getPreference()))) continue;
@@ -163,23 +179,19 @@ public class RoomReport implements Serializable {
             
 			boolean shouldUse = canUse && mustUseThisSizeOrBigger;
 			if (canUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
-				iSlotsCanUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsCanUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesCanUse += lecture.getNrRooms();
 			}
 			if (mustUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
-				iSlotsMustUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsMustUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesMustUse += lecture.getNrRooms();
 			}
 			if (mustUseThisSizeOrBigger) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
-				iSlotsMustUseThisSizeOrBigger += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsMustUseThisSizeOrBigger += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesMustUseThisSizeOrBigger += lecture.getNrRooms();
 			}
 			if (shouldUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
-				iSlotsShouldUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+				iSlotsShouldUse += getSlotsAWeek(lecture.timeLocations()) * lecture.getNrRooms();
 				iLecturesShouldUse += lecture.getNrRooms();
 			}
 
@@ -187,8 +199,7 @@ public class RoomReport implements Serializable {
 			if (lecture.getAssignment()!=null) {
 				Placement placement = (Placement)lecture.getAssignment();
 				if (placement.isMultiRoom()) {
-					for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-						RoomLocation r = (RoomLocation)e.nextElement();
+					for (RoomLocation r: placement.getRoomLocations()) {
                         if (r.getRoomConstraint()==null) continue;
                         if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 						if (iMinRoomSize<=r.getRoomSize() && r.getRoomSize()<iMaxRoomSize)
@@ -204,13 +215,33 @@ public class RoomReport implements Serializable {
 				}
 				if (use>0) {
 					TimeLocation t = placement.getTimeLocation(); 
-					iSlotsUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*use*t.getNrMeetings()*t.getNrSlotsPerMeeting();
+					iSlotsUse += getSlotsAWeek(t) * use;
 					iLecturesUse += use;
 				}
 			}
-			
 		}
 		
+		public double getSlotsAWeek(Collection<TimeLocation> times) {
+			if (times.isEmpty()) return 0;
+			double totalHoursAWeek = 0;
+			for (TimeLocation t: times)
+				totalHoursAWeek += getSlotsAWeek(t);
+			return ((double)totalHoursAWeek) / times.size();
+		}
+		
+		public double getSlotsAWeek(TimeLocation t) {
+			return getAverageDays(t) * t.getNrSlotsPerMeeting();
+		}
+		
+		public double getAverageDays(TimeLocation t) {
+			int nrDays = 0;
+			int dow = iStartDayDayOfWeek;
+			for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
+				if (iSessionDays.get(day) && t.getWeekCode().get(day) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0) nrDays++;
+				dow = (dow + 1) % 7;
+			}
+			return ((double)nrDays) / iNrWeeks;
+		}
 	}
 
 }

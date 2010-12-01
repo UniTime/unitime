@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -50,7 +50,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -147,7 +146,6 @@ public class RoomFeatureAddAction extends Action {
 		//if roomFeature is global
 		if (roomFeatureEditForm.isGlobal()) {
 			GlobalRoomFeatureDAO gdao = new GlobalRoomFeatureDAO();
-			LocationDAO ldao = new LocationDAO();
 			org.hibernate.Session hibSession = gdao.getSession();
 			Transaction tx = null;
 		
@@ -179,7 +177,6 @@ public class RoomFeatureAddAction extends Action {
 		    }
 		} else {
 			DepartmentRoomFeatureDAO ddao = new DepartmentRoomFeatureDAO();
-			LocationDAO ldao = new LocationDAO();
 			org.hibernate.Session hibSession = ddao.getSession();
 			Transaction tx = null;
 		
@@ -187,9 +184,6 @@ public class RoomFeatureAddAction extends Action {
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManagerDAO tdao = new TimetableManagerDAO();
-	        TimetableManager owner = tdao.get(new Long(mgrId));
 	        rf.setDepartment(Department.findByDeptCode(roomFeatureEditForm.getDeptCode(),sessionId));	
 
 			try {
@@ -243,7 +237,6 @@ public class RoomFeatureAddAction extends Action {
 		roomFeatureEditForm.setDeptCode(null);
 		
         ArrayList list = new ArrayList();
-        int i = 0;
         for (Iterator iter = departments.iterator(); iter.hasNext();) {
         	Department dept = (Department) iter.next();
         	if (!dept.isEditableBy(user)) continue;

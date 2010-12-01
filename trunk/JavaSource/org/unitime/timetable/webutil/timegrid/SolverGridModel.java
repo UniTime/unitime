@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.timegrid;
 
@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -40,8 +41,6 @@ import net.sf.cpsolver.coursett.constraint.RoomConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
 
@@ -51,13 +50,12 @@ import net.sf.cpsolver.ifs.solver.Solver;
 public class SolverGridModel extends TimetableGridModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private transient Long iRoomId = null;
-	private transient int iYear = 0;
 	
 	public SolverGridModel() {
 		super();
 	}
 	
-	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode) {
+	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeRoom, room.getResourceId());
 		if (room instanceof DiscouragedRoomConstraint)
 			setName("<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged)+"'>"+
@@ -68,11 +66,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		setSize(room.getCapacity());
         setType(room.getType());
 		iRoomId = room.getResourceId();
-		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		if (firstDay<0) {
 			Vector placements = new Vector();
-			for (Enumeration e=room.assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: room.assignedVariables()) {
 				Placement placement = (Placement)lecture.getAssignment();
 				if (placement.hasRoomLocation(iRoomId))
 						placements.add(placement);
@@ -91,11 +87,10 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		HashSet done = new HashSet();
 		for (int i=0;i<Constants.DAY_CODES.length;i++)
 			for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
-                Vector placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
+                List<Placement> placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
                 if (placements!=null && !placements.isEmpty()) {
-                    for (Enumeration e=placements.elements();e.hasMoreElements();) {
-                        Placement p = (Placement)e.nextElement();
-                        if (done.add(p))
+                    for (Placement p: placements) {
+                    	if ((showEvents || p.getAssignmentId() != null) && done.add(p))
                             init(solver, p, sBgModeNotAvailable, firstDay);
                     }
                 } else if (!room.isAvailable(i*Constants.SLOTS_PER_DAY+j)) {
@@ -112,11 +107,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super(sResourceTypeInstructor, instructor.getResourceId());
 		setName(instructor.getName());
         setType(instructor.getType());
-		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		if (firstDay<0) {
 			Vector placements = new Vector();
-			for (Enumeration e=instructor.assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: instructor.assignedVariables()) {
 				placements.add(lecture.getAssignment());
 			}
 			init(solver, placements, bgMode, firstDay);
@@ -127,10 +120,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			HashSet done = new HashSet();
 			for (int i=0;i<Constants.DAY_CODES.length;i++)
 				for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
-                    Vector placements = instructor.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j];
+                    List<Placement> placements = instructor.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j];
                     if (placements!=null) {
-                        for (Enumeration e=placements.elements();e.hasMoreElements();) {
-                            Placement p = (Placement)e.nextElement();
+                        for (Placement p: placements) {
                             if (p==null || !done.add(p)) continue;
                             init(solver, p, sBgModeNotAvailable, firstDay);
                         }
@@ -144,10 +136,8 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super(sResourceTypeInstructor, dept.getDepartmentId().longValue());
 		setName(dept.getName());
 		setSize(dept.variables().size());
-		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		Vector placements = new Vector();
-		for (Enumeration e=dept.assignedVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: dept.assignedVariables()) {
 			Placement placement = (Placement)lecture.getAssignment();
 			placements.add(placement);
 		}
@@ -184,10 +174,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	}
 	
 	private void init(Solver solver, Placement placement, int bgMode, int firstDay) {
-		Lecture lecture = (Lecture)placement.variable();
 		TimetableGridCell cell = null;
-		for (IntEnumeration f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
-			int slot = f.nextInt();
+		for (Enumeration<Integer> f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
+			int slot = f.nextElement();
 			if (firstDay>=0 && !placement.getTimeLocation().getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
 			if (cell==null) {
 				cell = createCell(solver, slot/Constants.SLOTS_PER_DAY,slot%Constants.SLOTS_PER_DAY,(Lecture)placement.variable(), placement, bgMode);
@@ -202,8 +191,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
     	if (lecture.isCommitted()) return PreferenceLevel.sRequired;
         if (placement==null) {
         	boolean hasNoConf = false;
-            for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-                Placement p = (Placement)e.nextElement();
+            for (Placement p: lecture.values()) {
                 if (p.isHard()) continue;
                 if (lecture.getModel().conflictValues(p).isEmpty()) {
                 	hasNoConf=true; break;
@@ -227,8 +215,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
         boolean hasRoom = false;
         boolean hasTimeNoConf = false;
         boolean hasRoomNoConf = false;
-        for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-            Placement p = (Placement)e.nextElement();
+        for (Placement p: lecture.values()) {
             if (p.equals(placement)) continue;
             if (p.isHard()) continue; 
             if (p.getTimeLocation().equals(placement.getTimeLocation())) {
@@ -257,18 +244,6 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
         return PreferenceLevel.sRequired;
     }
     
-    private int nrPlacementsNoConf(Lecture lecture, Placement placement) {
-		int nrPlacementsNoConf = 0;
-		for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-			Placement p = (Placement)e.nextElement();
-            if (p.equals(placement)) continue;
-            if (p.isHard()) continue;
-            if (!lecture.getModel().conflictValues(p).isEmpty()) continue;
-            nrPlacementsNoConf++;
-		}
-		return nrPlacementsNoConf;
-    }
-	
 	private TimetableGridCell createCell(Solver solver, int day, int slot, Lecture lecture, Placement placement, int bgMode) {
 		String name = lecture.getName();
 		String title = "";
@@ -276,7 +251,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		int nrMeetings = placement.getTimeLocation().getNrMeetings();
 		String shortComment = null;
 		String shortCommentNoColor = null;
-		String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
+		String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+lecture.getClassId()+"&op=Reset','900','90%');";
 		String background = TimetableGridCell.sBgColorNeutral;
 		
 		if (bgMode==sBgModeNotAvailable)
@@ -288,8 +263,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			penalty = solver.getPerturbationsCounter().getPerturbationPenalty(solver.currentSolution().getModel(),placement,new Vector());
 		}
 		DepartmentSpreadConstraint deptConstraint = null;
-		for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-			Constraint c = (Constraint)e.nextElement();
+		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint) {
 				deptConstraint = (DepartmentSpreadConstraint)c;
 				break;
@@ -308,8 +282,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			background = TimetableGridCell.conflicts2color(studConf);
 		} else if (bgMode==sBgModeInstructorBtbPref) {
 			int pref = 0;
-	       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-	       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 	       		pref += ic.getPreferenceCombination(placement);
 	       	}
 			background = TimetableGridCell.pref2color(pref);
@@ -333,8 +306,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			long minRoomSize = lecture.minRoomSize();
 			int roomSize = 0;
 			if (placement.isMultiRoom()) {
-				for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-					RoomLocation r = (RoomLocation)e.nextElement();
+				for (RoomLocation r: placement.getRoomLocations()) {
 					roomSize += r.getRoomSize();
 				}
 			} else
@@ -366,22 +338,20 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				
 			
 			int btbInstrPref = 0;
-	       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-	       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 	       		btbInstrPref += ic.getPreferenceCombination(placement);
 	       	}
 
-	       	title = "timePref:"+(int)placement.getTimeLocation().getNormalizedPreference()+", "+
-				"studConf:"+lecture.countStudentConflicts(placement)+", "+
-				"roomPref:"+roomPref+", "+
-				(lecture.getInstructorConstraints().isEmpty()?"":"btbInstrPref:"+btbInstrPref+", ")+
-				(lecture.getInitialAssignment()!=null?"initial:"+(lecture.getInitialAssignment().equals(placement)?"this one":lecture.getInitialAssignment().getName())+", ":"")+
-				(lecture.getInitialAssignment()!=null?"pert:"+Web.format(penalty)+", ":"")+
-				(deptConstraint==null?"":", deptBal:"+deptConstraint.getMaxPenalty(placement));
+	       	title = "Time preference: "+(int)placement.getTimeLocation().getNormalizedPreference() +"<br>"+
+				"Student conflicts: "+lecture.countStudentConflicts(placement)+"<br>"+
+				"Room preference: "+roomPref+
+				(lecture.getInstructorConstraints().isEmpty()?"":"<br>Back-to-back instructor pref.: "+btbInstrPref)+
+				(lecture.getInitialAssignment()!=null?"<br>Initial assignment: "+(lecture.getInitialAssignment().equals(placement)?"<i>current assignment</i>":lecture.getInitialAssignment().getName()):"")+
+				(lecture.getInitialAssignment()!=null?"<br>Perturbation penalty: "+Web.format(penalty):"")+
+				(deptConstraint==null?"":"<br>Department balance: "+deptConstraint.getMaxPenalty(placement));
 			
 			int gcPref = 0;
-			for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-				Constraint c = (Constraint)e.nextElement();
+			for (Constraint c: lecture.constraints()) {
 				if (!(c instanceof GroupConstraint)) continue;
 				GroupConstraint gc = (GroupConstraint)c;
 				if (gc.isHard()) continue;
@@ -389,7 +359,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				if (gc.getPreference()<0 && gc.getCurrentPreference()<0) continue;
 				gcPref = Math.max(gcPref,Math.abs(gc.getPreference()));
 			}
-			title = title+", distrPref:"+gcPref;
+			title = title+"<br>Distribution preference: "+gcPref;
 			if (bgMode==sBgModeDistributionConstPref)
 				background = TimetableGridCell.pref2color(gcPref);
 		}

@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -27,7 +27,7 @@
 <tiles:importAttribute />
 <html:form action="/solutionReport">
 	<logic:notEmpty name="SolutionReport.message" scope="request">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD>
 					<I>
@@ -42,14 +42,14 @@
 		<bean:define name="roomType" property="reference" id="ref"/>
 		<logic:notEmpty name='<%="SolutionReport.roomReportTable."+ref%>' scope="request">
 			<% if (!atLeastOneRoomReport) { %>
-				<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%  atLeastOneRoomReport = true; } %>
 			<bean:write name='<%="SolutionReport.roomReportTable."+ref%>' scope="request" filter="false"/>
 		</logic:notEmpty>
 	</logic:iterate>
 	<logic:notEmpty name="SolutionReport.roomReportTable.nonUniv" scope="request">
 		<% if (!atLeastOneRoomReport) { %>
-			<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%  atLeastOneRoomReport = true; } %>
 		<bean:write name="SolutionReport.roomReportTable.nonUniv" scope="request" filter="false"/>
 	</logic:notEmpty>
@@ -75,7 +75,7 @@
 	String violatedDistrPreferencesReportTable =  (String)request.getAttribute("SolutionReport.violatedDistrPreferencesReportTable");
 	if (violatedDistrPreferencesReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=violatedDistrPreferencesReportTable%>
 		<tr><td colspan='5'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
@@ -86,7 +86,7 @@
 	String discouragedInstructorBtbReportReportTable = (String)request.getAttribute("SolutionReport.discouragedInstructorBtbReportReportTable");
 	if (discouragedInstructorBtbReportReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=discouragedInstructorBtbReportReportTable%>
 		<tr><td colspan='6'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
@@ -96,9 +96,9 @@
 	String studentConflictsReportTable = (String)request.getAttribute("SolutionReport.studentConflictsReportTable");
 	if (studentConflictsReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=studentConflictsReportTable%>
-		<tr><td colspan='8'><tt:displayPrefLevelLegend/></td></tr>
+		<tr><td colspan='9'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
 <% 
 	}
@@ -106,7 +106,7 @@
 	String sameSubpartBalancingReportTable = (String)request.getAttribute("SolutionReport.sameSubpartBalancingReportTable");
 	if (sameSubpartBalancingReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=sameSubpartBalancingReportTable%>
 		<tr><td colspan='<%=2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6%>'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
@@ -116,7 +116,7 @@
 	String deptBalancingReportTable = (String)request.getAttribute("SolutionReport.deptBalancingReportTable");
 	if (deptBalancingReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=deptBalancingReportTable%>
 		<tr><td colspan='<%=2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6%>'><tt:displayPrefLevelLegend/></td></tr>
 	</TABLE><BR><BR><BR>
@@ -126,7 +126,7 @@
 	String perturbationReportTable = (String)request.getAttribute("SolutionReport.perturbationReportTable");
 	if (perturbationReportTable!=null) {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=perturbationReportTable%>
 		<tr><td><i>Class</i></td><td colspan='23'>Class name</td></tr>
 		<tr><td><i>Time</i></td><td colspan='23'>Time (initial &rarr; assigned)</td></tr>
@@ -157,7 +157,7 @@
 	}
 %>
 	<BR>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD align="right">
 				<html:submit onclick="displayLoading();" property="op" value="Export PDF" /> 

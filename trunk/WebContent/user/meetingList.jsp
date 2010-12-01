@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
@@ -32,7 +32,7 @@
 <tiles:importAttribute />
 <html:form action="/meetingList">
 <script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-<TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>
+<TABLE border="0" cellspacing="0" cellpadding="3" width='100%'>
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -91,6 +91,41 @@
 			</TD> 
 		</TR>
 		<TR>
+			<TD nowrap>Time: </TD>
+			<TD>
+				<html:checkbox property="dayMon"/>
+				Mon&nbsp;
+				<html:checkbox property="dayTue"/>
+				Tue&nbsp;
+				<html:checkbox property="dayWed"/>
+				Wed&nbsp;
+				<html:checkbox property="dayThu"/>
+				Thu&nbsp;
+				<html:checkbox property="dayFri"/>
+				Fri&nbsp;
+				<html:checkbox property="daySat"/>
+				Sat&nbsp;
+				<html:checkbox property="daySun"/>
+				Sun
+				<br/>
+				From:&nbsp;
+				<html:select name="meetingListForm" property="startTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="meetingListForm" property="times"/>
+				</html:select>
+				
+				&nbsp;&nbsp;
+				To: 
+				<html:select name="meetingListForm" property="stopTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearchTime(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="meetingListForm" property="stopTimes"/>
+				</html:select> 
+		</TR>
+		<TR>
 			<TD valign="top">Event Type:</TD>
 			<TD>
 				<logic:iterate name="meetingListForm" property="allEventTypes" id="type" indexId="typeIdx">
@@ -128,6 +163,8 @@
 				&nbsp; 
 				<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
 				&nbsp; 
+				<html:submit property="op" value="Export CSV" onclick="displayLoading();" accesskey="C" title="Export to CSV (Alt+C)"/> 
+				&nbsp; 
 				<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
 				&nbsp; 
 				<html:submit property="op" value="Add Event" accesskey="A" title="Add Event (Alt+A)"/>
@@ -135,10 +172,12 @@
 		</TR>
 </TABLE>
 <script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-<TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>	
+<TABLE border="0" cellspacing="0" cellpadding="3" width='100%'>	
 	<TR>
 		<TD align='right'>
 				<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
+				&nbsp; 
+				<html:submit property="op" value="Export CSV" onclick="displayLoading();" accesskey="C" title="Export to CSV (Alt+C)"/> 
 				&nbsp; 
 				<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
 				&nbsp; 

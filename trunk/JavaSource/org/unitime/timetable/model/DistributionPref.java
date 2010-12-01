@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -98,21 +98,7 @@ public class DistributionPref extends BaseDistributionPref {
 	public DistributionPref (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public DistributionPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
-
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public String preferenceText() {
@@ -159,7 +145,9 @@ public class DistributionPref extends BaseDistributionPref {
     	String color = getPrefLevel().prefcolor();
     	if (PreferenceLevel.sNeutral.equals(getPrefLevel().getPrefProlog()))
     		color = "gray";
-    	sb.append("<span style='color:"+color+";font-weight:bold;' title='"+getPrefLevel().getPrefName()+" "+preferenceText(true,false," (",", ",")")+"'>" );
+    	sb.append("<span style='color:"+color+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" + 
+    			getPrefLevel().getPrefName() + " " + preferenceText(true,false,"<ul><li>","<li>","</ul>")
+    			+ "');\" onmouseout=\"hideGwtHint();\">" );
     	sb.append(preferenceText(false,true, "", "", ""));
     	sb.append("</span>");
     	return sb.toString();
@@ -251,12 +239,12 @@ public class DistributionPref extends BaseDistributionPref {
     	return ToolBox.equals(getDistributionType(),((DistributionPref)other).getDistributionType()) && ToolBox.equals(getDistributionObjects(),((DistributionPref)other).getDistributionObjects());
     }
     /** Ordered set of distribution objects */
-    public Set getOrderedSetOfDistributionObjects() {
+    public Set<DistributionObject> getOrderedSetOfDistributionObjects() {
     	try {
-    		return new TreeSet(getDistributionObjects());
+    		return new TreeSet<DistributionObject>(getDistributionObjects());
     	} catch (ObjectNotFoundException ex) {
     		(new DistributionPrefDAO()).getSession().refresh(this);
-    		return new TreeSet(getDistributionObjects());
+    		return new TreeSet<DistributionObject>(getDistributionObjects());
     	}
     }
     
@@ -425,7 +413,6 @@ public class DistributionPref extends BaseDistributionPref {
     	if (d.effectiveStatusType().canManagerEdit()) {
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-       			PreferenceGroup pg = distrObj.getPrefGroup();
        			if (distrObj.getPrefGroup() instanceof Class_) {
        				Class_ clazz = (Class_)distrObj.getPrefGroup();
        				if (!manager.getDepartments().contains(clazz.getManagingDept())) return false;
@@ -460,7 +447,6 @@ public class DistributionPref extends BaseDistributionPref {
     	if (!department.isExternalManager().booleanValue() && department.effectiveStatusType().canOwnerView()) {
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-        		PreferenceGroup pg = distrObj.getPrefGroup();
         		if (distrObj.getPrefGroup() instanceof Class_) {
         			Class_ clazz = (Class_)distrObj.getPrefGroup();
         			if (clazz.getManagingDept().effectiveStatusType().canOwnerEdit() && department.getUniqueId().equals(clazz.getControllingDept().getUniqueId())) return true;
@@ -478,7 +464,6 @@ public class DistributionPref extends BaseDistributionPref {
         	//else -> class manager of all classes / subparts
        		for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
        			DistributionObject distrObj = (DistributionObject)i.next();
-       			PreferenceGroup pg = distrObj.getPrefGroup();
        			if (distrObj.getPrefGroup() instanceof Class_) {
        				Class_ clazz = (Class_)distrObj.getPrefGroup();
        				if (!department.getUniqueId().equals(clazz.getManagingDept().getUniqueId())) return false;

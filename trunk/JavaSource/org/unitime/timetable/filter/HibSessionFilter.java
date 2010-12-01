@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.filter;
 
@@ -66,41 +66,27 @@ public class HibSessionFilter implements Filter {
 		if (request.getAttribute("TimeStamp")==null)
 			request.setAttribute("TimeStamp", new Double(JProf.currentTimeSec()));
 		
-		Session hibSession = null;
 		try {
-			hibSession = new _RootDAO().getSession();
-			//if(!hibSession.getTransaction().isActive()) {
-		        //Debug.info("Starting transaction");
-			    //hibSession.beginTransaction();
-			//}
-			
 			// Process request
 			chain.doFilter(request,response);
 			
-			// Close hibernate session, after request is processed
-			//if(!hibSession.getTransaction().isActive()) {
-				//Debug.info("Committing transaction");
-			    //hibSession.getTransaction().commit();
-			//}
-
-			if(hibSession!=null && hibSession.isOpen()) {
+			Session hibSession = new _RootDAO().getCurrentThreadSession();
+			if(hibSession != null && hibSession.isOpen()) {
 			    hibSession.close();
 			}
-		} 
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
             // Rollback only
-            //ex.printStackTrace();
+			Session hibSession = new _RootDAO().getCurrentThreadSession();
             try {
-                if (hibSession!=null && hibSession.isOpen() && hibSession.getTransaction().isActive()) {
+                if (hibSession != null && hibSession.isOpen() && hibSession.getTransaction().isActive()) {
                     Debug.debug("Trying to rollback database transaction after exception");
                     hibSession.getTransaction().rollback();
                 }
             } catch (Throwable rbEx) {
                 Debug.error(rbEx);
             } finally {
-    			if(hibSession!=null && hibSession.isOpen()) {
-    			    hibSession.close();
-    			}
+    			if(hibSession != null && hibSession.isOpen())
+    				hibSession.close();
             }
             
             if (ex instanceof ServletException) throw (ServletException)ex;

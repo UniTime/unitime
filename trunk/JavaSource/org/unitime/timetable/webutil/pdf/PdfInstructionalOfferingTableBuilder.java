@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.pdf;
 
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -69,25 +70,25 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
-import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder;
 
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+
 
 
 /**
@@ -105,16 +106,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         super();
     }
     
-    protected static Color sBorderColor = Color.BLACK;
-    protected static Color sBgColorClass = Color.WHITE;
-    protected static Color sBgColorSubpart = new Color(225,225,225);
-    protected static Color sBgColorConfig = new Color(200,200,200);
-    protected static Color sBgColorOffering = new Color(200,200,200);
-    protected static Color sBgColorHeader = Color.WHITE;
-    protected Color iBgColor = Color.WHITE;
+    protected static BaseColor sBorderColor = BaseColor.BLACK;
+    protected static BaseColor sBgColorClass = BaseColor.WHITE;
+    protected static BaseColor sBgColorSubpart = new BaseColor(225,225,225);
+    protected static BaseColor sBgColorConfig = new BaseColor(200,200,200);
+    protected static BaseColor sBgColorOffering = new BaseColor(200,200,200);
+    protected static BaseColor sBgColorHeader = BaseColor.WHITE;
+    protected BaseColor iBgColor = BaseColor.WHITE;
     
-    protected Color sEnableColor = Color.BLACK;
-    protected Color sDisableColor = Color.GRAY;
+    protected BaseColor sEnableColor = BaseColor.BLACK;
+    protected BaseColor sDisableColor = BaseColor.GRAY;
     
 	public PdfPCell createCell() {
 		PdfPCell cell = new PdfPCell();
@@ -139,7 +140,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		addText(cell, text, false, false, orientation, sEnableColor, true);
 	}
 	
-	public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, Color color, boolean newLine) {
+	public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, BaseColor color, boolean newLine) {
 		if (text==null) return;
 		if (cell.getPhrase()==null) {
 			Chunk ch = new Chunk(text, FontFactory.getFont(FontFactory.HELVETICA, 12, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color));
@@ -490,7 +491,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }  
     
     protected PdfPCell pdfBuildPrefGroupLabel(PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
         String label = prefGroup.toString();
         if (prefGroup instanceof Class_) {
         	Class_ aClass = (Class_) prefGroup;
@@ -508,14 +509,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	DatePattern dp = prefGroup.effectiveDatePattern();
     	PdfPCell cell = createCell();
     	if (dp!=null) {
-    		Color color = (isEditable?sEnableColor:sDisableColor);
+    		BaseColor color = (isEditable?sEnableColor:sDisableColor);
     		addText(cell, dp.getName(), false, false, Element.ALIGN_CENTER, color, true);
     	}
         return cell;
     }
 
     private PdfPCell pdfBuildTimePatternCell(PreferenceGroup prefGroup, boolean isEditable){
-   		Color color = (isEditable?sEnableColor:sDisableColor);
+   		BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
     	for (Iterator i=prefGroup.effectiveTimePatterns().iterator(); i.hasNext();) {
     		TimePattern tp = (TimePattern)i.next();
@@ -533,7 +534,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     private PdfPCell pdfBuildTimePrefCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
 		Assignment a = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
@@ -554,7 +555,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 				try {
 					rtt.getModel().setDefaultSelection(getDefaultTimeGridSize());
 					if (rtt.getModel().isExactTime()) {
-						StringBuffer sb = new StringBuffer();
 						addText(cell, rtt.exactTime(false), false, false, Element.ALIGN_LEFT, color, true);
 					} else {
 						java.awt.Image awtImage = rtt.createBufferedImage(getTimeVertival());
@@ -579,7 +579,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     private PdfPCell pdfBuildPreferenceCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, Class prefType, boolean isEditable){
     	if (!isEditable) return createCell();
-   		Color color = (isEditable?sEnableColor:sDisableColor);
+   		BaseColor color = (isEditable?sEnableColor:sDisableColor);
 
     	if (TimePref.class.equals(prefType)) {
     		return pdfBuildTimePrefCell(classAssignment, prefGroup, isEditable);
@@ -603,7 +603,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     
     private PdfPCell pdfBuildPreferenceCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, Class[] prefTypes, boolean isEditable){
     	if (!isEditable) return createCell();
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
 
     	PdfPCell cell = createCell();
     	boolean noRoomPrefs = false;
@@ -653,7 +653,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     private PdfPCell pdfBuildLimit(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
 
     	PdfPCell cell = createCell();
 
@@ -700,7 +700,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     private PdfPCell pdfBuildDivisionSection(PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
     	
     	if (prefGroup instanceof Class_) {
@@ -714,7 +714,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildInstructor(PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
     	
     	if (prefGroup instanceof Class_) {
@@ -734,7 +734,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildCredit(PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof SchedulingSubpart) {
@@ -748,7 +748,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, User user) {
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
@@ -766,7 +766,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildSchedulePrintNote(InstructionalOffering io, boolean isEditable, User user){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	StringBuffer note = new StringBuffer("");
@@ -789,7 +789,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }    
     
     private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, User user){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
@@ -807,7 +807,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildManager(PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	Department managingDept = null;
@@ -824,7 +824,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
@@ -839,7 +839,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildRoomLimit(PreferenceGroup prefGroup, boolean isEditable, boolean classLimitDisplayed){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_){
@@ -877,24 +877,22 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     private PdfPCell pdfBuildAssignedTime(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
-    		AssignmentPreferenceInfo info = null;
     		try {
     			a = classAssignment.getAssignment(aClass);
-    			info = classAssignment.getAssignmentInfo(aClass);
     		} catch (Exception e) {
     			Debug.error(e);
     		}
     		if (a!=null) {
     			StringBuffer sb = new StringBuffer();
-   				IntEnumeration e = a.getTimeLocation().getDays();
+   				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader());
@@ -908,16 +906,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
    
     private PdfPCell pdfBuildAssignedRoom(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable) {
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
-    		AssignmentPreferenceInfo info = null;
     		try {
     			a= classAssignment.getAssignment(aClass);
-    			info = classAssignment.getAssignmentInfo(aClass);
     		} catch (Exception e) {
     			Debug.error(e);
     		}
@@ -938,7 +934,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
     private PdfPCell pdfBuildAssignedRoomCapacity(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable) {
-    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	BaseColor color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (classAssignment!=null && prefGroup instanceof Class_){
@@ -972,7 +968,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             sb.append(exam.getLabel());
             if (i.hasNext()) sb.append("\n");
         }
-        Color color = (isEditable?sEnableColor:sDisableColor);
+        BaseColor color = (isEditable?sEnableColor:sDisableColor);
         PdfPCell cell = createCell();
         addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
         return cell;
@@ -992,7 +988,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             }
             if (i.hasNext()) sb.append("\n");
         }
-        Color color = (isEditable?sEnableColor:sDisableColor);
+        BaseColor color = (isEditable?sEnableColor:sDisableColor);
         PdfPCell cell = createCell();
         addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
         return cell;
@@ -1016,7 +1012,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             }
             if (i.hasNext()) sb.append("\n");
         }
-        Color color = (isEditable?sEnableColor:sDisableColor);
+        BaseColor color = (isEditable?sEnableColor:sDisableColor);
         PdfPCell cell = createCell();
         addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
         return cell;
@@ -1183,7 +1179,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	protected void pdfBuildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, InstrOfferingConfig ioc, User user, boolean printConfigLine) {
 		iBgColor = sBgColorConfig;
 	    boolean isEditable = ioc.isViewableBy(user);
-	    Color color = (isEditable?sEnableColor:sDisableColor);
+	    BaseColor color = (isEditable?sEnableColor:sDisableColor);
 	    String configName = ioc.getName();
 	    boolean unlimited = ioc.isUnlimitedEnrollment().booleanValue();
 	    boolean hasConfig = false;
@@ -1346,7 +1342,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	}
         }
         boolean isManagedAs = !co.isIsControl().booleanValue();
-        Color color = (isEditable?sEnableColor:sDisableColor);
+        BaseColor color = (isEditable?sEnableColor:sDisableColor);
         
     	if (isShowLabel()){
     		iPdfTable.addCell(pdfSubjectAndCourseInfo(io, co));
@@ -1654,7 +1650,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("There are no courses currently offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, Color.RED)));
+                	iDocument.add(new Paragraph("There are no courses currently offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, BaseColor.RED)));
             }
             
             iDocument.add(iPdfTable);
@@ -1682,7 +1678,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("All courses are currently being offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, Color.BLACK)));
+                	iDocument.add(new Paragraph("All courses are currently being offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, BaseColor.BLACK)));
             }
             
     		iDocument.add(iPdfTable);

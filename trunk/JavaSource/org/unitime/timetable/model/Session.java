@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -34,6 +34,7 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -50,8 +51,6 @@ import org.unitime.timetable.util.ReferenceList;
  */
 public class Session extends BaseSession implements Comparable {
 
-	public static int sNrExcessDays = 0;
-	
 	public static int sHolidayTypeNone = 0;
 
 	public static int sHolidayTypeHoliday = 1;
@@ -65,8 +64,6 @@ public class Session extends BaseSession implements Comparable {
 			"rgb(240,240,240)", "rgb(200,30,20)", "rgb(240,50,240)" };
 
 	private static final long serialVersionUID = 3691040980400813366L;
-
-	static String mappingTable = "timetable.ll_course_mapping";
 
 	/*
 	 * @return all sessions
@@ -93,7 +90,7 @@ public class Session extends BaseSession implements Comparable {
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    for (Iterator i=hibSession.createQuery("from Location").iterate();i.hasNext();) {
+		    for (Iterator i=hibSession.createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", id).iterate();i.hasNext();) {
                 Location loc = (Location)i.next();
                 loc.getFeatures().clear();
                 loc.getRoomGroups().clear();
@@ -447,37 +444,6 @@ public class Session extends BaseSession implements Comparable {
 		return ("done");
 	}
 
-	private String getInsertCrsOffering(String llMsf, int control)
-			throws Exception {
-		String sql = "INSERT INTO timetable.course_offering "
-				+ "(UNIQUEID, SUBJECT_AREA_ID, COURSE_NBR, PERM_ID, INSTR_OFFR_ID, IS_CONTROL, PROJ_DEMAND) "
-				+ "	SELECT "
-				+ "    	   timetable.crs_offr_seq.nextval, "
-				+ "	       subject_id, course_nbr, perm_id, "
-				+ "    	   timetable.instr_offr_seq.currval, "
-				+ control
-				+ ", proj_demand"
-				+ "   FROM ( "
-				+ "	SELECT "
-				+ "	       llcm.course_nbr, llcm.perm_id,"
-				+ "    	   nvl(SUM(crscurr.requests), 0) proj_demand, llcm.subject_id "
-				+ "  	  FROM "
-				+ mappingTable
-				+ " llcm, "
-				+ llMsf
-				+ ".crscurr, "
-				+ mappingTable
-				+ " llcm_related"
-				+ "  	 WHERE llcm.course=?"
-				+ "      AND llcm_related.subject_id  = llcm.subject_id AND llcm_related.course_nbr = llcm.course_nbr"
-				+ "  	   AND llcm_related.course = crscurr.course(+)"
-				+ "  	 GROUP BY llcm.course_nbr, llcm.perm_id, llcm.subject_id ) xx "
-				+ " where not exists (select 1 from timetable.course_offering yy where xx.subject_id = yy.subject_area_id and xx.course_nbr = yy.course_nbr)";
-
-		return sql;
-
-	}
-
 	public Long getSessionId() {
 		return (this.getUniqueId());
 	}
@@ -514,12 +480,22 @@ public class Session extends BaseSession implements Comparable {
 	public int getStartMonth() {		
 		return DateUtils.getStartMonth(
 		        earliestSessionRelatedDate(),
-		        getSessionStartYear(), sNrExcessDays);
+		        getSessionStartYear(), 
+		        Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
 	}
 
 	public int getEndMonth() {
 		return DateUtils.getEndMonth(
-		        latestSessionRelatedDate(), getSessionStartYear(), sNrExcessDays);
+		        latestSessionRelatedDate(), getSessionStartYear(), 
+		        Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
+	}
+	
+	public int getPatternStartMonth() {
+		return getStartMonth() - Integer.parseInt(ApplicationProperties.getProperty("unitime.pattern.nrExcessMoths", "3"));
+	}
+	
+	public int getPatternEndMonth() {
+		return getEndMonth() + Integer.parseInt(ApplicationProperties.getProperty("unitime.pattern.nrExcessMoths", "3"));
 	}
 
 	public int getDayOfYear(int day, int month) {
@@ -596,8 +572,10 @@ public class Session extends BaseSession implements Comparable {
         Calendar eventEndDate = Calendar.getInstance(Locale.US);
         if (eventEndTime!=null) eventEndDate.setTime(eventEndTime);
 
-        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null&&eventBeginTime.before(sessionBeginTime)?eventBeginTime:sessionBeginTime, acadYear, sNrExcessDays);
-		int endMonth = DateUtils.getEndMonth(eventEndTime!=null&&eventEndTime.after(sessionEndTime)?eventEndTime:sessionEndTime, acadYear, sNrExcessDays);
+        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null&&eventBeginTime.before(sessionBeginTime)?eventBeginTime:sessionBeginTime, acadYear, 
+        		Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
+		int endMonth = DateUtils.getEndMonth(eventEndTime!=null&&eventEndTime.after(sessionEndTime)?eventEndTime:sessionEndTime, acadYear, 
+				Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
 		
 		for (int m = startMonth; m <= endMonth; m++) {
 			int yr = DateUtils.calculateActualYear(m, acadYear);

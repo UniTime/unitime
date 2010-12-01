@@ -1,10 +1,10 @@
 <%-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.commons.web.Web" %>
@@ -27,6 +27,8 @@
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.apache.struts.util.LabelValueBean" %>
+<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -60,9 +62,11 @@
 
 <html:form action="/roomDetail">
 	<html:hidden property="id"/>
+	<html:hidden property="next"/>
+	<html:hidden property="previous"/>
 	<input type='hidden' name='confirm' value='y'/>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -84,7 +88,7 @@
 					</html:submit>
 					&nbsp;
 					<html:submit property="doit" 
-							accesskey="P" styleClass="btn" titleKey="title.modifyRoomPreference"
+							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
 							>
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
@@ -117,9 +121,30 @@
 					<%}%>
 					&nbsp;
 					</logic:equal>
+					<logic:notEmpty name="<%=frmName%>" property="previous">
+						<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+						<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
+							<bean:message key="button.previousRoom" />
+						</html:submit>
+						&nbsp;
+						</logic:greaterEqual>
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="next">
+						<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
+						<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+							<bean:message key="button.nextRoom" />
+						</html:submit>
+						&nbsp;
+						</logic:greaterEqual>
+					</logic:notEmpty>
+					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+						<bean:write name="<%=frmName%>" property="id"/>
+					</tt:back>
+					<%--
 					<html:submit property="doit"  styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 						<bean:message key="button.returnToRoomList" />
 					</html:submit>
+					--%>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -140,7 +165,16 @@
 				</TD>
 			</TR>
 		</logic:messagesPresent>
-	
+		
+		<tt:hasProperty name="unitime.minimap.url">
+			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
+				</table>
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr><td valign="top"> <!-- 450, 463 -->
+						<table width="100%" border="0" cellspacing="0" cellpadding="3">
+			<% } %>
+		</tt:hasProperty>
+		
 		<logic:notEmpty name="<%=frmName%>" property="externalId">
 			<TR>
 				<TD>External Id:</TD><TD><bean:write name="<%=frmName%>" property="externalId"/></TD>
@@ -187,15 +221,18 @@
 			</TR>
 		</logic:notEmpty>
 			
-		<% if (frm.getCoordinateX().intValue()>=0 && frm.getCoordinateY().intValue()>=0) { %>
+		<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
 			<TR>
-				<TD>Coordinates:</TD><TD><%=frm.getCoordinateX()%>, <%=frm.getCoordinateY()%></TD>
-			</TR>
-		<% } else {%>
-			<TR>
-				<TD nowrap>Ignore Too Far Distances:</TD><TD><%=frm.getIgnoreTooFar()%></TD>
+				<TD>Coordinates:</TD><TD><%=frm.getCoordinateX()%>, <%=frm.getCoordinateY()%>
+					<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
+					&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
+				</TD>
 			</TR>
 		<% } %>
+
+		<TR>
+			<TD nowrap>Ignore Too Far Distances:</TD><TD><%=frm.getIgnoreTooFar()%></TD>
+		</TR>
 			
 		<TR>
 			<TD nowrap>Ignore Room Checks:</TD><TD><bean:write name="<%=frmName%>" property="ignoreRoomCheck"/></TD>
@@ -267,6 +304,17 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		
+		<tt:hasProperty name="unitime.minimap.url">
+			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
+						</table>
+					</td><td width="1%" nowrap="nowrap" style="padding-right: 3px;">
+						<img src="<%=ApplicationProperties.getProperty("unitime.minimap.url").replace("%x",frm.getCoordinateX().toString()).replace("%y",frm.getCoordinateY().toString())%>" border='0' alt="Minimap" style="border: 1px solid #9CB0CE;"/>
+					</td></tr>
+				</table>
+				<table width="100%" border="0" cellspacing="0" cellpadding="3">
+			<% } %>
+		</tt:hasProperty>
 		
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
@@ -372,7 +420,7 @@
 					</html:submit>
 					&nbsp;
 					<html:submit property="doit" 
-							accesskey="P" styleClass="btn" titleKey="title.modifyRoomPreference"
+							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
 							>
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
@@ -405,9 +453,30 @@
 					<%}%>
 					&nbsp;
 				</logic:equal>
+				<logic:notEmpty name="<%=frmName%>" property="previous">
+					<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+					<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
+						<bean:message key="button.previousRoom" />
+					</html:submit>
+					&nbsp;
+					</logic:greaterEqual>
+				</logic:notEmpty>
+				<logic:notEmpty name="<%=frmName%>" property="next">
+					<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
+					<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+						<bean:message key="button.nextRoom" />
+					</html:submit>
+					&nbsp;
+					</logic:greaterEqual>
+				</logic:notEmpty>
+				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+					<bean:write name="<%=frmName%>" property="id"/>
+				</tt:back>
+				<%--
 				<html:submit property="doit"  styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 					<bean:message key="button.returnToRoomList" />
 				</html:submit>
+				--%>
 			</TD>
 		</TR>
 

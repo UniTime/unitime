@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.studentsct;
 
@@ -23,18 +23,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -69,11 +68,11 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private long iLastTimeStamp = System.currentTimeMillis();
     private boolean iIsPassivated = false;
     private Map iProgressBeforePassivation = null;
-    private Hashtable iCurrentSolutionInfoBeforePassivation = null;
-    private Hashtable iBestSolutionInfoBeforePassivation = null;
+    private Map<String, String> iCurrentSolutionInfoBeforePassivation = null;
+    private Map<String, String> iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
-    public static long sInactiveTimeToPassivate = 1800000;
+    private Thread iWorkThread = null;
 
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
@@ -83,9 +82,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public Date getLoadedDate() {
         if (iLoadedDate==null && !isPassivated()) {
-            Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+            List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
             if (log!=null && !log.isEmpty()) {
-                iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+                iLoadedDate = log.get(0).getDate();
             }
         }
         return iLoadedDate;
@@ -169,14 +168,14 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         return getClass().getMethod((String)cmd[0],types).invoke(this, args);
     }
     
-    public Hashtable currentSolutionInfo() {
+    public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
         }
     }
 
-    public Hashtable bestSolutionInfo() {
+    public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getBestInfo();
@@ -219,9 +218,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         iWorking = true;
         StudentSectioningSaver saver = new StudentSectioningDatabaseSaver(this);
         saver.setCallback(getSavingDoneCallback());
-        Thread thread = new Thread(saver);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(saver);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void load(DataProperties properties) {
@@ -235,9 +234,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
         loader.setCallback(getLoadingDoneCallback());
-        Thread thread = new Thread(loader);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void reload(DataProperties properties) {
@@ -257,7 +256,8 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
         loader.setCallback(callBack);
-        (new Thread(loader)).start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.start();
     }
     
     public Callback getLoadingDoneCallback() {
@@ -289,8 +289,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         Progress iProgress = null;
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null)
                     iCurrentAssignmentTable.put(request.getId(),request.getAssignment());
                 if (request.getBestAssignment()!=null)
@@ -300,8 +299,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private Request getRequest(long id) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getId()==id) return request;
             }
             return null;
@@ -326,17 +324,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private void assign(Enrollment enrollment) {
-            Hashtable conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
+        	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
             if (conflictConstraints.isEmpty()) {
                 enrollment.variable().assign(0,enrollment);
             } else {
                 iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator j=vals.iterator();j.hasNext();) {
-                        Enrollment enrl = (Enrollment) j.next();
+                for (Constraint<Request, Enrollment> c: conflictConstraints.keySet()) {
+                	Set<Enrollment> vals = conflictConstraints.get(c);
+                    for (Enrollment enrl: vals) {
                         iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+enrl.getRequest().getName()+" = "+enrl.getName());
                     }
                     iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
@@ -344,8 +340,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private void unassignAll() {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null) request.unassign(0);
             }
         }
@@ -523,8 +518,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public void clear() {
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null) request.unassign(0);
             }
             currentSolution().clearBest();
@@ -535,7 +529,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         return getProperties().getPropertyLong("General.SessionId",null);
     }
     
-    public Solution currentSolution() {
+    public Solution<Request, Enrollment> currentSolution() {
         activateIfNeeded();
         return super.currentSolution();
     }
@@ -594,11 +588,27 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-        if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
     
     public Date getLastUsed() {
         return new Date(iLastTimeStamp);
+    }
+
+    public void interrupt() {
+    	try {
+            if (iSolverThread != null) {
+                iStop = true;
+                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
+                	iSolverThread.interrupt();
+            }
+			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+				iWorkThread.interrupt();
+			}
+    	} catch (Exception e) {
+    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
     }
 }

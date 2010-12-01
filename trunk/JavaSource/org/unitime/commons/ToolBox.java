@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.commons;
 
@@ -274,58 +274,6 @@ public class ToolBox {
 		}
 		return false;
 	}
-
-	/** This class is used by getCaller method, it reads i-th line of output stream.
-	 */
-	private static class LineOutputStream extends java.io.OutputStream {
-
-		/** buffer */
-		StringBuffer iBuffer = null;
-
-		/** line to be read */
-		int iLine = 0;
-
-		/** line counter */
-		int iCurLine = 0;
-
-		/** It create an instance of LineOutputStream.
-		 * @param line line to be read
-		 */
-		public LineOutputStream(int line) {
-			super();
-			iLine = line;
-			iBuffer = new StringBuffer();
-		}
-
-		/** Writes a byte to stream
-		 * @param b a byte
-		 */
-		public void write(int b) throws java.io.IOException {
-
-			if (b == '\n') {
-				iCurLine++;
-				return;
-			}
-			if (iLine == iCurLine) {
-				iBuffer.append((char) b);
-			}
-		}
-
-		/** Closes the stream
-		 */
-		public void close() throws java.io.IOException {
-			super.close();
-		}
-
-		/** Returns read line
-		 * @param read line
-		 */
-		public String toString() {
-
-			return iBuffer.toString().trim();
-		}
-	}
-
 
 	/**
 	 * This function constructs the absolute path to the target folder

@@ -1,10 +1,10 @@
 <%-- 
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,14 +13,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  --%>
 <%@ page language="java" pageEncoding="ISO-8859-1"%>
 <%@ page import="org.unitime.timetable.form.RollForwardSessionForm"%>
-<%@page import="org.unitime.timetable.util.SessionRollForward"%>
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html"%>
+<%@ page import="org.unitime.timetable.util.SessionRollForward"%>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
  
@@ -54,7 +54,15 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
-		
+	<logic:notEmpty name="table" scope="request">
+		<TR><TD>
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+				<bean:write name="table" scope="request" filter="false"/>
+			</TABLE>
+		</TD></TR>
+		<TR><TD>&nbsp;</TD></TR>
+	</logic:notEmpty>
+			
 		<tr>
 			<td valign="top" nowrap ><b>Session To Roll Foward To: </b>
 			<html:select style="width:200;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
@@ -175,6 +183,13 @@
 					<html:option value="2">Import Last-like Course Demands From Course Requests Of Previous Session</html:option>
 				</html:select>
 			</td>		
+		</tr>
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
+			<html:select style="width:200;" property="sessionToRollCurriculaForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).</i>
+			</td>
 		</tr>
 		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>
 		<tr>

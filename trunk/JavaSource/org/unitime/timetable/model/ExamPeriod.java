@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -54,30 +54,6 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	 */
 	public ExamPeriod (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamPeriod (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceLevel prefLevel,
-		java.lang.Integer dateOffset,
-		java.lang.Integer startSlot,
-		java.lang.Integer length,
-		java.lang.Integer examType,
-		java.lang.Integer eventStartOffset,
-		java.lang.Integer eventStopOffset) {
-
-		super (
-			uniqueId,
-			prefLevel,
-			dateOffset,
-			startSlot,
-			length,
-			examType,
-			eventStartOffset,
-			eventStopOffset);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -386,7 +362,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             }
         }
 
-        if (nrStudents > 0 && students.trim().length() > 0){
+        if (nrStudents > 0 && students.trim().length() > 0) {
             for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+

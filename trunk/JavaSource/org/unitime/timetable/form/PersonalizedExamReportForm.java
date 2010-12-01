@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -39,6 +39,7 @@ public class PersonalizedExamReportForm extends ActionForm {
     private String iFname = null;
     private String iMname = null;
     private String iLname = null;
+    private Long iSessionId = null;
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -52,6 +53,7 @@ public class PersonalizedExamReportForm extends ActionForm {
         iMessage = null;
         iUid = null;
         iAdmin = false;
+        iSessionId = null;
     }
     
     public String getOp() { return iOp; }
@@ -72,4 +74,6 @@ public class PersonalizedExamReportForm extends ActionForm {
     public void setMname(String mname) { iMname = mname; }
     public String getLname() { return iLname; }
     public void setLname(String lname) { iLname = lname; }
+    public Long getSessionId() { return iSessionId; }
+    public void setSessionId(Long sessionId) { iSessionId = (sessionId == null || sessionId == 0 ? null : sessionId); }
 }

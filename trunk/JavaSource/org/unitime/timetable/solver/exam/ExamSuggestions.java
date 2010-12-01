@@ -1,7 +1,25 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.solver.exam;
 
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -50,9 +68,8 @@ public class ExamSuggestions {
         iInitialAssignment = new Hashtable();
         iInitialUnassignment = new Vector();
         iInitialInfo = new Hashtable();
-        for (Enumeration e=iModel.variables().elements();e.hasMoreElements();) {
-            Exam exam = (Exam)e.nextElement();
-            ExamPlacement placement = (ExamPlacement)exam.getAssignment();
+        for (Exam exam: iModel.variables()) {
+            ExamPlacement placement = exam.getAssignment();
             if (placement==null) {
                 iInitialUnassignment.add(exam);
             } else {
@@ -142,8 +159,7 @@ public class ExamSuggestions {
             while (rooms.size()<nrRooms && size<exam.getSize()) {
                 int minSize = (exam.getSize()-size)/(nrRooms-rooms.size());
                 ExamRoomPlacement best = null; int bestSize = 0, bestPenalty = 0;
-                for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                    ExamRoomPlacement room = (ExamRoomPlacement)e.nextElement();
+                for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                     if (!room.isAvailable(period.getPeriod())) continue;
                     if (checkConstraints && room.getRoom().getPlacement(period.getPeriod())!=null) continue;
                     if (rooms.contains(room)) continue;
@@ -173,8 +189,7 @@ public class ExamSuggestions {
         if (iConflictsToResolve.size()+conflicts.size()<depth) {
             Exam exam = (Exam)placement.variable();
             HashSet adepts = new HashSet();
-            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-                ExamStudent s = (ExamStudent)e.nextElement();
+            for (ExamStudent s: exam.getStudents()) {
                 Set exams = s.getExams(placement.getPeriod());
                 for (Iterator i=exams.iterator();i.hasNext();) {
                     ExamPlacement conf = (ExamPlacement)((Exam)i.next()).getAssignment();
@@ -257,8 +272,7 @@ public class ExamSuggestions {
         Exam exam = (iDepth==depth && !iResolvedExams.contains(iExam)?iExam:iConflictsToResolve.keys().nextElement());
         if (iResolvedExams.contains(exam)) return;
         iResolvedExams.add(exam);
-        for (Enumeration e = exam.getPeriodPlacements().elements(); e.hasMoreElements();) {
-            ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
+        for (ExamPeriodPlacement period: exam.getPeriodPlacements()) {
             //if (exam.equals(iExam) && !match(period.getPeriod().toString())) continue;
             Set rooms = findBestAvailableRooms(exam, period, true);
             if (rooms!=null) {

@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
 <%@ page import="org.unitime.commons.web.Web" %>
@@ -46,7 +46,7 @@
 	<html:hidden property="op2" value=""/>
 	<bean:define name='<%=frmName%>' property="examId" id="examId"/>
 	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -65,8 +65,8 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
-					<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
-							onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
 					/>
 					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 						<bean:message key="button.deleteExam" />
@@ -215,7 +215,7 @@
 					<i>No relation defined for this exam.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="ExamDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="ExamDetail.table" filter="false"/>
 					</table>
 				</logic:notEmpty>
@@ -281,7 +281,7 @@
 					<bean:message key="button.addDistPref" />
 				</html:submit>
 				<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
-						onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+						onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
 				/>
 				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 					<bean:message key="button.deleteExam" />
