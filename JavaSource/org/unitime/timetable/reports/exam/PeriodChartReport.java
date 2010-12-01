@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
@@ -5,13 +24,12 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
@@ -21,8 +39,11 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
+/**
+ * @author Tomas Muller
+ */
 public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
@@ -48,10 +69,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        Hashtable<Integer,String> times = new Hashtable();
-        Hashtable<Integer,String> fixedTimes = new Hashtable();
-        Hashtable<Integer,String> days = new Hashtable();
-        TreeSet weeks = new TreeSet();
+        HashMap<Integer,String> times = new HashMap<Integer, String>();
+        HashMap<Integer,String> fixedTimes = new HashMap<Integer, String>();
+        HashMap<Integer,String> days = new HashMap<Integer, String>();
         for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             times.put(period.getStartSlot(), period.getStartTimeLabel());
@@ -73,10 +93,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         int lastDIdx = -1;
         boolean firstLine = true;
         for (int dIdx = 0; dIdx < days.size(); dIdx+=nrCols) {
-            for (Enumeration e=ToolBox.sortEnumeration(times.keys());e.hasMoreElements();) {
-                int time = ((Integer)e.nextElement()).intValue();
+            for (Integer time: new TreeSet<Integer>(times.keySet())) {
                 int offset = 0;
-                String timeStr = (String)times.get(new Integer(time));
+                String timeStr = times.get(time);
                 String header1 = "";
                 String header2 = "";
                 String header3 = "";
@@ -85,8 +104,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 String firstDay = null; int firstDayOffset = 0;
                 String lastDay = null;
                 nrCols = 0;
-                for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
-                    int day = ((Integer)f.nextElement()).intValue();
+                for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator();f.hasNext();idx++) {
+                	Integer day = f.next();
                     String dayStr = days.get(day);
                     if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==(iTotals?6:5)) continue;
                     if (firstDay==null) {
@@ -250,8 +269,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 println("Total Student Exams");
                 String line1 = "", line2 = "", line3 = "";
                 int idx = 0;
-                for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
-                    Integer day = (Integer)f.nextElement();
+                for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator(); f.hasNext(); idx++) {
+                    Integer day = f.next();
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     line1 += mpad((String)days.get(day),20)+"  ";
                     line2 += "=============== ====  ";

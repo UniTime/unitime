@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.tags;
 
@@ -36,6 +36,7 @@ import org.unitime.timetable.model.dao.PreferenceLevelDAO;
  * @author Tomas Muller
  */
 public class PreferenceLegend extends TagSupport {
+	private static final long serialVersionUID = -8994474921509928721L;
 	private boolean iNotAvailable = false;
 	private boolean iPrefs = true;
 	private boolean iDpBackgrounds = false;
@@ -72,7 +73,7 @@ public class PreferenceLegend extends TagSupport {
     		border = "border-"+iSeparator+":black 1px dashed";
     	if ("none".equals(iSeparator)) border = null;
         
-        StringBuffer html = new StringBuffer(border==null?"":"<table width='99%' cellspacing='1' cellpadding='1' border='0' style='"+border+"'><tr><td align='center'>");
+        StringBuffer html = new StringBuffer(border==null?"":"<table width='100%' cellspacing='1' cellpadding='1' border='0' style='"+border+"'><tr><td align='center'>");
         html.append("<table cellspacing='1' cellpadding='1' border='0'><tr>");
         
         Collection prefLevels = (Collection)pageContext.getRequest().getAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME);
@@ -84,9 +85,7 @@ public class PreferenceLegend extends TagSupport {
         if (isPrefs()) {
             for (Iterator i=prefLevels.iterator();i.hasNext();) {
                 PreferenceLevel pl = (PreferenceLevel)i.next();
-                String color = pl.prefcolor();
                 html.append(
-            	//"<td width='20' height='20' style='border:rgb(0,0,0) 1px solid;background-color:" + color + "'>&nbsp;</td>"
 				"<td style='font-size: 80%;'>"+
 				"<img border='0' align='absmiddle' src='"+imgFolder+"pref"+pl.getUniqueId()+".png'>"+
 				"&nbsp;" + pl.getPrefName() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+

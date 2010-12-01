@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,14 +14,15 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.tags;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
@@ -33,6 +34,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -53,7 +55,8 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class LastChange extends BodyTagSupport {
-    private String iPackage = "org.unitime.timetable.model";
+	private static final long serialVersionUID = -983949265164022751L;
+	private String iPackage = "org.unitime.timetable.model";
     private String iType = null;
     private String iId = null;
     private String iSource = null;
@@ -98,13 +101,13 @@ public class LastChange extends BodyTagSupport {
         if (lastChange==null) return 0;
         webTable.addLine(null,
                 new String[] {
-                        lastChange.getSourceTitle(pageContext.getRequest()),
+                        lastChange.getSourceTitle(),
                         lastChange.getObjectTitle(),
-                        lastChange.getOperationTitle(pageContext.getRequest()),
+                        lastChange.getOperationTitle(),
                         lastChange.getManager().getShortName(),
                         ChangeLog.sDF.format(lastChange.getTimeStamp())},
                 new Comparable[] {
-                        lastChange.getSourceTitle(pageContext.getRequest()), //new Integer(lastChange.getSource().ordinal()),
+                        lastChange.getSourceTitle(), //new Integer(lastChange.getSource().ordinal()),
                         lastChange.getObjectTitle(),
                         new Integer(lastChange.getOperation().ordinal()),
                         lastChange.getManager().getName(),
@@ -136,6 +139,7 @@ public class LastChange extends BodyTagSupport {
         HashSet subpartIds = new HashSet();
         HashSet classIds = new HashSet();
         HashSet offeringIds = new HashSet();
+        HashSet curriculumIds = new HashSet();
         
         for (Iterator i1=io.getInstrOfferingConfigs().iterator();i1.hasNext();) {
             InstrOfferingConfig ioc = (InstrOfferingConfig)i1.next();
@@ -154,6 +158,10 @@ public class LastChange extends BodyTagSupport {
             offeringIds.add(o.getUniqueId());
         }
         
+        curriculumIds.addAll((List<Long>)InstructionalOfferingDAO.getInstance().getSession().createQuery(
+				"select c.classification.curriculum.uniqueId from CurriculumCourse c where c.course.instructionalOffering.uniqueId = :offeringId")
+				.setLong("offeringId", io.getUniqueId()).setCacheable(true).list());
+
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(io, ChangeLog.Source.CROSS_LIST));
         
@@ -190,6 +198,14 @@ public class LastChange extends BodyTagSupport {
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(io, ChangeLog.Source.DIST_PREF_EDIT));
         
+        nrChanges += printLastChangeTableRow(webTable, 
+        		ChangeLog.findLastChange(CourseOffering.class.getName(), offeringIds, ChangeLog.Source.CURRICULA));
+        		
+        nrChanges += printLastChangeTableRow(webTable, 
+                combine(ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULA),
+                		ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULUM_EDIT)
+                		));
+
         if (nrChanges>0) {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+
@@ -325,7 +341,7 @@ public class LastChange extends BodyTagSupport {
             if (lch==null)
                 pageContext.getOut().print("<i>N/A</i>");
             else
-                pageContext.getOut().print(lch.getShortLabel(pageContext.getRequest()));
+                pageContext.getOut().print(lch.getShortLabel());
             pageContext.getOut().println("</TD></TR>");
         } catch (Exception e) {
             Debug.error(e);

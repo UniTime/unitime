@@ -8,13 +8,11 @@ import java.util.Vector;
 import org.unitime.timetable.model.PreferenceLevel;
 
 public class ClassProposedChange implements Serializable, Comparable<ClassProposedChange> {
-    private Vector<ClassAssignmentInfo> iAssignments = null;
+	private static final long serialVersionUID = 1510362646798301408L;
+	private Vector<ClassAssignmentInfo> iAssignments = null;
     private Vector<ClassAssignment> iConflicts = null;
     private Hashtable<Long,ClassAssignment> iInitials = null;
     private Long iSelectedClassId = null; 
-    
-    private double iValue = 0;
-    private int iNrAssigned = 0;
     
     public ClassProposedChange() {
         iAssignments = new Vector(); iConflicts = new Vector(); iInitials = new Hashtable();

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,11 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +35,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
@@ -145,12 +145,11 @@ public class Class_ extends BaseClass_ {
 	}
 
     private Set classInstructorPrefsOfType(Class type) {
-    	Vector instructors = getLeadInstructors();
+    	List<DepartmentalInstructor> instructors = getLeadInstructors();
     	if (instructors.isEmpty()) return null;
     	Set ret = null;
-    	for (Enumeration e=instructors.elements();e.hasMoreElements();) {
-    		DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
-    		if (ret==null)
+    	for (DepartmentalInstructor instructor: instructors) {
+    		if (ret == null)
     			ret = instructor.getPreferences(type);
     		else
     			ret = combinePreferences(ret, instructor.getPreferences(type));
@@ -180,24 +179,23 @@ public class Class_ extends BaseClass_ {
 		return ret;
     }
 
-    private Set combinePreferences(Set instrPrefs1, Set instrPrefs2) {
+    private Set<Preference> combinePreferences(Set<Preference> instrPrefs1, Set<Preference> instrPrefs2) {
     	if (instrPrefs1==null || instrPrefs1.isEmpty()) return instrPrefs2;
     	if (instrPrefs2==null || instrPrefs2.isEmpty()) return instrPrefs1;
 
-    	Set ret = new TreeSet();
+    	Set<Preference> ret = new TreeSet<Preference>();
 
     	TimePref tp = null;
-    	boolean hasTimePref = false;
-    	for (Iterator i=instrPrefs1.iterator();i.hasNext();) {
-    		Preference p1 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs1.iterator();i.hasNext();) {
+    		Preference p1 = i.next();
     		if (p1 instanceof TimePref) {
     			if (tp==null) {
     				tp = (TimePref)p1.clone();
     			} else tp.combineWith((TimePref)p1,false);
     		} else ret.add(p1);
     	}
-    	for (Iterator i=instrPrefs2.iterator();i.hasNext();) {
-    		Preference p2 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs2.iterator();i.hasNext();) {
+    		Preference p2 = i.next();
     		if (p2 instanceof TimePref) {
     			if (tp==null) {
     				tp = (TimePref)p2.clone();
@@ -205,11 +203,11 @@ public class Class_ extends BaseClass_ {
     		}
     	}
 
-    	for (Iterator i=instrPrefs2.iterator();i.hasNext();) {
-    		Preference p2 = (Preference)i.next();
+    	for (Iterator<Preference> i=instrPrefs2.iterator();i.hasNext();) {
+    		Preference p2 = i.next();
     		Preference p1 = null;
-			for (Iterator j=ret.iterator();j.hasNext();) {
-				Preference p = (Preference)j.next();
+			for (Iterator<Preference> j=ret.iterator();j.hasNext();) {
+				Preference p = j.next();
 				if (p.isSame(p2)) {
 					p1 = p; j.remove(); break;
 				}
@@ -499,10 +497,18 @@ public class Class_ extends BaseClass_ {
 	}
 
 	public Integer getSectionNumber() {
-		return getSectionNumber(true);
+		return getSectionNumber(null, true);
+	}
+	
+	public Integer getSectionNumber(org.hibernate.Session hibSession) {
+		return getSectionNumber(hibSession, true);
 	}
 
-    public Integer getSectionNumber(boolean save) {
+	public Integer getSectionNumber(boolean save) {
+		return getSectionNumber(null, save);
+	}
+
+    public Integer getSectionNumber(org.hibernate.Session hibSession, boolean save) {
     	Integer sectionNumber = getSectionNumberCache();
     	if (sectionNumber!=null) return sectionNumber;
 
@@ -527,8 +533,12 @@ public class Class_ extends BaseClass_ {
 		setSectionNumberCache(sectionNumber);
 
     	if (save) {
-    		(new Class_DAO()).getSession().saveOrUpdate(this);
-    		(new Class_DAO()).getSession().flush();
+    		if (hibSession != null) {
+    			hibSession.saveOrUpdate(this);
+    		} else {
+        		(new Class_DAO()).getSession().saveOrUpdate(this);
+        		(new Class_DAO()).getSession().flush();
+    		}
     	}
 
     	return sectionNumber;
@@ -538,14 +548,17 @@ public class Class_ extends BaseClass_ {
     	return getSectionNumber()+getSchedulingSubpart().getSchedulingSubpartSuffix();
     }
 
-    public Vector getLeadInstructors() {
-    	Vector ret = new Vector();
-    	if (getClassInstructors() == null){
-    		return(ret);
+    public String getSectionNumberString(org.hibernate.Session hibSession){
+    	return getSectionNumber(hibSession)+getSchedulingSubpart().getSchedulingSubpartSuffix(hibSession);
+    }
+
+    public List<DepartmentalInstructor> getLeadInstructors() {
+    	List<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>();
+    	if (getClassInstructors() == null) {
+    		return ret;
     	}
-    	for (Iterator i=getClassInstructors().iterator();i.hasNext();) {
-    		ClassInstructor classInstructor = (ClassInstructor)i.next();
-    		if (classInstructor.isLead().booleanValue()) ret.addElement(classInstructor.getInstructor());
+    	for (ClassInstructor classInstructor: getClassInstructors()) {
+    		if (classInstructor.isLead().booleanValue()) ret.add(classInstructor.getInstructor());
     	}
     	return ret;
     }
@@ -562,6 +575,10 @@ public class Class_ extends BaseClass_ {
         */
     	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
 //    	return(getClassLabel(getSchedulingSubpart().getControllingCourseOffering()));
+    }
+
+    public String getClassLabel(org.hibernate.Session hibSession) {
+    	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString(hibSession);
     }
 
     public String getClassLabelWithTitle() {
@@ -712,9 +729,9 @@ public class Class_ extends BaseClass_ {
         return(false);
     }
 
-    public Set getAvailableRooms() {
+    public Set<Location> getAvailableRooms() {
 
-    	Set rooms =  new TreeSet();
+    	Set<Location> rooms =  new TreeSet<Location>();
         for (Iterator i=getManagingDept().getRoomDepts().iterator();i.hasNext();) {
         	RoomDept roomDept = (RoomDept)i.next();
         	rooms.add(roomDept.getRoom());
@@ -974,7 +991,7 @@ public class Class_ extends BaseClass_ {
                 nrReservedStudentsThisOffering += reservation.getReserved().intValue();
             nrReservedStudents += reservation.getReserved().intValue();
         }
-
+        
 
         float nrLastLikeStudents = (float)(offering.getInstructionalOffering().getDemand()==null?0:offering.getInstructionalOffering().getDemand().intValue());
         float nrLastLikeStudentsThisOffering = (float)offering.getDemand().intValue();
@@ -1438,10 +1455,8 @@ public class Class_ extends BaseClass_ {
             
             // Remove all related constraint infos to avoid hibernate cache issues 
             // when an orphaned constraint info is automatically deleted
-            for (Iterator i = oldAssignment.getConstraintInfo().iterator(); i.hasNext(); ) {
-            	ConstraintInfo ci = (ConstraintInfo)i.next();
-            	for (Iterator j = ci.getAssignments().iterator(); j.hasNext(); ) {
-            		Assignment a = (Assignment)j.next();
+            for (ConstraintInfo ci: oldAssignment.getConstraintInfo()) {
+            	for (Assignment a: ci.getAssignments()) {
             		if (!a.equals(oldAssignment)) {
             			a.getConstraintInfo().remove(ci);
             		}
@@ -1499,17 +1514,15 @@ public class Class_ extends BaseClass_ {
                 
                 // Remove all related constraint infos to avoid hibernate cache issues 
                 // when an orphaned constraint info is automatically deleted
-                for (Iterator i = oldAssignment.getConstraintInfo().iterator(); i.hasNext(); ) {
-                	ConstraintInfo ci = (ConstraintInfo)i.next();
-                	for (Iterator j = ci.getAssignments().iterator(); j.hasNext(); ) {
-                		Assignment a = (Assignment)j.next();
+                for (ConstraintInfo ci: oldAssignment.getConstraintInfo()) {
+                	for (Assignment a: ci.getAssignments()) {
                 		if (!a.equals(oldAssignment)) {
                 			a.getConstraintInfo().remove(ci);
                 		}
                 	}
                 	hibSession.delete(ci);
                 }
-
+                
             	hibSession.delete(oldAssignment);
             }
             
@@ -1608,9 +1621,9 @@ public class Class_ extends BaseClass_ {
 			Debug.error(e);
 		}
 		if (a!=null) {
-				IntEnumeration e = a.getTimeLocation().getDays();
+				Enumeration<Integer> e = a.getTimeLocation().getDays();
 				while (e.hasMoreElements()){
-					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
 				}
 				sb.append(" ");
 				sb.append(a.getTimeLocation().getStartTimeHeader());

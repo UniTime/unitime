@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,24 +14,29 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.DateUtils;
 
 
 /**
  * @author Tomas Muller
  */
 public class TimetableGridCell implements Serializable, Comparable {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 	private static final long serialVersionUID = 2L;
 	private String iName;
 	private String iShortComment;
@@ -100,7 +105,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 				iNrMeetings,
 				iDatePatternName,
 				iWeekCode,
-				null);
+				iInstructor);
 	}
 	
 	public String getName() { return iName; }
@@ -162,13 +167,91 @@ public class TimetableGridCell implements Serializable, Comparable {
     }
     
     public boolean hasDays() {
-    	return iWeekCode!=null;
+    	return iWeekCode != null && iDatePatternName != null;
     }
     
-    public String getDays() {
-    	return iDatePatternName;
-    }
+    public String getDays() { return iDatePatternName; }
+    public void setDays(String days) { iDatePatternName = days; }
     
     public int getDay() { return iDay; }
     public int getSlot() { return iSlot; }
+    
+    public static String formatDatePattern(DatePattern dp, int dayCode) {
+    	if (dp == null || dp.isDefault()) return null;
+    	// if (dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	BitSet weekCode = dp.getPatternBitSet();
+    	if (weekCode.isEmpty()) return dp.getName();
+    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+    	Date dpFirstDate = DateUtils.getDate(1, dp.getSession().getPatternStartMonth(), dp.getSession().getSessionStartYear());
+    	cal.setTime(dpFirstDate);
+    	int idx = weekCode.nextSetBit(0);
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date first = null;
+    	while (idx < weekCode.size() && first == null) {
+    		if (weekCode.get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((dayCode & DayCode.MON.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((dayCode & DayCode.TUE.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((dayCode & DayCode.WED.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((dayCode & DayCode.THU.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((dayCode & DayCode.FRI.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((dayCode & DayCode.SAT.getCode()) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((dayCode & DayCode.SUN.getCode()) != 0) first = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
+    	}
+    	if (first == null) return dp.getName();
+    	cal.setTime(dpFirstDate);
+    	idx = weekCode.length() - 1;
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date last = null;
+    	while (idx >= 0 && last == null) {
+    		if (weekCode.get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((dayCode & DayCode.MON.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((dayCode & DayCode.TUE.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((dayCode & DayCode.WED.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((dayCode & DayCode.THU.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((dayCode & DayCode.FRI.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((dayCode & DayCode.SAT.getCode()) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((dayCode & DayCode.SUN.getCode()) != 0) last = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
+    	}
+    	if (last == null) return dp.getName();
+        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+    	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    }
 }

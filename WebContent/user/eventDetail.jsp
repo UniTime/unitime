@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  * <bean:write name="eventDetailForm" property="additionalInfo"/> 
 --%>
 
@@ -28,11 +28,11 @@
 
 <tiles:importAttribute />
 
-<html:form action="/eventDetail">
+<html:form action="/eventDetail" enctype="multipart/form-data">
 	<html:hidden property="id"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>	
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -251,7 +251,7 @@
 						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="location"/>
+						<bean:write name="meeting" property="location" filter="false"/>
 					</TD>	
 					<TD>
 						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
@@ -323,7 +323,15 @@
 								name="eventDetailForm"  
 								property="newEventNote">
 					</html:textarea>
-				</TD>			
+				</TD>
+			</TR>
+			<TR>
+				<TD>
+					Attachement:
+				</TD>
+				<TD>
+					<html:file name="eventDetailForm" property="attachement" size="80"/>
+				</TD>
 			</TR>
 			</logic:equal>
 			<TR>
@@ -335,6 +343,8 @@
 				<logic:equal name="eventDetailForm" property="canApprove" value="true">
 					<html:submit property="op" styleClass="btn" accesskey="P"
 						title="Approve Selected Meetings (Alt+P)" value="Approve"/>
+					<html:submit property="op" styleClass="btn" accesskey="I"
+						title="Send an email without approving or rejecting the event (Alt+I)" value="Inquire"/>
 					<html:submit property="op" styleClass="btn" accesskey="R"
 						title="Reject Selected Meetings (Alt+R)" value="Reject"/>
 				</logic:equal>
@@ -378,7 +388,7 @@
 					<i>No relation defined for this event.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="EventDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="EventDetail.table" filter="false"/>
 					</table>
 				</logic:notEmpty>
@@ -410,7 +420,7 @@
 		</TR>
 		<TR>
 			<TD colspan='2'>
-				<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+				<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 				<bean:write scope="request" name="EventDetail.table" filter="false"/>
 				</table>
 			</TD>

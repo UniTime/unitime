@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.interactive;
 
@@ -90,7 +90,7 @@ public class Suggestion implements Serializable, Comparable {
     	
     }
     
-    public Suggestion(Solver solver, Hashtable initialAssignments, Vector order, Collection unresolvedConflicts) {
+    public Suggestion(Solver<Lecture, Placement> solver, Hashtable<Lecture, Placement> initialAssignments, Vector order, Collection unresolvedConflicts) {
     	if (unresolvedConflicts!=null) {
     		iUnresolvedConflicts = new HashSet();
     		for (Iterator i=unresolvedConflicts.iterator();i.hasNext();)
@@ -102,9 +102,8 @@ public class Suggestion implements Serializable, Comparable {
         	HashSet jenrls = new HashSet();
         	HashSet gcs = new HashSet();
         	Hashtable committed = new Hashtable();
-        	for (Enumeration e=solver.currentSolution().getModel().assignedVariables().elements();e.hasMoreElements();) {
-        		Lecture lecture = (Lecture)e.nextElement();
-        		Placement p = (Placement)lecture.getAssignment();
+        	for (Lecture lecture: solver.currentSolution().getModel().assignedVariables()) {
+        		Placement p = lecture.getAssignment();
         		Placement ini = (Placement)initialAssignments.get(p.variable());
         		if (ini==null || !ini.equals(p)) {
         			iDifferentAssignments.add(new Hint(solver, p));  
@@ -124,10 +123,8 @@ public class Suggestion implements Serializable, Comparable {
         				committed.put(p,x);
         			}
         			gcs.addAll(lecture.groupConstraints());
-        			for (Enumeration f=lecture.getInstructorConstraints().elements();f.hasMoreElements();) {
-        				InstructorConstraint ic = (InstructorConstraint)f.nextElement();
-        			    for (Enumeration g=ic.variables().elements();g.hasMoreElements();) {
-        			        Lecture other = (Lecture)g.nextElement();
+        			for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
+        			    for (Lecture other: ic.variables()) {
         			        if (other.equals(lecture) || other.getAssignment()==null) continue;
         			        int pref = ic.getDistancePreference(p, (Placement)other.getAssignment());
         			        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
@@ -176,8 +173,7 @@ public class Suggestion implements Serializable, Comparable {
             	GroupConstraint gc = (GroupConstraint)i.next();
             	if (gc.isSatisfied()) continue;
 				DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
-				for (Enumeration f=gc.variables().elements();f.hasMoreElements();) {
-					Lecture another = (Lecture)f.nextElement();
+				for (Lecture another: gc.variables()) {
 					if (another.getAssignment()!=null)
 						dist.addHint(new Hint(solver, (Placement)another.getAssignment()));
 				}
@@ -206,7 +202,7 @@ public class Suggestion implements Serializable, Comparable {
     	iStudentConflictInfos = new Vector();
     	Placement currentPlacement = (Placement)lecture.getAssignment();
     	if (currentPlacement==null)
-    		currentPlacement = (lecture.values().isEmpty()?null:(Placement)lecture.values().firstElement());
+    		currentPlacement = (lecture.values().isEmpty()?null:lecture.values().get(0));
     	
     	Hashtable committed = new Hashtable();
     	if (currentPlacement!=null) {
@@ -232,8 +228,7 @@ public class Suggestion implements Serializable, Comparable {
 				}
 			}
 
-			for (Enumeration e=lecture.jenrlConstraints();e.hasMoreElements();) {
-        		JenrlConstraint jenrl = (JenrlConstraint)e.nextElement();
+			for (JenrlConstraint jenrl: lecture.jenrlConstraints()) {
         		long j = jenrl.jenrl(lecture, dummyPlacement);
         		if (j>0) {
         			//if (lecture.getAssignment()==null && jenrl.areStudentConflictsDistance(dummyPlacement)) continue;
@@ -292,12 +287,11 @@ public class Suggestion implements Serializable, Comparable {
         		if (sat) continue;
         		iGlobalGroupConstraintPreference += Math.abs(curPref==0?gc.getPreference():curPref);
     			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
-    			for (Enumeration f=gc.variables().elements();f.hasMoreElements();) {
-    				Lecture another = (Lecture)f.nextElement();
+    			for (Lecture another: gc.variables()) {
     				if (another.equals(lecture)) {
     					//dist.addHint(new Hint(solver, dummyPlacement));
     				} else if (another.getAssignment()!=null)
-    					dist.addHint(new Hint(solver, (Placement)another.getAssignment()));
+    					dist.addHint(new Hint(solver, another.getAssignment()));
     			}
     			iGroupConstraintInfos.addElement(dist);
         	}
@@ -569,6 +563,7 @@ public class Suggestion implements Serializable, Comparable {
 		        }
 		        sb.append("</td><td "+(iSecondInfo==null?"":"rowspan='2'")+" nowrap>");
 		        sb.append(props.isEmpty()?"":" <i>"+props+"</i>");
+		        sb.append(" <i>" + iInfo.getCurriculumText()+"</i>");
 		        if (iSecondInfo!=null) {
 		        	sb.append("</td></tr><tr><td nowrap>");
 		        	sb.append(iSecondInfo.getClazz().toHtml(link && !iInfo.isCommited())+" ");

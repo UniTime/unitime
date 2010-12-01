@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.webutil;
 
@@ -139,6 +139,20 @@ public class BackTracker {
 				
 				";\""+
 				"/>";
+		}
+	}
+	
+	public static String getGwtBack(HttpServletRequest request, int nrBackSteps) {
+		synchronized (request.getSession()) {
+			Vector back = getBackList(request.getSession());
+			if (back.size()<=1) return "";
+			StringBuffer ret = new StringBuffer("");
+			for (int i=Math.max(0,back.size()-MAX_BACK_STEPS); i<back.size(); i++) {
+				String[] backItem = (String[])back.elementAt(i);
+				if (ret.length() > 0) ret.append("&");
+				ret.append(encodeURL(backItem[0])+"|"+backItem[1]);
+			}
+			return "<span id='UniTimeGWT:Back' style='display:none;'>"+ret.toString()+"</span>";
 		}
 	}
 	

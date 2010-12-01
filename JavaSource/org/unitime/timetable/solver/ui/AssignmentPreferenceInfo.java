@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,13 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -95,12 +94,12 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		if (ofTheSameProblem) {
 			setNrStudentConflicts(lecture.countStudentConflictsOfTheSameProblem(placement));
 			setNrHardStudentConflicts(lecture.countHardStudentConflictsOfTheSameProblem(placement));
-			setNrCommitedStudentConflicts(0);
+			setNrCommitedStudentConflicts(lecture.countCommittedStudentConflictsOfTheSameProblem(placement));
 			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflictsOfTheSameProblem(placement));
 		} else {
 			setNrStudentConflicts(lecture.countStudentConflicts(placement)+lecture.getCommitedConflicts(placement));
 			setNrHardStudentConflicts(lecture.countHardStudentConflicts(placement));
-			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement));
+			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement) + lecture.countCommittedStudentConflicts(placement));
 			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflicts(placement));
 		}
 		setNrRoomLocations(lecture.nrRoomLocations());
@@ -110,8 +109,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		else
 			setTimePreference(placement.getTimeLocation().getPreference());
 		if (placement.isMultiRoom()) {
-			for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-				RoomLocation r = (RoomLocation)e.nextElement();
+			for (RoomLocation r: placement.getRoomLocations()) {
 				if (lecture.nrRoomLocations()==lecture.getNrRooms() && r.getPreference()==0)
 					setRoomPreference(r.getId(),PreferenceLevel.sIntLevelRequired);
 				else
@@ -127,8 +125,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			int nrSameRoomPlacementsNoConf = 0;
 			int nrSameTimePlacementsNoConf = 0;
 			int nrPlacementsNoConf = 0;
-			for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-				Placement p = (Placement)e.nextElement();
+			for (Placement p: lecture.values()) {
 				if (p.isHard()) continue;
 				if (p.equals(placement)) continue;
 				if (!lecture.getModel().conflictValues(p).isEmpty()) continue;
@@ -144,8 +141,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			setNrSameTimePlacementsNoConf(nrSameTimePlacementsNoConf);
 		}
 		int btbInstructorPref = 0;
-       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
        		btbInstructorPref += ic.getPreferenceCombination(placement);
        	}
        	setBtbInstructorPreference(btbInstructorPref);
@@ -159,8 +155,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		iMinRoomSize = lecture.minRoomSize();
 		iUselessHalfHours = placement.nrUselessHalfHours();
 		DepartmentSpreadConstraint deptConstraint = null;
-		for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-			Constraint c = (Constraint)e.nextElement();
+		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint)
 				deptConstraint = (DepartmentSpreadConstraint)c;
 			if (c instanceof GroupConstraint)

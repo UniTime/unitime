@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -54,7 +54,7 @@
 	<html:hidden property="creditText"/>
 	<html:hidden property="subpartCreditEditAllowed"/>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -157,7 +157,7 @@
 				<html:select style="width:200;" property="datePattern">
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="window.open('user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'datepatt','width=800,height=410,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');">
+				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
 			<TD>
 		</TR>
 		<TR>

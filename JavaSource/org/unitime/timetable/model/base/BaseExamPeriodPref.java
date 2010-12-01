@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,87 +14,58 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-public abstract class BaseExamPeriodPref extends org.unitime.timetable.model.Preference  implements Serializable {
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.Preference;
 
-	public static String REF = "ExamPeriodPref";
+public abstract class BaseExamPeriodPref extends Preference implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private ExamPeriod iExamPeriod;
 
 
-	// constructors
-	public BaseExamPeriodPref () {
+	public BaseExamPeriodPref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExamPeriodPref (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseExamPeriodPref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseExamPeriodPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
+	public ExamPeriod getExamPeriod() { return iExamPeriod; }
+	public void setExamPeriod(ExamPeriod examPeriod) { iExamPeriod = examPeriod; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ExamPeriodPref)) return false;
+		if (getUniqueId() == null || ((ExamPeriodPref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ExamPeriodPref)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.ExamPeriod examPeriod;
-
-
-
-	public org.unitime.timetable.model.ExamPeriod getExamPeriod() {
-		return examPeriod;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public void setExamPeriod (org.unitime.timetable.model.ExamPeriod examPeriod) {
-		this.examPeriod = examPeriod;
+	public String toString() {
+		return "ExamPeriodPref["+getUniqueId()+"]";
 	}
 
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ExamPeriodPref)) return false;
-		else {
-			org.unitime.timetable.model.ExamPeriodPref examPeriodPref = (org.unitime.timetable.model.ExamPeriodPref) obj;
-			if (null == this.getUniqueId() || null == examPeriodPref.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(examPeriodPref.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "ExamPeriodPref[" +
+			"\n	ExamPeriod: " + getExamPeriod() +
+			"\n	Owner: " + getOwner() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

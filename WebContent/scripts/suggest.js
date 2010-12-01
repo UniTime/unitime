@@ -242,10 +242,6 @@ function getAllFormTag() {
 
 function updateSuggestionList(textFieldId, actionURL, selectFirstWord, maxSuggestionsCount, suggestionsEncoding, minWordLength, timeout, all)
 {
-	// Hack to workaround bug - Heston
-	if (minWordLength==0)
-		minWordLength = 1;
-	
 	if (!document.getElementById(textFieldId) || document.getElementById(textFieldId).value.length < minWordLength) 
 	{
 		hideSuggestionList(textFieldId);
@@ -300,7 +296,8 @@ function updateSuggestionList(textFieldId, actionURL, selectFirstWord, maxSugges
 					
 					for( j=0; j<elementsMenu.length; j++)
 					{
-						divMenu.innerHTML += '<div class="suggestionList_element_off" onMouseDown="setTextFieldValue(\'' + textFieldId + '\', \'' + elementsMenu[j] + '\');hideSuggestionList(\'' + textFieldId + '\')" onMouseOver="displayCursor(\'' + textFieldId + '\', ' + j + ');" onMouseOut="hideCursor(\'' + textFieldId + '\', ' + j + ')">' + elementsMenu[j] + '</div>';
+						var fixedApostropheString = elementsMenu[j].split("'").join("\\'");
+						divMenu.innerHTML += '<div class="suggestionList_element_off" onClick="setTextFieldValue(\'' + textFieldId + '\', \'' + fixedApostropheString + '\');hideSuggestionList(\'' + textFieldId + '\')" onMouseOver="displayCursor(\'' + textFieldId + '\', ' + j + ')" onMouseOut="hideCursor(\'' + textFieldId + '\', ' + j + ')">' + elementsMenu[j] + '</div>';
 					}
 					
 					
@@ -494,10 +491,9 @@ function computeKeyDown(textFieldId, key, actionURL)
 
 function computeKeyPress(textFieldId, key)
 {
-	// Fix 'Enter' problem - be aware that selecting and pressing enter will now submit the form - Heston
 	if ( key == KEY_ENTER )
 	{
-		return true;
+		return false;
 	}
 }
 	

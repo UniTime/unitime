@@ -1,8 +1,26 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -15,7 +33,8 @@ import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 
 public class ExamProposedChange implements Serializable, Comparable<ExamProposedChange> {
-    private Vector<ExamAssignmentInfo> iAssignments = null;
+	private static final long serialVersionUID = -5497603865422857068L;
+	private Vector<ExamAssignmentInfo> iAssignments = null;
     private Vector<ExamAssignment> iConflicts = null;
     private Hashtable<Long,ExamAssignment> iInitials = null;
     private Long iSelectedExamId = null; 
@@ -45,8 +64,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
                 iInitials.put(exam.getId(),initialInfo.get(exam));
             }
         }
-        for (Enumeration e=model.assignedVariables().elements();e.hasMoreElements();) {
-            Exam exam = (Exam)e.nextElement();
+        for (Exam exam: model.assignedVariables()) {
             if (resolvedExams.contains(exam)) continue;
             ExamPlacement current = (ExamPlacement)exam.getAssignment();
             ExamPlacement initial = initialAssignment.get(exam);

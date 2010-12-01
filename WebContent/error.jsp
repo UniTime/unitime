@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,51 +13,62 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.commons.web.Web"%>
 <%@ page import="org.unitime.commons.Debug"%>
-<%@ page isErrorPage="true"%>
 <%@ page import="org.unitime.commons.Email" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@page import="org.unitime.timetable.util.AccessDeniedException"%>
 
-<%@ include file="/checkLogin.jspf"%>
-<%@ include file="/checkAccessLevel.jspf"%>
-
-<%	if (exception==null && session.getAttribute("exception")!=null) {
-		exception = (Exception)session.getAttribute("exception");
- 		session.removeAttribute("exception");
- 	}
- 	if (exception!=null && exception.getMessage()!=null && exception.getMessage().startsWith("Access Denied") ) { %>
- 		<jsp:forward page="/loginRequired.do">
+<%
+	try {
+		if (exception==null && session.getAttribute("exception")!=null) {
+			exception = (Exception)session.getAttribute("exception");
+			session.removeAttribute("exception");
+ 		}
+ 	} catch (IllegalStateException e) {}
+ 	if (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage())) {
+%>
+		<jsp:forward page="/loginRequired.do">
 			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
 		</jsp:forward>
-<%	}%>
+<%
+ 	}
+ %>
 <HTML>
 <HEAD>
-	<TITLE>Timetabling - Error</TITLE>
+	<TITLE>UniTime 3.2| Error</TITLE>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
+    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </HEAD>
-<BODY class="bodyStyle" background="images/bkrnd2.jpg">
-	<BR>
-	<TABLE border="0" width="100%">
-		<TR>
-			<TD width="12">&nbsp;</TD>
-			<TD height="45" align="right" class="WelcomeHead">
-				<DIV class="H3">Runtime Error &nbsp;</DIV>
-			</TD>
-			<TD width="55"><IMG align="middle" src="images/logosmall.jpg" border="0"></TD>
-		</TR>
-	</TABLE>
-	<BR>
+<BODY class="bodyMain">
+	<table align="center">
+    <tr>
+    <td valign="top">
+	    <table class="unitime-Page" width="100%"><tr>
+	    <td>
+    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
+		   		<tr><td rowspan="3">
+	    			<a href='main.jsp'>
+	    				<img src="images/unitime.png" border="0"/>
+	    			</a>
+	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;">
+	    			Runtime Error
+	    		</td></tr>
+	    	</table>
+	    </td></tr><tr><td>
 	<% if (exception!=null) { %>
-	<BLOCKQUOTE>
-		<TABLE width="90%" border="0">
+		<TABLE width="100%" border="0">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
@@ -71,15 +82,13 @@
 	                </DIV>
 				</TD>
 			</TR>
-
 		<% 
 		    WebOutputStream wos = new WebOutputStream();
 	        PrintWriter pw = new PrintWriter(wos);
 	        exception.printStackTrace(pw);
 	        pw.close();
 			String stackTrace = wos.toString();
-			
-			if(Web.isAdmin(session)) { %>
+		%>
 			<TR align="left" valign="top">
 				<TD><FONT color="898989">Trace: </FONT></TD>
 				<TD> <FONT color="898989"> <%
@@ -87,36 +96,33 @@
 				    %></FONT>
 				</TD>
 			</TR>
-		<% 	}
-		
-			Vector sessionTrace = new Vector();
-			try {
-				String errorEmail = (String) ApplicationProperties.getProperty("tmtbl.error.email");
-				String smtpDomain = (String) ApplicationProperties.getProperty("tmtbl.smtp.domain");
-				String smtpHost = (String) ApplicationProperties.getProperty("tmtbl.smtp.host");
-				String sentFrom = (String) ApplicationProperties.getProperty("tmtbl.error.sentFrom");
-				String replyTo = (String) ApplicationProperties.getProperty("tmtbl.error.replyTo");
-				String subject = (String) ApplicationProperties.getProperty("tmtbl.error.subject");
-
-				if (session.getAttribute("userTrace")!=null
-						&& errorEmail!=null && errorEmail.trim().length()>0 
-						&& exception.getMessage().toLowerCase().indexOf("access denied")<0) {				
-					String data = "Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
-								+ "Exception: " + exception.getMessage() + "\n" 
-								+ "Stack Trace: " + stackTrace.replaceAll("<br>\n", "") + "\n\n"								
-								+ (String) session.getAttribute("userTrace");
+		<%	try {
+				if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.error", "false")) && 
+					session.getAttribute("userTrace") !=null && exception.getMessage().toLowerCase().indexOf("access denied") < 0) {	
 					Email email = new Email();
-					email.sendMail(smtpHost, smtpDomain, sentFrom, replyTo, errorEmail, subject, data, sessionTrace);
+					email.setSubject("UniTime Error Report");
+					email.setText("Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
+								+ "Exception: " + exception.getMessage() + "\n" 
+								+ "Stack Trace: " + stackTrace.replaceAll("<br>", "") + "\n\n"								
+								+ (String) session.getAttribute("userTrace"));
+					email.addNotify();
+					email.send();
 				}
-			}
-			catch (Exception e) {
-				Debug.error(e);
-			}
-			
+			} catch (Exception e) { }
 			Debug.error(exception);
 		%>
 		</TABLE>
-	</BLOCKQUOTE>
-	<% } %>
-</BODY>
+	<% } %>	    
+	    </td></tr></table>
+    </td></tr><tr><td>
+    	<table class="unitime-Footer">
+    		<tr>
+    			<td width="33%" align="left" valign="top"><span id="UniTimeGWT:Version"></span></td>
+    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
+    			<td width="34%" align="center" valign="top" style="max-width: 300px;"><tt:copy/></td>
+    			<td width="33%" align="right" valign="top" style="max-width: 300px;"><tt:registration/></td>
+    		</tr>
+    	</table>
+	</td></tr></table>
+  </body>
 </HTML>

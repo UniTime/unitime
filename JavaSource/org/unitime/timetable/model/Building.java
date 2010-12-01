@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -24,7 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.hibernate.criterion.Restrictions;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -49,28 +52,6 @@ public class Building extends BaseBuilding implements Comparable {
 	 */
 	public Building (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public Building (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String externalUniqueId,
-		java.lang.String abbreviation,
-		java.lang.String name,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY) {
-
-		super (
-			uniqueId,
-			session,
-			externalUniqueId,
-			abbreviation,
-			name,
-			coordinateX,
-			coordinateY);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -202,11 +183,11 @@ public class Building extends BaseBuilding implements Comparable {
 			bldg.setName(extBldg.getDisplayName());
 			updated = true;
 		}
-		if((bldg.getCoordinateX().compareTo(extBldg.getCoordinateX())) != 0) {
+		if (!ToolBox.equals(bldg.getCoordinateX(), extBldg.getCoordinateX())) {
 			bldg.setCoordinateX(extBldg.getCoordinateX());
 			updated = true;
 		}
-		if((bldg.getCoordinateY().compareTo(extBldg.getCoordinateY())) != 0) {
+		if (!ToolBox.equals(bldg.getCoordinateY(), extBldg.getCoordinateY())) {
 			bldg.setCoordinateY(extBldg.getCoordinateY());
 			updated = true;
 		}
@@ -282,5 +263,15 @@ public class Building extends BaseBuilding implements Comparable {
 				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation").
 				setLong("sessionId", sessionId).setCacheable(true).list();
 	}
-	
+
+    public String getHtmlHint() {
+    	String hint = getName();
+    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
+    		hint += "<br><img src=\\'" + 
+			minimap.replace("%x", getCoordinateX().toString()).replace("%y", getCoordinateY().toString()) +
+			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
+    	}
+    	return hint;
+    }
 }

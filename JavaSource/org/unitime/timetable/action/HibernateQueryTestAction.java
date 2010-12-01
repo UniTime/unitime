@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -46,14 +46,16 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.SessionImplementor;
 import org.hibernate.hql.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.pretty.Formatter;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.commons.hibernate.util.PrettyFormatter;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -109,6 +111,7 @@ public class HibernateQueryTestAction extends Action {
         
         if(errors.size()==0) {
             try {
+            	int limit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.test_hql.max_line", "100"));
 		        String query = frm.getQuery();	        
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();	        
@@ -118,12 +121,12 @@ public class HibernateQueryTestAction extends Action {
 	                StringBuffer s = new StringBuffer();
 	                int line = 0;
 	                for (Iterator i=l.iterator();i.hasNext();line++) {
-	                    if (line>=100) {
+	                    if (limit > 0 && line >= limit) {
 	                        s.append("<tr><td>...</td></tr>"); break;
 	                    }
 	                    Object o = i.next();
 	                    if (s.length()==0) printHeader(s, o);
-	                    printLine(s, o);
+	                    printLine(s, o, (SessionImplementor)hibSession);
 	                }
 	                if (s.length()>0) {
 	                    printFooter(s);
@@ -167,7 +170,7 @@ public class HibernateQueryTestAction extends Action {
             if (sql.length()>0) sql+="<br><br>";
             if (comment!=null)
                 sql += "<font color='gray'>-- "+comment+"</font>";
-            sql += new Formatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
+            sql += new PrettyFormatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
         }
         if (sql.length()>0)
             request.setAttribute("sql",sql);
@@ -228,7 +231,6 @@ public class HibernateQueryTestAction extends Action {
                         header(s,idx++,null);
                     } else {
                         header(s,idx++,meta.getIdentifierPropertyName());
-                        Object[] val = meta.getPropertyValues(x[i], EntityMode.POJO);
                         for (int j=0;j<meta.getPropertyNames().length;j++) {
                             if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
                                 header(s,idx++,meta.getPropertyNames()[j]);
@@ -241,7 +243,6 @@ public class HibernateQueryTestAction extends Action {
             if (meta==null) {
                 header(s,idx++,null);
             } else {
-                Object[] val = meta.getPropertyValues(o, EntityMode.POJO);
                 header(s,idx++,meta.getIdentifierPropertyName());
                 for (int i=0;i<meta.getPropertyNames().length;i++) {
                     if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
@@ -259,7 +260,7 @@ public class HibernateQueryTestAction extends Action {
     }
     
     
-    public void printLine(StringBuffer s, Object o) {
+    public void printLine(StringBuffer s, Object o, SessionImplementor session) {
         s.append("<tr align='left' onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\" >");
         SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
         if (o==null) {
@@ -274,7 +275,7 @@ public class HibernateQueryTestAction extends Action {
                     if (meta==null) {
                         line(s,x[i]);
                     } else {
-                        line(s,meta.getIdentifier(x[i], EntityMode.POJO));
+                        line(s,meta.getIdentifier(x[i], session));
                         for (int j=0;j<meta.getPropertyNames().length;j++) 
                             if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
                                 line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j], EntityMode.POJO));
@@ -286,7 +287,7 @@ public class HibernateQueryTestAction extends Action {
             if (meta==null) {
                 line(s,o);
             } else {
-                line(s,meta.getIdentifier(o, EntityMode.POJO));
+                line(s,meta.getIdentifier(o, session));
                 for (int i=0;i<meta.getPropertyNames().length;i++) 
                     if (!skip(meta.getPropertyTypes()[i],meta.getPropertyLaziness()[i]))
                         line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i], EntityMode.POJO));

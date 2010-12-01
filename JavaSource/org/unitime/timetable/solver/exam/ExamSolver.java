@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam;
 
@@ -25,10 +25,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -40,6 +40,7 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -64,7 +65,6 @@ import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.Extension;
 import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Callback;
@@ -76,7 +76,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 /**
  * @author Tomas Muller
  */
-public class ExamSolver extends Solver implements ExamSolverProxy {
+public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolverProxy {
     private static Log sLog = LogFactory.getLog(ExamSolver.class);
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
     private boolean iWorking = false;
@@ -87,11 +87,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     private long iLastTimeStamp = System.currentTimeMillis();
     private boolean iIsPassivated = false;
     private Map iProgressBeforePassivation = null;
-    private Hashtable iCurrentSolutionInfoBeforePassivation = null;
-    private Hashtable iBestSolutionInfoBeforePassivation = null;
+    private Map<String,String> iCurrentSolutionInfoBeforePassivation = null;
+    private Map<String,String> iBestSolutionInfoBeforePassivation = null;
     private File iPassivationFolder = null;
     private String iPassivationPuid = null;
-    public static long sInactiveTimeToPassivate = 1800000;
+    private Thread iWorkThread = null;
 
     
     public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
@@ -101,9 +101,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public Date getLoadedDate() {
         if (iLoadedDate==null && !isPassivated()) {
-            Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+            List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
             if (log!=null && !log.isEmpty()) {
-                iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+                iLoadedDate = log.get(0).getDate();
             }
         }
         return iLoadedDate;
@@ -190,8 +190,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public Exam getExam(long examId) {
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getId()==examId) return exam;
             }
             return null;
@@ -225,8 +224,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
+            for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (p.getId().equals(assignment.getPeriodId())) { period = p; break; }
             }
             if (period==null) return null;
@@ -234,8 +232,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             for (ExamRoomInfo roomInfo : assignment.getRooms()) {
                 Long roomId = roomInfo.getLocationId();
                 ExamRoomPlacement room = null;
-                for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                    ExamRoomPlacement r = (ExamRoomPlacement)e.nextElement();
+                for (ExamRoomPlacement r: exam.getRoomPlacements()) {
                     if (r.getId()==roomId) { room = r; break; }
                 }
                 if (room!=null) rooms.add(room);
@@ -249,17 +246,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
+            for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (p.getId().equals(periodId)) { period = p; break; }
             }
             if (period==null) return null;
             HashSet rooms = new HashSet();
-            for (Iterator i=roomIds.iterator();i.hasNext();) {
-                Long roomId = (Long)i.next();
+            for (Long roomId: roomIds) {
                 ExamRoomPlacement room = null;
-                for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                    ExamRoomPlacement r = (ExamRoomPlacement)e.nextElement();
+                for (ExamRoomPlacement r: exam.getRoomPlacements()) {
                     if (r.getId()==roomId) { room = r; break; }
                 }
                 if (room!=null) rooms.add(room);
@@ -273,8 +267,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
             ExamPeriodPlacement period = null;
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
+            for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (p.getId().equals(assignment.getPeriodId())) { period = p; break; }
             }
             if (period==null) return "Examination period "+assignment.getPeriodName()+" is not available for examination "+assignment.getExamName()+".";
@@ -282,8 +275,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
                 ExamRoomInfo ri = (ExamRoomInfo)i.next();
                 ExamRoomPlacement room = null;
-                for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                    ExamRoomPlacement r = (ExamRoomPlacement)e.nextElement();
+                for (ExamRoomPlacement r: exam.getRoomPlacements()) {
                     if (r.getId()==ri.getLocationId()) { room = r; break; }
                 }
                 if (room==null) return "Examination room "+ri.getName()+" not found.";
@@ -313,14 +305,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
 
     
-    public Hashtable currentSolutionInfo() {
+    public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
         }
     }
 
-    public Hashtable bestSolutionInfo() {
+    public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getBestInfo();
@@ -359,9 +351,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         iWorking = true;
         ExamDatabaseSaver saver = new ExamDatabaseSaver(this);
         saver.setCallback(getSavingDoneCallback());
-        Thread thread = new Thread(saver);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(saver);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void load(DataProperties properties) {
@@ -376,9 +368,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         
         ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
         loader.setCallback(getLoadingDoneCallback());
-        Thread thread = new Thread(loader);
-        thread.setPriority(THREAD_PRIORITY);
-        thread.start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
     
     public void reload(DataProperties properties) {
@@ -398,7 +390,8 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         
         ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
         loader.setCallback(callBack);
-        (new Thread(loader)).start();
+        iWorkThread = new Thread(loader);
+        iWorkThread.start();
     }
     
     public Callback getLoadingDoneCallback() {
@@ -430,8 +423,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         Progress iProgress = null;
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getAssignment()!=null)
                     iCurrentAssignmentTable.put(exam.getId(),exam.getAssignment());
                 if (exam.getBestAssignment()!=null)
@@ -441,16 +433,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
         }
         private Exam getExam(long examId) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getId()==examId) return exam;
             }
             return null;
         }
         private ExamPlacement getPlacement(Exam exam, ExamPlacement placement) {
             ExamPeriodPlacement period = null;
-            for (Enumeration f=exam.getPeriodPlacements().elements();f.hasMoreElements();) {
-                ExamPeriodPlacement p = (ExamPeriodPlacement)f.nextElement();
+            for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (placement.getPeriod().equals(p.getPeriod())) {
                     period = p; break;
                 }
@@ -473,17 +463,15 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             return new ExamPlacement(exam,period,rooms);
         }
         private void assign(ExamPlacement placement) {
-            Hashtable conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+            Map<Constraint<Exam,ExamPlacement>, Set<ExamPlacement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
                 placement.variable().assign(0,placement);
             } else {
                 iProgress.warn("Unable to assign "+placement.variable().getName()+" := "+placement.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
-                for (Enumeration ex=conflictConstraints.keys();ex.hasMoreElements();) {
-                    Constraint c = (Constraint)ex.nextElement();
-                    Collection vals = (Collection)conflictConstraints.get(c);
-                    for (Iterator j=vals.iterator();j.hasNext();) {
-                        Value v = (Value) j.next();
+                for (Constraint<Exam,ExamPlacement> c: conflictConstraints.keySet()) {
+                	Set<ExamPlacement> vals = conflictConstraints.get(c);
+                    for (ExamPlacement v: vals) {
                         iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getName());
                     }
                     iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
@@ -491,8 +479,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
         }
         private void unassignAll() {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getAssignment()!=null) exam.unassign(0);
             }
         }
@@ -679,8 +666,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public void clear() {
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getAssignment()!=null) exam.unassign(0);
             }
             currentSolution().clearBest();
@@ -690,8 +676,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Collection<ExamAssignmentInfo> getAssignedExams() {
         synchronized (currentSolution()) {
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getAssignment()!=null)
                     ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
             }
@@ -701,8 +686,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Collection<ExamInfo> getUnassignedExams() {
         synchronized (currentSolution()) {
             Vector<ExamInfo> ret = new Vector<ExamInfo>();
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getAssignment()==null)
                     ret.add(new ExamInfo(exam));
             }
@@ -715,11 +699,10 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
         synchronized (currentSolution()) {
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 boolean hasSubjectArea = false;
-                for (Enumeration f=exam.getOwners().elements();!hasSubjectArea && f.hasMoreElements();) {
-                    ExamOwner ecs = (ExamOwner)f.nextElement();
+                for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                    ExamOwner ecs = (ExamOwner)f.next();
                     hasSubjectArea = ecs.getName().startsWith(sa);
                 }
                 if (hasSubjectArea && exam.getAssignment()!=null)
@@ -733,11 +716,10 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
         synchronized (currentSolution()) {
             Vector<ExamInfo> ret = new Vector<ExamInfo>();
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 boolean hasSubjectArea = false;
-                for (Enumeration f=exam.getOwners().elements();!hasSubjectArea && f.hasMoreElements();) {
-                    ExamOwner ecs = (ExamOwner)f.nextElement();
+                for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                    ExamOwner ecs = f.next();
                     hasSubjectArea = ecs.getName().startsWith(sa);
                 }
                 if (hasSubjectArea && exam.getAssignment()==null)
@@ -750,16 +732,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) {
         synchronized (currentSolution()) {
             ExamRoom room = null;
-            for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
-                ExamRoom r = (ExamRoom)e.nextElement();
+            for (ExamRoom r: ((ExamModel)currentSolution().getModel()).getRooms()) {
                 if (r.getId()==roomId) {
                     room = r; break;
                 }
             }
             if (room==null) return null;
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=((ExamModel)currentSolution().getModel()).getPeriods().elements();e.hasMoreElements();) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: ((ExamModel)currentSolution().getModel()).getPeriods()) {
                 ExamPlacement placement = room.getPlacement(period);
                 if (placement!=null)
                     ret.add(new ExamAssignmentInfo(placement));
@@ -771,16 +751,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) {
         synchronized (currentSolution()) {
             ExamInstructor instructor = null;
-            for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
-                ExamInstructor i = (ExamInstructor)e.nextElement();
+            for (ExamInstructor i: ((ExamModel)currentSolution().getModel()).getInstructors()) {
                 if (i.getId()==instructorId) {
                     instructor = i; break;
                 }
             }
             if (instructor==null) return null;
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=((ExamModel)currentSolution().getModel()).getPeriods().elements();e.hasMoreElements();) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: ((ExamModel)currentSolution().getModel()).getPeriods()) {
                 Set exams = instructor.getExams(period);
                 if (exams!=null)
                     for (Iterator i=exams.iterator();i.hasNext();) {
@@ -800,12 +778,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (sa!=null) {
                     boolean hasSubjectArea = false;
-                    for (Enumeration f=exam.getOwners().elements();!hasSubjectArea && f.hasMoreElements();) {
-                        ExamOwner ecs = (ExamOwner)f.nextElement();
+                    for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                        ExamOwner ecs = f.next();
                         hasSubjectArea = ecs.getName().startsWith(sa);
                     }
                     if (!hasSubjectArea) continue;
@@ -824,12 +801,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
+            for (Exam exam: currentSolution().getModel().variables()) {
                 if (sa!=null) {
                     boolean hasSubjectArea = false;
-                    for (Enumeration f=exam.getOwners().elements();!hasSubjectArea && f.hasMoreElements();) {
-                        ExamOwner ecs = (ExamOwner)f.nextElement();
+                    for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                        ExamOwner ecs = f.next();
                         hasSubjectArea = ecs.getName().startsWith(sa);
                     }
                     if (!hasSubjectArea) continue;
@@ -850,8 +826,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public ExamConflictStatisticsInfo getCbsInfo() {
         ConflictStatistics cbs = null;
-        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-            Extension ext = (Extension)e.nextElement();
+        for (Extension ext: getExtensions()) {
             if (ext instanceof ConflictStatistics) {
                 cbs = (ConflictStatistics)ext;
                 break;
@@ -870,8 +845,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public ExamConflictStatisticsInfo getCbsInfo(Long examId) {
         ConflictStatistics cbs = null;
-        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-            Extension ext = (Extension)e.nextElement();
+        for (Extension ext: getExtensions()) {
             if (ext instanceof ConflictStatistics) {
                 cbs = (ConflictStatistics)ext;
                 break;
@@ -923,7 +897,6 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 }
                 placement.variable().assign(0, placement);
             }
-            Vector<ExamAssignmentInfo> newAssignments = new Vector<ExamAssignmentInfo>();
             change.getAssignments().clear();
             change.getConflicts().clear();
             for (ExamPlacement assignment : assign)
@@ -949,8 +922,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
+            for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (periodId==p.getId()) { period = p; break; }
             }
             if (period==null) return null;
@@ -987,8 +959,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
             
             //compute rooms
-            for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                ExamRoomPlacement room = (ExamRoomPlacement)e.nextElement();
+            for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                 
                 int cap = room.getSize(exam.hasAltSeating());
                 if (minRoomSize>=0 && cap<minRoomSize) continue;
@@ -1052,8 +1023,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
 
             Vector<ExamAssignmentInfo> periods = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
+            for (ExamPeriodPlacement period: exam.getPeriodPlacements()) {
                 Set rooms = exam.findBestAvailableRooms(period);
                 if (rooms==null) rooms = new HashSet();
                 boolean conf = !exam.checkDistributionConstraints(period);
@@ -1110,14 +1080,12 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         synchronized (currentSolution()) {
             ExamModel model = (ExamModel)currentSolution().getModel();
             ExamRoom room = null;
-            for (Enumeration e=model.getRooms().elements();e.hasMoreElements();) {
-                ExamRoom r = (ExamRoom)e.nextElement();
+            for (ExamRoom r: model.getRooms()) {
                 if (r.getId()==locationId) { room = r; break; }
             }
             if (room==null) return null;
             TreeSet<ExamAssignment> ret = new TreeSet();
-            for (Enumeration e=model.getPeriods().elements();e.hasMoreElements();) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: model.getPeriods()) {
                 if (room.getPlacement(period)!=null)
                     ret.add(new ExamAssignment(room.getPlacement(period)));
             }
@@ -1139,7 +1107,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         } else stopSolverImmediately();
     }
     
-    public Solution currentSolution() {
+    public Solution<Exam, ExamPlacement> currentSolution() {
         activateIfNeeded();
         return super.currentSolution();
     }
@@ -1199,11 +1167,27 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-        if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
     
     public Date getLastUsed() {
         return new Date(iLastTimeStamp);
+    }
+    
+    public void interrupt() {
+    	try {
+            if (iSolverThread != null) {
+                iStop = true;
+                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
+                	iSolverThread.interrupt();
+            }
+			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+				iWorkThread.interrupt();
+			}
+    	} catch (Exception e) {
+    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
     }
 }

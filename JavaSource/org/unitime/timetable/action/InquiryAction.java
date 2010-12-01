@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -161,7 +159,6 @@ public class InquiryAction extends Action {
 	            	mail += "Version: "+Constants.VERSION+"."+Constants.BLD_NUMBER+" ("+Constants.REL_DATE+")\r\n";
 	            	mail += "TimeStamp: "+(new Date());
 	            	
-	            	Email email = new Email();
 	            	
                     String inqEmail = ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu");
 	            	String cc = inqEmail;
@@ -172,42 +169,61 @@ public class InquiryAction extends Action {
 	            		}
 	            	}
                     
-                    String host = ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu");
-                    String domain = ApplicationProperties.getProperty("tmtbl.smtp.domain", host);
-                    String sender = ApplicationProperties.getProperty("tmtbl.inquiry.sender", inqEmail);
                     EventContact c = EventContact.findByExternalUniqueId(user.getId());
-                    String mgrEmail = (mgr!=null && mgr.getEmailAddress()!=null?mgr.getEmailAddress():
-                            c!=null && c.getEmailAddress()!=null?c.getEmailAddress():
-                                user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"));
 	            	
-	            	email.sendMail(
-	            			host, domain, sender, mgrEmail, cc, 
-	            			"Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(), 
-	            			mail, 
-	            			new Vector());
-	            	
-	            	try {
-            		
-	            		mail = "The following inquiry was submitted on your behalf. "+
-	            			"We will contact you soon. "+
-            				"This email was automatically generated, please do not reply.\n\n";
-                        
-                        if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
-                            mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
+                    Email email = new Email();
+                    email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
+                    email.setText(mail);
+                    
+                    if (ApplicationProperties.getProperty("unitime.email.inquiry") != null)
+                    	email.addRecipient(ApplicationProperties.getProperty("unitime.email.inquiry"), ApplicationProperties.getProperty("unitime.email.inquiry.name"));
+                    else
+                    	email.addNotify();
+                    
+                    boolean autoreply = "true".equals(ApplicationProperties.getProperty("unitime.email.inquiry.autoreply", ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false")));
+                    
+                    if (!autoreply) {
+                        if (mgr != null && mgr.getEmailAddress() != null) {
+                            email.addRecipientCC(mgr.getEmailAddress(), mgr.getName());
+                        } else if (c != null && c.getEmailAddress() != null) {
+                        	email.addRecipientCC(c.getEmailAddress(), c.getName());
+                        } else {
+                        	email.addRecipientCC(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
                         }
+                        email.send();
+                    }
+                    
+                    if (autoreply) {
+            		
+                    	try {
+    	            		mail = "The following inquiry was submitted on your behalf. " +
+	    	            		"We will contact you soon. "+
+	            				"This email was automatically generated, please do not reply.\n\n";
                         
-                        mail +=
-                            "-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
-            				myForm.getMessage()+"\n"+
-            				"-- END INQUIRY -------------------------------------------";
-                        
-                        email.sendMail(
-                                host, domain, sender, inqEmail, mgrEmail,
-	            				"RE: Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(),
-	            				mail,
-	            				new Vector());
-	            		
-	            	} catch (IOException e) {}
+    	            		if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
+                                mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
+                            }
+                            
+                            mail +=
+                                "-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
+                				myForm.getMessage()+"\n"+
+                				"-- END INQUIRY -------------------------------------------";
+                            
+                            email = new Email();
+                            email.setSubject("RE: UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
+                            email.setText(mail);
+                            
+                            if (mgr != null && mgr.getEmailAddress() != null) {
+                                email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+                            } else if (c != null && c.getEmailAddress() != null) {
+                            	email.addRecipient(c.getEmailAddress(), c.getName());
+                            } else {
+                            	email.addRecipient(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
+                            }
+                            
+                            email.send();
+                    	} catch (Exception e) {}
+	            	}
 	            	
 	            	myForm.setOp("Sent");
 	            	return mapping.findForward("display");

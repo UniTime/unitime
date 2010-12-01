@@ -2,7 +2,7 @@
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -11,8 +11,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.util;
 
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -32,11 +33,18 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RollForwardSessionForm;
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.CurriculumCourse;
+import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -59,6 +67,8 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -76,9 +86,12 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.AcademicAreaDAO;
+import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseCatalogDAO;
+import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -90,9 +103,10 @@ import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
+import org.unitime.timetable.model.dao.PosMajorDAO;
+import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -170,8 +184,6 @@ public class SessionRollForward {
 		RoomGroup fromRoomGroup = null;
 		RoomGroup toRoomGroup = null;
 		RoomGroupDAO rgDao = new RoomGroupDAO();
-		RoomDAO rDao = new RoomDAO();
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
 		Collection fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
 		try {
 			if (fromRoomGroups != null && !fromRoomGroups.isEmpty()){
@@ -197,8 +209,6 @@ public class SessionRollForward {
 		DepartmentRoomFeature fromRoomFeature = null;
 		DepartmentRoomFeature toRoomFeature = null;
 		RoomFeatureDAO rfDao = new RoomFeatureDAO();
-		RoomDAO rDao = new RoomDAO();
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
 		Collection fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
 		try{
 			if (fromRoomFeatures != null && !fromRoomFeatures.isEmpty()){
@@ -296,11 +306,9 @@ public class SessionRollForward {
 		Room fromRoom = null;
 		Room toRoom = null;
 		RoomDAO rDao = new RoomDAO();
-		RoomDeptDAO rdDao = new RoomDeptDAO();
 		DepartmentDAO dDao = new DepartmentDAO();
 		Building toBuilding = null;
 		RoomDept fromRoomDept = null;
-		RoomDept toRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
 		HashMap roomFeatureCache = new HashMap();
@@ -413,8 +421,8 @@ public class SessionRollForward {
 				}
 				rDao.saveOrUpdate(toRoom);
 				rDao.getSession().flush();
-				rDao.getSession().evict(toRoom);
-				rDao.getSession().evict(fromRoom);
+				// rDao.getSession().evict(toRoom); -- commented out to prevent NonUniqueObjectException
+				// rDao.getSession().evict(fromRoom);
 			}								
 		} catch (Exception e) {
 			Debug.error(e);
@@ -486,11 +494,8 @@ public class SessionRollForward {
 		NonUniversityLocation fromNonUniversityLocation = null;
 		NonUniversityLocation toNonUniversityLocation = null;
 		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
-		RoomDeptDAO rdDao = new RoomDeptDAO();
 		DepartmentDAO dDao = new DepartmentDAO();
-		Building toBuilding = null;
 		RoomDept fromRoomDept = null;
-		RoomDept toRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
 		HashMap roomFeatureCache = new HashMap();
@@ -984,7 +989,6 @@ public class SessionRollForward {
 				&& !fromPrefGroup.getBuildingPreferences().isEmpty() 
 				&& !(fromPrefGroup instanceof Class_)
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
-			BuildingPref fromBuildingPref = null;
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
 			if (!isExamPref && locations == null){
 				return;
@@ -1456,7 +1460,6 @@ public class SessionRollForward {
 		Room fromRoom = null;
 		Room toRoom = null;
 		ExamLocationPref fromPref = null;
-		ExamLocationPref toPref = null;
 		ExamPeriod toPeriod = null;
 		for (Iterator rIt = rooms.iterator(); rIt.hasNext();){
 			fromRoom = (Room) rIt.next();
@@ -1898,13 +1901,13 @@ public class SessionRollForward {
 	public void rollTimePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollTimePatternsForwardFrom());
-		Vector fromDatePatterns = TimePattern.findAll(fromSession, null);
+		List<TimePattern> fromDatePatterns = TimePattern.findAll(fromSession, null);
 		TimePattern fromTimePattern = null;
 		TimePattern toTimePattern = null;
 		TimePatternDAO tpDao = new TimePatternDAO();
 		try {
-			for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
-				fromTimePattern = (TimePattern) it.next();
+			for(Iterator<TimePattern> it = fromDatePatterns.iterator(); it.hasNext();){
+				fromTimePattern = it.next();
 				if (fromTimePattern != null){
 					toTimePattern = (TimePattern) fromTimePattern.clone();
 					toTimePattern.setSession(toSession);
@@ -1978,6 +1981,7 @@ public class SessionRollForward {
 		}
 	}
 
+	/*
 	private void cloneCourses(String[] courses, String courseToCloneFrom, RollForwardSessionForm rollForwardSessionForm){
 		Session session = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
@@ -2021,6 +2025,7 @@ public class SessionRollForward {
 		}
 
 	}
+	*/
 
 	public void rollStudentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
         Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
@@ -2053,7 +2058,7 @@ public class SessionRollForward {
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
         hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
-        		.setLong("toSessionId", toSession.getUniqueId().longValue());
+        		.setLong("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();;
         
         int total = 0;
         for (int i=0;i<query.length;i++) {
@@ -2095,6 +2100,238 @@ public class SessionRollForward {
         }
 
     }
+	
+	public void rollCurriculaForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+        Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+        Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCurriculaForwardFrom());
+        
+        org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+        
+        // roll forward academic areas, if needed
+        Hashtable<String, AcademicArea> areas = new Hashtable<String, AcademicArea>();
+        for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	areas.put(area.getAcademicAreaAbbreviation(), area);
+        }
+        if (areas.isEmpty()) {
+        	for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		AcademicArea newArea = (AcademicArea)area.clone();
+        		newArea.setSession(toSession);
+        		newArea.setPosMajors(new HashSet<PosMajor>());
+        		newArea.setPosMinors(new HashSet<PosMinor>());
+        		hibSession.save(newArea);
+        		areas.put(newArea.getAcademicAreaAbbreviation(), newArea);
+        	}
+        }
+        
+        // roll forward academic classifications, if needed
+        Hashtable<String, AcademicClassification> classifications = new Hashtable<String, AcademicClassification>();
+        for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	classifications.put(clasf.getCode(), clasf);
+        }
+        if (classifications.isEmpty()) {
+        	for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+        		AcademicClassification newClasf = (AcademicClassification)clasf.clone();
+        		newClasf.setSession(toSession);
+        		hibSession.save(newClasf);
+        		classifications.put(newClasf.getCode(), newClasf);
+        	}
+        }
+        
+        // roll forward majors, if needed
+        Hashtable<String, Hashtable<String, PosMajor>> majors = new Hashtable<String, Hashtable<String,PosMajor>>();
+        for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	for (AcademicArea area: major.getAcademicAreas()) {
+        		Hashtable<String, PosMajor> code2major = majors.get(area.getAcademicAreaAbbreviation());
+        		if (code2major == null) {
+        			code2major = new Hashtable<String, PosMajor>();
+        			majors.put(area.getAcademicAreaAbbreviation(), code2major);
+        		}
+        		code2major.put(major.getCode(), major);
+        	}
+        }
+        if (majors.isEmpty()) {
+            for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+            	Set<AcademicArea> newAreas = new HashSet<AcademicArea>();
+            	for (AcademicArea area: major.getAcademicAreas()) {
+            		AcademicArea newArea = areas.get(area.getAcademicAreaAbbreviation());
+            		if (newArea != null) newAreas.add(newArea);
+            	}
+            	if (newAreas.isEmpty()) continue;
+            	PosMajor newMajor = (PosMajor)major.clone();
+            	newMajor.setSession(toSession);
+            	newMajor.setAcademicAreas(newAreas);
+            	for (AcademicArea newArea: newAreas) {
+            		newArea.getPosMajors().add(newMajor);
+            		Hashtable<String, PosMajor> code2major = majors.get(newArea.getAcademicAreaAbbreviation());
+            		if (code2major == null) {
+            			code2major = new Hashtable<String, PosMajor>();
+            			majors.put(newArea.getAcademicAreaAbbreviation(), code2major);
+            		}
+            		code2major.put(newMajor.getCode(), newMajor);
+            	}
+            	hibSession.save(newMajor);
+            }        	
+        }
+        
+        // roll forward minors, if needed
+        Hashtable<String, Hashtable<String, PosMinor>> minors = new Hashtable<String, Hashtable<String,PosMinor>>();
+        for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, toSession.getUniqueId())) {
+        	for (AcademicArea area: minor.getAcademicAreas()) {
+        		Hashtable<String, PosMinor> code2minor = minors.get(area.getAcademicAreaAbbreviation());
+        		if (code2minor == null) {
+        			code2minor = new Hashtable<String, PosMinor>();
+        			minors.put(area.getAcademicAreaAbbreviation(), code2minor);
+        		}
+        		code2minor.put(minor.getCode(), minor);
+        	}
+        }
+        if (minors.isEmpty()) {
+            for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, fromSession.getUniqueId())) {
+            	Set<AcademicArea> newAreas = new HashSet<AcademicArea>();
+            	for (AcademicArea area: minor.getAcademicAreas()) {
+            		AcademicArea newArea = areas.get(area.getAcademicAreaAbbreviation());
+            		if (newArea != null) newAreas.add(newArea);
+            	}
+            	if (newAreas.isEmpty()) continue;
+            	PosMinor newMinor = (PosMinor)minor.clone();
+            	newMinor.setSession(toSession);
+            	newMinor.setAcademicAreas(newAreas);
+            	for (AcademicArea newArea: newAreas) {
+            		newArea.getPosMinors().add(newMinor);
+            		Hashtable<String, PosMinor> code2minor = minors.get(newArea.getAcademicAreaAbbreviation());
+            		if (code2minor == null) {
+            			code2minor = new Hashtable<String, PosMinor>();
+            			minors.put(newArea.getAcademicAreaAbbreviation(), code2minor);
+            		}
+            		code2minor.put(newMinor.getCode(), newMinor);
+            	}
+            	hibSession.save(newMinor);
+            }        	
+        }
+        
+        // course translation table
+        Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
+        for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery("select co from CourseOffering co " +
+        		"where co.uniqueIdRolledForwardFrom is not null and " +
+        		"co.subjectArea.session.uniqueId = :sessionId").setLong("sessionId", toSession.getUniqueId()).list()) {
+        	courses.put(course.getUniqueIdRolledForwardFrom(), course);
+        }
+        
+        // cleanup all curricula
+        for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
+            	setLong("sessionId", toSession.getUniqueId()).list().iterator(); i.hasNext(); ) {
+        	hibSession.delete(i.next());
+    	}
+    	hibSession.flush();
+    	
+    	// roll forward curricula
+		Department tempDept = null;
+    	curricula: for (Curriculum curriculum: (List<Curriculum>)hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
+            	setLong("sessionId", fromSession.getUniqueId()).list()) {
+    		Curriculum newCurriculum = new Curriculum();
+    		newCurriculum.setAbbv(curriculum.getAbbv());
+    		newCurriculum.setName(curriculum.getName());
+    		AcademicArea area = areas.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
+    		if (area == null) continue;
+    		newCurriculum.setAcademicArea(area);
+    		Department dept = curriculum.getDepartment().findSameDepartmentInSession(toSession);
+    		if (dept == null) {
+    			if (tempDept == null) {
+    				tempDept = Department.findByDeptCode("TEMP", toSession.getUniqueId());
+    				if (tempDept == null){
+    					tempDept = new Department();
+    					tempDept.setAbbreviation("TEMP");
+    					tempDept.setAllowReqRoom(new Boolean(false));
+    					tempDept.setAllowReqTime(new Boolean(false));
+    					tempDept.setDeptCode("TEMP");
+    					tempDept.setExternalManager(new Boolean(false));
+    					tempDept.setExternalUniqueId(null);
+    					tempDept.setName("Temp Department For New Curricula");
+    					tempDept.setSession(toSession);
+    					tempDept.setDistributionPrefPriority(new Integer(0));
+    					toSession.addTodepartments(tempDept);
+    					hibSession.save(tempDept);
+    				}
+    			}
+    			dept = tempDept;
+    		}
+    		newCurriculum.setDepartment(dept);
+    		newCurriculum.setMajors(new HashSet<PosMajor>());
+    		Hashtable<String, PosMajor> code2major = majors.get(area.getAcademicAreaAbbreviation());
+    		for (PosMajor major: curriculum.getMajors()) {
+    			PosMajor newMajor = (code2major == null ? null : code2major.get(major.getCode()));
+    			if (newMajor == null) continue curricula;
+    			newCurriculum.getMajors().add(newMajor);
+    		}
+    		newCurriculum.setClassifications(new HashSet<CurriculumClassification>());
+            Hashtable<Long, CurriculumCourseGroup> createdGroups = new Hashtable<Long, CurriculumCourseGroup>();
+    		for (CurriculumClassification clasf: curriculum.getClassifications()) {
+    			CurriculumClassification newClasf = new CurriculumClassification();
+    			AcademicClassification f = classifications.get(clasf.getAcademicClassification().getCode());
+    			if (f == null) continue;
+    			newClasf.setAcademicClassification(f);
+    			newClasf.setCurriculum(newCurriculum);
+    			newClasf.setName(clasf.getName());
+    			newClasf.setNrStudents(clasf.getNrStudents());
+    			newClasf.setOrd(clasf.getOrd());
+    			newClasf.setCourses(new HashSet<CurriculumCourse>());
+    			newCurriculum.getClassifications().add(newClasf);
+    			for (CurriculumCourse course: clasf.getCourses()) {
+    				CurriculumCourse newCourse = new CurriculumCourse();
+    				newCourse.setOrd(course.getOrd());
+    				newCourse.setPercShare(course.getPercShare());
+    				CourseOffering co = courses.get(course.getCourse().getUniqueId());
+    				if (co == null) continue;
+    				newCourse.setCourse(co);
+    				newCourse.setClassification(newClasf);
+    				newClasf.getCourses().add(newCourse);
+    				newCourse.setGroups(new HashSet<CurriculumCourseGroup>());
+    				for (CurriculumCourseGroup group: course.getGroups()) {
+    					CurriculumCourseGroup newGroup = createdGroups.get(group.getUniqueId());
+    					if (newGroup == null) {
+    						newGroup = new CurriculumCourseGroup();
+    						newGroup.setColor(group.getColor());
+    						newGroup.setName(group.getName());
+    						newGroup.setType(group.getType());
+    						newGroup.setCurriculum(newCurriculum);
+    						createdGroups.put(group.getUniqueId(), newGroup);
+    					}
+    					newCourse.getGroups().add(newGroup);
+    				}
+    			}
+    		}
+    		
+    		hibSession.save(newCurriculum);
+            for (CurriculumCourseGroup g: createdGroups.values())
+            	hibSession.saveOrUpdate(g);
+    	}
+		
+		// roll forward projection rules (if empty)
+		if (hibSession.createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId")
+				.setLong("sessionId", toSession.getUniqueId()).list().isEmpty()) {
+			rules: for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery("select r from CurriculumProjectionRule r " +
+					"where r.academicArea.session.uniqueId = :sessionId").setLong("sessionId", fromSession.getUniqueId()).list()) {
+				CurriculumProjectionRule newRule = new CurriculumProjectionRule();
+	    		AcademicArea area = areas.get(rule.getAcademicArea().getAcademicAreaAbbreviation());
+	    		if (area == null) continue;
+				newRule.setAcademicArea(area);
+				AcademicClassification clasf = classifications.get(rule.getAcademicClassification().getCode());
+				if (clasf == null) continue;
+				newRule.setAcademicClassification(clasf);
+				if (rule.getMajor() != null) {
+		    		Hashtable<String, PosMajor> code2major = majors.get(area.getAcademicAreaAbbreviation());
+					PosMajor major = (code2major == null ? null : code2major.get(rule.getMajor().getCode()));
+					if (major == null) continue rules;
+					newRule.setMajor(major);
+				}
+				newRule.setProjection(rule.getProjection());
+				hibSession.save(newRule);
+			}
+		}
+		
+        hibSession.flush(); hibSession.clear();
+	}
+
 
 	/**
 	 * @return the subpartTimeRollForward

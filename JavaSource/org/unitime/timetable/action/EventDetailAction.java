@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -181,14 +179,55 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeApproval);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 		                    hibSession.saveOrUpdate(en);
 		                    event.getNotes().add(en);
 		                    hibSession.saveOrUpdate(event);                 
 		                    
-		                    new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+		                    new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
+
+		                    myForm.setSelectedMeetings(null);
+		                    myForm.setNewEventNote(null);
+						}
+	                    tx.commit();
+						if (!errors.isEmpty())
+						    saveErrors(request, errors);
+	                } catch (Exception e) {
+	                    if (tx!=null) tx.rollback();
+	                    throw e;
+	                }		                
+	
+				}
+				
+				if(iOp.equals("Inquire")) {
+					Long[] selectedMeetings = (myForm.getSelectedMeetings() == null ? null : myForm.getSelectedMeetings());
+	                org.hibernate.Session hibSession = new EventDAO().getSession();
+	                Transaction tx = null;
+	                try {
+	                    tx = hibSession.beginTransaction();
+	                    ActionMessages errors = new ActionMessages();
+	                    HashSet<Meeting> meetings = new HashSet();
+	                    if (selectedMeetings == null || selectedMeetings.length == 0) {
+	                    	meetings.addAll(event.getMeetings());
+	                    } else {
+							for (int i=0; i<selectedMeetings.length; i++)
+								meetings.add(MeetingDAO.getInstance().get(selectedMeetings[i]));
+	                    }
+						if (!meetings.isEmpty()) {
+		                    EventNote en = new EventNote();
+		                    en.setTimeStamp(new Date());
+		                    en.setNoteType(EventNote.sEventNoteTypeInquire);
+		                    en.setUser(uname);
+		                    en.setMeetingCollection(meetings);
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
+		                    en.setEvent(event);
+		                    hibSession.saveOrUpdate(en);
+		                    event.getNotes().add(en);
+		                    hibSession.saveOrUpdate(event);                 
 		                    
+		                    new EventEmail(event, EventEmail.sActionInquire, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
+
 		                    myForm.setSelectedMeetings(null);
 		                    myForm.setNewEventNote(null);
 						}
@@ -237,13 +276,13 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeRejection);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 		                    hibSession.saveOrUpdate(en);
 		                    event.getNotes().add(en);
 		                    hibSession.saveOrUpdate(event);     
 		                    
-		                    new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+		                    new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
 	
 		                    myForm.setSelectedMeetings(null);
 		                    myForm.setNewEventNote(null);
@@ -300,13 +339,13 @@ public class EventDetailAction extends Action {
 		                    en.setNoteType(EventNote.sEventNoteTypeDeletion);
 		                    en.setUser(uname);
 		                    en.setMeetingCollection(meetings);
-		                    en.setTextNote(myForm.getNewEventNote());
+		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
 							hibSession.saveOrUpdate(en);
 							event.getNotes().add(en);
 							hibSession.saveOrUpdate(event);		
 							
-							new EventEmail(event, EventEmail.sActionDelete, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+							new EventEmail(event, EventEmail.sActionDelete, Event.getMultiMeetings(meetings), myForm.getEventNoteWithAttachement(), myForm.getAttachement()).send(request);
 	
 			                if (event.getMeetings().isEmpty()) {
 			                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
@@ -374,7 +413,6 @@ public class EventDetailAction extends Action {
 								(ec.getEmailAddress()==null?"":ec.getEmailAddress()),
 								(ec.getPhone()==null?"":ec.getPhone()));
 					}
-					SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 					if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
 					    myForm.setCanDelete(true);
 					    myForm.setCanEdit(true);

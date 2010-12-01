@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -84,7 +84,7 @@
 	// -->
 </SCRIPT>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<html:form action="/instructionalOfferingDetail" styleClass="FormWithNoPadding">
@@ -99,7 +99,7 @@
 					<tt:section-title>
 							<A  title="Back to Instructional Offering List (Alt+I)" 
 								accesskey="I"
-								class="l7" 
+								class="l8" 
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
 							><bean:write name="instructionalOfferingDetailForm" property="instrOfferingName" /></A> 
 					</tt:section-title>						
@@ -225,11 +225,11 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader">Demands From</TD>
 						</logic:equal>
-						<TD align="center">&nbsp;</TD>
+						<TD align="center" >&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
 					<TR>
-						<TD align="center">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
+						<TD align="center" class="BottomBorderGray">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
 						<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
@@ -353,6 +353,12 @@
 			</TD>
 		</TR>
 		</logic:notEmpty>
+		
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:CourseCurricula' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+			</TD>
+		</TR>
 		
 		<TR>
 			<TD colspan="2" >&nbsp;</TD>

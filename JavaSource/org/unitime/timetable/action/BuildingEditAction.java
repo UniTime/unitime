@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -152,7 +152,7 @@ public class BuildingEditAction extends Action {
         }
         
         if ("Export PDF".equals(op)) {
-            DecimalFormat df5 = new DecimalFormat("####0");
+            DecimalFormat df5 = new DecimalFormat("####0.######");
             PdfWebTable table = new PdfWebTable( 5,
                     "Buildings", null,
                     new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
@@ -166,13 +166,13 @@ public class BuildingEditAction extends Action {
                             b.getAbbreviation(),
                             b.getName(),
                             b.getExternalUniqueId()==null?"@@ITALIC N/A @@END_ITALIC ":b.getExternalUniqueId().toString(),
-                            (b.getCoordinateX()==null || b.getCoordinateX()<0?"":df5.format(b.getCoordinateX())),
-                            (b.getCoordinateY()==null || b.getCoordinateY()<0?"":df5.format(b.getCoordinateY())),
+                            (b.getCoordinateX()==null ? "" : df5.format(b.getCoordinateX())),
+                            (b.getCoordinateY()==null ? "" : df5.format(b.getCoordinateY())),
                             }, 
                         new Comparable[] {
                             b.getAbbreviation(),
                             b.getName(),
-                            b.getExternalUniqueId()==null?"":b.getExternalUniqueId(),
+                            b.getExternalUniqueId()==null ? "" : b.getExternalUniqueId(),
                             b.getCoordinateX(),
                             b.getCoordinateY(),
                             });

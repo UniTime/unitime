@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,22 +14,25 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.ui;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.jsp.JspWriter;
-
-import org.dom4j.Element;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
 import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
@@ -45,11 +48,15 @@ import net.sf.cpsolver.ifs.extension.Assignment;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.dom4j.Element;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.timegrid.SolverGridModel;
+
 /**
  * @author Tomas Muller
  */
 public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
 	private static final long serialVersionUID = 7L;
 	public static int sVersion = 7; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;
@@ -69,10 +76,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		load(cbs, null);
 	}
 	
-	public ConflictStatisticsInfo getConflictStatisticsSubInfo(Vector variables) {
+	public ConflictStatisticsInfo getConflictStatisticsSubInfo(List variables) {
 		ConflictStatisticsInfo ret = new ConflictStatisticsInfo();
-		for (Enumeration e=variables.elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Iterator e=variables.iterator();e.hasNext();) {
+			Lecture lecture = (Lecture)e.next();
 			CBSVariable var = (CBSVariable)iVariables.get(lecture.getClassId());
 			if (var!=null)
 				ret.iVariables.put(lecture.getClassId(),var);
@@ -114,24 +121,24 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 					placement.getTimeLocation().getBreakTime());
 			var.values().add(val);
 			
-			Vector noGoods = (Vector)entry.getValue();
+			List noGoods = (List)entry.getValue();
 			
 			Hashtable constr2assignments = new Hashtable();
-			for (Enumeration e2=noGoods.elements();e2.hasMoreElements();) {
-				Assignment noGood = (Assignment)e2.nextElement();
+			for (Iterator e2=noGoods.iterator();e2.hasNext();) {
+				Assignment noGood = (Assignment)e2.next();
 				if (noGood.getConstraint()==null) continue;
-				Vector aaa = (Vector)constr2assignments.get(noGood.getConstraint());
+				List aaa = (List)constr2assignments.get(noGood.getConstraint());
 				if (aaa == null) {
-					aaa = new Vector();
+					aaa = new ArrayList();
 					constr2assignments.put(noGood.getConstraint(), aaa);
 				}
-				aaa.addElement(noGood);
+				aaa.add(noGood);
 			}
 			
 			for (Iterator i2=constr2assignments.entrySet().iterator();i2.hasNext();) {
 				Map.Entry entry2 = (Map.Entry)i2.next();
 				Constraint constraint = (Constraint)entry2.getKey();
-				Vector noGoodsThisConstraint = (Vector)entry2.getValue();
+				List noGoodsThisConstraint = (List)entry2.getValue();
 				
 				CBSConstraint con = null;
 				if (constraint instanceof RoomConstraint) {
@@ -155,8 +162,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 				}
 				val.constraints().add(con);
 				
-				for (Enumeration e3=noGoodsThisConstraint.elements();e3.hasMoreElements();) {
-					Assignment ass = (Assignment)e3.nextElement();
+				for (Iterator e3=noGoodsThisConstraint.iterator();e3.hasNext();) {
+					Assignment ass = (Assignment)e3.next();
 					Placement p = (Placement)ass.getValue();
 					Lecture l = (Lecture)p.variable();
 					String pr = SolverGridModel.hardConflicts2pref(l,p);
@@ -277,10 +284,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		int iCounter = 0;
 		int iDays;
 		int iStartSlot;
-		Vector iRoomIds;
+		List iRoomIds;
 		String iInstructorName = null;
-		Vector iRoomNames;
-		Vector iRoomPrefs;
+		List iRoomNames;
+		List iRoomPrefs;
 		int iTimePref;
 		CBSVariable iVariable = null;
 		HashSet iConstraints = new HashSet();
@@ -290,7 +297,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		String iDatePatternName = null;
 		Long iPatternId = null;
 		
-		CBSValue(CBSVariable var, String instructorName, Vector roomNames, int days, int startSlot, Vector roomIds, int timePref, Vector roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSValue(CBSVariable var, String instructorName, List roomNames, int days, int startSlot, List roomIds, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
 			iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iVariable = var; iInstructorName = instructorName; iRoomNames = roomNames; iTimePref = timePref; iRoomPrefs = roomPrefs;
 			iDatePatternName = datePatternName; iLength = length; iBreakTime = breakTime;
@@ -300,14 +307,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iVariable = var;
 			iDays = Integer.parseInt(element.attributeValue("days"));
 			iStartSlot = Integer.parseInt(element.attributeValue("slot"));
-			iRoomIds = new Vector();
-			iRoomNames = new Vector();
-			iRoomPrefs = new Vector();
+			iRoomIds = new ArrayList();
+			iRoomNames = new ArrayList();
+			iRoomPrefs = new ArrayList();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.addElement(Integer.valueOf(r.attributeValue("id")));
-				iRoomNames.addElement(r.attributeValue("name"));
-				iRoomPrefs.addElement(Integer.valueOf(r.attributeValue("pref")));
+				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomNames.add(r.attributeValue("name"));
+				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
 			iInstructorName = element.attributeValue("iName");
 			iTimePref = Integer.parseInt(element.attributeValue("tpref"));
@@ -344,10 +351,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public String getDatePatternName() {
 			return iDatePatternName;
 		}
-		public Vector getRoomNames() { return iRoomNames; }
+		public List getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
 		public int getTimePref() { return iTimePref; }
-		public Vector getRoomPrefs() { return iRoomPrefs; }
+		public List getRoomPrefs() { return iRoomPrefs; }
 		public String toString() {
 			//return getDays()+" "+getStartTime()+" "+getRoom().getRoomLabel();
 			return getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
@@ -357,7 +364,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iCounter+=value;
 			if (iVariable!=null) iVariable.incCounter(value);
 		}
-		public Vector getRoomIds() {
+		public List getRoomIds() {
 			return iRoomIds;
 		}
 		public Set constraints() { return iConstraints; }
@@ -389,9 +396,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
                 element.addAttribute("pattern", iPatternId.toString());
 			for (int i=0;i<iRoomIds.size();i++) {
 				Element r = element.addElement("room");
-				r.addAttribute("id",iRoomIds.elementAt(i).toString());
-				r.addAttribute("name",iRoomNames.elementAt(i).toString());
-				r.addAttribute("pref",iRoomPrefs.elementAt(i).toString());
+				r.addAttribute("id",iRoomIds.get(i).toString());
+				r.addAttribute("name",iRoomNames.get(i).toString());
+				r.addAttribute("pref",iRoomPrefs.get(i).toString());
 			}
 			if (iInstructorName!=null)
 				element.addAttribute("iName",iInstructorName);
@@ -479,19 +486,19 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		long iClassId;
 		int iDays;
 		int iStartSlot;
-		Vector iRoomIds;
+		List iRoomIds;
 		int iCounter = 0;
 		String iVarName, iInstructorName;
 		String iPref;
 		int iTimePref;
-		Vector iRoomPrefs;
-		Vector iRoomNames;
+		List iRoomPrefs;
+		List iRoomNames;
 		int iLength;
 		int iBreakTime;
 		String iDatePatternName = null;
 		Long iPatternId;
 		
-		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, Vector roomNames, int days, int startSlot, Vector roomIds, String pref, int timePref, Vector roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, List roomNames, int days, int startSlot, List roomIds, String pref, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
 			iClassId = classId; iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iConstraint = constraint;
 			iVarName = varName; iInstructorName = instructorName; iRoomNames = roomNames;
@@ -504,14 +511,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iClassId = Long.parseLong(element.attributeValue("class"));
 			iStartSlot = Integer.parseInt(element.attributeValue("slot"));
 			iDays = Integer.parseInt(element.attributeValue("days"));
-			iRoomIds = new Vector();
-			iRoomNames = new Vector();
-			iRoomPrefs = new Vector();
+			iRoomIds = new ArrayList();
+			iRoomNames = new ArrayList();
+			iRoomPrefs = new ArrayList();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.addElement(Integer.valueOf(r.attributeValue("id")));
-				iRoomNames.addElement(r.attributeValue("name"));
-				iRoomPrefs.addElement(Integer.valueOf(r.attributeValue("pref")));
+				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomNames.add(r.attributeValue("name"));
+				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
 			iVarName = element.attributeValue("varName");
 			iInstructorName = element.attributeValue("iName");
@@ -550,14 +557,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return iVarName+" "+getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
 		}
 		public String getVariableName() { return iVarName; }
-		public Vector getRoomNames() { return iRoomNames; }
+		public List getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
-		public Vector getRoomIds() {
+		public List getRoomIds() {
 			return iRoomIds;
 		}
 		public String getPref() { return iPref; }
 		public int getTimePref() { return iTimePref; }
-		public Vector getRoomPrefs() { return iRoomPrefs; }
+		public List getRoomPrefs() { return iRoomPrefs; }
 		public int getLength() {
 			return iLength;
 		}
@@ -590,9 +597,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			element.addAttribute("class",String.valueOf(iClassId));
 			for (int i=0;i<iRoomIds.size();i++) {
 				Element r = element.addElement("room");
-				r.addAttribute("id",iRoomIds.elementAt(i).toString());
-				r.addAttribute("name",iRoomNames.elementAt(i).toString());
-				r.addAttribute("pref",iRoomPrefs.elementAt(i).toString());
+				r.addAttribute("id",iRoomIds.get(i).toString());
+				r.addAttribute("name",iRoomNames.get(i).toString());
+				r.addAttribute("pref",iRoomPrefs.get(i).toString());
 			}
 			element.addAttribute("datePattern", iDatePatternName);
 			element.addAttribute("length", String.valueOf(iLength));
@@ -653,7 +660,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+variable.getId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+variable.getId()+"&op=Reset','900','90%');\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -664,15 +671,15 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		"</font> ";
     	String roomLink = "";
     	for (int i=0;i<value.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().elementAt(i)).intValue())+"'>"+ value.getRoomNames().elementAt(i)+"</font>";
-    		roomLink += "&room"+i+"="+value.getRoomIds().elementAt(i);
+    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
+    		roomLink += "&room"+i+"="+value.getRoomIds().get(i);
     	}
     	if (value.getInstructorName()!=null)
     		name += " "+value.getInstructorName();
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";	
+    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&op=Try&reset=1','900','90%');\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -725,14 +732,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		"</font> ";
     	String roomLink = "";
     	for (int i=0;i<assignment.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().elementAt(i)).intValue())+"'>"+ assignment.getRoomNames().elementAt(i)+"</font>";
-    		roomLink += "&room"+i+"="+assignment.getRoomIds().elementAt(i);
+    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
+    		roomLink += "&room"+i+"="+assignment.getRoomIds().get(i);
     	}
     	if (assignment.getInstructorName()!=null)
     		name += " "+assignment.getInstructorName();
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"window.open('suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&op=Try&reset=1','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"";
+    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&op=Try&reset=1','900','90%');\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     
@@ -768,20 +775,20 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
         out.flush();
     }
     
-    private Vector filter(Collection counters, double limit) {
-    	Vector cnt = new Vector(counters);
+    private List filter(Collection counters, double limit) {
+    	List cnt = new ArrayList(counters);
     	Collections.sort(cnt);
     	int total = 0;
-    	for (Enumeration e=cnt.elements();e.hasMoreElements();)
-    		total += ((Counter)e.nextElement()).getCounter();
+    	for (Iterator e=cnt.iterator();e.hasNext();)
+    		total += ((Counter)e.next()).getCounter();
     	
     	int totalLimit = (int)Math.ceil(limit*total);
     	int current = 0;
     	
-    	Vector ret = new Vector();
-    	for (Enumeration e=cnt.elements();e.hasMoreElements();) {
-    		Counter c = (Counter)e.nextElement();
-    		ret.addElement(c);
+    	List ret = new ArrayList();
+    	for (Iterator e=cnt.iterator();e.hasNext();) {
+    		Counter c = (Counter)e.next();
+    		ret.add(c);
     		current += c.getCounter();
     		if (current>=totalLimit) break;
     	}
@@ -828,31 +835,31 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     /** Print conflict-based statistics in HTML format */
     public void printHtml(PrintWriter out, Long classId, double[] limit, int type, boolean clickable) {
         if (type == TYPE_VARIABLE_BASED) {
-        	Vector vars = filter(iVariables.values(), limit[0]);
+        	List vars = filter(iVariables.values(), limit[0]);
         	if (classId!=null) {
         		CBSVariable var = (CBSVariable)iVariables.get(classId);
         		vars.clear(); 
         		if (var!=null) vars.add(var);
         	}
-            for (Enumeration e1 = vars.elements(); e1.hasMoreElements();) {
-            	CBSVariable variable = (CBSVariable)e1.nextElement();
+            for (Iterator e1 = vars.iterator(); e1.hasNext();) {
+            	CBSVariable variable = (CBSVariable)e1.next();
             	String m1 = String.valueOf(variable.getId());
             	if (classId==null)
             		unassignedVariableMenuItem(out,m1,variable, clickable);
-            	Vector vals = filter(variable.values(), limit[1]);
+            	List vals = filter(variable.values(), limit[1]);
             	int id = 0;
-            	for (Enumeration e2 = vals.elements();e2.hasMoreElements();) {
-            		CBSValue value = (CBSValue)e2.nextElement();
+            	for (Iterator e2 = vals.iterator();e2.hasNext();) {
+            		CBSValue value = (CBSValue)e2.next();
             		String m2 = m1+"."+(id++);
                     unassignmentMenuItem(out,m2,value, clickable);
-                    Vector constraints =filter(value.constraints(),limit[2]);
-                    for (Enumeration e3 = constraints.elements(); e3.hasMoreElements();) {
-                    	CBSConstraint constraint = (CBSConstraint)e3.nextElement();
+                    List constraints =filter(value.constraints(),limit[2]);
+                    for (Iterator e3 = constraints.iterator(); e3.hasNext();) {
+                    	CBSConstraint constraint = (CBSConstraint)e3.next();
                     	String m3 = m2 + constraint.getType()+"."+constraint.getId();
                     	constraintMenuItem(out,m3,constraint, clickable);
-                    	Vector assignments = filter(constraint.assignments(),limit[3]);
-                    	for (Enumeration e4 = assignments.elements();e4.hasMoreElements();) {
-                    		CBSAssignment assignment = (CBSAssignment)e4.nextElement();
+                    	List assignments = filter(constraint.assignments(),limit[3]);
+                    	for (Iterator e4 = assignments.iterator();e4.hasNext();) {
+                    		CBSAssignment assignment = (CBSAssignment)e4.next();
                     		assignmentLeafItem(out, assignment, clickable);
                         }
                         end_item(out);
@@ -897,27 +904,27 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
             		}
             	}
             }
-        	Vector consts = filter(constraints.values(), limit[0]);
-            for (Enumeration e1 = consts.elements(); e1.hasMoreElements();) {
-            	CBSConstraint constraint = (CBSConstraint)e1.nextElement();
+        	List consts = filter(constraints.values(), limit[0]);
+            for (Iterator e1 = consts.iterator(); e1.hasNext();) {
+            	CBSConstraint constraint = (CBSConstraint)e1.next();
             	String m1 = constraint.getType()+"."+constraint.getId();
             	constraintMenuItem(out,m1,constraint, clickable);
-            	Vector variables = filter(constraint.variables(), limit[1]);
+            	List variables = filter(constraint.variables(), limit[1]);
             	Collections.sort(variables);
-                for (Enumeration e2 = variables.elements(); e2.hasMoreElements();) {
-                	CBSVariable variable = (CBSVariable)e2.nextElement();
+                for (Iterator e2 = variables.iterator(); e2.hasNext();) {
+                	CBSVariable variable = (CBSVariable)e2.next();
                 	String m2 = m1+"."+variable.getId();
                 	if (classId==null)
                 		unassignedVariableMenuItem(out,m2,variable, clickable);
-                	Vector vals = filter(variable.values(), limit[2]);
+                	List vals = filter(variable.values(), limit[2]);
                 	int id = 0;
-                	for (Enumeration e3 = vals.elements();e3.hasMoreElements();) {
-                		CBSValue value = (CBSValue)e3.nextElement();
+                	for (Iterator e3 = vals.iterator();e3.hasNext();) {
+                		CBSValue value = (CBSValue)e3.next();
                 		String m3 = m2+"."+(id++);
                 		unassignmentMenuItem(out,m3,value, clickable);
-                    	Vector assignments = filter(value.assignments(), limit[3]);
-                    	for (Enumeration e4 = assignments.elements();e4.hasMoreElements();) {
-                    		CBSAssignment assignment = (CBSAssignment)e4.nextElement();
+                    	List assignments = filter(value.assignments(), limit[3]);
+                    	for (Iterator e4 = assignments.iterator();e4.hasNext();) {
+                    		CBSAssignment assignment = (CBSAssignment)e4.next();
                     		assignmentLeafItem(out, assignment, clickable);
                         }
                         end_item(out);

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -35,7 +35,6 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
-import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -86,7 +85,7 @@ public class SessionEditForm extends ActionForm {
 			errors.add("academicYear", new ActionMessage("errors.required", "Academic Year"));
 		else {
 			try {
-				int year = Integer.parseInt(academicYear); 
+				Integer.parseInt(academicYear); 
 			}
 			catch (Exception e) {
 				errors.add("academicYear", new ActionMessage("errors.numeric", "Academic Year"));
@@ -175,11 +174,13 @@ public class SessionEditForm extends ActionForm {
                             }
                             int startYear = start.get(Calendar.YEAR);
                             int endYear = end.get(Calendar.YEAR);
-                            int startDay = DateUtils.getDayOfYear(1, start.get(Calendar.MONTH), startYear);
-                            int endDay = DateUtils.getDayOfYear(28, end.get(Calendar.MONTH) + (12 * (endYear - startYear)), startYear);
-                            int daysInSession = endDay - startDay;
-                            if (daysInSession > 366){
-                            	errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than 12 calendar months."));
+                            int startMonth = start.get(Calendar.MONTH);
+                            int endMonth = end.get(Calendar.MONTH);
+                            int startDay = start.get(Calendar.DAY_OF_MONTH);
+                            int endDay = end.get(Calendar.DAY_OF_MONTH);
+                            if (startYear < endYear) {
+                            	if (startYear + 1 < endYear || startMonth < endMonth || (startMonth == endMonth && startDay <= endDay))
+                            		errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than one year."));
                             }
 						}
 					}

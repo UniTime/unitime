@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,11 +32,10 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.SessionDAO;
 
 public class EventGridForm extends EventAddForm {
-    private String iMode = null;
+	private static final long serialVersionUID = 1354167745113361938L;
+	private String iMode = null;
     public static String sModeAll = "All Events";
     public static String sModeApproved = "All Approved Events";
     public static String sModeWaiting = "All Events Awaiting Approval";
@@ -63,8 +63,6 @@ public class EventGridForm extends EventAddForm {
     
     public boolean isHasOutsideLocations() {
         if (getSessionId()==null) return false;
-        Session session = new SessionDAO().get(getSessionId());
-        boolean hasRoomType = false;
         for (RoomType roomType : RoomType.findAll(false)) {
             if (roomType.countManagableRooms(getSessionId())>0) return true;
         }
@@ -106,6 +104,9 @@ public class EventGridForm extends EventAddForm {
         session.setAttribute("EventGrid.RoomGroups", getRoomGroups());
         session.setAttribute("EventGrid.RoomFeatures", getRoomFeatures());
         session.setAttribute("EventGrid.Mode", getMode());
+		for (Map.Entry<Long, Long> entry: iNonUniversityLocationId.entrySet()) {
+			session.setAttribute("EventGrid.LocationId[" + entry.getKey() + "]", entry.getValue());
+		}
     }
     
     public void load (HttpSession session) {
@@ -124,6 +125,13 @@ public class EventGridForm extends EventAddForm {
         setRoomGroups((Long[]) session.getAttribute("EventGrid.RoomGroups"));
         setRoomFeatures((Long[]) session.getAttribute("EventGrid.RoomFeatures"));
         setMode((String)session.getAttribute("EventGrid.Mode"));
+		iNonUniversityLocationId.clear();
+		if (getRoomTypes() != null)
+			for (Long roomType: getRoomTypes()) {
+				Long id = (Long)session.getAttribute("EventGrid.LocationId[" + roomType + "]");
+				if (id != null)
+					iNonUniversityLocationId.put(roomType, id);
+			}
     }
     
     public String getDatesTable() {

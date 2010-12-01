@@ -1,4 +1,22 @@
-
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
@@ -14,6 +32,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.upload.FormFile;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Location;
@@ -24,6 +43,7 @@ import org.unitime.timetable.util.Constants;
 
 public class EventDetailForm extends ActionForm {
 
+	private static final long serialVersionUID = 3920377791042035L;
 	private String iId;
 	private String iOp;
 	private String iEventName;
@@ -50,6 +70,8 @@ public class EventDetailForm extends ActionForm {
 	private Boolean iCanApprove;
 	private Boolean iIsManager;
 	
+	private FormFile iAttachment;
+	
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -68,6 +90,7 @@ public class EventDetailForm extends ActionForm {
 				|| "Reject".equals(iOp) || "Delete".equals(iOp)
 			    || "view".equals(iOp) || "Cancel".equals(iOp)
 				|| "Update".equals(iOp) || "Submit".equals(iOp)
+				|| "Inquire".equals(iOp)
 				)){
 			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
 			iOp = null;
@@ -75,7 +98,7 @@ public class EventDetailForm extends ActionForm {
 
 		if (iId != null){
 			try {
-				long id = Long.parseLong(iId);
+				Long.parseLong(iId);
 			} catch (NumberFormatException nfe) {
 				iId = "0";
 				iOp = null;
@@ -107,6 +130,7 @@ public class EventDetailForm extends ActionForm {
 		iAdditionalEmails = null;
 		iSelectedMeetings = null;
 		iIsManager = false;
+		iAttachment = null;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -200,7 +224,20 @@ public class EventDetailForm extends ActionForm {
     
 	public Meeting getSelectedMeeting() {
 		return (MeetingDAO.getInstance()).get(iSelected);
-	} 	
+	}
+	
+	public String getEventNoteWithAttachement() {
+		String note = getNewEventNote();
+		if (getAttachement() != null && getAttachement().getFileSize() > 0) {
+			if (note == null) {
+				note = "";
+			} else if (!note.isEmpty()) {
+				note += "\n\n";
+			}
+			note += "<i>" + getAttachement().getFileName() + " attached.</i>";
+		}
+		return note;
+	}
 	
 	public Long[] getSelectedMeetings() { return iSelectedMeetings; }
 	public void setSelectedMeetings(Long[] selectedMeetings) { iSelectedMeetings = selectedMeetings; }
@@ -234,7 +271,7 @@ public class EventDetailForm extends ActionForm {
     	    iTime = (startTime==0 && endTime==Constants.SLOTS_PER_DAY?"All Day":
     	            Constants.toTime(Constants.SLOT_LENGTH_MIN*startTime+Constants.FIRST_SLOT_TIME_MIN)+" - "+
     	            Constants.toTime(Constants.SLOT_LENGTH_MIN*endTime+Constants.FIRST_SLOT_TIME_MIN));
-    	    iLocation = (location==null?"":location.getLabel());
+    	    iLocation = (location==null?"":location.getLabelWithHint());
     	    iLocationCapacity = (location==null?0:location.getCapacity());
     	}
     	
@@ -247,7 +284,7 @@ public class EventDetailForm extends ActionForm {
     	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStartOffset()==null?0:meeting.getStartOffset()))+" - "+
     	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStopOffset()==null?0:meeting.getStopOffset())));
             Location location = meeting.getLocation();
-            iLocation = (location==null?"":location.getLabel());
+            iLocation = (location==null?"":location.getLabelWithHint());
             iLocationCapacity = (location==null?0:location.getCapacity());
             iApprovedDate = (meeting.getApprovedDate()==null?"":new SimpleDateFormat("MM/dd/yy", Locale.US).format(meeting.getApprovedDate()));
             iDate = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US).format(meeting.getMeetingDate());
@@ -327,4 +364,7 @@ public class EventDetailForm extends ActionForm {
 	public void setEnrollment(String enrollment) {
 		iEnrollment = enrollment;
 	}
+	
+	public FormFile getAttachement() { return iAttachment; }
+	public void setAttachement(FormFile attachement) { iAttachment = attachement; }
 }

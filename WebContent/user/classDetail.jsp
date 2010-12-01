@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -45,20 +45,20 @@
 	<html:hidden property="previousId"/>
 	<bean:define name='<%=frmName%>' property="classId" id="classId"/>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l7"
+						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=<bean:write name="<%=frmName%>" property="instrOfferingId"/>">
 							<bean:write name="<%=frmName%>" property="courseName"/>
-						</A>
+							- <bean:write name="<%=frmName%>" property="courseTitle"/></A>: 
 						<logic:empty name="<%=frmName%>" property="subpart">
 							<bean:write name="<%=frmName%>" property="itypeDesc"/>
 						</logic:empty>
 						<logic:notEmpty name="<%=frmName%>" property="subpart">
-							<A title="Scheduling Subpart Detail (Alt+S)" accesskey="S" class="l7"
+							<A title="Scheduling Subpart Detail (Alt+S)" accesskey="S" class="l8"
 								href="schedulingSubpartDetail.do?ssuid=<bean:write name="<%=frmName%>" property="subpart"/>">
 								<bean:write name="<%=frmName%>" property="itypeDesc"/>
 							</A>
@@ -91,8 +91,8 @@
 					
 					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 						&nbsp;
-						<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
-								onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+						<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+								onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 						/>
 					</logic:equal>
 									
@@ -221,7 +221,7 @@
 				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
 						<bean:write name="dp" property="value" />
-						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="window.open('user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'datepatt','width=800,height=410,resizable=no,scrollbars=no,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no');">
+						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'840','520');">
 					</logic:equal>
 				</logic:iterate>
 			<TD>
@@ -408,8 +408,8 @@
 
 				<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 					&nbsp;
-					<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
-							onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+							onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 					/>
 				</logic:equal>
 			

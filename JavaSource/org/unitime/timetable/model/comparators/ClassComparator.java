@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,19 +14,20 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model.comparators;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -40,7 +41,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
  * 
  * @author Heston Fernandes, Tomas Muller
  */
-public class ClassComparator implements Comparator {
+public class ClassComparator implements Comparator<Class_> {
 	private Long subjectUID = null;
 	
     /** Compare 2 classes on UniqueId - Default **/
@@ -83,13 +84,13 @@ public class ClassComparator implements Comparator {
     	return (c1==null?(c2==null?0:-1):(c2==null?1:c1.compareTo(c2)));
     }
     
-    public static int compareInstructors(Vector i1, Vector i2) {
+    public static int compareInstructors(List<DepartmentalInstructor> i1, List<DepartmentalInstructor> i2) {
     	if (i1.isEmpty() || i2.isEmpty())
     		return Double.compare(i1.size(),i2.size());
     	if (i1.size()>1) Collections.sort(i1);
     	if (i2.size()>1) Collections.sort(i2);
     	for (int i=0;i<Math.min(i1.size(),i2.size());i++) {
-    		int cmp = compare((Comparable)i1.elementAt(i),(Comparable)i2.elementAt(i));
+    		int cmp = compare(i1.get(i),i2.get(i));
     		if (cmp!=0) return cmp;
     	}
     	return Double.compare(i1.size(),i2.size());
@@ -203,7 +204,7 @@ public class ClassComparator implements Comparator {
         			else {
         				TimeLocation t1 = a1.getPlacement().getTimeLocation();
         				TimeLocation t2 = a2.getPlacement().getTimeLocation();
-        				cmp = Double.compare(t1.getStartSlots().nextInt(), t2.getStartSlots().nextInt());
+        				cmp = t1.getStartSlots().nextElement().compareTo(t2.getStartSlots().nextElement());
         				if (cmp==0)
         					cmp = Double.compare(t1.getDayCode(), t2.getDayCode());
         				if (cmp==0)
@@ -245,9 +246,7 @@ public class ClassComparator implements Comparator {
     	return c1.getUniqueId().compareTo(c2.getUniqueId());
     }
     
-    public int compare(Object o1, Object o2) {
-        Class_ c1 = (Class_) o1;
-        Class_ c2 = (Class_) o2;
+    public int compare(Class_ c1, Class_ c2) {
         if (classListFormSortBy!=null) {
         	if (keepSubparts) {
         		return compareByParentChildSameIType(c1, c2);

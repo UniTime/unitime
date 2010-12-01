@@ -1,10 +1,28 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.test;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Locale;
 
 import org.unitime.timetable.solver.interactive.Suggestion;
@@ -66,8 +84,7 @@ public class InteractiveTimetablingTest {
             long solutions1 = 0, solutions2 = 0;
             double time1 = 0, time2 = 0;
             int timeout = 0;
-            for (Enumeration e=model.variables().elements();e.hasMoreElements();) {
-            	Lecture lect = (Lecture)e.nextElement();
+            for (Lecture lect: model.variables()) {
             	SuggestionsModel m1 = new SuggestionsModel();
                 m1.setDepth(depth);
                 m1.setTimeout(5000);

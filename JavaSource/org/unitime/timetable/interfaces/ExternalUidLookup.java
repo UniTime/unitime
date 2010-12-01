@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,31 +14,91 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.interfaces;
 
-import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Interface to lookup external ids for manager
  * 
- * @author Heston Fernandes
+ * @author Tomas Muller
  * 
  */
 public interface ExternalUidLookup {
 	
-	public final String SEARCH_ID = "searchId";
-	public final String EXTERNAL_ID = "externalId";
-	public final String USERNAME = "userName";
-	public final String FIRST_NAME = "firstName";
-	public final String MIDDLE_NAME = "middleName";
-	public final String LAST_NAME = "lastName";
-	public final String EMAIL = "email";
-	
-	public Map doLookup(Map attributes) throws Exception;
+	public UserInfo doLookup(String searchId) throws Exception;
 
-	public String getErrorMessage();
+	public static class UserInfo {
+		private String iExternalId = null;
+		private String iUserName = null;
+		private String iFirstName = null;
+		private String iMiddleName = null;
+		private String iLastName = null;
+		private String iEmail = null;
+		private String iName = null;
+		
+		public UserInfo() {}
+		
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public String getUserName() { return iUserName; }
+		public void setUserName(String userName) { iUserName = userName; }
+		
+		public String getFirstName() {
+			if (iFirstName != null) return iFirstName;
+			if (iName != null) {
+		        StringTokenizer s = new StringTokenizer(iName);
+		        if (s.countTokens() > 1) return s.nextToken();
+			}
+			return "";
+		}
+		public void setFirstName(String firstName) { iFirstName = firstName; }
+		
+		public String getMiddleName() {
+			if (iMiddleName != null) return iMiddleName;
+			if (iName != null) {
+		        StringTokenizer s = new StringTokenizer(iName);
+		        if (s.countTokens() > 2) {
+		        	s.nextToken();
+		        	String m = "";
+		        	while (true) {
+		        		String n = s.nextToken();
+		        		if (!s.hasMoreTokens()) break;
+		        		m += (m.isEmpty() ? "" : " ") + n;
+		        	}
+		        	return m;
+		        }
+			}
+			return "";
+		}
+		public void setMiddleName(String middleName) { iMiddleName  = middleName; }
+		
+		public String getLastName() { 
+			if (iLastName != null) return iLastName;
+			if (iName != null) {
+		        StringTokenizer s = new StringTokenizer(iName);
+		        if (s.countTokens() > 0) {
+		        	String l = s.nextToken();
+		        	while (s.hasMoreTokens()) l = s.nextToken();
+		        	return l;
+		        }
+			}
+			return "";
+		}
+		public void setLastName(String lastName) { iLastName = lastName; }
+		
+		public String getEmail() { return iEmail; }
+		public void setEmail(String email) { iEmail = email; }
+		
+		public String getName() {
+			if (iName != null) return iName;
+			return ((iLastName == null ? "" : iLastName) + ", " + (iFirstName == null ? "" : iFirstName) + (iMiddleName == null ? "" : " " + iMiddleName)).toString();
+		}
+		public void setName(String name) { iName = name; }
+	}
 	
 }

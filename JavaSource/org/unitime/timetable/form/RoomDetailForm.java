@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.form;
 
@@ -44,8 +44,8 @@ public class RoomDetailForm extends ActionForm {
 	private String name;
     private String externalId;
 	private Integer capacity;
-	private Integer coordinateX;
-	private Integer coordinateY;
+	private Double coordinateX;
+	private Double coordinateY;
 	private Long type;
     private String typeName;
 	private String patterns;
@@ -66,6 +66,8 @@ public class RoomDetailForm extends ActionForm {
 	private Integer examCapacity;
 	private String examPref;
 	private String examEPref;
+	
+	private Long previos, next;
 
 	// --------------------------------------------------------- Methods
 
@@ -99,6 +101,7 @@ public class RoomDetailForm extends ActionForm {
 		control = null;
 		examEnabled = false; examEEnabled = false;
 		examPref = null; examEPref = null;
+		previos = null; next = null;
 	}
 
 	public Integer getCapacity() {
@@ -109,19 +112,19 @@ public class RoomDetailForm extends ActionForm {
 		this.capacity = capacity;
 	}
 
-	public Integer getCoordinateX() {
+	public Double getCoordinateX() {
 		return coordinateX;
 	}
 
-	public void setCoordinateX(Integer coordinateX) {
+	public void setCoordinateX(Double coordinateX) {
 		this.coordinateX = coordinateX;
 	}
 
-	public Integer getCoordinateY() {
+	public Double getCoordinateY() {
 		return coordinateY;
 	}
 
-	public void setCoordinateY(Integer coordinateY) {
+	public void setCoordinateY(Double coordinateY) {
 		this.coordinateY = coordinateY;
 	}
 
@@ -316,6 +319,22 @@ public class RoomDetailForm extends ActionForm {
     
     public String getExamEPref() {
         return examEPref;
+    }
+    
+    public Long getNext() {
+    	return next;
+    }
+    
+    public void setNext(Long next) {
+    	this.next = next;
+    }
+    
+    public Long getPrevious() {
+    	return previos;
+    }
+    
+    public void setPrevious(Long previous) {
+    	this.previos = previous;
     }
 }
 

@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,15 +14,15 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -62,13 +62,13 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /** 
@@ -87,34 +87,24 @@ public class SolutionReportAction extends Action {
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
 		Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-		Calendar sessionStart = Calendar.getInstance(Locale.US);
-		sessionStart.setTime(session.getSessionBeginDateTime());
-		while (sessionStart.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY)
-			sessionStart.add(Calendar.DAY_OF_YEAR, -1);
-		int startDay = session.getDayOfYear(sessionStart.get(Calendar.DAY_OF_MONTH), sessionStart.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth() - 3);
-		Calendar sessionEnd = Calendar.getInstance(Locale.US);
-		sessionEnd.setTime(session.getSessionEndDateTime());
-		sessionEnd.add(Calendar.WEEK_OF_YEAR, -1);
-		while (sessionEnd.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY)
-			sessionEnd.add(Calendar.DAY_OF_YEAR, 1);
-		int endDay = session.getDayOfYear(sessionEnd.get(Calendar.DAY_OF_MONTH), sessionEnd.get(Calendar.MONTH)) - session.getDayOfYear(1, session.getStartMonth() - 3);
-
+		BitSet sessionDays = session.getDefaultDatePattern().getPatternBitSet();
+		int startDayDayOfWeek = Constants.getDayOfWeek(session.getDefaultDatePattern().getStartDate());
+		
 		SolverProxy solver = WebSolver.getSolver(request.getSession());
         if (solver==null) {
         	request.setAttribute("SolutionReport.message","Neither a solver is started nor solution is loaded.");
         } else {
         	try {
                 for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
+                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
                     if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                         WebTable t = getRoomReportTable(request, roomReport, false, type.getUniqueId());
                         if (t!=null)
                             request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
                     }
                 }
-                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     WebTable t = getRoomReportTable(request, roomReport, false, null);
                     if (t!=null)
@@ -148,7 +138,7 @@ public class SolutionReportAction extends Action {
         	try {
         		File file = ApplicationProperties.getTempFile("report", "pdf");
         		
-        		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.height(), 60f + 0.75f * PageSize.LETTER.height()),30,30,30,30);
+        		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.getHeight(), 60f + 0.75f * PageSize.LETTER.getHeight()),30,30,30,30);
         		
         		out = new FileOutputStream(file);
     			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
@@ -157,7 +147,7 @@ public class SolutionReportAction extends Action {
         		
                 boolean atLeastOneRoomReport = false;
                 for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
+                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
                     if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
                     if (table==null) continue;
@@ -170,7 +160,7 @@ public class SolutionReportAction extends Action {
                     doc.add(pdfTable);
                     atLeastOneRoomReport = true;
                 }
-                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
                     if (table!=null) {
@@ -586,7 +576,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?"":"<font color='"+PreferenceLevel.prolog2color(g.getPreference())+"'>")+
         				PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName()+
         				(noHtml?"":"</font>"),
-        				String.valueOf(Math.round(g.getDistance()*10.0))+"m",
+        				String.valueOf(Math.round(g.getDistance()))+"m",
         				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
         				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
         				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
@@ -609,17 +599,20 @@ public class SolutionReportAction extends Action {
 
 	public PdfWebTable getStudentConflictsReportTable(HttpServletRequest request, StudentConflictsReport report, boolean noHtml) {
 		WebTable.setOrder(request.getSession(),"solutionReports.studConf.ord",request.getParameter("studconf_ord"),-1);
-		PdfWebTable webTable = new PdfWebTable( 8,
+		PdfWebTable webTable = new PdfWebTable( 9,
    	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited"},
-   				new String[] {"left", "left", "left", "left", "left", "left","left","left"},
+   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
+   				new String[] {"left", "left", "left", "left", "left", "left","left","left", "left"},
    				null);
         webTable.setRowStyle("white-space:nowrap");
         
         try {
         	int idx = 0;
+        	int total[] = new int [] { 0, 0, 0, 0, 0};
         	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
         		JenrlInfo g = (JenrlInfo)i.next();
+        		
+        		if (Math.round(g.getJenrl()) <= 0) continue;
         		
         		StringBuffer rSB = new StringBuffer();
         		for (int j=0;j<g.getFirst().getRoom().length;j++)
@@ -637,9 +630,10 @@ public class SolutionReportAction extends Action {
         				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
         				rSB.toString(),
         				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
-        				(g.isDistance()?String.valueOf(Math.round(10.0*g.getDistance()))+"m":""),
+        				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
         				(noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":""),
-        				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":"")
+        				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":""),
+        				g.getCurriculumText()
         			},
         			new Comparable[] {
         				new Double(g.getJenrl()),
@@ -647,9 +641,39 @@ public class SolutionReportAction extends Action {
         				new Integer(g.isHard()?1:0),
         				new Double(g.getDistance()),
         				new Integer(g.isFixed()?1:0),
-        				new Integer(g.isCommited()?1:0)
+        				new Integer(g.isCommited()?1:0),
+        				null
         			});
+        		
+        		total[0] += Math.round(g.getJenrl());
+        		if (g.isHard()) total[1] += Math.round(g.getJenrl());
+        		if (g.isDistance()) total[2] += Math.round(g.getJenrl());
+        		if (g.isFixed()) total[3] += Math.round(g.getJenrl());
+        		if (g.isCommited()) total[4] += Math.round(g.getJenrl());
         	}
+        	
+    		webTable.addLine(null,
+    	    		new String[] {
+        				String.valueOf(total[0]),
+        				"<i>Total</i>",
+        				"",
+        				"",
+        				String.valueOf(total[1]),
+        				String.valueOf(total[2]),
+        				String.valueOf(total[3]),
+        				String.valueOf(total[4]),
+        				""
+        			},
+        			new Comparable[] {
+        				new Double(total[0]),
+        				new DuoComparable("",""), null, null,
+        				new Integer(total[1]),
+        				new Double(1000.0 * total[2]),
+        				new Integer(total[3]),
+        				new Integer(total[4]),
+        				null
+        			});
+        	
         } catch (Exception e) {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
@@ -740,12 +764,6 @@ public class SolutionReportAction extends Action {
 		//return String.valueOf(value);
 	}
 	
-	private String disp(double value, boolean noHtml) {
-		if (value==0) return "";
-		return (noHtml?ClassAssignmentDetails.dispNumberNoHtml(value):ClassAssignmentDetails.dispNumber(value));
-		//return sDoubleFormat.format(value);
-	}
-
 	public PdfWebTable getPerturbationReportTable(HttpServletRequest request, PerturbationReport report, boolean noHtml) {
 		WebTable.setOrder(request.getSession(),"solutionReports.pert.ord",request.getParameter("pert_ord"),1);
 		PdfWebTable webTable = new PdfWebTable( 24,
@@ -765,7 +783,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?g.getClazz().getClazz().getName():g.getClazz().getClazz().toHtml(true, true)),
         				(noHtml?g.getClazz().getTimeNoHtml():g.getClazz().getTimeHtml()),
         				(noHtml?g.getClazz().getRoomNoHtml():g.getClazz().getRoomHtml()),
-        				(Math.round(10.0*g.distance)>0?Math.round(10.0*g.distance)+"m":""),
+        				(Math.round(g.distance)>0?Math.round(g.distance)+"m":""),
         				disp(g.affectedStudents, noHtml),
         				disp(g.affectedStudentsByTime, noHtml),
         				disp(g.affectedStudentsByRoom, noHtml),

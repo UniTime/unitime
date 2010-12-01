@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,20 +14,17 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.exam;
 
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -60,7 +57,6 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class ExamDatabaseSaver extends ExamSaver {
-    private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
     private int iExamType;
     private Progress iProgress = null;
@@ -119,8 +115,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 j.remove();
             }
             Exam examVar = null;
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                Exam x = (Exam)e.nextElement();
+            for (Exam x: getModel().variables()) {
                 if (exam.getUniqueId().equals(x.getId())) { examVar=x;break; }
             }
             if (examVar==null) {
@@ -232,8 +227,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             }
         }
         iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
-        for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
-            Exam examVar = (Exam)e.nextElement();
+        for (Exam examVar: getModel().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;
@@ -380,8 +374,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             contact.setEmailAddress(manager.getEmailAddress());
             hibSession.save(contact);
         }
-        for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
-            Exam examVar = (Exam)e.nextElement();
+        for (Exam examVar: getModel().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;

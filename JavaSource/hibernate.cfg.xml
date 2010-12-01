@@ -4,12 +4,12 @@
     "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
 
 <!-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -18,8 +18,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  -->
 
 <hibernate-configuration>
@@ -43,7 +43,7 @@
 	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property>
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
-	<property name="dialect">org.hibernate.dialect.OracleDialect</property>
+	<property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.SequenceGenerator</property>
 	-->
 	<!-- End of Oracle Configuration -->
@@ -108,6 +108,8 @@
 	<!-- property name="hibernate.cglib.use_reflection_optimizer">
 		true
 		</property -->
+		
+	<property name="SetBigStringTryClob">true</property>
 
 	<!-- Mapping files -->
 	<mapping resource="Building.hbm.xml" />
@@ -193,5 +195,7 @@
 	<mapping resource="RoomTypeOption.hbm.xml" />
 	<mapping resource="SponsoringOrganization.hbm.xml" />
 	<mapping resource="Curriculum.hbm.xml" />
+	<mapping resource="StudentSectQueue.hbm.xml" />
+	<mapping resource="QueryLog.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

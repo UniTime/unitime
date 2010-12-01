@@ -1,0 +1,59 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<!ELEMENT curricula ( curriculum+ ) >
+<!ATTLIST curricula campus CDATA #REQUIRED >
+<!ATTLIST curricula term CDATA #REQUIRED >
+<!ATTLIST curricula year CDATA #REQUIRED >
+<!ATTLIST curricula created CDATA #IMPLIED >
+ 
+<!ELEMENT curriculum ( academicArea, department?, major*, classification* ) >
+<!ATTLIST curriculum abbreviation CDATA #IMPLIED >
+<!ATTLIST curriculum name CDATA #IMPLIED >
+
+<!ELEMENT academicArea EMPTY >
+<!ATTLIST academicArea externalId CDATA #IMPLIED >
+<!ATTLIST academicArea abbreviation CDATA #REQUIRED >
+
+<!ELEMENT department EMPTY >
+<!ATTLIST department externalId CDATA #IMPLIED >
+<!ATTLIST department code CDATA #REQUIRED >
+
+<!ELEMENT major EMPTY >
+<!ATTLIST major externalId CDATA #IMPLIED >
+<!ATTLIST major code CDATA #REQUIRED >
+
+<!ELEMENT classification ( academicClassification, course* ) >
+<!ATTLIST classification name CDATA #IMPLIED >
+<!ATTLIST classification enrollment NMTOKEN #REQUIRED >
+
+<!ELEMENT academicClassification EMPTY >
+<!ATTLIST academicClassification externalId CDATA #IMPLIED >
+<!ATTLIST academicClassification code CDATA #REQUIRED >
+
+<!ELEMENT course ( group* ) >
+<!ATTLIST course externalId CDATA #IMPLIED >
+<!ATTLIST course subject CDATA #REQUIRED >
+<!ATTLIST course courseNbr CDATA #REQUIRED >
+<!ATTLIST course share NMTOKEN #IMPLIED >
+
+<!ELEMENT group EMPTY >
+<!ATTLIST group id CDATA #REQUIRED >
+<!ATTLIST group name CDATA #IMPLIED >
+<!ATTLIST group type ( OPT | REQ | opt | req ) #IMPLIED >

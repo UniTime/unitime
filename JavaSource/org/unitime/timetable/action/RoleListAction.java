@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,15 +14,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.Debug;
+import org.unitime.commons.MultiComparable;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -182,19 +182,17 @@ public class RoleListAction extends Action {
      * @param user User object
      */
     private ManagerRole setUpRoles (HttpServletRequest request, User user) throws Exception {
+		WebTable.setOrder(request.getSession(),"roleLists.ord",request.getParameter("ord"), -2);
         
         ManagerRole defaultRole = null;
- 	    Vector roleSessions = (Vector) user.getAttribute(Roles.USER_ROLES_ATTR_NAME);
  	    
- 	    roleSessions = new Vector();
- 	   
  	    TimetableManager tm = TimetableManager.getManager(user);
- 	    Set sList = new TreeSet(Session.getAllSessions());
  	    
         WebTable table = new WebTable(4,"Select "+(tm.getManagerRoles().size()>1?"User Role &amp; ":"")+"Academic Session",
+        		"selectPrimaryRole.do?list=Y&ord=%%",
                 new String[] { "User Role", "Academic Session", "Academic Initiative", "Academic Session Status" },
                 new String[] { "left", "left", "left", "left"},
-                null);
+                new boolean[] { true, true, true, true});
         
         Object currentSessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 
@@ -224,7 +222,13 @@ public class RoleListAction extends Action {
                             mr.getRole().getAbbv(),
                             session.getAcademicYear()+" "+session.getAcademicTerm(),
                             session.getAcademicInitiative(),
-                            (session.getStatusType()==null?"":session.getStatusType().getLabel())}, null)
+                            (session.getStatusType()==null?"":session.getStatusType().getLabel())}, 
+                        new Comparable[] {
+                        	new MultiComparable(mr.getRole().getAbbv(), session.getSessionBeginDateTime(), session.getAcademicInitiative()),
+                        	new MultiComparable(session.getSessionBeginDateTime(), session.getAcademicInitiative(), mr.getRole().getAbbv()),
+                        	new MultiComparable(session.getAcademicInitiative(), session.getSessionBeginDateTime(), mr.getRole().getAbbv()),
+                        	new MultiComparable(session.getStatusType()==null ? -1 : session.getStatusType().getOrd(), session.getAcademicInitiative(), session.getSessionBeginDateTime(), mr.getRole().getAbbv())
+                        })
                .setBgColor(bgColor);
                    
                nrLines++;
@@ -239,7 +243,7 @@ public class RoleListAction extends Action {
  	    if (defaultRole==null && tm.getManagerRoles().size()==1)
  	       defaultRole = (ManagerRole)tm.getManagerRoles().iterator().next();
  	    
- 	    request.setAttribute(Roles.USER_ROLES_ATTR_NAME, table.printTable());
+ 	    request.setAttribute(Roles.USER_ROLES_ATTR_NAME, table.printTable(WebTable.getOrder(request.getSession(),"roleLists.ord")));
  	    
  	    Web.setUser(request.getSession(), user);
  	    

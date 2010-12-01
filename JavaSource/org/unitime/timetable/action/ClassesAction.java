@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -61,7 +61,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -320,9 +319,7 @@ public class ClassesAction extends Action {
                     new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
-        ClassComparator classCmp = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
         for (Class_ clazz: classes) {
             for (CourseOffering co : (Collection<CourseOffering>)clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
                 if (!match(form, co)) continue;

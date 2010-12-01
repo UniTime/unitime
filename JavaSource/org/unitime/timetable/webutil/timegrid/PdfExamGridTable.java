@@ -1,6 +1,24 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.webutil.timegrid;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,20 +33,18 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 
 public class PdfExamGridTable extends ExamGridTable {
-    private ExamGridForm iTable = null;
-    private PdfWriter iWriter = null;
     private Document iDocument = null;
     private PdfPTable iPdfTable = null;
 
@@ -41,12 +57,12 @@ public class PdfExamGridTable extends ExamGridTable {
         try {
             int nrCols = getNrColumns();
             iDocument = (iForm.getDispMode()==sDispModeInRowHorizontal || iForm.getDispMode()==sDispModeInRowVertical ?
-                new Document(new Rectangle(Math.max(PageSize.LETTER.width(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.height(),60.0f+150f*nrCols)).rotate(), 30, 30, 30, 30)
+                new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)).rotate(), 30, 30, 30, 30)
             :
-                new Document(new Rectangle(Math.max(PageSize.LETTER.width(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.height(),60.0f+150f*nrCols)), 30, 30, 30, 30));
+                new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)), 30, 30, 30, 30));
 
             out = new FileOutputStream(file);
-            iWriter = PdfEventHandler.initFooter(iDocument, out);
+            PdfEventHandler.initFooter(iDocument, out);
             iDocument.open();
             
             printTable();
@@ -62,7 +78,6 @@ public class PdfExamGridTable extends ExamGridTable {
     }
     
     public int getNrColumns() {
-        boolean vertical = isVertical();
         if (iForm.getDispMode()==sDispModeInRowHorizontal) {
             return 1 + days().size() * slots().size();
         } else if (iForm.getDispMode()==sDispModeInRowVertical) {
@@ -79,7 +94,7 @@ public class PdfExamGridTable extends ExamGridTable {
         return 0;
     }
     
-    private static Color sBorderColor = new Color(100,100,100);
+    private static BaseColor sBorderColor = new BaseColor(100,100,100);
     
     public PdfPCell createCell() {
         PdfPCell cell = new PdfPCell();
@@ -183,9 +198,9 @@ public class PdfExamGridTable extends ExamGridTable {
         iPdfTable.setHeaderRows(1);
     }
     
-    private Color getColor(String rgbColor) {
+    private BaseColor getColor(String rgbColor) {
         StringTokenizer x = new StringTokenizer(rgbColor.substring("rgb(".length(),rgbColor.length()-")".length()),",");
-        return new Color(
+        return new BaseColor(
                 Integer.parseInt(x.nextToken()),
                 Integer.parseInt(x.nextToken()),
                 Integer.parseInt(x.nextToken()));
@@ -210,7 +225,6 @@ public class PdfExamGridTable extends ExamGridTable {
     public void printCell(ExamGridModel model, int day, int slot, int idx, int maxIdx, boolean head, boolean vertical, boolean in, boolean eod, boolean eol) {
         ExamPeriod period = getPeriod(day, slot);
         ExamGridCell cell = model.getAssignment(period,idx);
-        String style = "Timetable"+(head || (!in && !vertical) ? "Head":"")+"Cell" + (!head && in && vertical?"In":"") + (vertical?"Vertical":"") + (eol?"EOL":eod?"EOD":"");
         PdfPCell c = createCell();
         c.setBorderWidthTop(head || (!in && !vertical) ? 1 : 0);
         c.setBorderWidthRight(eod || eol ? 1 : 0);
@@ -272,8 +286,6 @@ public class PdfExamGridTable extends ExamGridTable {
                     int maxIdx = getMaxIdx(day, slot);
                     for (int idx=0;idx<=maxIdx;idx++) {
                         printRowHeaderCell(getDayName(day)+"<br>"+getSlotName(slot), idx, maxIdx, vertical, head && slot==slots.first(), globalMaxIdx==0);
-                        boolean eod = (slot==slots.last());
-                        boolean eol = (eod && day==days.last());
                         for (ExamGridModel model : models()) {
                             printCell(model,
                                     day,

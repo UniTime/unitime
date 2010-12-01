@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -52,8 +52,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
-import org.unitime.timetable.model.ClassEvent;
-import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -339,7 +337,7 @@ public class ExamAssignmentReportAction extends Action {
             }
             Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
@@ -347,8 +345,7 @@ public class ExamAssignmentReportAction extends Action {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                ClassEvent event = (ClassEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);
@@ -356,7 +353,7 @@ public class ExamAssignmentReportAction extends Action {
                 meetings.add(meeting);
             }
             for (Iterator i=new ExamDAO().getSession().createQuery(
-                    "select p.uniqueId, ce, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
@@ -364,8 +361,7 @@ public class ExamAssignmentReportAction extends Action {
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
-                CourseEvent event = (CourseEvent)o[1];
-                Meeting meeting = (Meeting)o[2];
+                Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
                     meetings = new HashSet(); period2meetings.put(periodId, meetings);
@@ -1875,7 +1871,6 @@ public class ExamAssignmentReportAction extends Action {
     }
     
     private PdfWebTable generate2MoreADayConflictsReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean studentConf) {
-        String nl = (html?"<br>":"\n");
         DecimalFormat df = new DecimalFormat("0.0");
         int max = 0;
         for (ExamAssignmentInfo exam : exams) {
@@ -2033,7 +2028,6 @@ public class ExamAssignmentReportAction extends Action {
                 }
             }
         }
-        String nl = (html?"<br>":"\n");
         PdfWebTable table =
             (student?
             new PdfWebTable( 7,
@@ -2175,7 +2169,6 @@ public class ExamAssignmentReportAction extends Action {
     }
     
     private PdfWebTable generateStatisticsReport(boolean html, long sessionId, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
-        String nl = (html?"<br>":"\n");
         String sp = (html?"&nbsp;":" ");
         String indent = (html?"&nbsp;&nbsp;&nbsp;&nbsp;":"    ");
         PdfWebTable table = new PdfWebTable( 2,

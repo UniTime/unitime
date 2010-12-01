@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2009 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,12 +14,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,6 +73,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
@@ -85,13 +87,13 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller
  */
 public class ClassInfoModel implements Serializable {
-    private static Log sLog = LogFactory.getLog(ClassInfoModel.class);
+	private static final long serialVersionUID = 1373805772613891251L;
+	private static Log sLog = LogFactory.getLog(ClassInfoModel.class);
     private ClassInfo iClass = null;
     private ClassInfoForm iForm = null;
     private ClassProposedChange iChange = null;
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
-    private int iTimesTableOrd = 0;
     private String iManagerExternalId = null;
     private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
     private boolean iUnassignConflictingAssignments = false;
@@ -207,13 +209,15 @@ public class ClassInfoModel implements Serializable {
         }
     }
     
-    public String assign() {
+    public String assign(Long sessionId) {
         if (iChange==null) return "Nothing to assign.";
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
+        List<Long> classIds = new ArrayList<Long>();
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
+                classIds.add(assignment.getClassId());
         		String m = assignment.getClazz(hibSession).unassignCommited(iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
             } catch (Exception e) {
@@ -222,13 +226,17 @@ public class ClassInfoModel implements Serializable {
         }
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
+                classIds.add(assignment.getClassId());
                 String m = assignment.getClazz(hibSession).assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
             }
         }
-        // TODO: Update student sectioning information
+        
+        StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        hibSession.flush();
+        
         return message;
     }
     
@@ -338,8 +346,6 @@ public class ClassInfoModel implements Serializable {
     }
     
     public void apply(HttpServletRequest request, ClassInfoForm form) {
-        if (request.getParameter("pord")!=null)
-            iTimesTableOrd = Integer.parseInt(request.getParameter("pord"));
         iForm = form;
     }
     
@@ -349,7 +355,6 @@ public class ClassInfoModel implements Serializable {
         
     public String getTimesTable() {
     	try {
-            ClassAssignmentInfo current = getClassAssignment();
     		String ret = "";
             ret += "<script language='javascript'>";
             ret += "function timeOver(source, id) { ";
@@ -471,7 +476,7 @@ public class ClassInfoModel implements Serializable {
     }
     
     public String getStudentConflictTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Class</i></td>";
@@ -534,7 +539,6 @@ public class ClassInfoModel implements Serializable {
                 for (int time=0;time<pattern.getNrTimes(); time++) {
                 	times: for (int day=0;day<pattern.getNrDays(); day++) {
                         String pref = pattern.getPreference(day,time);
-                        Iterator startSlotsIterator = pattern.getStartSlots(day,time).iterator();
                         if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
                             pref = PreferenceLevel.sProhibited;
                         }
@@ -946,21 +950,23 @@ public class ClassInfoModel implements Serializable {
                             room,
                             bounds[0], bounds[1], 
                             RoomAvailabilityInterface.sClassType);
-            		Collection<TimeBlock> timesToCheck = null;
-            		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
-            			timesToCheck = new Vector();
-            			for (TimeBlock time: times) {
-            				if (time.getEndTime().compareTo(today) > 0) 
-            					timesToCheck.add(time);
-            			}
-            		} else {
-            			timesToCheck = times;
-            		}
-            		TimeBlock time = period.overlaps(timesToCheck);
-            		if (time!=null) {
-            			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
-        				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
-        				continue rooms;
+            		if (times != null && !times.isEmpty()) {
+                		Collection<TimeBlock> timesToCheck = null;
+                		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+                			timesToCheck = new Vector();
+                			for (TimeBlock time: times) {
+                				if (time.getEndTime().compareTo(today) > 0) 
+                					timesToCheck.add(time);
+                			}
+                		} else {
+                			timesToCheck = times;
+                		}
+                		TimeBlock time = period.overlaps(timesToCheck);
+                		if (time!=null) {
+                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
+            				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
+            				continue rooms;
+                		}
             		}
                 }
                 

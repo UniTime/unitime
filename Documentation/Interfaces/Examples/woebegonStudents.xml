@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE request PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentSectioning.dtd">
+<!--
+ 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ 
+-->
+<request campus='woebegon' year='2010' term='Fal'>
+	<student key='1001'>
+		<updateDemographics>
+			<name first='Andrew' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M3'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='ALG' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='PSY' courseNumber='101'/>
+			<courseOffering subjectArea='ECON' courseNumber='101'/>
+			<courseOffering subjectArea='SOC' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1002'>
+		<updateDemographics>
+			<name first='Brian' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M3'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='ALG' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='PSY' courseNumber='101'/>
+			<courseOffering subjectArea='ECON' courseNumber='101'/>
+			<courseOffering subjectArea='GER' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1003'>
+		<updateDemographics>
+			<name first='Charles' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+			<courseOffering subjectArea='PSY' courseNumber='101'/>
+			<courseOffering subjectArea='ECON' courseNumber='101'/>
+			<courseOffering subjectArea='C S' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1004'>
+		<updateDemographics>
+			<name first='David' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='PHAR' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1005'>
+		<updateDemographics>
+			<name first='Edward' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='PHAR' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1006'>
+		<updateDemographics>
+			<name first='Frank' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='PHAR' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1007'>
+		<updateDemographics>
+			<name first='George' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='PHYS' courseNumber='101'/>
+			<courseOffering subjectArea='ENGR' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='BAND' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1008'>
+		<updateDemographics>
+			<name first='Henry' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='ENGR' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1009'>
+		<updateDemographics>
+			<name first='Ivan' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='PHYS' courseNumber='101'/>
+			<courseOffering subjectArea='ENGR' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1010'>
+		<updateDemographics>
+			<name first='James' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='PHYS' courseNumber='101'/>
+			<courseOffering subjectArea='C S' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1011'>
+		<updateDemographics>
+			<name first='Kevin' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='POL' courseNumber='101'/>
+			<courseOffering subjectArea='PSY' courseNumber='101'/>
+			<courseOffering subjectArea='SPAN' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1012'>
+		<updateDemographics>
+			<name first='Larry' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+			<courseOffering subjectArea='GER' courseNumber='101'/>
+			<courseOffering subjectArea='PHIL' courseNumber='101'/>
+			<courseOffering subjectArea='HIST' courseNumber='101'/>
+			<courseOffering subjectArea='BAND' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1013'>
+		<updateDemographics>
+			<name first='Michael' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='SOC' courseNumber='101'/>
+			<courseOffering subjectArea='HIST' courseNumber='101'/>
+			<courseOffering subjectArea='LING' courseNumber='101'/>
+			<courseOffering subjectArea='PHIL' courseNumber='101'/>
+			<courseOffering subjectArea='PHYS' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1014'>
+		<updateDemographics>
+			<name first='Norman' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='MBIO' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1015'>
+		<updateDemographics>
+			<name first='Oscar' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M3'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='MBIO' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='GER' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1016'>
+		<updateDemographics>
+			<name first='Peter' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M3'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='MBIO' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='SPAN' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1017'>
+		<updateDemographics>
+			<name first='Richard' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='POL' courseNumber='101'/>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+			<courseOffering subjectArea='SPAN' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1018'>
+		<updateDemographics>
+			<name first='Steve' middle='' last='Student'/>
+			<acadArea abbv='A' classification='01'>
+				<major code='M1'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='HIST' courseNumber='101'/>
+			<courseOffering subjectArea='BIOL' courseNumber='101'/>
+			<courseOffering subjectArea='CHM' courseNumber='101'/>
+			<courseOffering subjectArea='ENGL' courseNumber='101'/>
+			<courseOffering subjectArea='GER' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+	<student key='1019'>
+		<updateDemographics>
+			<name first='Thomas' middle='' last='Student'/>
+			<acadArea abbv='A' classification='02'>
+				<major code='M2'/>
+			</acadArea>
+		</updateDemographics>
+		<updateCourseRequests commit='true'>
+			<courseOffering subjectArea='C S' courseNumber='101'/>
+			<courseOffering subjectArea='PHYS' courseNumber='101'/>
+			<courseOffering subjectArea='CALC' courseNumber='101'/>
+			<courseOffering subjectArea='COM' courseNumber='101'/>
+			<courseOffering subjectArea='POL' courseNumber='101'/>
+		</updateCourseRequests>
+	</student>
+</request>

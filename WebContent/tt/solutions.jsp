@@ -1,10 +1,10 @@
 <%--
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
@@ -112,7 +112,7 @@
 <html:form action="/listSolutions">
 	<input type='hidden' name='confirm' value='y'/>
 	<logic:notEmpty name="listSolutionsForm" property="messages">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR><TD colspan="2" align="left" class="errorCell">
 				<font color="red"><B>ERRORS:</B><BR>
 		<logic:iterate name="listSolutionsForm" property="messages" id="error">
@@ -167,7 +167,7 @@
 		if (status==null)
 			status = "Solver not started.";
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
@@ -215,12 +215,11 @@
 		<TR>
 			<TD valign="top">Note:</TD><TD><html:textarea property="solverNote" rows="4" cols="80" disabled="<%=solver.isWorking()%>"/></TD>
 		</TR>
-<%		Hashtable info = solver.currentSolutionInfo();
-		Vector keys = new Vector(info.keySet());
+<%		Map<String,String> info = solver.currentSolutionInfo();
+		List<String> keys = new ArrayList<String>(info.keySet());
 		Collections.sort(keys,new ListSolutionsForm.InfoComparator());
-		for (Enumeration e=keys.elements();e.hasMoreElements();) {
-			String key = (String)e.nextElement();
-			String val = info.get(key).toString();
+		for (String key: keys) {
+			String val = info.get(key);
 %>
 			<TR><TD nowrap><%=key%>:</TD><TD><%=val%></TD></TR>
 <%
@@ -279,7 +278,7 @@
 <logic:notEmpty name="listSolutionsForm" property="solutionBeans">
 	<html:hidden property="selectedSolutionBean"/><html:errors property="selectedSolutionBean"/>
 	<html:hidden property="note"/>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 	<logic:iterate name="listSolutionsForm" property="solutionBeans" id="sb" indexId="idx">
 		<TR>
@@ -372,13 +371,13 @@
 	</TABLE>
 </logic:notEmpty>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ListSolutions.table") %> 
 </TABLE>
 <logic:equal name="listSolutionsForm" property="canDo" value="true">
 <logic:notEmpty name="listSolutionsForm" property="owners">
 <% if (solver==null) { %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD nowrap>
 			Load into interactive solver:

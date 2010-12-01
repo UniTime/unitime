@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2009, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2009 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,13 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -45,8 +44,9 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  * @author Tomas Muller
  */
 public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
-	private static SimpleDateFormat sDateFormatShort = new SimpleDateFormat("MM/dd", Locale.US);
-    private int iStartSlot;
+	private static final long serialVersionUID = -342155197631035341L;
+
+	private int iStartSlot;
     
     private int iPreference;
     
@@ -270,7 +270,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
 
     public class DummyTimeBlock implements TimeBlock {
-    	private Date iD1, iD2;
+		private static final long serialVersionUID = -3806087343289917036L;
+		private Date iD1, iD2;
     	private DummyTimeBlock(Date d, int breakTimeStart, int breakTimeStop) {
     		Calendar c = Calendar.getInstance(Locale.US);
     		c.setTime(d);

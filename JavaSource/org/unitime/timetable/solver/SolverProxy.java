@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,12 +14,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -62,8 +63,8 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public void stopSolver() throws Exception;
 	public void restoreBest() throws Exception;
 	public void saveBest() throws Exception;
-	public Hashtable currentSolutionInfo() throws Exception;
-	public Hashtable bestSolutionInfo() throws Exception;
+	public Map<String,String> currentSolutionInfo() throws Exception;
+	public Map<String,String> bestSolutionInfo() throws Exception;
 	public boolean isWorking() throws Exception;
 
 	public DataProperties getProperties() throws Exception;
@@ -79,7 +80,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getLog(int level, boolean includeDate) throws Exception;
 	public String getLog(int level, boolean includeDate, String fromStage) throws Exception;
 	public SolverUnassignedClassesModel getUnassignedClassesModel() throws Exception;
-	public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode) throws Exception;
+	public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) throws Exception;
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) throws Exception;
 	public Suggestions getSuggestions(SuggestionsModel model) throws Exception;
 	public void assign(Collection hints) throws Exception;
@@ -101,7 +102,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getHostLabel();
 	public void dispose() throws Exception;
 	
-	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Long roomType) throws Exception;
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) throws Exception;
 	public DeptBalancingReport getDeptBalancingReport() throws Exception;
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() throws Exception;
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() throws Exception;
@@ -121,6 +122,8 @@ public interface SolverProxy extends ClassAssignmentProxy {
     
     public Hashtable getAssignmentTable2(Collection classesOrClassIds) throws Exception;
     public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) throws Exception;
+    
+    public void interrupt();
     
     public byte[] exportXml() throws Exception;
 }

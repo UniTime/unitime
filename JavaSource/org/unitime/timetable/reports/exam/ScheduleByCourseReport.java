@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
@@ -15,8 +34,11 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
+/**
+ * @author Tomas Muller
+ */
 public class ScheduleByCourseReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     

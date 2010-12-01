@@ -1,11 +1,11 @@
 <!-- 
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 -->
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
@@ -31,7 +31,7 @@
 <html:form action="/eventAddInfo">
 	<html:hidden property = "isAddMeetings"/>
 	<html:hidden property = "eventId"/>
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -176,7 +176,7 @@
 						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="location"/>
+						<bean:write name="meeting" property="location" filter="false"/>
 					</TD>	
 					<TD>
 						<bean:write name="meeting" property="locationCapacity"/>
@@ -240,7 +240,7 @@
 						<TD>
 							<html:text property="mainContactFirstName" maxlength="100" size="30" styleId="fname" />
 							<logic:equal name="eventAddInfoForm" property="mainContactLookup" value="true">
-								<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+mainContactFirstName.value+' '+mainContactLastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn"> 
+								<input type='button' value='Lookup' onclick="lookup();" style="btn"> 
 							</logic:equal>
 						</TD>
 					</TR>
@@ -315,7 +315,7 @@
 						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="location"/>
+						<bean:write name="meeting" property="location" filter="false"/>
 					</TD>	
 					<TD>
 						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
@@ -392,7 +392,7 @@
 					<i>No relation defined for this event.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="EventDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="EventDetail.table" filter="false"/>
 					</table>
 				</logic:notEmpty>
@@ -438,4 +438,18 @@
 		</TR>
 		
 </TABLE>
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = person[0];
+				document.getElementById('fname').value = person[1];
+				document.getElementById('mname').value = person[2];
+				document.getElementById('lname').value = person[3];
+				document.getElementById('email').value = person[4];
+				document.getElementById('phone').value = person[5];
+			}
+		}, "allowNoExternalId");
+	}
+</script>
 </html:form>

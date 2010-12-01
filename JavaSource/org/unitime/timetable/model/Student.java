@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -51,26 +51,6 @@ public class Student extends BaseStudent implements Comparable<Student> {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Student (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String firstName,
-		java.lang.String lastName,
-		java.lang.Integer freeTimeCategory,
-		java.lang.Integer schedulePreference) {
-
-		super (
-			uniqueId,
-			session,
-			firstName,
-			lastName,
-			freeTimeCategory,
-			schedulePreference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public void addToPosMajors (org.unitime.timetable.model.PosMajor major) {
@@ -103,7 +83,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
             uniqueResult();
     }
     
-    public Set getExams(Integer examType) {
+    public Set<Exam> getExams(Integer examType) {
         HashSet exams = new HashSet();
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
@@ -153,6 +133,8 @@ public class Student extends BaseStudent implements Comparable<Student> {
             return Constants.toInitialCase(getLastName()==null?"":getLastName().trim())+", "+
                 (getFirstName()==null?"":getFirstName().trim().substring(0, 1).toUpperCase())+
                 (getMiddleName()==null?"":" "+getMiddleName().trim().substring(0, 1).toUpperCase());
+        else if (DepartmentalInstructor.sNameFormatLastFirstMiddle.equals(instructorNameFormat))
+            return Constants.toInitialCase((getLastName()==null?"":getLastName().trim())+", "+(getFirstName()==null?"":getFirstName().trim()) + (getMiddleName()==null?"":" "+getMiddleName().trim()));
         else if (DepartmentalInstructor.sNameFormatShort.equals(instructorNameFormat)) {
             StringBuffer sb = new StringBuffer();
             if (getFirstName()!=null && getFirstName().length()>0) {

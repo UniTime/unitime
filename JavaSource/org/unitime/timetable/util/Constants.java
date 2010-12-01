@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.util;
 
@@ -71,7 +71,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static int EVENING_SLOTS_LAST = (23*60 + 00)/5 - 1; // evening ends at 23:00
 
     /** version */
-    public static String VERSION = "3.1";
+    public static String VERSION = "3.2";
 
     /** release date */
     public static String REL_DATE = "@build.date@";
@@ -515,7 +515,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
      */
 	public static boolean isInteger(String str) {
 		try {
-			int i = Integer.parseInt(str);
+			Integer.parseInt(str);
 		} catch (Exception e) {
 			return false;			
 		}
@@ -529,7 +529,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	 */
 	public static boolean isNumber(String str) {
 		try {
-			double i = Double.parseDouble(str);
+			Double.parseDouble(str);
 		} catch (Exception e) {
 			return false;			
 		}
@@ -588,7 +588,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	}
     	return(offset);
     }
-
+    
     public static int getDayOfWeek(Date date) {
     	Calendar c = Calendar.getInstance(Locale.US);
     	c.setTime(date);
@@ -611,4 +611,5 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 			return DAY_MON;
 		}
     }
+
 }

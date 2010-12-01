@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -222,15 +223,20 @@ public class ExamListAction extends Action {
                     PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType());
                     px.load(exam);
                     RequiredTimeTable rtt = new RequiredTimeTable(px);
+                    String hint = null;
                     File imageFileName = null;
                     try {
                         imageFileName = rtt.createImage(timeVertical);
+                        hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+            			hint = "'" + rtt.getModel().toString();
+            			if (ea!=null)
+            				hint += ", assigned "+ea.getPeriodName();
+            			hint += "'";
+        				Debug.error(ex);
                     }
-                    String title = rtt.getModel().toString();
                     if (imageFileName!=null)
-                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
                     else
                         perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                 }
@@ -256,7 +262,6 @@ public class ExamListAction extends Action {
                     if (roomPref.length()>0) roomPref+=nl;
                     roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
-                boolean prefPrinted = false;
                 if (Exam.sExamTypeMidterm==exam.getExamType()) {
                     MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     epx.load(exam);

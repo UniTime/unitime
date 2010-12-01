@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -49,24 +49,6 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	 */
 	public ExamOwner (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamOwner (
-	        java.lang.Long uniqueId,
-	        org.unitime.timetable.model.Exam exam,
-	        java.lang.Long ownerId,
-	        java.lang.Integer ownerType,
-	        org.unitime.timetable.model.CourseOffering course) {
-
-		super (
-			uniqueId,
-			exam,
-			ownerId,
-			ownerType,
-			course);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -162,7 +144,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         if (cmp!=0) return cmp;
         
         switch (getOwnerType()) {
-            case sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare(getOwnerObject(), owner.getOwnerObject());
+            case sOwnerTypeClass : return new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY).compare((Class_)getOwnerObject(), (Class_)owner.getOwnerObject());
             case sOwnerTypeConfig : return new InstrOfferingConfigComparator(null).compare(getOwnerObject(), owner.getOwnerObject());
         }
            

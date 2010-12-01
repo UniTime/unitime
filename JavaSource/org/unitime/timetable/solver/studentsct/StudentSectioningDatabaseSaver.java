@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,15 +14,14 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.studentsct;
 
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +35,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -98,11 +98,14 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             save(session, hibSession);
             
-            tx.commit();
+            StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
+            
+            tx.commit(); tx = null;
+            
         } catch (Exception e) {
             iProgress.fatal("Unable to save student schedule, reason: "+e.getMessage(),e);
             sLog.error(e.getMessage(),e);
-            tx.rollback();
+            if (tx != null) tx.rollback();
         } finally {
             // here we need to close the session since this code may run in a separate thread
             if (hibSession!=null && hibSession.isOpen()) hibSession.close();
@@ -159,8 +162,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             WaitList wl = (WaitList)i.next();
             hibSession.delete(wl); i.remove();
         }
-        for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-            Request request = (Request)e.nextElement();
+        for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+            Request request = (Request)e.next();
             Enrollment enrollment = (Enrollment)request.getAssignment();
             if (request instanceof CourseRequest) {
                 CourseRequest courseRequest = (CourseRequest)request;
@@ -168,14 +171,16 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
                         WaitList wl = new WaitList();
                         wl.setStudent(s);
-                        wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().firstElement()).getId()));
+                        wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
                         wl.setTimestamp(new Date());
                         wl.setType(new Integer(0));
+                        s.getWaitlists().add(wl);
                         hibSession.save(wl);
                     }
                 } else {
                     org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
                     if (cr==null) continue;
+                    cr.getClassEnrollments().clear();
                     for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
                         Section section = (Section)j.next();
                         StudentClassEnrollment sce = new StudentClassEnrollment();
@@ -184,11 +189,15 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         sce.setCourseRequest(cr);
                         sce.setCourseOffering(cr.getCourseOffering());
                         sce.setTimestamp(new Date());
+                        s.getClassEnrollments().add(sce);
+                        cr.getClassEnrollments().add(sce);
                         hibSession.save(sce);
                     }
+                    hibSession.saveOrUpdate(cr);
                 }
             }
         }
+        hibSession.saveOrUpdate(s);
     }    
     
     public void save(Session session, org.hibernate.Session hibSession) {
@@ -212,8 +221,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     iCourses.put(request.getCourseOffering().getUniqueId(), request.getCourseOffering());
                 }
             }
-            for (Enumeration e=getModel().getStudents().elements();e.hasMoreElements();) {
-                Student student = (Student)e.nextElement();
+            for (Iterator e=getModel().getStudents().iterator();e.hasNext();) {
+                Student student = (Student)e.next();
                 if (student.isDummy()) continue;
                 saveStudent(hibSession, student);
                 flushIfNeeded(hibSession);
@@ -235,14 +244,14 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         		infoTable.put(info.getClazz().getUniqueId(), info);
             
             iProgress.setPhase("Saving expected/held space for online sectioning...", getModel().getOfferings().size());
-            for (Enumeration e=getModel().getOfferings().elements();e.hasMoreElements();) {
-                Offering offering = (Offering)e.nextElement(); iProgress.incProgress();
-                for (Enumeration f=offering.getConfigs().elements();f.hasMoreElements();) {
-                    Config config = (Config)f.nextElement();
-                    for (Enumeration g=config.getSubparts().elements();g.hasMoreElements();) {
-                        Subpart subpart = (Subpart)g.nextElement();
-                        for (Enumeration h=subpart.getSections().elements();h.hasMoreElements();) {
-                            Section section = (Section)h.nextElement();
+            for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
+                Offering offering = (Offering)e.next(); iProgress.incProgress();
+                for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
+                    Config config = (Config)f.next();
+                    for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
+                        Subpart subpart = (Subpart)g.next();
+                        for (Iterator h=subpart.getSections().iterator();h.hasNext();) {
+                            Section section = (Section)h.next();
                             Class_ clazz = iClasses.get(section.getId());
                             if (clazz==null) continue;
                             SectioningInfo info = infoTable.get(section.getId());
@@ -261,14 +270,14 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         // Update class enrollments
-        for (Enumeration e=getModel().getOfferings().elements();e.hasMoreElements();) {
-            Offering offering = (Offering)e.nextElement();
-            for (Enumeration f=offering.getConfigs().elements();f.hasMoreElements();) {
-                Config config = (Config)f.nextElement();
-                for (Enumeration g=config.getSubparts().elements();g.hasMoreElements();) {
-                    Subpart subpart = (Subpart)g.nextElement();
-                    for (Enumeration h=subpart.getSections().elements();h.hasMoreElements();) {
-                        Section section = (Section)h.nextElement();
+        for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
+            Offering offering = (Offering)e.next();
+            for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
+                Config config = (Config)f.next();
+                for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
+                    Subpart subpart = (Subpart)g.next();
+                    for (Iterator h=subpart.getSections().iterator();h.hasNext();) {
+                        Section section = (Section)h.next();
                         Class_ clazz = iClasses.get(section.getId());
                         if (clazz==null) continue;
                         int enrl = 0;

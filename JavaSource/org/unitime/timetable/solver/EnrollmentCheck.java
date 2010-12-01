@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,25 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
+
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.model.Configuration;
+import net.sf.cpsolver.coursett.model.FinalSectioning;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -33,20 +42,11 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.FinalSectioning;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.util.FastVector;
-import net.sf.cpsolver.ifs.util.Progress;
-
 /**
  * @author Tomas Muller
  */
 public class EnrollmentCheck {
-    private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.00",new java.text.DecimalFormatSymbols(Locale.US));
+    private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.##",new java.text.DecimalFormatSymbols(Locale.US));
     private TimetableModel iModel = null;
     
     public EnrollmentCheck(TimetableModel model) {
@@ -57,25 +57,22 @@ public class EnrollmentCheck {
     public void checkJenrl(Progress p) {
         try {
             p.setPhase("Checking jenrl ...",iModel.variables().size());
-            for (Enumeration i1=iModel.variables().elements();i1.hasMoreElements();) {
-                Lecture l1 = (Lecture)i1.nextElement();
+            for (Lecture l1: iModel.variables()) {
                 p.incProgress();
                 p.debug("Checking "+l1.getName()+" ...");
-                for (Enumeration i2=iModel.variables().elements();i2.hasMoreElements();) {
-                    Lecture l2 = (Lecture)i2.nextElement();
+                for (Lecture l2: iModel.variables()) {
                     if (l1.getId()<l2.getId()) {
                         double jenrl = 0;
-                        Vector jenrlStudents = new FastVector();
+                        List<Student> jenrlStudents = new ArrayList<Student>();
                         for (Iterator i3=l1.students().iterator(); i3.hasNext(); ) {
                             Student student = (Student)i3.next();
                             if (l2.students().contains(student)) {
                                 jenrl+=student.getJenrlWeight(l1,l2);
-                                jenrlStudents.addElement(student);
+                                jenrlStudents.add(student);
                             }
                         }
                         boolean found = false;
-                        for (Enumeration i3=iModel.getJenrlConstraints().elements();i3.hasMoreElements(); ) {
-                            JenrlConstraint j = (JenrlConstraint)i3.nextElement();
+                        for (JenrlConstraint j: iModel.getJenrlConstraints()) {
                             Lecture a=(Lecture)j.first();
                             Lecture b=(Lecture)j.second();
                             if ((a.equals(l1) && b.equals(l2)) || (a.equals(l2) && b.equals(l1))) {
@@ -115,8 +112,7 @@ public class EnrollmentCheck {
         if (enrolled==null) {
             p.warn("Student "+s.getId()+" not enrolled in any class of subpart "+getSubpartLabel(subpartId)+".");
         } else if (enrolled.hasAnyChildren()) {
-            for (Enumeration e=enrolled.getChildrenSubpartIds();e.hasMoreElements();) {
-                Long sid = (Long)e.nextElement();
+            for (Long sid: enrolled.getChildrenSubpartIds()) {
                 checkEnrollment(p, s, sid, enrolled.getChildren(sid));
             }
         }
@@ -195,12 +191,15 @@ public class EnrollmentCheck {
         if (iModel.getStudentDistanceConflicts()!=iModel.countStudentDistanceConflicts()) {
             p.warn("Inconsistent number of distance student conflits (counter="+iModel.getStudentDistanceConflicts()+", actual="+iModel.countStudentDistanceConflicts()+").");
         }
-        if (iModel.getCommitedStudentConflicts()!=iModel.countCommitedStudentConflicts()) {
-            p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts()+").");
+        if (iModel.getCommittedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(false)) {
+            p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts(false)+").");
+        }
+        if (iModel.getViolatedCommitttedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false)) {
+            p.warn("Inconsistent number of committed student course conflits (counter="+iModel.getCommitedStudentConflicts()+
+            		", actual="+(iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false))+").");
         }
         p.setPhase("Checking class limits...", iModel.variables().size());
-        for (Enumeration e=iModel.variables().elements();e.hasMoreElements();) {
-            Lecture lecture = (Lecture)e.nextElement();
+        for (Lecture lecture: iModel.variables()) {
             p.incProgress();
             p.debug("Checking "+getClassLabel(lecture)+" ... students="+lecture.students().size()+", weighted="+lecture.nrWeightedStudents()+", limit="+lecture.classLimit()+" ("+lecture.minClassLimit()+".."+lecture.maxClassLimit()+")");
             if (lecture.students().isEmpty()) continue;
@@ -214,7 +213,7 @@ public class EnrollmentCheck {
                     p.warn("Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
             }
         }
-        //iModel.checkJenrl(p);
+        // checkJenrl(p);
         p.setPhase("Checking enrollments...", iModel.getAllStudents().size());
         for (Iterator i=iModel.getAllStudents().iterator();i.hasNext();) {
             p.incProgress();
@@ -234,8 +233,7 @@ public class EnrollmentCheck {
             }
             for (Iterator j=student.getConfigurations().iterator();j.hasNext();) {
                 Configuration cfg = (Configuration)j.next();
-                for (Enumeration e=cfg.getTopSubpartIds();e.hasMoreElements();) {
-                    Long subpartId = (Long)e.nextElement();
+                for (Long subpartId: cfg.getTopSubpartIds()) {
                     checkEnrollment(p, student, subpartId, cfg.getTopLectures(subpartId));
                 }
             }

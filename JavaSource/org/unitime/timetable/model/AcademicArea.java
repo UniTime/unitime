@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.model;
 
@@ -44,24 +44,6 @@ public class AcademicArea extends BaseAcademicArea {
 	 */
 	public AcademicArea (java.lang.Long uniqueId) {
 		super(uniqueId);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public AcademicArea (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String academicAreaAbbreviation,
-		java.lang.String shortTitle,
-		java.lang.String longTitle) {
-
-		super (
-			uniqueId,
-			session,
-			academicAreaAbbreviation,
-			shortTitle,
-			longTitle);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -109,24 +91,47 @@ public class AcademicArea extends BaseAcademicArea {
         return this.getShortTitle() + " : " + this.getAcademicAreaAbbreviation();
     }
 	
-		public Long getSessionId(){
-			if (getSession() != null){
-				return(getSession().getUniqueId());
-			} else {
-				return(null);
-			}
+	public Long getSessionId(){
+		if (getSession() != null){
+			return(getSession().getUniqueId());
+		} else {
+			return(null);
 		}
+	}
+    
+    public static AcademicArea findByAbbv(Long sessionId, String abbv) {
+        return (AcademicArea)new AcademicAreaDAO().
+            getSession().
+            createQuery(
+                    "select a from AcademicArea a where "+
+                    "a.session.uniqueId=:sessionId and "+
+                    "a.academicAreaAbbreviation=:abbv").
+             setLong("sessionId", sessionId.longValue()).
+             setString("abbv", abbv).
+             setCacheable(true).
+             uniqueResult(); 
+    }
+    
+    public static AcademicArea findByExternalId(Long sessionId, String externalId) {
+        return (AcademicArea)new AcademicAreaDAO().
+            getSession().
+            createQuery(
+                    "select a from AcademicArea a where "+
+                    "a.session.uniqueId=:sessionId and "+
+                    "a.externalUniqueId=:externalId").
+             setLong("sessionId", sessionId.longValue()).
+             setString("externalId", externalId).
+             setCacheable(true).
+             uniqueResult(); 
+    }
+
+    public Object clone() {
+    	AcademicArea area = new AcademicArea();
+    	area.setExternalUniqueId(getExternalUniqueId());
+    	area.setAcademicAreaAbbreviation(getAcademicAreaAbbreviation());
+    	area.setShortTitle(getShortTitle());
+    	area.setLongTitle(getLongTitle());
+    	return area;
+    }
         
-        public static AcademicArea findByAbbv(Long sessionId, String abbv) {
-            return (AcademicArea)new AcademicAreaDAO().
-                getSession().
-                createQuery(
-                        "select a from AcademicArea a where "+
-                        "a.session.uniqueId=:sessionId and "+
-                        "a.academicAreaAbbreviation=:abbv").
-                 setLong("sessionId", sessionId.longValue()).
-                 setString("abbv", abbv).
-                 setCacheable(true).
-                 uniqueResult(); 
-        }
 }

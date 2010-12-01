@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
- * UniTime 3.1 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
  -->
 
 <dbupdate>
@@ -2536,6 +2536,362 @@
 			references %SCHEMA%.pos_major (uniqueid) on delete cascade
 		</sql>
 	</update>
-	
-	
+	<update version="51" date="07-Jun-2010" comment="Curriculum course groups">
+		<sql>alter table %SCHEMA%.curriculum_course drop column group_nr</sql>
+		<plsql>
+			create table %SCHEMA%.curriculum_group
+				(
+				  uniqueid number(20) constraint nn_curriculum_group_id not null,
+				  name varchar2(20) constraint nn_curriculum_group_name not null,
+				  color varchar2(20),
+				  type number(10) constraint nn_curriculum_group_type not null,
+				  constraint pk_curriculum_group primary key (uniqueid)
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_group
+				(
+				  uniqueid decimal(20,0) primary key not null,
+				  name varchar(20) not null,
+				  color varchar(60),
+				  type bigint(10) not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.curriculum_course_group (
+				group_id number(20,0) constraint nn_curriculum_course_id not null,
+				cur_course_id number(20,0) constraint nn_cur_course_groups_course not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course_group add constraint pk_curriculum_course_groups primary key (group_id, cur_course_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_course_group (
+				group_id decimal(20,0) not null,
+				cur_course_id decimal(20,0) not null,
+				primary key (group_id, cur_course_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_course_group add constraint fk_cur_course_group_group foreign key (group_id)
+			references %SCHEMA%.curriculum_group (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_course_group add constraint fk_cur_course_group_course foreign key (cur_course_id)
+			references %SCHEMA%.curriculum_course (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="52" date="09-Jun-2010" comment="Curriculum course groups">
+		<plsql>
+			alter table %SCHEMA%.curriculum_group add curriculum_id number(20) constraint nn_curriculum_group_curriculum not null
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_group add curriculum_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_group add constraint fk_curriculum_group_curriculum foreign key (curriculum_id)
+			references %SCHEMA%.curriculum (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="53" date="11-Jun-2010" comment="Curriculum manager role">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = next_hi+1</mysql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Curriculum Mgr', 'Curriculum Manager')</mysql>
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.role_seq.nextval, 'Curriculum Mgr', 'Curriculum Manager')</plsql>
+	</update>
+	<update version="54" date="15-Jun-2010" comment="Academic area, classification, major indexes">
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_academic_area_abbv on %SCHEMA%.academic_area(academic_area_abbreviation, session_id)
+		</plsql>
+		<mysql onFail="next">
+			create index idx_academic_area_abbv on %SCHEMA%.academic_area(academic_area_abbreviation, session_id)
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_academic_clasf_code on %SCHEMA%.academic_classification(code, session_id)
+		</plsql>
+		<mysql onFail="next">
+			create index idx_academic_clasf_code on %SCHEMA%.academic_classification(code, session_id)
+		</mysql>
+		<plsql>
+			create index %SCHEMA%.idx_pos_major_code on %SCHEMA%.pos_major(code, session_id)
+		</plsql>
+		<mysql>
+			create index idx_pos_major_code on %SCHEMA%.pos_major(code, session_id)
+		</mysql>
+	</update>
+	<update version="55" date="18-Jun-2010" comment="Curriculum projection rules">
+		<!--  disallow null in curriculum.acad_area_id -->
+		<plsql>
+			alter table %SCHEMA%.curriculum drop constraint fk_curriculum_acad_area
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum drop foreign key fk_curriculum_acad_area
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum add constraint nn_curriculum_acad_area check (acad_area_id is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum modify acad_area_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum
+				add constraint fk_curriculum_acad_area foreign key (acad_area_id)
+				references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<!--  disallow null in curriculum_clasf.acad_clasf_id -->
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf drop constraint fk_curriculum_clasf_acad_clasf
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curriculum_clasf_acad_clasf
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf add constraint nn_curriculum_clasf_acad_clasf check (acad_clasf_id is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf modify acad_clasf_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_clasf
+				add constraint fk_curriculum_clasf_acad_clasf foreign key (acad_clasf_id)
+				references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+		<!--  drop unused columns -->
+		<sql>alter table %SCHEMA%.curriculum_clasf drop column ll_students</sql>
+		<sql>alter table %SCHEMA%.curriculum_course drop column ll_share</sql>
+		<!--  create curriculum_rule table -->
+		<plsql>
+			create table %SCHEMA%.curriculum_rule
+				(
+				  uniqueid number(20) constraint nn_cur_rule_id not null,
+				  acad_area_id number(20) constraint nn_cur_rule_acad_area not null,
+				  major_id number(20),
+				  acad_clasf_id number(20) constraint nn_cur_rule_acad_clasf not null,
+				  projection float constraint nn_cur_rule_proj not null,
+				  constraint pk_curriculum_rule primary key (uniqueid)
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_rule
+				(
+				  uniqueid decimal(20,0) primary key not null,
+				  acad_area_id decimal(20,0) not null,
+				  major_id decimal(20,0),
+				  acad_clasf_id decimal(20,0) not null,
+				  projection float not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create index %SCHEMA%.idx_cur_rule_areadept on %SCHEMA%.curriculum_rule(acad_area_id, acad_clasf_id)
+		</plsql>
+		<mysql>
+			create index idx_cur_rule_areadept on %SCHEMA%.curriculum_rule(acad_area_id, acad_clasf_id)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_acad_area foreign key (acad_area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_acad_clasf foreign key (acad_clasf_id)
+			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="56" date="21-Jul-2010" comment="Allow for GPS coordinates">
+		<mysql>alter table %SCHEMA%.building modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.building modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.room modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.room modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.external_building modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.external_building modify coordinate_y double null</mysql>
+		<mysql>alter table %SCHEMA%.external_room modify coordinate_x double null</mysql>
+		<mysql>alter table %SCHEMA%.external_room modify coordinate_y double null</mysql>
+		
+		<plsql>alter table %SCHEMA%.building modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.building modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.room modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.room modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_building modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_building modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_x double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_y double precision</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify coordinate_y double precision</plsql>
+		
+		<plsql>alter table %SCHEMA%.building drop constraint nn_building_coordinate_x</plsql>
+		<plsql>alter table %SCHEMA%.building drop constraint nn_building_coordinate_y</plsql>
+		<plsql>alter table %SCHEMA%.room drop constraint nn_room_coordinate_x</plsql>
+		<plsql>alter table %SCHEMA%.room drop constraint nn_room_coordinate_y</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location drop constraint nn_non_univ_loc_coord_x</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location drop constraint nn_non_univ_loc_coord_y</plsql>
+		
+		<sql>update %SCHEMA%.building set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.building set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.room set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.room set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.non_university_location set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.non_university_location set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.external_building set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.external_building set coordinate_y = null where coordinate_y = -1</sql>
+		<sql>update %SCHEMA%.external_room set coordinate_x = null where coordinate_x = -1</sql>
+		<sql>update %SCHEMA%.external_room set coordinate_y = null where coordinate_y = -1</sql>
+	</update>
+	<update version="57" date="30-Jul-2010" comment="Solver changes (coordinates, curricula)">
+		<!--  deprecated parameters -->
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Weight last-like students (deprecated)' where name = 'General.WeightStudents'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Student Conflict: Distance Limit (after 75min class, deprecated)' where name = 'Student.DistanceLimit75min'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Student Conflict: Distance Limit (deprecated)' where name = 'Student.DistanceLimit'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Do not load committed student conflicts (deprecated)' where name = 'General.IgnoreCommittedStudentConflicts'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, description = 'Students sectioning' where name = 'General.SwitchStudents'</sql>
+		<!-- cleanup test defs -->
+		<sql>delete from %SCHEMA%.solver_parameter_def where name in ('Curriculum.StudentCourseDemadsClass', 'Distances.Ellipsoid', 'Distances.Speed', 'General.LoadCommittedAssignments', 'General.CommittedStudentConflicts')</sql>
+		<!--  MySQL changes -->
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="GID_BASIC">select uniqueid from %SCHEMA%.solver_parameter_group where name='Basic'</mysql>
+		<mysql into="ORD_BASIC">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_BASIC%</mysql>
+		<mysql into="GID_GENERAL">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="ORD_GENERAL">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_GENERAL%</mysql>
+		<mysql into="GID_DISTANCE">select uniqueid from %SCHEMA%.solver_parameter_group where name='Distance'</mysql>
+		<mysql into="ORD_DISTANCE">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID_DISTANCE%</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%, 'Curriculum.StudentCourseDemadsClass', 'Projected Student Course Demands', 'Student course demands', 'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Enrolled Student Course Demands)', %ORD_GENERAL%+1, 1, %GID_GENERAL%),
+			(%ID%+1, 'General.CommittedStudentConflicts', 'Load', 'Committed student conflicts', 'enum(Load,Compute,Ignore)',  %ORD_GENERAL%+2, 1, %GID_GENERAL%),
+			(%ID%+2, 'Distances.Ellipsoid', 'DEFAULT', 'Ellipsoid to be used to compute distances', 'enum(DEFAULT,LEGACY,WGS84,GRS80,Airy1830,Intl1924,Clarke1880,GRS67)', %ORD_DISTANCE%+1, 1, %GID_DISTANCE%),
+			(%ID%+3, 'Distances.Speed', '67.0', 'Student speed in meters per minute', 'double', %ORD_DISTANCE%+2, 1, %GID_DISTANCE%),
+			(%ID%+4, 'General.LoadCommittedAssignments', 'false', 'Load committed assignments', 'boolean', %ORD_BASIC%+1, 1, %GID_BASIC%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<!-- Oracle changes -->
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Curriculum.StudentCourseDemadsClass' as name, 'Projected Student Course Demands' as default_value,
+			'Student course demands' as description,
+			'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Enrolled Student Course Demands)' as type,
+			15 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'General.CommittedStudentConflicts' as name, 'Load' as default_value,
+			'Committed student conflicts' as description,
+			'enum(Load,Compute,Ignore)' as type, 16 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'General.LoadCommittedAssignments' as name, 'false' as default_value,
+			'Load committed assignments' as description,
+			'boolean' as type, 4 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Basic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Distances.Ellipsoid' as name, 'DEFAULT' as default_value,
+			'Ellipsoid to be used to compute distances' as description,
+			'enum(DEFAULT,LEGACY,WGS84,GRS80,Airy1830,Intl1924,Clarke1880,GRS67)' as type, 5 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Distance')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'Distances.Speed' as name, '67.0' as default_value,
+			'Student speed in meters per minute' as description,
+			'double' as type, 6 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Distance')
+		</plsql>
+	</update>
+	<update version="58" date="03-Sep-2010" comment="Curriculum student cache">
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf add students longtext binary null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf add students clob
+		</plsql>
+	</update>
+	<update version="59" date="03-Sep-2010" comment="Sectioning queue">
+		<mysql>
+			create table %SCHEMA%.sectioning_queue (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				type bigint(10)  not null,
+				time_stamp datetime not null,
+				message longtext binary null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.sectioning_queue (
+				uniqueid number(20,0) constraint nn_sect_queue_uniqueid not null,
+				session_id number(20,0) constraint nn_sect_queue_session not null,
+				type number(10) constraint nn_sect_queue_type not null,
+				time_stamp timestamp constraint nn_sect_queue_ts not null,
+				message clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_queue add constraint pk_sect_queue primary key (uniqueid)</plsql>
+		<mysql>create index idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</mysql>
+		<plsql>create index %SCHEMA%.idx_sect_queue_session_ts on %SCHEMA%.sectioning_queue(session_id, time_stamp)</plsql>
+	</update>
+	<update version="60" date="23-Sep-2010" comment="Using student course requests in the solver">
+		<sql>update %SCHEMA%.solver_parameter_def set
+			type = 'enum(Last Like Student Course Demands,Weighted Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Student Course Requests,Enrolled Student Course Demands)'
+			where name = 'Curriculum.StudentCourseDemadsClass'
+		</sql>
+	</update>
+	<update version="61" date="20-Oct-2010" comment="Session holidays need to cover 13 months">
+		<plsql>
+			alter table %SCHEMA%.sessions modify holidays varchar2(400)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions modify holidays varchar(400) binary null
+		</mysql>
+	</update>
+	<update version="62" date="05-Nov-2010" comment="Add Index for Student External Id">
+		<plsql>
+			create index %SCHEMA%.idx_student_external_uid on %SCHEMA%.student(external_uid)
+		</plsql>
+		<mysql>
+			create index idx_student_external_uid on %SCHEMA%.student(external_uid)
+		</mysql>
+	</update>
+	<update version="63" date="08-Nov-2010" comment="Query Log">
+		<mysql>
+			create table %SCHEMA%.query_log (
+				uniqueid decimal(20,0) primary key not null,
+				time_stamp datetime not null,
+				time_spent decimal(20,0) not null,
+				uri varchar(255) not null,
+				type decimal(10,0) not null,
+				session_id varchar(32) null,
+				userid varchar(40) null,
+				query longtext binary null,
+				exception longtext binary null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create index idx_query_log on %SCHEMA%.query_log(time_stamp)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.query_log (
+				uniqueid number(20,0) constraint nn_query_log_uniqueid not null,
+				time_stamp date constraint nn_query_log_time_stamp not null,
+				time_spent number(20,0) constraint nn_query_log_time_spent not null,
+				uri varchar2(255) constraint nn_query_log_uri not null,
+				type decimal(10,0) constraint nn_query_log_type not null,
+				session_id varchar2(32),
+				userid varchar2(40),
+				query clob,
+				exception clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.query_log add constraint pk_query_log primary key (uniqueid)</plsql>
+		<plsql>
+			create index %SCHEMA%.idx_query_log on %SCHEMA%.query_log(time_stamp, type)
+		</plsql>
+	</update>
 </dbupdate>

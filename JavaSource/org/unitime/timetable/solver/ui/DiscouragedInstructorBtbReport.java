@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,16 +14,15 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -45,24 +44,21 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 
 	public DiscouragedInstructorBtbReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getInstructorConstraints().elements();e.hasMoreElements(); ) {
-			InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+		for (InstructorConstraint ic: model.getInstructorConstraints()) {
 			HashSet used = new HashSet();
 	        for (int slot=1;slot<Constants.SLOTS_PER_DAY * Constants.NR_DAYS;slot++) {
 	        	if ((slot%Constants.SLOTS_PER_DAY)==0) continue;
-	            for (Enumeration f=ic.getResource(slot).elements();f.hasMoreElements();) {
-	            	Placement placement = (Placement)f.nextElement();
-	            	Vector prevPlacements = ic.getPlacements(slot-1,placement);
-	            	for (Enumeration i=prevPlacements.elements();i.hasMoreElements();) {
-	            		Placement prevPlacement = (Placement)i.nextElement();
+	            for (Placement placement: ic.getResource(slot)) {
+	            	List<Placement> prevPlacements = ic.getPlacements(slot-1,placement);
+	            	for (Placement prevPlacement: prevPlacements) {
 	            		if (prevPlacement.equals(placement)) continue;
 	            		if (!used.add(prevPlacement+"."+placement)) continue; 
-	            		double dist = Placement.getDistance(prevPlacement,placement);
-	            		if (dist>model.getInstructorNoPreferenceLimit() && dist<=model.getInstructorDiscouragedLimit())
+	            		double dist = Placement.getDistanceInMeters(model.getDistanceMetric(), prevPlacement,placement);
+	            		if (dist>model.getDistanceMetric().getInstructorNoPreferenceLimit() && dist<=model.getDistanceMetric().getInstructorDiscouragedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sDiscouraged));
-	            		if (dist>model.getInstructorDiscouragedLimit() && dist<=model.getInstructorProhibitedLimit()) 
+	            		if (dist>model.getDistanceMetric().getInstructorDiscouragedLimit() && dist<=model.getDistanceMetric().getInstructorProhibitedLimit()) 
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sStronglyDiscouraged));
-	            		if (dist>model.getInstructorProhibitedLimit())
+	            		if (dist>model.getDistanceMetric().getInstructorProhibitedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sProhibited));
 	            			
 	            	}

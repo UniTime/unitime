@@ -1,11 +1,11 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
 */
 package org.unitime.timetable.action;
 
@@ -23,27 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,12 +40,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.Email;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
@@ -80,8 +66,6 @@ public class EnrollmentAuditPdfReportAction extends Action {
             throw new Exception ("Access Denied.");
         }
         
-        TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
-
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if ("Generate".equals(op)) myForm.save(request.getSession());
@@ -150,56 +134,26 @@ public class EnrollmentAuditPdfReportAction extends Action {
                 if (output.isEmpty())
                     myForm.log("<font color='orange'>No report generated.</font>");
                 else if (myForm.getEmail()) {
-                    InternetAddress from = 
-                        (mgr.getEmailAddress()==null?
-                                new InternetAddress(
-                                        ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                                        ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")):
-                                new InternetAddress(mgr.getEmailAddress(),mgr.getName()));
                     myForm.log("Sending email(s)...");
-                    Properties p = ApplicationProperties.getProperties();
-                    if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                        p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-                    Authenticator a = null;
-                    if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                        a = new Authenticator() {
-                            public PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(
-                                        ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                        ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                            }
-                        };
-                    }
-                    javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
-                    MimeMessage mail = new MimeMessage(mailSession);
-                    mail.setSubject(myForm.getSubject()==null?"Enrollment Audit Report":myForm.getSubject());
-                    Multipart body = new MimeMultipart();
-                    MimeBodyPart text = new MimeBodyPart();
-                    text.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
-                            "For an up-to-date report, please visit "+
-                            request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
-                            "This email was automatically generated by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                    body.addBodyPart(text);
-                    if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                    if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
-                    if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
-                    if (from!=null)
-                        mail.setFrom(from);
-                    for (Map.Entry<String, File> entry : output.entrySet()) {
-                        BodyPart attachement = new MimeBodyPart();
-                        attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                         attachement.setFileName(session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
-                        body.addBodyPart(attachement);
-                    }
-                    mail.setSentDate(new Date());
-                    mail.setContent(body);
                     try {
-                        Transport.send(mail);
+                        Email mail = new Email();
+                        mail.setSubject(myForm.getSubject()==null?"Enrollment Audit Report":myForm.getSubject());
+                        mail.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
+                                "For an up-to-date report, please visit "+
+                                request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(s.nextToken(), null);
+                        if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientCC(s.nextToken(), null);
+                        if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipientBCC(s.nextToken(), null);
+                        for (Map.Entry<String, File> entry : output.entrySet()) {
+                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
+                        }
+                        mail.send();
                         myForm.log("Email sent.");
                     } catch (Exception e) {
                         myForm.log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");

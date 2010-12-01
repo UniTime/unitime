@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
@@ -18,7 +37,6 @@ import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -36,8 +54,11 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
+/**
+ * @author Tomas Muller
+ */
 public class InstructorExamReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(InstructorExamReport.class);
     Hashtable<Long,String> iStudentNames = null;
@@ -402,7 +423,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
-            ExamPeriod period = exam.getPeriod();
             iCoursePrinted = false;
                 if (iDirect) for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                     if (!conflict.getStudents().contains(instructor.getId())) continue;
@@ -560,7 +580,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
-            ExamPeriod period = exam.getPeriod();
             iCoursePrinted = false;
             Vector<Long> students = new Vector<Long>(section.getStudentIds());
             Collections.sort(students,new Comparator<Long>() {
