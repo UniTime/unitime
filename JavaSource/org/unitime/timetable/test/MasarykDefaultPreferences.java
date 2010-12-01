@@ -32,11 +32,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -52,7 +50,6 @@ import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class MasarykDefaultPreferences {
@@ -91,11 +88,13 @@ public class MasarykDefaultPreferences {
             
             MakeAssignmentsForClassEvents makePattern = new MakeAssignmentsForClassEvents(session, hibSession);
             
+            /*
             for (ExactTimeMins x: ExactTimeMinsDAO.getInstance().findAll(hibSession)) {
             	x.setNrSlots(x.getMinsPerMtgMax() / 5);
             	x.setBreakTime(5);
             	hibSession.saveOrUpdate(x);
             }
+            */
             
             RoomGroup poc = null, mult = null; //, bez = null;
             for (RoomGroup rg: (Collection<RoomGroup>)RoomGroup.getAllGlobalRoomGroups()) {
@@ -108,11 +107,13 @@ public class MasarykDefaultPreferences {
             		bez = rg;
             	*/
             }
-            
+
+            /*
             for (Department d: session.getDepartments()) {
             	d.getDistributionPreferences().clear();
             	hibSession.saveOrUpdate(d);
             }
+            */
             
             // Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
             
@@ -128,6 +129,9 @@ public class MasarykDefaultPreferences {
             	boolean hasPreferences = false;
             	if (!ss.getPreferences().isEmpty()) hasPreferences = true;
             	for (Class_ c: ss.getClasses()) {
+            		if (c.effectiveDatePattern().getName().startsWith("import") || c.getNbrRooms() == 0) {
+            			hasPreferences = false; break;
+            		}
             		if (c.getPreferences().size() > c.getPreferences(TimePref.class).size()) hasPreferences = true;
             		else for (Iterator i = c.getPreferences(TimePref.class).iterator(); !hasPreferences && i.hasNext(); ) {
             			TimePref t = (TimePref)i.next();
@@ -150,9 +154,16 @@ public class MasarykDefaultPreferences {
         		
         		if (ss.getChildSubparts().isEmpty() && ss.getParentSubpart() != null) {
         			boolean sameDay = false;
+        			boolean hasConstraint = false;
         			classes: for (Class_ c: ss.getClasses()) {
         				int dayCode = 0;
         				while (c != null) {
+        					for (DistributionObject d: c.getDistributionObjects()) {
+        						if (d.getDistributionPref().getDistributionType().equals(sameDaysType)) {
+        							hasConstraint = true;
+        							break classes;
+        						}
+        					}
         					Assignment a = c.getCommittedAssignment();
         					if (a != null) {
         						if ((dayCode & a.getDays()) != 0) { sameDay = true; break classes; }
@@ -161,23 +172,25 @@ public class MasarykDefaultPreferences {
         					c = c.getParentClass();
         				}
         			}
-                	DistributionPref dp = new DistributionPref();
-                	dp.setDistributionType(sameDaysType);
-    				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(sameDay ? PreferenceLevel.sStronglyDiscouraged : PreferenceLevel.sProhibited));
-    				dp.setDistributionObjects(new HashSet<DistributionObject>());
-    				dp.setGrouping(DistributionPref.sGroupingProgressive);
-    				dp.setOwner(ss.getManagingDept());
-    				SchedulingSubpart x = ss;
-    				int index = 1;
-    				while (x != null) {
-        				DistributionObject o = new DistributionObject();
-        				o.setDistributionPref(dp);
-        				o.setPrefGroup(x);
-        				o.setSequenceNumber(index++);
-        				dp.getDistributionObjects().add(o);
-    					x = x.getParentSubpart();
-    				}
-    				hibSession.saveOrUpdate(dp);
+        			if (!hasConstraint) {
+                    	DistributionPref dp = new DistributionPref();
+                    	dp.setDistributionType(sameDaysType);
+        				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(sameDay ? PreferenceLevel.sStronglyDiscouraged : PreferenceLevel.sProhibited));
+        				dp.setDistributionObjects(new HashSet<DistributionObject>());
+        				dp.setGrouping(DistributionPref.sGroupingProgressive);
+        				dp.setOwner(ss.getManagingDept());
+        				SchedulingSubpart x = ss;
+        				int index = 1;
+        				while (x != null) {
+            				DistributionObject o = new DistributionObject();
+            				o.setDistributionPref(dp);
+            				o.setPrefGroup(x);
+            				o.setSequenceNumber(index++);
+            				dp.getDistributionObjects().add(o);
+        					x = x.getParentSubpart();
+        				}
+        				hibSession.saveOrUpdate(dp);
+        			}
         		}
         		
             	for (Class_ c: ss.getClasses()) {
@@ -269,13 +282,25 @@ public class MasarykDefaultPreferences {
                 		c.getPreferences().add(tp);
             		}
             		// Room preferences
-            		boolean reqMult = false;
+            		boolean reqRoomGroup = false;
             		if ("MM".equals(c.getSchedulePrintNote())) {
-            			reqMult = true;
+            			reqRoomGroup = true;
     					RoomGroupPref gp = new RoomGroupPref();
     					gp.setOwner(c);
-    					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+    					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
     					gp.setRoomGroup(mult);
+        				c.getPreferences().add(gp);
+    					RoomGroupPref gp2 = new RoomGroupPref();
+    					gp2.setOwner(c);
+    					gp2.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sPreferred));
+    					gp2.setRoomGroup(poc);
+        				c.getPreferences().add(gp2);
+            		} else if ("PC".equals(c.getSchedulePrintNote())) {
+            			reqRoomGroup = true;
+    					RoomGroupPref gp = new RoomGroupPref();
+    					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+    					gp.setOwner(c);
+    					gp.setRoomGroup(poc);
         				c.getPreferences().add(gp);
             		}
             		for (Location l: a.getRooms()) {
@@ -308,40 +333,41 @@ public class MasarykDefaultPreferences {
             					c.setRoomRatio(0f);
             				}
             			}
-            			for (RoomGroup rg: l.getRoomGroups()) {
-            				if (rg.isGlobal() && rg.getAbbv().equals("MULT")) {
-            					if (reqMult) continue; // already have required MULT
-            					RoomGroupPref gp = new RoomGroupPref();
-            					gp.setOwner(c);
-            					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
-            					gp.setRoomGroup(rg);
-                				c.getPreferences().add(gp);
-            					RoomGroupPref gp2 = new RoomGroupPref();
-            					gp2.setOwner(c);
-            					gp2.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sPreferred));
-            					gp2.setRoomGroup(poc);
-                				c.getPreferences().add(gp2);
-            				} else if (rg.isGlobal() && rg.getAbbv().equals("POČ")) {
-            					RoomGroupPref gp = new RoomGroupPref();
-            					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
-            					gp.setOwner(c);
-            					gp.setRoomGroup(rg);
-                				c.getPreferences().add(gp);
-            				} else if (rg.isGlobal() && rg.getAbbv().equals("BĚŽ")) {
-            					RoomGroupPref gp = new RoomGroupPref();
-            					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
-            					gp.setOwner(c);
-            					gp.setRoomGroup(rg);
-                				c.getPreferences().add(gp);
-            					RoomGroupPref gp2 = new RoomGroupPref();
-            					gp2.setOwner(c);
-            					gp2.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
-            					gp2.setRoomGroup(poc);
-                				c.getPreferences().add(gp2);
-            				}
+            			if (!reqRoomGroup) {
+                			for (RoomGroup rg: l.getRoomGroups()) {
+                				if (rg.isGlobal() && rg.getAbbv().equals("MULT")) {
+                					RoomGroupPref gp = new RoomGroupPref();
+                					gp.setOwner(c);
+                					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
+                					gp.setRoomGroup(rg);
+                    				c.getPreferences().add(gp);
+                					RoomGroupPref gp2 = new RoomGroupPref();
+                					gp2.setOwner(c);
+                					gp2.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sPreferred));
+                					gp2.setRoomGroup(poc);
+                    				c.getPreferences().add(gp2);
+                				} else if (rg.isGlobal() && rg.getAbbv().equals("POČ")) {
+                					RoomGroupPref gp = new RoomGroupPref();
+                					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+                					gp.setOwner(c);
+                					gp.setRoomGroup(rg);
+                    				c.getPreferences().add(gp);
+                				} else if (rg.isGlobal() && rg.getAbbv().equals("BĚŽ")) {
+                					RoomGroupPref gp = new RoomGroupPref();
+                					gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
+                					gp.setOwner(c);
+                					gp.setRoomGroup(rg);
+                    				c.getPreferences().add(gp);
+                					RoomGroupPref gp2 = new RoomGroupPref();
+                					gp2.setOwner(c);
+                					gp2.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+                					gp2.setRoomGroup(poc);
+                    				c.getPreferences().add(gp2);
+                				}
+                			}
             			}
             		}
-            		c.setNbrRooms(a.getRooms().size());
+            		c.setNbrRooms(Math.max(1, a.getRooms().size()));
             		
             		hibSession.saveOrUpdate(c);
             	}
