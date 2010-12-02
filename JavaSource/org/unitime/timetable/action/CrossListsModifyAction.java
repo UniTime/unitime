@@ -467,9 +467,9 @@ public class CrossListsModifyAction extends Action {
 		                    cor1.setCourseOffering(co1);
 		                    cor1.setOwner(io.getUniqueId());
 		                    cor1.setOwnerClassId(Constants.RESV_OWNER_IO);
-		                    cor1.setPriorEnrollment(null);
+		                    cor1.setPriorEnrollment(co1.getDemand());
 		                    cor1.setPriority(new Integer(1));
-		                    cor1.setProjectedEnrollment(null);
+		                    cor1.setProjectedEnrollment(co1.getProjectedDemand());
 		                    cor1.setRequested(null);
 		                    cor1.setReservationType(permResvType);
 			                cor1.setReserved(Integer.valueOf(frm.getLimits(indx)));

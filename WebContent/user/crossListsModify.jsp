@@ -192,12 +192,10 @@
 					<TR>
 						<TD align="left" class="WebTableHeader"> Offering </TD>
 						<TD align="center" class="WebTableHeader"> Controlling </TD>
-						<% if ( ((java.util.List)cos).size()>1 ) { %>
 						<TD align="center" class="WebTableHeader"> Reserved </TD>
 						<TD align="right" class="WebTableHeader"><!-- I> Requested </I --></TD>
 						<TD align="right" class="WebTableHeader"> Projected </TD>
 						<TD align="right" class="WebTableHeader"> Last Term </TD>
-						<% } %>
 						<TD>&nbsp;</TD>
 					</TR>
 
@@ -207,9 +205,7 @@
 							<html:hidden property='<%= "courseOfferingIds[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "courseOfferingNames[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "ownedCourse[" + ctr + "]" %>'/>
-						<% if ( ((java.util.List)cos).size()==1 ) { %>
 							<html:hidden property='<%= "limits[" + ctr + "]" %>'/>
-						<% } %>
 							<bean:write name="crossListsModifyForm" property='<%= "courseOfferingNames[" + ctr + "]" %>'/> &nbsp;
 						</TD>
 						<TD align="center" class="BottomBorderGray">
@@ -219,17 +215,21 @@
 							</logic:equal>
 							&nbsp;
 						</TD>
-						<% if ( ((java.util.List)cos).size()>1 ) { %>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property='<%= "resvId[" + ctr + "]" %>'/>
-							<logic:equal name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
-								<html:text name="crossListsModifyForm" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" property='<%= "limits[" + ctr + "]" %>' size="4" maxlength="4" />
-							</logic:equal>
-							<logic:notEqual name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
+							<% if ( ((java.util.List)cos).size() == 1 ) { %>
 								<bean:write name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>' />
 								<html:hidden property='<%= "limits[" + ctr + "]" %>' />
-							</logic:notEqual>
+							<% } else { %>
+								<logic:equal name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
+									<html:text name="crossListsModifyForm" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" property='<%= "limits[" + ctr + "]" %>' size="4" maxlength="4" />
+								</logic:equal>
+								<logic:notEqual name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
+									<bean:write name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>' />
+									<html:hidden property='<%= "limits[" + ctr + "]" %>' />
+								</logic:notEqual>
+							<% } %>
 							<bean:define id="resvSpace" name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>'/>							
 							<% if (resvSpace!=null && resvSpace.toString().length()>0 && Constants.isInteger(resvSpace.toString())) { 
 								resvExists = true;
@@ -262,7 +262,6 @@
 							   else 
 							   	out.print("-"); %>&nbsp;
 						</TD>
-						<% } %>
 						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
