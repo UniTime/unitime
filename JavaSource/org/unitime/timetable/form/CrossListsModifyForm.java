@@ -363,10 +363,11 @@ public class CrossListsModifyForm extends ActionForm {
         }
         else {
             this.resvId.add("");
-            this.limits.add("");
+            this.limits.add(co.getInstructionalOffering().getCourseOfferings().size() == 1 && co.getInstructionalOffering().getLimit() != null ? co.getInstructionalOffering().getLimit().toString()
+            		: co.getProjectedDemand() != null ? co.getProjectedDemand().toString() : co.getDemand().toString());
             this.requested.add("");
-            this.projected.add("");
-            this.lastTerm.add("");
+            this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
+            this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
         }
     }
     
