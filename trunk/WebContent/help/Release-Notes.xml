@@ -27,6 +27,39 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Bug fixes and improvements</title>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>When creating a new cross-list, if there is no course reservation, populate the fields from course offering data
+					<line>instructional offering limit -&gt; requested</line>
+					<line>projected demand -&gt; projected</line>
+					<line>(last-like) demand -&gt; last term</line>
+				</line>
+				<line>When there is only one line (the course is not cross-listed), display the above numbers.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling -- Suggestions</name>
+			<description>
+				<line>In computation of suggestions -- check that the tested value is not among conflicting
+					<line>This may happen with the recent improvement of meet with constraint as for instance the class cannot be assigned into a room that is not big enough for all the meet with classes</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Small style changes and improvements</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.93</version>
+	<release-date>Wed, 1 Dec 2010</release-date>
+	<category>
 		<title>First Release of UniTime 3.2</title>
 		<item>
 			<name>Look &amp; feel changes</name>
