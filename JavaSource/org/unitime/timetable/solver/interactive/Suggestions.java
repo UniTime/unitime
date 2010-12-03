@@ -212,6 +212,7 @@ public class Suggestions implements Serializable {
                     Lecture lect = (Lecture)plac.variable();
                     if (placement!=null && placement.variable().equals(lect)) continue;
                     Set conflicts = iModel.conflictValues(plac);
+                    if (conflicts.contains(plac)) return null;
                     for (Iterator i=conflicts.iterator();i.hasNext();) {
                         Placement conflictPlacement = (Placement)i.next();
                         conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
@@ -225,6 +226,7 @@ public class Suggestions implements Serializable {
             if (placement!=null) {
                 Lecture lect = (Lecture)placement.variable();
                 Set conflicts = iModel.conflictValues(placement);
+                if (conflicts.contains(placement)) return null;
                 for (Iterator i=conflicts.iterator();i.hasNext();) {
                     Placement conflictPlacement = (Placement)i.next();
                     conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
@@ -339,6 +341,7 @@ public class Suggestions implements Serializable {
                 Set conflicts = iModel.conflictValues(placement);
                 if (conflicts!=null && (nrUnassigned+conflicts.size()>depth)) continue;
                 if (containsCommited(iModel, conflicts)) continue;
+                if (conflicts.contains(placement)) continue;
                 boolean containException = false;
                 if (conflicts!=null) {
                     for (Iterator i=conflicts.iterator();!containException && i.hasNext();) {
@@ -402,7 +405,9 @@ public class Suggestions implements Serializable {
             if (iSameTime && iLecture.getAssignment()!=null && !p.getTimeLocation().equals(((Placement)iLecture.getAssignment()).getTimeLocation())) continue;
             if (iSameRoom && iLecture.getAssignment()!=null && !p.sameRooms((Placement)iLecture.getAssignment())) continue;
         	if (iAllAssignments.size()==iLimit && ((Suggestion)iAllAssignments.last()).isBetter(iSolver)) continue;
-            iAllAssignments.add(tryAssignment(p));
+        	Suggestion s = tryAssignment(p);
+        	if (s != null)
+        		iAllAssignments.add(s);
     		if (iAllAssignments.size()>iLimit) iAllAssignments.remove(iAllAssignments.last());
     	}
     }
