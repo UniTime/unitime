@@ -45,6 +45,8 @@ import org.dom4j.Element;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -558,36 +560,45 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		return new SolverUnassignedClassesModel(this);
     	}
     }
-    
-    private boolean match(String findString, String name) {
-		if (findString==null || findString.trim().length()==0) return true;
-		StringTokenizer stk = new StringTokenizer(findString.toUpperCase()," ,");
-		String n = name.toUpperCase();
-		while (stk.hasMoreTokens()) {
-			String token = stk.nextToken().trim();
-			if (token.length()==0) continue;
-			if (n.indexOf(token)<0) return false;
-		}
-		return true;
+
+    private boolean match(Query q, final String name) {
+    	return q == null || q.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(name, " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return name.matches(term);
+				} else if ("find".equals(attr)) {
+					return name.toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				}
+				return false;
+			}
+		});
 	}    
     
     public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
     	Vector models = new Vector();
+    	Query q = new Query(findString);
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		if (resourceType==TimetableGridModel.sResourceTypeRoom) {
     			for (RoomConstraint rc: model.getRoomConstraints()) {
-    				if (!match(findString, rc.getName())) continue;
+    				if (!match(q, rc.getName())) continue;
     				models.add(new SolverGridModel(this,rc,startDay,bgMode,showEvents));
     			}
     		} else if (resourceType==TimetableGridModel.sResourceTypeInstructor) {
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {
-    				if (!match(findString, ic.getName())) continue;
+    				if (!match(q, ic.getName())) continue;
     				models.add(new SolverGridModel(this,ic,startDay,bgMode));
     			}
     		} else if (resourceType==TimetableGridModel.sResourceTypeDepartment) {
     			for (DepartmentSpreadConstraint dc: model.getDepartmentSpreadConstraints()) {
-    				if (!match(findString, dc.getName())) continue;
+    				if (!match(q, dc.getName())) continue;
     				models.add(new SolverGridModel(this,dc,startDay,bgMode));
     			}
     		}
