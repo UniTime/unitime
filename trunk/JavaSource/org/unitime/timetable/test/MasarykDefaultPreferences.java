@@ -73,6 +73,7 @@ public class MasarykDefaultPreferences {
     
 	public static void main(String[] args) {
         try {
+        	// select count(p) from Preference p where p.owner not in (select g from PreferenceGroup g)
             Properties props = new Properties();
             props.setProperty("log4j.rootLogger", "DEBUG, A1");
             props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
@@ -164,6 +165,11 @@ public class MasarykDefaultPreferences {
 			"select d from DistributionType d where d.reference = :type").setString("type", "SAME_DAYS").uniqueResult();
 
             
+			TimePattern tp2h = (TimePattern)hibSession.createQuery(
+					"select p from TimePattern as p where p.session.uniqueId=:sessionId and p.name=:name").
+					setLong("sessionId", session.getUniqueId()).
+					setText("name", "2h").uniqueResult();
+			
             for (SchedulingSubpart ss: (List<SchedulingSubpart>)hibSession.createQuery(
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
             		"co.subjectArea.department.session.uniqueId = :sessionId")
@@ -187,7 +193,7 @@ public class MasarykDefaultPreferences {
             	if (hasPreferences && incremental) {
             		continue;
             	}
-        		//sLog.info("Setting " + ss.getSchedulingSubpartLabel() + " ...");
+        		sLog.info("Setting " + ss.getSchedulingSubpartLabel() + " ...");
 
         		if (ss.getInstrOfferingConfig().isUnlimitedEnrollment()) {
         			ss.getInstrOfferingConfig().setUnlimitedEnrollment(false);
@@ -286,6 +292,7 @@ public class MasarykDefaultPreferences {
                 					}
                 				}
             		}
+            		boolean extConv = false;
             		if (pattern == null) {
             			// Exact time
             			pattern = TimePattern.findExactTime(session.getUniqueId());
@@ -298,6 +305,10 @@ public class MasarykDefaultPreferences {
                 		tp.setOwner(c);
                 		c.getPreferences().add(tp);
             		} else {
+                		if (pattern.getName().equals("2h ext")) {
+                			pattern = tp2h;
+                			extConv = true;
+                		}
             			TimePatternModel m = pattern.getTimePatternModel();
             			for (int d = 0; d < m.getNrDays(); d++)
             				for (int t = 0; t < m.getNrTimes(); t++) {
@@ -315,6 +326,15 @@ public class MasarykDefaultPreferences {
         	            				for (int tt = 0; tt < m.getNrTimes(); tt++)
         	            					m.setPreference(m.getNrDays() - 1, tt, PreferenceLevel.sProhibited);
             						}
+            					} else if (extConv && t > 0 && a.getTimeLocation().getDayCode() == m.getDayCode(d) &&
+            							a.getTimeLocation().getStartSlot() > m.getStartSlot(t-1) &&
+            							a.getTimeLocation().getStartSlot() < m.getStartSlot(t)) {
+        							for (int dd = 0; dd < m.getNrDays(); dd++) {
+                						m.setPreference(dd, t-1, PreferenceLevel.sPreferred);
+                						m.setPreference(dd, t, PreferenceLevel.sPreferred);
+        							}
+            						m.setPreference(d, t-1, PreferenceLevel.sStronglyPreferred);
+            						m.setPreference(d, t, PreferenceLevel.sStronglyPreferred);
             					}
             				}
                 		TimePref tp = new TimePref();
