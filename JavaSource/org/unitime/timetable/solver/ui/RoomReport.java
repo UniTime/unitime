@@ -165,8 +165,12 @@ public class RoomReport implements Serializable {
 			boolean canUse = false, mustUse = true, mustUseThisSizeOrBigger = true;
 			for (RoomLocation r: lecture.roomLocations()) {
                 if (r.getRoomConstraint()==null) continue;
-                if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 				if (PreferenceLevel.sProhibited.equals(PreferenceLevel.int2prolog(r.getPreference()))) continue;
+                if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) {
+                	mustUse = false;
+					mustUseThisSizeOrBigger = false;
+                	continue;
+                }
                 skip = false;
 				if (iMinRoomSize<=r.getRoomSize() && r.getRoomSize()<iMaxRoomSize)
 					canUse = true;
