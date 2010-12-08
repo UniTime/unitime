@@ -45,10 +45,11 @@ public class StudentConflictsReport implements Serializable {
 		for (Lecture lecture: model.assignedVariables()) {
 			iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
 		}
-		for (Lecture lecture: model.constantVariables()) {
-			if (lecture.getAssignment() != null)
-				iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
-		}
+		if (model.constantVariables() != null)
+			for (Lecture lecture: model.constantVariables()) {
+				if (lecture.getAssignment() != null)
+					iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
+			}
 	}
 	
 	public Set getGroups() {
