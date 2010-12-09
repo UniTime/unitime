@@ -583,7 +583,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     
     public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
     	Vector models = new Vector();
-    	Query q = new Query(findString);
+    	Query q = (findString == null ? null : new Query(findString));
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		if (resourceType==TimetableGridModel.sResourceTypeRoom) {
