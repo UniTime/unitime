@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTabPabel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -111,7 +111,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 	private FreeTimePicker iFreeTimePicker;
 	private Label iFreeTimeError = null, iCoursesTip, iFreeTimeTip;
 	
-	private UniTimeTabPabel iTabPanel, iCourseDetailsTabPanel = null;
+	private UniTimeTabPanel iTabPanel, iCourseDetailsTabPanel = null;
 	
 	private HTML iCourseDetails;
 	private ScrollPanel iCourseDetailsPanel, iClassesPanel;
@@ -360,7 +360,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 				}
 			});
 			
-			iTabPanel = new UniTimeTabPabel();	
+			iTabPanel = new UniTimeTabPanel();	
 			if (ie) {
 				iCoursesPanel.setSize("780px", "400px");
 				iCoursesPanel.setStyleName("unitime-ScrollPanel-inner");
@@ -370,7 +370,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 				iClassesPanel.setSize("780px", "400px");
 				iTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
 			} else {
-				iCourseDetailsTabPanel = new UniTimeTabPabel();
+				iCourseDetailsTabPanel = new UniTimeTabPanel();
 				iCourseDetailsTabPanel.setDeckSize("780", "200");
 				iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
 				iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
