@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTabPabel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -111,7 +111,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	private Label iCoursesTip;
 	private CourseCurriculaTable iCurricula;
 	
-	private UniTimeTabPabel iCourseDetailsTabPanel;
+	private UniTimeTabPanel iCourseDetailsTabPanel;
 	
 	private HTML iCourseDetails;
 	private ScrollPanel iCourseDetailsPanel, iClassesPanel, iCurriculaPanel;
@@ -303,7 +303,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iCoursesPanel.setSize("780px", "200px");
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
 			
-			iCourseDetailsTabPanel = new UniTimeTabPabel();
+			iCourseDetailsTabPanel = new UniTimeTabPanel();
 			
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
