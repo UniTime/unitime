@@ -147,6 +147,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private Hashtable<CourseOffering, Set<Student>> iCourse2students = new Hashtable<CourseOffering, Set<Student>>();
 
     private boolean iDeptBalancing = true;
+    private boolean iSubjectBalancing = false;
     private boolean iMppAssignment = true;
     private boolean iInteractiveMode = false;
     private boolean iSpread = true;
@@ -202,6 +203,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
 
         iDeptBalancing = getModel().getProperties().getPropertyBoolean("General.DeptBalancing",iDeptBalancing);
+        iSubjectBalancing = getModel().getProperties().getPropertyBoolean("General.SubjectBalancing",iSubjectBalancing);
         iSpread = getModel().getProperties().getPropertyBoolean("General.Spread",iSpread);
         iAutoSameStudents = getModel().getProperties().getPropertyBoolean("General.AutoSameStudents",iAutoSameStudents);
         iMppAssignment = getModel().getProperties().getPropertyBoolean("General.MPP",iMppAssignment);
@@ -2883,6 +2885,26 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         }
 		
+		if (iSubjectBalancing) {
+        	iProgress.setPhase("Creating subject spread constraints ...",getModel().variables().size());
+            Hashtable<Long, SpreadConstraint> subjectSpreadConstraints = new Hashtable<Long, SpreadConstraint>();
+            for (Lecture lecture: getModel().variables()) {
+            	Class_ clazz = iClasses.get(lecture.getClassId());
+            	if (clazz == null) continue;
+            	for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+            		Long subject = co.getSubjectArea().getUniqueId();
+            		SpreadConstraint subjectSpreadConstr = subjectSpreadConstraints.get(subject);
+                    if (subjectSpreadConstr==null) {
+                        subjectSpreadConstr = new SpreadConstraint(getModel().getProperties(), co.getSubjectArea().getSubjectAreaAbbreviation());
+                        subjectSpreadConstraints.put(subject, subjectSpreadConstr);
+                        getModel().addConstraint(subjectSpreadConstr);
+                    }
+                    subjectSpreadConstr.addVariable(lecture);
+            	}
+                iProgress.incProgress();
+            }
+        }
+
 		purgeInvalidValues();
 		
 		for (Constraint c: getModel().constraints()) {
