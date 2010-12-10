@@ -30,8 +30,8 @@ import com.google.gwt.user.client.ui.Widget;
  */
 
 @SuppressWarnings("deprecation")
-public class UniTimeTabPabel extends TabPanel {
-	public UniTimeTabPabel() {
+public class UniTimeTabPanel extends TabPanel {
+	public UniTimeTabPanel() {
 		super();
 	}
 

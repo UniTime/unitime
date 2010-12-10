@@ -25,7 +25,7 @@ import java.util.Iterator;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTabPabel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -84,7 +84,7 @@ public class StudentSectioningWidget extends Composite {
 	private HorizontalPanel iFooter;
 	private Button iPrev, iNext, iEnroll, iPrint, iExport, iSave;
 	private HTML iErrorMessage;
-	private UniTimeTabPabel iAssignmentPanel;
+	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
 	private ImageLink iCalendar;
 	
@@ -223,7 +223,7 @@ public class StudentSectioningWidget extends Composite {
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
 			));
 		
-		iAssignmentPanel = new UniTimeTabPabel();
+		iAssignmentPanel = new UniTimeTabPanel();
 		iAssignmentPanel.add(iAssignments, MESSAGES.tabClasses(), true);
 		iAssignmentPanel.selectTab(0);
 		
