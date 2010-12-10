@@ -48,9 +48,30 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 public class EnrollmentCheck {
     private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.##",new java.text.DecimalFormatSymbols(Locale.US));
     private TimetableModel iModel = null;
+    private int iMessageLevel = Progress.MSGLEVEL_WARN;
+    private int iMessageLowerLevel = Progress.MSGLEVEL_INFO;
     
-    public EnrollmentCheck(TimetableModel model) {
+    public EnrollmentCheck(TimetableModel model, int msgLevel) {
         iModel = model;
+        setMessageLevel(msgLevel);
+    }
+    
+    public void setMessageLevel(int messageLevel) {
+    	iMessageLevel = messageLevel;
+    	switch (iMessageLevel) {
+    	case Progress.MSGLEVEL_FATAL:
+    		iMessageLowerLevel = Progress.MSGLEVEL_ERROR; break;
+    	case Progress.MSGLEVEL_ERROR:
+    		iMessageLowerLevel = Progress.MSGLEVEL_WARN; break;
+    	case Progress.MSGLEVEL_WARN:
+    		iMessageLowerLevel = Progress.MSGLEVEL_INFO; break;
+    	case Progress.MSGLEVEL_INFO:
+    		iMessageLowerLevel = Progress.MSGLEVEL_DEBUG; break;
+    	case Progress.MSGLEVEL_DEBUG:
+    		iMessageLowerLevel = Progress.MSGLEVEL_TRACE; break;
+    	case Progress.MSGLEVEL_TRACE:
+    		iMessageLowerLevel = Progress.MSGLEVEL_TRACE; break;
+    	}
     }
     
     /** Check validity of JENRL constraints from student enrollments */
@@ -105,12 +126,12 @@ public class EnrollmentCheck {
             Lecture lecture = (Lecture)i.next();
             if (s.getLectures().contains(lecture)) {
                 if (enrolled!=null)
-                    p.warn("Student "+s.getId()+" enrolled in multiple classes of the same subpart "+getClassLabel(enrolled)+", "+getClassLabel(lecture)+".");
+                    p.message(iMessageLevel, "Student "+s.getId()+" enrolled in multiple classes of the same subpart "+getClassLabel(enrolled)+", "+getClassLabel(lecture)+".");
                 enrolled = lecture;
             }
         }
         if (enrolled==null) {
-            p.warn("Student "+s.getId()+" not enrolled in any class of subpart "+getSubpartLabel(subpartId)+".");
+            p.message(iMessageLevel, "Student "+s.getId()+" not enrolled in any class of subpart "+getSubpartLabel(subpartId)+".");
         } else if (enrolled.hasAnyChildren()) {
             for (Long sid: enrolled.getChildrenSubpartIds()) {
                 checkEnrollment(p, s, sid, enrolled.getChildren(sid));
@@ -183,19 +204,19 @@ public class EnrollmentCheck {
     public void checkStudentEnrollments(Progress p) {
         p.setStatus("Student Enrollments Check");
         if (iModel.getViolatedStudentConflicts()!=iModel.countViolatedStudentConflicts()) {
-            p.warn("Inconsistent number of student conflits (counter="+iModel.getViolatedStudentConflicts()+", actual="+iModel.countViolatedStudentConflicts()+").");
+            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+iModel.getViolatedStudentConflicts()+", actual="+iModel.countViolatedStudentConflicts()+").");
         }
         if (iModel.getHardStudentConflicts()!=iModel.countHardStudentConflicts()) {
-            p.warn("Inconsistent number of hard student conflits (counter="+iModel.getHardStudentConflicts()+", actual="+iModel.countHardStudentConflicts()+").");
+            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+iModel.getHardStudentConflicts()+", actual="+iModel.countHardStudentConflicts()+").");
         }
         if (iModel.getStudentDistanceConflicts()!=iModel.countStudentDistanceConflicts()) {
-            p.warn("Inconsistent number of distance student conflits (counter="+iModel.getStudentDistanceConflicts()+", actual="+iModel.countStudentDistanceConflicts()+").");
+            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+iModel.getStudentDistanceConflicts()+", actual="+iModel.countStudentDistanceConflicts()+").");
         }
         if (iModel.getCommittedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(false)) {
-            p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts(false)+").");
+            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts(false)+").");
         }
         if (iModel.getViolatedCommitttedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false)) {
-            p.warn("Inconsistent number of committed student course conflits (counter="+iModel.getCommitedStudentConflicts()+
+            p.message(iMessageLevel, "Inconsistent number of committed student course conflits (counter="+iModel.getCommitedStudentConflicts()+
             		", actual="+(iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false))+").");
         }
         p.setPhase("Checking class limits...", iModel.variables().size());
@@ -208,9 +229,9 @@ public class EnrollmentCheck {
                 w = Math.max(w, ((Student)i.next()).getOfferingWeight(lecture.getConfiguration().getOfferingId()));
             if (lecture.nrWeightedStudents()-w>FinalSectioning.sEps+lecture.classLimit()) {
                 if (hasSubpartMixedOwnership(lecture))
-                    p.info("Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
+                    p.message(iMessageLowerLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
                 else
-                    p.warn("Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
+                    p.message(iMessageLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
             }
         }
         // checkJenrl(p);
@@ -221,7 +242,7 @@ public class EnrollmentCheck {
             for (Iterator j=student.getLectures().iterator();j.hasNext();) {
                 Lecture lecture = (Lecture)j.next();
                 if (!student.canEnroll(lecture))
-                    p.info("Student "+student.getId()+" enrolled to invalid class "+getClassLabel(lecture)+".");
+                    p.message(iMessageLowerLevel, "Student "+student.getId()+" enrolled to invalid class "+getClassLabel(lecture)+".");
             }
             if (student.getConfigurations().size()!=student.getOfferings().size()) {
                 Vector got = new Vector();
@@ -229,7 +250,7 @@ public class EnrollmentCheck {
                     Configuration cfg = (Configuration)j.next();
                     got.add(cfg.getOfferingId());
                 }
-                p.warn("Student "+student.getId()+" demands offerings "+getOfferingsLabel(student.getOfferings())+", but got "+getOfferingsLabel(got)+".");
+                p.message(iMessageLevel, "Student "+student.getId()+" demands offerings "+getOfferingsLabel(student.getOfferings())+", but got "+getOfferingsLabel(got)+".");
             }
             for (Iterator j=student.getConfigurations().iterator();j.hasNext();) {
                 Configuration cfg = (Configuration)j.next();
