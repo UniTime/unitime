@@ -59,9 +59,11 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
@@ -148,12 +150,39 @@ public class ClassInfoModel implements Serializable {
 	            // Check for instructor conflicts
 	            if (assignment.getInstructors()!=null) for (ClassInstructorInfo instructor : assignment.getInstructors()) {
 	            	if (!instructor.isLead()) continue;
+	            	// check all departmental instructors with the same external id
+	            	for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor().getInstructor())) {
+		            	for (ClassInstructor ci : di.getClasses()) {
+		            		if (ci.equals(instructor.getInstructor())) continue;
+		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
+		            		if (a == null) continue;
+		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+		            				iChange.getConflicts().add(new ClassAssignment(a));
+		            		}
+		            	}
+	            	}
+	            	/*
+	            	// Potential speed-up #1) only check the current department instructors
+	            	for (ClassInstructor ci : instructor.getInstructor().getInstructor().getClasses()) {
+	            		if (ci.equals(instructor.getInstructor())) continue;
+	            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
+	            		if (a == null) continue;
+	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+	            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+	            				iChange.getConflicts().add(new ClassAssignment(a));
+	            		}
+	            	}
+	            	*/
+	            	/*
+	            	// Potential speed-up #2) use instructor assignments from the solution
 	            	for (Assignment a : instructor.getInstructor().getInstructor().getCommitedAssignments()) {
 	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
 	            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 	            				iChange.getConflicts().add(new ClassAssignment(a));
 	            		}
 	            	}
+	            	*/
 	            }
         	}
             // Check the course structure for conflicts
@@ -211,6 +240,9 @@ public class ClassInfoModel implements Serializable {
     
     public String assign(Long sessionId) {
         if (iChange==null) return "Nothing to assign.";
+        if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
+        	if (!iChange.getConflicts().isEmpty())
+        		return "It is not allowed to keep a class unassigned.";
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
@@ -244,6 +276,8 @@ public class ClassInfoModel implements Serializable {
         if (iChange==null) return false;
         for (ClassAssignment assignment : iChange.getAssignments())
             if (!assignment.isValid()) return false;
+        if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
+        	if (!iChange.getConflicts().isEmpty()) return false;
         return true;
     }
     
