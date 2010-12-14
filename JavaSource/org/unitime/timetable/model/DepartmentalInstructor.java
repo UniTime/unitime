@@ -328,20 +328,17 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @return
 	 */
 	public static List<DepartmentalInstructor> getAllForInstructor(DepartmentalInstructor di, Long sessionId) {
-		ArrayList<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>();
-		if (di == null) return ret;
 		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().trim().isEmpty()) {
+			ArrayList<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>(1);
 			ret.add(di);
 			return ret;
 		}
-		ret.addAll(
-				DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-						"from DepartmentalInstructor where externalUniqueId=:puid and department.session.uniqueId=:sessionId")
+		return (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+						"from DepartmentalInstructor where externalUniqueId=:puid and " +
+						"department.session.uniqueId=:sessionId")
 				.setString("puid", di.getExternalUniqueId())
 				.setLong("sessionId", sessionId)
-				.setCacheable(true).list()
-				);
-		return ret;
+				.setCacheable(true).list();
 	}
 	
 	public static List<DepartmentalInstructor> getAllForInstructor(DepartmentalInstructor di) {
