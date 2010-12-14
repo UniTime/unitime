@@ -327,26 +327,25 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @param di
 	 * @return
 	 */
-	public static List getAllForInstructor(DepartmentalInstructor di, Long sessionId) {
-		if (di == null || di.getExternalUniqueId()==null || di.getExternalUniqueId().trim().length()==0 ){
-		    ArrayList list1 = new ArrayList();
-		    list1.add(di);
-			return(list1);
+	public static List<DepartmentalInstructor> getAllForInstructor(DepartmentalInstructor di, Long sessionId) {
+		ArrayList<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>();
+		if (di == null) return ret;
+		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().trim().isEmpty()) {
+			ret.add(di);
+			return ret;
 		}
-		
-		DepartmentalInstructorDAO ddao = new DepartmentalInstructorDAO();
-		String query = "from DepartmentalInstructor where externalUniqueId=:puid and department.session.uniqueId=:sessionId";
-		Query q = ddao.getSession().createQuery(query);
-		q.setString("puid", di.getExternalUniqueId());
-		q.setLong("sessionId", sessionId.longValue());
-		List list = q.list();
-		
-		if(list == null) {
-		    list = new ArrayList();
-		    list.add(di);
-		}
-
-		return list;
+		ret.addAll(
+				DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+						"from DepartmentalInstructor where externalUniqueId=:puid and department.session.uniqueId=:sessionId")
+				.setString("puid", di.getExternalUniqueId())
+				.setLong("sessionId", sessionId)
+				.setCacheable(true).list()
+				);
+		return ret;
+	}
+	
+	public static List<DepartmentalInstructor> getAllForInstructor(DepartmentalInstructor di) {
+		return getAllForInstructor(di, di.getDepartment().getSessionId());
 	}
 	
 	/**
