@@ -336,6 +336,9 @@ public class CourseOfferingExport extends BaseExport {
             timeElement.addAttribute("days", dayCode2days(time.getDayCode()));
             timeElement.addAttribute("startTime", startSlot2startTime(time.getStartSlot()));
             timeElement.addAttribute("endTime", timeLocation2endTime(time));
+            DatePattern dp = assignment.getDatePattern();
+            if (dp != null && !dp.isDefault())
+            	timeElement.addAttribute("datePattern", dp.getName());
         }
     }
     

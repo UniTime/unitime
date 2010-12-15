@@ -50,7 +50,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
             
             List classes = getHibSession().createQuery(
                     "select distinct c from Class_ as c where " +
-                    "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId").
+                    "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.parentClass is null").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
             
@@ -70,7 +70,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
         classElement.addAttribute("subject", course.getSubjectAreaAbbv());
         classElement.addAttribute("courseNbr", course.getCourseNbr());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
-        classElement.addAttribute("suffix", clazz.getSectionNumberString());
+        classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, session);
