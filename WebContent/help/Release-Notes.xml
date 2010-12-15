@@ -27,7 +27,7 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
-		<title>Bug fixes and improvements</title>
+		<title>User interface</title>
 		<item>
 			<name>Instructional Offering Cross Lists</name>
 			<description>
@@ -40,17 +40,52 @@
 			</description>
 		</item>
 		<item>
-			<name>Course Timetabling -- Suggestions</name>
+			<name>Class Assignment</name>
 			<description>
-				<line>In computation of suggestions -- check that the tested value is not among conflicting
-					<line>This may happen with the recent improvement of meet with constraint as for instance the class cannot be assigned into a room that is not big enough for all the meet with classes</line>
-				</line>
+				<line>Check instructor conflicts using actual class instructors (not what is saved with the committed solution)</line>
+				<line>When application property tmtbl.classAssign.allowUnassignment is set to false (defaults to true ~ current behavior), it is not allowed to leave a class unassigned</line>
+			</description>
+		</item>
+		<item>
+			<name>Room (allocation) report</name>
+			<description>
+				<line>If a class can be assigned in rooms of different types, do not count the class as must / should in both room types (rather not count it at all)</line>
 			</description>
 		</item>
 		<item>
 			<name>Other</name>
 			<description>
 				<line>Small style changes and improvements</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Buildings page, Update Data operation</name>
+			<description>
+				<line>Added ability to update existing rooms and buildings (when unitime.external.room.update.existing is set to true, defaults to false).
+					<line>Global room features are reset when unitime.external.room.update.existing.features is true (defaults to false)</line>
+					<line>Room department relations from external data are added when unitime.external.room.update.existing.departments is true (defaults to false)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Offering, Course Timetable exports</name>
+			<description>
+				<line>Timetable export: fixed the issue when a class was exported multiple times (need to start from top classes only)</line>
+				<line>Timetable export: class suffix -- use class suffix when present, section number otherwise (course offering export already did that correctly)</line>
+				<line>Both exports (time element -- export date pattern name, if not default)</line>
+			</description>
+ 		</item>
+	</category>
+	<category>
+		<title>Constraint Solver</title>
+		<item>
+			<name>Course Timetabling Solver</name>
+			<description>
+				<line>Added ability to automatically spread classes of each subject area in time.</line>
+				<line>Database loader: added ability to change message level of various messages (mostly warning now)</line>
 			</description>
 		</item>
 	</category>
