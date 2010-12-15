@@ -157,10 +157,13 @@ public class SolutionChangesAction extends Action {
     	    	String time = ClassAssignmentDetails.dispTime2((before==null?null:before.getTime()),(after==null?null:after.getTime()));
         		String rooms = "";
         		String link = (before==null?null:"id="+before.getClazz().getClassId()+"&days="+before.getTime().getDays()+"&slot="+before.getTime().getStartSlot()+"&pattern="+before.getTime().getPatternId());
-        		for (int i=0;i<(before==null?(after.getRoom()==null?0:after.getRoom().length):(before.getRoom()==null?0:before.getRoom().length));i++) {
+        		int nrRooms = Math.max(before == null || before.getRoom() == null ? 0 : before.getRoom().length, after == null || after.getRoom() == null ? 0 : after.getRoom().length);
+        		for (int i=0;i<nrRooms;i++) {
     	        	if (i>0) rooms += ", ";
-    	        	rooms += (ClassAssignmentDetails.dispRoom2((before==null || before.getRoom().length<=i?null:before.getRoom()[i]),(after==null  || after.getRoom().length<=i?null:after.getRoom()[i])));
-    	        	if (before!=null)
+    	        	rooms += (ClassAssignmentDetails.dispRoom2(
+    	        			(before==null || before.getRoom()==null || before.getRoom().length<=i ? null : before.getRoom()[i]),
+    	        			(after==null || after.getRoom()==null || after.getRoom().length<=i ? null : after.getRoom()[i])));
+    	        	if (before!=null && before.getRoom()!=null && before.getRoom().length>i)
     	        		link += "&room"+i+"="+before.getRoom()[i].getId();
     	        }
     	        String dates = (before==null?after.getDaysHtml():before.getDaysHtml());
