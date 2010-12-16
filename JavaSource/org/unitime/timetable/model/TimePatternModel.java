@@ -343,14 +343,11 @@ public class TimePatternModel implements RequiredTimeTableModel {
 
         for (int i = 0; i < iDays.length; i++) {
         	double nrOfPreferencesThisDay = 0;
-        	boolean prohibitedDay = true;
         	for (int j = 0; j < iMinutes.length; j++) {
         		String p = iPreferences[i][j];
                 if (PreferenceLevel.sRequired.equalsIgnoreCase(p)) continue;
-                if (!PreferenceLevel.sProhibited.equalsIgnoreCase(p)) prohibitedDay = false;
                 if (PreferenceLevel.sProhibited.equalsIgnoreCase(p) || Integer.parseInt(p)!=0) nrOfPreferencesThisDay+=increment;
             }
-        	if (prohibitedDay) continue;
             nrOfPreferences = Math.max(nrOfPreferences,nrOfPreferencesThisDay);
         }
         
