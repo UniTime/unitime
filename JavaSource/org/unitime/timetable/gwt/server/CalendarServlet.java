@@ -21,8 +21,11 @@ package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -51,6 +54,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -91,6 +95,7 @@ import net.sf.cpsolver.studentsct.model.Section;
  */
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String q = request.getParameter("q");
@@ -993,7 +998,12 @@ public class CalendarServlet extends HttpServlet {
 			cipher.init(Cipher.ENCRYPT_MODE, secret());
 			return new BigInteger(cipher.doFinal(text.getBytes())).toString(36);
 		} catch (Exception e) {
-			return null;
+			sLog.warn("Encoding failed: " + e.getMessage());
+			try {
+				return URLEncoder.encode(text, "ISO-8859-1");
+			} catch (UnsupportedEncodingException x) {
+				return null;
+			}
 		}
 	}
 	
@@ -1004,7 +1014,12 @@ public class CalendarServlet extends HttpServlet {
 			cipher.init(Cipher.DECRYPT_MODE, secret());
 			return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
 		} catch (Exception e) {
-			return null;
+			sLog.warn("Decoding failed: " + e.getMessage());
+			try {
+				return URLDecoder.decode(text, "ISO-8859-1");
+			} catch (UnsupportedEncodingException x) {
+				return null;
+			}
 		}
 	}
 
