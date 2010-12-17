@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +47,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -141,10 +141,11 @@ public class CalendarServlet extends HttpServlet {
     	String type = params.get("type");
     	String id = params.get("id");
    
-		response.setContentType("text/calendar");
+		response.setContentType("text/calendar; charset=UTF-8");
+		response.setCharacterEncoding("UTF-8");
 		response.setHeader( "Content-Disposition", "attachment; filename=\"schedule.ics\"" );
         
-		ServletOutputStream out = response.getOutputStream();
+		PrintWriter out = response.getWriter();
 		org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 		try {
             out.println("BEGIN:VCALENDAR");
@@ -293,7 +294,7 @@ public class CalendarServlet extends HttpServlet {
         }
 	}
 	
-	private void printEvent(EventInterface event, ServletOutputStream out) throws IOException {
+	private void printEvent(EventInterface event, PrintWriter out) throws IOException {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
@@ -343,7 +344,7 @@ public class CalendarServlet extends HttpServlet {
             	String[] instructor = event.getInstructor().split("\\|");
             	String[] email = event.getEmail().split("\\|");
             	for (int i = 0; i < instructor.length; i++) {
-            		out.println((i == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor[i] + "\":MAILTO:" + email[i]);
+            		out.println((i == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor[i].trim() + "\":MAILTO:" + email[i].trim());
             	}
             } else if (event.hasSponsor()) {
             	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor() + "\":MAILTO:" + (event.getEmail() == null ? "" : event.getEmail()));
@@ -352,7 +353,7 @@ public class CalendarServlet extends HttpServlet {
         }
 	}
 	
-	private void printEvent(Event event, Collection<Meeting> meetings, ServletOutputStream out) throws IOException {
+	private void printEvent(Event event, Collection<Meeting> meetings, PrintWriter out) throws IOException {
 		if (meetings == null)
 			meetings = event.getMeetings();
 		
@@ -407,7 +408,7 @@ public class CalendarServlet extends HttpServlet {
         }
 	}
 	
-	private void printExam(Exam exam, ServletOutputStream out) throws IOException {
+	private void printExam(Exam exam, PrintWriter out) throws IOException {
 		if (exam.getAssignedPeriod() == null) return;
 		
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
@@ -436,7 +437,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");      
 	}
 
-	private void printClass(CourseOffering course, Class_ clazz, ServletOutputStream out) throws IOException {
+	private void printClass(CourseOffering course, Class_ clazz, PrintWriter out) throws IOException {
 		Assignment assignment = clazz.getCommittedAssignment();
 		if (assignment == null) return;
 		TimeLocation time = assignment.getTimeLocation();
@@ -604,7 +605,7 @@ public class CalendarServlet extends HttpServlet {
         }
 	}
 	
-	private void printClassRest(CourseOffering course, Class_ clazz, Assignment assignment, ServletOutputStream out) throws IOException {
+	private void printClassRest(CourseOffering course, Class_ clazz, Assignment assignment, PrintWriter out) throws IOException {
         out.println("UID:" + clazz.getUniqueId());
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + clazz.getClassLabel(course));
@@ -635,7 +636,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private void printSection(SectioningServer server, CourseInfo course, Section section, ServletOutputStream out) throws IOException {
+	private void printSection(SectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
 		TimeLocation time = section.getTime();
 		if (time == null || time.getWeekCode().isEmpty()) return;
 		
@@ -801,7 +802,7 @@ public class CalendarServlet extends HttpServlet {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void printMeetingRest(SectioningServer server, CourseInfo course, Section section, ServletOutputStream out) throws IOException {
+	private void printMeetingRest(SectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
         out.println("UID:" + section.getId());
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
@@ -842,7 +843,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, ServletOutputStream out) throws IOException {
+	private void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, PrintWriter out) throws IOException {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
