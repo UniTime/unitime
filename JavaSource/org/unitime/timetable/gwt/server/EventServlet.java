@@ -664,7 +664,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
 				    				if (!instructor.isEmpty()) { instructor += "|"; email += "|"; }
 				    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
-				    				email += (i.getInstructor().getEmail() == null ? "" : i.getInstructor().getEmail());
+				    				email += (i.getInstructor().getEmail() == null ? "-" : i.getInstructor().getEmail());
 				    			}
 				    			event.setInstructor(instructor);
 				    			event.setEmail(email);
