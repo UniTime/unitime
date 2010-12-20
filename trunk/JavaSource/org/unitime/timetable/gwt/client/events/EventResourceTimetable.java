@@ -98,7 +98,7 @@ public class EventResourceTimetable extends Composite {
 	
 	private final EventServiceAsync iEventService = GWT.create(EventService.class);
 	
-	public EventResourceTimetable() {
+	public EventResourceTimetable(String type) {
 		sInstance = this; 
 		
 		iFilter = new SimpleForm(2);
@@ -167,6 +167,9 @@ public class EventResourceTimetable extends Composite {
 			}
 		});
 		iFilter.addRow("Resoure Type:", iResourceTypes);
+		if (type != null)
+			iFilter.getRowFormatter().setVisible(iFilter.getRowCount() - 1, false);
+		
 		iResources = new SuggestBox(new SuggestOracle() {
 			@Override
 			public void requestSuggestions(final Request request, final Callback callback) {
@@ -212,7 +215,7 @@ public class EventResourceTimetable extends Composite {
 		});
 
 		iResourceTypes.setSelectedIndex(ResourceType.PERSON.ordinal());
-		String typeString = Window.Location.getParameter("type");
+		String typeString = (type != null ? type : Window.Location.getParameter("type"));
 		if (typeString != null)
 			for (int idx = 0; idx < iResourceTypes.getItemCount(); idx ++) {
 				if (iResourceTypes.getValue(idx).equals(typeString.toUpperCase())) {
@@ -390,7 +393,7 @@ public class EventResourceTimetable extends Composite {
 			public void onSuccess(List<EventInterface> result) {
 				iData = result;
 				if (iResource.getType() != ResourceType.PERSON)
-					changeUrl(iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
+					changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
 				LoadingWidget.getInstance().hide();
 				if (iData.isEmpty()) {
 					iHeader.setErrorMessage((iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel().substring(0, 1).toUpperCase() + iResource.getType().getLabel().substring(1) + " ") + iResource.getName() + " has no events in " + iResource.getSessionName() + "."); 
@@ -515,7 +518,7 @@ public class EventResourceTimetable extends Composite {
 		WeekInterface week = null;
 		if (iWeek.getSelectedIndex() <= 0) {
 			if (iResource.getType() != ResourceType.PERSON)
-				changeUrl(iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
+				changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
 			iHeader.setHeaderTitle(iResource.getName() + " timetable for " + iResource.getSessionName());
 			iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iResource.getSessionName());
 			iTimeGrid.setOneWeek(false);
@@ -531,7 +534,7 @@ public class EventResourceTimetable extends Composite {
 				if (w.getDayOfYear() == dayOfYear) { week = w; break; }
 			}
 			if (iResource.getType() != ResourceType.PERSON && week != null)
-				changeUrl(iResource.getSessionAbbv(),
+				changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(),
 						iResource.getType().toString().toLowerCase(),
 						iResource.getAbbreviation(),
 						week.getDayNames().get(0));
@@ -921,10 +924,10 @@ public class EventResourceTimetable extends Composite {
 	    };
 	 }-*/;
 	
-	private native static void changeUrl(String term, String type, String name, String date) /*-{
+	private native static void changeUrl(String page, String term, String type, String name, String date) /*-{
 		try {
 			var state = "term=" + term + "&type=" + type + "&name=" + name.replace(' ', '+') + (date == null ? "" : "&date=" + date);
-			$wnd.history.pushState(state, "", "gwt.jsp?page=timetable&" + state);
+			$wnd.history.pushState(state, "", "gwt.jsp?page=" + page + "&" + state);
 		} catch (err) {
 		}
 	}-*/;
