@@ -38,7 +38,8 @@ public enum Pages {
 	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); } }),
 	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
 	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
-	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(); } });
+	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(null); } }),
+	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable("room"); } });
 	
 	private String iTitle;
 	private PageFactory iFactory;
