@@ -53,6 +53,20 @@
 			</description>
 		</item>
 		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>Added ability to display a simplified version of the page (gwt.jsp?page=roomtable) that only allows to display room timetable (and no other resource type)</line>
+			</description>
+		</item>
+		<item>
+			<name>(Course Timetabling) Changes</name>
+			<description>
+				<line>Check both assignments for rooms
+					<line>This fixes the problem when selected solution had no room assigned (no room change was shown even when the new solution had a room assigned)</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Small style changes and improvements</line>
@@ -77,6 +91,14 @@
 				<line>Timetable export: class suffix -- use class suffix when present, section number otherwise (course offering export already did that correctly)</line>
 				<line>Both exports (time element -- export date pattern name, if not default)</line>
 			</description>
+ 		</item>
+ 		<item>
+ 			<name>iCalendar export</name>
+ 			<description>
+ 				<line>Ensure that the exported calendar is in UTF-8.</line>
+ 				<line>Avoid ArrayIndexOutOfBounds exception when there are two or more instructors with empty emails</line>
+ 				<line>If parameter encryption fails, fall back to no encryption</line>
+ 			</description>
  		</item>
 	</category>
 	<category>
