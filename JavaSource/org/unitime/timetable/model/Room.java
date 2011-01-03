@@ -30,6 +30,7 @@ import org.unitime.timetable.model.base.BaseRoom;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
+import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
 public class Room extends BaseRoom {
@@ -139,10 +140,11 @@ public class Room extends BaseRoom {
 	}
     
 	public static void addNewExternalRoomsToSession(Session session) {
-		String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId";
+		String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId and er.building.externalUniqueId is not null and er.externalUniqueId is not null";
 		boolean updateExistingRooms = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing", "false"));
 		if (!updateExistingRooms)
-			query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId)";
+			query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId " +
+					"and r.externalUniqueId is not null)";
 		boolean resetRoomFeatures = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing.features", "false"));
 		boolean resetRoomDepartments = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing.departments", "false"));
 		String classifications = ApplicationProperties.getProperty("unitime.external.room.update.classifications");
@@ -205,6 +207,7 @@ public class Room extends BaseRoom {
 				}
 				for (ExternalRoomDepartment erd: er.getRoomDepartments())
 					r.addExternalRoomDept(erd, er.getRoomDepartments());
+				LocationPermIdGenerator.setPermanentId(r);
 				hibSession.saveOrUpdate(r);
 			} else if (updateExistingRooms) {
 				r.setBuilding(b);
