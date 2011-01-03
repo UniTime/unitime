@@ -29,6 +29,23 @@
 	<category>
 		<title>User interface</title>
 		<item>
+			<name>Buildings -- Update Rooms</name>
+			<description>
+				<line>Only update rooms and buildings that have external ids</line>
+				<line>Ensure that Room.permanentId attribute is set for a newly created room
+					<line>This fixes a bug introduced in 3.2.101</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.107</version>
+	<release-date>Thu, 23 Dec 2010</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
 			<name>Instructional Offering Cross Lists</name>
 			<description>
 				<line>When creating a new cross-list, if there is no course reservation, populate the fields from course offering data
