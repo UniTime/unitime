@@ -74,12 +74,12 @@ ehcache-1.5.0.jar
 	License: Apache Software License, Version 2.0
 
 hibernate3.jar
-	Hibernate 3.0.5
+	Hibernate 3.5.6
 	URL: http://www.hibernate.org/
 	Copyright: (c) 2008, Adam Warski, JBoss Inc.
 	License: GNU Lesser General Public License, Version 2.1
 
-iText-5.0.2.jar
+iText-5.0.6.jar
 	iText is a library that allows you to create and manipulate PDF documents
 	URL: http://itextpdf.com/
 	Copyright: (C) 2010 1T3XT BVBA
@@ -104,7 +104,7 @@ jta-1.1.jar
 	License: Proprietary Sun's SLA, 
 	  see https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewLicense-Start
 
-log4j-1.2.15.jar
+log4j-1.2.16.jar
 	Apache Logging Service
 	URL: http://logging.apache.org/log4j/1.2/
 	Copyright: (C) 1999-2010 Apache Software Foundation
@@ -117,7 +117,7 @@ mail.jar
 	License: Common Development and Distribution License (CDDL) version 1.0
 	License: GNU General Public License (GPL) version 2
 
-mysql-connector-java-5.1.11-bin.jar
+mysql-connector-java-5.1.14-bin.jar
 	MySQL Connector/J
 	Copyright: (C) 2010 Oracle Corp.
 	URL: http://www.mysql.com/products/connector/
