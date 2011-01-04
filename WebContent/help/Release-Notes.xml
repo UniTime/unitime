@@ -37,6 +37,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Minor technology update</name>
+			<description>
+				<line>GWT updated to version 2.1.1 (was 2.1.0)</line>
+				<line>iText updated to version 5.0.5 (was 5.0.2)</line>
+				<line>Hibernate updated to 3.5.6 (was 3.5.3)</line>
+				<line>Log4j updated to 1.2.16 (was 1.2.15)</line>
+				<line>MySQL Connector/J updated to 5.1.14 (was 5.1.11)</line>
+			</description>
+		</item>
 	</category>
 </release>
 
