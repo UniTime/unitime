@@ -251,7 +251,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			iTimePreference = Integer.parseInt(root.elementText("timePref"));
 			for (Iterator i=root.elementIterator("roomPref");i.hasNext();) {
 				Element e = (Element)i.next();
-				iRoomPreference.put(Integer.valueOf(e.attributeValue("id")),Integer.valueOf(e.getText()));
+				iRoomPreference.put(Long.valueOf(e.attributeValue("id")),Integer.valueOf(e.getText()));
 			}
 			iBestRoomPreference = Integer.parseInt(root.elementText("bestRoomPref"));
 			iNrStudentConflicts = Integer.parseInt(root.elementText("nrStudentConf"));
