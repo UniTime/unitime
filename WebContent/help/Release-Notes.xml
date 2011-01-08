@@ -47,6 +47,12 @@
 				<line>MySQL Connector/J updated to 5.1.14 (was 5.1.11)</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetable export</name>
+			<description>
+				<line>If there is a cross-list, export each class under all the course names (not just the controlling one).</line>
+			</description>
+ 		</item>
 	</category>
 </release>
 

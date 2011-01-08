@@ -32,6 +32,8 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 
 public class CourseTimetableExport extends CourseOfferingExport {
@@ -48,14 +50,23 @@ public class CourseTimetableExport extends CourseOfferingExport {
             root.addAttribute("term", session.getAcademicTerm());
             root.addAttribute("action", "update");
             
-            List classes = getHibSession().createQuery(
-                    "select distinct c from Class_ as c where " +
-                    "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.parentClass is null").
+            List<CourseOffering> courses = (List<CourseOffering>)getHibSession().createQuery(
+                    "select c from CourseOffering as c where " +
+                    "c.subjectArea.session.uniqueId=:sessionId " + 
+                    "order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
             
-            for (Iterator i=classes.iterator();i.hasNext();)
-                exportClass(root.addElement("class"), (Class_)i.next(), session);
+            for (CourseOffering course: courses) {
+            	for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+            		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+            			if (subpart.getParentSubpart() != null) continue;
+            			for (Class_ clazz: subpart.getClasses()) {
+                            exportClass(root.addElement("class"), clazz, course, session);
+            			}
+            		}
+            	}
+            }
             
             commitTransaction();
         } catch (Exception e) {
@@ -64,16 +75,15 @@ public class CourseTimetableExport extends CourseOfferingExport {
         }
     }
     
-    protected void exportClass(Element classElement, Class_ clazz, Session session) {
+    protected void exportClass(Element classElement, Class_ clazz, CourseOffering course, Session session) {
         classElement.addAttribute("id", clazz.getUniqueId().toString());
-        CourseOffering course = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
-        classElement.addAttribute("subject", course.getSubjectAreaAbbv());
+        classElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
         classElement.addAttribute("courseNbr", course.getCourseNbr());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
         classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
             Class_ childClazz = (Class_)i.next();
-            exportClass(classElement.addElement("class"), childClazz, session);
+            exportClass(classElement.addElement("class"), childClazz, course, session);
         }
         if (clazz.getCommittedAssignment()!=null)
             exportAssignment(classElement, clazz.getCommittedAssignment(), session);
