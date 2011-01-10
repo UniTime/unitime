@@ -205,10 +205,10 @@ public class Room extends BaseRoom {
 					if (grf != null)
 						r.getFeatures().add(grf);
 				}
-				for (ExternalRoomDepartment erd: er.getRoomDepartments())
-					r.addExternalRoomDept(erd, er.getRoomDepartments());
 				LocationPermIdGenerator.setPermanentId(r);
 				hibSession.saveOrUpdate(r);
+				for (ExternalRoomDepartment erd: er.getRoomDepartments())
+					r.addExternalRoomDept(erd, er.getRoomDepartments());
 			} else if (updateExistingRooms) {
 				r.setBuilding(b);
 				r.setCapacity(er.getCapacity());
@@ -232,11 +232,11 @@ public class Room extends BaseRoom {
 							r.getFeatures().add(grf);
 					}
 				}
+				hibSession.saveOrUpdate(r);
 				if (resetRoomDepartments) {
 					for (ExternalRoomDepartment erd: er.getRoomDepartments())
 						r.addExternalRoomDept(erd, er.getRoomDepartments());
 				}
-				hibSession.saveOrUpdate(r);
 			}
 		}
 		hibSession.flush();
