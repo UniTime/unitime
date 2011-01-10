@@ -32,8 +32,9 @@
 			<name>Buildings -- Update Rooms</name>
 			<description>
 				<line>Only update rooms and buildings that have external ids</line>
-				<line>Ensure that Room.permanentId attribute is set for a newly created room
-					<line>This fixes a bug introduced in 3.2.101</line>
+				<line>Following bugs were fixed (both were introduced in 3.2.101)
+					<line>Generate Room.permanentId attribute for a newly created room</line>
+					<line>Exception "not-null property references a null or transient value: RoomDept.room" when a room-department relation is present</line>
 				</line>
 			</description>
 		</item>
