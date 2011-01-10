@@ -263,7 +263,15 @@
 	<filter-mapping>
 		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
-        <url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>/calendar</url-pattern>
 	</filter-mapping>
 </web-app>
