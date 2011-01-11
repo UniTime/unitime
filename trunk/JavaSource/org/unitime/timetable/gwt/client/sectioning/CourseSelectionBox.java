@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -97,10 +99,12 @@ public class CourseSelectionBox extends Composite implements Validator {
 	
 	private TextBox iTextField;
 	private SuggestBox iSuggest;
+	private String iLastSuggestion;
 	private Image iImage;
 	private HorizontalPanel iHPanel;
 	private VerticalPanel iVPanel;
 	private Label iError;
+	private Set<String> iValidCourseNames = new HashSet<String>();
 	
 	private TextBox iFilter;
 	private DialogBox iDialog;
@@ -195,14 +199,25 @@ public class CourseSelectionBox extends Composite implements Validator {
 		
 		iSuggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
 			public void onSelection(SelectionEvent<Suggestion> event) {
+				String text = event.getSelectedItem().getReplacementString();
+				iLastSuggestion = text;
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-					h.onChange(iTextField.getText(), !iTextField.getText().isEmpty());
+					h.onChange(text, !text.isEmpty());
 			}
 		});
 		iTextField.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
+				boolean valid = false;
+				String text = iTextField.getText();
+				if (text.equalsIgnoreCase(iLastSuggestion))
+					valid = true;
+				else for (String course: iValidCourseNames) {
+					if (course.equalsIgnoreCase(text)) {
+						valid = true; break;
+					}
+				}
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-					h.onChange(iTextField.getText(), false);
+					h.onChange(text, valid);
 			}
 		});
 		iTextField.addKeyDownHandler(new KeyDownHandler() {
@@ -901,6 +916,7 @@ public class CourseSelectionBox extends Composite implements Validator {
 		}
 		
 		public void onFailure(Throwable caught) {
+			iValidCourseNames.clear();
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
 			if (iAllowFreeTime) {
 				try {
@@ -920,14 +936,18 @@ public class CourseSelectionBox extends Composite implements Validator {
 
 		public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
+			iValidCourseNames.clear();
 			for (ClassAssignmentInterface.CourseAssignment suggestion: result) {
 				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
 				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName :
 					MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
-				if (suggestion.hasUniqueName())
+				if (suggestion.hasUniqueName()) {
 					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName));
-				else
+					iValidCourseNames.add(courseName);
+				} else {
 					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle));
+					iValidCourseNames.add(courseNameWithTitle);
+				}
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 		}
