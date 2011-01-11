@@ -54,6 +54,12 @@
 				<line>If there is a cross-list, export each class under all the course names (not just the controlling one).</line>
 			</description>
  		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Courses / Alternatives table: in some browsers the course 1st alternative text field was not enabled after a course was selected using the SuggestionBox (selecting a suggestion using Enter).</line>
+			</description>
+ 		</item>
 	</category>
 </release>
 
