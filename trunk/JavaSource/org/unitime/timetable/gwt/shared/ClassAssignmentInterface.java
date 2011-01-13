@@ -29,6 +29,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class ClassAssignmentInterface implements IsSerializable {
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
+	private boolean iCanEnroll = true;
 	
 	public ClassAssignmentInterface() {}
 	
@@ -56,6 +57,9 @@ public class ClassAssignmentInterface implements IsSerializable {
 		}
 		return ret;
 	}
+	
+	public boolean isCanEnroll() { return iCanEnroll; }
+	public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
 	
 	public static class CourseAssignment implements IsSerializable {
 		private Long iCourseId = null;

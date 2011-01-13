@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -252,7 +253,7 @@ public class StudentSectioningWidget extends Composite {
 			public void onClick(ClickEvent event) {
 				iCourseRequests.changeTip();
 				iErrorMessage.setHTML("");
-				iCourseRequests.getValidator().validate(new AsyncCallback<Boolean>() {
+				iCourseRequests.validate(new AsyncCallback<Boolean>() {
 					public void onSuccess(Boolean result) {
 						updateHistory();
 						if (result) {
@@ -268,11 +269,12 @@ public class StudentSectioningWidget extends Composite {
 									iErrorMessage.setVisible(true);
 								}
 							});
+							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 							iSectioningService.section(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 								public void onFailure(Throwable caught) {
 									iErrorMessage.setHTML(caught.getMessage());
 									iErrorMessage.setVisible(true);
-									iCourseRequests.getValidator().hide();
+									LoadingWidget.getInstance().hide();
 									updateHistory();
 								}
 								public void onSuccess(ClassAssignmentInterface result) {
@@ -283,14 +285,14 @@ public class StudentSectioningWidget extends Composite {
 						} else {
 							iErrorMessage.setHTML(MESSAGES.validationFailed());
 							iErrorMessage.setVisible(true);
-							iCourseRequests.getValidator().hide();
+							LoadingWidget.getInstance().hide();
 							updateHistory();
 						}
 					}
 					public void onFailure(Throwable caught) {
 						iErrorMessage.setHTML(MESSAGES.validationFailed());
 						iErrorMessage.setVisible(true);
-						iCourseRequests.getValidator().hide();
+						LoadingWidget.getInstance().hide();
 						updateHistory();
 					}
 				});
@@ -423,35 +425,36 @@ public class StudentSectioningWidget extends Composite {
 			public void onClick(ClickEvent event) {
 				iCourseRequests.changeTip();
 				iErrorMessage.setHTML("");
-				iCourseRequests.getValidator().validate(new AsyncCallback<Boolean>() {
+				iCourseRequests.validate(new AsyncCallback<Boolean>() {
 					public void onSuccess(Boolean result) {
 						updateHistory();
 						if (result) {
+							LoadingWidget.getInstance().show(MESSAGES.courseRequestsSaving());
 							iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
 								public void onSuccess(Boolean result) {
 									if (result) {
 										iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
 										iErrorMessage.setVisible(true);
 									}
-									iCourseRequests.getValidator().hide();
+									LoadingWidget.getInstance().hide();
 								}
 								public void onFailure(Throwable caught) {
 									iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
 									iErrorMessage.setVisible(true);
-									iCourseRequests.getValidator().hide();
+									LoadingWidget.getInstance().hide();
 								}
 							});
 						} else {
 							iErrorMessage.setHTML(MESSAGES.validationFailed());
 							iErrorMessage.setVisible(true);
-							iCourseRequests.getValidator().hide();
+							LoadingWidget.getInstance().hide();
 							updateHistory();
 						}
 					}
 					public void onFailure(Throwable caught) {
 						iErrorMessage.setHTML(MESSAGES.validationFailed());
 						iErrorMessage.setVisible(true);
-						iCourseRequests.getValidator().hide();
+						LoadingWidget.getInstance().hide();
 						updateHistory();
 					}
 				});
@@ -484,8 +487,7 @@ public class StudentSectioningWidget extends Composite {
 		}		
 		iAssignments.setSelectedRow(rowIndex);
 		iErrorMessage.setVisible(false);
-		iSuggestionsBox.setRow(iCourseRequests.getRequest(), iLastResult, rowIndex);
-		iSuggestionsBox.center();
+		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex);
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
@@ -496,6 +498,21 @@ public class StudentSectioningWidget extends Composite {
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear();
+			CourseRequestInterface req = iCourseRequests.getRequest();
+			for (CourseRequestInterface.Request r: req.getCourses()) {
+				if (r.hasRequestedFreeTime()) {
+					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
+						iAssignmentGrid.addFreeTime(ft);
+					}
+				}
+			}
+			for (CourseRequestInterface.Request r: req.getAlternatives()) {
+				if (r.hasRequestedFreeTime()) {
+					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
+						iAssignmentGrid.addFreeTime(ft);
+					}
+				}
+			}
 			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				if (course.isAssigned()) {
 					boolean firstClazz = true;
@@ -521,7 +538,7 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getParentSection()),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
-						final ArrayList<TimeGrid.Meeting> meetings = iAssignmentGrid.addClass(clazz, rows.size());
+						final ArrayList<TimeGrid.Meeting> meetings = (clazz.isFreeTime() ? null : iAssignmentGrid.addClass(clazz, rows.size()));
 						// row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString() + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						final int index = rows.size();
 						((CheckBox)row.getCell(0).getWidget()).addClickHandler(new ClickHandler() {
@@ -599,11 +616,12 @@ public class StudentSectioningWidget extends Composite {
 			iAssignmentGrid.shrink();
 			iAssignmentPanel.setWidth(iAssignmentGrid.getWidth());
 			iAssignments.setData(rowArray);
-			iCourseRequests.getValidator().hide();
+			if (LoadingWidget.getInstance().isShowing())
+				LoadingWidget.getInstance().hide();
 			iPanel.remove(iCourseRequests);
 			iPanel.insert(iAssignmentPanelWithFocus, 0);
 			iPrev.setVisible(true);
-			iEnroll.setVisible(true);
+			iEnroll.setVisible(result.isCanEnroll());
 			iPrint.setVisible(true);
 			iExport.setVisible(true);
 			iNext.setVisible(false);
@@ -621,7 +639,8 @@ public class StudentSectioningWidget extends Composite {
 			iCalendar.setUrl(calendarUrl);
 		} else {
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
-			iCourseRequests.getValidator().hide();
+			if (LoadingWidget.getInstance().isShowing())
+				LoadingWidget.getInstance().fail(MESSAGES.noSchedule());
 		}
 	}
 	

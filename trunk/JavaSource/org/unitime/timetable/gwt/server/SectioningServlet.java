@@ -513,7 +513,19 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
-			return SectioningServer.getInstance(request.getAcademicSessionId()).section(request, currentAssignment);
+			ClassAssignmentInterface ret = SectioningServer.getInstance(request.getAcademicSessionId()).section(request, currentAssignment);
+			if (ret != null) {
+				ret.setCanEnroll(true);
+				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
+					ret.setCanEnroll(false);
+				} else {
+					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
+						ret.setCanEnroll(false);
+					}
+				}
+			}
+			return ret;
 		} catch (Exception e) {
 			if (e instanceof SectioningException) throw (SectioningException)e;
 			sLog.error(e.getMessage(), e);
@@ -561,7 +573,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-			return SectioningServer.getInstance(request.getAcademicSessionId()).computeSuggestions(request, currentAssignment, selectedAssignment);
+			Collection<ClassAssignmentInterface> ret = SectioningServer.getInstance(request.getAcademicSessionId()).computeSuggestions(request, currentAssignment, selectedAssignment);
+			if (ret != null) {
+				boolean canEnroll = true;
+				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
+					canEnroll = false;
+				} else {
+					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
+						canEnroll = false;
+					}
+				}
+				for (ClassAssignmentInterface ca: ret)
+					ca.setCanEnroll(canEnroll);
+			}
+			return ret;
 		} catch (Exception e) {
 			if (e instanceof SectioningException) throw (SectioningException)e;
 			sLog.error(e.getMessage(), e);

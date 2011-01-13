@@ -796,7 +796,7 @@ public class StudentSectioningTest {
                                 }
                             }
                             if (nrClasses==assignedSections.size()) {
-                                courseRequest.setInitialAssignment(new Enrollment(request, 1.0, config, assignedSections));
+                                courseRequest.setInitialAssignment(new Enrollment(request, 0, config, assignedSections));
                                 sLog.info("    initial assignment "+courseRequest.getInitialAssignment());
                             }
                         }
