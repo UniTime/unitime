@@ -29,6 +29,46 @@
 	<category>
 		<title>User interface</title>
 		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Adopted to use the new priority weighting model
+					<line>adding penalization for sections without time assignment, over expected sections, and sections that have a different time or instructor than selected</line> 
+				</line>
+				<line>Only show Enroll button when it is available</line>
+				<line>Show LoadingWidget while waiting</line>
+				<line>Display free time requests as red background in the timetable grid</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Constraint Solver Update (CPSolver 1.2.26)</title>
+		<item>
+			<name>Student Sectioning Solver</name>
+			<description>
+				<line>New priority weighting model:
+					<line>total student weight is between zero and one (one means student got the best schedule)</line>
+					<line>weight of the given priority course is higher than sum of the remaining weights the student can get</line>
+					<line>first alternative is better than the following course</line>
+					<line>second alternative is better than the second following course</line>
+					<line>distance conflicts are considered secondary (priorities should be maximized first), and only counted on the lower priority course</line>
+					<line>time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely)</line>
+				</line>
+				<line>Time overlaps:
+					<line>added ability for some classes to overlap (time overlap is minimized) -- to be defined on scheduling subparts</line>
+					<line>minimize overlaps with free times (when those cannot be fully satisfied)</line>
+				</line>
+				<line>Batch sectioning: added a new priority based construction phase</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.113</version>
+	<release-date>Wed, 12 Jan 2011</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
 			<name>Buildings -- Update Rooms</name>
 			<description>
 				<line>Only update rooms and buildings that have external ids</line>
