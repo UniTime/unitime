@@ -23,8 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.widgets.ValidationErrors;
-import org.unitime.timetable.gwt.client.widgets.Validator;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -66,7 +65,6 @@ public class CourseRequestsTable extends Composite {
 	
 	private FlexTable iGrid;
 	private AcademicSessionProvider iSessionProvider;
-	private ValidationErrors iValidator;
 	private ArrayList<CourseSelectionBox[]> iCourses;
 	private ArrayList<CourseSelectionBox[]> iAlternatives;
 	private Label iTip;
@@ -304,8 +302,6 @@ public class CourseRequestsTable extends Composite {
 	}
 	
 	private void init() {
-		iValidator = new ValidationErrors(false, MESSAGES.courseRequestsScheduling(), MESSAGES.validationFailed(), false);
-
 		CourseSelectionBox.Validator checkForDuplicities = new CourseSelectionBox.Validator() {
 			public String validate(CourseSelectionBox source) {
 				if (source.getCourse().isEmpty() || source.isFreeTime()) return null;
@@ -389,9 +385,6 @@ public class CourseRequestsTable extends Composite {
 			c[0].addValidator(checkForDuplicities);
 			c[1].addValidator(checkForDuplicities);
 			c[2].addValidator(checkForDuplicities);
-			iValidator.addValidator(c[0]);
-			iValidator.addValidator(c[1]);
-			iValidator.addValidator(c[2]);
 		}
 		
 		for (final CourseSelectionBox[] c: iAlternatives) {
@@ -465,29 +458,35 @@ public class CourseRequestsTable extends Composite {
 			c[0].addValidator(checkForDuplicities);
 			c[1].addValidator(checkForDuplicities);
 			c[2].addValidator(checkForDuplicities);
-			iValidator.addValidator(c[0]);
-			iValidator.addValidator(c[1]);
-			iValidator.addValidator(c[2]);
 		}
-		
-		iValidator.addValidator(new Validator() {
-			public void validate(final AsyncCallback<String> callback) {
-				CourseRequestInterface cr = new CourseRequestInterface();
-				cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
-				fillInCourses(cr); fillInAlternatives(cr);
-				iSectioningService.checkCourses(cr,
-						new AsyncCallback<Collection<String>>() {
-							public void onSuccess(Collection<String> result) {
-								for (String course: result)
-									setError(course, MESSAGES.validationCourseNotExists(course));
-								callback.onSuccess(result.isEmpty() ? null : MESSAGES.validationUnknownCourseNotExists());
-							}
-							public void onFailure(Throwable caught) {
-								callback.onFailure(caught);
-							}
-						});
+	}
+	
+	public void validate(final AsyncCallback<Boolean> callback) {
+		String failed = null;
+		LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
+		for (final CourseSelectionBox[] c: iCourses) {
+			for (CourseSelectionBox x: c) {
+				String message = x.validate();
+				if (message != null) failed = message;
 			}
-		});
+		}
+		CourseRequestInterface cr = new CourseRequestInterface();
+		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
+		fillInCourses(cr); fillInAlternatives(cr);
+		final boolean success = (failed == null);
+		iSectioningService.checkCourses(cr,
+				new AsyncCallback<Collection<String>>() {
+					public void onSuccess(Collection<String> result) {
+						for (String course: result)
+							setError(course, MESSAGES.validationCourseNotExists(course));
+						LoadingWidget.getInstance().hide();
+						callback.onSuccess(success && result.isEmpty());
+					}
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						callback.onFailure(caught);
+					}
+				});
 	}
 	
 	public void setError(String course, String error) {
@@ -506,10 +505,6 @@ public class CourseRequestsTable extends Composite {
 	
 	public void changeTip() {
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
-	}
-	
-	public ValidationErrors getValidator() {
-		return iValidator;
 	}
 	
 	public void fillInCourses(CourseRequestInterface cr) {

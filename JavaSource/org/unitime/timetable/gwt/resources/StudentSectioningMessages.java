@@ -112,12 +112,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Course Requests Table messages
 	 */
-	@DefaultMessage("Scheduling")
+	@DefaultMessage("Validating...")
+	String courseRequestsValidating();
+
+	@DefaultMessage("Scheduling...")
 	String courseRequestsScheduling();
 	
+	@DefaultMessage("Saving...")
+	String courseRequestsSaving();
+
 	@DefaultMessage("Validation failed, see above for errors.")
 	String validationFailed();
-	
+
 	@DefaultMessage("Course {0} used multiple times.")
 	String validationMultiple(String course);
 	

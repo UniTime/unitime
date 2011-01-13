@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowClickEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -95,7 +96,7 @@ public class SuggestionsBox extends DialogBox {
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
 		iSuggestionsScroll = new ScrollPanel(iSuggestions);
-		iSuggestionsScroll.setSize("950", "400");
+		iSuggestionsScroll.setHeight("400");
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
 		suggestionPanel.add(iSuggestionsScroll);
 
@@ -107,6 +108,8 @@ public class SuggestionsBox extends DialogBox {
 				iSuggestions.clearData(true);
 				iSuggestions.setEmptyMessage("<font color='red'>" + caught.getMessage() + "</font>");
 				iMessages.setHTML("");
+				LoadingWidget.getInstance().hide();
+				center();
 			}
 
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
@@ -115,6 +118,8 @@ public class SuggestionsBox extends DialogBox {
 				if (result.isEmpty()) {
 					iSuggestions.clearData(true);
 					iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+					LoadingWidget.getInstance().hide();
+					center();
 				} else {
 					ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 					int lastSize = 0;
@@ -300,8 +305,11 @@ public class SuggestionsBox extends DialogBox {
 					int idx = 0;
 					for (WebTable.Row row: rows) rowArray[idx++] = row;
 					iSuggestions.setData(rowArray);
-					if (rows.isEmpty())
+					if (rows.isEmpty()) {
 						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+					}
+					LoadingWidget.getInstance().hide();
+					center();
 				}
 			}
 		};
@@ -330,7 +338,8 @@ public class SuggestionsBox extends DialogBox {
 			return oldVal.equals(newVal) ? newVal : newVal;
 	}
 	
-	public void setRow(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index) {
+	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index) {
+		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
 		iAssignment = row;
 		iCurrent = rows;

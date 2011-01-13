@@ -228,9 +228,8 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i+getHeaderRowsCount(), j, cell.getHorizontalAlignment());
 			}
-			for (int j=iTable.getCellCount(i+getHeaderRowsCount()) - 1; j >= iRows[i].getNrCells(); j--) {
-				iTable.clearCell(i+getHeaderRowsCount(), j);
-			}
+			for (int j=iTable.getCellCount(i+getHeaderRowsCount()) - 1; j >= iRows[i].getNrCells(); j--)
+				iTable.removeCell(i+getHeaderRowsCount(), j);
 		}
 	}
 	

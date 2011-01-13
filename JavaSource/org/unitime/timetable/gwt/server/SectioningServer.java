@@ -44,6 +44,7 @@ import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.SectionLimit;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
+import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import net.sf.cpsolver.studentsct.model.Assignment;
@@ -336,6 +337,7 @@ public class SectioningServer {
 				Subpart subpart = f.next();
 				Subpart clonedSubpart = new Subpart(subpart.getId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
 						(subpart.getParent() == null ? null: subparts.get(subpart.getParent())));
+				clonedSubpart.setAllowOverlap(subpart.isAllowOverlap());
 				subparts.put(subpart, clonedSubpart);
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
@@ -771,9 +773,12 @@ public class SectioningServer {
     @SuppressWarnings("unchecked")
 	public ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
 		long t0 = System.currentTimeMillis();
-		StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
-		model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
+		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
+		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
+		config.setProperty("Student.WeightsClass", StudentSchedulingAssistantWeights.class.getName());
+		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
 		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
 		for (CourseRequestInterface.Request c: request.getCourses())
@@ -801,7 +806,7 @@ public class SectioningServer {
 						if (section == null || section.getLimit() == 0) {
 							continue a;
 						}
-						if (a.isPinned()) 
+						if (a.isPinned() || a.isSaved()) 
 							requiredSections.add(section);
 						preferredSections.add(section);
 						cr.getSelectedChoices().add(section.getChoice());
@@ -834,6 +839,8 @@ public class SectioningServer {
 
         BranchBoundSelection.Selection selection = onlineSelection.getSelection(student); 
         BranchBoundNeighbour neighbour = selection.select();
+        neighbour.assign(0);
+        sLog.info("Solution: " + neighbour);
         
 		long t3 = System.currentTimeMillis();
 
@@ -897,9 +904,12 @@ public class SectioningServer {
 	public Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment) throws SectioningException {
 		long t0 = System.currentTimeMillis();
 
-		StudentSectioningModel model = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
-		model.getProperties().setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		model.getProperties().setProperty("Extensions.Classes", "net.sf.cpsolver.studentsct.extension.DistanceConflict");
+		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
+		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
+		config.setProperty("Student.WeightsClass", StudentSchedulingAssistantWeights.class.getName());
+		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
 		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
 		for (CourseRequestInterface.Request c: request.getCourses())
@@ -938,10 +948,10 @@ public class SectioningServer {
 					if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 						Section section = cr.getSection(a.getClassId());
 						if (section == null || section.getLimit() == 0) {
-							messages.addMessage((a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
+							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
-						if (a.isPinned()) 
+						if (a.isPinned() || a.isSaved()) 
 							requiredSections.add(section);
 						preferredSections.add(section);
 						cr.getSelectedChoices().add(section.getChoice());

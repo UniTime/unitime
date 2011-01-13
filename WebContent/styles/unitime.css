@@ -562,6 +562,11 @@ h1 {
 	width: 100%
 }
 
+.unitime-TimeGrid .busy {
+	background: #FFE1DD;
+	width: 100%
+}
+
 .unitime-TimeGrid .day-separator {
 	height: 100%;
 	position: absolute;
