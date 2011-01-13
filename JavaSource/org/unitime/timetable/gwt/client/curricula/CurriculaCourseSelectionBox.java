@@ -26,7 +26,6 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
-import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -90,7 +89,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 /**
  * @author Tomas Muller
  */
-public class CurriculaCourseSelectionBox extends Composite implements Validator, Focusable {
+public class CurriculaCourseSelectionBox extends Composite implements Focusable {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);

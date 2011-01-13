@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -82,6 +83,7 @@ public class TimeGrid extends Composite {
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private ArrayList<PinClickHandler> iPinClickHandlers = new ArrayList<PinClickHandler>();
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+	private ArrayList<BusyPanel> iBusy = new ArrayList<BusyPanel>();
 	
 	public TimeGrid() {
 		this(5, 900 / 5, false, 0, 24);
@@ -182,6 +184,15 @@ public class TimeGrid extends Composite {
         initWidget(iContainer);
 	}
 	
+	public void addFreeTime(CourseRequestInterface.FreeTime ft) {
+		for (int day: ft.getDays())
+			addBusy(day, ft.getStart(), ft.getLength());
+	}
+	
+	private void addBusy(int day, int start, int length) {
+		iBusy.add(new BusyPanel(day, start, length));
+	}
+	
 	public void setCalendarUrl(String url) {
 		iCalendar.setUrl(url);
 	}
@@ -197,6 +208,8 @@ public class TimeGrid extends Composite {
 				m.setDummy();
 				m.addStyleName("meeting-selected-noshadow");
 			}
+		for (BusyPanel busy: iBusy)
+			tg.addBusy(busy.getDay(), busy.getStart(), busy.getLength());
 		return tg;
 	}
 	
@@ -237,6 +250,8 @@ public class TimeGrid extends Composite {
 		for (ArrayList<Meeting> meetings: iMeetings)
 			for (Meeting meeting: meetings) 
 				meeting.move();
+		for (BusyPanel busy: iBusy)
+			busy.move();
 	}
 	
 	public int firstSlot() {
@@ -264,6 +279,10 @@ public class TimeGrid extends Composite {
 		for (int slot = 0; slot < 24 * 60 / 5; slot++) {
 			if (iMeetingTable[5][slot] !=null && !iMeetingTable[5][slot].isEmpty()) hasSat = true;
 			if (iMeetingTable[6][slot] !=null && !iMeetingTable[6][slot].isEmpty()) hasSun = true;
+		}
+		for (BusyPanel busy: iBusy) {
+			if (busy.getDay() == 5) hasSat = true;
+			if (busy.getDay() == 6) hasSun = true;
 		}
 		if (!hasSat && !hasSun) setNrDays(5);
 		else if (!hasSun) setNrDays(6);
@@ -295,6 +314,9 @@ public class TimeGrid extends Composite {
 				if (iMeetingTable[i][j] != null) iMeetingTable[i][j].clear();
 		iColor.clear();
 		iClasses.clear();
+		for (BusyPanel busy: iBusy)
+			busy.remove();
+		iBusy.clear();
 	}
 	
 	public String getColor(ClassAssignmentInterface.ClassAssignment clazz) {
@@ -657,5 +679,33 @@ public class TimeGrid extends Composite {
 		public void setDummy() {
 			iDummy = true;
 		}
+	}
+	
+	private class BusyPanel extends SimplePanel {
+		private int iDayOfWeek, iStartSlot, iLength;
+		
+		public BusyPanel(int dayOfWeek, int startSlot, int length) {
+			super();
+			iDayOfWeek = dayOfWeek;
+			iStartSlot = startSlot;
+			iLength = length;
+			setStyleName("busy");
+			setSize(String.valueOf(iCellWidth + (iPrint ? 3 : iDayOfWeek + 1 < iNrDays ? 3 : 0)), String.valueOf(125 * iLength / 30));
+			iGrid.insert(this, iCellWidth * iDayOfWeek, 125 * iStartSlot / 30 - 50 * iStart, 1);
+		}
+		
+		public void move() {
+			setWidth(String.valueOf(iCellWidth + (iPrint ? 3 : iDayOfWeek + 1 < iNrDays ? 3 : 0)));
+			DOM.setStyleAttribute(getElement(), "left", String.valueOf(iCellWidth * iDayOfWeek));
+		}
+		
+		public int getDay() { return iDayOfWeek; }
+		public int getStart() { return iStartSlot; }
+		public int getLength() { return iLength; }
+		
+		public void remove() {
+			iGrid.remove(this);
+		}
+		
 	}
 }
