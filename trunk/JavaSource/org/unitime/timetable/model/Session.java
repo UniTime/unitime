@@ -731,10 +731,10 @@ public class Session extends BaseSession implements Comparable {
 	
 	/** Return distance of the given date outside the session start/end date (in milliseconds) */
 	public long getDistance(Date date) {
-		if (date.compareTo(getSessionBeginDateTime())<0) //before session 
-			return getSessionBeginDateTime().getTime() - date.getTime();
-		if (date.compareTo(getSessionEndDateTime())>0) //after session
-			return date.getTime() - getSessionEndDateTime().getTime();
+		if (date.compareTo(getEventBeginDate())<0) //before session 
+			return getEventBeginDate().getTime() - date.getTime();
+		if (date.compareTo(getEventEndDate())>0) //after session
+			return date.getTime() - getEventEndDate().getTime();
 		return 0; //inside session
 	}
 	
