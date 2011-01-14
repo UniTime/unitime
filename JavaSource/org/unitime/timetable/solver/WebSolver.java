@@ -385,6 +385,10 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
                 if (ext.length()>0) ext.append(";");
                 ext.append("net.sf.cpsolver.studentsct.extension.DistanceConflict");
             }
+            if (properties.getPropertyBoolean("StudentSct.TimeOverlaps",true)) {
+                if (ext.length()>0) ext.append(";");
+                ext.append("net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter");
+            }
         }
         properties.setProperty("Extensions.Classes",ext.toString());
         if (properties.getPropertyBoolean("Basic.DisobeyHard",false)) {
