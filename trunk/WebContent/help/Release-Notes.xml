@@ -57,7 +57,10 @@
 					<line>added ability for some classes to overlap (time overlap is minimized) -- to be defined on scheduling subparts</line>
 					<line>minimize overlaps with free times (when those cannot be fully satisfied)</line>
 				</line>
-				<line>Batch sectioning: added a new priority based construction phase</line>
+				<line>Batch sectioning improvements:
+					<line>added a new priority based construction phase</line>
+					<line>enforce course and configuration limits</line>
+				</line>
 			</description>
 		</item>
 	</category>
