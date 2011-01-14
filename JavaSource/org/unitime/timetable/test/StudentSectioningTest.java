@@ -317,7 +317,7 @@ public class StudentSectioningTest {
         Hashtable ss2subpart = new Hashtable();
         for (Iterator i=co.getInstructionalOffering().getInstrOfferingConfigs().iterator();i.hasNext();) {
             InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
-            Config config = new Config(ioc.getUniqueId().longValue(), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
+            Config config = new Config(ioc.getUniqueId().longValue(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
             TreeSet subparts = new TreeSet(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (Iterator j=subparts.iterator();j.hasNext();) {
@@ -922,7 +922,7 @@ public class StudentSectioningTest {
                 for (Iterator i=assignments.iterator();i.hasNext();) {
                     Section section = (Section)i.next();
                     if (courseOfferingElement.attribute("subjectArea")==null) {
-                        Course course = section.getSubpart().getConfig().getOffering().getCourse(student);
+                        Course course = enrollment.getCourse();
                         courseOfferingElement.addAttribute("subjectArea", course.getSubjectArea());
                         courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
                         CourseOffering co = CourseOffering.findByUniqueId(course.getId());

@@ -313,7 +313,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         DecimalFormat df = new DecimalFormat("000");
         for (Iterator<InstrOfferingConfig> i = io.getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
         	InstrOfferingConfig ioc = i.next();
-            Config config = new Config(ioc.getUniqueId(), courseName + " [" + ioc.getName() + "]", offering);
+            Config config = new Config(ioc.getUniqueId(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), courseName + " [" + ioc.getName() + "]", offering);
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (SchedulingSubpart ss: subparts) {
@@ -538,7 +538,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                	Enrollment enrl = (Enrollment)r.getInitialAssignment();
                	iProgress.error("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ")");
                	boolean hasLimit = false, hasOverlap = false;
-               	sections: for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
+               	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
                		Section section = i.next();
                		if (section.getTime() != null) {
                    		for (Request q: student.getRequests()) {
@@ -552,12 +552,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                    							" overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
                    							sectionx.getName() + " " + sectionx.getTime().getLongName());
                    					hasOverlap = true;
-                   					continue sections;
                    				}
                    			}
                    		}
                		}
-               		if (section.getLimit() >= section.getEnrollments().size()) {
+               		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments().size()) {
        					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()) +
        							" has no space available (limit is "+ section.getLimit() + ")");
        					if (iTweakLimits) {
@@ -565,9 +564,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        						iProgress.info("    limit increased to "+section.getLimit());
        					}
                			hasLimit = true;
-               			continue sections;
                		}
    					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()));
+               	}
+               	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments().size()) {
+   					iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
+   					if (iTweakLimits) {
+   						enrl.getConfig().setLimit(enrl.getConfig().getEnrollments().size() + 1);
+   						iProgress.info("    limit increased to "+enrl.getConfig().getLimit());
+   					}
+           			hasLimit = true;
                	}
                	if (!hasLimit && !hasOverlap) {
                		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
@@ -581,7 +587,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            					iProgress.info("    of a different student");
                		}
                	}
-               	if (hasLimit && iTweakLimits && r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
+               	if (hasLimit && !hasOverlap && iTweakLimits && r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
                    	r.assign(0, r.getInitialAssignment());
                	}
                }
