@@ -330,7 +330,7 @@ public class SectioningServer {
 		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
 		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
 			Config config = e.next();
-			Config clonedConfig = new Config(config.getId(), config.getName(), clonedOffering);
+			Config clonedConfig = new Config(config.getId(), config.getLimit(), config.getName(), clonedOffering);
 			Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
 			Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
 			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
@@ -523,7 +523,7 @@ public class SectioningServer {
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				if (enrollment.getRequest() instanceof CourseRequest) {
 					CourseRequest r = (CourseRequest)enrollment.getRequest();
-					Course course = enrollment.getOffering().getCourse(enrollment.getStudent());
+					Course course = enrollment.getCourse();
 					ca.setAssigned(false);
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
@@ -565,7 +565,7 @@ public class SectioningServer {
 									f.getTime().getEndTimeHeader());
 							} else {
 								CourseRequest cr = (CourseRequest)q.getRequest();
-								Course o = q.getOffering().getCourse(q.getStudent());
+								Course o = q.getCourse();
 								String ov = o.getSubjectArea() + " " + o.getCourseNumber();
 								if (overlapingSections.get(cr).size() == 1)
 									for (Iterator<Section> i = overlapingSections.get(cr).iterator(); i.hasNext();) {
@@ -583,7 +583,7 @@ public class SectioningServer {
 							if (x == enrollment) continue;
 							if (x.getRequest().isAlternative() && x.getRequest() instanceof CourseRequest) {
 								if (--alt == 0) {
-									Course o = x.getOffering().getCourse(x.getStudent());
+									Course o = x.getCourse();
 									ca.setInstead(o.getSubjectArea() + " " +o.getCourseNumber());
 									break;
 								}
@@ -610,7 +610,7 @@ public class SectioningServer {
 											f.getTime().getStartTimeHeader() + " - " +
 											f.getTime().getEndTimeHeader());
 									} else {
-										Course o = x.getOffering().getCourse(x.getStudent());
+										Course o = x.getCourse();
 										Section s = (Section)a;
 										ca.addOverlap(o.getSubjectArea() + " " + o.getCourseNumber() + " " + s.getSubpart().getName());
 									}
@@ -634,7 +634,7 @@ public class SectioningServer {
 				if (r.isAlternative() && r.isAssigned()) nrAssignedAlt++;
 				TreeSet<Section> sections = new TreeSet<Section>(new EnrollmentSectionComparator());
 				sections.addAll(enrollment.getSections());
-				Course course = enrollment.getOffering().getCourse(enrollment.getStudent());
+				Course course = enrollment.getCourse();
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				ca.setAssigned(true);
 				ca.setCourseId(course.getId());

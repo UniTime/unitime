@@ -278,7 +278,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 sLog.debug("  -- config "+ioc.getName()+" has no class");
                 continue;
             }
-            Config config = new Config(ioc.getUniqueId().longValue(), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
+            Config config = new Config(ioc.getUniqueId().longValue(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
             sLog.debug("  -- created config "+config);
             TreeSet subparts = new TreeSet(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
