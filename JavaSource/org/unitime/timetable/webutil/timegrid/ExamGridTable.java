@@ -387,7 +387,14 @@ public class ExamGridTable {
         cal.setTime(iForm.getExamBeginDate());
         cal.setLenient(true);
         cal.add(Calendar.DAY_OF_YEAR, day);
-        return 1+cal.get(Calendar.WEEK_OF_YEAR)-iForm.getSessionBeginWeek();
+        int week = 1;
+        while (cal.getTime().after(iForm.getSessionBeginDate()) && cal.get(Calendar.WEEK_OF_YEAR) != iForm.getSessionBeginWeek()) {
+        	cal.add(Calendar.DAY_OF_YEAR, -7); week ++;
+        }
+        while (cal.getTime().before(iForm.getSessionBeginDate()) && cal.get(Calendar.WEEK_OF_YEAR) != iForm.getSessionBeginWeek()) {
+        	cal.add(Calendar.DAY_OF_WEEK, 7); week --;
+        }
+        return week;
     }
     
     public int getDayOfWeek(int day) {
