@@ -181,9 +181,14 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				
 				switch (type) {
 				case ROOM:
-					List<Room> rooms = hibSession.createQuery("select r from Room r where r.session.uniqueId = :sessionId and (" +
+					List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+							"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+							"where r.session.uniqueId = :sessionId and rd.control=true and mr.role.reference=:eventMgr and (" +
 							"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
-							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
+							.setString("name", name)
+							.setLong("sessionId", academicSession.getUniqueId())
+							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+							.list();
 					if (!rooms.isEmpty()) {
 						Room room = rooms.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -195,9 +200,15 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						fillInCalendarUrl(ret);
 						return ret;
 					}
-					List<NonUniversityLocation> locations = hibSession.createQuery("select l from NonUniversityLocation l where " +
-							"l.session.uniqueId = :sessionId and l.name = :name")
-							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
+					List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
+							"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+							"where l.session.uniqueId = :sessionId and l.name = :name and " + 
+							"rd.control=true and mr.role.reference=:eventMgr"
+							)
+							.setString("name", name)
+							.setLong("sessionId", academicSession.getUniqueId())
+							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+							.list();
 					if (!locations.isEmpty()) {
 						NonUniversityLocation location = locations.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -862,11 +873,17 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				List<ResourceInterface> resources = new ArrayList<ResourceInterface>();
 				switch (type) {
 				case ROOM:
-					List<Room> rooms = hibSession.createQuery("select r from Room r, RoomTypeOption o where r.session.uniqueId = :sessionId and " +
+					List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+							"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
+							"RoomTypeOption o where r.session.uniqueId = :sessionId and " +
+							"rd.control=true and mr.role.reference=:eventMgr and " + 
 							"o.status = 1 and o.roomType = r.roomType and o.session = r.session and (" +
 							"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
 							"order by r.buildingAbbv, r.roomNumber")
-							.setString("name", query.toLowerCase() + "%").setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+							.setString("name", query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId())
+							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+							.setMaxResults(limit).list();
 					for (Room room: rooms) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.ROOM);
@@ -882,10 +899,16 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						fillInCalendarUrl(ret);
 						resources.add(ret);
 					}
-					List<NonUniversityLocation> locations = hibSession.createQuery("select l from NonUniversityLocation l, RoomTypeOption o where " +
+					List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
+							"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
+							"RoomTypeOption o where " +
+							"rd.control=true and mr.role.reference=:eventMgr and " + 
 							"l.session.uniqueId = :sessionId and o.status = 1 and o.roomType = l.roomType and o.session = l.session and lower(l.name) like :name " +
 							"order by l.name")
-							.setString("name", query.toLowerCase() + "%").setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+							.setString("name", query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId())
+							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+							.setMaxResults(limit).list();
 					for (NonUniversityLocation location: locations) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.ROOM);
