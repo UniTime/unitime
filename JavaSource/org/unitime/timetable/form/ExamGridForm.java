@@ -167,7 +167,14 @@ public class ExamGridForm extends ActionForm {
             ExamPeriod period = (ExamPeriod)i.next();
             Calendar cal = Calendar.getInstance(Locale.US);
             cal.setTime(period.getStartDate());
-            int week = 1+cal.get(Calendar.WEEK_OF_YEAR)-iSessionBeginWeek;
+            int week = 1;
+            while (cal.getTime().after(iSessionBeginDate) && cal.get(Calendar.WEEK_OF_YEAR) != iSessionBeginWeek) {
+            	cal.add(Calendar.DAY_OF_YEAR, -7); week ++;
+            }
+            while (cal.getTime().before(iSessionBeginDate) && cal.get(Calendar.WEEK_OF_YEAR) != iSessionBeginWeek) {
+            	cal.add(Calendar.DAY_OF_WEEK, 7); week --;
+            }
+            cal.setTime(period.getStartDate());
             if (added.add(1000+week)) {
                 while (cal.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) cal.add(Calendar.DAY_OF_YEAR, -1);
                 String first = df.format(cal.getTime());
