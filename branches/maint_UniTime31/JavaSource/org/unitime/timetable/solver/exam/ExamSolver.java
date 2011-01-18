@@ -771,7 +771,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) {
         synchronized (currentSolution()) {
             ExamInstructor instructor = null;
-            for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
+            for (Enumeration e=((ExamModel)currentSolution().getModel()).getInstructors().elements();e.hasMoreElements();) {
                 ExamInstructor i = (ExamInstructor)e.nextElement();
                 if (i.getId()==instructorId) {
                     instructor = i; break;
