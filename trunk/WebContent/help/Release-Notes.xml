@@ -39,6 +39,12 @@
 				<line>Display free time requests as red background in the timetable grid</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Timetable</name>
+			<description>
+				<line>Date filter corrected for the case when session start date is in a different year than the period.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver Update (CPSolver 1.2.26)</title>
