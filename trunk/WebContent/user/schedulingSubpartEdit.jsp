@@ -212,7 +212,7 @@
 				<tr>
 				<td nowrap>Fractional Increments Allowed: </td>
 				<td>
-				<html:checkbox property="fractionalIncrementsAllowed"disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
+				<html:checkbox property="fractionalIncrementsAllowed" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
 				</td>
 				</tr>
 				</table>
