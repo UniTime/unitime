@@ -87,7 +87,7 @@
 			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
 			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
-					<html:submit onclick="displayLoading();" property="op" value="Assign" onclick="return confirmAssign();" />
+					<html:submit onclick="return confirmAssign();" property="op" value="Assign" />
 				</td></tr>
 			</logic:equal>
 			<logic:notEmpty name="model" property="selectedAssignment">

@@ -93,16 +93,17 @@
 								</logic:equal>
 								<logic:equal name="rf" property="room" value="false">
 								    <bean:define id="rfId" name="rf" property="uniqueId"/>
-									<html:multibox property="roomTypes" onchange="<%="document.getElementById('nul" + rfId + "').style.display = (this.checked ? null : 'none');"%>" styleId="<%="chnul" + rfId%>">
+								    <% String onChange = "document.getElementById('nul" + rfId + "').style.display = (this.checked ? null : 'none');"; %>
+									<html:multibox property="roomTypes" onchange="<%=onChange%>" styleId='<%="chnul" + rfId%>'>
 										<bean:write name="rf" property="uniqueId"/>
 									</html:multibox>
 									<bean:write name="rf" property="label"/><span id="<%="nul"+rfId%>">:&nbsp;
-									<html:select name="eventGridForm" property="<%="nonUniversityLocation[" + rfId + "]"%>"
+									<html:select name="eventGridForm" property='<%="nonUniversityLocation[" + rfId + "]"%>'
 										onfocus="setUp();" 
     									onkeypress="return selectSearch(event, this);" 
 										onkeydown="return checkKey(event, this);">
 										<html:option value="-1">Select...</html:option>
-										<html:optionsCollection name="eventGridForm" property="<%="nonUniversityLocations[" + rfId + "]"%>" label="label" value="uniqueId"/>
+										<html:optionsCollection name="eventGridForm" property='<%="nonUniversityLocations[" + rfId + "]"%>' label="label" value="uniqueId"/>
 									</html:select>
 									</span>
 									<script>document.getElementById('nul<%=rfId%>').style.display = (document.getElementById('chnul<%=rfId%>').checked ? null : 'none');</script>
