@@ -76,6 +76,21 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Apache Tomcat 7 Compatibility Issues</title>
+		<item>
+			<name>Query Log</name>
+			<description>
+				<line>Fixed the AbstractMethodError in QueryLogFilter (by changing the HttpServletRequestWrapper to be a Java Proxy)</line>
+			</description>
+		</item>
+		<item>
+			<name>Various Pages</name>
+			<description>
+				<line>Corrected syntax to meet the new Tomcat 7 validation</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
