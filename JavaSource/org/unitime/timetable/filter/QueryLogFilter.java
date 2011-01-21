@@ -19,32 +19,28 @@
 */
 package org.unitime.timetable.filter;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.ifs.util.JProf;
 
@@ -88,10 +84,13 @@ public class QueryLogFilter implements Filter {
 			}
 		} catch (IllegalStateException e) {}
 		
+		HttpServletRequestWrapper wrapper = null;
 		if (request instanceof HttpServletRequest) {
 			HttpServletRequest r = (HttpServletRequest)request;
-			if (r.getRequestURI().endsWith(".gwt"))
-				request = new HttpServletRequestWrapper(r);
+			if (r.getRequestURI().endsWith(".gwt")) {
+				wrapper = new HttpServletRequestWrapper(r);
+				request = wrapper.createRequest();
+			}
 		}
 		
 		long t0 = JProf.currentTimeMillis();
@@ -129,9 +128,9 @@ public class QueryLogFilter implements Filter {
 						q.setUid(user.getId());
 				}
 			} catch (IllegalStateException e) {}
-			if (r instanceof HttpServletRequestWrapper && ((HttpServletRequestWrapper)r).getBody() != null) {
+			if (wrapper != null && wrapper.getBody() != null) {
 				try {
-					String body = new String(((HttpServletRequestWrapper)r).getBody());
+					String body = new String(wrapper.getBody());
 					q.setQuery(body);
 					String args[] = body.split("\\|");
 					q.setUri(q.getUri() + ": " + args[5].substring(args[5].lastIndexOf('.') + 1) + "#" + args[6]);
@@ -224,264 +223,62 @@ public class QueryLogFilter implements Filter {
 		
 	}
 	
-	private static class HttpServletRequestWrapper implements HttpServletRequest {
+	private static class HttpServletRequestWrapper implements InvocationHandler {
 		private HttpServletRequest iRequest;
-		private ServletInputStreamWrapper iInputStream = null;
+		private ServletInputStream iInputStream = null;
+		private ByteArrayOutputStream iBody = null;
 		
 		public HttpServletRequestWrapper(HttpServletRequest r) {
 			iRequest = r;
 		}
-		@Override
-		public String getAuthType() {
-			return iRequest.getAuthType();
+
+		public HttpServletRequest createRequest() {
+			return (HttpServletRequest)Proxy.newProxyInstance(QueryLogFilter.class.getClassLoader(), new Class[] {HttpServletRequest.class}, this);
 		}
+
 		@Override
-		public String getContextPath() {
-			return iRequest.getContextPath();
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			if ("getInputStream".equals(method.getName()) && method.getParameterTypes().length == 0)
+				return getInputStream();
+			return iRequest.getClass().getMethod(method.getName(),method.getParameterTypes()).invoke(iRequest, args);
 		}
-		@Override
-		public Cookie[] getCookies() {
-			return iRequest.getCookies();
-		}
-		@Override
-		public long getDateHeader(String name) {
-			return iRequest.getDateHeader(name);
-		}
-		@Override
-		public String getHeader(String name) {
-			return iRequest.getHeader(name);
-		}
-		@Override
-		public Enumeration getHeaderNames() {
-			return iRequest.getHeaderNames();
-		}
-		@Override
-		public Enumeration getHeaders(String name) {
-			return iRequest.getHeaders(name);
-		}
-		@Override
-		public int getIntHeader(String name) {
-			return iRequest.getIntHeader(name);
-		}
-		@Override
-		public String getMethod() {
-			return iRequest.getMethod();
-		}
-		@Override
-		public String getPathInfo() {
-			return iRequest.getPathInfo();
-		}
-		@Override
-		public String getPathTranslated() {
-			return iRequest.getPathTranslated();
-		}
-		@Override
-		public String getQueryString() {
-			return iRequest.getQueryString();
-		}
-		@Override
-		public String getRemoteUser() {
-			return iRequest.getRemoteUser();
-		}
-		@Override
-		public String getRequestURI() {
-			return iRequest.getRequestURI();
-		}
-		@Override
-		public StringBuffer getRequestURL() {
-			return iRequest.getRequestURL();
-		}
-		@Override
-		public String getRequestedSessionId() {
-			return iRequest.getRequestedSessionId();
-		}
-		@Override
-		public String getServletPath() {
-			return iRequest.getServletPath();
-		}
-		@Override
-		public HttpSession getSession() {
-			return iRequest.getSession();
-		}
-		@Override
-		public HttpSession getSession(boolean create) {
-			return iRequest.getSession(create);
-		}
-		@Override
-		public Principal getUserPrincipal() {
-			return iRequest.getUserPrincipal();
-		}
-		@Override
-		public boolean isRequestedSessionIdFromCookie() {
-			return iRequest.isRequestedSessionIdFromCookie();
-		}
-		@Override
-		public boolean isRequestedSessionIdFromURL() {
-			return iRequest.isRequestedSessionIdFromURL();
-		}
-		@Override
-		@Deprecated
-		public boolean isRequestedSessionIdFromUrl() {
-			return iRequest.isRequestedSessionIdFromUrl();
-		}
-		@Override
-		public boolean isRequestedSessionIdValid() {
-			return iRequest.isRequestedSessionIdValid();
-		}
-		@Override
-		public boolean isUserInRole(String role) {
-			return iRequest.isUserInRole(role);
-		}
-		@Override
-		public Object getAttribute(String name) {
-			return iRequest.getAttribute(name);
-		}
-		@Override
-		public Enumeration getAttributeNames() {
-			return iRequest.getAttributeNames();
-		}
-		@Override
-		public String getCharacterEncoding() {
-			return iRequest.getCharacterEncoding();
-		}
-		@Override
-		public int getContentLength() {
-			return iRequest.getContentLength();
-		}
-		@Override
-		public String getContentType() {
-			return iRequest.getContentType();
-		}
-		@Override
+		
 		public ServletInputStream getInputStream() throws IOException {
-			if (iInputStream == null)
-				iInputStream = new ServletInputStreamWrapper(iRequest.getInputStream());
+			if (iInputStream == null) {
+				iBody = new ByteArrayOutputStream();
+				iInputStream = new ServletInputStreamWrapper(iRequest.getInputStream(), iBody);
+			}
 			return iInputStream;
 		}
+		
 		public byte[] getBody() {
-			return (iInputStream == null ? null : iInputStream.getBytes());
+			return (iBody == null ? null : iBody.toByteArray());
 		}
-		@Override
-		public String getLocalAddr() {
-			return iRequest.getLocalAddr();
-		}
-		@Override
-		public String getLocalName() {
-			return iRequest.getLocalName();
-		}
-		@Override
-		public int getLocalPort() {
-			return iRequest.getLocalPort();
-		}
-		@Override
-		public Locale getLocale() {
-			return iRequest.getLocale();
-		}
-		@Override
-		public Enumeration getLocales() {
-			return iRequest.getLocales();
-		}
-		@Override
-		public String getParameter(String name) {
-			return iRequest.getParameter(name);
-		}
-		@Override
-		public Map getParameterMap() {
-			return iRequest.getParameterMap();
-		}
-		@Override
-		public Enumeration getParameterNames() {
-			return iRequest.getParameterNames();
-		}
-		@Override
-		public String[] getParameterValues(String name) {
-			return iRequest.getParameterValues(name);
-		}
-		@Override
-		public String getProtocol() {
-			return iRequest.getProtocol();
-		}
-		@Override
-		public BufferedReader getReader() throws IOException {
-			return iRequest.getReader();
-		}
-		@Override
-		@Deprecated
-		public String getRealPath(String path) {
-			return iRequest.getRealPath(path);
-		}
-		@Override
-		public String getRemoteAddr() {
-			return iRequest.getRemoteAddr();
-		}
-		@Override
-		public String getRemoteHost() {
-			return iRequest.getRemoteHost();
-		}
-		@Override
-		public int getRemotePort() {
-			return iRequest.getRemotePort();
-		}
-		@Override
-		public RequestDispatcher getRequestDispatcher(String path) {
-			return iRequest.getRequestDispatcher(path);
-		}
-		@Override
-		public String getScheme() {
-			return iRequest.getScheme();
-		}
-		@Override
-		public String getServerName() {
-			return iRequest.getServerName();
-		}
-		@Override
-		public int getServerPort() {
-			return iRequest.getServerPort();
-		}
-		@Override
-		public boolean isSecure() {
-			return iRequest.isSecure();
-		}
-		@Override
-		public void removeAttribute(String name) {
-			iRequest.removeAttribute(name);
-		}
-		@Override
-		public void setAttribute(String name, Object o) {
-			iRequest.setAttribute(name, o);
-		}
-		@Override
-		public void setCharacterEncoding(String env)
-				throws UnsupportedEncodingException {
-			iRequest.setCharacterEncoding(env);
-		}		
+
+		
 	}
 	
 	private static class ServletInputStreamWrapper extends ServletInputStream {
 		private InputStream iInputStream;
-		private ByteArrayOutputStream iBytes;
+		private OutputStream iOutputStream;
 		
-		public ServletInputStreamWrapper(InputStream is) {
-			iBytes = new ByteArrayOutputStream();
-			iInputStream = is;
+		public ServletInputStreamWrapper(InputStream in, OutputStream out) {
+			iInputStream = in;
+			iOutputStream = out;
 		}
 
 		@Override
 		public int read() throws IOException {
 			int out = iInputStream.read();
-			iBytes.write(out);
+			iOutputStream.write(out);
 			return out;
 		}
 		
 		@Override
 		public void close() throws IOException {
 			iInputStream.close();
-			iBytes.flush();
-			iBytes.close();
-		}
-		
-		public byte[] getBytes() {
-			return iBytes.toByteArray();
+			iOutputStream.flush();
+			iOutputStream.close();
 		}
 	}
 }
