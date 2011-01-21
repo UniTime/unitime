@@ -89,7 +89,7 @@
 			<tr><td colspan='2'>Do not unassign conflicting classes: <html:checkbox property="keepConflictingAssignments" onchange="op2.value='Apply'; submit();"/></td></tr>
 			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
-					<html:submit onclick="displayLoading();" property="op" value="Assign" onclick="return confirmAssign();" />
+					<html:submit onclick="return confirmAssign();" property="op" value="Assign" />
 				</td></tr>
 			</logic:equal>
 		</logic:notEmpty>

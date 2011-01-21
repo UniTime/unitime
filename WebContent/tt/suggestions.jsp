@@ -227,7 +227,7 @@ try {
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" title="Apply changes" value="Apply"/>
-				<html:button onclick="displayLoading();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close" onclick="parent.hideGwtDialog();"/>
+				<html:button onclick="parent.hideGwtDialog();" accesskey="C" title="Close window (Alt+C)" property="op" value="Close"/>
 			</TD>
 		</TR>
 		</TABLE>
