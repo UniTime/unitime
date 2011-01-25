@@ -3096,6 +3096,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
                 BitSet weekCode = new BitSet(size);
                 int offset = iSession.getDayOfYear(d,m) - firstDOY;
+                if (offset < 0 || offset >= size) continue;
                 weekCode.set(offset);
                 switch (c.get(Calendar.DAY_OF_WEEK)) {
                     case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
