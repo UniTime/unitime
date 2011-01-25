@@ -575,6 +575,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
    					}
            			hasLimit = true;
                	}
+               	if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments().size()) {
+   					iProgress.info("  course " + enrl.getCourse().getName() + " has no space available (limit is "+ enrl.getCourse().getLimit() + ")");
+   					if (iTweakLimits) {
+   						enrl.getCourse().setLimit(enrl.getCourse().getEnrollments().size() + 1);
+   						iProgress.info("    limit increased to "+enrl.getCourse().getLimit());
+   					}
+           			hasLimit = true;
+               	}
                	if (!hasLimit && !hasOverlap) {
                		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
                			Enrollment enrlx = i.next();
