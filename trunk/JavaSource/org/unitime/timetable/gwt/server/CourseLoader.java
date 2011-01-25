@@ -461,6 +461,14 @@ public class CourseLoader {
        					}
                			hasLimit = true;
                    	}
+                   	if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments().size()) {
+                   		sLog.info("  course " + enrl.getCourse().getName() + " has no space available (limit is "+ enrl.getCourse().getLimit() + ")");
+       					if (tweakLimits) {
+       						enrl.getCourse().setLimit(enrl.getCourse().getEnrollments().size() + 1);
+       						sLog.info("    limit increased to "+enrl.getCourse().getLimit());
+       					}
+               			hasLimit = true;
+                   	}
                 	if (!hasLimit && !hasOverlap) {
                 		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
                 			Enrollment enrlx = i.next();
