@@ -53,7 +53,7 @@
 		</item>
 	</category>
 	<category>
-		<title>Constraint Solver Update (CPSolver 1.2.26)</title>
+		<title>Constraint Solver Update (CPSolver 1.2.29)</title>
 		<item>
 			<name>Student Sectioning Solver</name>
 			<description>
@@ -64,6 +64,15 @@
 					<line>second alternative is better than the second following course</line>
 					<line>distance conflicts are considered secondary (priorities should be maximized first), and only counted on the lower priority course</line>
 					<line>time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely)</line>
+					<line>if alternative sections are otherwise equal, the better balanced one is preferred</line>
+				</line>
+				<line>New equal weighting model:
+					<line>all course (non alternative) requests have equal weight</line>
+					<line>first alternatives have lower weight than first choices, but equal among themselves</line>
+					<line>second alternatives have lower weight than first alternatives, alternative course requests than second alternatives</line>
+					<line>distance conflicts are considered secondary, and only counted on the lower priority course</line>
+					<line>time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely)</line>
+					<line>if alternative sections are otherwise equal, the better balanced one is preferred</line>
 				</line>
 				<line>Time overlaps:
 					<line>added ability for some classes to overlap (time overlap is minimized) -- to be defined on scheduling subparts</line>
@@ -72,6 +81,14 @@
 				<line>Batch sectioning improvements:
 					<line>added a new priority based construction phase</line>
 					<line>enforce course and configuration limits</line>
+				</line>
+				<line>Section balancing:
+					<line>Small weight is removed from assignments that further dis-balance a section</line>
+					<line>Small weight is added to assignments that better balance the section</line>
+					<line>Target balance:
+						<line>Sections with limits: section limit x ( subpart enrollment / subpart limit )</line>
+						<line>Unlimited sections: subpart enrollment / number of sections in the subpart</line>
+					</line> 
 				</line>
 			</description>
 		</item>
@@ -88,6 +105,15 @@
 			<name>Various Pages</name>
 			<description>
 				<line>Corrected syntax to meet the new Tomcat 7 validation</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Course Timetabling Database Loader</name>
+			<description>
+				<line>Avoid meetings outside of the session (IndexOutOfBoundsException: bitIndex &lt; 0: -167)</line>
 			</description>
 		</item>
 	</category>
