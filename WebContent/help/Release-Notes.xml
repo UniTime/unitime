@@ -90,6 +90,7 @@
 						<line>Unlimited sections: subpart enrollment / number of sections in the subpart</line>
 					</line> 
 				</line>
+				<line>Student weights parameters were added to solver configuration.</line>
 			</description>
 		</item>
 	</category>

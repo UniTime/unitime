@@ -38,6 +38,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressListener;
+import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -388,6 +389,13 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             if (properties.getPropertyBoolean("StudentSct.TimeOverlaps",true)) {
                 if (ext.length()>0) ext.append(";");
                 ext.append("net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter");
+            }
+            if (!properties.getProperty("StudentWeights.Mode","").isEmpty()) {
+                StudentWeights.Implementation studentWeights = StudentWeights.Implementation.valueOf(properties.getProperty("StudentWeights.Mode"));
+                if (studentWeights != null) {
+                	properties.setProperty("StudentWeights.Class", studentWeights.getImplementation().getName());
+                	properties.setProperty("Comparator.Class", studentWeights.getImplementation().getName());
+                }
             }
         }
         properties.setProperty("Extensions.Classes",ext.toString());
