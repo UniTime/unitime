@@ -290,6 +290,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     sLog.error("    -- subpart "+ss.getSchedulingSubpartLabel()+" has parent "+ss.getParentSubpart().getSchedulingSubpartLabel()+", but the appropriate parent subpart is not loaded.");
                 }
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), ss.getItype().getItype().toString()+sufix, ss.getItypeDesc().trim()+(sufix==null || sufix.length()==0?"":" ("+sufix+")"), config, parentSubpart);
+                subpart.setAllowOverlap(ss.isStudentAllowOverlap());
                 ss2subpart.put(ss, subpart);
                 sLog.debug("    -- created subpart "+subpart);
                 for (Iterator k=ss.getClasses().iterator();k.hasNext();) {

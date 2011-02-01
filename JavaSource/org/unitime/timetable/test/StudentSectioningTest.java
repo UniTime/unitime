@@ -325,6 +325,7 @@ public class StudentSectioningTest {
                 String sufix = ss.getSchedulingSubpartSuffix();
                 Subpart parentSubpart = (ss.getParentSubpart()==null?null:(Subpart)ss2subpart.get(ss.getParentSubpart()));
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), ss.getItype().getItype().toString()+sufix, ss.getItypeDesc().trim()+(sufix==null || sufix.length()==0?"":" ("+sufix+")"), config, parentSubpart);
+                subpart.setAllowOverlap(ss.isStudentAllowOverlap());
                 ss2subpart.put(ss, subpart);
                 for (Iterator k=ss.getClasses().iterator();k.hasNext();) {
                     Class_ c = (Class_)k.next();
