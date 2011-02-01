@@ -46,6 +46,8 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
     private double iPreferenceFactor = 0.250;
     /** deduction for over expected sections */
     private double iPenaltyFactor = 0.500;
+    /** similar to balancing factor on {@link PriorityStudentWeights} */
+    private double iAvailabilityFactor;
 	private Hashtable<CourseRequest, Double> iBestTime = new Hashtable<CourseRequest, Double>();
 	
 	public StudentSchedulingAssistantWeights(DataProperties properties) {
@@ -53,6 +55,7 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		iNoTimeFactor = properties.getPropertyDouble("StudentWeights.NoTimeFactor", iNoTimeFactor);
 		iPreferenceFactor = properties.getPropertyDouble("StudentWeights.PreferenceFactor", iPreferenceFactor);
 		iPenaltyFactor = properties.getPropertyDouble("StudentWeights.PenaltyFactor", iPenaltyFactor);
+		iAvailabilityFactor = iBalancingFactor; iBalancingFactor = 0.0;
 	}
 	
 	private double bestTime(Request r) {
@@ -115,11 +118,32 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
         	selectedFraction = (size - nrSelected) / size;
 		}
 		
+		double unavailableSizeFraction = 0.0;
+		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
+            double unavailableSize = 0;
+            double total = 0;
+            for (Section section: enrollment.getSections()) {
+                Subpart subpart = section.getSubpart();
+                // skip unlimited and single section subparts
+                if (subpart.getSections().size() <= 1 || subpart.getLimit() <= 0) continue;
+                // average size
+                double averageSize = ((double)subpart.getLimit()) / subpart.getSections().size();
+                // section is below average
+                if (section.getLimit() < averageSize)
+                    unavailableSize += (averageSize - section.getLimit()) / averageSize;
+                total ++;
+            }
+            if (unavailableSize > 0)
+            	unavailableSizeFraction = unavailableSize / total;
+		}
+		
 		weight -= penaltyFraction * base * iPenaltyFactor;
 		
 		weight -= selectedFraction * base * iPreferenceFactor;
 		
 		weight -= noTime * base * iNoTimeFactor;
+		
+		weight -= unavailableSizeFraction * base * iAvailabilityFactor;
 		
 		return weight;
 		
