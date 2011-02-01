@@ -325,6 +325,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), df.format(ss.getItype().getItype()) + sufix,
                 		ss.getItype().getAbbv().trim(), config, parentSubpart);
+                subpart.setAllowOverlap(ss.isStudentAllowOverlap());
                 ss2subpart.put(ss.getUniqueId(), subpart);
                 for (Iterator<Class_> j = ss.getClasses().iterator(); j.hasNext(); ) {
                 	Class_ c = j.next();

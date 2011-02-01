@@ -163,7 +163,13 @@
 		<TR>
 			<TD>Automatic Spread In Time:</TD>
 			<TD>
-				<html:checkbox property="autoSpreadInTime"/>
+				<html:checkbox property="autoSpreadInTime"/> <i>If checked, spread in time constraint will be automatically posted between classes of this subpart.</i>
+			<TD>
+		</TR>
+		<TR>
+			<TD>Student Overlaps:</TD>
+			<TD>
+				<html:checkbox property="studentAllowOverlap"/> <i>If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.</i>
 			<TD>
 		</TR>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
