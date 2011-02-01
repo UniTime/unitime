@@ -51,6 +51,14 @@
 				<line>Room Timetable: Only show rooms that can be used for event management.</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Subpart Detail / Edit</name>
+			<description>
+				<line>Added student allow overlap toggle.
+					<line>If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver Update (CPSolver 1.2.29)</title>
@@ -91,6 +99,7 @@
 					</line> 
 				</line>
 				<line>Student weights parameters were added to solver configuration.</line>
+				<line>Load information about whether student overlaps are allowed.</line>
 			</description>
 		</item>
 	</category>
@@ -115,6 +124,15 @@
 			<name>Course Timetabling Database Loader</name>
 			<description>
 				<line>Avoid meetings outside of the session (IndexOutOfBoundsException: bitIndex &lt; 0: -167)</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Course Offering Import: student overlaps should be disabled by default.</line>
 			</description>
 		</item>
 	</category>

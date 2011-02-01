@@ -67,6 +67,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Boolean autoSpreadInTime;
     private Boolean subpartCreditEditAllowed;
     private boolean itypeBasic;
+    private Boolean studentAllowOverlap;
     
     // --------------------------------------------------------- Methods
 
@@ -94,6 +95,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         parentSubpartId = null; parentSubpartLabel = null; managingDeptName = null; sameItypeAsParent = null;
         creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = new Boolean(false); creditText = "";
         autoSpreadInTime = Boolean.FALSE;
+        studentAllowOverlap = Boolean.FALSE;
         subpartCreditEditAllowed =new Boolean(ApplicationProperties.getProperty("tmtbl.subpart.credit.editable", "false").equals("true"));
         itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
@@ -310,4 +312,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	
 	public boolean getItypeBasic() { return itypeBasic; }
 	public void setItypeBasic(boolean itypeBasic) { this.itypeBasic = itypeBasic; }
+	
+	public boolean getStudentAllowOverlap() { return studentAllowOverlap; }
+	public void setStudentAllowOverlap(boolean studentAllowOverlap) { this.studentAllowOverlap = studentAllowOverlap; }
 }

@@ -175,6 +175,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if(op.equals("init")) {
             frm.reset(mapping, request);
             frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
+            frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
         }
 
         // Load form attributes that are constant
@@ -350,7 +351,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         super.doUpdate(request, frm, ss, s, timeVertical);
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
-        ss.setStudentAllowOverlap(new Boolean(false));
+        ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
 
         if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);

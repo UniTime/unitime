@@ -181,9 +181,17 @@
 			<TR>
 				<TD>Automatic Spread In Time:</TD>
 				<TD>
-					<font color='red'><B>DISABLED</B></font>
+					<font color='red'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>
 				<TD>
 			</TR>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="studentAllowOverlap" value="true">
+		<TR>
+			<TD>Student Overlaps:</TD>
+			<TD>
+				<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>
+			<TD>
+		</TR>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
 		<TR>

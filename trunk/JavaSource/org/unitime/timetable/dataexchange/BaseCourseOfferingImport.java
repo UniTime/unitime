@@ -2153,7 +2153,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				}
 				
 				if (ss.isStudentAllowOverlap() == null){
-					ss.setStudentAllowOverlap(new Boolean(true));
+					ss.setStudentAllowOverlap(new Boolean(false));
 				}
 				
 				if (ss.getMinutesPerWk() == null || !ss.getMinutesPerWk().equals(minPerWeek)){
