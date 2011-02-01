@@ -341,10 +341,15 @@ public class SectioningServer {
 				subparts.put(subpart, clonedSubpart);
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
-					int limit = section.getLimit() - section.getEnrollments().size();
-					for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
-						Enrollment enrollment = i.next();
-						if (enrollment.getStudent().getId() == studentId) { limit++; break; }
+					int limit = section.getLimit();
+					if (limit >= 0) {
+						// limited section, deduct enrollments
+						limit -= section.getEnrollments().size();
+						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
+							Enrollment enrollment = i.next();
+							if (enrollment.getStudent().getId() == studentId) { limit++; break; }
+						}
+						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 					}
 					Section clonedSection = new Section(section.getId(), limit,
 							section.getName(), clonedSubpart, section.getPlacement(),
@@ -776,7 +781,7 @@ public class SectioningServer {
 		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
 		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-		config.setProperty("Student.WeightsClass", StudentSchedulingAssistantWeights.class.getName());
+		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
@@ -907,7 +912,7 @@ public class SectioningServer {
 		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
 		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-		config.setProperty("Student.WeightsClass", StudentSchedulingAssistantWeights.class.getName());
+		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
