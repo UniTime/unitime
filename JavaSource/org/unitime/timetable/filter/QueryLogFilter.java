@@ -141,7 +141,7 @@ public class QueryLogFilter implements Filter {
 				String params = "";
 				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
 					String n = (String)e.nextElement();
-					if ("password".equals(n)) continue;
+					if ("password".equals(n) || "noCacheTS".equals(n)) continue;
 					if (!params.isEmpty()) params += "&";
 					params += n + "=" + r.getParameter(n);
 				}
