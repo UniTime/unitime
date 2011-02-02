@@ -655,16 +655,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			}			
 		}
 		String pattern = createPatternString(startDates, endDates);
-		DatePattern dp = (DatePattern) this.
+		DatePattern dp = null;
+		
+		List patterns = this.
 		getHibSession().
 		createQuery("from DatePattern as d where d.session.uniqueId = :sessionId and d.pattern = :pattern and d.offset = :offset and d.type = (select min(dd.type) from DatePattern as dd where dd.session.uniqueId = :sessionId and dd.pattern = :pattern and dd.offset = :offset)").
 		setLong("sessionId", session.getUniqueId().longValue()).
 		setString("pattern", pattern).
 		setInteger("offset", offset).
 		setCacheable(true).
-		uniqueResult();
+		list();
 		
-		if (dp == null){
+		if (!patterns.isEmpty()) {
+			dp = (DatePattern)patterns.get(0);
+		} else {
 			dp = new DatePattern();
 			dp.setName("import - " + c.getClassLabel());
 			dp.setPattern(pattern);
@@ -957,6 +961,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				}
         	}
         	changed = addUpdateClassEvent(c, meetings);
+        	if (changed)
+        		c.setDatePattern(assignmentHelper.getDatePattern(c.getEvent()));
         }
         
         return(changed);

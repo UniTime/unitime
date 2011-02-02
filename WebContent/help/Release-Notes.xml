@@ -27,6 +27,25 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Course Offering Import</name>
+			<description>
+				<line>Fixed NonUniqueResultException when looking for a matching date pattern.
+					<line>There is nothing in the user interface preventing users to create two date patterns with the same type and dates (first matching one is used in this case).</line>
+				</line>
+				<line>Only create "Week .." date patterns (out of event meeting dates) for classes imported using &lt;meeting&gt; elements.
+					<line>Classes imported using datePattern attribute (of &lt;time&gt; element) or using &lt;date&gt; elements should keep their matching / generated patterns.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.120</version>
+	<release-date>Wed, 2 Feb 2011</release-date>
+	<category>
 		<title>User interface</title>
 		<item>
 			<name>Student Scheduling Assistant</name>
