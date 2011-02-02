@@ -75,6 +75,8 @@ public class ItypeDescEditAction extends Action {
             myForm.setOp("Save");
         }
 
+        LookupTables.setupItypes(request, true);
+        
         // Add / Update
         if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
@@ -140,8 +142,6 @@ public class ItypeDescEditAction extends Action {
 
             return mapping.findForward("back");
         }
-        
-        LookupTables.setupItypes(request, true);
         
         return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {

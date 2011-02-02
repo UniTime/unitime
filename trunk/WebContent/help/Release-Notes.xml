@@ -27,6 +27,18 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>User interface</title>
+		<item>
+			<name>Add/Edit Instructional Type</name>
+			<description>
+				<line>Avoid "JspException: Cannot find bean under name itypesList" runtime exception when form validation fails.
+					<line>For instance, when a user attempts to create an instructional type with an existing IType.</line>
+				</line>
+				<line>Instructional type that has children types cannot be deleted.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Data Exchange</title>
 		<item>
 			<name>Course Offering Import</name>
