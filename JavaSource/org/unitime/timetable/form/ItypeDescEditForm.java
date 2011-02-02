@@ -124,7 +124,12 @@ public class ItypeDescEditForm extends ActionForm {
             createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype").
             setInteger("itype", itype.getItype()).
             uniqueResult()).intValue();
-        setCanDelete(nrUsed<=0);
+        int nrChildren = ((Number)
+                new ItypeDescDAO().getSession().
+                createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype").
+                setInteger("itype", itype.getItype()).
+                uniqueResult()).intValue();
+        setCanDelete(nrUsed <= 0 && nrChildren <= 0);
         setParent(itype.getParent()==null?null:itype.getParent().getItype());
         setOrganized(itype.isOrganized());
     }
