@@ -239,7 +239,6 @@ public class MakeAssignmentsForClassEvents {
     public Assignment createAssignment(ClassEvent event) {
         if (event==null || event.getClazz()==null || event.getMeetings().isEmpty()) return null;
         Class_ clazz = event.getClazz();
-        clazz.setDatePattern(getDatePattern(event));
         Assignment assignment = clazz.getCommittedAssignment();
         if (assignment==null) {
             assignment = new Assignment();
@@ -294,6 +293,7 @@ public class MakeAssignmentsForClassEvents {
                             .iterate();j.hasNext();) {
                         ClassEvent e = (ClassEvent)j.next();
                         Assignment a = m.createAssignment(e);
+                        e.getClazz().setDatePattern(m.getDatePattern(e));
                         System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName()));
                     }
 
