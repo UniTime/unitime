@@ -233,6 +233,19 @@
 			<param-value>menu.gwt: MenuService#getSolverInfo</param-value>
 		</init-param>
 	</filter>
+	
+	<filter>
+		<filter-name>
+			Google Chrome Frame No Cache Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.NoCacheFilter
+		</filter-class>
+		<init-param>
+			<param-name>user-agent</param-name>
+			<param-value>chromeframe</param-value>
+		</init-param>
+	</filter>
 
 	<!-- Filter Mappings -->
 	<filter-mapping>
@@ -274,5 +287,9 @@
 		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>/calendar</url-pattern>
 	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Google Chrome Frame No Cache Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
 </web-app>
-
