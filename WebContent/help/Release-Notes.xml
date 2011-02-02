@@ -52,6 +52,18 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Google Chrome Frame</name>
+			<description>
+				<line>When Google Chrome Frame is used it tends to cache redirects (despite of all the expires, pragma, cache-control meta tags).
+					<line>To avoid caching, when chrome frame is detected, a timestamp parameter (named noCacheTS) is added to every redirect (overriding HttpsServletResponse.sendRedirect).</line>
+					<line>This should fix various navigation issues, e.g., going back and forth while creating a new event.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
