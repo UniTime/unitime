@@ -186,11 +186,11 @@ public class TimeGrid extends Composite {
 	
 	public void addFreeTime(CourseRequestInterface.FreeTime ft) {
 		for (int day: ft.getDays())
-			addBusy(day, ft.getStart(), ft.getLength());
+			addBusy("Free " + ft.toString(CONSTANTS.shortDays()), day, ft.getStart(), ft.getLength());
 	}
 	
-	private void addBusy(int day, int start, int length) {
-		iBusy.add(new BusyPanel(day, start, length));
+	private void addBusy(String text, int day, int start, int length) {
+		iBusy.add(new BusyPanel(text, day, start, length));
 	}
 	
 	public void setCalendarUrl(String url) {
@@ -209,7 +209,7 @@ public class TimeGrid extends Composite {
 				m.addStyleName("meeting-selected-noshadow");
 			}
 		for (BusyPanel busy: iBusy)
-			tg.addBusy(busy.getDay(), busy.getStart(), busy.getLength());
+			tg.addBusy(busy.getTitle(), busy.getDay(), busy.getStart(), busy.getLength());
 		return tg;
 	}
 	
@@ -683,12 +683,29 @@ public class TimeGrid extends Composite {
 	
 	private class BusyPanel extends SimplePanel {
 		private int iDayOfWeek, iStartSlot, iLength;
+		private String iText;
 		
-		public BusyPanel(int dayOfWeek, int startSlot, int length) {
+		public BusyPanel(String text, int dayOfWeek, int startSlot, int length) {
 			super();
+			iText = text;
 			iDayOfWeek = dayOfWeek;
 			iStartSlot = startSlot;
 			iLength = length;
+			if (iText != null || !iText.isEmpty()) {
+				setTitle(iText);
+				boolean empty = true;
+				for (int i = 0; i < 3; i++) {
+					if (iMeetingTable[iDayOfWeek].length <= iStartSlot + i) { empty = false; break; }
+					if (iMeetingTable[iDayOfWeek][iStartSlot + i] != null && !iMeetingTable[iDayOfWeek][iStartSlot + i].isEmpty()) {
+						empty = false; break;
+					}
+				}
+				if (empty) {
+					HTML widget = new HTML(text, false);
+					widget.setStyleName("text");
+					setWidget(widget);
+				}
+			}
 			setStyleName("busy");
 			setSize(String.valueOf(iCellWidth + (iPrint ? 3 : iDayOfWeek + 1 < iNrDays ? 3 : 0)), String.valueOf(125 * iLength / 30));
 			iGrid.insert(this, iCellWidth * iDayOfWeek, 125 * iStartSlot / 30 - 50 * iStart, 1);
