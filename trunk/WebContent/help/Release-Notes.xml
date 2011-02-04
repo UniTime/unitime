@@ -37,6 +37,12 @@
 				<line>Instructional type that has children types cannot be deleted.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Free time requests on the Timetable view -- show free time statement in the top left corner of the red box.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Data Exchange</title>
