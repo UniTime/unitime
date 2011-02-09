@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2008 - 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -263,6 +263,7 @@ public class SchedulingSubpartTableBuilder {
         // Generate Javascript
         String onBlur1 = "";
         String onBlur2 = "";
+        String maxClasses = "if ( document.forms[0].nc" + sicId + ".value > 999) { document.forms[0].nc" + sicId + ".value=0 } ";
         
         if (autoCalc) {
             
@@ -274,11 +275,11 @@ public class SchedulingSubpartTableBuilder {
 		    	    + "{ document.forms[0].nc" + sicId 
 			    	+ ".value=Math.ceil( (document.forms[0].mxlpc" + parentSic.getId() 
 			    	+ ".value * document.forms[0].nc" + parentSic.getId() 
-			    	+ ".value) / this.value ); } ";
+			    	+ ".value) / this.value ); " + maxClasses + " } ";
 	        }
 	        else {
 		    	onBlur2 = " onBlur=\"if (this.value!=0) { document.forms[0].nc" + sicId 
-			    	+ ".value=Math.ceil(document.forms[0].limit.value/this.value); } ";
+			    	+ ".value=Math.ceil(document.forms[0].limit.value/this.value); " + maxClasses + "} ";
 	        }
 
         }
