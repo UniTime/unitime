@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Solution" table="solution">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">solution_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="created"
+            column="created"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+
+        <property
+            name="valid"
+            column="valid"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="commited"
+            column="commited"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="commitDate"
+            column="commit_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+
+        <property
+            name="note"
+            column="note"
+            type="java.lang.String"
+            not-null="false"
+            length="1000"/>
+
+        <property
+            name="creator"
+            column="creator"
+            type="java.lang.String"
+            not-null="false"
+            length="250"/>
+
+        <set
+            name="parameters"
+            inverse="false"
+            cascade="all"
+            table="solver_parameter">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="solution_id" foreign-key="fk_solver_param_solution"/>
+            <one-to-many class="SolverParameter"/>
+        </set>
+
+        <set
+            name="solutionInfo"
+            inverse="true"
+            cascade="all"
+            table="solver_info"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="solution_id"/>
+            <one-to-many class="SolutionInfo"/>
+        </set>
+
+        <set
+            name="studentEnrollments"
+            inverse="true"
+            cascade="all"
+            table="student_enrl">
+
+            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <key column="solution_id"/>
+            <one-to-many class="StudentEnrollment"/>
+        </set>
+
+        <set
+            name="assignments"
+            inverse="true"
+            cascade="all"
+            table="assignment">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="solution_id"/>
+            <one-to-many class="Assignment"/>
+        </set>
+
+        <many-to-one
+            name="owner"
+            class="SolverGroup"
+            column="owner_id"
+            not-null="true"
+            lazy="false"
+            foreign-key="fk_solution_owner"/>
+
+        <set
+            name="jointEnrollments"
+            inverse="true"
+            cascade="all"
+            table="jenrl">
+
+            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <key column="solution_id"/>
+            <one-to-many class="JointEnrollment"/>
+        </set>
+
+        <many-to-one
+            name="globalInfo"
+            class="org.unitime.timetable.model.SolutionInfo"
+            not-null="false"
+            lazy="proxy"
+            formula=" ( select si.uniqueid from %SCHEMA%.solver_info si, %SCHEMA%.solver_info_def d where si.type=1 and si.solver_info_def_id=d.uniqueid and d.name='GlobalInfo' and si.solution_id=uniqueid ) "/>
+
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet type="text/css" href="Release-Notes.css"?>
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<release-history>
+
+<doc-title>UniTime 3.2 Release Notes</doc-title>
+
+<release>
+	<version>3.2.@build.number@</version>
+	<release-date>@release.date@</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
+			<name>Add/Edit Instructional Type</name>
+			<description>
+				<line>Avoid "JspException: Cannot find bean under name itypesList" runtime exception when form validation fails.
+					<line>For instance, when a user attempts to create an instructional type with an existing IType.</line>
+				</line>
+				<line>Instructional type that has children types cannot be deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Free time requests on the Timetable view -- show free time statement in the top left corner of the red box.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Course Offering Import</name>
+			<description>
+				<line>Fixed NonUniqueResultException when looking for a matching date pattern.
+					<line>There is nothing in the user interface preventing users to create two date patterns with the same type and dates (first matching one is used in this case).</line>
+				</line>
+				<line>Only create "Week .." date patterns (out of event meeting dates) for classes imported using &lt;meeting&gt; elements.
+					<line>Classes imported using datePattern attribute (of &lt;time&gt; element) or using &lt;date&gt; elements should keep their matching / generated patterns.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Google Chrome Frame</name>
+			<description>
+				<line>When Google Chrome Frame is used it tends to cache redirects (despite of all the expires, pragma, cache-control meta tags).
+					<line>To avoid caching, when chrome frame is detected, a timestamp parameter (named noCacheTS) is added to every redirect (overriding HttpsServletResponse.sendRedirect).</line>
+					<line>This should fix various navigation issues, e.g., going back and forth while creating a new event.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Minor technology update</name>
+			<description>
+				<line>GWT updated to version 2.2.0 (was 2.1.1)</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.120</version>
+	<release-date>Wed, 2 Feb 2011</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Adopted to use the new priority weighting model
+					<line>adding penalization for sections without time assignment, over expected sections, and sections that have a different time or instructor than selected</line> 
+				</line>
+				<line>Only show Enroll button when it is available</line>
+				<line>Show LoadingWidget while waiting</line>
+				<line>Display free time requests as red background in the timetable grid</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetable</name>
+			<description>
+				<line>Date filter corrected for the case when session start date is in a different year than the period.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>Room Timetable: Only show rooms that can be used for event management.</line>
+			</description>
+		</item>
+		<item>
+			<name>Scheduling Subpart Detail / Edit</name>
+			<description>
+				<line>Added student allow overlap toggle.
+					<line>If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Constraint Solver Update (CPSolver 1.2.29)</title>
+		<item>
+			<name>Student Sectioning Solver</name>
+			<description>
+				<line>New priority weighting model:
+					<line>total student weight is between zero and one (one means student got the best schedule)</line>
+					<line>weight of the given priority course is higher than sum of the remaining weights the student can get</line>
+					<line>first alternative is better than the following course</line>
+					<line>second alternative is better than the second following course</line>
+					<line>distance conflicts are considered secondary (priorities should be maximized first), and only counted on the lower priority course</line>
+					<line>time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely)</line>
+					<line>if alternative sections are otherwise equal, the better balanced one is preferred</line>
+				</line>
+				<line>New equal weighting model:
+					<line>all course (non alternative) requests have equal weight</line>
+					<line>first alternatives have lower weight than first choices, but equal among themselves</line>
+					<line>second alternatives have lower weight than first alternatives, alternative course requests than second alternatives</line>
+					<line>distance conflicts are considered secondary, and only counted on the lower priority course</line>
+					<line>time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely)</line>
+					<line>if alternative sections are otherwise equal, the better balanced one is preferred</line>
+				</line>
+				<line>Time overlaps:
+					<line>added ability for some classes to overlap (time overlap is minimized) -- to be defined on scheduling subparts</line>
+					<line>minimize overlaps with free times (when those cannot be fully satisfied)</line>
+				</line>
+				<line>Batch sectioning improvements:
+					<line>added a new priority based construction phase</line>
+					<line>enforce course and configuration limits</line>
+				</line>
+				<line>Section balancing:
+					<line>Small weight is removed from assignments that further dis-balance a section</line>
+					<line>Small weight is added to assignments that better balance the section</line>
+					<line>Target balance:
+						<line>Sections with limits: section limit x ( subpart enrollment / subpart limit )</line>
+						<line>Unlimited sections: subpart enrollment / number of sections in the subpart</line>
+					</line> 
+				</line>
+				<line>Student weights parameters were added to solver configuration.</line>
+				<line>Load information about whether student overlaps are allowed.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Apache Tomcat 7 Compatibility Issues</title>
+		<item>
+			<name>Query Log</name>
+			<description>
+				<line>Fixed the AbstractMethodError in QueryLogFilter (by changing the HttpServletRequestWrapper to be a Java Proxy)</line>
+			</description>
+		</item>
+		<item>
+			<name>Various Pages</name>
+			<description>
+				<line>Corrected syntax to meet the new Tomcat 7 validation</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Course Timetabling Database Loader</name>
+			<description>
+				<line>Avoid meetings outside of the session (IndexOutOfBoundsException: bitIndex &lt; 0: -167)</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Course Offering Import: student overlaps should be disabled by default.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.113</version>
+	<release-date>Wed, 12 Jan 2011</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
+			<name>Buildings -- Update Rooms</name>
+			<description>
+				<line>Only update rooms and buildings that have external ids</line>
+				<line>Following bugs were fixed (both were introduced in 3.2.101)
+					<line>Generate Room.permanentId attribute for a newly created room</line>
+					<line>Exception "not-null property references a null or transient value: RoomDept.room" when a room-department relation is present</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Minor technology update</name>
+			<description>
+				<line>GWT updated to version 2.1.1 (was 2.1.0)</line>
+				<line>iText updated to version 5.0.5 (was 5.0.2)</line>
+				<line>Hibernate updated to 3.5.6 (was 3.5.3)</line>
+				<line>Log4j updated to 1.2.16 (was 1.2.15)</line>
+				<line>MySQL Connector/J updated to 5.1.14 (was 5.1.11)</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetable export</name>
+			<description>
+				<line>If there is a cross-list, export each class under all the course names (not just the controlling one).</line>
+			</description>
+ 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Courses / Alternatives table: in some browsers the course 1st alternative text field was not enabled after a course was selected using the SuggestionBox (selecting a suggestion using Enter).</line>
+			</description>
+ 		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.107</version>
+	<release-date>Thu, 23 Dec 2010</release-date>
+	<category>
+		<title>User interface</title>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>When creating a new cross-list, if there is no course reservation, populate the fields from course offering data
+					<line>instructional offering limit -&gt; requested</line>
+					<line>projected demand -&gt; projected</line>
+					<line>(last-like) demand -&gt; last term</line>
+				</line>
+				<line>When there is only one line (the course is not cross-listed), display the above numbers.</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Check instructor conflicts using actual class instructors (not what is saved with the committed solution)</line>
+				<line>When application property tmtbl.classAssign.allowUnassignment is set to false (defaults to true ~ current behavior), it is not allowed to leave a class unassigned</line>
+			</description>
+		</item>
+		<item>
+			<name>Room (allocation) report</name>
+			<description>
+				<line>If a class can be assigned in rooms of different types, do not count the class as must / should in both room types (rather not count it at all)</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>Added ability to display a simplified version of the page (gwt.jsp?page=roomtable) that only allows to display room timetable (and no other resource type)</line>
+			</description>
+		</item>
+		<item>
+			<name>(Course Timetabling) Changes</name>
+			<description>
+				<line>Check both assignments for rooms
+					<line>This fixes the problem when selected solution had no room assigned (no room change was shown even when the new solution had a room assigned)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Small style changes and improvements</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Buildings page, Update Data operation</name>
+			<description>
+				<line>Added ability to update existing rooms and buildings (when unitime.external.room.update.existing is set to true, defaults to false).
+					<line>Global room features are reset when unitime.external.room.update.existing.features is true (defaults to false)</line>
+					<line>Room department relations from external data are added when unitime.external.room.update.existing.departments is true (defaults to false)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Offering, Course Timetable exports</name>
+			<description>
+				<line>Timetable export: fixed the issue when a class was exported multiple times (need to start from top classes only)</line>
+				<line>Timetable export: class suffix -- use class suffix when present, section number otherwise (course offering export already did that correctly)</line>
+				<line>Both exports (time element -- export date pattern name, if not default)</line>
+			</description>
+ 		</item>
+ 		<item>
+ 			<name>iCalendar export</name>
+ 			<description>
+ 				<line>Ensure that the exported calendar is in UTF-8.</line>
+ 				<line>Avoid ArrayIndexOutOfBounds exception when there are two or more instructors with empty emails</line>
+ 				<line>If parameter encryption fails, fall back to no encryption</line>
+ 			</description>
+ 		</item>
+	</category>
+	<category>
+		<title>Constraint Solver</title>
+		<item>
+			<name>Course Timetabling Solver</name>
+			<description>
+				<line>Added ability to automatically spread classes of each subject area in time.</line>
+				<line>Database loader: added ability to change message level of various messages (mostly warning now)</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.93</version>
+	<release-date>Wed, 1 Dec 2010</release-date>
+	<category>
+		<title>First Release of UniTime 3.2</title>
+		<item>
+			<name>Look &amp; feel changes</name>
+			<description>
+				<line>Menu on the top of the page or on the side
+					<line>Can be changed in user preferences (user.menu.style property)</line>
+				</line>
+				<line>User / solver info -> solver, user, session components under page title</line>
+				<line>Back button (does not work well in Chrome)</line>
+				<line>Help page opens in a dialog</line>
+				<line>A disclaimer message (in HTML format) can be added at the bottom of every page.
+					<line>Value of the application property tmtbl.page.disclaimer.</line>
+				</line>
+				<line>Room &amp; building coordinates can be in GPS
+					<line>A map showing the room's location can be displayed  on the Room Detail page</line>
+					<line>Edit pages can use Google maps to enter coordinates</line>
+					<line>Non-university locations can have GPS coordinates set</line>
+					<line>Rooms can ignore distances (not just non-university locations)</line>
+				</line>
+				<line>More informative tooltips
+					<line>Events (all pages): show tooltip on locations including name, display name, room type, minimap, capacity, global groups and features</line>
+					<line>Classes, Instructional Offerings: show enlarged version of the time preferences table as tooltip for time preferences icon</line>
+					<line>Examinations: show enlarged version of the period preferences table as tooltip for period preferences icon</line>
+					<line>Classes, Instructional Offerings, Examinations: show list of distribution objects in the tooltip of a distribution preference</line>
+					<line>Classes, Instructional Offerings, Examinations: show a bigger tooltip for room and building preferences (including minimap and capacity, global room/features for rooms)</line>
+					<line>Rooms: show a bigger tooltip for room sharing, exam period preferences, room and building names</line>
+				</line>
+				<line>New version of people lookup dialog
+					<line>Show each person only once (merging information from various sources)</line>
+					<line>Only people having external id are displayed (external id is used to merge contact information)
+						<line>Except on events, where people without external id are displayed in gray and at the bottom of the list</line>
+					</line>
+					<line>It is now possible to search people by email as well</line>
+				</line>
+				<line>Suggestions, Class Assignment, Examination Assignment, Date pattern preview, wiki help
+					<line>Use GWT-based dialog box instead of opening a new browser window</line>
+					<line>Suggestions, Class/Examination Assignment -- refresh the parent page when a new assignment is made</line>
+				</line>
+				<line>Event Timetable
+					<line>Timetable of a room, person, department, curriculum, subject area</line>
+					<line>Including all events, calendar-like time grid as well as list, export to iCalendar</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver changes</name>
+			<description>
+				<line>Added ability to use GPS coordinates
+					<line>Back-to-back distance student conflict are now based on break times</line>
+					<line>Course demand can be based on
+						<line>Last-like student enrollments</line>
+						<line>Projected course demands (last-like + curriculum projections)</line>
+						<line>Curriculum-based (with or without last-like information)</line>
+						<line>Current student enrollments</line>
+						<line>Student course requests</line>
+					</line>
+				</line>
+				<line>Student sectioning in course timetabling changes
+					<line>Students can be moved among committed classes as well</line>
+					<line>May or may not include courses that do not have any classes of the problem (default only for curriculum-based demands where students are made up)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>New features</name>
+			<description>
+				<line>Curriculum-based Course Timetabling
+					<line>Curriculum Projections page</line>
+					<line>Curricula / Curriculum Edit / Curriculum Details page</line>
+					<line>Curricula section on Instructional Offering Details page</line>
+					<line>Academic Areas, Classifications, Majors, Minors administrative page</line>
+					<line>Curricula XML export/import</line>
+				</line>
+				<line>Student Sectioning Assistant
+					<line>Still more of a demo as it only allows for class assignment changes (with no rescheduling)</line>
+				</line>
+				<line>Student Course Requests page for collecting student pre-registration (must be enabled by session status)</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Update of underlying technologies
+					<line>Constraint Solver Library 1.2</line>
+					<line>Hibernate 3.5, Struts 1.3.10, iText 5.0.2, GWT 2.1</line>
+				</line>
+				<line>Unified sending of emails</line>
+				<line>Replaced Hibernate Synchronizer with a home-made class</line>
+				<line>Code cleanup</line>
+				<line>Queue for roll-forward and data exchange</line>
+				<line>Online documentation moved to help.unitime.org (powered by Google Sites)</line>
+				<line>Added default implementation of LDAP external uid lookup, translation between uid and external id</line>
+				<line>Excessive days/months on sessions/date patterns made more general.</line>
+				<line>Few improvements to the Timetable (grid) page (e.g., show event when a solution from the database is displayed).</line>
+				<line>Room allocation report (Solvers Reports page) improved (counting of weekly hour usage)</line>
+				<line>Select Academic Session / Select User Role: table or roles / sessions made sortable, default order by session (last session first)</line>
+				<line>Event Detail: added Inquire button (an email is sent, a message is added to events history); added ability to attach a file to a approve / inquiry / reject email</line>
+				<line>Events / Meetings: added export to CSV; added enrollment counts for exam and course related events; added filter by day of week and time</line>
+				<line>Woebegon example contains a new term (Fall 2010) with few example curricula defined</line>
+				<line>Examination Assignment page, examination reports: for the sake of consistency, exam size (if set) overrides the number of students on an exam in all cases (not just for the examination solver)</line>
+				<line>Exporting an iCalendar now produces a URL that can be shared.</line>
+				<line>Manage Solvers: it is now possible to unload a (working) solver</line>
+				<line>Hibernate configuration files: all table names are now in lower-case avoiding the need to set MySQL to case insensitive mode on Linux based systems</line>
+				<line>Timetable: added ability to show/hide non-class events</line>
+				<line>It is now possible to create an academic session over a whole year (but not longer than a year)</line>
+				<line>Events: when filtering rooms by non-university location room type, added ability to select the room from a drop down box</line>
+				<line>Rooms: added navigation</line>
+				<line>Added optional registration</line>
+				<line>License update to GNU General Public License, Version 3 (was Version 2)
+					<line>Added list of dependencies (including URLs, copyrights, and licenses)</line>
+				</line>
+				<line>Added query log (Page Statistics page)</line>
+				<line>Examinations: Added ability to automatically put a preference on an original building (i.e., building of a room in which the related class took place)</line>
+				<line>Course timetabling solver: handling of meet with constraint improved</line>
+				<line>Course offerings: course number can be in lower case (automatic conversion to upper case is disabled when tmtbl.courseNumber.upperCase property is set to false)</line>
+				<line>Course offering import: allow for incremental mode
+					<line>Set by attribute incremental on the root element (boolean, defalts to false)</line>
+					<line>If incremental, course offerings / courses that are not included in the file are left untouched (i.e., not deleted at the end)</line>
+				</line>
+				<line>Timetable: Allow for boolean expressions in the filter (e.g., ME or ENAD will match all rooms from ME or ENAD buildings)
+					<line>Also allow for regular expressions (e.g., regex:"ME .*[A-Za-z]" will match all ME rooms ending with a character)</line>
+					<line>By default, the name must contain all the terms (e.g., ME 200 will only match ME 200 room and not ME 2001)</line>
+					<line>Partial matches can be done by using find: attribute (e.g., find:"ME 200")</line>
+					<line>Term matches are case insensitive (me will match ME building)</line>
+					<line>Also, when displaying save solution, display dates instead of extended date pattern names.</line>
+				</line>
+				<line>Test HQL: Allow to change the maximal number of displayed lines by setting the tmtbl.test_hql.max_line application property.</line>
+				<line>XML imports: Ensure that the user that initiated the import is used for the change-log and also for sending emails in the course offering import.</line>
+			</description>
+		</item>
+		<item>
+			<name>Fixes</name>
+			<description>
+				<line>All recent fixes of UniTime 3.1 are included (see below)</line>
+				<line>Personal Schedule -- fixed the ability to change sessions for an administrator looking up a student's schedule</line>
+				<line>Fixed a problem in people lookup (single quotation marks were not escaped)</line>
+				<line>Preview of a date pattern -- window size increased to fit more months</line>
+				<line>Delete Session -- all room group / feature relations were deleted (not just the ones of the session)</line>
+				<line>Added workaround for a Java Bug 4466485 (URL.getFile() may return %20 for spaces on Windows).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>UniTime 3.1 Bug Fixes &amp; Other Improvements</title>
+		<item>
+			<name>PDF Exam reports</name>
+			<description>
+				<line>Reports Queue
+					<line>Process only one report at a time by putting all requests for a PDF exam report into a queue.</line>
+					<line>Display current queue (of PDF exam reports) on the page, if it is not empty.</line>
+					<line>There is also an ability to delete a request from the queue before it is processed.</line>
+					<line>Also show reports (including log and output files) that were finished during the last hour.</line>
+ 				</line>
+ 				<line>Exam Verification Report -- Class not full-term message
+ 					<line>Fixed an issue with the message not being printed in some cases (POL 10100).</line>
+ 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Session Roll-Forward</name>
+			<description>
+				<line>After rolling forward last like demand data, update the last like demand counts on the Course Offerings.</line>
+				<line>Fix bug where solver groups were not being placed on the timetable managers during roll forward.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Student Enrollment Import
+					<line>Update class / course enrollments by default.</line>
+					<line>Fixed the queries that do the update to work on MySQL as well.</line>
+					<line>When classes have no external ids, allow the given external id (in the XML file) to match on the class name.</line>
+				</line>
+				<line>Student Sectioning Import
+					<line>If a new student is created, set all required properties.</line>
+					<line>Update both sides of the course request relations (student - demands - requested courses) to avoid Hibernate cache issues.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>When a manager of a class is changed, not only delete all related class assignments (class belongs to a different problem), but also delete the related class event.
+					<line>This (class having an event associated but no committed assignment) was causing a problem on the Class Assignment page.</line>
+				</line>
+				<line>Fixed a bug that was introduced in October 2009 -- exam print offset got completely ignored.</line>
+				<line>Fixes related to an old date patterns change (adding extra 3 months before and after the data pattern, from Jul)
+					<line>Exam print offset got completely ignored</line>
+					<line>Week filter on Timetable page fixed</line>
+					<line>Course timetabling solver -- room availability was incorrect (all meetings got shifted by these 3 months).</line>
+					<line>Room Allocation report (Solution Reports page) fixed.</line>
+				</line>
+				<line>Add Event: Changed location search to use an in statement when searching for room groups rather than an or statement.  This makes the search more efficient.</line>
+				<line>Examination conflicts: query returning overlapping course meetings with required attendance improved</line>
+				<line>Add Event: fixed a problem with creating a course event with >1000 students</line>
+				<line>Enrollment Audits: Ensure the correct enrollment is used for the audit results when a student is enrolled in multiple names of a cross listed course.</line>
+				<line>Edit Date Pattern: fixed ArrayIndexOutOfBoundsException when pattern offset is negative, assumption about the days of weeks corrected</line>
+				<line>Class Assignment: remove all related constraint infos to avoid hibernate cache issues when an orphaned constraint info is automatically deleted
+					<line>This should fix the ObjectNotFoundException on the Class Assignment page</line>
+				</line>
+				<line>Student sectioning: check for LazyInitializationException during save</line>
+				<line>Remote solver server: added ability to override database connection string by the tmtbl.solver.connection.url property</line>
+				<line>Examination verification report: limit the length of the scheduling note to fit within one line</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+</release-history>
