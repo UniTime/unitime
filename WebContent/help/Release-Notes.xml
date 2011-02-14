@@ -69,6 +69,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Minor technology update</name>
+			<description>
+				<line>GWT updated to version 2.2.0 (was 2.1.1)</line>
+			</description>
+		</item>
 	</category>
 </release>
 
