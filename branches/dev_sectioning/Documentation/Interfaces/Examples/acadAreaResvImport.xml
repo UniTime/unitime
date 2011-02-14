@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE academicAreaReservations PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/AcademicAreaReservation.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- subjectCourse ==> Required:  subject, courseNumber  {Instructional or Course Offering identification}
+	       reservation ==> [1 ==> N entries]
+	                       Required:  reservationType, level, priority 
+	                    			  request, reserved
+	                    				(One of request | reserved must be non-null.  
+	                    				 If one is null it defaults to the non-null value.)
+	                                  academicArea, academicClass 
+	                                    (One of academicArea | academicClass must be non-null.
+	                                     Both may be non-null.)
+	                                  configuration
+	                                    (Configuration is only required to be non-null if 
+	                                     level = "configuration".)
+	                       Optional:  priorEnrollment, projectedEnrollment
+	     
+	     reservationType = info, temp or perm
+	     level = instrOffering, courseOffering, configuration
+	-->
+<academicAreaReservations campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<subjectCourse subject="A&amp;AE" courseNumber="203">
+   		<reservation academicArea="AAE" academicClass="" reservationType="info" level="courseOffering" configuration="" priority="1" request="67" reserved="67" priorEnrollment="0" projectedEnrollment="67"/>
+   		<reservation academicArea="E" academicClass="06" reservationType="perm" level="instrOffering" configuration="" priority="1" request="27" reserved="" projectedEnrollment="27"/>
+   		<reservation academicArea="ECE" academicClass="" reservationType="info" level="courseOffering" configuration="" priority="2" request="3" reserved="3" priorEnrollment="0" projectedEnrollment="3"/>
+   		<reservation academicArea="LA" academicClass="" reservationType="info" level="courseOffering" configuration="" priority="1" request="1" reserved="1" priorEnrollment="0" projectedEnrollment="1"/>
+   		<reservation academicArea="S" academicClass="" reservationType="info" level="courseOffering" configuration="" priority="3" request="2" reserved="2" priorEnrollment="0" projectedEnrollment="2"/>
+	</subjectCourse>
+	<subjectCourse subject="A&amp;AE" courseNumber="204">
+   		<reservation academicArea="" academicClass="02" reservationType="temp" level="instrOffering" configuration="" priority="1" request="53" reserved="53" priorEnrollment="0" projectedEnrollment="53"/>
+   		<reservation academicArea="E" academicClass="" reservationType="info" level="courseOffering" configuration="" priority="1" request="" reserved="5" priorEnrollment="0" projectedEnrollment="5"/>
+	</subjectCourse>
+	<subjectCourse subject="A&amp;AE" courseNumber="204L">
+  		<reservation academicArea="AAE" academicClass="" reservationType="info" level="configuration" configuration="2" priority="1" request="55" reserved="55" priorEnrollment="0" projectedEnrollment="55"/>
+  		<reservation academicArea="E" academicClass="" reservationType="info" level="configuration" configuration="2" priority="1" request="5" reserved="5" priorEnrollment="0" projectedEnrollment="5"/>
+	</subjectCourse>
+</academicAreaReservations>
