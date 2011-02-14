@@ -32,7 +32,7 @@ google-sites-liberation-1.0.3.jar
 	License: Apache Software License, Version 2.0
 
 gwt-dev.jar, gwt-user.jar, gwt-servlet.jar
-	Google Web Toolkit 2.1
+	Google Web Toolkit 2.2
 	URL: http://code.google.com/webtoolkit/
 	Copyrigt: (C) 2010 Google
 	License: Apache Software License, Version 2.0
