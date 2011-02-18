@@ -20,24 +20,29 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Reservation;
-import org.unitime.timetable.model.ReservationType;
 
 public abstract class BaseReservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
-	private String iOwnerClassId;
-	private Long iOwner;
-	private Integer iPriority;
+	private Date iExpirationDate;
+	private Integer iLimit;
 
-	private ReservationType iReservationType;
+	private InstructionalOffering iInstructionalOffering;
+	private Set<InstrOfferingConfig> iConfigurations;
+	private Set<Class_> iClasses;
 
 	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_OWNER_CLASS_ID = "ownerClassId";
-	public static String PROP_OWNER = "owner";
-	public static String PROP_PRIORITY = "priority";
+	public static String PROP_EXPIRATION_DATE = "expirationDate";
+	public static String PROP_RESERVATION_LIMIT = "limit";
 
 	public BaseReservation() {
 		initialize();
@@ -53,17 +58,28 @@ public abstract class BaseReservation implements Serializable {
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-	public String getOwnerClassId() { return iOwnerClassId; }
-	public void setOwnerClassId(String ownerClassId) { iOwnerClassId = ownerClassId; }
+	public Date getExpirationDate() { return iExpirationDate; }
+	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
 
-	public Long getOwner() { return iOwner; }
-	public void setOwner(Long owner) { iOwner = owner; }
+	public Integer getLimit() { return iLimit; }
+	public void setLimit(Integer limit) { iLimit = limit; }
 
-	public Integer getPriority() { return iPriority; }
-	public void setPriority(Integer priority) { iPriority = priority; }
+	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
+	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
-	public ReservationType getReservationType() { return iReservationType; }
-	public void setReservationType(ReservationType reservationType) { iReservationType = reservationType; }
+	public Set<InstrOfferingConfig> getConfigurations() { return iConfigurations; }
+	public void setConfigurations(Set<InstrOfferingConfig> configurations) { iConfigurations = configurations; }
+	public void addToconfigurations(InstrOfferingConfig instrOfferingConfig) {
+		if (iConfigurations == null) iConfigurations = new HashSet<InstrOfferingConfig>();
+		iConfigurations.add(instrOfferingConfig);
+	}
+
+	public Set<Class_> getClasses() { return iClasses; }
+	public void setClasses(Set<Class_> classes) { iClasses = classes; }
+	public void addToclasses(Class_ class_) {
+		if (iClasses == null) iClasses = new HashSet<Class_>();
+		iClasses.add(class_);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Reservation)) return false;
@@ -82,10 +98,9 @@ public abstract class BaseReservation implements Serializable {
 
 	public String toDebugString() {
 		return "Reservation[" +
-			"\n	Owner: " + getOwner() +
-			"\n	OwnerClassId: " + getOwnerClassId() +
-			"\n	Priority: " + getPriority() +
-			"\n	ReservationType: " + getReservationType() +
+			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	InstructionalOffering: " + getInstructionalOffering() +
+			"\n	Limit: " + getLimit() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

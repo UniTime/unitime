@@ -3076,4 +3076,188 @@
 		</mysql>
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 	</update>
+	<update version="65" date="14-Feb-2011" comment="Reservations">
+		<mysql>
+			alter table %SCHEMA%.course_offering add reservation bigint(10)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add reservation number(10)
+		</plsql>
+		<sql>
+			update course_offering c set c.reservation = 
+				(select r.reserved from course_reservation r where r.course_offering = c.uniqueid)
+			where exists
+				(select r.reserved from course_reservation r where r.course_offering = c.uniqueid)
+		</sql>
+		<sql>
+			drop table %SCHEMA%.acad_area_reservation
+		</sql>
+		<sql>
+			drop table %SCHEMA%.individual_reservation
+		</sql>
+		<sql>
+			drop table %SCHEMA%.student_group_reservation
+		</sql>
+		<sql>
+			drop table %SCHEMA%.pos_reservation
+		</sql>
+		<sql>
+			drop table %SCHEMA%.course_reservation
+		</sql>
+		<sql>
+			drop table %SCHEMA%.reservation_type
+		</sql>
+		<plsql>
+			create table %SCHEMA%.reservation (
+				uniqueid number(20,0) constraint nn_reservation_uniqueid not null,
+				reservation_type decimal(10,0) constraint nn_reservation_type not null,
+				expiration_date date,
+				reservation_limit decimal(10,0),
+				offering_id number(20,0) constraint nn_reservation_offering not null,
+				group_id number(20,0),
+				area_id number(20,0),
+				course_id number(20,0)
+			)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation
+				(
+  				uniqueid decimal(20,0) not null primary key,
+  				reservation_type bigint(10) not null,
+  				expiration_date datetime,
+  				reservation_limit bigint(10),
+  				offering_id decimal(20,0) not null,
+  				group_id decimal(20,0),
+  				area_id decimal(20,0),
+  				course_id decimal(20,0)
+				) engine = INNODB
+		</mysql>
+		<plsql>alter table %SCHEMA%.reservation add constraint pk_reservation primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.reservation_config (
+				reservation_id number(20,0) constraint nn_res_config_id not null,
+				config_id number(20,0) constraint nn_res_config_config not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_config add constraint pk_reservation_config primary key (reservation_id, config_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_config (
+				reservation_id decimal(20,0) not null,
+				config_id decimal(20,0) not null,
+				primary key (reservation_id, config_id)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.reservation_class (
+				reservation_id number(20,0) constraint nn_res_class_id not null,
+				class_id number(20,0) constraint nn_res_class_class not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_class add constraint pk_reservation_class primary key (reservation_id, class_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_class (
+				reservation_id decimal(20,0) not null,
+				class_id decimal(20,0) not null,
+				primary key (reservation_id, class_id)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.reservation_student (
+				reservation_id number(20,0) constraint nn_res_student_id not null,
+				student_id number(20,0) constraint nn_res_student_student not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_student add constraint pk_reservation_students primary key (reservation_id, student_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_student (
+				reservation_id decimal(20,0) not null,
+				student_id decimal(20,0) not null,
+				primary key (reservation_id, student_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.reservation add constraint fk_reservation_offering foreign key (offering_id)
+			references %SCHEMA%.instructional_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation add constraint fk_reservation_student_group foreign key (group_id)
+			references %SCHEMA%.student_group (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation add constraint fk_reservation_area foreign key (area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation add constraint fk_reservation_course foreign key (course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_config add constraint fk_res_config_config foreign key (config_id)
+			references %SCHEMA%.instr_offering_config (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_config add constraint fk_res_config_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_class add constraint fk_res_class_class foreign key (class_id)
+			references %SCHEMA%.class_ (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_class add constraint fk_res_class_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_student add constraint fk_res_student_student foreign key (student_id)
+			references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_student add constraint fk_res_student_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.reservation_clasf (
+				reservation_id number(20,0) constraint nn_res_clasf_id not null,
+				acad_clasf_id number(20,0) constraint nn_res_clasf_clasf not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_clasf add constraint pk_reservation_clasf primary key (reservation_id, acad_clasf_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_clasf (
+				reservation_id decimal(20,0) not null,
+				acad_clasf_id decimal(20,0) not null,
+				primary key (reservation_id, acad_clasf_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.reservation_clasf add constraint fk_res_clasf_clasf foreign key (acad_clasf_id)
+			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_clasf add constraint fk_res_clasf_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.reservation_major (
+				reservation_id number(20,0) constraint nn_res_major_id not null,
+				major_id number(20,0) constraint nn_res_major_major not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.reservation_major add constraint pk_reservation_major primary key (reservation_id, major_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.reservation_major (
+				reservation_id decimal(20,0) not null,
+				major_id decimal(20,0) not null,
+				primary key (reservation_id, major_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.reservation_major add constraint fk_res_majors_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.reservation_major add constraint fk_res_majors_reservation foreign key (reservation_id)
+			references %SCHEMA%.reservation (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

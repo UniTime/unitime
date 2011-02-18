@@ -215,7 +215,6 @@ public class SubjectAreaEditAction extends Action {
 			for (Iterator i = s.iterator(); i.hasNext();) {
 				InstructionalOffering io = (InstructionalOffering) i.next();
 				io.deleteAllDistributionPreferences(hibSession);
-				io.deleteAllReservations(hibSession);
 				io.deleteAllClasses(hibSession);
 				io.deleteAllCourses(hibSession);
 				hibSession.delete(io);

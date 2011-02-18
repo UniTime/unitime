@@ -45,7 +45,7 @@
 			</menu>
 			<separator/>
 			<item name="Distribution Preferences" page="distributionPrefs.do"/>
-			<item name="Reservations" page="reservationList.do"/>
+			<menu name="Reservations" page="reservations" type="gwt"/>
 			<item name="Class Assignments" page="classAssignmentsReportShowSearch.do">
 				<condition>
 					<canSeeTimetable/>

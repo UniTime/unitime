@@ -155,7 +155,8 @@
         <set
             name="groups"
             table="student_to_group"
-            inverse="false">
+            inverse="true"
+            lazy="true">
             <cache include="non-lazy" usage="read-write"/>
             <key column="student_id" foreign-key="fk_student_group_group"/>
             <many-to-many

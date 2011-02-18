@@ -23,8 +23,6 @@ import java.util.Iterator;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
-import org.unitime.timetable.model.ReservationType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 
@@ -52,23 +50,14 @@ public class CourseOfferingReservationImport extends BaseImport {
             if(session == null) {
                 throw new Exception("No session found for the given campus, year, and term.");
             }
-
-            ReservationType type = fetchReservationType();
             
             for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
                 SubjectArea subject = this.fetchSubjectArea(element.attributeValue("subject"), session.getSessionId());
                 CourseOffering course = this.fetchCourseOffering(element.attributeValue("courseNumber"), subject.getUniqueId());
-                CourseOfferingReservation res = new CourseOfferingReservation();
-                res.setOwner(course.getInstructionalOffering().getUniqueId());
-                res.setCourseOffering(course);
-                res.setPriority(new Integer(1));
-                res.setReserved(new Integer(Integer.parseInt(element.attributeValue("reservation"))));
-                res.setOwnerClassId("I");
-                res.setPriorEnrollment(new Integer(Integer.parseInt(element.attributeValue("priorEnrollment"))));
-                res.setProjectedEnrollment(new Integer(Integer.parseInt(element.attributeValue("projectedEnrollment"))));
-                res.setReservationType(type);
-                getHibSession().saveOrUpdate(res);
+                String r = element.attributeValue("reservation");
+                course.setReservation(r == null ? null : Integer.valueOf(r));
+                getHibSession().saveOrUpdate(course);
                 
                 flushIfNeeded(false);
             }
@@ -97,13 +86,5 @@ public class CourseOfferingReservationImport extends BaseImport {
 			setString("courseNumber", courseNumber).
 			setCacheable(true).
 			uniqueResult();
-	}
-
-	ReservationType fetchReservationType() {
-		return (ReservationType) getHibSession().
-		createQuery("select distinct a from RESERVATION_TYPE as a where a.reference=:ref").
-		setString("ref", "perm").
-		setCacheable(true).
-		uniqueResult();
 	}
 }

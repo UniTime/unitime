@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -44,7 +43,6 @@ import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
@@ -110,37 +108,6 @@ public class CourseOfferingEditAction extends Action {
 		    throw new Exception ("Operation could not be interpreted: " + op);
 
 		Debug.debug ("Op: " + op);
-
-	    //TODO Reservations functionality to be removed later
-		if(op.equals(rsc.getMessage("button.addReservation")) ) {
-		    String courseOfferingId = request.getParameter("courseOfferingId");
-	        CourseOffering co = new CourseOfferingDAO().get(new Long(courseOfferingId));
-
-		    request.setAttribute("ownerId", co.getUniqueId() );
-		    request.setAttribute("ownerName", co.getCourseNameWithTitle() );
-		    request.setAttribute("ownerType", Constants.RESV_OWNER_COURSE);
-		    request.setAttribute("ownerTypeLabel", Constants.RESV_OWNER_COURSE_LBL);
-		    
-		    InstructionalOffering io = co.getInstructionalOffering();
-            request.setAttribute("ioLimit", io.getLimit()!=null ? io.getLimit().toString() : null);
-            request.setAttribute("unlimited", io.hasUnlimitedEnrollment());
-
-		    Collection ioResvs2 = io.getReservations(false, false, false, false, true);
-	    	if (ioResvs2!=null && ioResvs2.size()>0) {
-	    		for (Iterator it1=ioResvs2.iterator(); it1.hasNext(); ) {
-	    			Object o = it1.next();
-	    			if (o instanceof CourseOfferingReservation) {
-	    				CourseOfferingReservation cor = (CourseOfferingReservation) o;
-	    				if (cor.getCourseOffering().equals(co)) {
-	    					request.setAttribute("crsLimit", cor.getReserved().toString());
-	    					break;
-	    				}
-	    			}
-	    		}
-	    	}
-            return mapping.findForward("displayAcadAreaReservation");
-		}
-	    // End
 
 		if(op.equals(rsc.getMessage("button.editCourseOffering")) ) {
 

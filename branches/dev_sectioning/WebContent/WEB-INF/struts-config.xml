@@ -89,13 +89,6 @@
       <form-bean name="designatorListForm" type="org.unitime.timetable.form.DesignatorListForm" />
       <form-bean name="designatorEditForm" type="org.unitime.timetable.form.DesignatorEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
-      <form-bean name="reservationListForm" type="org.unitime.timetable.form.ReservationListForm" />
-      <form-bean name="reservationEditForm" type="org.unitime.timetable.form.ReservationEditForm" />
-      <form-bean name="courseReservationEditForm" type="org.unitime.timetable.form.CourseReservationEditForm" />
-      <form-bean name="academicAreaReservationEditForm" type="org.unitime.timetable.form.AcademicAreaReservationEditForm" />
-      <form-bean name="posReservationEditForm" type="org.unitime.timetable.form.PosReservationEditForm" />
-      <form-bean name="individualReservationEditForm" type="org.unitime.timetable.form.IndividualReservationEditForm" />
-      <form-bean name="studentGroupReservationEditForm" type="org.unitime.timetable.form.StudentGroupReservationEditForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
       <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
@@ -1126,12 +1119,6 @@
 	      <forward
 	        name="showConfigDetail" 
 	        path="instructionalOfferingDetailTile" />
-	      <forward
-	        name="addReservation" 
-	        path="/reservationAdd.do" />
-	       <forward 
-       		name="displayCourseReservation" 
-       		path="/courseReservationEdit.do" />
 	    </action>
 	    
     <action
@@ -1167,12 +1154,6 @@
        <forward 
        	name="changeClassOwner" 
        	path="/classOwnerChange.do" />
-      <forward
-        name="addReservation" 
-        path="/reservationAdd.do" />
-      <forward 
-   		name="displayCourseReservation" 
-   		path="/courseReservationEdit.do" />
     </action>
 
     <action
@@ -1528,9 +1509,6 @@
        <forward 
        		name="instructionalOfferingDetail" 
        		path="/instructionalOfferingDetail.do" />
-       <forward 
-       		name="displayAcadAreaReservation" 
-       		path="/academicAreaReservationEdit.do" />
     </action>
     
     <action
@@ -1592,137 +1570,6 @@
        <forward name="list" path="applicationConfigTile" />
        <forward name="add" path="applicationConfigAddTile" />
        <forward name="edit" path="applicationConfigEditTile" />
-    </action>
-    
-    <action
-       path="/reservationList"
-       type="org.unitime.timetable.action.ReservationListAction"
-       attribute="reservationListForm"
-       input="reservationListTile"
-       name="reservationListForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="displayReservationList" 
-       		path="reservationListTile" />
-       <forward 
-       		name="addReservation" 
-       		path="/reservationAdd.do" />
-    </action>
-    
-    <action
-       path="/reservationAdd"
-       type="org.unitime.timetable.action.ReservationEditAction"
-       attribute="reservationEditForm"
-       input="reservationAddTile"
-       name="reservationEditForm"
-       scope="request"
-       validate="false">
-       <forward 
-       		name="displayReservationDetail" 
-       		path="reservationAddTile" />
-       <forward 
-       		name="displayReservationList" 
-       		path="/reservationList.do" />
-       <forward 
-       		name="displayCourseReservation" 
-       		path="/courseReservationEdit.do" />
-    </action>
-         
-    <action
-       path="/reservationEdit"
-       type="org.unitime.timetable.action.ReservationEditAction"
-       attribute="reservationEditForm"
-       input="reservationEditTile"
-       name="reservationEditForm"
-       scope="request"
-       validate="false">
-       <forward 
-       		name="displayReservationDetail" 
-       		path="reservationEditTile" />
-       <forward 
-       		name="displayReservationList" 
-       		path="/reservationList.do" />
-       <forward 
-       		name="displayCourseReservation" 
-       		path="/courseReservationEdit.do" />
-       <forward 
-       		name="displayAcadAreaReservation" 
-       		path="/academicAreaReservationEdit.do" />
-       <forward 
-       		name="displayPosReservation" 
-       		path="/posReservationEdit.do" />
-       <forward 
-       		name="displayIndividualReservation" 
-       		path="/individualReservationEdit.do" />
-       <forward 
-       		name="displayStudentGroupReservation" 
-       		path="/studentGroupReservationEdit.do" />
-    </action>
-    
-    <action
-       path="/courseReservationEdit"
-       type="org.unitime.timetable.action.CourseReservationEditAction"
-       attribute="courseReservationEditForm"
-       input="courseReservationEditTile"
-       name="courseReservationEditForm"
-       scope="request"
-       validate="false">         
-       <forward 
-       		name="displayCourseReservationDetail" 
-       		path="courseReservationEditTile" />
-    </action>
-    
-    <action
-       path="/academicAreaReservationEdit"
-       type="org.unitime.timetable.action.AcademicAreaReservationEditAction"
-       attribute="academicAreaReservationEditForm"
-       input="academicAreaReservationEditTile"
-       name="academicAreaReservationEditForm"
-       scope="request"
-       validate="false">         
-       <forward 
-       		name="displayAcadAreaReservationDetail" 
-       		path="academicAreaReservationEditTile" />
-    </action>
-
-    <action
-       path="/posReservationEdit"
-       type="org.unitime.timetable.action.PosReservationEditAction"
-       attribute="posReservationEditForm"
-       input="posReservationEditTile"
-       name="posReservationEditForm"
-       scope="request"
-       validate="false">         
-       <forward 
-       		name="displayPosReservationDetail" 
-       		path="posReservationEditTile" />
-    </action>
-
-    <action
-       path="/individualReservationEdit"
-       type="org.unitime.timetable.action.IndividualReservationEditAction"
-       attribute="individualReservationEditForm"
-       input="individualReservationEditTile"
-       name="individualReservationEditForm"
-       scope="request"
-       validate="false">         
-       <forward 
-       		name="displayIndividualReservationDetail" 
-       		path="individualReservationEditTile" />
-    </action>
-
-    <action
-       path="/studentGroupReservationEdit"
-       type="org.unitime.timetable.action.StudentGroupReservationEditAction"
-       attribute="studentGroupReservationEditForm"
-       input="studentGroupReservationEditTile"
-       name="studentGroupReservationEditForm"
-       scope="request"
-       validate="false">         
-       <forward 
-       		name="displayStuGrpReservationDetail" 
-       		path="studentGroupReservationEditTile" />
     </action>
     
     <action

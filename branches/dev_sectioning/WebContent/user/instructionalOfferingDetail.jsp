@@ -128,15 +128,6 @@
 					<logic:equal name="instructionalOfferingDetailForm" property="isManager" value="true">
 
 						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
-						<%--
-							<bean:define id="cos" name="instructionalOfferingDetailForm" property="courseOfferings" />
-							<% if ( ((java.util.List)cos).size()>1 ) { %>
-							<html:submit property="op" 
-								styleClass="btn" accesskey="R" titleKey="title.addReservation">
-								<bean:message key="button.addReservation" />
-							</html:submit>
-							<% } --%>
-							
 							<html:submit property="op" 
 								styleClass="btn" accesskey="L" titleKey="title.crossLists">
 								<bean:message key="button.crossLists" />
@@ -221,6 +212,7 @@
 					<TR>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 						<TD align="left" class="WebTableHeader">Title</TD>
+						<TD align="left" class="WebTableHeader">Reserved</TD>
 						<TD align="left" class="WebTableHeader">Schedule of Classes Note</TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader">Demands From</TD>
@@ -231,6 +223,11 @@
 					<TR>
 						<TD align="center" class="BottomBorderGray">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
+						<TD class="BottomBorderGray">
+							<logic:notEmpty name="co" property="reservation">
+								<bean:write name="co" property="reservation"/>
+							</logic:notEmpty>
+						</TD>
 						<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD class="BottomBorderGray">&nbsp;
@@ -252,12 +249,6 @@
 							<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
 								<html:hidden property="courseOfferingId" value="<%= courseOfferingId %>" />
 
-								<!-- TODO Reservations functionality to be removed later -->
-								<html:submit property="op" 
-									styleClass="btn" titleKey="title.addReservationCo">
-									<bean:message key="button.addReservation" />
-								</html:submit>
-								<!-- End -->
 								<% if (isEditableBy) { %>
 								<html:submit property="op" 
 									styleClass="btn" titleKey="title.editCourseOffering">
@@ -361,6 +352,18 @@
 		</TR>
 		
 		<TR>
+			<TD colspan="2">
+				<a name="reservations"></a>
+				<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
+					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+				</logic:equal>
+				<logic:notEqual name="instructionalOfferingDetailForm" property="isEditable" value="true">
+					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+				</logic:notEqual>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD colspan="2" >&nbsp;</TD>
 		</TR>
 
@@ -406,21 +409,6 @@
 		<% } %>
 		
 
-<!-- Reservations -->
-		<% if (request.getAttribute(Reservation.RESV_REQUEST_ATTR)!=null) { %>
-			<TR>
-				<TD colspan="2" >&nbsp;</TD>
-			</TR>
-
-			<TR>
-				<TD colspan="2">
-					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-						<%=request.getAttribute(Reservation.RESV_REQUEST_ATTR)%>
-					</TABLE>
-				</TD>
-			</TR>
-		<% } %>
-		
 		<TR>
 			<TD colspan="2">
 				<tt:exams type='InstructionalOffering' add='true'>
@@ -468,15 +456,6 @@
 				<logic:equal name="instructionalOfferingDetailForm" property="isManager" value="true">
 
 					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
-					<%--
-						<bean:define id="cos" name="instructionalOfferingDetailForm" property="courseOfferings" />
-						<% if ( ((java.util.List)cos).size()>1 ) { %>
-						<html:submit property="op" 
-							styleClass="btn" accesskey="R" titleKey="title.addReservation">
-							<bean:message key="button.addReservation" />
-						</html:submit>
-						<% } --%>
-
 						<html:submit property="op" 
 							styleClass="btn" accesskey="L" titleKey="title.crossLists">
 							<bean:message key="button.crossLists" />

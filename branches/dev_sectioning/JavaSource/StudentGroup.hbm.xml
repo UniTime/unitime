@@ -70,6 +70,19 @@
             column="session_id"
             not-null="true"/>
 
+        <set
+            name="students"
+            table="student_to_group"
+            lazy="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="group_id" foreign-key="fk_student_group_student"/>
+            <many-to-many
+                class="Student"
+                column="student_id"
+                foreign-key="fk_student_group_group"/>
+
+        </set>
+
     </class>
 
 </hibernate-mapping>

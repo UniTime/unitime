@@ -44,7 +44,7 @@ public abstract class BaseQueryLog implements Serializable {
 	public static String PROP_URI = "uri";
 	public static String PROP_TYPE = "type";
 	public static String PROP_SESSION_ID = "sessionId";
-	public static String PROP_UID = "uid";
+	public static String PROP_USERID = "uid";
 	public static String PROP_QUERY = "query";
 	public static String PROP_EXCEPTION = "exception";
 

@@ -42,7 +42,6 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -2274,29 +2273,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if (io.getCourseOfferings().size() == 1){
 			deleteInstructionalOffering(io);
 		} else if (io.getCourseOfferings().size() > 1) {
-			if (io.getCourseReservations() != null && !io.getCourseReservations().isEmpty()){
-				if (io.getCourseReservations().size() <= 2){
-					for (Iterator<?> it = io.getCourseReservations().iterator(); it.hasNext(); ){
-						CourseOfferingReservation cor = (CourseOfferingReservation) it.next();
-						io.getCourseReservations().remove(cor);
-						co.getCourseReservations().remove(cor);
-						cor.setCourseOffering(null);
-						cor.setOwner(null);
-						this.getHibSession().delete(cor);
-					}
-				} else {
-					for (Iterator<?> it = io.getCourseReservations().iterator(); it.hasNext(); ){
-						CourseOfferingReservation cor = (CourseOfferingReservation) it.next();
-						if(cor.getCourseOffering().getUniqueId().equals(co.getUniqueId())){
-							io.getCourseReservations().remove(cor);
-							co.getCourseReservations().remove(cor);
-							cor.setCourseOffering(null);
-							cor.setOwner(null);
-							this.getHibSession().delete(cor);
-						}
-					}
-				}
-			}
 			io.getCourseOfferings().remove(co);
 			if (co.isIsControl().booleanValue()){
 				CourseOffering newControl = (CourseOffering) io.getCourseOfferings().iterator().next();

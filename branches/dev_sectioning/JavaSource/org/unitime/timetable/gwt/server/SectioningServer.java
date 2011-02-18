@@ -58,6 +58,7 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
@@ -327,12 +328,32 @@ public class SectioningServer {
 	@SuppressWarnings("unchecked")
 	private Course clone(Course course, long studentId, boolean updateFromCache) {
 		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());
-		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
+		int courseLimit = course.getLimit();
+		if (courseLimit >= 0) {
+			courseLimit -= course.getEnrollments().size();
+			for (Iterator<Enrollment> i = course.getEnrollments().iterator(); i.hasNext();) {
+				Enrollment enrollment = i.next();
+				if (enrollment.getStudent().getId() == studentId) { courseLimit++; break; }
+			}
+			if (courseLimit < 0) courseLimit = 0;
+		}
+		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
+		Hashtable<Config, Config> configs = new Hashtable<Config, Config>();
+		Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
+		Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
 		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
 			Config config = e.next();
-			Config clonedConfig = new Config(config.getId(), config.getLimit(), config.getName(), clonedOffering);
-			Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
-			Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
+			int configLimit = config.getLimit();
+			if (configLimit >= 0) {
+				configLimit -= config.getEnrollments().size();
+				for (Iterator<Enrollment> i = config.getEnrollments().iterator(); i.hasNext();) {
+					Enrollment enrollment = i.next();
+					if (enrollment.getStudent().getId() == studentId) { configLimit++; break; }
+				}
+				if (configLimit < 0) configLimit = 0;
+			}
+			Config clonedConfig = new Config(config.getId(), configLimit, config.getName(), clonedOffering);
+			configs.put(config, clonedConfig);
 			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
 				Subpart subpart = f.next();
 				Subpart clonedSubpart = new Subpart(subpart.getId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
@@ -359,6 +380,33 @@ public class SectioningServer {
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
 					clonedSection.setPenalty(section.getOnlineSectioningPenalty());
 					sections.put(section, clonedSection);
+				}
+			}
+		}
+		if (course.getOffering().hasReservations()) {
+			Student student = getStudent(studentId);
+			for (Reservation reservation: course.getOffering().getReservations()) {
+				int reservationLimit = (int)Math.round(reservation.getLimit());
+				if (reservationLimit >= 0) {
+					reservationLimit -= reservation.getEnrollments().size();
+					for (Iterator<Enrollment> i = reservation.getEnrollments().iterator(); i.hasNext();) {
+						Enrollment enrollment = i.next();
+						if (enrollment.getStudent().getId() == studentId) { reservationLimit++; break; }
+					}
+					if (reservationLimit <= 0) continue;
+				}
+				Reservation clonedReservation = new DummyReservation(reservation.getId(), clonedOffering,
+						reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
+						student != null && reservation.isApplicable(student));
+				for (Config config: reservation.getConfigs())
+					clonedReservation.addConfig(configs.get(config));
+				for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
+					Set<Section> clonedSections = new HashSet<Section>();
+					for (Section section: entry.getValue())
+						clonedSections.add(sections.get(section));
+					clonedReservation.getSections().put(
+							subparts.get(entry.getKey()),
+							clonedSections);
 				}
 			}
 		}
@@ -783,6 +831,7 @@ public class SectioningServer {
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
 		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
@@ -914,6 +963,7 @@ public class SectioningServer {
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
 		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
 		Student student = new Student(request.getStudentId() == null ? -1l : request.getStudentId());
@@ -1201,5 +1251,41 @@ public class SectioningServer {
 	
 	public ReadWriteLock getLock() {
 		return iLock;
+	}
+	
+	public static class DummyReservation extends Reservation {
+		private int iPriority;
+		private boolean iOver;
+		private int iLimit;
+		private boolean iApply;
+		
+		public DummyReservation(long id, Offering offering, int priority, boolean over, int limit, boolean apply) {
+			super(id, offering);
+			iPriority = priority;
+			iOver = over;
+			iLimit = limit;
+			iApply = apply;
+		}
+		
+		@Override
+		public boolean canAssignOverLimit() {
+			return iOver;
+		}
+
+		@Override
+		public double getLimit() {
+			return iLimit;
+		}
+
+		@Override
+		public int getPriority() {
+			return iPriority;
+		}
+
+		@Override
+		public boolean isApplicable(Student student) {
+			return iApply;
+		}
+		
 	}
 }
