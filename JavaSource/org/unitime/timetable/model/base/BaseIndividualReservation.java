@@ -20,22 +20,18 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.Reservation;
+import org.unitime.timetable.model.Student;
 
 public abstract class BaseIndividualReservation extends Reservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private String iExternalUniqueId;
-	private Boolean iOverLimit;
-	private Date iExpirationDate;
+	private Set<Student> iStudents;
 
-
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_OVER_LIMIT = "overLimit";
-	public static String PROP_EXPIRATION_DATE = "expirationDate";
 
 	public BaseIndividualReservation() {
 		initialize();
@@ -48,15 +44,12 @@ public abstract class BaseIndividualReservation extends Reservation implements S
 
 	protected void initialize() {}
 
-	public String getExternalUniqueId() { return iExternalUniqueId; }
-	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
-
-	public Boolean isOverLimit() { return iOverLimit; }
-	public Boolean getOverLimit() { return iOverLimit; }
-	public void setOverLimit(Boolean overLimit) { iOverLimit = overLimit; }
-
-	public Date getExpirationDate() { return iExpirationDate; }
-	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
+	public Set<Student> getStudents() { return iStudents; }
+	public void setStudents(Set<Student> students) { iStudents = students; }
+	public void addTostudents(Student student) {
+		if (iStudents == null) iStudents = new HashSet<Student>();
+		iStudents.add(student);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof IndividualReservation)) return false;
@@ -76,12 +69,8 @@ public abstract class BaseIndividualReservation extends Reservation implements S
 	public String toDebugString() {
 		return "IndividualReservation[" +
 			"\n	ExpirationDate: " + getExpirationDate() +
-			"\n	ExternalUniqueId: " + getExternalUniqueId() +
-			"\n	OverLimit: " + getOverLimit() +
-			"\n	Owner: " + getOwner() +
-			"\n	OwnerClassId: " + getOwnerClassId() +
-			"\n	Priority: " + getPriority() +
-			"\n	ReservationType: " + getReservationType() +
+			"\n	InstructionalOffering: " + getInstructionalOffering() +
+			"\n	Limit: " + getLimit() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,19 +46,16 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedActi
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
-import org.unitime.timetable.webutil.ReservationsTableBuilder;
 
 
 /** 
@@ -208,27 +204,6 @@ public class InstructionalOfferingDetailAction extends Action {
 				"Instructional Offering ("+frm.getInstrOfferingName()+")",
 				true, false);
 		
-		// Add Reservation
-		if(op.equals(rsc.getMessage("button.addReservation"))) {
-		    
-		    //TODO Reservations Bypass - to be removed later
-	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-		    request.setAttribute("ownerId", frm.getInstrOfferingId());
-		    request.setAttribute("ownerName", io.getCourseNameWithTitle());
-		    request.setAttribute("ownerType", Constants.RESV_OWNER_IO);
-		    request.setAttribute("ownerTypeLabel", Constants.RESV_OWNER_IO_LBL);
-		    return mapping.findForward("displayCourseReservation");		    
-		    // End Bypass
-		    
-	        //TODO Reservations - functionality to be made visible later
-		    /*
-		    request.setAttribute("ownerId", frm.getInstrOfferingId().toString());
-		    request.setAttribute("ownerClassId", Constants.RESV_OWNER_IO);
-		    return mapping.findForward("addReservation");
-		    */
-		}
-		
 		// Go back to instructional offerings
         return mapping.findForward("showInstructionalOfferings");
         
@@ -254,7 +229,6 @@ public class InstructionalOfferingDetailAction extends Action {
 	        tx = hibSession.beginTransaction();
 
 			io.deleteAllDistributionPreferences(hibSession);
-	        io.deleteAllReservations(hibSession);
             Event.deleteFromEvents(hibSession, io);
 	        Exam.deleteFromExams(hibSession, io);
         	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.delete_action.class");
@@ -347,11 +321,10 @@ public class InstructionalOfferingDetailAction extends Action {
 	    
         // Check limits on courses if cross-listed
         if (io.getCourseOfferings().size()>1 && !frm.getUnlimited().booleanValue()) {
-            Set resvs = io.getCourseReservations();
             int lim = 0;
-            for (Iterator i = resvs.iterator(); i.hasNext(); ) {
-                CourseOfferingReservation cor = (CourseOfferingReservation) i.next();
-                lim += cor.getReserved().intValue();
+            for (CourseOffering course: io.getCourseOfferings()) {
+            	if (course.getReservation() != null)
+            		lim += course.getReservation();
             }
             
             if (io.getLimit()!=null && lim < io.getLimit().intValue()) {
@@ -381,13 +354,6 @@ public class InstructionalOfferingDetailAction extends Action {
         if (html!=null && html.indexOf("No preferences found")<0)
         	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);	    
         
-        ReservationsTableBuilder resvTbl = new ReservationsTableBuilder();
-        String resvHtml = resvTbl.htmlTableForInstructionalOffering(
-                user, io, true, true, true, true,
-                true, true, true, true, true );
-        if (resvHtml!=null) 
-        	request.setAttribute(Reservation.RESV_REQUEST_ATTR, resvHtml);	    
-            
     }
 
     /**

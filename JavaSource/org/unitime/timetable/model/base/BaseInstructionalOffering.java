@@ -23,17 +23,13 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
-import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
-import org.unitime.timetable.model.PosReservation;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.StudentGroupReservation;
 
 public abstract class BaseInstructionalOffering implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -53,11 +49,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private OfferingConsentType iConsentType;
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
-	private Set<CourseOfferingReservation> iCourseReservations;
-	private Set<IndividualReservation> iIndividualReservations;
-	private Set<StudentGroupReservation> iStudentGroupReservations;
-	private Set<AcadAreaReservation> iAcadAreaReservations;
-	private Set<PosReservation> iPosReservations;
+	private Set<Reservation> iReservations;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -130,39 +122,11 @@ public abstract class BaseInstructionalOffering implements Serializable {
 		iInstrOfferingConfigs.add(instrOfferingConfig);
 	}
 
-	public Set<CourseOfferingReservation> getCourseReservations() { return iCourseReservations; }
-	public void setCourseReservations(Set<CourseOfferingReservation> courseReservations) { iCourseReservations = courseReservations; }
-	public void addTocourseReservations(CourseOfferingReservation courseOfferingReservation) {
-		if (iCourseReservations == null) iCourseReservations = new HashSet<CourseOfferingReservation>();
-		iCourseReservations.add(courseOfferingReservation);
-	}
-
-	public Set<IndividualReservation> getIndividualReservations() { return iIndividualReservations; }
-	public void setIndividualReservations(Set<IndividualReservation> individualReservations) { iIndividualReservations = individualReservations; }
-	public void addToindividualReservations(IndividualReservation individualReservation) {
-		if (iIndividualReservations == null) iIndividualReservations = new HashSet<IndividualReservation>();
-		iIndividualReservations.add(individualReservation);
-	}
-
-	public Set<StudentGroupReservation> getStudentGroupReservations() { return iStudentGroupReservations; }
-	public void setStudentGroupReservations(Set<StudentGroupReservation> studentGroupReservations) { iStudentGroupReservations = studentGroupReservations; }
-	public void addTostudentGroupReservations(StudentGroupReservation studentGroupReservation) {
-		if (iStudentGroupReservations == null) iStudentGroupReservations = new HashSet<StudentGroupReservation>();
-		iStudentGroupReservations.add(studentGroupReservation);
-	}
-
-	public Set<AcadAreaReservation> getAcadAreaReservations() { return iAcadAreaReservations; }
-	public void setAcadAreaReservations(Set<AcadAreaReservation> acadAreaReservations) { iAcadAreaReservations = acadAreaReservations; }
-	public void addToacadAreaReservations(AcadAreaReservation acadAreaReservation) {
-		if (iAcadAreaReservations == null) iAcadAreaReservations = new HashSet<AcadAreaReservation>();
-		iAcadAreaReservations.add(acadAreaReservation);
-	}
-
-	public Set<PosReservation> getPosReservations() { return iPosReservations; }
-	public void setPosReservations(Set<PosReservation> posReservations) { iPosReservations = posReservations; }
-	public void addToposReservations(PosReservation posReservation) {
-		if (iPosReservations == null) iPosReservations = new HashSet<PosReservation>();
-		iPosReservations.add(posReservation);
+	public Set<Reservation> getReservations() { return iReservations; }
+	public void setReservations(Set<Reservation> reservations) { iReservations = reservations; }
+	public void addToreservations(Reservation reservation) {
+		if (iReservations == null) iReservations = new HashSet<Reservation>();
+		iReservations.add(reservation);
 	}
 
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }

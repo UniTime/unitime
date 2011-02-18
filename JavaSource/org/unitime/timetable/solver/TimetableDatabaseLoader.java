@@ -79,7 +79,6 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -2414,10 +2413,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		for (CourseOffering course: offering.getCourseOfferings()) {
         		int courseLimit = -1;
-        		for (CourseOfferingReservation r: offering.getCourseReservations()) {
-        			if (r.getCourseOffering().equals(course))
-        				courseLimit = r.getReserved().intValue();
-        		}
+        		if (course.getReservation() != null)
+        			courseLimit = course.getReservation();
         		if (courseLimit < 0) {
         			if (offering.getCourseOfferings().size() == 1)
         				courseLimit = offering.getLimit();
@@ -2459,10 +2456,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 						studentWeight += studentId.getWeight();
 
         		int courseLimit = -1;
-        		for (CourseOfferingReservation r: offering.getCourseReservations()) {
-        			if (r.getCourseOffering().equals(course))
-        				courseLimit = r.getReserved().intValue();
-        		}
+        		if (course.getReservation() != null)
+        			courseLimit = course.getReservation();
         		if (courseLimit < 0) {
         			if (offering.getCourseOfferings().size() == 1)
         				courseLimit = offering.getLimit().intValue();

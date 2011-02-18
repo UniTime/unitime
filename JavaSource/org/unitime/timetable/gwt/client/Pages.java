@@ -23,6 +23,8 @@ import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
+import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
+import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
 
 import com.google.gwt.user.client.ui.Widget;
@@ -39,7 +41,9 @@ public enum Pages {
 	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
 	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
 	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(null); } }),
-	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable("room"); } });
+	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable("room"); } }),
+	reservation("Reservation", new PageFactory() { public Widget create() { return new ReservationEdit(true); } }),
+	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } });
 	
 	private String iTitle;
 	private PageFactory iFactory;

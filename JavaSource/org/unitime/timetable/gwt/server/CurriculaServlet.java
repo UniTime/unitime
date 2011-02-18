@@ -66,7 +66,6 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
@@ -1688,11 +1687,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						if (cfg.isUnlimitedEnrollment()) unlimited = true;
 						if (cfg.getLimit() != null) courseLimit += cfg.getLimit();
 					}
-		            for (Iterator<CourseOfferingReservation> k = c.getCourseReservations().iterator(); k.hasNext(); ) {
-		            	CourseOfferingReservation reservation = k.next();
-		                if (reservation.getCourseOffering().equals(c) && reservation.getReserved()!=null)
-		                	courseLimit = reservation.getReserved();
-		            }
+					if (c.getReservation() != null)
+						courseLimit = c.getReservation();
 		            if (courseLimit >= 9999) unlimited = true;
 					course.setLimit(unlimited ? -1 : courseLimit);
 					course.setProjected(c.getProjectedDemand());

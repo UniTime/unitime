@@ -205,7 +205,6 @@
 							<html:hidden property='<%= "courseOfferingIds[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "courseOfferingNames[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "ownedCourse[" + ctr + "]" %>'/>
-							<html:hidden property='<%= "limits[" + ctr + "]" %>'/>
 							<bean:write name="crossListsModifyForm" property='<%= "courseOfferingNames[" + ctr + "]" %>'/> &nbsp;
 						</TD>
 						<TD align="center" class="BottomBorderGray">

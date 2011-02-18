@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -50,17 +49,14 @@ import org.unitime.timetable.form.CrossListsModifyForm;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingInCrosslistAddAction;
-import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.ReservationType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -150,8 +146,7 @@ public class CrossListsModifyAction extends Action {
                 CourseOffering co = cdao.get(addedOffering);
                 
                 // Check reservations limit
-                InstructionalOffering io = co.getInstructionalOffering();
-                frm.addToCourseOfferings(co, getCourseReservation(io, co), new Boolean(co.isEditableBy(user)));
+                frm.addToCourseOfferings(co, co.isEditableBy(user));
                 frm.setAddCourseOfferingId(null);
             }
             else {
@@ -264,8 +259,6 @@ public class CrossListsModifyAction extends Action {
         Transaction tx = null;
         HashMap saList = new HashMap();
         
-        ReservationType permResvType=ReservationType.getReservationTypebyRef(Constants.RESV_TYPE_PERM_REF);
-        
         try {
 	        tx = hibSession.beginTransaction();
 	        StringTokenizer strTok = new StringTokenizer(origCourseIds);
@@ -293,36 +286,6 @@ public class CrossListsModifyAction extends Action {
                     CourseOffering co2 = (CourseOffering)co1.clone();                    
                     co2.setIsControl(new Boolean(true));
 
-                    // Copy academic reservations from course offering
-                    HashSet resvs = new HashSet(); 
-                    Set resv1 = co1.getAcadAreaReservations();
-                    if (resv1==null) {
-                        resvs.add(null);
-                    }
-                    else {
-	                    for (Iterator resvIter=resv1.iterator(); resvIter.hasNext();) {
-	                    	
-	                        AcadAreaReservation ar1 = (AcadAreaReservation) resvIter.next();
-	                        
-	                        AcadAreaReservation ar2 = new AcadAreaReservation();
-	                        ar2.setAcademicArea(ar1.getAcademicArea());
-	                        ar2.setAcademicClassification(ar1.getAcademicClassification());
-	                        ar2.setOwnerClassId(ar1.getOwnerClassId());
-	                        ar2.setPriorEnrollment(ar1.getPriorEnrollment());
-	                        ar2.setPriority(ar1.getPriority());
-	                        ar2.setProjectedEnrollment(ar1.getProjectedEnrollment());
-	                        ar2.setRequested(ar1.getRequested());
-	                        ar2.setReservationType(ar1.getReservationType());
-	                        ar2.setReserved(ar1.getReserved());
-	                        resvs.add(ar2);
-	                        
-	                        // Delete academic area reservations
-	                        Debug.debug("Removing academic area reservation from course offering");
-	                        hibSession.delete(ar1);
-	                        resvIter.remove();
-	                    }
-                    }
-                    co1.setAcadAreaReservations(null);
                     
 /*	                
 	                hibSession.saveOrUpdate(io1);
@@ -345,59 +308,6 @@ public class CrossListsModifyAction extends Action {
 			        // Delete old course offering
 			        io.removeCourseOffering(co1);
 			        
-			        // Remove the course from course reservations - if more than one course still exists in the offering 
-			        // Remove all course reservations - if only one course exists in the offering
-		            Set ioResv = io.getCourseReservations();
-		            for (Iterator iterR=ioResv.iterator(); iterR.hasNext(); ) {
-		                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
-		                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
-		                      || ids.size()==1  ) {
-	                        Debug.debug("Removing course offering from course offering reservations");
-	                        resv.getCourseOffering().getCourseReservations().remove(resv);
-		                    iterR.remove();
-		                    hibSession.delete(resv);
-		                }
-		            }
-			            
-		            Set configs = io.getInstrOfferingConfigs();
-		            for (Iterator iterCfg=configs.iterator(); iterCfg.hasNext(); ) {
-		                InstrOfferingConfig config = (InstrOfferingConfig) iterCfg.next();
-		                
-		                Set cfgResv = config.getCourseReservations();
-			            for (Iterator iterR=cfgResv.iterator(); iterR.hasNext(); ) {
-			                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
-			                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
-			                      || ids.size()==1  ) {
-			                    resv.getCourseOffering().getCourseReservations().remove(resv);
-			                    iterR.remove();
-			                    hibSession.delete(resv);
-			                }
-			            }
-				        hibSession.saveOrUpdate(config);
-				        
-			            Set subparts = config.getSchedulingSubparts();;
-			            for (Iterator iterSubparts=subparts.iterator(); iterSubparts.hasNext(); ) {
-			                SchedulingSubpart subpart = (SchedulingSubpart) iterSubparts.next();
-			                
-			                Set classes = subpart.getClasses();
-				            for (Iterator iterClasses=classes.iterator(); iterClasses.hasNext(); ) {
-				                Class_ cls = (Class_) iterClasses.next();
-				                
-				                Set clsResv = cls.getCourseReservations();
-					            for (Iterator iterR=clsResv.iterator(); iterR.hasNext(); ) {
-					                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
-					                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
-					                      || ids.size()==1  ) {
-					                    resv.getCourseOffering().getCourseReservations().remove(resv);
-					                    iterR.remove();
-					                    hibSession.delete(resv);
-					                }
-					            }
-						        hibSession.saveOrUpdate(cls);
-				            }			                
-			            }
-		            }
-
                     Event.deleteFromEvents(hibSession, co1);
 		            Exam.deleteFromExams(hibSession, co1);
 		            
@@ -429,19 +339,6 @@ public class CrossListsModifyAction extends Action {
 	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).newInstance());
 	    	       		addAction.performExternalInstructionalOfferingInCrosslistAddAction(io1, hibSession);
 	            	}
-	                
-	                // Add reservations to newly created offering
-		            if (resvs!=null) {
-		                hibSession.refresh(co2);
-	                    for (Iterator resvIter=resvs.iterator(); resvIter.hasNext();) {
-	                        AcadAreaReservation ar = (AcadAreaReservation) resvIter.next();
-	                        ar.setOwner(co2.getUniqueId());
-	                        hibSession.saveOrUpdate(ar);
-	                    }
-	                    co2.getAcadAreaReservations().addAll(resvs);
-	                    hibSession.saveOrUpdate(co2);
-		                hibSession.flush();
-		            }
 	            }
 	            
 	            // 2. For all existing courses - update controlling attribute and reservation limits
@@ -454,35 +351,13 @@ public class CrossListsModifyAction extends Action {
 	                    co.setIsControl(new Boolean(true));
 	                else
 	                    co.setIsControl(new Boolean(false));
-	                hibSession.saveOrUpdate(co);
 	                
 	                // Update course reservation
-	                CourseOffering co1 = cdao.get(new Long(origCrs.trim()));                
-	                CourseOfferingReservation cor1 = getCourseReservation(io, co1);
 	                int indx = frm.getIndex(origCrs);
-	                
-	                if (ids.size()>1) {
-		                if (cor1==null) {
-		                    cor1 = new CourseOfferingReservation();
-		                    cor1.setCourseOffering(co1);
-		                    cor1.setOwner(io.getUniqueId());
-		                    cor1.setOwnerClassId(Constants.RESV_OWNER_IO);
-		                    cor1.setPriorEnrollment(co1.getDemand());
-		                    cor1.setPriority(new Integer(1));
-		                    cor1.setProjectedEnrollment(co1.getProjectedDemand());
-		                    cor1.setRequested(null);
-		                    cor1.setReservationType(permResvType);
-			                cor1.setReserved(Integer.valueOf(frm.getLimits(indx)));
-			                io.getCourseReservations().add(cor1);
-			                hibSession.saveOrUpdate(cor1);
-			                hibSession.saveOrUpdate(io);
-		                }
-		                else {
-			                cor1.setReserved(Integer.valueOf(frm.getLimits(indx)));
-			                hibSession.saveOrUpdate(cor1);	                
-		                }
-	                }
-	                
+	                co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
+
+	                hibSession.saveOrUpdate(co);
+
 	                hibSession.flush();
 	                hibSession.refresh(co);
 	            }
@@ -490,8 +365,6 @@ public class CrossListsModifyAction extends Action {
 	        
 	        // 3. For all added courses - delete all preferences and change the instr offering id  
 	        Vector addedOfferings = new Vector();
-	        Vector addedResvs = new Vector();
-	        Vector addedCourseResvs = new Vector();
 	        StringTokenizer strTok2 = new StringTokenizer(courseIds);
 	
 	        while (strTok2.hasMoreTokens()) {
@@ -519,64 +392,10 @@ public class CrossListsModifyAction extends Action {
 	                    else
 	                        co3.setIsControl(new Boolean(false));
 
-	                    // Copy academic reservations from course offering
-	                    HashSet resvs = new HashSet(); 
-	                    Set resv2 = co2.getAcadAreaReservations();
-	                    if (resv2==null) {
-	                        resvs.add(null);
-	                    }
-	                    else {
-		                    for (Iterator resvIter=resv2.iterator(); resvIter.hasNext();) {
-		                        AcadAreaReservation ar2 = (AcadAreaReservation) resvIter.next();
-
-		                        AcadAreaReservation ar3 = new AcadAreaReservation();
-		                        ar3.setAcademicArea(ar2.getAcademicArea());
-		                        ar3.setAcademicClassification(ar2.getAcademicClassification());
-		                        ar3.setOwnerClassId(ar2.getOwnerClassId());
-		                        ar3.setPriorEnrollment(ar2.getPriorEnrollment());
-		                        ar3.setPriority(ar2.getPriority());
-		                        ar3.setProjectedEnrollment(ar2.getProjectedEnrollment());
-		                        ar3.setRequested(ar2.getRequested());
-		                        ar3.setReservationType(ar2.getReservationType());
-		                        ar3.setReserved(ar2.getReserved());
-		                        resvs.add(ar3);
-
-		                        // Delete academic area reservations
-		                        Debug.debug("Removing academic area reservation from course offering");
-		                        hibSession.delete(ar2);
-		                        resvIter.remove();
-		                    }
-	                    }
-	                    co2.setAcadAreaReservations(null);
-	                    
 	                    addedOfferings.addElement(co3);
-	                    addedResvs.addElement(resvs);
 
-		                // Copy course reservations from instructional offering
-	                    CourseOfferingReservation cor2 = getCourseReservation(io1, co2);
     	                int indx = frm.getIndex(course);
-
-    	                CourseOfferingReservation cor3 = new CourseOfferingReservation();
-                        //cor3.setCourseOffering(co3);
-                        cor3.setOwner(io.getUniqueId());
-		                cor3.setReserved(Integer.valueOf(frm.getLimits(indx)));
-    	                
-	                    if (cor2!=null) {
-	                        cor3.setOwnerClassId(cor2.getOwnerClassId());
-	                        cor3.setPriorEnrollment(cor2.getPriorEnrollment());
-	                        cor3.setPriority(cor2.getPriority());
-	                        cor3.setProjectedEnrollment(cor2.getProjectedEnrollment());
-	                        cor3.setRequested(cor2.getRequested());
-	                        cor3.setReservationType(cor2.getReservationType());
-	                    } else {
-		                    cor3.setOwnerClassId(Constants.RESV_OWNER_IO);
-		                    cor3.setPriorEnrollment(null);
-		                    cor3.setPriority(new Integer(1));
-		                    cor3.setProjectedEnrollment(null);
-		                    cor3.setRequested(null);
-		                    cor3.setReservationType(permResvType);
-	                    }
-                        addedCourseResvs.addElement(cor3);
+                        co3.setReservation(Integer.valueOf(frm.getLimits(indx)));
 		                
 	                    // Remove from collection
 	                    //i.remove();
@@ -629,25 +448,7 @@ public class CrossListsModifyAction extends Action {
 	            
 	            hibSession.flush();
 	            hibSession.refresh(co3);
-            
-	            // Add academic area reservations
-	            HashSet resvs = (HashSet) addedResvs.get(i);
-	            if (resvs!=null) {
-                    for (Iterator resvIter=resvs.iterator(); resvIter.hasNext();) {
-                        AcadAreaReservation ar = (AcadAreaReservation) resvIter.next();
-                        ar.setOwner(co3.getUniqueId());
-                        hibSession.saveOrUpdate(ar);
-                    }
-                    co3.getAcadAreaReservations().addAll(resvs);
-                    hibSession.saveOrUpdate(co3);
-	            }
-	            
-	            // Update course reservations
-	            CourseOfferingReservation cor = (CourseOfferingReservation) addedCourseResvs.get(i);
-	            cor.setCourseOffering(co3);
-	            hibSession.saveOrUpdate(cor);
-	            
-	            io.getCourseReservations().add(cor);
+
 	            hibSession.saveOrUpdate(io);
 	        }
             
@@ -759,31 +560,8 @@ public class CrossListsModifyAction extends Action {
 
         for(Iterator i = offerings.iterator(); i.hasNext(); ) {
             CourseOffering co1 = ((CourseOffering) i.next());
-            frm.addToCourseOfferings(co1, getCourseReservation(io, co1), new Boolean(co1.isEditableBy(user)));
+            frm.addToCourseOfferings(co1, co1.isEditableBy(user));
             frm.addToOriginalCourseOfferings(co1);
         }        
     }
-    
-    /**
-     * Get reservation for the specified course offering
-     * @param io
-     * @param co
-     * @return null if not found
-     */
-    private CourseOfferingReservation getCourseReservation(InstructionalOffering io, CourseOffering co) {
-        
-        // Check reservations for limits
-        Set crsResv = io.getCourseReservations();
-        if (crsResv!=null && crsResv.size()>0) {
-            for (Iterator j=crsResv.iterator(); j.hasNext(); ) {
-                CourseOfferingReservation cor = (CourseOfferingReservation) j.next();
-                if (cor.getCourseOffering().equals(co)) {
-                    return cor;
-                }
-            }
-        }
-        
-        return null;
-    }
-
 }

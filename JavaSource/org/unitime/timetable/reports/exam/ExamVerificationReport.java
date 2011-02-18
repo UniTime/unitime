@@ -37,7 +37,6 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -513,11 +512,8 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 int courseLimit = -1;
                 InstructionalOffering offering = course.getInstructionalOffering();
                 boolean unlimited = false;
-                for (Iterator i=offering.getCourseReservations().iterator();i.hasNext();) {
-                    CourseOfferingReservation r = (CourseOfferingReservation)i.next();
-                    if (r.getCourseOffering().equals(co))
-                        courseLimit = r.getReserved().intValue();
-                }
+                if (co.getReservation() != null)
+                	courseLimit = co.getReservation();
                 if (courseLimit<0) {
                     if (offering.getCourseOfferings().size()==1 && offering.getLimit()!=null)
                         courseLimit = offering.getLimit().intValue();

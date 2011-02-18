@@ -39,7 +39,6 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -261,11 +260,8 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
             int limit = co.getInstructionalOffering().getLimit().intValue();
             if (unlimited) limit=-1;
-            for (Iterator j=co.getInstructionalOffering().getCourseReservations().iterator();j.hasNext();) {
-                CourseOfferingReservation reservation = (CourseOfferingReservation)j.next();
-                if (reservation.getCourseOffering().equals(co) && reservation.getReserved()!=null)
-                    limit = reservation.getReserved().intValue();
-            }
+            if (co.getReservation() != null)
+            	limit = co.getReservation();
             Course course = new Course(co.getUniqueId().longValue(), co.getSubjectAreaAbbv(), co.getCourseNbr(), offering, limit, projected);
             courseTable.put(co.getUniqueId(), course);
             sLog.debug("  -- created course "+course);

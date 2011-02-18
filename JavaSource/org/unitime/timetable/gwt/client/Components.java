@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
 import org.unitime.timetable.gwt.client.page.UniTimeVersion;
+import org.unitime.timetable.gwt.client.reservations.ReservationTable;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -43,7 +44,9 @@ public enum Components {
 	menubar_dynamic("UniTimeGWT:DynamicTopMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(true).insert(panel); } }),
 	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimePageHeader().insert(panel); } }),
 	version("UniTimeGWT:Version", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeVersion().insert(panel); } }),
-	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } });
+	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } }),
+	offeringReservations("UniTimeGWT:OfferingReservations", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(true, true).insert(panel); } }),
+	offeringReservationsReadOnly("UniTimeGWT:OfferingReservationsRO", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(false, true).insert(panel); } });
 	
 	private String iId;
 	private ComponentFactory iFactory;

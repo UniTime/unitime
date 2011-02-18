@@ -21,14 +21,11 @@ package org.unitime.timetable.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -38,7 +35,6 @@ import javax.servlet.http.HttpSession;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
-import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -46,13 +42,8 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.base.BaseClass_;
-import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
-import org.unitime.timetable.model.comparators.CourseReservationComparator;
-import org.unitime.timetable.model.comparators.IndividualReservationComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
-import org.unitime.timetable.model.comparators.PosReservationComparator;
-import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
@@ -951,20 +942,30 @@ public class Class_ extends BaseClass_ {
     public int getClassLimit(CourseOffering offering) {
         return getClassLimit(new CommitedClassAssignmentProxy(), offering);
     }
-
-    private boolean hasCourseReservation(CourseOffering offering) {
-        for (Iterator i=getCourseReservations().iterator();i.hasNext();) {
-            CourseOfferingReservation reservation = (CourseOfferingReservation)i.next();
-            if (reservation.getCourseOffering().equals(offering)) return true;
-        }
-        for (Iterator i=getChildClasses().iterator();i.hasNext();) {
-            Class_ clazz = (Class_)i.next();
-            if (clazz.hasCourseReservation(offering)) return true;
-        }
-        return false;
+    
+    private boolean hasChildClass(Reservation r) {
+    	if (r.getClasses().contains(this)) return true;
+    	for (Class_ child: getChildClasses())
+    		if (child.hasChildClass(r)) return true;
+    	return false;
+    }
+    
+    public boolean hasClass(Reservation r) {
+    	if (r.getClasses().isEmpty()) return false;
+    	Class_ c = this;
+    	while (c != null) {
+    		if (r.getClasses().contains(c)) return true;
+    		c = c.getParentClass();
+    	}
+    	for (Class_ child: getChildClasses())
+    		if (child.hasChildClass(r)) return true;
+    	return false;
     }
 
+    @Deprecated
     public int getClassLimit(ClassAssignmentProxy proxy, CourseOffering offering) {
+    	return getClassLimit(proxy);
+    	/*
         int limit = getClassLimit(proxy);
 
         if (limit==0 || offering.getInstructionalOffering().getCourseOfferings().size()==1) {
@@ -984,14 +985,11 @@ public class Class_ extends BaseClass_ {
         }
 
         float nrReservedStudents = 0;
-        float nrReservedStudentsThisOffering = 0;
-        for (Iterator i=offering.getInstructionalOffering().getCourseReservations().iterator();i.hasNext();) {
-            CourseOfferingReservation reservation = (CourseOfferingReservation)i.next();
-            if (reservation.getCourseOffering().equals(offering))
-                nrReservedStudentsThisOffering += reservation.getReserved().intValue();
-            nrReservedStudents += reservation.getReserved().intValue();
+        float nrReservedStudentsThisOffering = (offering.getReservation() == null ? 0 : offering.getReservation());
+        for (CourseOffering course:offering.getInstructionalOffering().getCourseOfferings()) {
+        	if (course.getReservation() != null)
+        		nrReservedStudents += course.getReservation();
         }
-        
 
         float nrLastLikeStudents = (float)(offering.getInstructionalOffering().getDemand()==null?0:offering.getInstructionalOffering().getDemand().intValue());
         float nrLastLikeStudentsThisOffering = (float)offering.getDemand().intValue();
@@ -1085,21 +1083,11 @@ public class Class_ extends BaseClass_ {
                 for (Iterator i=getSchedulingSubpart().getClasses().iterator();i.hasNext();) {
                     Class_ clazz = (Class_)i.next();
                     HashSet courseOfferingsThisClass = new HashSet();
-                    Class_ c = clazz;
-                    while (c!=null) {
-                        Iterator j = null;
-                        try {
-                            j = c.getCourseReservations().iterator();
-                        } catch (LazyInitializationException e) {
-                            c = new Class_DAO().get(c.getUniqueId());
-                            j = c.getCourseReservations().iterator();
-                        }
-                        while (j.hasNext()) {
-                            CourseOfferingReservation res = (CourseOfferingReservation)j.next();
-                            courseOfferingsThisClass.add(res.getCourseOffering());
-                        }
-                        c = c.getParentClass();
-                    }
+                	for (Reservation r: offering.getInstructionalOffering().getReservations()) {
+                		if (r instanceof CourseReservation && clazz.hasClass(r)) {
+                			courseOfferingsThisClass.add(((CourseReservation)r).getCourse());
+                		}
+                	}
                     for (Iterator j=courseOfferingsThisClass.iterator();j.hasNext();) {
                         CourseOffering co = (CourseOffering)j.next();
                         HashSet reservedClassesThisCO = (HashSet)reservedClasses.get(co);
@@ -1128,12 +1116,7 @@ public class Class_ extends BaseClass_ {
                         Map.Entry entry = (Map.Entry)i.next();
                         CourseOffering co = (CourseOffering)entry.getKey();
                         HashSet classes = (HashSet)entry.getValue();
-                        float nrReservedStudentsCO = 0;
-                        for (Iterator j=offering.getInstructionalOffering().getCourseReservations().iterator();j.hasNext();) {
-                            CourseOfferingReservation reservation = (CourseOfferingReservation)j.next();
-                            if (reservation.getCourseOffering().equals(co))
-                                nrReservedStudentsCO += reservation.getReserved().intValue();
-                        }
+                        float nrReservedStudentsCO = (co.getReservation() == null ? 0 : co.getReservation());
                         updatedNrReservedStudents -= nrReservedStudentsCO;
                         if (!classes.contains(this)) continue;
                         float totalLimit = 0;
@@ -1156,64 +1139,7 @@ public class Class_ extends BaseClass_ {
         //CASE 3: no last-like term student course demands, no course reservations
         // return the class limit as it is
         return limit;
-    }
-
-    /**
-     * Returns a list containing all the types of reservations for a Class
-     * in the order: Individual, Group, Acad Area, POS, Course Offering
-     * @param individual include individual reservations
-     * @param studentGroup include student group reservations
-     * @param acadArea include academic area reservations
-     * @param pos include pos reservations
-     * @param course include course reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection getReservations(
-            boolean individual, boolean studentGroup, boolean acadArea, boolean pos, boolean course ) {
-
-        Collection resv = new Vector();
-        if (individual && this.getIndividualReservations()!=null) {
-            List c = new Vector(this.getIndividualReservations());
-            Collections.sort(c, new IndividualReservationComparator());
-            resv.addAll(c);
-        }
-        if (studentGroup && this.getStudentGroupReservations()!=null) {
-            List c = new Vector(this.getStudentGroupReservations());
-            Collections.sort(c, new StudentGroupReservationComparator());
-            resv.addAll(c);
-        }
-        if (acadArea && this.getAcadAreaReservations()!=null) {
-            List c = new Vector(this.getAcadAreaReservations());
-            Collections.sort(c, new AcadAreaReservationComparator());
-            resv.addAll(c);
-        }
-        if (pos && this.getPosReservations()!=null) {
-            List c = new Vector(this.getPosReservations());
-            Collections.sort(c, new PosReservationComparator());
-            resv.addAll(c);
-        }
-        if (course && this.getCourseReservations()!=null) {
-            List c = new Vector(this.getCourseReservations());
-            Collections.sort(c, new CourseReservationComparator());
-            resv.addAll(c);
-        }
-
-        return resv;
-    }
-
-    /**
-     * Returns effective reservations for the class
-     * @param individual include individual reservations
-     * @param studentGroup include student group reservations
-     * @param acadArea include academic area reservations
-     * @param pos include pos reservations
-     * @param course include course reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection effectiveReservations(
-            boolean individual, boolean studentGroup, boolean acadArea, boolean pos, boolean course ) {
-        //TODO hfernan - effective reservations - if applicable
-        return getReservations( individual, studentGroup, acadArea, pos, course );
+        */
     }
 
     /**
@@ -1229,7 +1155,6 @@ public class Class_ extends BaseClass_ {
 	    deleteAllDistributionPreferences(hibSession, updateClass);
 		deleteClassInstructors(hibSession);
 		deleteAssignments(hibSession);
-		deleteReservations(hibSession);
 		Exam.deleteFromExams(hibSession, this);
 		Event.deleteFromEvents(hibSession, this);
 
@@ -1269,16 +1194,6 @@ public class Class_ extends BaseClass_ {
 		Set s = getAssignments();
 		deleteObjectsFromCollection(hibSession, s);
 	}
-
-	/**
-	 * Delete all class reservations
-	 * @param hibSession
-	 */
-	public void deleteReservations(org.hibernate.Session hibSession) {
-		Collection s = getReservations(true, true, true, true, true);
-		deleteObjectsFromCollection(hibSession, s);
-	}
-
 
 	/**
 	 * Common method to delete objects from acollection

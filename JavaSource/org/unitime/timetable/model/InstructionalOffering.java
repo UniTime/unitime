@@ -20,14 +20,11 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
@@ -40,14 +37,9 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
-import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
-import org.unitime.timetable.model.comparators.CourseReservationComparator;
-import org.unitime.timetable.model.comparators.IndividualReservationComparator;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
-import org.unitime.timetable.model.comparators.PosReservationComparator;
-import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
@@ -296,7 +288,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			query.append("left join fetch ioc.studentGroupReservations as sgr ");
 			query.append("left join fetch ioc.acadAreaReservations as aar ");
 			query.append("left join fetch ioc.posReservations as pr ");
-			query.append("left join fetch ioc.courseReservations as cr ");
 		}
 
 		query.append(" where io.session.uniqueId=:sessionId ");
@@ -503,67 +494,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		list();
     }
 
-
-    /**
-     * Returns a list containing all the types of reservations for an Instructional
-     * Offering in the order: Individual, Group, Acad Area, POS, Course Offering
-     * @param individual include individual reservations
-     * @param studentGroup include student group reservations
-     * @param acadArea include academic area reservations
-     * @param pos include pos reservations
-     * @param course include course reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection getReservations(
-            boolean individual, boolean studentGroup, boolean acadArea, boolean pos, boolean course ) {
-
-        Collection resv = new Vector();
-
-        if (individual && this.getIndividualReservations()!=null) {
-            List c = new Vector(this.getIndividualReservations());
-            Collections.sort(c, new IndividualReservationComparator());
-            resv.addAll(c);
-        }
-        if (studentGroup && this.getStudentGroupReservations()!=null) {
-            List c = new Vector(this.getStudentGroupReservations());
-            Collections.sort(c, new StudentGroupReservationComparator());
-            resv.addAll(c);
-        }
-        if (acadArea && this.getAcadAreaReservations()!=null) {
-            List c = new Vector(this.getAcadAreaReservations());
-            Collections.sort(c, new AcadAreaReservationComparator());
-            resv.addAll(c);
-        }
-        if (pos && this.getPosReservations()!=null) {
-            List c = new Vector(this.getPosReservations());
-            Collections.sort(c, new PosReservationComparator());
-            resv.addAll(c);
-        }
-        if (course && this.getCourseReservations()!=null) {
-            List c = new Vector(this.getCourseReservations());
-            Collections.sort(c, new CourseReservationComparator());
-            resv.addAll(c);
-        }
-
-        return resv;
-    }
-
-    /**
-     * Returns effective reservations for the class
-     * @param individual include individual reservations
-     * @param studentGroup include student group reservations
-     * @param acadArea include academic area reservations
-     * @param pos include pos reservations
-     * @param course include course reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection effectiveReservations(
-            boolean individual, boolean studentGroup, boolean acadArea, boolean pos, boolean course ) {
-        //TODO hfernan - effective reservations - if applicable
-        return getReservations( individual, studentGroup, acadArea, pos, course );
-    }
-
-
     public void computeLabels(org.hibernate.Session hibSession) {
     	hibSession.flush();
     	for (Iterator i1=getInstrOfferingConfigs().iterator();i1.hasNext();) {
@@ -668,36 +598,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return false;
     }
     
-    /**
-     * Delete all resrvations
-     * @param hibSession
-     * @throws Exception
-     */
-    public void deleteAllReservations(
-    		org.hibernate.Session hibSession) throws Exception{
-    	
-	        // Remove all academic area reservations
-	        for (Iterator i = getCourseOfferings().iterator(); i.hasNext(); ) {
-	        	CourseOffering co = (CourseOffering) i.next();
-	            Set acadResvs = co.getAcadAreaReservations();
-	            if (acadResvs!=null) {
-	                for (Iterator resvIter=acadResvs.iterator(); resvIter.hasNext();) {
-	                    AcadAreaReservation ar = (AcadAreaReservation) resvIter.next();
-	                    resvIter.remove();
-	                    hibSession.delete(ar);
-	                }
-	            }
-	        }            
-
-	        // Remove all course reservations
-            Set ioResv = getCourseReservations();
-            for (Iterator iterR=ioResv.iterator(); iterR.hasNext(); ) {
-                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
-                iterR.remove();
-                hibSession.delete(resv);
-            }
-    }
-
 	/**
 	 * Delete all course offerings in the instructional offering
 	 * @param hibSession
@@ -765,10 +665,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			}
 			this.addToinstrOfferingConfigs(newIoc);
 		}
-	}
-	public void addTocourseOfferingsReservations (org.unitime.timetable.model.CourseOfferingReservation courseOfferingReservation) {
-		if (null == getCourseReservations()) setCourseReservations(new java.util.HashSet());
-		getCourseReservations().add(courseOfferingReservation);
 	}
 
     public static InstructionalOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
