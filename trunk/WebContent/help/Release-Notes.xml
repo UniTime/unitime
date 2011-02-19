@@ -75,6 +75,14 @@
 				<line>GWT updated to version 2.2.0 (was 2.1.1)</line>
 			</description>
 		</item>
+		<item>
+			<name>Constraint solver updated with the latest version (1.2.31)</name>
+			<description>
+				<line>Added course reservations.</line>
+				<line>Added ability to enroll students with individual reservation over the class / course / section limit.</line>
+				<line>Fixed NullPointerException when last-like student course requests are involved (after a recent change (reservations), first last-like adept got ignored).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
