@@ -281,7 +281,7 @@ public class ReservationEdit extends Composite {
 				Lookup.getInstance().center();
 			}
 		});
-		Lookup.getInstance().setOptions("mustHaveExternalId");
+		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
 		Lookup.getInstance().setCallback(createLookupCallback());
 		students.add(lookup);
 		students.setCellHorizontalAlignment(lookup, HasHorizontalAlignment.ALIGN_RIGHT);
