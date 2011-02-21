@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.reservations;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -30,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
@@ -214,40 +216,269 @@ public class ReservationTable extends Composite {
 			UniTimeTableHeader hOffering = new UniTimeTableHeader("Instructional<br>Offering");
 			hOffering.setWidth("100px");
 			header.add(hOffering);
+			hOffering.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iReservations.sort(new Comparator<ReservationInterface>() {
+						@Override
+						public int compare(ReservationInterface r1, ReservationInterface r2) {
+							return r1.compareTo(r2);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return "Sort by Instructional Offering";
+				}
+			});
 		}
 
 		UniTimeTableHeader hType = new UniTimeTableHeader("Reservation<br>Type");
 		hType.setWidth("100px");
+		hType.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
+						if (cmp != 0) return cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Reservation Type";
+			}
+		});
 		header.add(hType);
 		
 		UniTimeTableHeader hOwner = new UniTimeTableHeader("Owner");
 		hOwner.setWidth("250px");
 		header.add(hOwner);
+		hOwner.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
+						if (cmp != 0) return cmp;
+						cmp = r1.toString().compareTo(r2.toString());
+						if (cmp != 0) return cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Owner";
+			}
+		});
 
 		UniTimeTableHeader hRestrict = new UniTimeTableHeader("Restrictions");
 		hRestrict.setWidth("160px");
+		hRestrict.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = r1.getOffering().getAbbv().compareTo(r2.getOffering().getAbbv());
+						if (cmp != 0) return cmp;
+						cmp = r1.getConfigs().toString().compareTo(r2.getConfigs().toString());
+						if (cmp != 0) return cmp;
+						cmp = r1.getClasses().toString().compareTo(r2.getClasses().toString());
+						if (cmp != 0) return cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Restrictions";
+			}
+		});
 		header.add(hRestrict);
 
 		UniTimeTableHeader hLimit = new UniTimeTableHeader("Reserved<br>Space");
 		hLimit.setWidth("80px");
 		header.add(hLimit);
+		hLimit.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getLimit() == null ? Integer.MAX_VALUE : r1.getLimit()).compareTo(r2.getLimit() == null ? Integer.MAX_VALUE : r2.getLimit());
+						if (cmp != 0) return -cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Reserved Space";
+			}
+		});
 
 		UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
 		hLastLike.setWidth("80px");
 		header.add(hLastLike);
+		hLastLike.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getLastLike() == null ? -1 : r1.getLastLike()).compareTo(r2.getLastLike() == null ? -1 : r2.getLastLike());
+						if (cmp != 0) return -cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Last-Like Enrollment";
+			}
+		});
 
 		UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by Rule");
 		hProjected.setWidth("80px");
 		header.add(hProjected);
+		hProjected.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getProjection() == null ? -1 : r1.getProjection()).compareTo(r2.getProjection() == null ? -1 : r2.getProjection());
+						if (cmp != 0) return -cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Projection by Rule";
+			}
+		});
 
 		UniTimeTableHeader hEnrollment = new UniTimeTableHeader("Current<br>Enrollment");
 		hEnrollment.setWidth("80px");
 		header.add(hEnrollment);
-
+		hEnrollment.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Integer(r1.getEnrollment() == null ? -1 : r1.getEnrollment()).compareTo(r2.getEnrollment() == null ? -1 : r2.getEnrollment());
+						if (cmp != 0) return -cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Current Enrollment";
+			}
+		});
+		
 		UniTimeTableHeader hExpiration = new UniTimeTableHeader("Expiration<br>Date");
 		hExpiration.setWidth("80px");
 		header.add(hExpiration);
-
+		hExpiration.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iReservations.sort(new Comparator<ReservationInterface>() {
+					@Override
+					public int compare(ReservationInterface r1, ReservationInterface r2) {
+						int cmp = new Long(r1.getExpirationDate() == null ? Long.MAX_VALUE : r1.getExpirationDate().getTime()).compareTo(r2.getExpirationDate() == null ? Long.MAX_VALUE : r2.getExpirationDate().getTime());
+						if (cmp != 0) return cmp;
+						return r1.compareTo(r2);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return "Sort by Expiration Date";
+			}
+		});
+		
 		iReservations.addRow(null, header);
 		
 		int total = 0, lastLike = 0, projection = 0, enrollment = 0;

@@ -93,6 +93,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Course getCourse() { return iCourse; }
 		public void setCourse(Course course) { iCourse = course; }
 		
+		public Integer getLimit() { return (iCourse == null ? null : iCourse.getLimit()); }
+		
 		public String toString() { return getCourse().toString(); }
 	}
 	
@@ -117,6 +119,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		}
 		
 		public List<IdName> getStudents() { return iStudents; }
+		
+		public Integer getLimit() { return iStudents.size(); }
 		
 		public String toString() { return getStudents().toString(); }
 	}
