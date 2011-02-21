@@ -775,7 +775,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			if (term.isEmpty()) return true;
 			if (attr == null || "course".equals(attr)) {
 				for (CourseOffering co: iReservation.getInstructionalOffering().getCourseOfferings()) {
-					if (eq(co.getCourseName(), term)) return true;
+					if (eq(co.getCourseName(), term) || has(co.getCourseName(), term)) return true;
 				}
 			}
 			if (attr == null || "dept".equals(attr)) {
