@@ -175,7 +175,7 @@ public class CourseLoader {
         			section.setSpaceExpected(info.getNbrExpectedStudents());
         			section.setSpaceHeld(info.getNbrHoldingStudents());
         			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
-        				sLog.info("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
+        				sLog.debug("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
         						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
         						", expected: " + section.getSpaceExpected() + ")");
         		}
@@ -184,6 +184,10 @@ public class CourseLoader {
 			long t1 = System.currentTimeMillis();
 			sLog.info("  Update of session " + iAcademicSession + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");
 			sLog.info(ToolBox.dict2string(iModel.getInfo(), 2));
+			
+			for (Request r : iModel.unassignedVariables()) {
+				sLog.info("Not assigned: " + r + " (student " + r.getStudent().getId() + ")");
+			}
 		}
 	}
 	
@@ -389,22 +393,33 @@ public class CourseLoader {
                             	StudentClassEnrollment enrl = i.next();
                             	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                                 if (section!=null) {
+                                	if (section.getTime() != null && !assignedSections.isEmpty()) {
+                                		for (Section other: assignedSections) {
+                            				if (other.getTime() != null && other.getTime().hasIntersection(section.getTime())) {
+                            					sLog.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
+                            							section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
+                            							" overlaps with " + other.getSubpart().getConfig().getOffering().getName() + " " + other.getSubpart().getName() + " " +
+                            							other.getName() + " " + other.getTime().getLongName() + " [" + iAcademicSession + "]");
+                            				}
+                                		}
+                                	}
                                     assignedSections.add(section);
                                     if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                                    	sLog.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations. [" + iAcademicSession + "]");
+                                    	sLog.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations. [" + iAcademicSession + "]");
                                     }
                                     assignedConfig = section.getSubpart().getConfig();
                                     if (!subparts.add(section.getSubpart().getId())) {
-                                    	sLog.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart. [" + iAcademicSession + "]");
+                                    	sLog.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart. [" + iAcademicSession + "]");
                                     }
                                 } else {
-                                	sLog.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known. [" + iAcademicSession + "]");
+                                	sLog.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known. [" + iAcademicSession + "]");
                                 }
                             }
                         }
                         courses.addElement(course);
                     }
-                    if (courses.isEmpty()) continue;
+                    if (courses.isEmpty())
+                    	continue;
                     CourseRequest request = new CourseRequest(
                             cd.getUniqueId(),
                             cd.getPriority(),
@@ -412,13 +427,20 @@ public class CourseLoader {
                             student,
                             courses,
                             cd.isWaitlist());
-                    if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
+                    if (assignedConfig!=null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
-                    }
-                    if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                    	sLog.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
-                    			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + "). [" + iAcademicSession + "]");
+                        if (assignedSections.size() != assignedConfig.getSubparts().size()) {
+                        	sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
+                        			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + "). [" + iAcademicSession + "]");
+                        }
+                        for (Request r: student.getRequests()) {
+                        	if (r.equals(request) || r.getInitialAssignment() == null) continue;
+                        	if (r.getInitialAssignment().isOverlapping(request.getInitialAssignment())) {
+                        		sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
+                        				" overlaps with " + r.getName() + " [" + iAcademicSession + "]");
+                        	}
+                        }
                     }
                 }
             }
@@ -440,7 +462,7 @@ public class CourseLoader {
                 courses.add(course);
         	}
         	int priority = 0;
-        	courses: for (Course course: courses) {
+        	for (Course course: courses) {
         		Vector<Course> cx = new Vector<Course>(); cx.add(course);
                 CourseRequest request = new CourseRequest(
                         course.getId(),
@@ -457,33 +479,47 @@ public class CourseLoader {
                 	if (course.getId() != enrl.getCourseOffering().getUniqueId()) continue;
                 	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                     if (section!=null) {
+                    	if (section.getTime() != null && !assignedSections.isEmpty()) {
+                    		for (Section other: assignedSections) {
+                				if (other.getTime() != null && other.getTime().hasIntersection(section.getTime())) {
+                					sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
+                							section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
+                							" overlaps with " + other.getSubpart().getConfig().getOffering().getName() + " " + other.getSubpart().getName() + " " +
+                							other.getName() + " " + other.getTime().getLongName() + " [" + iAcademicSession + "]");
+                				}
+                    		}
+                    	}
                         assignedSections.add(section);
                         if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                        	sLog.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations. [" + iAcademicSession + "]");
-                        	continue courses;
+                        	sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations. [" + iAcademicSession + "]");
                         }
                         assignedConfig = section.getSubpart().getConfig();
                         if (!subparts.add(section.getSubpart().getId())) {
-                        	sLog.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart. [" + iAcademicSession + "]");
-                        	continue courses;
+                        	sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart. [" + iAcademicSession + "]");
                         }
                     } else {
-                    	sLog.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known. [" + iAcademicSession + "]");
+                    	sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known. [" + iAcademicSession + "]");
                     	Section x = iClassTable.get(enrl.getClazz().getUniqueId());
                     	if (x != null) {
                     		sLog.info("  but a class with the same id is loaded, but under offering " + x.getSubpart().getConfig().getOffering().getName() + " (id is " + x.getSubpart().getConfig().getOffering().getId() + 
                     				", expected " +course.getOffering().getId() + ") [" + iAcademicSession + "]");
                     	}
-                    	continue courses;
                     }
                 }
-                if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
+                if (assignedConfig!=null) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                     request.setInitialAssignment(enrollment);
-                }
-                if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                	sLog.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
-                			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + "). [" + iAcademicSession + "]");
+                    if (assignedSections.size() != assignedConfig.getSubparts().size()) {
+                    	sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
+                    			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + "). [" + iAcademicSession + "]");
+                    }
+                    for (Request r: student.getRequests()) {
+                    	if (r.equals(request) || r.getInitialAssignment() == null) continue;
+                    	if (r.getInitialAssignment().isOverlapping(request.getInitialAssignment())) {
+                    		sLog.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
+                    				" overlaps with " + r.getName() + " [" + iAcademicSession + "]");
+                    	}
+                    }
                 }
         	}
         }
@@ -500,7 +536,7 @@ public class CourseLoader {
                 } else {
                 	CourseRequest cr = (CourseRequest)r;
                 	Enrollment enrl = (Enrollment)r.getInitialAssignment();
-                	sLog.error("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") [" + iAcademicSession + "]");
+                	sLog.warn("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") [" + iAcademicSession + "]");
                 	boolean hasLimit = false, hasOverlap = false;
                 	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
                 		Section section = i.next();
