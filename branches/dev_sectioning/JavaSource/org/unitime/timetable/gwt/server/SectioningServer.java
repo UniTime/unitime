@@ -94,7 +94,7 @@ public class SectioningServer {
 	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
 	private Hashtable<String, TreeSet<CourseInfo>> iCourseForName = new Hashtable<String, TreeSet<CourseInfo>>();
 	private TreeSet<CourseInfo> iCourses = new TreeSet<CourseInfo>();
-	private StudentSectioningModel iModel = new StudentSectioningModel(new DataProperties(ApplicationProperties.getProperties()));
+	private StudentSectioningModel iModel = null;
 	private DistanceMetric iDistanceMetric = null;
 	
 	private Hashtable<Long, Course> iCourseTable = new Hashtable<Long, Course>();
@@ -170,6 +170,14 @@ public class SectioningServer {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			if (session == null)
 				throw new SectioningException(SectioningExceptionType.SESSION_NOT_EXIST, (sessionId == null ? "null" : sessionId.toString()));
+			DataProperties config = new DataProperties(ApplicationProperties.getProperties());
+			config.setProperty("Reservation.CanAssignOverTheLimit", "true");
+			config.setProperty("Sectioning.SectionLimit", "false");
+			config.setProperty("Sectioning.ConfigLimit", "false");
+			config.setProperty("Sectioning.CourseLimit", "false");
+			config.setProperty("Sectioning.ReservationLimit", "false");
+			config.setProperty("Sectioning.StudentConflict", "false");
+			iModel = new StudentSectioningModel(config);
 			iAcademicSession = new AcademicSessionInfo(session);
 			iLoader = new CourseLoader(iModel, iAcademicSession, iCourseTable, iClassTable, iStudentTable, iCourseForId, iCourseForName, iCourses);
 			iUpdater = new SectioningServerUpdater(iAcademicSession, StudentSectioningQueue.getLastTimeStamp(hibSession, sessionId));
