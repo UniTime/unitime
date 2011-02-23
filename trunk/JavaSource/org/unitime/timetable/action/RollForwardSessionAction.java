@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2008 - 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -291,14 +291,14 @@ public class RollForwardSessionAction extends Action {
             if (iForm.getRollForwardTimePatterns()) names.add("time patterns");
         	if (iForm.getRollForwardDepartments()) names.add("departments");
         	if (iForm.getRollForwardManagers()) names.add("managers");
-        	if (iForm.getRollForwardRoomData()) names.add("roons");
+        	if (iForm.getRollForwardRoomData()) names.add("rooms");
         	if (iForm.getRollForwardSubjectAreas()) names.add("subjects");
         	if (iForm.getRollForwardInstructorData()) names.add("instructors");
         	if (iForm.getRollForwardCourseOfferings()) names.add("courses");
         	if (iForm.getRollForwardClassInstructors()) names.add("class instructors");
         	if (iForm.getAddNewCourseOfferings()) names.add("new courses");
         	if (iForm.getRollForwardExamConfiguration()) names.add("exam config");
-        	if (iForm.getRollForwardMidtermExams()) names.add("midter exams");
+        	if (iForm.getRollForwardMidtermExams()) names.add("midterm exams");
         	if (iForm.getRollForwardFinalExams()) names.add("final exams");
         	if (iForm.getRollForwardStudents()) names.add("students");
         	if (iForm.getRollForwardCurricula()) names.add("curricula");
