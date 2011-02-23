@@ -104,7 +104,7 @@ public class Registration extends BodyTagSupport {
 			}
 			
 			sLog.debug("Contacting registration service..." );
-			ClientResource cr = new ClientResource("https://unitimereg.appspot.com/xml");
+			ClientResource cr = new ClientResource("http://register.unitime.org/xml");
 			
 			StringWriter w = new StringWriter();
 			new XMLWriter(w, OutputFormat.createPrettyPrint()).write(input);
