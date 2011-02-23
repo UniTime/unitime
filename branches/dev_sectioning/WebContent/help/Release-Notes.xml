@@ -27,6 +27,71 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Reservations</title>
+		<item>
+			<name>Database Changes</name>
+			<description>
+				<line>Deleted the old database model.
+					<line>Course reservations replaced by "reservation" attribute.</line>
+				</line>
+				<line>Create a new database model that better follows the latest design.
+					<line>A reservation is set to an instructional offering with optional relations to (many-to-many) configurations and classes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>User Interface Changes</name>
+			<description>
+				<line>The old (and mostly disabled) interface replaced by a new (GWT-based) one</line>
+				<line>A new Reservations page created, and there is a Reservations table under the Instructional Offering Details page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Changes</name>
+			<description>
+				<line>Reservations are now being loaded into the student sectioning solver.</line>
+				<line>Constraint solver updated with the latest version (1.2.32)
+					<line>Student sectioning: Added ability to ignore (not create) all the hard constraint</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Student Scheduling Assitant</title>
+		<item>
+			<name>Data Model</name>
+			<description>
+				<line>Do not impose hard constraints in the reference model.
+					<line>This is useful as there may be inconsistencies we cannot avoid (lowered limit, new reservation, etc.).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Registration</name>
+			<description>
+				<line>Use http://register.unitime.org/xml (instead of the https variant, https://unitimereg.appspot.com/xml)
+					<line>This is to avoid certificate issues when accessing a secure (https) resource (SunCertPathBuilderException: unable to find valid certification path to requested target),</line>
+					<line>and there are no "secret" data being sent and/or received anyway" --username "muller@unitime.org".</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>People lookup</name>
+			<description>
+				<line>Use departmental instructor table too.</line>
+				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.125</version>
+	<release-date>Sun, 20 Feb 2011</release-date>
+	<category>
 		<title>User interface</title>
 		<item>
 			<name>Add/Edit Instructional Type</name>
@@ -75,38 +140,14 @@
 				<line>GWT updated to version 2.2.0 (was 2.1.1)</line>
 			</description>
 		</item>
-	</category>
-	<category>
-		<title>Reservations</title>
-		<item>
-			<name>Database Changes</name>
-			<description>
-				<line>Deleted the old database model.
-					<line>Course reservations replaced by "reservation" attribute.</line>
-				</line>
-				<line>Create a new database model that better follows the latest design.
-					<line>A reservation is set to an instructional offering with optional relations to (many-to-many) configurations and classes.</line>
-				</line>
-			</description>
-		</item>
-		<item>
-			<name>User Interface Changes</name>
-			<description>
-				<line>The old (and mostly disabled) interface replaced by a new (GWT-based) one</line>
-				<line>A new Reservations page created, and there is a Reservations table under the Instructional Offering Details page.</line>
-			</description>
-		</item>
-		<item>
-			<name>Solver Changes</name>
-			<description>
-				<line>Reservations are now being loaded into the student sectioning solver.</line>
-				<line>Constraint solver updated with the latest version (1.2.31).
-					<line>Added course reservations.</line>
-					<line>Added ability to enroll students with individual reservation over the class / course / section limit.</line>
-					<line>Fixed NullPointerException when last-like student course requests are involved (after a recent change (reservations), first last-like adept got ignored).</line>
-				</line>
-			</description>
-		</item>
+		<item> 
+			<name>Constraint solver updated with the latest version (1.2.31)</name> 
+			<description> 
+				<line>Added course reservations.</line> 
+				<line>Added ability to enroll students with individual reservation over the class / course / section limit.</line> 
+				<line>Fixed NullPointerException when last-like student course requests are involved (after a recent change (reservations), first last-like adept got ignored).</line> 
+			</description> 
+		</item> 
 	</category>
 </release>
 
