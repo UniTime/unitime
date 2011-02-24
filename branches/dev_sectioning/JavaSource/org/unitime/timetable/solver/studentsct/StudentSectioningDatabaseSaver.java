@@ -225,7 +225,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                 Student student = (Student)e.next();
                 if (student.isDummy()) continue;
                 saveStudent(hibSession, student);
-                flushIfNeeded(hibSession);
             }
             flush(hibSession);
         }
