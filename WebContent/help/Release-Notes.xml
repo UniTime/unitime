@@ -27,6 +27,15 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Solver Changes</title>
+		<item> 
+			<name>Batch Student Sectioning</name> 
+			<description> 
+				<line>Database save: avoid LazyInitializationException when saving student enrollments.</line> 
+			</description> 
+		</item> 
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item> 
 			<name>People lookup</name> 
