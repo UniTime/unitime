@@ -27,6 +27,21 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Other Changes</title>
+		<item> 
+			<name>People lookup</name> 
+			<description> 
+				<line>Use departmental instructor table too.</line> 
+				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line> 
+			</description> 
+		</item> 
+	</category>
+</release>
+
+<release>
+	<version>3.2.125</version>
+	<release-date>Sun, 20 Feb 2011</release-date>
+	<category>
 		<title>User interface</title>
 		<item>
 			<name>Add/Edit Instructional Type</name>
