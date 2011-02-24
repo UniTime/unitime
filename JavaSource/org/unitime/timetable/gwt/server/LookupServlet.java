@@ -46,10 +46,12 @@ import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
@@ -92,6 +94,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 			try {
 				boolean displayWithoutId = true;
 				int maxResults = -1;
+				boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
 				if (options != null) {
 					for (String option: options.split(",")) {
 						option = option.trim();
@@ -103,17 +106,29 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 							displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
 						else if (option.startsWith("maxResults="))
 							maxResults = Integer.parseInt(option.substring("maxResults=".length()));
+						else if (option.startsWith("source=")) {
+							ldap = students = staff = managers = events = instructors = false;
+							for (String s: option.substring("source=".length()).split(":")) {
+								if ("ldap".equals(s)) ldap = true;
+								if ("students".equals(s)) students = true;
+								if ("staff".equals(s)) staff = true;
+								if ("managers".equals(s)) managers = true;
+								if ("events".equals(s)) events = true;
+								if ("instructors".equals(s)) instructors = true;
+							}
+						}
 					}
 				}
 				Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
 				TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
 				Long sessionId = getAcademicSessionId();
 				String q = query.trim().toLowerCase();
-		        findPeopleFromLdap(people, peopleWithoutId, q);
-		        findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
-		        findPeopleFromStaff(people, peopleWithoutId, q);
-		        findPeopleFromTimetableManagers(people, peopleWithoutId, q);
-		        findPeopleFromEventContact(people, peopleWithoutId, q);
+		        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
+		        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
+		        if (instructors) findPeopleFromInstructors(people, peopleWithoutId, q, sessionId);
+		        if (staff) findPeopleFromStaff(people, peopleWithoutId, q);
+		        if (managers) findPeopleFromTimetableManagers(people, peopleWithoutId, q);
+		        if (events) findPeopleFromEventContact(people, peopleWithoutId, q);
 		        List<PersonInterface> ret = new ArrayList<PersonInterface>(people.values());
 		        Collections.sort(ret);
 		        if (displayWithoutId)
@@ -183,6 +198,25 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
                     contact.getEmailAddress(), contact.getPhone(), null, 
                     null,
                     "Event Contacts"));
+        }
+    }
+    
+    protected void findPeopleFromInstructors(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query, Long sessionId) throws Exception {
+        String q = "select s from DepartmentalInstructor s where s.department.session.uniqueId="+sessionId+" and ";
+        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
+            String t = stk.nextToken().replace("'", "''");
+            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
+            if (stk.hasMoreTokens()) q += " and ";
+        }
+        for (Iterator i=DepartmentalInstructorDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
+        	DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+            addPerson(people, peopleWithoutId, new PersonInterface(translate(instructor.getExternalUniqueId(), Source.Staff), 
+                    Constants.toInitialCase(instructor.getFirstName()),
+                    Constants.toInitialCase(instructor.getMiddleName()),
+                    Constants.toInitialCase(instructor.getLastName()),
+                    instructor.getEmail(), null, instructor.getDepartment().getName(),
+                    (instructor.getPositionType() == null ? null : instructor.getPositionType().getLabel()),
+                    "Instructors"));
         }
     }
 
