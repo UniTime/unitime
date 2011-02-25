@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
-import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -44,7 +43,6 @@ import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.studentsct.StudentSectioningSaver;
 import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
@@ -133,33 +131,15 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             iProgress.warn("Student "+student.getId()+" not found.");
             return;
         }
-        Iterator i = null;
-        try {
-        	i = s.getClassEnrollments().iterator();
-        } catch (LazyInitializationException e) {
-        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
-        	if (s == null) {
-                iProgress.warn("Student "+student.getId()+" not found.");
-                return;
-        	}
-        	i = s.getClassEnrollments().iterator();
-        }
-        while (i.hasNext()) {
-            StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+        for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
+            StudentClassEnrollment sce = i.next();
+            sce.getClazz().getStudentEnrollments().remove(sce);
+            if (sce.getCourseRequest() != null)
+            	sce.getCourseRequest().getClassEnrollments().remove(sce);
             hibSession.delete(sce); i.remove();
         }
-        try {
-        	i = s.getWaitlists().iterator();
-        } catch (LazyInitializationException e) {
-        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
-        	if (s == null) {
-                iProgress.warn("Student "+student.getId()+" not found.");
-                return;
-        	}
-        	i = s.getWaitlists().iterator();
-        }
-        while (i.hasNext()) {
-            WaitList wl = (WaitList)i.next();
+        for (Iterator<WaitList> i = s.getWaitlists().iterator(); i.hasNext(); ) {
+            WaitList wl = i.next();
             hibSession.delete(wl); i.remove();
         }
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
@@ -169,9 +149,14 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                 CourseRequest courseRequest = (CourseRequest)request;
                 if (enrollment==null) {
                     if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
+                        CourseOffering co = iCourses.get(courseRequest.getCourses().get(0).getId());
+                        if (co == null) {
+                        	iProgress.warn("Course offering " + courseRequest.getCourses().get(0).getId() + " not found.");
+                        	continue;
+                        }
                         WaitList wl = new WaitList();
                         wl.setStudent(s);
-                        wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
+                        wl.setCourseOffering(co);
                         wl.setTimestamp(new Date());
                         wl.setType(new Integer(0));
                         s.getWaitlists().add(wl);
@@ -179,21 +164,34 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     }
                 } else {
                     org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
-                    if (cr==null) continue;
-                    cr.getClassEnrollments().clear();
+                    if (cr != null)
+                    	cr.getClassEnrollments().clear();
                     for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
                         Section section = (Section)j.next();
+                        Class_ clazz = iClasses.get(section.getId());
+                        if (clazz == null) {
+                        	iProgress.warn("Class " + section.getId() + " not found.");
+                        	continue;
+                        }
                         StudentClassEnrollment sce = new StudentClassEnrollment();
                         sce.setStudent(s);
-                        sce.setClazz(iClasses.get(section.getId()));
-                        sce.setCourseRequest(cr);
-                        sce.setCourseOffering(cr.getCourseOffering());
+                        sce.setClazz(clazz);
+                        if (cr == null) {
+                        	CourseOffering co = iCourses.get(enrollment.getCourse().getId());
+                        	if (co == null)
+                        		co = clazz.getSchedulingSubpart().getControllingCourseOffering();
+                        	sce.setCourseOffering(co);
+                        } else {
+                            sce.setCourseRequest(cr);
+                            sce.setCourseOffering(cr.getCourseOffering());
+                        	cr.getClassEnrollments().add(sce);
+                        }
                         sce.setTimestamp(new Date());
                         s.getClassEnrollments().add(sce);
-                        cr.getClassEnrollments().add(sce);
                         hibSession.save(sce);
                     }
-                    hibSession.saveOrUpdate(cr);
+                    if (cr != null)
+                    	hibSession.saveOrUpdate(cr);
                 }
             }
         }
@@ -202,16 +200,19 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void save(Session session, org.hibernate.Session hibSession) {
         iClasses = new Hashtable<Long, Class_>();
+        iProgress.setPhase("Loading classes...", 1);
         for (Iterator i=Class_.findAll(hibSession, session.getUniqueId()).iterator();i.hasNext();) {
             Class_ clazz = (Class_)i.next();
             iClasses.put(clazz.getUniqueId(),clazz);
         }
+        iProgress.incProgress();
+        
         if (iIncludeCourseDemands) {
             iStudents = new Hashtable();
             iCourses = new Hashtable();
             iRequests = new Hashtable();
             List courseDemands = CourseDemand.findAll(hibSession, session.getUniqueId());
-            iProgress.setPhase("Saving student enrollments...", courseDemands.size());
+            iProgress.setPhase("Loading course demands...", courseDemands.size());
             for (Iterator i=courseDemands.iterator();i.hasNext();) {
                 CourseDemand demand = (CourseDemand)i.next(); iProgress.incProgress();
                 iStudents.put(demand.getStudent().getUniqueId(), demand.getStudent());
@@ -221,8 +222,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     iCourses.put(request.getCourseOffering().getUniqueId(), request.getCourseOffering());
                 }
             }
+            iProgress.setPhase("Saving student enrollments...", getModel().getStudents().size());
             for (Iterator e=getModel().getStudents().iterator();e.hasNext();) {
-                Student student = (Student)e.next();
+                Student student = (Student)e.next(); iProgress.incProgress();
                 if (student.isDummy()) continue;
                 saveStudent(hibSession, student);
             }
@@ -269,8 +271,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         // Update class enrollments
+        iProgress.setPhase("Updating class enrollments...", getModel().getOfferings().size());
         for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
-            Offering offering = (Offering)e.next();
+            Offering offering = (Offering)e.next(); iProgress.incProgress();
             for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
                 Config config = (Config)f.next();
                 for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
