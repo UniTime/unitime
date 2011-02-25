@@ -31,7 +31,12 @@
 		<item> 
 			<name>Batch Student Sectioning</name> 
 			<description> 
-				<line>Database save: avoid LazyInitializationException when saving student enrollments.</line> 
+				<line>Database save:
+					<line>Avoid LazyInitializationException when saving student enrollments.</line>
+					<line>Fixed ObjectDeletedException when saving the same schedule for the second time.</line>
+					<line>Save class enrollments that do not have course requests too (when no course requests are present).</line>
+					<line>Few other small improvements.</line>
+				</line> 
 			</description> 
 		</item> 
 	</category>
