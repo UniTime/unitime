@@ -104,6 +104,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Curriculum Timetabling</name>
+			<description>
+				<line>Curricula page: added More button (drop down with all the available operations).</line>
+				<line>Instructional Offering Detail page, Curricula table: added Curricula Operations button (drop down with operations available on the table).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
