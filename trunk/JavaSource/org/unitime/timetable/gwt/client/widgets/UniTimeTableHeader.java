@@ -56,32 +56,37 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
-				List<Operation> operations = getOperations();
-				if (operations.isEmpty()) return;
-				boolean first = true;
-				MenuBar menu = new MenuBar(true);
-				for (final Operation op: operations) {
-					if (!op.isApplicable()) continue;
-					if (op.hasSeparator() && !first)
-						menu.addSeparator();
-					first = false;
-					MenuItem item = new MenuItem(op.getName(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							op.execute();
-						}
-					});
-					item.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(item);
-				}
-				if (first) return;
-				menu.setVisible(true);
-				popup.add(menu);
+				if (!setMenu(popup)) return;
 				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
-		
+	}
+	
+	public boolean setMenu(final PopupPanel popup) {
+		List<Operation> operations = getOperations();
+		if (operations.isEmpty()) return false;
+		boolean first = true;
+		MenuBar menu = new MenuBar(true);
+		for (final Operation op: operations) {
+			if (!op.isApplicable()) continue;
+			if (op.hasSeparator() && !first)
+				menu.addSeparator();
+			first = false;
+			MenuItem item = new MenuItem(op.getName(), true, new Command() {
+				@Override
+				public void execute() {
+					popup.hide();
+					op.execute();
+				}
+			});
+			item.getElement().getStyle().setCursor(Cursor.POINTER);
+			menu.addItem(item);
+		}
+		if (first) return false;
+		menu.setVisible(true);
+		menu.setFocusOnHoverEnabled(true);
+		popup.add(menu);
+		return true;
 	}
 	
 	public UniTimeTableHeader(String title) {

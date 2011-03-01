@@ -50,6 +50,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -99,6 +100,8 @@ public class CourseCurriculaTable extends Composite {
 	private int iSelectedRow = -1;
 	private boolean iEditable = true;
 	
+	private Button iOperations;
+	private ClickHandler iMenu;
 	
 	public static enum Type {
 		EXP ("Requested"),
@@ -131,6 +134,160 @@ public class CourseCurriculaTable extends Composite {
 		iCurriculaPanel = new VerticalPanel();
 		iCurriculaPanel.setWidth("100%");
 		
+		// Menu
+		iMenu = new ClickHandler() {
+			@Override
+			public void onClick(final ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				MenuItem showHide = new MenuItem(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "Hide Details" : "Show Details", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
+						if (iCurriculaImage != null)
+							iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+						if (iCurricula.getRowCount() > 2) {
+							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+								int rowType = iRowTypes.get(row);
+								if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+								iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
+							}
+							for (int col = 0; col < iClassifications.size()  + 2; col++) {
+								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
+							}
+						}
+					}
+				});
+				showHide.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(showHide);
+				if (iCurricula.getRowCount() > 2 && CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
+					boolean canExpand = false, canCollapse = false;
+					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+						int rowType = iRowTypes.get(row);
+						if (rowType == sRowTypeArea || rowType == sRowTypeOther) {
+							if (iCurricula.getRowFormatter().isVisible(row))
+								canExpand = true;
+							else 
+								canCollapse = true;
+						}
+					}
+					if (canExpand) {
+						MenuItem expandAll = new MenuItem("Expand All", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+									int rowType = iRowTypes.get(row);
+									boolean visible = (rowType != sRowTypeArea && rowType != sRowTypeOther);
+									iCurricula.getRowFormatter().setVisible(row, visible);
+									iExpandedAreas.clear();
+									iExpandedAreas.addAll(iAllAreas);
+								}
+							}
+						});
+						expandAll.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(expandAll);
+					}
+					if (canCollapse) {
+						MenuItem collapseAll = new MenuItem("Collapse All", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+									int rowType = iRowTypes.get(row);
+									boolean visible = (rowType != sRowTypeCurriculum && rowType != sRowTypeOtherArea);
+									iCurricula.getRowFormatter().setVisible(row, visible);
+									iExpandedAreas.clear();
+								}
+							}
+						});
+						collapseAll.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(collapseAll);
+					}
+				}
+				menu.addSeparator();
+				for (final Type t : Type.values()) {
+					MenuItem item = new MenuItem(
+							"Show " + t.getName() + " Enrollment",
+							true,
+							new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									CurriculumCookie.getInstance().setCourseCurriculaTableType(t);
+									iHint.setText("Showing " + t.getName() + " Enrollment");
+									if (iCurricula.getRowCount() > 1) {
+										for (int row = 1; row < iCurricula.getRowCount(); row++) {
+											int hc = getHeaderCols(row);
+											for (int col = 0; col <= iClassifications.size(); col++) {
+												((MyLabel)iCurricula.getWidget(row, hc + col)).refresh();
+											}
+										}
+										//((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + t.getName() + " Enrollment");
+									}
+								}
+							});
+					if (t == CurriculumCookie.getInstance().getCourseCurriculaTableType())
+						item.getElement().getStyle().setColor("#666666");
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				menu.addSeparator();
+				MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						LoadingWidget.getInstance().show("Populating projected demands for this offering ...");
+						iCurriculaService.populateCourseProjectedDemands(false, iOfferingId, new AsyncCallback<Boolean>(){
+
+							@Override
+							public void onFailure(Throwable caught) {
+								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								LoadingWidget.getInstance().hide();
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+							}
+							
+						});
+					}
+				});
+				populateProjectedDemands.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(populateProjectedDemands);
+				MenuItem populateProjectedDemands2 = new MenuItem("Populate Course Projected Demands (Include Other Students)", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						LoadingWidget.getInstance().show("Populating projected demands for this course ...");
+						iCurriculaService.populateCourseProjectedDemands(true, iOfferingId, new AsyncCallback<Boolean>(){
+							@Override
+							public void onFailure(Throwable caught) {
+								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								LoadingWidget.getInstance().hide();
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+							}
+							
+						});
+					}
+				});
+				populateProjectedDemands2.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(populateProjectedDemands2);
+				menu.setVisible(true);
+				menu.setFocusOnHoverEnabled(true);
+				popup.add(menu);
+				popup.showRelativeTo((Widget)event.getSource());
+				menu.focus();
+			}
+		};
+		
 		if (showHeader) {
 			HorizontalPanel header = new HorizontalPanel();
 			iCurriculaImage = new Image(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
@@ -144,6 +301,13 @@ public class CourseCurriculaTable extends Composite {
 			header.setCellWidth(curriculaLabel, "100%");
 			header.setStyleName("unitime3-HeaderPanel");
 			iCurriculaPanel.add(header);
+			iOperations = new Button("Curricula&nbsp;<u>O</u>perations&nbsp;&or;");
+			iOperations.setAccessKey('o');
+			iOperations.addStyleName("unitime-NoPrint");
+			iOperations.getElement().getStyle().setMarginBottom(2, Unit.PX);
+			iOperations.addClickHandler(iMenu);
+			iOperations.setVisible(false);
+			header.add(iOperations);
 			
 			iCurriculaImage.addClickHandler(new ClickHandler() {
 				@Override
@@ -311,176 +475,24 @@ public class CourseCurriculaTable extends Composite {
 	}
 	
 	private void populate(TreeSet<CurriculumInterface> curricula) {
-		// Menu
-		ClickHandler menu = new ClickHandler() {
-			@Override
-			public void onClick(final ClickEvent event) {
-				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
-				MenuItem showHide = new MenuItem(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "Hide Details" : "Show Details", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-						if (iCurriculaImage != null)
-							iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-						if (iCurricula.getRowCount() > 2) {
-							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
-								int rowType = iRowTypes.get(row);
-								if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
-								iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-							}
-							for (int col = 0; col < iClassifications.size()  + 2; col++) {
-								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
-							}
-						}
-					}
-				});
-				showHide.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(showHide);
-				if (iCurricula.getRowCount() > 2 && CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
-					boolean canExpand = false, canCollapse = false;
-					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
-						int rowType = iRowTypes.get(row);
-						if (rowType == sRowTypeArea || rowType == sRowTypeOther) {
-							if (iCurricula.getRowFormatter().isVisible(row))
-								canExpand = true;
-							else 
-								canCollapse = true;
-						}
-					}
-					if (canExpand) {
-						MenuItem expandAll = new MenuItem("Expand All", true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
-									int rowType = iRowTypes.get(row);
-									boolean visible = (rowType != sRowTypeArea && rowType != sRowTypeOther);
-									iCurricula.getRowFormatter().setVisible(row, visible);
-									iExpandedAreas.clear();
-									iExpandedAreas.addAll(iAllAreas);
-								}
-							}
-						});
-						expandAll.getElement().getStyle().setCursor(Cursor.POINTER);
-						menu.addItem(expandAll);
-					}
-					if (canCollapse) {
-						MenuItem collapseAll = new MenuItem("Collapse All", true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
-									int rowType = iRowTypes.get(row);
-									boolean visible = (rowType != sRowTypeCurriculum && rowType != sRowTypeOtherArea);
-									iCurricula.getRowFormatter().setVisible(row, visible);
-									iExpandedAreas.clear();
-								}
-							}
-						});
-						collapseAll.getElement().getStyle().setCursor(Cursor.POINTER);
-						menu.addItem(collapseAll);
-					}
-				}
-				menu.addSeparator();
-				for (final Type t : Type.values()) {
-					MenuItem item = new MenuItem(
-							"Show " + t.getName() + " Enrollment",
-							true,
-							new Command() {
-								@Override
-								public void execute() {
-									popup.hide();
-									CurriculumCookie.getInstance().setCourseCurriculaTableType(t);
-									iHint.setText("Showing " + t.getName() + " Enrollment");
-									if (iCurricula.getRowCount() > 1) {
-										for (int row = 1; row < iCurricula.getRowCount(); row++) {
-											int hc = getHeaderCols(row);
-											for (int col = 0; col <= iClassifications.size(); col++) {
-												((MyLabel)iCurricula.getWidget(row, hc + col)).refresh();
-											}
-										}
-										//((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + t.getName() + " Enrollment");
-									}
-								}
-							});
-					if (t == CurriculumCookie.getInstance().getCourseCurriculaTableType())
-						item.getElement().getStyle().setColor("#666666");
-					item.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(item);
-				}
-				menu.addSeparator();
-				MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						LoadingWidget.getInstance().show("Populating projected demands for this offering ...");
-						iCurriculaService.populateCourseProjectedDemands(false, iOfferingId, new AsyncCallback<Boolean>(){
-
-							@Override
-							public void onFailure(Throwable caught) {
-								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
-								LoadingWidget.getInstance().hide();
-							}
-
-							@Override
-							public void onSuccess(Boolean result) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
-							}
-							
-						});
-					}
-				});
-				populateProjectedDemands.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(populateProjectedDemands);
-				MenuItem populateProjectedDemands2 = new MenuItem("Populate Course Projected Demands (Include Other Students)", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						LoadingWidget.getInstance().show("Populating projected demands for this course ...");
-						iCurriculaService.populateCourseProjectedDemands(true, iOfferingId, new AsyncCallback<Boolean>(){
-							@Override
-							public void onFailure(Throwable caught) {
-								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
-								LoadingWidget.getInstance().hide();
-							}
-
-							@Override
-							public void onSuccess(Boolean result) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
-							}
-							
-						});
-					}
-				});
-				populateProjectedDemands2.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(populateProjectedDemands2);
-				menu.setVisible(true);
-				popup.add(menu);
-				popup.showRelativeTo((Widget)event.getSource());
-			}
-		};
-		
 		// Create header
 		int col = 0;
 		final Label curriculumLabel = new Label("Curriculum", false);
-		curriculumLabel.addClickHandler(menu);
+		curriculumLabel.addClickHandler(iMenu);
 		iCurricula.setWidget(0, col, curriculumLabel);
 		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
 		col++;
 		
 		final Label areaLabel = new Label("Area", false);
-		areaLabel.addClickHandler(menu);
+		areaLabel.addClickHandler(iMenu);
 		iCurricula.setWidget(0, col, areaLabel);
 		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
 		col++;
 		
 		final Label majorLabel = new Label("Major(s)", false);
-		majorLabel.addClickHandler(menu);
+		majorLabel.addClickHandler(iMenu);
 		iCurricula.setWidget(0, col, majorLabel);
 		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
@@ -488,7 +500,7 @@ public class CourseCurriculaTable extends Composite {
 		
 		for (AcademicClassificationInterface clasf: iClassifications) {
 			final Label clasfLabel = new Label(clasf.getCode());
-			clasfLabel.addClickHandler(menu);
+			clasfLabel.addClickHandler(iMenu);
 			iCurricula.setWidget(0, col, clasfLabel);
 			iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 			iCurricula.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -497,7 +509,7 @@ public class CourseCurriculaTable extends Composite {
 		}
 		
 		final Label totalLabel = new Label("Total", false);
-		totalLabel.addClickHandler(menu);
+		totalLabel.addClickHandler(iMenu);
 		iCurricula.setWidget(0, col, totalLabel);
 		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iCurricula.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -981,6 +993,8 @@ public class CourseCurriculaTable extends Composite {
 		iLoadingImage.setVisible(false);
 		iHint.setVisible(true);
 		iCurriculaImage.setVisible(true);
+		if (iOperations != null)
+			iOperations.setEnabled(true);
 	}
 	
 	private int getHeaderCols(int row) {
@@ -1005,7 +1019,13 @@ public class CourseCurriculaTable extends Composite {
 				public void onSuccess(TreeSet<CurriculumInterface> result) {
 					if (result.isEmpty()) {
 						setMessage("The selected offering has no curricula.");
+						if (iOperations != null)
+							iOperations.setVisible(false);
 					} else {
+						if (iOperations != null) {
+							iOperations.setVisible(true);
+							iOperations.setEnabled(false);
+						}
 						populate(result);
 					}
 					iLoadingImage.setVisible(false);
