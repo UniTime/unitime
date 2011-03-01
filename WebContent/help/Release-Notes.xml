@@ -57,7 +57,7 @@
 		</item>
 	</category>
 	<category>
-		<title>Student Scheduling Assitant</title>
+		<title>Student Scheduling Assistant</title>
 		<item>
 			<name>Data Model</name>
 			<description>
@@ -74,7 +74,7 @@
 			<description>
 				<line>Use http://register.unitime.org/xml (instead of the https variant, https://unitimereg.appspot.com/xml)
 					<line>This is to avoid certificate issues when accessing a secure (https) resource (SunCertPathBuilderException: unable to find valid certification path to requested target),</line>
-					<line>and there are no "secret" data being sent and/or received anyway" --username "muller@unitime.org".</line>
+					<line>and there are no "secret" data being sent and/or received anyway".</line>
 				</line>
 			</description>
 		</item>
