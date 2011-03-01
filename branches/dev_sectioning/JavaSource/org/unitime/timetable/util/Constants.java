@@ -577,5 +577,16 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 			return DAY_MON;
 		}
     }
+    
+	public static int toHour(int slot) {
+		int min = slot * SLOT_LENGTH_MIN + FIRST_SLOT_TIME_MIN;
+		return min / 60;
+	}
+	
+	public static int toMinute(int slot) {
+		int min = slot * SLOT_LENGTH_MIN + FIRST_SLOT_TIME_MIN;
+		return min % 60;
+	}
+
 
 }

@@ -17,13 +17,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom.purdue;
+package org.unitime.timetable.onlinesectioning.custom.purdue;
 
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.server.custom.CustomSectionNames;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
 
 /**
  * @author Tomas Muller

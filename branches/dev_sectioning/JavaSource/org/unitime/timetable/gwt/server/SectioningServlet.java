@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -49,12 +47,9 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
 import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
-import org.unitime.timetable.gwt.server.custom.CourseDetailsProvider;
-import org.unitime.timetable.gwt.server.custom.CustomSectionNames;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -65,9 +60,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -75,11 +68,21 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerUpdater;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
+import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
+import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
+import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -89,16 +92,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class SectioningServlet extends RemoteServiceServlet implements SectioningService {
 	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
-	private SectioningServerUpdater iUpdater;
+	private OnlineSectioningServerUpdater iUpdater;
 
 	public void init() throws ServletException {
 		System.out.println("Student Sectioning Service is starting up ...");
-        SectioningServer.init();
+		OnlineSectioningService.init();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
 		try {
-			iUpdater = new SectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
+			iUpdater = new OnlineSectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
 			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
 				final Session session = i.next();
 				
@@ -115,7 +118,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					Thread t = new Thread(new Runnable() {
 						public void run() {
 							try {
-								SectioningServer.createInstance(sessionId);
+								OnlineSectioningService.createInstance(sessionId);
 							} catch (Exception e) {
 								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
 										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
@@ -127,7 +130,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					t.start();
 				} else {
 					try {
-						SectioningServer.createInstance(sessionId);
+						OnlineSectioningService.createInstance(sessionId);
 					} catch (Exception e) {
 						sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
 								" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
@@ -145,13 +148,13 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public void destroy() {
 		System.out.println("Student Sectioning Service is going down ...");
 		iUpdater.stopUpdating();
-		SectioningServer.unloadAll();
+		OnlineSectioningService.unloadAll();
 	}
 	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException {
 		if (sessionId==null) throw new SectioningException(SectioningExceptionType.NO_ACADEMIC_SESSION);
 		setLastSessionId(sessionId);
-		if (SectioningServer.getInstance(sessionId) == null) {
+		if (OnlineSectioningService.getInstance(sessionId) == null) {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
@@ -195,7 +198,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		} else {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			try {
-				for (CourseInfo c: SectioningServer.getInstance(sessionId).findCourses(query, limit)) {
+				for (CourseInfo c: OnlineSectioningService.getInstance(sessionId).findCourses(query, limit)) {
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());
 					course.setSubject(c.getSubjectArea());
@@ -220,7 +223,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	@SuppressWarnings("unchecked")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException {
 		setLastSessionId(sessionId);
-		if (SectioningServer.getInstance(sessionId) == null) {
+		if (OnlineSectioningService.getInstance(sessionId) == null) {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			CourseOffering courseOffering = null;
@@ -233,7 +236,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					.setCacheable(true).setMaxResults(1).list()) {
 				courseOffering = c; break;
 			}
-			if (courseOffering == null) throw new CurriculaException("course " + course + " does not exist");
+			if (courseOffering == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST);
 			List<Class_> classes = new ArrayList<Class_>();
 			for (Iterator<InstrOfferingConfig> i = courseOffering.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
 				InstrOfferingConfig config = i.next();
@@ -299,7 +302,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			try {
 				if (sessionId==null) throw new SectioningException(SectioningExceptionType.NO_ACADEMIC_SESSION);
-				SectioningServer server = SectioningServer.getInstance(sessionId);
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 				CourseInfo c = server.getCourseInfo(course);
 				if (c == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST, course);
 				Long studentId = getStudentId(sessionId);
@@ -334,7 +337,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					}
 				});
 				Hashtable<Long, int[]> limits = null;
-				if (SectioningServer.sSectionLimitProvider != null) {
+				if (OnlineSectioningService.sSectionLimitProvider != null) {
 					ArrayList<Long> classIds = new ArrayList<Long>();
 					final Hashtable<Long, String> classNames = new Hashtable<Long, String>();
 					for (Section section: sections) {
@@ -346,14 +349,14 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						}
 
 						public String getClassSuffix(Long sessionId, Long courseId, Long classId) {
-							if (SectioningServer.sCustomSectionNames != null) {
-								String ret = SectioningServer.sCustomSectionNames.getClassSuffix(sessionId, courseId, classId);
+							if (OnlineSectioningService.sCustomSectionNames != null) {
+								String ret = OnlineSectioningService.sCustomSectionNames.getClassSuffix(sessionId, courseId, classId);
 								if (ret != null) return ret;
 							}
 							return classNames.get(classId);
 						}
 					};
-					limits = SectioningServer.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), c.getUniqueId(), classIds, x);
+					limits = OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), c.getUniqueId(), classIds, x);
 				}
 				ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
 				courseAssign.setCourseId(c.getUniqueId());
@@ -427,7 +430,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		ArrayList<String[]> ret = new ArrayList<String[]>();
 		if (sectioning) {
 			UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
-			for (AcademicSessionInfo s: SectioningServer.getAcademicSessions()) {
+			for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
 				if (principal != null && principal.getStudentId(s.getUniqueId()) == null) continue;
 				ret.add(new String[] {
 						String.valueOf(s.getUniqueId()),
@@ -437,7 +440,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				});
 			}
 			if (ret.isEmpty() && principal != null)
-				for (AcademicSessionInfo s: SectioningServer.getAcademicSessions()) {
+				for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
 					ret.add(new String[] {
 							String.valueOf(s.getUniqueId()),
 							s.getYear(),
@@ -462,36 +465,23 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return ret;
 	}
 	
-	private CourseOffering getCourse(Long sessionId, String courseName) {
-		for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
-				"select c from CourseOffering c where " +
-				"c.subjectArea.session.uniqueId = :sessionId and " +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
-				.setString("course", courseName.toLowerCase())
-				.setLong("sessionId", sessionId)
-				.setCacheable(true).setMaxResults(1).list()) {
-			return co;
-		}
-		return null;
-	}
-
 	public String retrieveCourseDetails(Long sessionId, String course) throws SectioningException {
 		setLastSessionId(sessionId);
-		if (SectioningServer.getInstance(sessionId) == null) {
-			CourseOffering courseOffering = getCourse(sessionId, course);
+		if (OnlineSectioningService.getInstance(sessionId) == null) {
+			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
 			if (courseOffering == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST, course);
 			CourseDetailsProvider provider = null;
 			try {
 				provider = (CourseDetailsProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider")).newInstance();
 			} catch (Exception e) {
-				throw new CurriculaException("course detail interface not provided");
+				throw new SectioningException(SectioningExceptionType.NO_CUSTOM_COURSE_DETAILS);
 			}
 			String details = provider.getDetails(
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 			return details;
 		} else {
-			CourseInfo c = SectioningServer.getInstance(sessionId).getCourseInfo(course);
+			CourseInfo c = OnlineSectioningService.getInstance(sessionId).getCourseInfo(course);
 			if (c == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST, course);
 			return c.getDetails();
 		}
@@ -499,7 +489,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException {
 		setLastSessionId(sessionId);
-		CourseInfo c = SectioningServer.getInstance(sessionId).getCourseInfo(course);
+		CourseInfo c = OnlineSectioningService.getInstance(sessionId).getCourseInfo(course);
 		if (c == null) throw new SectioningException(SectioningExceptionType.COURSE_NOT_EXIST, course);
 		return c.getUniqueId();
 	}
@@ -509,7 +499,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
-			ClassAssignmentInterface ret = SectioningServer.getInstance(request.getAcademicSessionId()).section(request, currentAssignment);
+			ClassAssignmentInterface ret = OnlineSectioningService.getInstance(request.getAcademicSessionId()).execute(
+					new FindAssignmentAction(request, currentAssignment)).get(0);
 			if (ret != null) {
 				ret.setCanEnroll(true);
 				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
@@ -533,28 +524,29 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
-			if (SectioningServer.getInstance(request.getAcademicSessionId()) == null) {
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			if (OnlineSectioningService.getInstance(request.getAcademicSessionId()) == null) {
 				ArrayList<String> notFound = new ArrayList<String>();
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
-					if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && getCourse(request.getAcademicSessionId(), cr.getRequestedCourse()) == null)
+					if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(), cr.getRequestedCourse()) == null)
 						notFound.add(cr.getRequestedCourse());
-					if (cr.hasFirstAlternative() && getCourse(request.getAcademicSessionId(), cr.getFirstAlternative()) == null)
+					if (cr.hasFirstAlternative() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(), cr.getFirstAlternative()) == null)
 						notFound.add(cr.getFirstAlternative());
-					if (cr.hasSecondAlternative() && getCourse(request.getAcademicSessionId(), cr.getSecondAlternative()) == null)
+					if (cr.hasSecondAlternative() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(), cr.getSecondAlternative()) == null)
 						notFound.add(cr.getSecondAlternative());
 				}
 				for (CourseRequestInterface.Request cr: request.getAlternatives()) {
-					if (cr.hasRequestedCourse() && getCourse(request.getAcademicSessionId(),cr.getRequestedCourse()) == null)
+					if (cr.hasRequestedCourse() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(),cr.getRequestedCourse()) == null)
 						notFound.add(cr.getRequestedCourse());
-					if (cr.hasFirstAlternative() && getCourse(request.getAcademicSessionId(),cr.getFirstAlternative()) == null)
+					if (cr.hasFirstAlternative() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(),cr.getFirstAlternative()) == null)
 						notFound.add(cr.getFirstAlternative());
-					if (cr.hasSecondAlternative() && getCourse(request.getAcademicSessionId(),cr.getSecondAlternative()) == null)
+					if (cr.hasSecondAlternative() && SaveStudentRequests.getCourse(hibSession, request.getAcademicSessionId(),cr.getSecondAlternative()) == null)
 						notFound.add(cr.getSecondAlternative());
 				}
 				return notFound;
 			} else {
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				return SectioningServer.getInstance(request.getAcademicSessionId()).checkCourses(request);
+				return OnlineSectioningService.getInstance(request.getAcademicSessionId()).checkCourses(request);
 			}
 		} catch (Exception e) {
 			if (e instanceof SectioningException) throw (SectioningException)e;
@@ -569,7 +561,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-			Collection<ClassAssignmentInterface> ret = SectioningServer.getInstance(request.getAcademicSessionId()).computeSuggestions(request, currentAssignment, selectedAssignment);
+			Collection<ClassAssignmentInterface> ret = OnlineSectioningService.getInstance(request.getAcademicSessionId()).execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment));
 			if (ret != null) {
 				boolean canEnroll = true;
 				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
@@ -717,7 +709,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user != null) {
 				Session session = Session.getCurrentAcadSession(user);
-				if (session != null && SectioningServer.getInstance(session.getUniqueId()) != null)
+				if (session != null && OnlineSectioningService.getInstance(session.getUniqueId()) != null)
 					lastSessionId = session.getUniqueId();
 			}
 		}
@@ -744,7 +736,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "no session was used");
 		if (sectioning) {
-			SectioningServer server = SectioningServer.getInstance(sessionId);
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 			if (server == null) throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "no server data");
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "no session info");
@@ -778,7 +770,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (studentId == null) throw new SectioningException(SectioningExceptionType.NO_STUDENT);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 			try {
-				SectioningServer server = SectioningServer.getInstance(sessionId);
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
 				if (!student.getCourseDemands().isEmpty()) {
@@ -880,7 +872,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (studentId == null) throw new SectioningException(SectioningExceptionType.NO_STUDENT);
 		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 		try {
-			SectioningServer server = SectioningServer.getInstance(sessionId);
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 			Student student = StudentDAO.getInstance().get(studentId, hibSession);
 			if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
 			if (!student.getClassEnrollments().isEmpty()) {
@@ -915,297 +907,44 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 		if (principal == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AUTHENTICATED);
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
-		SectioningServer server = SectioningServer.getInstance(request.getAcademicSessionId());
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
 		if (server != null) {
 			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
-		}
-		if (studentId == null) {
-			if (server != null)
+			if (studentId == null)
 				throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
-			else
-				throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel());
-		}
-		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
-		try {
-			Student student = StudentDAO.getInstance().get(studentId, hibSession);
-			if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-			saveRequest(hibSession, student, request, true);
-			hibSession.save(student);
-			hibSession.flush();
+			server.execute(new SaveStudentRequests(studentId, request, true));
 			return true;
-		} catch (Exception e) {
-			if (e instanceof SectioningException) throw (SectioningException)e;
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(SectioningExceptionType.UNKNOWN, e.getMessage(), e);
-		} finally {
-			hibSession.close();
-		}
-	}
-	
-	public Hashtable<Long, CourseRequest> saveRequest(org.hibernate.Session hibSession, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
-		Hashtable<Long, CourseRequest> ret = new Hashtable<Long, CourseRequest>();
-		SectioningServer server = SectioningServer.getInstance(student.getSession().getUniqueId());
-		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-			StudentClassEnrollment enrl = i.next();
-			if (keepEnrollments) {
-				if (enrl.getCourseRequest() != null) {
-					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-					enrl.setCourseRequest(null);
-					hibSession.save(enrl);
-				}
-			} else {
-				enrl.getClazz().getStudentEnrollments().remove(enrl);
-				hibSession.delete(enrl);
+		} else {
+			if (studentId == null)
+				throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel());
+			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
+			try {
+				Student student = StudentDAO.getInstance().get(studentId, hibSession);
+				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				SaveStudentRequests.saveRequest(hibSession, student, request, true);
+				hibSession.save(student);
+				hibSession.flush();
+				return true;
+			} catch (Exception e) {
+				if (e instanceof SectioningException) throw (SectioningException)e;
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(SectioningExceptionType.UNKNOWN, e.getMessage(), e);
+			} finally {
+				hibSession.close();
 			}
 		}
-		if (!keepEnrollments) student.getClassEnrollments().clear();
-		for (Iterator<CourseDemand> j =  student.getCourseDemands().iterator(); j.hasNext(); ) {
-			CourseDemand cd = j.next();
-			if (cd.getFreeTime() != null) hibSession.delete(cd.getFreeTime());
-			for (Iterator<CourseRequest> k = cd.getCourseRequests().iterator(); k.hasNext(); ) {
-				CourseRequest cr = k.next();
-				hibSession.delete(cr);
-			}
-			hibSession.delete(cd);
-		}
-		student.getCourseDemands().clear();
-		int priority = 0;
-		Date ts = new Date();
-		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedFreeTime()) {
-				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-					CourseDemand cd = new CourseDemand();
-					cd.setAlternative(false);
-					cd.setPriority(priority);
-					cd.setTimestamp(ts);
-					cd.setWaitlist(false);
-					FreeTime free = new FreeTime();
-					free.setCategory(0);
-					free.setDayCode(DayCode.toInt(DayCode.toDayCodes(ft.getDays())));
-					free.setStartSlot(ft.getStart());
-					free.setLength(ft.getLength());
-					free.setSession(student.getSession());
-					free.setName(ft.toString());
-					hibSession.saveOrUpdate(free);
-					cd.setFreeTime(free);
-					cd.setStudent(student);
-					student.getCourseDemands().add(cd);
-				}
-			} else {
-				CourseDemand cd = new CourseDemand();
-				cd.setAlternative(false);
-				cd.setPriority(priority);
-				cd.setTimestamp(ts);
-				cd.setWaitlist(false);
-				cd.setCourseRequests(new HashSet<CourseRequest>());
-				if (r.hasRequestedCourse()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-					if (co != null) {
-						CourseRequest cr = new CourseRequest();
-						cr.setAllowOverlap(false);
-						cr.setCredit(0);
-						cr.setOrder(0);
-						cr.setCourseOffering(co);
-						cd.getCourseRequests().add(cr);
-						cr.setCourseDemand(cd);
-						ret.put(co.getUniqueId(), cr);
-					}
-				}
-				if (r.hasFirstAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-					if (co != null) {
-						CourseRequest cr = new CourseRequest();
-						cr.setAllowOverlap(false);
-						cr.setCredit(0);
-						cr.setOrder(1);
-						cr.setCourseOffering(co);
-						cd.getCourseRequests().add(cr);
-						cr.setCourseDemand(cd);
-						ret.put(co.getUniqueId(), cr);
-					}
-				}
-				if (r.hasSecondAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-					if (co != null) {
-						CourseRequest cr = new CourseRequest();
-						cr.setAllowOverlap(false);
-						cr.setCredit(0);
-						cr.setOrder(2);
-						cr.setCourseOffering(co);
-						cd.getCourseRequests().add(cr);
-						cr.setCourseDemand(cd);
-						ret.put(co.getUniqueId(), cr);
-					}
-				}
-				if (cd.getCourseRequests().isEmpty()) continue;
-				cd.setStudent(student);
-				student.getCourseDemands().add(cd);
-			}
-			priority++;
-		}
-		priority = 0;
-		for (CourseRequestInterface.Request r: request.getAlternatives()) {
-			CourseDemand cd = new CourseDemand();
-			cd.setAlternative(true);
-			cd.setPriority(priority);
-			cd.setTimestamp(ts);
-			cd.setWaitlist(false);
-			cd.setCourseRequests(new HashSet<CourseRequest>());
-			if (r.hasRequestedCourse()) {
-				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-				CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-				if (co != null) {
-					CourseRequest cr = new CourseRequest();
-					cr.setAllowOverlap(false);
-					cr.setCredit(0);
-					cr.setOrder(0);
-					cr.setCourseOffering(co);
-					cd.getCourseRequests().add(cr);
-					cr.setCourseDemand(cd);
-					ret.put(co.getUniqueId(), cr);
-				}
-			}
-			if (r.hasFirstAlternative()) {
-				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-				CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-				if (co != null) {
-					CourseRequest cr = new CourseRequest();
-					cr.setAllowOverlap(false);
-					cr.setCredit(0);
-					cr.setOrder(1);
-					cr.setCourseOffering(co);
-					cd.getCourseRequests().add(cr);
-					cr.setCourseDemand(cd);
-					ret.put(co.getUniqueId(), cr);
-				}
-			}
-			if (r.hasSecondAlternative()) {
-				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-				CourseOffering co = (c == null ? getCourse(request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
-				if (co != null) {
-					CourseRequest cr = new CourseRequest();
-					cr.setAllowOverlap(false);
-					cr.setCredit(0);
-					cr.setOrder(2);
-					cr.setCourseOffering(co);
-					cr.setCourseDemand(cd);
-					cd.getCourseRequests().add(cr);
-					ret.put(co.getUniqueId(), cr);
-				}
-			}
-			if (cd.getCourseRequests().isEmpty()) continue;
-			cd.setStudent(student);
-			student.getCourseDemands().add(cd);
-			priority++;
-		}
-		return ret;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private boolean isAvailable(org.hibernate.Session hibSession, Student student, Class_ clazz, Section section) {
-		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) return true;
-		int limit = clazz.getMaxExpectedCapacity();
-		if (clazz.getExpectedCapacity() < clazz.getMaxExpectedCapacity()) {
-			Assignment commited = clazz.getCommittedAssignment();
-			int roomLimit = 0;
-			if (commited != null) {
-				int roomCap = 0;
-				for (Iterator<Location> i = commited.getRooms().iterator(); i.hasNext(); ) roomCap += i.next().getCapacity();
-				roomLimit = Math.round(clazz.getRoomRatio() * roomCap);
-			}
-			limit = Math.min(Math.max(roomLimit, clazz.getExpectedCapacity()), clazz.getMaxExpectedCapacity());
-		}
-		if (limit != section.getLimit()) {
-			sLog.warn("Limit of " + clazz.getClassLabel() + " changed (" + limit +" != " + section.getLimit() + ").");
-		}
-		if (clazz.getStudentEnrollments().size() != section.getEnrollments().size()) {
-			sLog.warn("Enrollment of " + clazz.getClassLabel() + " changed (" + clazz.getStudentEnrollments().size() +" != " + section.getEnrollments().size() + ").");
-			enrl: for (Iterator<StudentClassEnrollment> i = clazz.getStudentEnrollments().iterator(); i.hasNext(); ) {
-				StudentClassEnrollment enrl = i.next();
-				for (Iterator<Enrollment> j = section.getEnrollments().iterator(); j.hasNext();) {
-					Enrollment enrollment = j.next();
-					if (enrollment.getStudent().getId() == enrl.getStudent().getUniqueId()) continue enrl;
-				}
-				sLog.warn(" -- student " + enrl.getStudent().getExternalUniqueId() + " not present in section enrollments (solver).");
-			}
-			enrl: for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
-				Enrollment enrollment = i.next();
-				for (Iterator<StudentClassEnrollment> j = clazz.getStudentEnrollments().iterator(); j.hasNext(); ) {
-					StudentClassEnrollment enrl = j.next();
-					if (enrollment.getStudent().getId() == enrl.getStudent().getUniqueId()) continue enrl;
-				}
-				Student s = StudentDAO.getInstance().get(enrollment.getStudent().getId(), hibSession);
-				sLog.warn(" -- student " + s.getExternalUniqueId() + " not present in class enrollments (db).");
-			}
-		}
-		if (clazz.getStudentEnrollments().size() < limit) return true;
-		if (clazz.getStudentEnrollments().size() > limit) return false;
-		for (Iterator<StudentClassEnrollment> i = clazz.getStudentEnrollments().iterator(); i.hasNext(); ) {
-			StudentClassEnrollment enrl = i.next();
-			if (enrl.getStudent().equals(student)) return true;
-		}
-		return false;
 	}
 	
 	public ArrayList<Long> enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
 		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 		if (principal == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AUTHENTICATED);
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
-		SectioningServer server = SectioningServer.getInstance(request.getAcademicSessionId());
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
 		if (studentId == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true")))
 			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
-		server.getLock().writeLock().lock();
-		try {
-			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
-			try {
-				Student student = StudentDAO.getInstance().get(studentId, hibSession);
-				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-				Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
-				for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
-					if (ca.isFreeTime() || ca.getClassId() == null) continue;
-					Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), hibSession);
-					if (!isAvailable(hibSession, student, clazz, server.getSection(ca.getClassId())))
-						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
-					classes.put(clazz.getUniqueId(), clazz);
-				}
-				Hashtable<Long, CourseRequest> req = saveRequest(hibSession, student, request, false);
-				Date ts = new Date();
-				for (ClassAssignmentInterface.ClassAssignment ca: currentAssignment) {
-					if (ca.isFreeTime() || ca.getClassId() == null) continue;
-					Class_ clazz = classes.get(ca.getClassId());
-					CourseRequest cr = req.get(ca.getCourseId());
-					if (clazz == null || cr == null) continue;
-					StudentClassEnrollment enrl = new StudentClassEnrollment();
-					enrl.setClazz(clazz);
-					clazz.getStudentEnrollments().add(enrl);
-					enrl.setCourseOffering(cr.getCourseOffering());
-					enrl.setCourseRequest(cr);
-					enrl.setTimestamp(ts);
-					enrl.setStudent(student);
-					student.getClassEnrollments().add(enrl);
-				}
-				hibSession.save(student);
-				hibSession.flush();
-				hibSession.refresh(student);
-				server.reloadStudent(student);
-				ArrayList<Long> ret = new ArrayList<Long>();
-				ret.addAll(server.getSavedClasses(student.getUniqueId()));
-				return ret;
-			} catch (Exception e) {
-				if (e instanceof SectioningException) throw (SectioningException)e;
-				sLog.error(e.getMessage(), e);
-				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
-			} finally {
-				hibSession.close();
-			}			
-		} finally {
-			server.getLock().writeLock().unlock();
-		}
+		return new ArrayList<Long>(server.execute(new EnrollStudent(studentId, request, currentAssignment)));
 	}
 
 	public Boolean isAdmin() throws SectioningException {

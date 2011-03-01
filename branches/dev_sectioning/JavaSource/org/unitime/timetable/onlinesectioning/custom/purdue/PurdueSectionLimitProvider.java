@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom.purdue;
+package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,12 +33,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.server.custom.CustomSectionNames;
-import org.unitime.timetable.gwt.server.custom.SectionLimitProvider;
-import org.unitime.timetable.gwt.server.custom.SectionUrlProvider;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
+import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
+import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 
 /**
  * @author Tomas Muller

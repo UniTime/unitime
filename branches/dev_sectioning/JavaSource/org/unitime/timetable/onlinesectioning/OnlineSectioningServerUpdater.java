@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.onlinesectioning;
 
 import java.util.Date;
 import java.util.List;
@@ -28,19 +28,22 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
+import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
+import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
+import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
  * @author Tomas Muller
  */
-public class SectioningServerUpdater extends Thread {
-	private static Logger sLog = Logger.getLogger(SectioningServerUpdater.class);
+public class OnlineSectioningServerUpdater extends Thread {
+	private static Logger sLog = Logger.getLogger(OnlineSectioningServerUpdater.class);
 	private long iSleepTimeInSeconds = 5;
 	private Date iLastTimeStamp;
 	private boolean iRun = true;
 	
 	private AcademicSessionInfo iSession = null; 
 	
-	public SectioningServerUpdater(AcademicSessionInfo session, Date lastTimeStamp) {
+	public OnlineSectioningServerUpdater(AcademicSessionInfo session, Date lastTimeStamp) {
 		super();
 		iLastTimeStamp = lastTimeStamp;
 		iSession = session;
@@ -49,7 +52,7 @@ public class SectioningServerUpdater extends Thread {
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.updateInterval", "30"));
 	}
 	
-	public SectioningServerUpdater(Date lastTimeStamp) {
+	public OnlineSectioningServerUpdater(Date lastTimeStamp) {
 		super();
 		iLastTimeStamp = lastTimeStamp;
 		iSession = null;
@@ -77,12 +80,10 @@ public class SectioningServerUpdater extends Thread {
 		return iSession;
 	}
 	
-	public SectioningServer getServer() {
+	public OnlineSectioningServer getServer() {
 		if (getAcademicSession() == null) return null;
-		return SectioningServer.getInstance(getAcademicSession().getUniqueId());
+		return OnlineSectioningService.getInstance(getAcademicSession().getUniqueId());
 	}
-	
-
 	
 	public void checkForUpdates() {
 		org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
@@ -104,7 +105,7 @@ public class SectioningServerUpdater extends Thread {
 	}
 	
 	protected void processChange(StudentSectioningQueue q) {
-		SectioningServer server = SectioningServer.getInstance(q.getSessionId());
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(q.getSessionId());
 		switch (StudentSectioningQueue.Type.values()[q.getType()]) {
 		case SESSION_RELOAD:
 			sessionStatusChanged(q.getSessionId(), true);
@@ -117,15 +118,15 @@ public class SectioningServerUpdater extends Thread {
 				List<Long> studentIds = q.getIds();
 				if (studentIds == null || studentIds.isEmpty()) {
 					sLog.info("All students changed for " + server.getAcademicSession());
-					server.allStudentsChanged();
+					server.execute(new ReloadAllStudents());
 				} else {
-					server.studentChanged(studentIds);
+					server.execute(new ReloadStudent(studentIds));
 				}
 			}
 			break;
 		case CLASS_ASSIGNMENT_CHANGE:
 			if (server != null) {
-				server.classChanged(q.getIds());
+				server.execute(new ClassAssignmentChanged(q.getIds()));
 			}
 			break;
 		default:
@@ -134,7 +135,7 @@ public class SectioningServerUpdater extends Thread {
 	}
 	
 	protected void processGenericChange(StudentSectioningQueue q) {
-		if (SectioningServer.getInstance(q.getSessionId()) != null)
+		if (OnlineSectioningService.getInstance(q.getSessionId()) != null)
 			return; // a server already exists
 		
 		// only process events that may load the server
@@ -155,12 +156,12 @@ public class SectioningServerUpdater extends Thread {
 		try {
 			final Session session = SessionDAO.getInstance().get(academicSessionId, hibSession);
 			
-			SectioningServer server = SectioningServer.getInstance(academicSessionId);
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(academicSessionId);
 			
 			if (session == null) {
 				if (server != null) {
 					sLog.info("Unloading " + server.getAcademicSession());
-					server.unload();
+					OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
 				}
 				return;
 			}
@@ -174,13 +175,13 @@ public class SectioningServerUpdater extends Thread {
 			if (!load) {
 				if (server != null) {
 					sLog.info("Unloading " + server.getAcademicSession());
-					server.unload();
+					OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
 				}
 				return;
 			}
 			
 			if (server == null || reload)
-				SectioningServer.createInstance(academicSessionId);
+				OnlineSectioningService.createInstance(academicSessionId);
 						
 		} finally {
 			hibSession.close();
