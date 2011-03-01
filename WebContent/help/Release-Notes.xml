@@ -56,6 +56,14 @@
 				<line>Instructional Offering Detail page, Curricula table: added Curricula Operations button (drop down with operations available on the table).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Do not impose hard constraints in the reference model.
+					<line>This is useful as there may be inconsistencies we cannot avoid (lowered limit, new reservation, etc.).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
