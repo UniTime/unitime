@@ -79,6 +79,7 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -89,6 +90,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
@@ -104,7 +106,6 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -1890,6 +1891,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     }
     
+    private void propagateReservedClasses(Class_ clazz, Set<Long> reservedClasses) {
+    	reservedClasses.add(clazz.getUniqueId());
+    	for (Class_ child: clazz.getChildClasses())
+    		propagateReservedClasses(child, reservedClasses);
+    }
+    
     private boolean canAttend(Set<Lecture> cannotAttendLectures, Collection<Lecture> lectures) {
     	for (Iterator e=lectures.iterator();e.hasNext();) {
     		Lecture lecture = (Lecture)e.next();
@@ -1924,61 +1931,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (canAttendConfigurations(cannotAttendLectures, configurations)) return;
     	iProgress.message(msglevel("badCourseReservation", Progress.MSGLEVEL_WARN), "Inconsistent course reservations for course "+getOfferingLabel(course));
     }
-    
-    private void propagateCannotAttend(Class_ clazz, HashSet cannotAttendLectures) {
-    	for (Iterator i=clazz.getChildClasses().iterator(); i.hasNext();) {
-    		Class_ child = (Class_)i.next();
-			Lecture lecture = (Lecture)iLectures.get(child.getUniqueId());
-			if (lecture!=null)
-				cannotAttendLectures.add(lecture);
-			propagateCannotAttend(child, cannotAttendLectures);
-    	}
-    }
-    
-    private void propagateUpCannotAttend(Set classes, HashSet cannotAttendLectures) {
-    	if (classes.isEmpty()) return;
-    	HashSet parentClasses = new HashSet();
-    	HashSet subparts = new HashSet();
-    	for (Iterator x=classes.iterator();x.hasNext();) {
-    		Class_ cx = (Class_)x.next();;
-    		SchedulingSubpart subpart = cx.getSchedulingSubpart();
-    		if (subparts.add(subpart)) {
-    	    	for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
-    	    		Class_ clazz = (Class_)i.next();
-    	    		if (classes.contains(clazz)) {
-    	    			if (clazz.getParentClass()!=null) parentClasses.add(clazz.getParentClass());
-    	    		} else {
-    	    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-    	    			if (lecture!=null && !lecture.isCommitted())
-    	    				cannotAttendLectures.add(lecture);
-    	    		}
-    	    	}
-    		}
-    	}
-    	propagateUpCannotAttend(parentClasses, cannotAttendLectures);
-    }
-    
-    private Set<Lecture> computeCannotAttendLectures(Collection<Long> reservedClassIds) {
-    	HashSet<Lecture> cannotAttendLectures = new HashSet<Lecture>();
-    	HashSet<Class_> parentClasses = new HashSet<Class_>();
-    	for (Long classId: reservedClassIds) {
-    		Class_ cx = (Class_)iClasses.get(classId);
-    		if (cx==null) cx = (new Class_DAO()).get(classId);
-    		if (cx==null) continue;
-    		if (cx.getParentClass() != null)
-    			parentClasses.add(cx.getParentClass());
-    		for (Class_ clazz: cx.getSchedulingSubpart().getClasses()) {
-    			if (reservedClassIds.contains(clazz.getUniqueId())) continue;
-    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-    			if (lecture!=null && !lecture.isCommitted())
-    				cannotAttendLectures.add(lecture);
-    			propagateCannotAttend(clazz, cannotAttendLectures);
-    		}
-    	}
-    	propagateUpCannotAttend(parentClasses, cannotAttendLectures);
-    	return cannotAttendLectures;
-    }
-    
+
     private Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> loadOffering(InstructionalOffering offering) {
     	// solver group ids for fast check
     	HashSet<Long> solverGroupIds = new HashSet<Long>();
@@ -2445,8 +2398,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (totalCourseLimit != offering.getLimit())
     			factor = new Double(((double)offering.getLimit()) / totalCourseLimit);
     		
-            Hashtable<CourseOffering, Hashtable<SchedulingSubpart, Set<Class_>>> computedCourseReservations = new Hashtable<CourseOffering, Hashtable<SchedulingSubpart,Set<Class_>>>();
-    		
         	for (CourseOffering course: offering.getCourseOfferings()) {
         		Set<WeightedStudentId> studentIds = iStudentCourseDemands.getDemands(course);
         		
@@ -2483,55 +2434,68 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		Set<Lecture> cannotAttendLectures = null;
         		
         		if (offering.getCourseOfferings().size() > 1) {
-            		List<Long> reservedClasses = (List<Long>)hibSession.
-        				createQuery("select distinct r.owner from CourseOfferingReservation r "+
-        						"where r.courseOffering.uniqueId=:courseId and r.ownerClassId='C'").
-        				setLong("courseId", course.getUniqueId().longValue()).
-        				list();
+        			
+        			Set<Long> reservedClasses = new HashSet<Long>();
+        			int limit = 0;
+        			boolean unlimited = false;
 
+        			for (Reservation r: offering.getReservations()) {
+        				if (r instanceof CourseReservation && course.equals(((CourseReservation)r).getCourse())) {
+            				for (Class_ clazz: r.getClasses()) {
+            					limit += clazz.getMaxExpectedCapacity();
+        						propagateReservedClasses(clazz, reservedClasses);
+        						Class_ parent = clazz.getParentClass();
+            					while (parent != null) {
+            						reservedClasses.add(parent.getUniqueId());
+            						parent = parent.getParentClass();
+            					}
+            				}
+            				for (InstrOfferingConfig config: r.getConfigurations()) {
+            					if (config.isUnlimitedEnrollment())
+            						unlimited = true;
+            					else
+            						limit += config.getLimit();
+            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+            						for (Class_ clazz: subpart.getClasses())
+                    					reservedClasses.add(clazz.getUniqueId());
+            				}
+        				}
+        			}
+        			
             		if (!reservedClasses.isEmpty()) {
         				iProgress.debug("Course requests for course "+getOfferingLabel(course)+" are "+reservedClasses);
-        				cannotAttendLectures = computeCannotAttendLectures(reservedClasses);
-        				iProgress.debug("Prohibited lectures for course "+getOfferingLabel(course)+" are "+cannotAttendLectures);
-        				checkReservation(course, cannotAttendLectures, iAltConfigurations.get(offering));
-        			}
-                    
-                    Hashtable<SchedulingSubpart, Integer> totalClassLimit = new Hashtable<SchedulingSubpart, Integer>();
-                    for (Long classId: reservedClasses) {
-                        Class_ clazz = (Class_)iClasses.get(classId);
-                        if (clazz==null) clazz = (new Class_DAO()).get(classId);
-                        if (clazz==null) continue;
-                        Integer tcl = totalClassLimit.get(clazz.getSchedulingSubpart());
-                        totalClassLimit.put(clazz.getSchedulingSubpart(), (tcl == null ? 0 : tcl) + clazz.getMaxExpectedCapacity());
-                    }
-                    for (Map.Entry<SchedulingSubpart, Integer> entry: totalClassLimit.entrySet()) {
-                        SchedulingSubpart subpart = entry.getKey();
-                        int limit = entry.getValue();
-                        if (courseLimit >= limit) {
-                            if (courseLimit > limit)
-                                iProgress.message(msglevel("insufficientCourseReservation", Progress.MSGLEVEL_WARN), "Too little space reserved in "+getSubpartLabel(subpart)+" for course "+getOfferingLabel(course)+" ("+limit+"<"+courseLimit+").");
-                            for (CourseOffering co: offering.getCourseOfferings()) {
-                                if (co.equals(course)) continue;
-                                Hashtable<SchedulingSubpart, Set<Class_>> cannotAttendClasses = computedCourseReservations.get(co);
-                                if (cannotAttendClasses==null) {
-                                    cannotAttendClasses = new Hashtable<SchedulingSubpart, Set<Class_>>();
-                                    computedCourseReservations.put(co, cannotAttendClasses);
-                                }
-                                Set<Class_> cannotAttendClassesThisSubpart = cannotAttendClasses.get(subpart);
-                                if (cannotAttendClassesThisSubpart==null) {
-                                    cannotAttendClassesThisSubpart = new HashSet<Class_>();
-                                    cannotAttendClasses.put(subpart, cannotAttendClassesThisSubpart);
-                                }
-                                for (Long classId: reservedClasses) {
-                                    Class_ clazz = (Class_)iClasses.get(classId);
-                                    if (clazz==null) clazz = (new Class_DAO()).get(classId);
-                                    if (clazz==null) continue;
-                                    if (clazz.getSchedulingSubpart().equals(subpart))
-                                        cannotAttendClassesThisSubpart.add(clazz);
-                                }
-                            }
+                        if (!unlimited && courseLimit > limit)
+                            iProgress.message(msglevel("insufficientCourseReservation", Progress.MSGLEVEL_WARN), "Too little space reserved in for course "+getOfferingLabel(course)+" ("+limit+"<"+courseLimit+").");
+                        cannotAttendLectures = new HashSet<Lecture>();
+                        for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+                    		boolean hasConfigReservation = false;
+                        	subparts: for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+                        		for (Class_ clazz: subpart.getClasses())
+                        			if (reservedClasses.contains(clazz.getUniqueId())) {
+                        				hasConfigReservation = true; break subparts;
+                        			}
+                    		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+                        		boolean hasSubpartReservation = false;
+                        		for (Class_ clazz: subpart.getClasses())
+                        			if (reservedClasses.contains(clazz.getUniqueId())) {
+                            			hasSubpartReservation = true; break;
+                        			}
+                        		// !hasConfigReservation >> all lectures are cannot attend (there is a reservation on a different config)
+                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpoart --> can attend any of the classes of this subpart
+                        		if (!hasConfigReservation || hasSubpartReservation)
+                            		for (Class_ clazz: subpart.getClasses()) {
+                            			if (reservedClasses.contains(clazz.getUniqueId())) continue;
+                            			Lecture lecture = iLectures.get(clazz.getUniqueId());
+                            			if (lecture != null && !lecture.isCommitted())
+                            				cannotAttendLectures.add(lecture);
+                            		}
+                        	}
                         }
-                    }
+                        if (!cannotAttendLectures.isEmpty()) {
+                        	iProgress.debug("Prohibited lectures for course " + getOfferingLabel(course)+" are " + cannotAttendLectures);
+                        	checkReservation(course, cannotAttendLectures, iAltConfigurations.get(offering));
+                        }
+        			}
         		}
 
     			for (WeightedStudentId studentId: studentIds) {
@@ -2557,38 +2521,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			student.addCanNotEnroll(offering.getUniqueId(), cannotAttendLectures);
         		}
         	}
-    		
-            for (Map.Entry<CourseOffering, Hashtable<SchedulingSubpart, Set<Class_>>> entry1: computedCourseReservations.entrySet()) {
-                CourseOffering course = entry1.getKey();
-                Hashtable<SchedulingSubpart, Set<Class_>> cannotAttendClasses = entry1.getValue();
-                HashSet<Long> reservedClasses = new HashSet<Long>();
-                for (Map.Entry<SchedulingSubpart, Set<Class_>> entry2: cannotAttendClasses.entrySet()) {
-                    SchedulingSubpart subpart = entry2.getKey();
-                    Set<Class_> cannotAttendClassesThisSubpart = entry2.getValue();
-                    for (Class_ clazz: subpart.getClasses()) {
-                        if (cannotAttendClassesThisSubpart.contains(clazz)) continue;
-                        reservedClasses.add(clazz.getUniqueId());
-                    }
-                }
-                if (!reservedClasses.isEmpty()) {
-                    Set<Student> students = iCourse2students.get(course);
-                    if (students==null || students.isEmpty()) continue;
-                    iProgress.debug("Course requests for course "+getOfferingLabel(course)+" are "+reservedClasses);
-                    Set<Lecture> cannotAttendLectures = computeCannotAttendLectures(reservedClasses);
-                    if (cannotAttendLectures.isEmpty()) continue;
-                    boolean first = true;
-                    for (Student student: students) {
-                        student.addCanNotEnroll(offering.getUniqueId(), cannotAttendLectures);
-                        if (first) {
-                            Set<Lecture> allCannotAttendLectures = student.canNotEnrollSections().get(offering.getUniqueId());
-                            iProgress.debug("Prohibited lectures for course "+getOfferingLabel(course)+" are "+allCannotAttendLectures);
-                            checkReservation(course, allCannotAttendLectures, iAltConfigurations.get(offering));
-                        }
-                        first = false;
-                    }
-                }
-            }
-            
     		
         	iProgress.incProgress();
     	}
