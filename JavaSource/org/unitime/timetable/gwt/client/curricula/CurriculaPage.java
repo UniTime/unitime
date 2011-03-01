@@ -143,6 +143,8 @@ public class CurriculaPage extends Composite {
 		
 		iCurriculaTable = new CurriculaTable();
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
+		iFilterPanel.add(iCurriculaTable.getOperations());
+		iCurriculaTable.getOperations().setEnabled(false);
 		
 		iCurriculaPanel.add(iCurriculaTable);
 		
@@ -354,6 +356,7 @@ public class CurriculaPage extends Composite {
 		if (!iSearch.isEnabled()) return;
 		iSearch.setEnabled(false);
 		iPrint.setEnabled(false);
+		iCurriculaTable.getOperations().setEnabled(false);
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
@@ -363,6 +366,7 @@ public class CurriculaPage extends Composite {
 			public void execute() {
 				iSearch.setEnabled(true);
 				iPrint.setEnabled(true);
+				iCurriculaTable.getOperations().setEnabled(true);
 				if (newEnabled)
 					iNew.setEnabled(true);
 			}

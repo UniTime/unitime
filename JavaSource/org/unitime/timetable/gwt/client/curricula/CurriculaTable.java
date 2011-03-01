@@ -53,6 +53,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -61,6 +62,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -79,7 +81,8 @@ public class CurriculaTable extends Composite {
 	private Label iErrorLabel = null;
 	private UniTimeTable<CurriculumInterface> iTable = null;
 	private String iLastQuery = null;
-
+	private Button iOperations = null;
+	
 	private AsyncCallback<List<CurriculumClassificationInterface>> iLoadClassifications;
 	
 	private List<CurriculumClickHandler> iCurriculumClickHandlers = new ArrayList<CurriculumClickHandler>();
@@ -98,10 +101,14 @@ public class CurriculaTable extends Composite {
 	private EditClassificationHandler iEditClassificationHandler = null;
 	
 	public CurriculaTable() {
+		iOperations = new Button("<u>M</u>ore &or;");
+		iOperations.setAccessKey('m');
+		iOperations.addStyleName("unitime-NoPrint");
+
 		iTable = new UniTimeTable<CurriculumInterface>();
 		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
+		final UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 		header.add(hSelect);
 		hSelect.setWidth("10px");
 		hSelect.addAdditionalStyleName("unitime-NoPrint");
@@ -963,6 +970,16 @@ public class CurriculaTable extends Composite {
 				return iClassifications;
 			}
 		});
+		
+		iOperations.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				if (!hSelect.setMenu(popup)) return;
+				popup.showRelativeTo(iOperations);
+				((MenuBar)popup.getWidget()).focus();
+			}
+		});
 	}
 	
 	public void setLastSelectedRow(int row) {
@@ -1132,8 +1149,10 @@ public class CurriculaTable extends Composite {
 			for (int r = 0; r < iTable.getRowCount(); r++) {
 				iTable.getCellFormatter().setVisible(r, 0, false);
 			}
+			iOperations.setVisible(false);
 		} else {
 			iTable.getCellFormatter().setVisible(0, 0, true);
+			iOperations.setVisible(true);
 		}
 		
 		if (rowToScroll >= 0) {
@@ -1239,6 +1258,10 @@ public class CurriculaTable extends Composite {
 	
 	public void setEditClassificationHandler(EditClassificationHandler h) {
 		iEditClassificationHandler = h;
+	}
+	
+	public Button getOperations() {
+		return iOperations;
 	}
 	
 	public static enum DeptMode {
