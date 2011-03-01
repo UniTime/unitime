@@ -96,6 +96,14 @@
 				</line> 
 			</description> 
 		</item> 
+		<item>
+			<name>Examinations</name>
+			<description>
+				<line>Examination Solver: Best / Current Timetable sections:
+					<line>Link (?) to http://help.unitime.org/Examination_Timetabling which contains (among others) also description of the solution properties</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

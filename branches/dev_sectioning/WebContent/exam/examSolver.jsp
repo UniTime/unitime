@@ -220,7 +220,7 @@ try {
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
-					Best Timetable Found So Far <tt:wiki>Examination Solution Properties</tt:wiki>
+					Best Timetable Found So Far <tt:wiki>Examination Timetabling</tt:wiki>
 					</DIV>
 				</TD>
 			</TR>
@@ -241,7 +241,7 @@ try {
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				Current Timetable <tt:wiki>Examination Solution Properties</tt:wiki>
+				Current Timetable <tt:wiki>Examination Timetabling</tt:wiki>
 				</DIV>
 			</TD>
 		</TR>
