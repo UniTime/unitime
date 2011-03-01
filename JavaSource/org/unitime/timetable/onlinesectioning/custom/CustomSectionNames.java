@@ -17,14 +17,14 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom;
+package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
  * @author Tomas Muller
  */
-public interface CourseDetailsProvider {
-	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException;
+public interface CustomSectionNames {
+	public void update(AcademicSessionInfo session);
+	public String getClassSuffix(Long sessionId, Long courseId, Long classId);
 }

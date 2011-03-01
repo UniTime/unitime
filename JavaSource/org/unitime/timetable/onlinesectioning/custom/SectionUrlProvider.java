@@ -17,14 +17,17 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom;
+package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
+import java.net.URL;
+
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
  * @author Tomas Muller
  */
-public interface CustomSectionNames {
-	public void update(AcademicSessionInfo session);
-	public String getClassSuffix(Long sessionId, Long courseId, Long classId);
+public interface SectionUrlProvider {
+
+	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix);
+
 }
