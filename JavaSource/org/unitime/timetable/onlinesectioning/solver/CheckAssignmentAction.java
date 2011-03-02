@@ -1,0 +1,161 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+package org.unitime.timetable.onlinesectioning.solver;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.cpsolver.studentsct.model.Config;
+import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.Section;
+import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
+
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.SolverAction;
+
+public class CheckAssignmentAction extends SolverAction<Map<Config, List<Section>>>{
+	private Long iStudentId;
+	private CourseRequestInterface iRequest;
+	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
+	
+	public CheckAssignmentAction(Long studentId, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+		iStudentId = studentId;
+		iRequest = request;
+		iAssignment = assignment;
+	}
+	
+	public Long getStudentId() { return iStudentId; }
+	public CourseRequestInterface getRequest() { return iRequest; }
+	public Collection<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
+
+	@Override
+	public Map<Config, List<Section>> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Student student = server.getStudent(getStudentId());
+		if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+		Hashtable<Config, Course> config2course = new Hashtable<Config, Course>();
+		Hashtable<Config, List<Section>> config2sections = new Hashtable<Config, List<Section>>();
+		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
+			// Skip free times
+			if (ca.isFreeTime()) continue;
+			
+			// Check section limits
+			Section section = server.getSection(ca.getClassId());
+			if (section == null)
+				throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
+
+			Config config = section.getSubpart().getConfig();
+			List<Section> sections = config2sections.get(config);
+			if (sections == null) {
+				sections = new ArrayList<Section>();
+				config2sections.put(config, sections);
+				Course course = null;
+				for (Course cx: config.getOffering().getCourses()) {
+					if (cx.getId() == ca.getCourseId()) { course = cx; break; }
+				}
+				if (course == null)
+					throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
+				config2course.put(config, course);
+			}
+		}
+		
+		for (Map.Entry<Config, List<Section>> entry: config2sections.entrySet()) {
+			Config config = entry.getKey();
+			Course course = config2course.get(config);
+			List<Section> sections = entry.getValue();
+
+			Reservation reservation = null;
+			reservations: for (Reservation r: course.getOffering().getReservations()) {
+				if (!r.isApplicable(student)) continue;
+				if (r.getLimit() >= 0 && r.getLimit() <= r.getEnrollments().size()) {
+					boolean contain = false;
+					for (Enrollment e: r.getEnrollments())
+						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+					if (!contain) continue;
+				}
+				if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(config)) continue;
+				for (Section section: sections)
+					if (r.getSections(section.getSubpart()) != null && !r.getSections(section.getSubpart()).contains(section)) continue reservations;
+				if (reservation == null || r.compareTo(reservation) < 0)
+					reservation = r;
+			}
+			
+			if (reservation == null || !reservation.canAssignOverLimit()) {
+				for (Section section: sections) {
+					if (section.getLimit() >= 0 && section.getLimit() <= section.getEnrollments().size()) {
+						boolean contain = false;
+						for (Enrollment e: section.getEnrollments())
+							if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+						if (!contain)
+							throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName());
+					}
+					if ((reservation == null || !section.getSectionReservations().contains(reservation)) && section.getUnreservedSpace(null) <= 0) {
+						boolean contain = false;
+						for (Enrollment e: section.getEnrollments())
+							if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+						if (!contain)
+							throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName());
+					}
+				}
+				
+				if (config.getLimit() >= 0 && config.getLimit() <= config.getEnrollments().size()) {
+					boolean contain = false;
+					for (Enrollment e: config.getEnrollments())
+						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+					if (!contain)
+						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName());
+				}
+				if ((reservation == null || !config.getConfigReservations().contains(reservation)) && config.getUnreservedSpace(null) <= 0) {
+					boolean contain = false;
+					for (Enrollment e: config.getEnrollments())
+						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+					if (!contain)
+						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName());
+				}
+				
+				if (course.getLimit() >= 0 && course.getLimit() <= course.getEnrollments().size()) {
+					boolean contain = false;
+					for (Enrollment e: course.getEnrollments())
+						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
+					if (!contain)
+						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, course.getSubjectArea() + " " + course.getCourseNumber());
+				}
+			}
+		}
+		
+		return config2sections;
+	}
+
+	@Override
+	public String name() {
+		return "check-assignment";
+	}
+	
+
+}
