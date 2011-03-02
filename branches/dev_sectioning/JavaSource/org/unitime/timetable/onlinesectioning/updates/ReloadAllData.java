@@ -364,7 +364,8 @@ public class ReloadAllData extends DatabaseAction<Boolean> {
                                     	helper.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                     }
                                 } else {
-                                	helper.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                                	if (enrl.getCourseOffering().getUniqueId().equals(course.getId()))
+                                		helper.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
                                 }
                             }
                         }

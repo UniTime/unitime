@@ -39,7 +39,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.DatabaseAction;
 
@@ -65,7 +64,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 	public Hashtable<Long, CourseRequest> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 		if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-		return saveRequest(helper.getHibSession(), student, getRequest(), getKeepEnrollments());
+		return saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
 	}
 
 	@Override
@@ -87,31 +86,30 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 	}
 
 	
-	public static Hashtable<Long, CourseRequest> saveRequest(org.hibernate.Session hibSession, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
+	public static Hashtable<Long, CourseRequest> saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
 		Hashtable<Long, CourseRequest> ret = new Hashtable<Long, CourseRequest>();
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
 		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 			StudentClassEnrollment enrl = i.next();
 			if (keepEnrollments) {
 				if (enrl.getCourseRequest() != null) {
 					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
 					enrl.setCourseRequest(null);
-					hibSession.save(enrl);
+					helper.getHibSession().save(enrl);
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
-				hibSession.delete(enrl);
+				helper.getHibSession().delete(enrl);
 			}
 		}
 		if (!keepEnrollments) student.getClassEnrollments().clear();
 		for (Iterator<CourseDemand> j =  student.getCourseDemands().iterator(); j.hasNext(); ) {
 			CourseDemand cd = j.next();
-			if (cd.getFreeTime() != null) hibSession.delete(cd.getFreeTime());
+			if (cd.getFreeTime() != null) helper.getHibSession().delete(cd.getFreeTime());
 			for (Iterator<CourseRequest> k = cd.getCourseRequests().iterator(); k.hasNext(); ) {
 				CourseRequest cr = k.next();
-				hibSession.delete(cr);
+				helper.getHibSession().delete(cr);
 			}
-			hibSession.delete(cd);
+			helper.getHibSession().delete(cd);
 		}
 		student.getCourseDemands().clear();
 		int priority = 0;
@@ -131,7 +129,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 					free.setLength(ft.getLength());
 					free.setSession(student.getSession());
 					free.setName(ft.toString());
-					hibSession.saveOrUpdate(free);
+					helper.getHibSession().saveOrUpdate(free);
 					cd.setFreeTime(free);
 					cd.setStudent(student);
 					student.getCourseDemands().add(cd);
@@ -145,7 +143,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 				cd.setCourseRequests(new HashSet<CourseRequest>());
 				if (r.hasRequestedCourse()) {
 					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 					if (co != null) {
 						CourseRequest cr = new CourseRequest();
 						cr.setAllowOverlap(false);
@@ -159,7 +157,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 				}
 				if (r.hasFirstAlternative()) {
 					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 					if (co != null) {
 						CourseRequest cr = new CourseRequest();
 						cr.setAllowOverlap(false);
@@ -173,7 +171,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 				}
 				if (r.hasSecondAlternative()) {
 					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 					if (co != null) {
 						CourseRequest cr = new CourseRequest();
 						cr.setAllowOverlap(false);
@@ -201,7 +199,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 			cd.setCourseRequests(new HashSet<CourseRequest>());
 			if (r.hasRequestedCourse()) {
 				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-				CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+				CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 				if (co != null) {
 					CourseRequest cr = new CourseRequest();
 					cr.setAllowOverlap(false);
@@ -215,7 +213,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 			}
 			if (r.hasFirstAlternative()) {
 				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-				CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+				CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 				if (co != null) {
 					CourseRequest cr = new CourseRequest();
 					cr.setAllowOverlap(false);
@@ -229,7 +227,7 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 			}
 			if (r.hasSecondAlternative()) {
 				CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-				CourseOffering co = (c == null ? getCourse(hibSession, request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), hibSession));
+				CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
 				if (co != null) {
 					CourseRequest cr = new CourseRequest();
 					cr.setAllowOverlap(false);
