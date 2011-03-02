@@ -58,21 +58,15 @@ public class ReloadStudent extends ReloadAllData {
 		for (Long studentId: getStudentIds()) {
 			// Unload student
 			Student oldStudent = server.getStudent(studentId);
-			if (oldStudent != null) {
-				for (Request r: oldStudent.getRequests())
-					if (r.getAssignment() != null)
-						r.unassign(0);
+			if (oldStudent != null)
 				server.remove(oldStudent);
-			}
 			
 			// Load student
 			org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 			if (student != null) {
 				Student newStudent = loadStudent(student, server, helper);
-				for (Request r: newStudent.getRequests())
-					if (r.getInitialAssignment() != null)
-		               	r.assign(0, r.getInitialAssignment());
-				server.update(newStudent);
+				if (newStudent != null)
+					server.update(newStudent);
 			}
 		}
 		
