@@ -201,11 +201,11 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 		int courseLimit = course.getLimit();
 		if (courseLimit >= 0) {
 			courseLimit -= course.getEnrollments().size();
+			if (courseLimit < 0) courseLimit = 0;
 			for (Iterator<Enrollment> i = course.getEnrollments().iterator(); i.hasNext();) {
 				Enrollment enrollment = i.next();
 				if (enrollment.getStudent().getId() == studentId) { courseLimit++; break; }
 			}
-			if (courseLimit < 0) courseLimit = 0;
 		}
 		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
 		Hashtable<Config, Config> configs = new Hashtable<Config, Config>();
@@ -216,11 +216,11 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 			int configLimit = config.getLimit();
 			if (configLimit >= 0) {
 				configLimit -= config.getEnrollments().size();
+				if (configLimit < 0) configLimit = 0;
 				for (Iterator<Enrollment> i = config.getEnrollments().iterator(); i.hasNext();) {
 					Enrollment enrollment = i.next();
 					if (enrollment.getStudent().getId() == studentId) { configLimit++; break; }
 				}
-				if (configLimit < 0) configLimit = 0;
 			}
 			Config clonedConfig = new Config(config.getId(), configLimit, config.getName(), clonedOffering);
 			configs.put(config, clonedConfig);
@@ -236,11 +236,11 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 					if (limit >= 0) {
 						// limited section, deduct enrollments
 						limit -= section.getEnrollments().size();
+						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
 							Enrollment enrollment = i.next();
 							if (enrollment.getStudent().getId() == studentId) { limit++; break; }
 						}
-						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 					}
 					Section clonedSection = new Section(section.getId(), limit,
 							section.getName(), clonedSubpart, section.getPlacement(),
@@ -258,6 +258,7 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 				int reservationLimit = (int)Math.round(reservation.getLimit());
 				if (reservationLimit >= 0) {
 					reservationLimit -= reservation.getEnrollments().size();
+					if (reservationLimit < 0) reservationLimit = 0;
 					for (Iterator<Enrollment> i = reservation.getEnrollments().iterator(); i.hasNext();) {
 						Enrollment enrollment = i.next();
 						if (enrollment.getStudent().getId() == studentId) { reservationLimit++; break; }
@@ -369,12 +370,14 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 		}
 		Section original = server.getSection(section.getId());
 		int actual = original.getEnrollments().size();
+		/*
 		if (studentId != null) {
 			for (Iterator<Enrollment> i = original.getEnrollments().iterator(); i.hasNext();) {
 				Enrollment enrollment = i.next();
 				if (enrollment.getStudent().getId() == studentId) { actual--; break; }
 			}
 		}
+		*/
 		return new int[] {actual, original.getLimit()};
 	}
 	

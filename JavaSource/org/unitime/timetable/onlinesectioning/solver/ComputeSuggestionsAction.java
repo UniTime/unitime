@@ -117,7 +117,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
-						if (a.isPinned() || a.isSaved()) 
+						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
 						cr.getSelectedChoices().add(section.getChoice());
