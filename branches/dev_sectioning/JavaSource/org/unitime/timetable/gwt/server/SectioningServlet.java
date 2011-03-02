@@ -74,6 +74,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerUpdater;
@@ -370,22 +371,18 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							room += rm.getName();
 						}
 					}
-					int[] limit = (limits == null ? new int[] { -1, section.getLimit()} : limits.get(section.getId()));
-					if (limits == null) {
-						int actual = section.getEnrollments().size();
-						if (studentId != null) {
-							for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
-								Enrollment enrollment = i.next();
-								if (enrollment.getStudent().getId() == studentId) { actual--; break; }
-							}
-						}
-						limit = new int[] {actual, section.getLimit()};
-					}
+					int[] limit = (limits == null ? new int[] { section.getEnrollments().size(), section.getLimit()} : limits.get(section.getId()));
 					ClassAssignmentInterface.ClassAssignment a = courseAssign.addClassAssignment();
 					a.setClassId(section.getId());
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(server.getSectionName(c.getUniqueId(), section));
 					a.setLimit(limit);
+					if (studentId != null) {
+						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
+							Enrollment enrollment = i.next();
+							if (enrollment.getStudent().getId() == studentId) { a.setSaved(true); break; }
+						}
+					}
 					if (section.getTime() != null) {
 						for (DayCode d: DayCode.toDayCodes(section.getTime().getDayCode()))
 							a.addDay(d.getIndex());
@@ -922,7 +919,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-				SaveStudentRequests.saveRequest(hibSession, student, request, true);
+				SaveStudentRequests.saveRequest(null, new OnlineSectioningHelper(hibSession), student, request, true);
 				hibSession.save(student);
 				hibSession.flush();
 				return true;

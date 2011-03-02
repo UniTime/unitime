@@ -307,7 +307,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 			if (iLimit == null) return "";
 			if (iLimit[1] >= 9999 || iLimit[1] < 0) return "&infin;";
 			if (iLimit[0] < 0) return String.valueOf(iLimit[1]);
-			return (iLimit[1] - iLimit[0]) + " / " + iLimit[1];
+			return (iLimit[1] > iLimit[0] ? iLimit[1] - iLimit[0] : 0) + " / " + iLimit[1];
 		}
 		public boolean isAvailable() {
 			if (iLimit == null) return true;
