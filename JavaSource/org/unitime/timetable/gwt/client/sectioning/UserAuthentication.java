@@ -134,7 +134,6 @@ public class UserAuthentication extends Composite {
 		buttonPanel.add(iSkip);
 		iSkip.setVisible(iAllowGuest);
 		
-		Lookup.getInstance().setOptions("mustHaveExternalId");
 		Lookup.getInstance().setCallback(createLookupCallback());
 		iLookup = new Button(MESSAGES.buttonUserLookup());
 		buttonPanel.add(iLookup);
