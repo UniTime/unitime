@@ -298,7 +298,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public void remove(Student student) {
 		iLock.writeLock().lock();
 		try {
-			iStudentTable.remove(student.getId());
+			Student s = iStudentTable.get(student.getId());
+			if (s != null) {
+				for (Request r: s.getRequests())
+					if (r.getAssignment() != null)
+						r.unassign(0);
+				iStudentTable.remove(student.getId());
+			}
 		} finally {
 			iLock.writeLock().unlock();
 		}
