@@ -64,6 +64,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 		return session.getYear();
 	}
 
+	@Override
 	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
 			if (courseNbr.length() > 5) courseNbr = courseNbr.substring(0, 5);
@@ -80,7 +81,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 		}
 	}
 	
-	public String getDetails(URL courseUrl) throws SectioningException {
+	protected String getDetails(URL courseUrl) throws SectioningException {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(courseUrl.openStream()));
 			StringBuffer content = new StringBuffer();

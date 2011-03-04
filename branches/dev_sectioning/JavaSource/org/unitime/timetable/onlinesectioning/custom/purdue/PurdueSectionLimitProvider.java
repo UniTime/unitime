@@ -24,19 +24,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.sf.cpsolver.studentsct.model.Section;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 
@@ -69,12 +70,17 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 		return session.getYear();
 	}
 	
-	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix) {
+	@Override
+	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Section section) {
+		return getSectionUrl(session, courseId, section.getId(), section.getName(courseId));
+	}
+	
+	protected URL getSectionUrl(AcademicSessionInfo session, Long courseId, Long classId, String className) {
 		try {
-			if (customClassSuffix == null || customClassSuffix.isEmpty()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "class CRN not provided");
-			String crn = customClassSuffix;
-			if (customClassSuffix.indexOf('-') >= 0)
-				crn = customClassSuffix.substring(0, customClassSuffix.indexOf('-'));
+			if (className == null || className.isEmpty()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "class CRN not provided");
+			String crn = className;
+			if (className.indexOf('-') >= 0)
+				crn = className.substring(0, className.indexOf('-'));
 			URL url = new URL(sUrl
 				.replace(":year", getYear(session))
 				.replace(":term", getTerm(session))
@@ -86,13 +92,18 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 		}
 	}
 	
-	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix) throws SectioningException {
-		int[] ret = getSectionLimit(getSectionUrl(session, courseId, classId, customClassSuffix));
+	@Override
+	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Section section) throws SectioningException {
+		return getSectionLimit(session, courseId, section.getId(), section.getName(courseId));
+	}
+	
+	protected int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Long classId, String className) throws SectioningException {
+		int[] ret = getSectionLimit(getSectionUrl(session, courseId, classId, className));
 		iCache.put(classId, ret);
 		return ret;
 	}
-	
-	public int[] getSectionLimit(URL secionUrl) throws SectioningException {
+
+	protected int[] getSectionLimit(URL secionUrl) throws SectioningException {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(secionUrl.openStream()));
 			StringBuffer content = new StringBuffer();
@@ -119,66 +130,37 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 		}
 	}
 	
-	public Hashtable<Long, int[]> getSectionLimits(AcademicSessionInfo session, Long courseId, ArrayList<Long> classIds, CustomSectionNames names) {
+	@Override
+	public Map<Long, int[]> getSectionLimits(AcademicSessionInfo session, Long courseId, Collection<Section> sections) {
 		Hashtable<Long, int[]> ret = new Hashtable<Long, int[]>();
 		ThreadPool pool = new ThreadPool();
-		for (Long classId: classIds) {
-			String customClassSuffix = names.getClassSuffix(session.getUniqueId(), courseId, classId);
-			pool.retrieveLimit(session, courseId, classId, customClassSuffix, ret);
+		for (Section section: sections) {
+			pool.retrieveLimit(session, courseId, section.getId(), section.getName(courseId), ret);
 		}
 		pool.waitForAll();
 		return ret;
 	}
 
-	public Hashtable<Long, int[]> getSectionLimitsFromCache(AcademicSessionInfo session, Long courseId, ArrayList<Long> classIds, CustomSectionNames names) {
+	@Override
+	public Map<Long, int[]> getSectionLimitsFromCache(AcademicSessionInfo session, Long courseId, Collection<Section> sections) {
 		Hashtable<Long, int[]> ret = new Hashtable<Long, int[]>();
 		ThreadPool pool = new ThreadPool();
-		for (Long classId: classIds) {
-			int[] limits = iCache.get(classId);
+		for (Section section: sections) {
+			int[] limits = iCache.get(section.getId());
 			if (limits != null) {
-				ret.put(classId, limits);
+				ret.put(section.getId(), limits);
 			} else {
-				String customClassSuffix = names.getClassSuffix(session.getUniqueId(), courseId, classId);
-				pool.retrieveLimit(session, courseId, classId, customClassSuffix, ret);
+				pool.retrieveLimit(session, courseId, section.getId(), section.getName(courseId), ret);
 			}
 		}
 		pool.waitForAll();
 		return ret;
 	}
 
-	public static void main(String[] args) {
-		try {
-			// int[] l = new PurdueSectionLimitProvider().getSectionLimit(new URL(sDummyUrl));
-			AcademicSessionInfo session = new AcademicSessionInfo(-1l, "2009", "Fall", "PWL");
-			ArrayList<Long> classIds = new ArrayList<Long>();
-			for (int i = 0; i < 100; i++)
-				classIds.add(new Long(10001 + i));
-			CustomSectionNames names = new CustomSectionNames() {
-				public void update(AcademicSessionInfo session) {
-				}
-				public String getClassSuffix(Long sessionId, Long courseId, Long classId) {
-					return classId.toString() + "-dummy";
-				}
-			};
-			long t0 = System.currentTimeMillis();
-			Hashtable<Long, int[]> limits = new PurdueSectionLimitProvider().getSectionLimits(session, -1l, classIds, names);
-			long t1 = System.currentTimeMillis();
-			System.out.println("limits:");
-			for (Long classId : new TreeSet<Long>(limits.keySet())) {
-				int[] limit = limits.get(classId);
-				System.out.println("  " + classId + " .. " + limit[0] + "/" + limit[1]);
-			}
-			System.out.println("  lookup took " + (t1 - t0) + "ms");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-
-	class ThreadPool {
-		Set<Worker> iWorkers = new HashSet<Worker>();
+	private class ThreadPool {
+		private Set<Worker> iWorkers = new HashSet<Worker>();
 		
-		void retrieveLimit(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix, Hashtable<Long, int[]> ret) {
+		private void retrieveLimit(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix, Hashtable<Long, int[]> ret) {
 			synchronized (iWorkers) {
 				while (iWorkers.size() > sConcurrencyLimit) {
 					try {
@@ -191,14 +173,14 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 			}
 		}
 		
-		void done(Worker w) {
+		private void done(Worker w) {
 			synchronized (iWorkers) {
 				iWorkers.remove(w);
 				iWorkers.notify();
 			}
 		}
 		
-		public void waitForAll() {
+		private void waitForAll() {
 			synchronized (iWorkers) {
 				while (!iWorkers.isEmpty()) {
 					try {
@@ -208,27 +190,28 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 			}
 		}
 	
-		class Worker extends Thread {
+		private class Worker extends Thread {
 			private AcademicSessionInfo iSession;
 			private Long iCourseId, iClassId;
-			private String iCustomClassSuffix;
+			private String iClassName;
 			private Hashtable<Long, int[]> iResults;
 			
-			public Worker(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix, Hashtable<Long, int[]> ret) {
+			private Worker(AcademicSessionInfo session, Long courseId, Long classId, String className, Hashtable<Long, int[]> ret) {
 				iSession = session;
 				iCourseId = courseId;
 				iClassId = classId;
-				iCustomClassSuffix = customClassSuffix;
+				iClassName = className;
 				iResults = ret;
 				setName("PuSectLimitP-" + classId);
 			}
 			
+			@Override
 			public void run() {
 				try {
-					int[] limit = getSectionLimit(iSession, iCourseId, iClassId, iCustomClassSuffix);
+					int[] limit = getSectionLimit(iSession, iCourseId, iClassId, iClassName);
 					iResults.put(iClassId, limit);
 				} catch (SectioningException e) {
-					sLog.warn("Failed to retrieve section limit for "+iCustomClassSuffix+" ("+iSession.getTerm()+" "+iSession.getYear()+"): "+e.getMessage());
+					sLog.warn("Failed to retrieve section limit for "+iClassName+" ("+iSession.getTerm()+" "+iSession.getYear()+"): "+e.getMessage());
 				} finally {
 					done(this);
 				}

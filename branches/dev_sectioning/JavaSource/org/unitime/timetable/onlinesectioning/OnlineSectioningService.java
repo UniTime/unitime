@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 
@@ -42,7 +41,6 @@ public class OnlineSectioningService {
 	private static Hashtable<Long, OnlineSectioningServer> sInstances = new Hashtable<Long, OnlineSectioningServer>();
 	private static Hashtable<Long, OnlineSectioningServerUpdater> sUpdaters = new Hashtable<Long, OnlineSectioningServerUpdater>();
 	
-    public static CustomSectionNames sCustomSectionNames = null;
     public static SectionLimitProvider sSectionLimitProvider = null;
     public static SectionUrlProvider sSectionUrlProvider = null;
     public static boolean sUpdateLimitsUsingSectionLimitProvider = false;
@@ -50,13 +48,6 @@ public class OnlineSectioningService {
 	private static ReentrantReadWriteLock sGlobalLock = new ReentrantReadWriteLock();
 
 	public static void init() {
-        if (ApplicationProperties.getProperty("unitime.custom.CourseSectionNames") != null) {
-        	try {
-        		sCustomSectionNames = (CustomSectionNames)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseSectionNames")).newInstance();
-        	} catch (Exception e) {
-        		sLog.fatal("Unable to initialize custom section names, reason: "+e.getMessage(), e);
-        	}
-        }
         if (ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider") != null) {
         	try {
         		sSectionLimitProvider = (SectionLimitProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider")).newInstance();
@@ -110,8 +101,6 @@ public class OnlineSectioningService {
 		try {
 			OnlineSectioningServer s = new OnlineSectioningServerImpl(academicSessionId);
 			sInstances.put(academicSessionId, s);
-			if (sCustomSectionNames != null)
-				sCustomSectionNames.update(s.getAcademicSession());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				OnlineSectioningServerUpdater updater = new OnlineSectioningServerUpdater(s.getAcademicSession(), StudentSectioningQueue.getLastTimeStamp(hibSession, academicSessionId));
