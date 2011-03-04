@@ -30,6 +30,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
+import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
@@ -127,6 +128,11 @@ public class OnlineSectioningServerUpdater extends Thread {
 		case CLASS_ASSIGNMENT_CHANGE:
 			if (server != null) {
 				server.execute(new ClassAssignmentChanged(q.getIds()));
+			}
+			break;
+		case OFFERING_CHANGE:
+			if (server != null) {
+				server.execute(new ReloadOfferingAction(q.getIds()));
 			}
 			break;
 		default:

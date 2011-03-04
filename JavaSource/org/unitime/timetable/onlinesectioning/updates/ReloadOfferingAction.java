@@ -20,31 +20,34 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.model.Student;
 
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.DatabaseAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 /**
  * @author Tomas Muller
  */
-public class ReloadOfferingAction extends DatabaseAction<Boolean> {
+public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 	private List<Long> iOfferingIds;
 	
 	public ReloadOfferingAction(Long... offeringIds) {
@@ -58,91 +61,124 @@ public class ReloadOfferingAction extends DatabaseAction<Boolean> {
 	}
 	
 	public List<Long> getOfferingIds() { return iOfferingIds; }
+	
+	public Collection<Long> getCourseIds(OnlineSectioningServer server) {
+		Set<Long> courseIds = new HashSet<Long>();
+		for (Long offeringId: getOfferingIds()) {
+			Offering offering = server.getOffering(offeringId);
+			if (offering != null) {
+				for (Course course: offering.getCourses())
+					courseIds.add(course.getId());
+			}
+		}
+		return courseIds;
+	}
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		for (Long offeringId: getOfferingIds()) {
-			// Unload offering
-			Offering oldOffering = server.getOffering(offeringId);
-			List<Enrollment> oldEnrollments = new ArrayList<Enrollment>();
-			if (oldOffering != null) {
-				server.remove(oldOffering);
-				for (Config oldConfig: oldOffering.getConfigs())
-					for (Subpart oldSubpart: oldConfig.getSubparts())
-						for (Section oldSection: oldSubpart.getSections()) {
-							oldEnrollments.addAll(oldSection.getEnrollments());
-						}
-				for (Enrollment enrollment: oldEnrollments)
-					enrollment.variable().unassign(0);
-			}
-			
-			// Load offering
-			InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, helper.getHibSession());
-			Offering newOffering = null;
-			
-			if (offering != null) {
-				newOffering = ReloadAllData.loadOffering(offering, server, helper);
-				server.update(newOffering);
-				for (CourseOffering co: offering.getCourseOfferings())
-					server.update(new CourseInfo(co));
-				
-				// Load sectioning info
-	        	List<SectioningInfo> infos = helper.getHibSession().createQuery(
-	        			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId")
-	        			.setLong("offeringId", offeringId).list();
-	        	for (SectioningInfo info : infos) {
-	        		Section section = server.getSection(info.getClazz().getUniqueId());
-	        		if (section != null) {
-	        			section.setSpaceExpected(info.getNbrExpectedStudents());
-	        			section.setSpaceHeld(info.getNbrHoldingStudents());
-	        		}
-	        	}
-	        	
-			}
-			
-			// Transfer course requests
-			if (oldOffering != null) {
-				for (Enrollment enrollment: oldEnrollments) {
-					for (Iterator<Request> i = enrollment.getStudent().getRequests().iterator(); i.hasNext();) {
-						Request request = i.next();
-						if (request instanceof CourseRequest) {
-							CourseRequest cr = (CourseRequest)request;
-							List<Course> newCourses = new ArrayList<Course>(); boolean changed = false;
-							for (Course course: cr.getCourses())
-								if (course.getOffering().equals(oldOffering)) {
-									changed = true;
-									if (newOffering != null)
-										for (Course newCourse: newOffering.getCourses())
-											if (newCourse.getId() == course.getId()) {
-												newCourses.add(newCourse);
-												break;
-											}
-									newCourses.add(course);
-								}
-							if (changed) {
-								cr.getCourses().clear(); cr.getCourses().addAll(newCourses);
-							}
-							if (cr.getCourses().isEmpty())
-								i.remove();
-							if (cr.getAssignment() != null && cr.getAssignment().getCourse().getOffering().equals(oldOffering)) {
-								// do it some other way
-							}
-						}
-					}
-				}
-			}
-			
-			// Migrate enrollments
-			if (newOffering != null && oldOffering == null) {
-				for (Enrollment enrollment: oldEnrollments) {
+		helper.beginTransaction();
+		try {
+			for (Long offeringId: getOfferingIds()) {
+				List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
+						"select distinct e.student.uniqueId from StudentClassEnrollment e where "+
+                		"e.courseOffering.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
+				Lock lock = server.lockOffering(offeringId, studentIds);
+				try {
+
+					reloadOffering(server, helper, offeringId, studentIds);
 					
+				} finally {
+					lock.release();
 				}
+									
+			}				
+			helper.commitTransaction();
+			return true;			
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+		}
+	}
+		
+	public void reloadOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
+		// Existing offering
+		Offering oldOffering = server.getOffering(offeringId);
+		server.remove(oldOffering);
+		
+		// New offering
+		Offering newOffering = null;
+		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, helper.getHibSession());
+		if (oldOffering != null) {
+			newOffering = ReloadAllData.loadOffering(io, server, helper);
+			server.update(newOffering);
+			for (CourseOffering co: io.getCourseOfferings())
+				server.update(new CourseInfo(co));
+			
+			// Load sectioning info
+        	List<SectioningInfo> infos = helper.getHibSession().createQuery(
+        			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId")
+        			.setLong("offeringId", offeringId).list();
+        	for (SectioningInfo info : infos) {
+        		Section section = server.getSection(info.getClazz().getUniqueId());
+        		if (section != null) {
+        			section.setSpaceExpected(info.getNbrExpectedStudents());
+        			section.setSpaceHeld(info.getNbrHoldingStudents());
+        		}
+        	}
+		}
+		
+		if (oldOffering == null) return;
+		
+		List<Student[]> students = new ArrayList<Student[]>();
+		
+		if (newOffering == null) {
+			// Reload affected students
+			for (Course course: oldOffering.getCourses())
+				for (CourseRequest request: server.getRequests(course.getId())) {
+					Student oldStudent = request.getStudent();
+					server.remove(oldStudent);
+					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(oldStudent.getId(), helper.getHibSession());
+					Student newStudent = (student == null ? null : ReloadAllData.loadStudent(student, server, helper));
+					if (newStudent != null)
+						server.update(newStudent);
+					students.add(new Student[] {oldStudent, newStudent});
+				}
+		} else {
+			for (Course course: oldOffering.getCourses())
+				for (CourseRequest request: server.getRequests(course.getId())) {
+					Student oldStudent = request.getStudent();
+					server.remove(oldStudent);
+					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(oldStudent.getId(), helper.getHibSession());
+					Student newStudent = (student == null ? null : ReloadAllData.loadStudent(student, server, helper));
+					if (newStudent != null)
+						server.update(newStudent);
+					students.add(new Student[] {oldStudent, newStudent});
+					newStudentIds.remove(oldStudent.getId());
+				}
+			for (Long studentId: newStudentIds) {
+				Student oldStudent = server.getStudent(studentId);
+				if (oldStudent != null)
+					server.remove(oldStudent);
+				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+				Student newStudent = (student == null ? null : ReloadAllData.loadStudent(student, server, helper));
+				if (newStudent != null)
+					server.update(newStudent);
+				students.add(new Student[] {oldStudent, newStudent});
 			}
 		}
 		
-		return true;
+		//TODO: Check for conflicts among the new students, do some sectioning
+		
+		for (Student[] student: students) {
+			if (student[0] == null && student[1] == null) continue;
+			server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(),
+					(student[0] == null ? null : student[0].getRequests()),
+					(student[1] == null ? null : student[1].getRequests()));
+		}
 	}
-	
+		
 	@Override
     public String name() { return "reload-offering"; }
 }

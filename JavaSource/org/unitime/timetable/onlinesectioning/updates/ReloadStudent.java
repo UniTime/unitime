@@ -21,13 +21,16 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
-import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Student;
 
 /**
@@ -48,29 +51,51 @@ public class ReloadStudent extends ReloadAllData {
 
 	
 	public Collection<Long> getStudentIds() { return iStudentIds; }
-
+	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return false;
 
 		helper.info(getStudentIds().size() + " students changed.");
 
-		for (Long studentId: getStudentIds()) {
-			// Unload student
-			Student oldStudent = server.getStudent(studentId);
-			if (oldStudent != null)
-				server.remove(oldStudent);
-			
-			// Load student
-			org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-			if (student != null) {
-				Student newStudent = loadStudent(student, server, helper);
-				if (newStudent != null)
-					server.update(newStudent);
+		helper.beginTransaction();
+		try {
+			for (Long studentId: getStudentIds()) {
+				Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
+						"select distinct e.courseOffering.InstructionalOffering.uniqueId from StudentClassEnrollment e where "+
+                		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list());
+				try {
+					
+					// Unload student
+					Student oldStudent = server.getStudent(studentId);
+					if (oldStudent != null)
+						server.remove(oldStudent);
+
+					// Load student
+					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+					Student newStudent = null;
+					if (student != null) {
+						newStudent = loadStudent(student, server, helper);
+						if (newStudent != null)
+							server.update(newStudent);
+					}
+					
+					server.notifyStudentChanged(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));
+
+				} finally {
+					lock.release();
+				}
+					
 			}
+			
+			helper.commitTransaction();
+			return true;
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 		}
-		
-		return true;
 	}
 	
 	@Override
