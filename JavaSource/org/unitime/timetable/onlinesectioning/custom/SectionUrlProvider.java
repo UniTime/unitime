@@ -21,6 +21,8 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import java.net.URL;
 
+import net.sf.cpsolver.studentsct.model.Section;
+
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
@@ -28,6 +30,6 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
  */
 public interface SectionUrlProvider {
 
-	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix);
+	public URL getSectionUrl(AcademicSessionInfo session, Long courseId, Section section);
 
 }

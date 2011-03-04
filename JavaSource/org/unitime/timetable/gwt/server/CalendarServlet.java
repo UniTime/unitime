@@ -814,7 +814,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("UID:" + section.getId());
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
-        		section.getSubpart().getName() + " " + server.getSectionName(course.getUniqueId(), section));
+        		section.getSubpart().getName() + " " + section.getName(course.getUniqueId()));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
 		if (course.getConsent() != null && !course.getConsent().isEmpty())
 			desc += " (" + course.getConsent() + ")";

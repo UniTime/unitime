@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.Collection;
+import java.util.Map;
+
+import net.sf.cpsolver.studentsct.model.Section;
 
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
@@ -29,8 +31,8 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
  */
 public interface SectionLimitProvider {
 
-	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Long classId, String customClassSuffix);
-	public Hashtable<Long, int[]> getSectionLimits(AcademicSessionInfo session, Long courseId, ArrayList<Long> classIds, CustomSectionNames names);
-	public Hashtable<Long, int[]> getSectionLimitsFromCache(AcademicSessionInfo session, Long courseId, ArrayList<Long> classIds, CustomSectionNames names);
+	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Section section);
+	public Map<Long, int[]> getSectionLimits(AcademicSessionInfo session, Long courseId, Collection<Section> sections);
+	public Map<Long, int[]> getSectionLimitsFromCache(AcademicSessionInfo session, Long courseId, Collection<Section> sections);
 
 }
