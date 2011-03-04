@@ -24,8 +24,11 @@ import java.util.List;
 import net.sf.cpsolver.studentsct.model.Student;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 /**
  * @author Tomas Muller
@@ -34,23 +37,36 @@ public class ReloadAllStudents extends ReloadAllData {
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return false;
+		Lock lock = server.lockAll();
+		try {
+			helper.beginTransaction();
+			try {
+				server.clearAllStudents();
 
-		server.clearAllStudents();
+				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
+		                "select distinct s from Student s " +
+		                "left join fetch s.courseDemands as cd " +
+		                "left join fetch cd.courseRequests as cr " +
+		                "left join fetch s.classEnrollments as e " +
+		                "where s.session.uniqueId=:sessionId").
+		                setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
+		        for (org.unitime.timetable.model.Student student: students) {
+		        	Student s = loadStudent(student, server, helper);
+		        	if (s != null)
+		        		server.update(s);
+		        }
 
-		List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-                "select distinct s from Student s " +
-                "left join fetch s.courseDemands as cd " +
-                "left join fetch cd.courseRequests as cr " +
-                "left join fetch s.classEnrollments as e " +
-                "where s.session.uniqueId=:sessionId").
-                setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
-        for (org.unitime.timetable.model.Student student: students) {
-        	Student s = loadStudent(student, server, helper);
-        	if (s != null)
-        		server.update(s);
-        }
-
-        return true;
+				helper.commitTransaction();
+				return true;
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			}
+		} finally {
+			lock.release();
+		}		
 	}
 	
 	@Override

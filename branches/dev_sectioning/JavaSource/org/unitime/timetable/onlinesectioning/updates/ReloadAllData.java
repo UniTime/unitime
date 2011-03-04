@@ -54,6 +54,8 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
@@ -72,78 +74,93 @@ import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.DatabaseAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 /**
  * @author Tomas Muller
  */
-public class ReloadAllData extends DatabaseAction<Boolean> {
+public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		helper.info("Updating course infos and the student sectining model for session " + server.getAcademicSession());
-		long t0 = System.currentTimeMillis();
-		server.clearAll();
+		Lock lock = server.lockAll();
+		try {
+			helper.beginTransaction();
+			try {
+				helper.info("Updating course infos and the student sectining model for session " + server.getAcademicSession());
+				long t0 = System.currentTimeMillis();
+				server.clearAll();
 
-		List<InstructionalOffering> offerings = helper.getHibSession().createQuery(
-				"select distinct io from InstructionalOffering io " +
-				"left join fetch io.courseOfferings co " +
-				"left join fetch io.instrOfferingConfigs cf " +
-				"left join fetch cf.schedulingSubparts ss " +
-				"left join fetch ss.classes c " +
-				"left join fetch c.assignments a " +
-				"left join fetch a.rooms r " +
-				"left join fetch c.classInstructors i " +
-				"left join fetch io.reservations x " +
-				"where io.session.uniqueId = :sessionId and io.notOffered = false")
-				.setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
-		for (InstructionalOffering io: offerings) {
-			Offering offering = loadOffering(io, server, helper);
-			if (offering != null)
-				server.update(offering);
-			for (CourseOffering co: io.getCourseOfferings())
-				server.update(new CourseInfo(co));
-		}
-		
-		if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
-			List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-                    "select distinct s from Student s " +
-                    "left join fetch s.courseDemands as cd " +
-                    "left join fetch cd.courseRequests as cr " +
-                    "left join fetch s.classEnrollments as e " +
-                    "left join fetch s.academicAreaClassifications as a " +
-                    "left join fetch s.posMajors as mj " +
-                    "where s.session.uniqueId=:sessionId").
-                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
-            for (org.unitime.timetable.model.Student student: students) {
-            	Student s = loadStudent(student, server, helper);
-            	if (s != null)
-            		server.update(s);
-            }
-		}
-		
-    	List<SectioningInfo> infos = helper.getHibSession().createQuery(
-    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-    			.setLong("sessionId", server.getAcademicSession().getUniqueId())
-    			.list();
-    	for (SectioningInfo info : infos) {
-    		Section section = server.getSection(info.getClazz().getUniqueId());
-    		if (section != null) {
-    			section.setSpaceExpected(info.getNbrExpectedStudents());
-    			section.setSpaceHeld(info.getNbrHoldingStudents());
-    			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
-    				helper.debug("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
-    						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
-    						", expected: " + section.getSpaceExpected() + ")");
-    		}
-    	}
-        
-		long t1 = System.currentTimeMillis();
-		helper.info("  Update of session " + server.getAcademicSession() + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");
-		
-		return true;
+				List<InstructionalOffering> offerings = helper.getHibSession().createQuery(
+						"select distinct io from InstructionalOffering io " +
+						"left join fetch io.courseOfferings co " +
+						"left join fetch io.instrOfferingConfigs cf " +
+						"left join fetch cf.schedulingSubparts ss " +
+						"left join fetch ss.classes c " +
+						"left join fetch c.assignments a " +
+						"left join fetch a.rooms r " +
+						"left join fetch c.classInstructors i " +
+						"left join fetch io.reservations x " +
+						"where io.session.uniqueId = :sessionId and io.notOffered = false")
+						.setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
+				for (InstructionalOffering io: offerings) {
+					Offering offering = loadOffering(io, server, helper);
+					if (offering != null)
+						server.update(offering);
+					for (CourseOffering co: io.getCourseOfferings())
+						server.update(new CourseInfo(co));
+				}
+				
+				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
+					List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
+		                    "select distinct s from Student s " +
+		                    "left join fetch s.courseDemands as cd " +
+		                    "left join fetch cd.courseRequests as cr " +
+		                    "left join fetch s.classEnrollments as e " +
+		                    "left join fetch s.academicAreaClassifications as a " +
+		                    "left join fetch s.posMajors as mj " +
+		                    "where s.session.uniqueId=:sessionId").
+		                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
+		            for (org.unitime.timetable.model.Student student: students) {
+		            	Student s = loadStudent(student, server, helper);
+		            	if (s != null)
+		            		server.update(s);
+		            }
+				}
+				
+		    	List<SectioningInfo> infos = helper.getHibSession().createQuery(
+		    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+		    			.setLong("sessionId", server.getAcademicSession().getUniqueId())
+		    			.list();
+		    	for (SectioningInfo info : infos) {
+		    		Section section = server.getSection(info.getClazz().getUniqueId());
+		    		if (section != null) {
+		    			section.setSpaceExpected(info.getNbrExpectedStudents());
+		    			section.setSpaceHeld(info.getNbrHoldingStudents());
+		    			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
+		    				helper.debug("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
+		    						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
+		    						", expected: " + section.getSpaceExpected() + ")");
+		    		}
+		    	}
+		        
+				long t1 = System.currentTimeMillis();
+				helper.info("  Update of session " + server.getAcademicSession() + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");
+				
+				helper.commitTransaction();
+				return true;
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			}
+		} finally {
+			lock.release();
+		}		
 	}
 	
     public static Offering loadOffering(InstructionalOffering io, OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -221,6 +238,8 @@ public class ReloadAllData extends DatabaseAction<Boolean> {
                     	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
                     }
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString(helper.getHibSession()) : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
+                    for (CourseOffering co: io.getCourseOfferings())
+                    	section.setName(co.getUniqueId(), c.getClassSuffix(co));
                     class2section.put(c.getUniqueId(), section);
                 }
             }
@@ -383,7 +402,6 @@ public class ReloadAllData extends DatabaseAction<Boolean> {
                     if (assignedConfig!=null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
-                        request.assign(0, enrollment);
                         if (assignedSections.size() != assignedConfig.getSubparts().size()) {
                         	helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
                         			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
@@ -463,7 +481,6 @@ public class ReloadAllData extends DatabaseAction<Boolean> {
                 if (assignedConfig!=null) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                     request.setInitialAssignment(enrollment);
-                    request.assign(0, enrollment);
                     if (assignedSections.size() != assignedConfig.getSubparts().size()) {
                     	helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
                     			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");

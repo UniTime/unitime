@@ -39,7 +39,6 @@ import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.constraint.SectionLimit;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
@@ -63,20 +62,19 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
-import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.SolverAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.DummyReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.EnrollmentSectionComparator;
-import org.unitime.timetable.onlinesectioning.custom.CustomSectionNames;
 
 /**
  * @author Tomas Muller
  */
-public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInterface>>{
+public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface>>{
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
@@ -104,17 +102,21 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
-		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
+
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
-		Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
-		for (CourseRequestInterface.Request c: getRequest().getCourses())
-			addRequest(server, model, student, original, c, false, false);
-		if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
-		for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-			addRequest(server, model, student, original, c, true, false);
-		model.addStudent(student);
-		
-		long t1 = System.currentTimeMillis();
+
+		Lock readLock = server.readLock();
+		try {
+			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			for (CourseRequestInterface.Request c: getRequest().getCourses())
+				addRequest(server, model, student, original, c, false, false);
+			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
+			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
+				addRequest(server, model, student, original, c, true, false);
+			model.addStudent(student);
+		} finally {
+			readLock.release();
+		}
 		
 		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
@@ -151,7 +153,9 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 				}
 			}
 		}
+		long t1 = System.currentTimeMillis();
 		
+			
         Solution solution = new Solution(model,0,0);
         
         Solver solver = new Solver(model.getProperties());
@@ -286,8 +290,6 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 	@SuppressWarnings("unchecked")
 	private void updateLimits(OnlineSectioningServer server, Course course, boolean updateFromCache) {
 		if (!OnlineSectioningService.sUpdateLimitsUsingSectionLimitProvider || OnlineSectioningService.sSectionLimitProvider == null) return;
-		ArrayList<Long> classIds = new ArrayList<Long>();
-		final Hashtable<Long, String> classNames = new Hashtable<Long, String>();
 		Hashtable<Long, Section> classes = new Hashtable<Long, Section>();
 		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
 			Config config = e.next();
@@ -295,27 +297,13 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 				Subpart subpart = f.next();
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
-					classIds.add(section.getId());
-					classNames.put(section.getId(), section.getName());
 					classes.put(section.getId(), section);
 				}
 			}
 		}
-		CustomSectionNames x = new CustomSectionNames() {
-			public void update(AcademicSessionInfo session) {
-			}
-
-			public String getClassSuffix(Long sessionId, Long courseId, Long classId) {
-				if (OnlineSectioningService.sCustomSectionNames != null) {
-					String ret = OnlineSectioningService.sCustomSectionNames.getClassSuffix(sessionId, courseId, classId);
-					if (ret != null) return ret;
-				}
-				return classNames.get(classId);
-			}
-		};
-		Hashtable<Long, int[]> limits = (updateFromCache ? 
-				OnlineSectioningService.sSectionLimitProvider.getSectionLimitsFromCache(server.getAcademicSession(), course.getId(), classIds, x) :
-					OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), course.getId(), classIds, x));
+		Map<Long, int[]> limits = (updateFromCache ? 
+				OnlineSectioningService.sSectionLimitProvider.getSectionLimitsFromCache(server.getAcademicSession(), course.getId(), classes.values()) :
+					OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), course.getId(), classes.values()));
 		for (Map.Entry<Long, int[]> entry: limits.entrySet()) {
 			classes.get(entry.getKey()).setLimit(Math.max(0 , entry.getValue()[1] - entry.getValue()[0]));
 			iLastSectionLimit.put(entry.getKey(), entry.getValue());
@@ -531,7 +519,7 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 					a.setAlternative(r.isAlternative());
 					a.setClassId(section.getId());
 					a.setSubpart(section.getSubpart().getName());
-					a.setSection(server.getSectionName(course.getId(), section));
+					a.setSection(section.getName(course.getId()));
 					a.setLimit(getLimit(server, section, r.getStudent().getId()));
 					if (section.getTime() != null) {
 						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
@@ -556,7 +544,7 @@ public class FindAssignmentAction extends SolverAction<List<ClassAssignmentInter
 						}
 					}
 					if (section.getParent() != null)
-						a.setParentSection(server.getSectionName(course.getId(), section.getParent()));
+						a.setParentSection(section.getParent().getName(course.getId()));
 					if (requiredSections != null && requiredSections.contains(section)) a.setPinned(true);
 					a.setSubpartId(section.getSubpart().getId());
 					a.setHasAlternatives(hasAlt);

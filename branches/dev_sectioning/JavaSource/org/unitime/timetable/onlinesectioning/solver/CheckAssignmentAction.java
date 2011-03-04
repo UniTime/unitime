@@ -21,9 +21,11 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
@@ -33,30 +35,48 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.SolverAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
-public class CheckAssignmentAction extends SolverAction<Map<Config, List<Section>>>{
+public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config, List<Section>>>{
 	private Long iStudentId;
-	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
-	public CheckAssignmentAction(Long studentId, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+	public CheckAssignmentAction(Long studentId, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iStudentId = studentId;
-		iRequest = request;
 		iAssignment = assignment;
 	}
 	
 	public Long getStudentId() { return iStudentId; }
-	public CourseRequestInterface getRequest() { return iRequest; }
 	public Collection<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
 
 	@Override
 	public Map<Config, List<Section>> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Lock readLock = server.readLock();
+		try {
+			Set<Long> offeringIds = new HashSet<Long>();
+			for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
+				if (!ca.isFreeTime()) {
+					Course course = server.getCourse(ca.getClassId());
+					if (course != null) offeringIds.add(course.getOffering().getId());
+				}
+			
+			Lock lock = server.lockStudent(getStudentId(), offeringIds);
+			try {
+				return check(server, helper);
+			} finally {
+				lock.release();
+			}
+		} finally {
+			readLock.release();
+		}
+	}
+	
+	public Map<Config, List<Section>> check(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Student student = server.getStudent(getStudentId());
 		if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
 		Hashtable<Config, Course> config2course = new Hashtable<Config, Course>();

@@ -32,7 +32,6 @@ import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.constraint.SectionLimit;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -49,6 +48,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 /**
  * @author Tomas Muller
@@ -75,16 +75,21 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
-		model.addGlobalConstraint(new SectionLimit(model.getProperties()));
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
-		Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
-		for (CourseRequestInterface.Request c: getRequest().getCourses())
-			addRequest(server, model, student, original, c, false, true);
-		if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
-		for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-			addRequest(server, model, student, original, c, true, true);
-		model.addStudent(student);
-		model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+		
+		Lock readLock = server.readLock();
+		try {
+			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			for (CourseRequestInterface.Request c: getRequest().getCourses())
+				addRequest(server, model, student, original, c, false, true);
+			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
+			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
+				addRequest(server, model, student, original, c, true, true);
+			model.addStudent(student);
+			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+		} finally {
+			readLock.release();
+		}
 		
 		long t1 = System.currentTimeMillis();
 

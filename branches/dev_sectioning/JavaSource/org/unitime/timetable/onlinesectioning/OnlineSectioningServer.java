@@ -20,15 +20,19 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Offering;
+import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
@@ -39,8 +43,12 @@ public interface OnlineSectioningServer {
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
 	
+	public ArrayList<ClassAssignmentInterface.ClassAssignment> getAssignment(Long studentId);
+	public CourseRequestInterface getRequest(Long studentId);
+	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
 	public List<Section> getSections(CourseInfo courseInfo);
+	public Collection<CourseRequest> getRequests(Long courseId);
 	
 	public CourseInfo getCourseInfo(Long courseId);
 	public CourseInfo getCourseInfo(String course);
@@ -50,7 +58,6 @@ public interface OnlineSectioningServer {
 	public Course getCourse(Long courseId);
 	public Offering getOffering(Long offeringId);
 	
-	public String getSectionName(Long courseId, Section section);
 	public URL getSectionUrl(Long courseId, Section section);
 	
 	public Collection<String> checkCourses(CourseRequestInterface req);
@@ -64,4 +71,17 @@ public interface OnlineSectioningServer {
 	public void update(CourseInfo info);
 	public void clearAll();
 	public void clearAllStudents();
+	
+	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests);
+	
+	public Lock readLock();
+	public Lock lockAll();
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds);
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds);
+	public Lock lockClass(Long classId, Collection<Long> studentIds);
+	public Lock lockRequest(CourseRequestInterface request);
+	
+	public static interface Lock {
+		void release();
+	}
 }

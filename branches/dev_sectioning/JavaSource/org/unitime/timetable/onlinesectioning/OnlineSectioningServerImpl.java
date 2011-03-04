@@ -23,15 +23,20 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
@@ -39,21 +44,23 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.DataMode;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 
 /**
  * @author Tomas Muller
  */
 public class OnlineSectioningServerImpl implements OnlineSectioningServer {
+    private Log iLog = LogFactory.getLog(OnlineSectioningServerImpl.class);
 	private AcademicSessionInfo iAcademicSession = null;
 	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
 	private Hashtable<String, TreeSet<CourseInfo>> iCourseForName = new Hashtable<String, TreeSet<CourseInfo>>();
@@ -66,6 +73,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Hashtable<Long, Offering> iOfferingTable = new Hashtable<Long, Offering>();
 	
 	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
+	private MultiLock iMultiLock;
 	
 	OnlineSectioningServerImpl(Long sessionId) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -74,6 +82,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			if (session == null)
 				throw new SectioningException(SectioningExceptionType.SESSION_NOT_EXIST, (sessionId == null ? "null" : sessionId.toString()));
 			iAcademicSession = new AcademicSessionInfo(session);
+			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession + "]");
+			iMultiLock = new MultiLock(iAcademicSession);
 			execute(new ReloadAllData());
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
@@ -88,15 +98,6 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	@Override
 	public DistanceMetric getDistanceMetric() {
 		return iDistanceMetric;
-	}
-	
-	@Override
-	public String getSectionName(Long courseId, Section section) {
-		if (OnlineSectioningService.sCustomSectionNames != null) {
-			String name = OnlineSectioningService.sCustomSectionNames.getClassSuffix(getAcademicSession().getUniqueId(), courseId, section.getId());
-			if (name != null) return name;
-		}
-		return section.getName();
 	}
 	
 	@Override
@@ -153,6 +154,114 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.readLock().unlock();
 		}
 	}
+	
+	@Override
+	public ArrayList<ClassAssignmentInterface.ClassAssignment> getAssignment(Long studentId) {
+		iLock.readLock().lock();
+		try {
+			Student student = iStudentTable.get(studentId);
+			if (student == null) return null;
+			ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+			for (Request request: student.getRequests()) {
+				if (request.getAssignment() != null && request instanceof CourseRequest) {
+					Enrollment enrollment = request.getAssignment();
+					CourseInfo course = iCourseForId.get(enrollment.getCourse().getId());
+					if (course == null) continue;
+					for (Section section: enrollment.getSections()) {
+						ClassAssignmentInterface.ClassAssignment ca = new ClassAssignmentInterface.ClassAssignment();
+						ca.setCourseId(course.getUniqueId());
+						ca.setClassId(section.getId());
+						ca.setPinned(true);
+						ca.setSubject(course.getSubjectArea());
+						ca.setCourseNbr(course.getCourseNbr());
+						ca.setSubpart(section.getSubpart().getName());
+						ca.setSection(section.getName(course.getUniqueId()));
+						ret.add(ca);
+					}
+				}
+			}
+			return ret;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
+	
+	@Override
+	public CourseRequestInterface getRequest(Long studentId) {
+		iLock.readLock().lock();
+		try {
+			Student student = iStudentTable.get(studentId);
+			if (student == null) return null;
+			CourseRequestInterface request = new CourseRequestInterface();
+			request.setAcademicSessionId(getAcademicSession().getUniqueId());
+			TreeSet<Request> requests = new TreeSet<Request>(new Comparator<Request>() {
+				public int compare(Request d1, Request d2) {
+					if (d1.isAlternative() && !d2.isAlternative()) return 1;
+					if (!d1.isAlternative() && d2.isAlternative()) return -1;
+					int cmp = new Integer(d1.getPriority()).compareTo(d2.getPriority());
+					if (cmp != 0) return cmp;
+					return new Long(d1.getId()).compareTo(d2.getId());
+				}
+			});
+			requests.addAll(student.getRequests());
+			CourseRequestInterface.Request lastRequest = null;
+			int lastRequestPriority = -1;
+			for (Request cd: requests) {
+				CourseRequestInterface.Request r = null;
+				if (cd instanceof FreeTimeRequest) {
+					FreeTimeRequest ftr = (FreeTimeRequest)cd;
+					CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+					ft.setStart(ftr.getTime().getStartSlot());
+					ft.setLength(ftr.getTime().getLength());
+					for (DayCode day : DayCode.toDayCodes(ftr.getTime().getDayCode()))
+						ft.addDay(day.getIndex());
+					if (lastRequest != null && lastRequestPriority == cd.getPriority()) {
+						r = lastRequest;
+						lastRequest.addRequestedFreeTime(ft);
+						lastRequest.setRequestedCourse(lastRequest.getRequestedCourse() + ", " + ft.toString());
+					} else {
+						r = new CourseRequestInterface.Request();
+						r.addRequestedFreeTime(ft);
+						r.setRequestedCourse(ft.toString());
+						if (cd.isAlternative())
+							request.getAlternatives().add(r);
+						else
+							request.getCourses().add(r);
+					}
+				} else if (cd instanceof CourseRequest) {
+					r = new CourseRequestInterface.Request();
+					int order = 0;
+					for (Course course: ((CourseRequest)cd).getCourses()) {
+						CourseInfo c = iCourseForId.get(course.getId());
+						if (c == null) continue;
+						switch (order) {
+							case 0: 
+								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								break;
+							case 1:
+								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								break;
+							case 2:
+								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+							}
+						order++;
+						}
+					if (r.hasRequestedCourse()) {
+						if (cd.isAlternative())
+							request.getAlternatives().add(r);
+						else
+							request.getCourses().add(r);
+					}
+					lastRequest = r;
+					lastRequestPriority = cd.getPriority();
+				}
+			}
+			return request;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
+
 
 	@Override
 	public Collection<CourseInfo> findCourses(String query, Integer limit) {
@@ -179,8 +288,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	@Override
 	public URL getSectionUrl(Long courseId, Section section) {
 		if (OnlineSectioningService.sSectionUrlProvider == null) return null;
-		return OnlineSectioningService.sSectionUrlProvider.getSectionUrl(getAcademicSession(), courseId, section.getId(),
-				getSectionName(courseId, section));
+		return OnlineSectioningService.sSectionUrlProvider.getSectionUrl(getAcademicSession(), courseId, section);
 	}
 		
 	@Override
@@ -224,6 +332,23 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			return sections;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
+	
+	@Override
+	public List<CourseRequest> getRequests(Long courseId) {
+		iLock.readLock().lock();
+		try {
+			List<CourseRequest> requests = new ArrayList<CourseRequest>();
+			for (Student student: iStudentTable.values())
+				for (Request request: student.getRequests())
+					if (request instanceof CourseRequest)
+						for (Course course: ((CourseRequest)request).getCourses())
+							if (courseId.equals(course.getId()))
+								requests.add((CourseRequest)request);
+			return requests;
 		} finally {
 			iLock.readLock().unlock();
 		}
@@ -315,6 +440,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		iLock.writeLock().lock();
 		try {
 			iStudentTable.put(student.getId(), student);
+			for (Request r: student.getRequests()) {
+				if (r.getInitialAssignment() == null) {
+					if (r.getAssignment() != null)
+						r.unassign(0);
+				} else {
+					if (r.getAssignment() == null || !r.getAssignment().equals(r.getInitialAssignment()))
+						r.assign(0, r.getInitialAssignment());
+				}
+			}
+
 		} finally {
 			iLock.writeLock().unlock();
 		}
@@ -343,10 +478,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				iCourseTable.remove(course.getId());
 			}
 			iOfferingTable.remove(offering.getId());
-			for (Config config: offering.getConfigs())
+			for (Config config: offering.getConfigs()) {
 				for (Subpart subpart: config.getSubparts())
 					for (Section section: subpart.getSections())
 						iClassTable.remove(section.getId());
+				for (Enrollment enrollment: new ArrayList<Enrollment>(config.getEnrollments()))
+					enrollment.variable().unassign(0);
+			}
 		} finally {
 			iLock.writeLock().unlock();
 		}
@@ -440,37 +578,185 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 
 	@Override
 	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException {
-		switch (action.lockType()) {
-		case WRITE:
-			iLock.writeLock().lock();
-			break;
-		case READ:
-			iLock.readLock().lock();
-			break;
-		}
-		OnlineSectioningHelper h = new OnlineSectioningHelper(action.dataMode() == DataMode.SESSION ? new _RootDAO().createNewSession() : null);
-		h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toString() + "]")));
 		try {
-			if (action.dataMode() == DataMode.TRANSACTION) h.beginTransaction();
-			E e = action.execute(this, h);
-			if (action.dataMode() == DataMode.TRANSACTION) h.commitTransaction();
-			return e;
+			OnlineSectioningHelper h = new OnlineSectioningHelper();
+			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toString() + "]")));
+			return action.execute(this, h);
 		} catch (Exception e) {
-			if (action.dataMode() == DataMode.TRANSACTION) h.rollbackTransaction();
+			iLog.error("Execution of " + action.name() + " failed: " + e.getMessage(), e);
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
-		} finally {
-			if (action.dataMode() == DataMode.SESSION)
-				h.getHibSession().close();
-			switch (action.lockType()) {
-			case WRITE:
-				iLock.writeLock().unlock();
-				break;
-			case READ:
+		}
+	}
+	
+	public Lock readLock() {
+		iLog.info("Read locking all...");
+		iLock.readLock().lock();
+		iLog.info("All read locked.");
+		return new Lock() {
+			public void release() {
+				iLog.info("Read unlocking all...");
 				iLock.readLock().unlock();
-				break;
+				iLog.info("All read unlocked.");
 			}
+		};
+	}
+
+	public Lock lockAll() {
+		iLog.info("Write locking all...");
+		iLock.writeLock().lock();
+		iLog.info("All write locked.");
+		return new Lock() {
+			public void release() {
+				iLog.info("Write unlocking all...");
+				iLock.writeLock().unlock();
+				iLog.info("All write unlocked.");
+			}
+		};
+	}
+	
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds) {
+		Set<Long> ids = new HashSet<Long>();
+		iLock.readLock().lock();
+		try {
+			ids.add(-studentId);
+			if (offeringIds != null)
+				ids.addAll(offeringIds);
+			
+			Student student = iStudentTable.get(studentId);
+			
+			if (student != null)
+				for (Request r: student.getRequests()) {
+					Offering o = (r.getAssignment() == null ? null : r.getAssignment().getOffering());
+					if (o != null) ids.add(o.getId());
+				}
+		} finally {
+			iLock.readLock().unlock();
+		}
+		return iMultiLock.lock(ids);
+	}
+	
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds) {
+		Set<Long> ids = new HashSet<Long>();
+		iLock.readLock().lock();
+		try {
+			ids.add(offeringId);
+			if (studentIds != null)
+				for (Long studentId: studentIds)
+				ids.add(-studentId);
+			
+			Offering offering = iOfferingTable.get(offeringId);
+			
+			if (offering != null)
+				for (Config config: offering.getConfigs())
+					for (Enrollment enrollment: config.getEnrollments())
+						ids.add(-enrollment.getStudent().getId());
+		} finally {
+			iLock.readLock().unlock();
+		}
+		return iMultiLock.lock(ids);
+	}
+	
+	public Lock lockClass(Long classId, Collection<Long> studentIds) {
+		Set<Long> ids = new HashSet<Long>();
+		iLock.readLock().lock();
+		try {
+			if (studentIds != null)
+				for (Long studentId: studentIds)
+				ids.add(-studentId);
+			
+			Section section = iClassTable.get(classId);
+			if (section != null) {
+				for (Enrollment enrollment: section.getEnrollments())
+					ids.add(-enrollment.getStudent().getId());
+				ids.add(section.getSubpart().getConfig().getOffering().getId());
+			}
+		} finally {
+			iLock.readLock().unlock();
+		}
+		return iMultiLock.lock(ids);
+	}
+	
+	private Long getOfferingIdFromCourseName(String courseName) {
+		if (courseName == null) return null;
+		CourseInfo c = getCourseInfo(courseName);
+		if (c == null) return null;
+		Course course = iCourseTable.get(c.getUniqueId());
+		return (course == null ? null : course.getOffering().getId());
+	}
+	
+	public Lock lockRequest(CourseRequestInterface request) {
+		Set<Long> ids = new HashSet<Long>();
+		iLock.readLock().lock();
+		try {
+			if (request.getStudentId() != null)
+				ids.add(-request.getStudentId());
+			for (CourseRequestInterface.Request r: request.getCourses()) {
+				if (r.hasRequestedCourse()) {
+					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+					if (id != null) ids.add(id);
+				}
+				if (r.hasFirstAlternative()) {
+					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+					if (id != null) ids.add(id);
+				}
+				if (r.hasSecondAlternative()) {
+					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+					if (id != null) ids.add(id);
+				}
+			}
+			for (CourseRequestInterface.Request r: request.getAlternatives()) {
+				if (r.hasRequestedCourse()) {
+					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+					if (id != null) ids.add(id);
+				}
+				if (r.hasFirstAlternative()) {
+					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+					if (id != null) ids.add(id);
+				}
+				if (r.hasSecondAlternative()) {
+					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+					if (id != null) ids.add(id);
+				}
+			}
+		} finally {
+			iLock.readLock().unlock();
+		}
+		return iMultiLock.lock(ids);
+	}
+	
+	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests) {
+		Student student = getStudent(studentId);
+		if (student != null) {
+			String message = "Student " + student.getId() + " changed.";
+			if (oldRequests != null) {
+				message += "\n  Previous schedule:";
+				for (Request r: oldRequests) {
+					message += "\n    " + r.getName() + (r instanceof FreeTimeRequest || r.getInitialAssignment() != null ? "" : " NOT ASSIGNED");
+					if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
+						for (Section s: r.getInitialAssignment().getSections()) {
+							message += "\n      " + s.getSubpart().getName() + " " + s.getName()
+								+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
+								+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
+						}
+					}
+				}
+			}
+			if (newRequests != null) {
+				message += "\n  New schedule:";
+				for (Request r: newRequests) {
+					message += "\n    " + r.getName() + (r instanceof FreeTimeRequest || r.getInitialAssignment() != null ? "" : " NOT ASSIGNED");
+					if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
+						for (Section s: r.getInitialAssignment().getSections()) {
+							message += "\n      " + s.getSubpart().getName() + " " + s.getName()
+								+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
+								+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
+						}
+					}
+				}
+			}
+			iLog.info(message);
 		}
 	}
 }

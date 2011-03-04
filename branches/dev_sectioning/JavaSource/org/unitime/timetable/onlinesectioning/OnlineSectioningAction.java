@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-
 /**
  * @author Tomas Muller
  */
@@ -28,42 +27,5 @@ public interface OnlineSectioningAction<T> {
 	public T execute(OnlineSectioningServer server, OnlineSectioningHelper helper);
 	
 	public String name();
-	
-	public static enum DataMode {
-		TRANSACTION, SESSION, NONE
-	}
-	
-	public DataMode dataMode();
-	
-	public static enum LockType {
-		WRITE, READ, NONE
-	}
-	
-	public LockType lockType();
 
-	public abstract class DatabaseAction<T> implements OnlineSectioningAction<T>{
-
-		@Override
-		public DataMode dataMode() {
-			return DataMode.TRANSACTION;
-		}
-
-		@Override
-		public LockType lockType() {
-			return LockType.WRITE;
-		}
-	}
-
-	public abstract class SolverAction<T> implements OnlineSectioningAction<T>{
-
-		@Override
-		public DataMode dataMode() {
-			return DataMode.NONE;
-		}
-
-		@Override
-		public LockType lockType() {
-			return LockType.NONE;
-		}
-	}
 }

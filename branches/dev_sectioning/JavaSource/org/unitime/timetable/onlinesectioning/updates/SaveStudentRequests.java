@@ -38,14 +38,15 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction.DatabaseAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 /**
  * @author Tomas Muller
  */
-public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRequest>>{
+public class SaveStudentRequests implements OnlineSectioningAction<Hashtable<Long, CourseRequest>>{
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private boolean iKeepEnrollments;
@@ -62,9 +63,24 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 
 	@Override
 	public Hashtable<Long, CourseRequest> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-		if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-		return saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
+		Lock readLock = server.readLock();
+		try {
+			helper.beginTransaction();
+			try {
+				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
+				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				Hashtable<Long, CourseRequest> ret = saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
+				helper.commitTransaction();
+				return ret;
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			}
+		} finally {
+			readLock.release();
+		}
 	}
 
 	@Override
@@ -246,5 +262,4 @@ public class SaveStudentRequests extends DatabaseAction<Hashtable<Long, CourseRe
 		}
 		return ret;
 	}
-
 }
