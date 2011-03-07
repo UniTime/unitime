@@ -591,27 +591,19 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 	
 	public Lock readLock() {
-		iLog.info("Read locking all...");
 		iLock.readLock().lock();
-		iLog.info("All read locked.");
 		return new Lock() {
 			public void release() {
-				iLog.info("Read unlocking all...");
 				iLock.readLock().unlock();
-				iLog.info("All read unlocked.");
 			}
 		};
 	}
 
 	public Lock lockAll() {
-		iLog.info("Write locking all...");
 		iLock.writeLock().lock();
-		iLog.info("All write locked.");
 		return new Lock() {
 			public void release() {
-				iLog.info("Write unlocking all...");
 				iLock.writeLock().unlock();
-				iLog.info("All write unlocked.");
 			}
 		};
 	}
