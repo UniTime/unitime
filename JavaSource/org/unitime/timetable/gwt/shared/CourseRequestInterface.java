@@ -124,7 +124,7 @@ public class CourseRequestInterface implements IsSerializable {
 	}
 	
 	public String toString() {
-		String ret = "CourseRequests(student = " + iSessionId + ", session = " + iSessionId + ", requests = {";
+		String ret = "CourseRequests(student = " + iStudentId + ", session = " + iSessionId + ", requests = {";
 		int idx = 1;
 		for (Request r: iCourses)
 			ret += "\n   " + (idx++) + ". " + r;

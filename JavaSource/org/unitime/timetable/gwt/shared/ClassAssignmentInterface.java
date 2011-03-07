@@ -146,6 +146,10 @@ public class ClassAssignmentInterface implements IsSerializable {
 			if (iEnrollment < 0) return "&infin;";
 			return iEnrollment.toString();
 		}
+		
+		public String toString() {
+			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? "NOT ASSIGNED" : getClassAssignments());
+		}
 	}
 	
 	public static class ClassAssignment implements IsSerializable {
@@ -344,6 +348,15 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public int getExpected() { return (iExpected == null ? 0 : iExpected); }
 		public boolean isOfHighDemand() {
 			return isAvailable() && !isUnlimited() && hasExpected() && getExpected() > getAvailableLimit();
+		}
+		
+		public String toString() {
+			return (isFreeTime() ? "Free Time" : getSubpart() + " " + getSection()) + 
+					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}) : "") +
+					(hasRoom() ? " " + getRooms(",") : "") +
+					(isSaved() || isPinned() || isOfHighDemand() || hasAlternatives() || hasDistanceConflict() || isUnlimited() ? "[" +
+							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +
+							"]" : "");
 		}
 	}
 }
