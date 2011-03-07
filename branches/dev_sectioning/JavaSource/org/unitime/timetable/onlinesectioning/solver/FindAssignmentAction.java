@@ -104,10 +104,17 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		StudentSectioningModel model = new StudentSectioningModel(config);
 
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
-
+		Set<Long> enrolled = null;
 		Lock readLock = server.readLock();
 		try {
 			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			if (original != null) {
+				enrolled = new HashSet<Long>();
+				for (Request r: original.getRequests())
+					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
+						for (Section s: r.getInitialAssignment().getSections())
+							enrolled.add(s.getId());
+			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, false);
 			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
@@ -176,8 +183,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
 		if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
         
-		ClassAssignmentInterface ret = convert(server, model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, getEnrolledClasses(server, getRequest().getStudentId()));
-
+		ClassAssignmentInterface ret = convert(server, model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, enrolled);
+		
 		long t4 = System.currentTimeMillis();
 		helper.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
 
@@ -186,19 +193,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		return rets;
 	}
 	
-	@SuppressWarnings("unchecked")
-	protected Set<Long> getEnrolledClasses(OnlineSectioningServer server, Long studentId) {
-		if (studentId == null) return null;
-		Student student = server.getStudent(studentId);
-		if (student == null) return null;
-		Set<Long> ret = new HashSet<Long>();
-		for (Request r: student.getRequests())
-			if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
-				for (Section s: r.getInitialAssignment().getSections())
-					ret.add(s.getId());
-		return ret;
-	}
-
 	@SuppressWarnings("unchecked")
 	protected Course clone(Course course, long studentId, Student originalStudent) {
 		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());

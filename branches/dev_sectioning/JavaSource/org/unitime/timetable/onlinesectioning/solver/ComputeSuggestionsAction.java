@@ -69,17 +69,25 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		long t0 = System.currentTimeMillis();
 
 		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
-		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+		config.setProperty("Suggestions.Timeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
-		
+		Set<Long> enrolled = null;
+
 		Lock readLock = server.readLock();
 		try {
 			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			if (original != null) {
+				enrolled = new HashSet<Long>();
+				for (Request r: original.getRequests())
+					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
+						for (Section s: r.getInitialAssignment().getSections())
+							enrolled.add(s.getId());
+			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, true);
 			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
@@ -157,9 +165,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		long t3 = System.currentTimeMillis();
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
 
-		Set<Long> savedClasses = getEnrolledClasses(server, getRequest().getStudentId());
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-        	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, false, model.getDistanceConflict(), savedClasses));
+        	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, false, model.getDistanceConflict(), enrolled));
         }
         
 		long t4 = System.currentTimeMillis();
