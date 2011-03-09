@@ -910,6 +910,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (principal == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AUTHENTICATED);
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+		if (studentId == null && isAdmin())
+			studentId = request.getStudentId();
 		if (server != null) {
 			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
