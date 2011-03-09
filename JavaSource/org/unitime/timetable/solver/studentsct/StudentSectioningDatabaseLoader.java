@@ -507,7 +507,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isAlternative(),
                         student,
                         courses,
-                        cd.isWaitlist());
+                        cd.isWaitlist() ? cd.getTimestamp().getTime() : null);
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
@@ -545,7 +545,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         false,
                         student,
                         cx,
-                        false);
+                        null);
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
@@ -735,7 +735,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 false,
                 student,
                 courses,
-                false);
+                null);
         iProgress.trace("added request "+request);
         if (classAssignments!=null && !classAssignments.isEmpty()) {
             HashSet assignedSections = new HashSet();

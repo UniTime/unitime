@@ -341,14 +341,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public List<CourseRequest> getRequests(Long courseId) {
 		iLock.readLock().lock();
 		try {
-			List<CourseRequest> requests = new ArrayList<CourseRequest>();
-			for (Student student: iStudentTable.values())
-				for (Request request: student.getRequests())
-					if (request instanceof CourseRequest)
-						for (Course course: ((CourseRequest)request).getCourses())
-							if (courseId.equals(course.getId()))
-								requests.add((CourseRequest)request);
-			return requests;
+			Course course = iCourseTable.get(courseId);
+			return (course == null ? null : new ArrayList<CourseRequest>(course.getRequests()));
 		} finally {
 			iLock.readLock().unlock();
 		}
@@ -425,9 +419,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		try {
 			Student s = iStudentTable.get(student.getId());
 			if (s != null) {
-				for (Request r: s.getRequests())
+				for (Request r: s.getRequests()) {
+			        for (Request request : student.getRequests()) {
+			            if (request instanceof CourseRequest) {
+			                for (Course course: ((CourseRequest) request).getCourses())
+			                    course.getRequests().remove(request);
+			            }
 					if (r.getAssignment() != null)
 						r.unassign(0);
+			        }
+				}
 				iStudentTable.remove(student.getId());
 			}
 		} finally {
@@ -728,7 +729,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					message += "\n    " + r.getName() + (r instanceof FreeTimeRequest || r.getInitialAssignment() != null ? "" : " NOT ASSIGNED");
 					if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
 						for (Section s: r.getInitialAssignment().getSections()) {
-							message += "\n      " + s.getSubpart().getName() + " " + s.getName()
+							message += "\n      " + s.getSubpart().getName() + " " + s.getName(r.getInitialAssignment().getCourse().getId())
 								+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
 								+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
 						}
@@ -741,7 +742,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					message += "\n    " + r.getName() + (r instanceof FreeTimeRequest || r.getInitialAssignment() != null ? "" : " NOT ASSIGNED");
 					if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
 						for (Section s: r.getInitialAssignment().getSections()) {
-							message += "\n      " + s.getSubpart().getName() + " " + s.getName()
+							message += "\n      " + s.getSubpart().getName() + " " + s.getName(r.getInitialAssignment().getCourse().getId())
 								+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
 								+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
 						}

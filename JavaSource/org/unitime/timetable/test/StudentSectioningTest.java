@@ -481,7 +481,7 @@ public class StudentSectioningTest {
                         cd.isAlternative().booleanValue(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue());
+                        cd.isWaitlist() ? cd.getTimestamp().getTime() : null);
                 ((CourseRequest)request).getWaitlistedChoices().addAll(wlChoices);
                 ((CourseRequest)request).getSelectedChoices().addAll(selChoices);
                 if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
@@ -712,7 +712,7 @@ public class StudentSectioningTest {
                 } else if ("courseOffering".equals(requestElement.getName())) {
                     String subjectArea = requestElement.attributeValue("subjectArea");
                     String courseNumber = requestElement.attributeValue("courseNumber");
-                    boolean waitlist = "true".equals(requestElement.attributeValue("waitlist"));
+                    Long waitlist = (requestElement.attributeValue("waitlist") == null ? null : Long.valueOf(requestElement.attributeValue("waitlist")));
                     CourseOffering co = null;
 
         	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
@@ -842,7 +842,8 @@ public class StudentSectioningTest {
                     CourseOffering co = CourseOffering.findByUniqueId(course.getId());
                     element.addAttribute("title", (co.getTitle()!=null?co.getTitle():""));
                 }
-                reqElement.addAttribute("waitlist", (courseRequest.isWaitlist()?"true":"false"));
+                if (courseRequest.isWaitlist())
+                	reqElement.addAttribute("waitlist", courseRequest.getWaitListTimeStamp().toString());
                 sLog.info("  added "+courseRequest);
             }
             if (request.isAlternative()) reqElement.addAttribute("alternative", "true");
@@ -886,7 +887,7 @@ public class StudentSectioningTest {
                     courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
                     CourseOffering co = CourseOffering.findByUniqueId(course.getId());
                     courseOfferingElement.addAttribute("title", co.getTitle());
-                    courseOfferingElement.addAttribute("waitlist", "true");
+                    courseOfferingElement.addAttribute("waitlist", ((CourseRequest)request).getWaitListTimeStamp().toString());
                 }
                 continue;
             }
