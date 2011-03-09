@@ -398,8 +398,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             cd.isAlternative(),
                             student,
                             courses,
-                            cd.isWaitlist() ? cd.getTimestamp().getTime() : null);
-                    if (assignedConfig!=null) {
+                            cd.isWaitlist() || assignedConfig != null ? cd.getTimestamp().getTime() : null);
+                    if (assignedConfig != null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
                         if (assignedSections.size() != assignedConfig.getSubparts().size()) {
@@ -419,6 +419,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         }
         
         if (student.getRequests().isEmpty() && !s.getClassEnrollments().isEmpty()) {
+        	Date ts = new Date();
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
@@ -442,7 +443,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                         false,
                         student,
                         cx,
-                        null);
+                        ts.getTime());
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
