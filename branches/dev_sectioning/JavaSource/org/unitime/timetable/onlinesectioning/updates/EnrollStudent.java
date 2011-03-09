@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.cpsolver.studentsct.model.Course;
@@ -91,7 +92,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 					classes.put(clazz.getUniqueId(), clazz);
 				}
 				
-				Hashtable<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
+				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
 				Date ts = new Date();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
