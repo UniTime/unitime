@@ -398,7 +398,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             cd.isAlternative(),
                             student,
                             courses,
-                            cd.isWaitlist());
+                            cd.isWaitlist() ? cd.getTimestamp().getTime() : null);
                     if (assignedConfig!=null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
@@ -442,7 +442,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                         false,
                         student,
                         cx,
-                        false);
+                        null);
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();

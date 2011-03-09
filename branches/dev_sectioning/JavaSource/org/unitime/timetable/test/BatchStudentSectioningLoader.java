@@ -373,7 +373,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                         cd.isAlternative().booleanValue(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue());
+                        (cd.isWaitlist().booleanValue() ? cd.getTimestamp().getTime() : null));
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
@@ -450,7 +450,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 false,
                 student,
                 courses,
-                false);
+                null);
         sLog.debug("  -- added request "+request);
         if (classAssignments!=null && !classAssignments.isEmpty()) {
             HashSet assignedSections = new HashSet();
