@@ -108,7 +108,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException {
 		try {
-			sLog.info("findCurricula(filter='" + filter+"')");
+			sLog.debug("findCurricula(filter='" + filter+"')");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 			Query q = new Query(filter);
@@ -149,7 +149,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + results.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + results.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -160,7 +160,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public List<CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException {
 		try {
-			sLog.info("loadClassifications(curriculumIds=" + curriculumIds + ")");
+			sLog.debug("loadClassifications(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			if (curriculumIds == null || curriculumIds.isEmpty()) return new ArrayList<CurriculumClassificationInterface>();
 			
@@ -237,7 +237,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Loaded " + results.size() + " classifications (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Loaded " + results.size() + " classifications (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -248,7 +248,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException {
 		try {
-			sLog.info("loadCurriculum(curriculumId=" + curriculumId + ")");
+			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
 
 			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
@@ -404,7 +404,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				ChangeLog ch = ChangeLog.findLastChange(c);
 				if (ch != null) curriculumIfc.setLastChange(ch.getShortLabel());
 				
-				sLog.info("Loaded 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+				sLog.debug("Loaded 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 				return curriculumIfc;
 			} finally {
 				hibSession.close();
@@ -418,7 +418,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException {
 		try {
-			sLog.info("saveCurriculum(curriculum=" + curriculum.getId() + ")");
+			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -635,7 +635,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				hibSession.flush();
 				tx.commit(); tx = null;
 
-				sLog.info("Saved 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+				sLog.debug("Saved 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 				return ret;
 			} finally {
 				try {
@@ -654,7 +654,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException {
 		try {
-			sLog.info("saveClassifications()");
+			sLog.debug("saveClassifications()");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -719,7 +719,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Saved classifications for " + curricula.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Saved classifications for " + curricula.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -730,7 +730,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException {
 		try {
-			sLog.info("deleteCurriculum(curriculumId=" + curriculumId + ")");
+			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -767,7 +767,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Deleted 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Deleted 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -778,7 +778,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException {
 		try {
-			sLog.info("deleteCurricula(curriculumIds=" + curriculumIds + ")");
+			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -818,7 +818,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Deleted " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Deleted " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -829,7 +829,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException {
 		try {
-			sLog.info("mergeCurricula(curriculumIds=" + curriculumIds + ")");
+			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -1011,7 +1011,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Merged " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Merged " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1022,7 +1022,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException {
 		try {
-			sLog.info("loadAcademicClassifications()");
+			sLog.debug("loadAcademicClassifications()");
 			Long s0 = System.currentTimeMillis();
 
 			TreeSet<AcademicClassificationInterface> results = new TreeSet<AcademicClassificationInterface>();
@@ -1041,7 +1041,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Loaded " + results.size() + " academic classifications (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Loaded " + results.size() + " academic classifications (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1052,7 +1052,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public HashMap<String, CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException {
 		try {
-			sLog.info("computeEnrollmentsAndLastLikes(acadAreaId=" + acadAreaId + ", majors=" + majors + ")");
+			sLog.debug("computeEnrollmentsAndLastLikes(acadAreaId=" + acadAreaId + ", majors=" + majors + ")");
 			Long s0 = System.currentTimeMillis();
 			if (acadAreaId == null) return new HashMap<String, CurriculumStudentsInterface[]>();
 			Hashtable<Long, Integer> classificationIndex = new Hashtable<Long, Integer>();
@@ -1128,7 +1128,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + results.size() + " courses with enrollments/last-like data (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + results.size() + " courses with enrollments/last-like data (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1446,7 +1446,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException {
 		try {
-			sLog.info("getCurriculaForACourse(courseName='" + courseName + "')");
+			sLog.debug("getCurriculaForACourse(courseName='" + courseName + "')");
 			Long s0 = System.currentTimeMillis();
 			
 			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
@@ -1463,7 +1463,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + (results == null ? 0 : results.size()) + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + (results == null ? 0 : results.size()) + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1474,7 +1474,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException {
 		try {
-			sLog.info("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
+			sLog.debug("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
 			Long s0 = System.currentTimeMillis();
 			
 			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
@@ -1507,7 +1507,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + results.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + results.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1518,7 +1518,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<AcademicAreaInterface> loadAcademicAreas() throws CurriculaException {
 		try {
-			sLog.info("loadAcademicAreas()");
+			sLog.debug("loadAcademicAreas()");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<AcademicAreaInterface> results = new TreeSet<AcademicAreaInterface>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -1537,7 +1537,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Loaded " + results.size() + " academic areas (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Loaded " + results.size() + " academic areas (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1548,7 +1548,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException {
 		try {
-			sLog.info("loadMajors(academicAreaId=" + academicAreaId + ")");
+			sLog.debug("loadMajors(academicAreaId=" + academicAreaId + ")");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<MajorInterface> results = new TreeSet<MajorInterface>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -1579,7 +1579,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Loaded " + results.size() + " majors (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Loaded " + results.size() + " majors (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1590,7 +1590,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public TreeSet<DepartmentInterface> loadDepartments() throws CurriculaException {
 		try {
-			sLog.info("loadDepartments()");
+			sLog.debug("loadDepartments()");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<DepartmentInterface> results = new TreeSet<DepartmentInterface>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -1625,7 +1625,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Loaded " + results.size() + " departments (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Loaded " + results.size() + " departments (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1636,7 +1636,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 
 	
 	public String lastCurriculaFilter() throws CurriculaException {
-		sLog.info("lastCurriculaFilter()");
+		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
 		String filter = (String)getThreadLocalRequest().getSession().getAttribute("Curricula.LastFilter");
 		if (filter == null) {
@@ -1650,14 +1650,14 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				}
 			}
 		}
-		sLog.info("Last filter is '" + filter + "'  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+		sLog.debug("Last filter is '" + filter + "'  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 		return filter;
 	}
 	
 
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException {
 		try {
-			sLog.info("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
+			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
 			Long s0 = System.currentTimeMillis();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -1700,7 +1700,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + results.size() + " course offerings  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + results.size() + " course offerings  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1711,7 +1711,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public String retrieveCourseDetails(String course) throws CurriculaException {
 		try {
-			sLog.info("retrieveCourseDetails(course='" + course + "')");
+			sLog.debug("retrieveCourseDetails(course='" + course + "')");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
@@ -1726,7 +1726,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				String details = provider.getDetails(
 						new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 						courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
-				sLog.info("Details of length " + details.length() + " retrieved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+				sLog.debug("Details of length " + details.length() + " retrieved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 				return details;
 			} finally {
 				hibSession.close();
@@ -1740,7 +1740,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException {
 		try {
-			sLog.info("listClasses(course='" + course + "')");
+			sLog.debug("listClasses(course='" + course + "')");
 			Long s0 = System.currentTimeMillis();
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -1820,7 +1820,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Found " + results.size() + " classes (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Found " + results.size() + " classes (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1863,7 +1863,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException {
-		sLog.info("loadProjectionRules()");
+		sLog.debug("loadProjectionRules()");
 		Long s0 = System.currentTimeMillis();
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -1960,7 +1960,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			} finally {
 				hibSession.close();
 			}
-			sLog.info("Curriculum projection rules loaded (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Curriculum projection rules loaded (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return rules;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -1970,7 +1970,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 	
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException {
-		sLog.info("saveProjectionRules()");
+		sLog.debug("saveProjectionRules()");
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!canEditProjectionRules())
@@ -2041,7 +2041,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Curriculum projection rules saved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Curriculum projection rules saved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -2060,7 +2060,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 	
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException {
-		sLog.info("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
+		sLog.debug("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!isAdmin())
@@ -2109,7 +2109,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -2119,7 +2119,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 	
 	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException {
-		sLog.info("updateCurriculaByProjections(curricula=" + curriculumIds + ", updateCurriculumCourses=" + updateCurriculumCourses + ")");
+		sLog.debug("updateCurriculaByProjections(curricula=" + curriculumIds + ", updateCurriculumCourses=" + updateCurriculumCourses + ")");
 		long s0 = System.currentTimeMillis();
 		User user = Web.getUser(getThreadLocalRequest().getSession());
 		try {
@@ -2278,7 +2278,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Curricula update (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Curricula update (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -2288,7 +2288,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 	
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException {
-		sLog.info("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ")");
+		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ")");
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!isAdmin())
@@ -2395,7 +2395,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -2405,7 +2405,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	}
 	
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException {
-		sLog.info("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
+		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
 		long s0 = System.currentTimeMillis();
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -2508,7 +2508,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.debug("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
