@@ -150,7 +150,11 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 
-	public static void offeringChanged(org.hibernate.Session hibSession, Long sessionId, Long offeringId) {
+	public static void offeringChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> offeringId) {
+		addItem(hibSession, sessionId, Type.OFFERING_CHANGE, offeringId);
+	}
+
+	public static void offeringChanged(org.hibernate.Session hibSession, Long sessionId, Long... offeringId) {
 		addItem(hibSession, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 }
