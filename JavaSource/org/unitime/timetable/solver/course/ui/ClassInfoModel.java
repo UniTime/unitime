@@ -247,11 +247,14 @@ public class ClassInfoModel implements Serializable {
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
         List<Long> classIds = new ArrayList<Long>();
+        Set<Long> offeringIds = new HashSet<Long>();
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
                 classIds.add(assignment.getClassId());
-        		String m = assignment.getClazz(hibSession).unassignCommited(iManagerExternalId, hibSession);
+                Class_ clazz = assignment.getClazz(hibSession);
+        		String m = clazz.unassignCommited(iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
+                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Unassignment of "+assignment.getClassName()+" failed, reason: "+e.getMessage();
             }
@@ -259,14 +262,22 @@ public class ClassInfoModel implements Serializable {
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
                 classIds.add(assignment.getClassId());
-                String m = assignment.getClazz(hibSession).assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
+                Class_ clazz = assignment.getClazz(hibSession);
+                String m = clazz.assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
+                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
             }
         }
         
-        StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        //TODO: Call class assignment change when only scheduling assistant is in use (no resectioning),
+        // call offering changed in the case of online sectioning (conflicting students will get moved
+        // to other times or unassigned and put on wait-list)
+        
+        // StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        StudentSectioningQueue.offeringChanged(hibSession, sessionId, offeringIds);
+        
         hibSession.flush();
         
         return message;
