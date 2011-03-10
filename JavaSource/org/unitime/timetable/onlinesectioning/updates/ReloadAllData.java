@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -398,7 +399,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             cd.isAlternative(),
                             student,
                             courses,
-                            cd.isWaitlist() || assignedConfig != null ? cd.getTimestamp().getTime() : null);
+                            cd.isWaitlist() || assignedConfig != null,
+                            cd.getTimestamp().getTime());
                     if (assignedConfig != null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
@@ -419,12 +421,12 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         }
         
         if (student.getRequests().isEmpty() && !s.getClassEnrollments().isEmpty()) {
-        	Date ts = new Date();
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
         		}
         	});
+        	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
         	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
         		StudentClassEnrollment enrl = i.next();
         		Course course = server.getCourse(enrl.getCourseOffering().getUniqueId());
@@ -432,18 +434,20 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     helper.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
+                if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
         	for (Course course: courses) {
         		Vector<Course> cx = new Vector<Course>(); cx.add(course);
                 CourseRequest request = new CourseRequest(
-                        course.getId(),
+                        - course.getId(),
                         priority++,
                         false,
                         student,
                         cx,
-                        ts.getTime());
+                        true,
+                        timeStamp.get(course.getId()));
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
