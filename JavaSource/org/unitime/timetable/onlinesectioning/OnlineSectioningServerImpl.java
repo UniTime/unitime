@@ -82,7 +82,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			if (session == null)
 				throw new SectioningException(SectioningExceptionType.SESSION_NOT_EXIST, (sessionId == null ? "null" : sessionId.toString()));
 			iAcademicSession = new AcademicSessionInfo(session);
-			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession + "]");
+			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
 			iMultiLock = new MultiLock(iAcademicSession);
 			execute(new ReloadAllData());
 		} catch (Throwable t) {
@@ -581,7 +581,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException {
 		try {
 			OnlineSectioningHelper h = new OnlineSectioningHelper();
-			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toString() + "]")));
+			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			return action.execute(this, h);
 		} catch (Exception e) {
 			iLog.error("Execution of " + action.name() + " failed: " + e.getMessage(), e);
