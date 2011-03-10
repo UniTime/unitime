@@ -339,7 +339,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 				for (Course clonedCourse: cr)
 					updateLimits(server, clonedCourse, updateFromCache);
-				new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, null);
+				new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false, null);
 			}
 		}
 	}

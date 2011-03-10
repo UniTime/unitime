@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -507,7 +508,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isAlternative(),
                         student,
                         courses,
-                        cd.isWaitlist() ? cd.getTimestamp().getTime() : null);
+                        cd.isWaitlist(), 
+                        cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
@@ -527,6 +529,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
         		}
         	});
+        	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
         	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
         		StudentClassEnrollment enrl = i.next();
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
@@ -534,6 +537,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
+                if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
@@ -545,7 +549,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         false,
                         student,
                         cx,
-                        null);
+                        true,
+                        timeStamp.get(course.getId()));
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
@@ -735,6 +740,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 false,
                 student,
                 courses,
+                false,
                 null);
         iProgress.trace("added request "+request);
         if (classAssignments!=null && !classAssignments.isEmpty()) {
