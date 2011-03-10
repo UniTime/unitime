@@ -48,7 +48,7 @@ public class MultiLock {
     }
     
     public MultiLock(AcademicSessionInfo session) {
-    	iLog = LogFactory.getLog(MultiLock.class.getName() + ".lock[" + session.toString() + "]");
+    	iLog = LogFactory.getLog(MultiLock.class.getName() + ".lock[" + session.toCompactString() + "]");
     }
     
 	private Condition hasLock(Collection<Long> ids) {

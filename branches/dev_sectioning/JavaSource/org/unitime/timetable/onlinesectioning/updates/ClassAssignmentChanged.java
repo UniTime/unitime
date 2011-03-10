@@ -133,7 +133,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 		                section.getChoice().setInstructor(instructorIds, instructorNames);
 						helper.info("  -- instructor: " + instructorNames);
 
-		                section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() : clazz.getExternalUniqueId());
+		                section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() == null ? clazz.getSectionNumberString(helper.getHibSession()) : clazz.getClassSuffix() : clazz.getExternalUniqueId());
 					} finally {
 						lock.release();
 					}
