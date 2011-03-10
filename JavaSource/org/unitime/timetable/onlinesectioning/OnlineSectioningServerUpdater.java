@@ -37,7 +37,7 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
  * @author Tomas Muller
  */
 public class OnlineSectioningServerUpdater extends Thread {
-	private static Logger sLog = Logger.getLogger(OnlineSectioningServerUpdater.class);
+	private Logger iLog;
 	private long iSleepTimeInSeconds = 5;
 	private Date iLastTimeStamp;
 	private boolean iRun = true;
@@ -51,6 +51,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[" + getAcademicSession().toCompactString() + "]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.updateInterval", "30"));
+		iLog = Logger.getLogger(OnlineSectioningServerUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
 	}
 	
 	public OnlineSectioningServerUpdater(Date lastTimeStamp) {
@@ -60,20 +61,21 @@ public class OnlineSectioningServerUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[generic]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.loadInterval", "600"));
+		iLog = Logger.getLogger(OnlineSectioningServerUpdater.class + ".updater[generic]"); 
 	}
 	
 	public void run() {
 		try {
-			sLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater started.");
+			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater started.");
 			while (iRun) {
 				checkForUpdates();
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
 			}
-			sLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater stopped.");
+			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater stopped.");
 		} catch (Exception e) {
-			sLog.error((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater failed, " + e.getMessage(), e);
+			iLog.error((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater failed, " + e.getMessage(), e);
 		}
 	}
 	
@@ -91,12 +93,20 @@ public class OnlineSectioningServerUpdater extends Thread {
 		try {
 			if (getAcademicSession() != null) {
 				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
-					processChange(q);
+					try {
+						processChange(q);
+					} catch (Exception e) {
+						iLog.error("Update failed: " + e.getMessage(), e);
+					}
 					iLastTimeStamp = q.getTimeStamp();
 				}
 			} else {
 				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, null, iLastTimeStamp)) {
-					processGenericChange(q);
+					try {
+						processGenericChange(q);
+					} catch (Exception e) {
+						iLog.error("Update failed: " + e.getMessage(), e);
+					}
 					iLastTimeStamp = q.getTimeStamp();
 				}
 			}
@@ -118,7 +128,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			if (server != null) {
 				List<Long> studentIds = q.getIds();
 				if (studentIds == null || studentIds.isEmpty()) {
-					sLog.info("All students changed for " + server.getAcademicSession());
+					iLog.info("All students changed for " + server.getAcademicSession());
 					server.execute(new ReloadAllStudents());
 				} else {
 					server.execute(new ReloadStudent(studentIds));
@@ -136,7 +146,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			}
 			break;
 		default:
-			sLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");
+			iLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");
 		}
 	}
 	
@@ -155,7 +165,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 		}
 	}
 	
-	private static void sessionStatusChanged(Long academicSessionId, boolean reload) {
+	private void sessionStatusChanged(Long academicSessionId, boolean reload) {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
@@ -166,12 +176,12 @@ public class OnlineSectioningServerUpdater extends Thread {
 			
 			if (session == null) {
 				if (server != null) {
-					sLog.info("Unloading " + server.getAcademicSession());
+					iLog.info("Unloading " + server.getAcademicSession());
 					OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
 				}
 				return;
 			}
-			sLog.info("Session status changed for " + session.getLabel());
+			iLog.info("Session status changed for " + session.getLabel());
 			
 			boolean load = true;
 			if (year != null && !year.equals(session.getAcademicYear())) load = false;
@@ -180,7 +190,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 
 			if (!load) {
 				if (server != null) {
-					sLog.info("Unloading " + server.getAcademicSession());
+					iLog.info("Unloading " + server.getAcademicSession());
 					OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
 				}
 				return;
