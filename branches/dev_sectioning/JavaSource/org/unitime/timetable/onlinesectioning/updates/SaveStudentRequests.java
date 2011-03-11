@@ -249,6 +249,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
+				if (enrl.getCourseRequest() != null)
+					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
 				helper.getHibSession().delete(enrl);
 				i.remove();
 			}
