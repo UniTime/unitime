@@ -337,17 +337,6 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 	}
 	
-	@Override
-	public List<CourseRequest> getRequests(Long courseId) {
-		iLock.readLock().lock();
-		try {
-			Course course = iCourseTable.get(courseId);
-			return (course == null ? null : new ArrayList<CourseRequest>(course.getRequests()));
-		} finally {
-			iLock.readLock().unlock();
-		}
-	}
-	
 	public static class EnrollmentSectionComparator implements Comparator<Section> {
 	    public boolean isParent(Section s1, Section s2) {
 			Section p1 = s1.getParent();
