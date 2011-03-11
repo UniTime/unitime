@@ -20,8 +20,9 @@
 package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -33,10 +34,10 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.server.DayCode;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.model.Model;
 import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
+import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -63,8 +64,8 @@ public class SuggestionsBranchAndBound {
 	private long iT0, iT1;
 	private boolean iTimeoutReached = false;
 	private int iNrSolutionsSeen = 0;
-	private Model iModel;
-	private Hashtable<Request, Collection<Enrollment>> iValues = new Hashtable<Request, Collection<Enrollment>>();
+	private StudentSectioningModel iModel;
+	private Hashtable<Request, List<Enrollment>> iValues = new Hashtable<Request, List<Enrollment>>();
 	private long iLastSuggestionId = 0;
 	
 	public SuggestionsBranchAndBound(DataProperties properties, Student student,
@@ -78,7 +79,7 @@ public class SuggestionsBranchAndBound {
 		iSelectedRequest = selectedRequest;
 		iSelectedSection = selectedSection;
 		iStudent = student;
-		iModel = selectedRequest.getModel();
+		iModel = (StudentSectioningModel)selectedRequest.getModel();
 		iMaxDepth = properties.getPropertyInt("Suggestions.MaxDepth", iMaxDepth);
 		iTimeout = properties.getPropertyLong("Suggestions.Timeout", iTimeout);
 		iMaxSuggestions = properties.getPropertyInt("Suggestions.MaxSuggestions", iMaxSuggestions);
@@ -181,13 +182,20 @@ public class SuggestionsBranchAndBound {
             enrollment.variable().assign(0, enrollment);
             if (enrollment.getAssignments().isEmpty()) {
             	if (altRequests2resolve != null && !altRequests2resolve.isEmpty()) {
+                	Suggestion lastBefore = (iSuggestions.isEmpty() ? null : iSuggestions.last());
+                	int sizeBefore = iSuggestions.size();
                 	for (Request r: altRequests2resolve) {
                 		newVariables2resolve.add(r);
                 		backtrack(newVariables2resolve, null, idx+1, depth);
                 		newVariables2resolve.remove(r);
                 	}
+                	Suggestion lastAfter = (iSuggestions.isEmpty() ? null : iSuggestions.last());
+                	int sizeAfter = iSuggestions.size();
+                	// did not succeeded with an alternative -> try without it
+                	if (sizeBefore == sizeAfter && (sizeAfter < iMaxSuggestions || sizeAfter == 0 || lastAfter.compareTo(lastBefore) == 0))
+                		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
             	} else {
-                    backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
+            		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
             	}
             } else {
                 backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
@@ -204,12 +212,31 @@ public class SuggestionsBranchAndBound {
     }
     
     @SuppressWarnings("unchecked")
-	protected Collection<Enrollment> values(Request request) {
-    	Collection<Enrollment> values = iValues.get(request);
+	protected List<Enrollment> values(final Request request) {
+    	List<Enrollment> values = iValues.get(request);
     	if (values != null) return values;
     	if (request instanceof CourseRequest) {
     		CourseRequest cr = (CourseRequest)request;
     		values = (cr.equals(iSelectedRequest) ? cr.getAvaiableEnrollments() : cr.getAvaiableEnrollmentsSkipSameTime());
+            Collections.sort(values, new Comparator<Enrollment>() {
+                private HashMap<Enrollment, Double> iValues = new HashMap<Enrollment, Double>();
+                private Double value(Enrollment e) {
+                    Double value = iValues.get(e);
+                    if (value == null) {
+                        value = iModel.getStudentWeights().getWeight(e,
+                                        (iModel.getDistanceConflict() == null ? null : iModel.getDistanceConflict().conflicts(e)),
+                                        (iModel.getTimeOverlaps() == null ? null : iModel.getTimeOverlaps().freeTimeConflicts(e)));
+                        iValues.put(e, value);       
+                    }
+                    return value;
+                }
+                public int compare(Enrollment e1, Enrollment e2) {
+                    if (e1.equals(request.getAssignment())) return -1;
+                    if (e2.equals(request.getAssignment())) return -1;
+                    return value(e2).compareTo(value(e1));
+                }
+                
+            });
     	} else {
     		values = new ArrayList<Enrollment>();
     		values.add(((FreeTimeRequest)request).createEnrollment());
