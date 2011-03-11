@@ -34,14 +34,11 @@ import java.util.Vector;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -95,14 +92,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
+		DataProperties config = new DataProperties();
 		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
-
+		
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<Long> enrolled = null;
 		Lock readLock = server.readLock();
@@ -121,6 +118,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, false);
 			model.addStudent(student);
+			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 		} finally {
 			readLock.release();
 		}
@@ -162,31 +161,22 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		}
 		long t1 = System.currentTimeMillis();
 		
-			
-        Solution solution = new Solution(model,0,0);
-        
-        Solver solver = new Solver(model.getProperties());
-        solver.setInitalSolution(solution);
-        solver.initSolver();
-        
-		long t2 = System.currentTimeMillis();
-
         SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
-        onlineSelection.init(solver);
+        onlineSelection.setModel(model);
+        
 
-        BranchBoundSelection.Selection selection = onlineSelection.getSelection(student); 
-        BranchBoundNeighbour neighbour = selection.select();
+        BranchBoundNeighbour neighbour = onlineSelection.getSelection(student).select();
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
         
-		long t3 = System.currentTimeMillis();
+		long t2 = System.currentTimeMillis();
 
 		if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
         
 		ClassAssignmentInterface ret = convert(server, model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, enrolled);
 		
-		long t4 = System.currentTimeMillis();
-		helper.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
+		long t3 = System.currentTimeMillis();
+		helper.info("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
 
 		List<ClassAssignmentInterface> rets = new ArrayList<ClassAssignmentInterface>(1);
 		rets.add(ret);
