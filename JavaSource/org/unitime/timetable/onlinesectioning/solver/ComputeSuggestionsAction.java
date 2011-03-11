@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
@@ -68,13 +67,14 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 
-		DataProperties config = new DataProperties(ApplicationProperties.getProperties());
+		DataProperties config = new DataProperties();
 		config.setProperty("Suggestions.Timeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
+
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<Long> enrolled = null;
 
@@ -95,6 +95,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				addRequest(server, model, student, original, c, true, true);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 		} finally {
 			readLock.release();
 		}
@@ -155,8 +156,6 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			}
 		}
 		
-        new Solution(model);
-        
 		long t2 = System.currentTimeMillis();
         
         SuggestionsBranchAndBound suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse, selectedRequest, selectedSection);
