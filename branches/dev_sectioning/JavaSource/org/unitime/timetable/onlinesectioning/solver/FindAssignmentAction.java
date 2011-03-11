@@ -96,6 +96,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
 		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
 		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
+		config.setProperty("StudentWeights.LeftoverSpread", "true");
 		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
 		StudentSectioningModel model = new StudentSectioningModel(config);
