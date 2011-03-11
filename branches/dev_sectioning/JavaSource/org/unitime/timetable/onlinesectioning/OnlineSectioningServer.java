@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
@@ -48,7 +47,6 @@ public interface OnlineSectioningServer {
 	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
 	public List<Section> getSections(CourseInfo courseInfo);
-	public Collection<CourseRequest> getRequests(Long courseId);
 	
 	public CourseInfo getCourseInfo(Long courseId);
 	public CourseInfo getCourseInfo(String course);
