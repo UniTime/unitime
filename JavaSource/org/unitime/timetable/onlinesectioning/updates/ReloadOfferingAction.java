@@ -146,7 +146,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		
 		if (oldOffering != null) {
 			for (Course course: oldOffering.getCourses())
-				for (CourseRequest request: server.getRequests(course.getId())) {
+				for (CourseRequest request: new ArrayList<CourseRequest>(course.getRequests())) {
 					Student oldStudent = request.getStudent();
 					server.remove(oldStudent);
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(oldStudent.getId(), helper.getHibSession());
@@ -236,7 +236,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
 				StudentClassEnrollment enrl = i.next();
 				if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getId())) ||
-					(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().equals(offeringId))) {
+					(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId))) {
 					helper.info("Deleting " + enrl.getClazz().getClassLabel());
 					enrl.getClazz().getStudentEnrollments().remove(enrl);
 					if (enrl.getCourseRequest() != null)
@@ -255,6 +255,13 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			
 			if (r.getRequest().getAssignment() != null) { // save enrollment
 				org.unitime.timetable.model.CourseRequest cr = null;
+				CourseOffering co = null;
+				if (cr != null)
+					co = cr.getCourseOffering();
+				if (co == null) 
+					for (CourseOffering x: io.getCourseOfferings())
+						if (x.getUniqueId().equals(r.getRequest().getAssignment().getCourse().getId()))
+							co = x;
 				for (Section section: r.getRequest().getAssignment().getSections()) {
 					Class_ clazz = Class_DAO.getInstance().get(section.getId());
 					if (cd != null && cr == null) {
@@ -263,10 +270,12 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 								cr = x; break;
 							}
 					}
+					if (co == null)
+						co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 					StudentClassEnrollment enrl = new StudentClassEnrollment();
 					enrl.setClazz(clazz);
 					clazz.getStudentEnrollments().add(enrl);
-					enrl.setCourseOffering(cr.getCourseOffering());
+					enrl.setCourseOffering(co);
 					enrl.setCourseRequest(cr);
 					enrl.setTimestamp(ts);
 					enrl.setStudent(student);
@@ -411,7 +420,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			
 			// Do we need to consider reservations ???
 			
-			return new Long(getRequest().getId()).compareTo(r.getRequest().getId());
+			return new Long(getRequest().getStudent().getId()).compareTo(r.getRequest().getStudent().getId());
 		}
 		
 		public int evaluate(Enrollment e) {
