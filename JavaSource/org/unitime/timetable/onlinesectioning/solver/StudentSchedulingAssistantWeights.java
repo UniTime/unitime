@@ -43,9 +43,9 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 	/** deduction for section with no time assignment */
     private double iNoTimeFactor = 0.050;
     /** deduction for sections that are not preferred (different time & instructor) */
-    private double iPreferenceFactor = 0.250;
+    private double iPreferenceFactor = 0.125;
     /** deduction for over expected sections */
-    private double iPenaltyFactor = 0.500;
+    private double iPenaltyFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
     private double iAvailabilityFactor;
 	private Hashtable<CourseRequest, Double> iBestTime = new Hashtable<CourseRequest, Double>();
