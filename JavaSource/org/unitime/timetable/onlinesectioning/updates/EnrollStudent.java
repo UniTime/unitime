@@ -69,7 +69,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 		Set<Long> offeringIds = new HashSet<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (!ca.isFreeTime()) {
-				Course course = server.getCourse(ca.getClassId());
+				Course course = server.getCourse(ca.getCourseId());
 				if (course != null) offeringIds.add(course.getOffering().getId());
 			}
 		
@@ -105,6 +105,8 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 					clazz.getStudentEnrollments().add(enrl);
 					enrl.setCourseOffering(cr.getCourseOffering());
 					enrl.setCourseRequest(cr);
+					if (cr.getClassEnrollments() != null)
+						cr.getClassEnrollments().add(enrl);
 					enrl.setTimestamp(ts);
 					enrl.setStudent(student);
 					student.getClassEnrollments().add(enrl);

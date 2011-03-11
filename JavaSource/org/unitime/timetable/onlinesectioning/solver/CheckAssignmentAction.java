@@ -61,7 +61,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 			Set<Long> offeringIds = new HashSet<Long>();
 			for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 				if (!ca.isFreeTime()) {
-					Course course = server.getCourse(ca.getClassId());
+					Course course = server.getCourse(ca.getCourseId());
 					if (course != null) offeringIds.add(course.getOffering().getId());
 				}
 			
@@ -83,7 +83,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 		Hashtable<Config, List<Section>> config2sections = new Hashtable<Config, List<Section>>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
 			// Skip free times
-			if (ca.isFreeTime()) continue;
+			if (ca.isFreeTime() || ca.getClassId() == null) continue;
 			
 			// Check section limits
 			Section section = server.getSection(ca.getClassId());
