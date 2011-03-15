@@ -30,23 +30,24 @@ import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
 public class DepartmentStatusType extends BaseDepartmentStatusType implements Comparable{
 	private static final long serialVersionUID = 1L;
 	
-	public static final int sCanManagerView			= 1;
-	public static final int sCanManagerEdit			= 2;
-	public static final int sCanManagerLimitedEdit	= 4; //e.g., assign instructors
-	public static final int sCanOwnerView			= 8;
-	public static final int sCanOwnerEdit			= 16;
-	public static final int sCanOwnerLimitedEdit    = 32;
-	public static final int sCanAudit				= 64;
-	public static final int sCanTimetable			= 128;
-	public static final int sCanCommit				= 256;
-	public static final int sCanExamView            = 512;
-	public static final int sCanExamEdit            = 1024;
-	public static final int sCanExamTimetable       = 2048;
-	public static final int sCanNoRoleReportExamFin = 4096;
-	public static final int sCanNoRoleReportExamMid = 8192;
-	public static final int sCanNoRoleReportClass   = 16384;
-	public static final int sCanSectioningStudents  = 32768;
-	public static final int sCanPreRegisterStudents = 65536; 
+	public static final int sCanManagerView				= 1;
+	public static final int sCanManagerEdit				= 2;
+	public static final int sCanManagerLimitedEdit		= 4; //e.g., assign instructors
+	public static final int sCanOwnerView				= 8;
+	public static final int sCanOwnerEdit				= 16;
+	public static final int sCanOwnerLimitedEdit		= 32;
+	public static final int sCanAudit					= 64;
+	public static final int sCanTimetable				= 128;
+	public static final int sCanCommit					= 256;
+	public static final int sCanExamView				= 512;
+	public static final int sCanExamEdit				= 1024;
+	public static final int sCanExamTimetable			= 2048;
+	public static final int sCanNoRoleReportExamFin		= 4096;
+	public static final int sCanNoRoleReportExamMid		= 8192;
+	public static final int sCanNoRoleReportClass		= 16384;
+	public static final int sCanSectAssistStudents		= 32768;
+	public static final int sCanPreRegisterStudents		= 65536; 
+	public static final int sCanOnlineSectionStudents	= 131072;
 	
 	public static final int sApplySession    = 1;
 	public static final int sApplyDepartment = 2;
@@ -179,12 +180,16 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
         return can(sCanNoRoleReportClass);
     }
     
-    public boolean canSectioningStudents() {
-        return can(sCanSectioningStudents);
+    public boolean canSectionAssistStudents() {
+        return can(sCanSectAssistStudents);
     }
     
     public boolean canPreRegisterStudents() {
     	return can(sCanPreRegisterStudents);
+    }
+
+    public boolean canOnlineSectionStudents() {
+    	return can(sCanOnlineSectionStudents);
     }
 
     public boolean canNoRoleReportExam() {
