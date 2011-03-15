@@ -82,7 +82,7 @@ public class OnlineSectioningService {
 			if (year != null && !year.equals(session.getAcademicYear())) continue;
 			if (term != null && !term.equals(session.getAcademicTerm())) continue;
 
-			if (!session.getStatusType().canSectioningStudents()) continue;
+			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 
 			return true;
 		}
@@ -91,7 +91,7 @@ public class OnlineSectioningService {
 	
 	public static boolean isRegistrationEnabled() {
 		for (Session session: SessionDAO.getInstance().findAll()) {
-			if (!session.getStatusType().canSectioningStudents() && session.getStatusType().canPreRegisterStudents()) return true;
+			if (!session.getStatusType().canOnlineSectionStudents() && !session.getStatusType().canSectionAssistStudents() && session.getStatusType().canPreRegisterStudents()) return true;
 		}
 		return false;
 	}
