@@ -371,6 +371,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (enrollment.getRequest() instanceof CourseRequest) {
 					CourseRequest r = (CourseRequest)enrollment.getRequest();
 					Course course = enrollment.getCourse();
+					if (server.isOfferingLocked(course.getOffering().getId()))
+						ca.setLocked(true);
 					ca.setAssigned(false);
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
@@ -483,6 +485,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				sections.addAll(enrollment.getSections());
 				Course course = enrollment.getCourse();
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
+				if (server.isOfferingLocked(course.getOffering().getId()))
+					ca.setLocked(true);
 				ca.setAssigned(true);
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());

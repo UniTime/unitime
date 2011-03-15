@@ -346,8 +346,10 @@ public class StudentSectioningWidget extends Composite {
 		
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show("Enrolling...");
 				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ArrayList<Long>>() {
 					public void onSuccess(ArrayList<Long> result) {
+						LoadingWidget.getInstance().hide();
 						int idx = 0;
 						for (ClassAssignmentInterface.ClassAssignment ca: iLastResult) {
 							if (ca.getClassId() != null) {
@@ -367,6 +369,7 @@ public class StudentSectioningWidget extends Composite {
 						updateHistory();
 					}
 					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().fail(MESSAGES.enrollFailed(caught.getMessage()));
 						iErrorMessage.setHTML(MESSAGES.enrollFailed(caught.getMessage()));
 						iErrorMessage.setVisible(true);
 						updateHistory();
@@ -523,7 +526,7 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 								new WebTable.Cell(clazz.getParentSection()),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
-								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 						final ArrayList<TimeGrid.Meeting> meetings = (clazz.isFreeTime() ? null : iAssignmentGrid.addClass(clazz, rows.size()));
 						// row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString() + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						final int index = rows.size();
@@ -563,6 +566,8 @@ public class StudentSectioningWidget extends Composite {
 						unassignedMessage += ".";
 					} else if (course.isNotAvailable()) {
 						unassignedMessage = MESSAGES.classNotAvailable();
+					} else if (course.isLocked()) {
+						unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
 					}
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						row = new WebTable.Row(
@@ -576,7 +581,8 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getStartString()),
 								new WebTable.Cell(clazz.getEndString()),
 								new WebTable.Cell(clazz.getDatePattern()),
-								new WebTable.Cell(unassignedMessage, 5, null));
+								new WebTable.Cell(unassignedMessage, 4, null),
+								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
 						row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
 						break;
@@ -586,7 +592,8 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(null),
 								new WebTable.Cell(course.getSubject()),
 								new WebTable.Cell(course.getCourseNbr()),
-								new WebTable.Cell(unassignedMessage, 12, null));
+								new WebTable.Cell(unassignedMessage, 11, null),
+								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
 						row.setId(course.getCourseId().toString());
 						iLastResult.add(course.addClassAssignment());
 					}
