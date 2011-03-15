@@ -79,6 +79,12 @@ public interface OnlineSectioningServer {
 	public Lock lockClass(Long classId, Collection<Long> studentIds);
 	public Lock lockRequest(CourseRequestInterface request);
 	
+	public boolean isOfferingLocked(Long offeringId);
+	public void lockOffering(Long offeringId);
+	public void unlockOffering(Long offeringId);
+	public Collection<Long> getLockedOfferings();
+	public void releaseAllOfferingLocks();
+	
 	public static interface Lock {
 		void release();
 	}
