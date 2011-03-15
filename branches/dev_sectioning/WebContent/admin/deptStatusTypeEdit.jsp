@@ -114,6 +114,8 @@
 			<TD><i>Students are able to use the Student Course Requests page to fill in their course and free time requests.</i></TD></TR>
 		<TR><TD nowrap>Assistant:</TD><TD><html:checkbox property="canSectioningStudents"/></TD>
 			<TD><i>Unauthenticated users and students are able to use the Student Scheduling Assistant.</i></TD></TR>
+		<TR><TD nowrap>Online Sectioning:</TD><TD><html:checkbox property="canOnlineSectionStudents"/></TD>
+			<TD><i>Online student sectioning is fully enabled (e.g., courses must be locked before a change, conflicting students are automatically re-sectioned).</i></TD></TR>
 
 		<TR><TD colspan='3'><tt:section-title><br>No-Role Reports</tt:section-title></TD></TR>
 		<TR><TD>Class Schedule:</TD><TD><html:checkbox property="canNoRoleReportClass"/></TD>
