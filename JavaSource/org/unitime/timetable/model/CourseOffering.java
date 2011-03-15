@@ -274,7 +274,13 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	/** The course as well as all its classes are editable by the user */
 	public boolean isFullyEditableBy(User user) {
     	if (user==null) return false;
+
+    	if (getSubjectArea().getSession().getStatusType().canOnlineSectionStudents() &&
+        		!getSubjectArea().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId()))
+        		return false;
+
     	if (user.isAdmin()) return true;
+
 		if (getDepartment()==null) return false;
 		
 		TimetableManager tm = TimetableManager.getManager(user);
@@ -299,6 +305,11 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 
     public boolean isEditableBy(User user){
     	if (user==null) return false;
+
+    	if (getSubjectArea().getSession().getStatusType().canOnlineSectionStudents() &&
+    		!getSubjectArea().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId()))
+    		return false;
+
     	if (user.isAdmin()) return true;
 		if (getDepartment()==null) return false;
 		
