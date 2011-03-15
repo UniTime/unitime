@@ -70,6 +70,8 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (!ca.isFreeTime()) {
 				Course course = server.getCourse(ca.getCourseId());
+				if (server.isOfferingLocked(course.getOffering().getId()))
+					throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
 				if (course != null) offeringIds.add(course.getOffering().getId());
 			}
 		
