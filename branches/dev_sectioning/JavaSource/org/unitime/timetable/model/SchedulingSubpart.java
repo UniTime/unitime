@@ -164,7 +164,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		if (tm == null) return false;
 		
         if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
+        
 		if (tm.getDepartments().contains(getManagingDept())) {
 			//I am manager, return true if manager can edit the class
 			if (getManagingDept().effectiveStatusType().canManagerEdit()) return true;
@@ -197,6 +197,15 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public boolean isEditableBy(User user) {
+    	if (getInstrOfferingConfig().getInstructionalOffering().getSession().getStatusType().canOnlineSectionStudents() &&
+    		!getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLocked(getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
+    		return false;
+        }
+    	return super.isEditableBy(user);
 	}
 	
 	public boolean isLimitedEditable(User user) {
