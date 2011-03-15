@@ -186,7 +186,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			boolean load = true;
 			if (year != null && !year.equals(session.getAcademicYear())) load = false;
 			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
-			if (!session.getStatusType().canSectioningStudents()) load = false;
+			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) load = false;
 
 			if (!load) {
 				if (server != null) {
@@ -198,7 +198,11 @@ public class OnlineSectioningServerUpdater extends Thread {
 			
 			if (server == null || reload)
 				OnlineSectioningService.createInstance(academicSessionId);
-						
+			else {
+				if (server.getAcademicSession().isSectioningEnabled() && !session.getStatusType().canOnlineSectionStudents())
+					server.releaseAllOfferingLocks();
+				server.getAcademicSession().setSectioningEnabled(session.getStatusType().canOnlineSectionStudents());
+			}
 		} finally {
 			hibSession.close();
 		}

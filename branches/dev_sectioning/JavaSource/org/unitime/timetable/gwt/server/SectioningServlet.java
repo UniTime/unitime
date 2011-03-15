@@ -108,7 +108,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
-				if (!session.getStatusType().canSectioningStudents()) continue;
+				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 
 				int nrSolutions = ((Number)hibSession.createQuery(
 						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
@@ -432,7 +432,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
-				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectioningStudents())
+				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents())
 					ret.add(new String[] {
 							String.valueOf(session.getUniqueId()),
 							session.getAcademicYear(),
@@ -481,13 +481,12 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
-			ClassAssignmentInterface ret = OnlineSectioningService.getInstance(request.getAcademicSessionId()).execute(
-					new FindAssignmentAction(request, currentAssignment)).get(0);
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+			if (server == null) throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "no server data");
+			ClassAssignmentInterface ret = server.execute(new FindAssignmentAction(request, currentAssignment)).get(0);
 			if (ret != null) {
-				ret.setCanEnroll(true);
-				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
-					ret.setCanEnroll(false);
-				} else {
+				ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
+				if (ret.isCanEnroll()) {
 					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
 						ret.setCanEnroll(false);
@@ -543,12 +542,12 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-			Collection<ClassAssignmentInterface> ret = OnlineSectioningService.getInstance(request.getAcademicSessionId()).execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment));
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+			if (server == null) throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "no server data");
+			Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment));
 			if (ret != null) {
-				boolean canEnroll = true;
-				if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) {
-					canEnroll = false;
-				} else {
+				boolean canEnroll = server.getAcademicSession().isSectioningEnabled();
+				if (canEnroll) {
 					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
 						canEnroll = false;
@@ -732,7 +731,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			Session session = SessionDAO.getInstance().get(sessionId);
 			if (session == null)
 				throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "session not found");
-			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectioningStudents())
+			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectionAssistStudents() || session.getStatusType().canOnlineSectionStudents())
 				throw new SectioningException(SectioningExceptionType.LAST_ACADEMIC_SESSION_FAILED, "registration is not allowed");
 			return new String[] {
 					session.getUniqueId().toString(),
@@ -913,7 +912,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (studentId == null && isAdmin())
 			studentId = request.getStudentId();
 		if (server != null) {
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true"))) return false;
+			if (server.getAcademicSession().isSectioningEnabled()) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
 			if (studentId == null)
 				throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
@@ -950,7 +949,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			studentId = request.getStudentId();
 		if (studentId == null)
 			throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled","true")))
+		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
 		return new ArrayList<Long>(server.execute(new EnrollStudent(studentId, request, currentAssignment)));
 	}
