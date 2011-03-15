@@ -412,4 +412,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Expected {0} students, but only {1} spaces are available, please try to avoid this class.")
 	String highDemand(int expected, int available);
+
+	@DefaultMessage("Course {0} is locked.")
+	String courseLocked(String course);
 }

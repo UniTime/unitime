@@ -69,7 +69,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
 		private ArrayList<String> iOverlaps = null;
-		private boolean iNotAvailable = false;
+		private boolean iNotAvailable = false, iLocked = false;
 		private String iInstead;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
@@ -105,6 +105,9 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public boolean isNotAvailable() { return iNotAvailable; }
 		public void setNotAvailable(boolean notAvailable) { iNotAvailable = notAvailable; }
 		
+		public boolean isLocked() { return iLocked; }
+		public void setLocked(boolean locked) { iLocked = locked; }
+
 		public void setInstead(String instead) { iInstead = instead; }
 		public String getInstead() { return iInstead; }
 		

@@ -320,7 +320,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
             }
         }
         
-        if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.enabled", "true"))) {
+        if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save", "false"))) {
     		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
     			public int compare(CourseDemand d1, CourseDemand d2) {
     				if (d1.isAlternative() && !d2.isAlternative()) return 1;

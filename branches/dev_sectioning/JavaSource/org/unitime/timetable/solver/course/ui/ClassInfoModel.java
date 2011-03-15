@@ -75,12 +75,14 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -271,13 +273,17 @@ public class ClassInfoModel implements Serializable {
             }
         }
         
-        //TODO: Call class assignment change when only scheduling assistant is in use (no resectioning),
-        // call offering changed in the case of online sectioning (conflicting students will get moved
-        // to other times or unassigned and put on wait-list)
-        
-        // StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
-        StudentSectioningQueue.offeringChanged(hibSession, sessionId, offeringIds);
-        
+        Session session = SessionDAO.getInstance().get(sessionId, hibSession); 
+        if (session.getStatusType().canOnlineSectionStudents()) {
+        	List<Long> unlockedOfferings = new ArrayList<Long>();
+        	for (Long offeringId: offeringIds)
+        		if (!session.isOfferingLocked(offeringId))
+        			unlockedOfferings.add(offeringId);
+        	if (!unlockedOfferings.isEmpty())
+        		StudentSectioningQueue.offeringChanged(hibSession, sessionId, offeringIds);
+        } else if (session.getStatusType().canSectionAssistStudents()) {
+        	StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        }
         hibSession.flush();
         
         return message;
