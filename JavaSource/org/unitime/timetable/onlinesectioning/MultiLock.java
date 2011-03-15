@@ -60,7 +60,7 @@ public class MultiLock {
 		return null;
 	}
 	
-	public Unlock lock(Long... ids) throws InterruptedException {
+	public Unlock lock(Long... ids) {
 		List<Long> list = new ArrayList<Long>(ids.length);
 		for (Long id: ids)
 			list.add(id);
@@ -126,6 +126,12 @@ public class MultiLock {
 		}
 	}
 
+	public void unlock(Long... ids) {
+		List<Long> list = new ArrayList<Long>(ids.length);
+		for (Long id: ids)
+			list.add(id);
+		unlock(list);
+	}
 	
 	private void unlock(Collection<Long> ids) {
 		iLock.lock();

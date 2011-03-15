@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -74,6 +75,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	
 	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
 	private MultiLock iMultiLock;
+	private Map<Long, Lock> iOfferingLocks = new Hashtable<Long, Lock>();
 	
 	OnlineSectioningServerImpl(Long sessionId) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -739,6 +741,52 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
+		}
+	}
+	
+	@Override
+	public boolean isOfferingLocked(Long offeringId) {
+		synchronized (iOfferingLocks) {
+			return iOfferingLocks.containsKey(offeringId);
+		}
+	}
+
+	@Override
+	public void lockOffering(Long offeringId) {
+		synchronized (iOfferingLocks) {
+			if (iOfferingLocks.containsKey(offeringId)) return;
+		}
+		Lock lock = iMultiLock.lock(offeringId);
+		synchronized (iOfferingLocks) {
+			if (iOfferingLocks.containsKey(offeringId))
+				lock.release();
+			else
+				iOfferingLocks.put(offeringId, lock);
+		}
+	}
+
+	@Override
+	public void unlockOffering(Long offeringId) {
+		synchronized (iOfferingLocks) {
+			Lock lock = iOfferingLocks.remove(offeringId);
+			if (lock != null)
+				lock.release();
+		}
+	}
+	
+	@Override
+	public Collection<Long> getLockedOfferings() {
+		synchronized (iOfferingLocks) {
+			return new ArrayList<Long>(iOfferingLocks.keySet());
+		}
+	}
+	
+	@Override
+	public void releaseAllOfferingLocks() {
+		synchronized (iOfferingLocks) {
+			for (Lock lock: iOfferingLocks.values())
+				lock.release();
+			iOfferingLocks.clear();
 		}
 	}
 }
