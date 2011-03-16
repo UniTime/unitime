@@ -20,15 +20,15 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Choice;
+import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.studentsct.extension.DistanceConflict;
+import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -53,6 +53,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 /**
  * @author Tomas Muller
@@ -72,18 +74,6 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 	
 	public List<Long> getOfferingIds() { return iOfferingIds; }
 	
-	public Collection<Long> getCourseIds(OnlineSectioningServer server) {
-		Set<Long> courseIds = new HashSet<Long>();
-		for (Long offeringId: getOfferingIds()) {
-			Offering offering = server.getOffering(offeringId);
-			if (offering != null) {
-				for (Course course: offering.getCourses())
-					courseIds.add(course.getId());
-			}
-		}
-		return courseIds;
-	}
-
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		helper.beginTransaction();
@@ -169,7 +159,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		}
 		
 
-		Set<Resection> queue = new TreeSet<Resection>();
+		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
 				
 		for (Student[] student: students) {
 			if (student[0] == null && student[1] == null) continue;
@@ -204,14 +194,14 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			
 			if (oldEnrollment == null) {
 				if (newRequest.getStudent().canAssign(newRequest))
-					queue.add(new Resection(newRequest, student[0], null));
+					queue.add(new SectioningRequest(newRequest, student[0], null));
 				continue;
 			}
 			
 			if (newEnrollment != null) {
 				// new enrollment is valid and / or has all the same times
 				if (check(newEnrollment)) {// || isSame(oldEnrollment, newEnrollment)) {
-					if (!isVerySame(newEnrollment, oldEnrollment))
+					if (!ResectioningWeights.isVerySame(newEnrollment, oldEnrollment))
 						server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), student[0].getRequests(), student[1].getRequests());
 					continue;
 				}
@@ -223,78 +213,88 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				newRequest.unassign(0);
 			if (newRequest.getInitialAssignment() != null)
 				newRequest.setInitialAssignment(null);
-			queue.add(new Resection(newRequest, student[0], oldEnrollment));
+			queue.add(new SectioningRequest(newRequest, student[0], oldEnrollment));
 		}
 		
-		Date ts = new Date();
-		for (Resection r: queue) {
-			helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
-			resection(r);
-			helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
-			
-			org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudent().getId(), helper.getHibSession());
-			for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
-				StudentClassEnrollment enrl = i.next();
-				if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getId())) ||
-					(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId))) {
-					helper.info("Deleting " + enrl.getClazz().getClassLabel());
-					enrl.getClazz().getStudentEnrollments().remove(enrl);
-					if (enrl.getCourseRequest() != null)
-						enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-					helper.getHibSession().delete(enrl);
-					i.remove();
+		if (!queue.isEmpty()) {
+			DataProperties properties = new DataProperties();
+			ResectioningWeights w = new ResectioningWeights(properties);
+			DistanceConflict dc = new DistanceConflict(null, properties);
+			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
+			Date ts = new Date();
+			for (SectioningRequest r: queue) {
+				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
+				Enrollment e = r.resection(w, dc, toc);
+				if (e != null) {
+					r.getRequest().setInitialAssignment(e);
+					r.getRequest().assign(0, e);
 				}
-			}
-			CourseDemand cd = null;
-			demands: for (CourseDemand x: student.getCourseDemands())
-				for (org.unitime.timetable.model.CourseRequest q: x.getCourseRequests())
-					if (q.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
-						cd = x;
-						break demands;
+				helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
+				
+				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudent().getId(), helper.getHibSession());
+				for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
+					StudentClassEnrollment enrl = i.next();
+					if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getId())) ||
+						(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId))) {
+						helper.info("Deleting " + enrl.getClazz().getClassLabel());
+						enrl.getClazz().getStudentEnrollments().remove(enrl);
+						if (enrl.getCourseRequest() != null)
+							enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+						helper.getHibSession().delete(enrl);
+						i.remove();
 					}
-			
-			if (r.getRequest().getAssignment() != null) { // save enrollment
-				org.unitime.timetable.model.CourseRequest cr = null;
-				CourseOffering co = null;
-				if (cr != null)
-					co = cr.getCourseOffering();
-				if (co == null) 
-					for (CourseOffering x: io.getCourseOfferings())
-						if (x.getUniqueId().equals(r.getRequest().getAssignment().getCourse().getId()))
-							co = x;
-				for (Section section: r.getRequest().getAssignment().getSections()) {
-					Class_ clazz = Class_DAO.getInstance().get(section.getId());
-					if (cd != null && cr == null) {
-						for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
-							if (x.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
-								cr = x; break;
-							}
+				}
+				CourseDemand cd = null;
+				demands: for (CourseDemand x: student.getCourseDemands())
+					for (org.unitime.timetable.model.CourseRequest q: x.getCourseRequests())
+						if (q.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
+							cd = x;
+							break demands;
+						}
+				
+				if (r.getRequest().getAssignment() != null) { // save enrollment
+					org.unitime.timetable.model.CourseRequest cr = null;
+					CourseOffering co = null;
+					if (cr != null)
+						co = cr.getCourseOffering();
+					if (co == null) 
+						for (CourseOffering x: io.getCourseOfferings())
+							if (x.getUniqueId().equals(r.getRequest().getAssignment().getCourse().getId()))
+								co = x;
+					for (Section section: r.getRequest().getAssignment().getSections()) {
+						Class_ clazz = Class_DAO.getInstance().get(section.getId());
+						if (cd != null && cr == null) {
+							for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
+								if (x.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
+									cr = x; break;
+								}
+						}
+						if (co == null)
+							co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+						StudentClassEnrollment enrl = new StudentClassEnrollment();
+						enrl.setClazz(clazz);
+						clazz.getStudentEnrollments().add(enrl);
+						enrl.setCourseOffering(co);
+						enrl.setCourseRequest(cr);
+						enrl.setTimestamp(ts);
+						enrl.setStudent(student);
+						student.getClassEnrollments().add(enrl);
+						helper.info("Adding " + enrl.getClazz().getClassLabel());
 					}
-					if (co == null)
-						co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
-					StudentClassEnrollment enrl = new StudentClassEnrollment();
-					enrl.setClazz(clazz);
-					clazz.getStudentEnrollments().add(enrl);
-					enrl.setCourseOffering(co);
-					enrl.setCourseRequest(cr);
-					enrl.setTimestamp(ts);
-					enrl.setStudent(student);
-					student.getClassEnrollments().add(enrl);
-					helper.info("Adding " + enrl.getClazz().getClassLabel());
+				} else if (!r.getRequest().isAlternative()) { // wait-list
+					if (cd != null && !cd.isWaitlist()) {
+						cd.setWaitlist(true);
+						helper.getHibSession().saveOrUpdate(cd);
+					}
+					r.getRequest().setWaitlist(true);
 				}
-			} else if (!r.getRequest().isAlternative()) { // wait-list
-				if (cd != null && !cd.isWaitlist()) {
-					cd.setWaitlist(true);
-					helper.getHibSession().saveOrUpdate(cd);
-				}
-				r.getRequest().setWaitlist(true);
-			}
+				
+				helper.getHibSession().save(student);
 			
-			helper.getHibSession().save(student);
-		
-			server.notifyStudentChanged(r.getRequest().getStudent().getId(),
-					r.getOldStudent() == null ? null : r.getOldStudent().getRequests(),
-					r.getRequest().getStudent().getRequests());
+				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
+						r.getOldStudent() == null ? null : r.getOldStudent().getRequests(),
+						r.getRequest().getStudent().getRequests());
+			}			
 		}
 		
      	helper.getHibSession().createQuery(
@@ -311,49 +311,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
                  setLong("offeringId", offeringId).executeUpdate();
 	}
 	
-	public static boolean sameRooms(Section s1, Section s2) {
-		if (s1.getPlacement() == null && s2.getPlacement() == null) return true;
-		if (s1.getPlacement() == null || s2.getPlacement() == null) return false;
-		return s1.getPlacement().sameRooms(s2.getPlacement());
-	}
-	
-	public static boolean sameTime(Section s1, Section s2) {
-		if (s1.getPlacement() == null && s2.getPlacement() == null) return true;
-		if (s1.getPlacement() == null || s2.getPlacement() == null) return false;
-		return s1.getPlacement().sameTime(s2.getPlacement());
-	}
-	
-	public static boolean sameChoice(Section s1, Section s2) {
-		if (s1.getChoice() == null && s2.getChoice() == null) return true;
-		if (s1.getChoice() == null || s2.getChoice() == null) return false;
-		return s1.getChoice().equals(s2.getChoice());
-	}
-
-	public static boolean sameName(Section s1, Enrollment e1, Section s2, Enrollment e2) {
-		return s1.getName(e1.getCourse().getId()).equals(s2.getName(e2.getCourse().getId()));
-	}
-
-	public static boolean isSame(Enrollment e1, Enrollment e2) {
-		if (e1.getSections().size() != e2.getSections().size()) return false;
-		s1: for (Section s1: e1.getSections()) {
-			for (Section s2: e2.getSections())
-				if (sameChoice(s1, s2)) continue s1;
-			return false;
-		}
-		return true;
-	}
-	
-	public static boolean isVerySame(Enrollment e1, Enrollment e2) {
-		if (e1.getSections().size() != e2.getSections().size()) return false;
-		s1: for (Section s1: e1.getSections()) {
-			for (Section s2: e2.getSections())
-				if (sameName(s1, e1, s2, e2) && sameTime(s1, s2) && sameRooms(s1, s2)) continue s1;
-			return false;
-		}
-		return true;
-	}
-
-	public static boolean check(Enrollment e) {
+	public boolean check(Enrollment e) {
 		if (e.getSections().size() != e.getConfig().getSubparts().size()) return false;
 		for (Section s1: e.getSections())
 			for (Section s2: e.getSections())
@@ -363,86 +321,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		}
 		return true;
 	}
-	
-	private static void resection(Resection rx) {
-		Enrollment enrollment = null;
-		int bonus = 0;
-		enrollments: for (Enrollment e: rx.getRequest().getAvaiableEnrollments()) {
-			for (Request other: rx.getRequest().getStudent().getRequests())
-				if (other.getAssignment() != null && !other.equals(rx.getRequest()) && other.getAssignment().isOverlapping(e))
-					continue enrollments;
-			int points = rx.evaluate(e); 
-			if (enrollment == null || points > bonus) {
-				enrollment = e; bonus = points;
-			}
-		}
-		if (enrollment != null) {
-			rx.getRequest().setInitialAssignment(enrollment);
-			rx.getRequest().assign(0, enrollment);
-		}
-	}
 
-	private class Resection implements Comparable<Resection> {
-		CourseRequest iRequest;
-		Student iOldStudent;
-		Enrollment iLastEnrollment;
-		
-		public Resection(CourseRequest request, Student oldStudent, Enrollment lastEnrollment) {
-			iRequest = request; iOldStudent = oldStudent; iLastEnrollment = lastEnrollment;
-		}
-		
-		public CourseRequest getRequest() { return iRequest; }
-		public Enrollment getLastEnrollment() { return iLastEnrollment; }
-		public Student getOldStudent() { return iOldStudent; }
-		
-		public int hashCode() { return new Long(getRequest().getStudent().getId()).hashCode(); }
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Resection)) return false;
-			return getRequest().getStudent().getId() == ((Resection)o).getRequest().getStudent().getId();
-		}
-		
-		public int compareTo(Resection r) {
-			// Requests with last enrollment (recently unassigned requests) have priority
-			if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
-			if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
-			
-			// Alternative requests last
-			if (getRequest().isAlternative() && !r.getRequest().isAlternative()) return 1;
-			if (!getRequest().isAlternative() && r.getRequest().isAlternative()) return -1;
-			
-			// Use priority
-			int cmp = new Integer(getRequest().getPriority()).compareTo(r.getRequest().getPriority());
-			if (cmp != 0) return cmp;
-			
-			cmp = (getRequest().getTimeStamp() != null ? getRequest().getTimeStamp() : new Long(Long.MAX_VALUE)).compareTo(
-					(r.getRequest().getTimeStamp() != null ? r.getRequest().getTimeStamp() : Long.MAX_VALUE));
-			if (cmp != 0) return cmp;
-			
-			// Do we need to consider reservations ???
-			
-			return new Long(getRequest().getStudent().getId()).compareTo(r.getRequest().getStudent().getId());
-		}
-		
-		public int evaluate(Enrollment e) {
-			int points = 0;
-			if (getLastEnrollment() != null) {
-				for (Section s1: getLastEnrollment().getSections()) {
-					for (Section s2: e.getSections()) {
-						if (sameChoice(s1, s2)) points += 10;
-						if (sameTime(s1, s2)) points += 5;
-						if (sameRooms(s1, s2)) points += 1;
-						if (sameName(s1, getLastEnrollment(), s2, e)) points += 3;
-					}
-				}
-			}
-			for (Choice c: getRequest().getSelectedChoices()) {
-				for (Section s2: e.getSections()) {
-					if (c.equals(s2.getChoice())) points += 10;
-				}
-			}
-			return points;
-		}
-	}
 		
 	@Override
     public String name() { return "reload-offering"; }
