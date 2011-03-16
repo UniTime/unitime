@@ -44,6 +44,7 @@ public class OfferingLocks extends TagSupport {
 	public String getOfferingLocksWarning(User user, Session session) {
 		if (!session.getStatusType().canOnlineSectionStudents()) return null;
 		List<InstructionalOffering> lockedOfferings = new ArrayList<InstructionalOffering>();
+		if (session.getLockedOfferings() == null) return null;
 		for (Long offeringId: session.getLockedOfferings()) {
 			InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId);
 			if (io != null && io.isLockableBy(user))
