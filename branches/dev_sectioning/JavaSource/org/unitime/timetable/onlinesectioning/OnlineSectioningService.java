@@ -141,6 +141,9 @@ public class OnlineSectioningService {
 			OnlineSectioningServerUpdater u = sUpdaters.get(academicSessionId);
 			if (u != null)
 				u.stopUpdating();
+			OnlineSectioningServer s = sInstances.get(academicSessionId);
+			if (s != null)
+				s.unload();
 			sInstances.remove(academicSessionId);
 			sUpdaters.remove(academicSessionId);
 		} finally {
