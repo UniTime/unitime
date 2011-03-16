@@ -878,7 +878,9 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public void unload() {
 		if (iExecutor != null) {
 			iExecutor.iStop = true;
-			iExecutorQueue.notify();
+			synchronized (iExecutorQueue) {
+				iExecutorQueue.notify();
+			}
 		}
 	}
 }
