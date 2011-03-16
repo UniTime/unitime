@@ -84,11 +84,15 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
     	return bestTime;
     }
 	
+	public double getBaseWeight(Enrollment enrollment) {
+		return super.getWeight(enrollment);
+	}
+	
 	@Override
 	public double getWeight(Enrollment enrollment) {
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
-		double base = super.getWeight(enrollment);
+		double base = getBaseWeight(enrollment);
 		double weight = base;
 		
 		int size = enrollment.getAssignments().size();

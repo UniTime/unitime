@@ -65,8 +65,9 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
 
 	@Override
-	public Collection<Long> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public Collection<Long> execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Set<Long> offeringIds = new HashSet<Long>();
+		List<Long> ret = new ArrayList<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (!ca.isFreeTime()) {
 				Course course = server.getCourse(ca.getCourseId());
@@ -75,7 +76,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 				if (course != null) offeringIds.add(course.getOffering().getId());
 			}
 		
-		List<Long> ret = new ArrayList<Long>();
+		Set<Long> reloadOfferingIds = new HashSet<Long>();
 		Lock lock = server.lockStudent(getStudentId(), offeringIds);
 		try {
 			helper.beginTransaction();
@@ -84,7 +85,13 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 				
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-				
+
+				net.sf.cpsolver.studentsct.model.Student st = server.getStudent(getStudentId());
+				if (st != null)
+					for (Request r: st.getRequests())
+						if (r.getAssignment() != null && r.getAssignment().isCourseRequest())
+							reloadOfferingIds.add(r.getAssignment().getCourse().getOffering().getId());
+
 				Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
 					if (ca.isFreeTime() || ca.getClassId() == null) continue;
@@ -139,7 +146,6 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 							ret.add(s.getId());
 			
 				helper.commitTransaction();
-				return ret;
 			} catch (Exception e) {
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
@@ -149,6 +155,20 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 		} finally {
 			lock.release();
 		}
+		
+		if (!reloadOfferingIds.isEmpty())
+			server.execute(new CheckOfferingAction(reloadOfferingIds), new OnlineSectioningServer.Callback<Boolean>() {
+				@Override
+				public void onFailure(Throwable exception) {
+					helper.error("Offering check failed: " + exception.getMessage(), exception);
+				}
+				@Override
+				public void onSuccess(Boolean result) {
+					helper.info("All related offerings were checked.");
+				}
+			});
+		
+		return ret;
 	}
 	
 	@Override
