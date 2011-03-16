@@ -78,7 +78,7 @@ public class StudentImport extends BaseImport {
 	            student.setSchedulePreference(new Integer(0));
 	            
 	            loadAcadAreaClassifications(element, student, session);
-	            if(!loadMajors(element, student, session)) continue;
+	            loadMajors(element, student, session);
 	            loadMinors(element, student, session);
                 
                 getHibSession().save(student);
@@ -93,8 +93,8 @@ public class StudentImport extends BaseImport {
 			throw e;
 		}
 	}
-	private boolean loadMajors(Element element, Student student, Session session) throws Exception {
-		if(element.element("studentMajors") == null) return false;
+	private void loadMajors(Element element, Student student, Session session) throws Exception {
+		if(element.element("studentMajors") == null) return;
 
 		for (Iterator it = element.element("studentMajors").elementIterator("major"); it.hasNext();) {
 			Element el = (Element) it.next();
@@ -114,11 +114,7 @@ public class StudentImport extends BaseImport {
 				student.addToPosMajors(major);
 			}
 		}
-		if(student.getPosMajors() != null) {
-			return student.getPosMajors().size() > 0;
-		} else
-			return false;
-		}
+	}
 
 	private void loadMinors(Element element, Student student, Session session) throws Exception {
 		if(element.element("studentMinors") == null) return;
