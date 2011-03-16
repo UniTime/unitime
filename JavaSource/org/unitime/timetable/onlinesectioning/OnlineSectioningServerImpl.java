@@ -26,8 +26,10 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -55,6 +57,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 
 /**
@@ -76,6 +79,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
 	private MultiLock iMultiLock;
 	private Map<Long, Lock> iOfferingLocks = new Hashtable<Long, Lock>();
+	private AsyncExecutor iExecutor;
+	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	
 	OnlineSectioningServerImpl(Long sessionId) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -87,6 +92,10 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
 			iMultiLock = new MultiLock(iAcademicSession);
 			execute(new ReloadAllData());
+			if (iAcademicSession.isSectioningEnabled())
+				execute(new CheckAllOfferingsAction());
+			iExecutor = new AsyncExecutor();
+			iExecutor.start();
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, t);
@@ -745,6 +754,36 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 	
 	@Override
+	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment) {
+		Student student = getStudent(studentId);
+		if (student != null) {
+			String message = "Student " + student.getId() + " changed.";
+			if (oldEnrollment != null) {
+				message += "\n  Previous assignment:";
+				message += "\n    " + request.getName() + (request instanceof FreeTimeRequest || oldEnrollment != null ? "" : " NOT ASSIGNED");
+				if (request instanceof CourseRequest && oldEnrollment != null) {
+					for (Section s: oldEnrollment.getSections()) {
+						message += "\n      " + s.getSubpart().getName() + " " + s.getName(oldEnrollment.getCourse().getId())
+							+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
+							+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
+					}
+				}
+			}
+			message += "\n  New schedule:";
+			message += "\n    " + request.getName() + (request instanceof FreeTimeRequest || request.getInitialAssignment() != null ? "" : " NOT ASSIGNED");
+			if (request instanceof CourseRequest && request.getInitialAssignment() != null) {
+				for (Section s: request.getInitialAssignment().getSections()) {
+					message += "\n      " + s.getSubpart().getName() + " " + s.getName(request.getInitialAssignment().getCourse().getId())
+						+ (s.getTime() == null ? "" : " " + s.getTime().getLongName())
+						+ (s.getNrRooms() == 0 ? "" : " " + s.getPlacement().getRoomName(", "));
+				}
+			}
+			iLog.info(message);
+		}
+	}
+
+	
+	@Override
 	public boolean isOfferingLocked(Long offeringId) {
 		synchronized (iOfferingLocks) {
 			return iOfferingLocks.containsKey(offeringId);
@@ -787,6 +826,59 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			for (Lock lock: iOfferingLocks.values())
 				lock.release();
 			iOfferingLocks.clear();
+		}
+	}
+
+	@Override
+	public <E> void execute(final OnlineSectioningAction<E> action, final Callback<E> callback) throws SectioningException {
+		synchronized (iExecutorQueue) {
+			iExecutorQueue.offer(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						callback.onSuccess(execute(action));
+					} catch (Throwable t) {
+						callback.onFailure(t);
+					}
+				}
+			});
+			iExecutorQueue.notify();
+		}
+	}
+	
+	public class AsyncExecutor extends Thread {
+		private boolean iStop = false;
+		
+		public AsyncExecutor() {
+			setName("AsyncExecutor[" + getAcademicSession() + "]");
+			setDaemon(true);
+		}
+		
+		public void run() {
+			Runnable job;
+			while (!iStop) {
+				synchronized (iExecutorQueue) {
+					job = iExecutorQueue.poll();
+					if (job == null) {
+						try {
+							iLog.info("Executor is waiting for a new job...");
+							iExecutorQueue.wait();
+						} catch (InterruptedException e) {}
+						continue;
+					}		
+				}
+				job.run();
+			}
+			iLog.info("Executor stopped.");
+		}
+		
+	}
+	
+	@Override
+	public void unload() {
+		if (iExecutor != null) {
+			iExecutor.iStop = true;
+			iExecutorQueue.notify();
 		}
 	}
 }

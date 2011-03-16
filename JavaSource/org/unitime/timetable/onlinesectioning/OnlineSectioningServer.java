@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
@@ -61,6 +62,7 @@ public interface OnlineSectioningServer {
 	public Collection<String> checkCourses(CourseRequestInterface req);
 	
 	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException;
+	public <E> void execute(OnlineSectioningAction<E> action, Callback<E> callback) throws SectioningException;
 	
 	public void remove(Student student);
 	public void update(Student student);
@@ -71,6 +73,7 @@ public interface OnlineSectioningServer {
 	public void clearAllStudents();
 	
 	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests);
+	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment);
 	
 	public Lock readLock();
 	public Lock lockAll();
@@ -85,7 +88,14 @@ public interface OnlineSectioningServer {
 	public Collection<Long> getLockedOfferings();
 	public void releaseAllOfferingLocks();
 	
+	public void unload();
+	
 	public static interface Lock {
 		void release();
+	}
+	
+	public static interface Callback<E> {
+		public void onFailure(Throwable exception);
+		public void onSuccess(E result);
 	}
 }
