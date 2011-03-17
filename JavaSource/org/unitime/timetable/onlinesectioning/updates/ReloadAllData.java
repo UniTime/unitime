@@ -321,6 +321,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         }
         
         if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save", "false"))) {
+        	Date ts = new Date();
     		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
     			public int compare(CourseDemand d1, CourseDemand d2) {
     				if (d1.isAlternative() && !d2.isAlternative()) return 1;
@@ -399,8 +400,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             cd.isAlternative(),
                             student,
                             courses,
-                            cd.isWaitlist() || assignedConfig != null,
-                            cd.getTimestamp().getTime());
+                            (cd.isWaitlist() != null && cd.isWaitlist()) || assignedConfig != null,
+                            (cd.getTimestamp() == null ? ts.getTime() : cd.getTimestamp().getTime()));
                     if (assignedConfig != null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
