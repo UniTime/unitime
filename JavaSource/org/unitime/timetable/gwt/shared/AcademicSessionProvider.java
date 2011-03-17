@@ -29,6 +29,8 @@ public interface AcademicSessionProvider {
 	
 	public static interface AcademicSessionChangeEvent {
 		public Long getNewAcademicSessionId();
+		public Long getOldAcademicSessionId();
+		public boolean isChanged();
 	}
 
 

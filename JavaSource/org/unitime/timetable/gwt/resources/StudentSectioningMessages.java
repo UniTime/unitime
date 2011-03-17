@@ -121,6 +121,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Saving...")
 	String courseRequestsSaving();
 
+	@DefaultMessage("Loading...")
+	String courseRequestsLoading();
+
 	@DefaultMessage("Validation failed, see above for errors.")
 	String validationFailed();
 
@@ -285,16 +288,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Student Sectioning widget messags
 	 */
-	@DefaultMessage("<u>P</u>revious")
-	String buttonPrev();
+	@DefaultMessage("<u>R</u>equests")
+	String buttonRequests();
 	
-	@DefaultMessage("<u>N</u>ext")
-	String buttonNext();
+	@DefaultMessage("Re-schedule")
+	String buttonReset();
+
+	@DefaultMessage("<u>S</u>chedule")
+	String buttonSchedule();
 	
 	@DefaultMessage("<u>E</u>nroll")
 	String buttonEnroll();
 	
-	@DefaultMessage("P<u>r</u>int")
+	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
 	
 	@DefaultMessage("E<u>x</u>port")

@@ -857,16 +857,22 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return request;
 	}
 	
-	public ArrayList<ClassAssignmentInterface.ClassAssignment> lastResult(Long sessionId) throws SectioningException {
+	public ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException {
 		Long studentId = getStudentId(sessionId);
 		if (studentId == null) throw new SectioningException(SectioningExceptionType.NO_STUDENT);
 		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 		try {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 			if (server == null) throw new SectioningException(SectioningExceptionType.BAD_SESSION);
-			ArrayList<ClassAssignmentInterface.ClassAssignment> ret = server.getAssignment(studentId);
+			ClassAssignmentInterface ret = server.getAssignment(studentId);
 			if (ret == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-			if (!ret.isEmpty()) return ret;
+			ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
+			if (ret.isCanEnroll()) {
+				UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+				if (principal == null || principal.getStudentId(sessionId) == null)
+					ret.setCanEnroll(false);
+			}
+			if (!ret.getCourseAssignments().isEmpty()) return ret;
 			/*
 			Student student = StudentDAO.getInstance().get(studentId, hibSession);
 			if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
