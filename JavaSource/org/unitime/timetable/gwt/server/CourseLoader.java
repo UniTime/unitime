@@ -349,7 +349,7 @@ public class CourseLoader {
                             cd.isAlternative(),
                             student,
                             courses,
-                            cd.isWaitlist());
+                            cd.isWaitlist() != null && cd.isWaitlist());
                     if (assignedConfig!=null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);
