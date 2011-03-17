@@ -83,7 +83,7 @@ public class StudentSectioningWidget extends Composite {
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
-	private Button iPrev, iNext, iEnroll, iPrint, iExport, iSave;
+	private Button iRequests, iReset, iSchedule, iEnroll, iPrint, iExport, iSave;
 	private HTML iErrorMessage;
 	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
@@ -113,11 +113,19 @@ public class StudentSectioningWidget extends Composite {
 		iFooter = new HorizontalPanel();
 		iFooter.setStyleName("unitime-MainTableBottomHeader");
 		
-		iPrev = new Button(MESSAGES.buttonPrev());
-		iPrev.setWidth("75");
-		iPrev.setAccessKey('p');
-		iPrev.setVisible(false);
-		iFooter.add(iPrev);
+		HorizontalPanel leftFooterPanel = new HorizontalPanel();
+		iRequests = new Button(MESSAGES.buttonRequests());
+		iRequests.setWidth("75");
+		iRequests.setAccessKey('r');
+		iRequests.setVisible(false);
+		leftFooterPanel.add(iRequests);
+
+		iReset = new Button(MESSAGES.buttonReset());
+		iReset.setWidth("95");
+		iReset.setVisible(false);
+		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
+		leftFooterPanel.add(iReset);
+		iFooter.add(leftFooterPanel);
 
 		iErrorMessage = new HTML();
 		iErrorMessage.setWidth("100%");
@@ -129,16 +137,18 @@ public class StudentSectioningWidget extends Composite {
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 
 
-		iNext = new Button(MESSAGES.buttonNext());
-		iNext.setWidth("75");
-		iNext.setAccessKey('n');
-		rightFooterPanel.add(iNext);
-		iNext.setVisible(mode.isSectioning());
+		iSchedule = new Button(MESSAGES.buttonSchedule());
+		iSchedule.setWidth("75");
+		iSchedule.setAccessKey('s');
+		if (mode.isSectioning())
+			rightFooterPanel.add(iSchedule);
+		iSchedule.setVisible(mode.isSectioning());
 		
 		iSave = new Button(MESSAGES.buttonSave());
 		iSave.setWidth("75");
 		iSave.setAccessKey('s');
-		rightFooterPanel.add(iSave);
+		if (!mode.isSectioning())
+			rightFooterPanel.add(iSave);
 		iSave.setVisible(!mode.isSectioning());
 
 		iEnroll = new Button(MESSAGES.buttonEnroll());
@@ -150,7 +160,7 @@ public class StudentSectioningWidget extends Composite {
 
 		iPrint = new Button(MESSAGES.buttonPrint());
 		iPrint.setWidth("75");
-		iPrint.setAccessKey('r');
+		iPrint.setAccessKey('p');
 		iPrint.setVisible(false);
 		iPrint.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iPrint);
@@ -242,14 +252,34 @@ public class StudentSectioningWidget extends Composite {
 		iAssignmentPanelWithFocus = new FocusPanel(iAssignmentPanel);
 		iAssignmentPanelWithFocus.setStyleName("unitime-FocusPanel");
 		
-		iPrev.addClickHandler(new ClickHandler() {
+		iRequests.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				prev();
 				addHistory();
 			}
 		});
 		
-		iNext.addClickHandler(new ClickHandler() {
+		iReset.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iErrorMessage.setHTML("");
+				LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+				iSectioningService.section(iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
+					public void onFailure(Throwable caught) {
+						iErrorMessage.setHTML(caught.getMessage());
+						iErrorMessage.setVisible(true);
+						LoadingWidget.getInstance().hide();
+						updateHistory();
+					}
+					public void onSuccess(ClassAssignmentInterface result) {
+						fillIn(result);
+						addHistory();
+					}
+				});
+			}
+		});
+		
+		iSchedule.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCourseRequests.changeTip();
 				iErrorMessage.setHTML("");
@@ -324,6 +354,7 @@ public class StudentSectioningWidget extends Composite {
 		
 		iAssignments.addRowClickHandler(new WebTable.RowClickHandler() {
 			public void onRowClick(WebTable.RowClickEvent event) {
+				if (iLastResult.get(event.getRowIdx()) == null) return;
 				updateHistory();
 				showSuggestionsAsync(event.getRowIdx());
 			}
@@ -411,7 +442,7 @@ public class StudentSectioningWidget extends Composite {
 					if (item >= 0) iHistory.get(item).restore();
 				} else {
 					iCourseRequests.clear();
-					if (!iNext.isVisible()) prev();
+					if (!iSchedule.isVisible()) prev();
 				}
 			}
 		});
@@ -627,11 +658,12 @@ public class StudentSectioningWidget extends Composite {
 				LoadingWidget.getInstance().hide();
 			iPanel.remove(iCourseRequests);
 			iPanel.insert(iAssignmentPanelWithFocus, 0);
-			iPrev.setVisible(true);
+			iRequests.setVisible(true);
+			iReset.setVisible(true);
 			iEnroll.setVisible(result.isCanEnroll());
 			iPrint.setVisible(true);
 			iExport.setVisible(true);
-			iNext.setVisible(false);
+			iSchedule.setVisible(false);
 			iAssignmentGrid.scrollDown();
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -654,35 +686,75 @@ public class StudentSectioningWidget extends Composite {
 	public void prev() {
 		iPanel.remove(iAssignmentPanelWithFocus);
 		iPanel.insert(iCourseRequests, 0);
-		iPrev.setVisible(false);
+		iRequests.setVisible(false);
+		iReset.setVisible(false);
 		iEnroll.setVisible(false);
 		iPrint.setVisible(false);
 		iExport.setVisible(false);
-		iNext.setVisible(true);
+		iSchedule.setVisible(true);
 		iErrorMessage.setVisible(false);
 	}
 	
 	public void clear() {
 		iCourseRequests.clear();
 		iLastResult.clear();
-		if (iPrev.isVisible()) {
+		if (iRequests.isVisible()) {
 			prev();
 		}
 	}
 	
 	public void lastRequest(Long sessionId) {
+		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		iSectioningService.lastRequest(sessionId, new AsyncCallback<CourseRequestInterface>() {
-			public void onFailure(Throwable caught) { }
-			public void onSuccess(CourseRequestInterface result) {
-				iCourseRequests.setRequest(result);
-				iSectioningService.lastResult(result.getAcademicSessionId(), new AsyncCallback<ArrayList<ClassAssignmentInterface.ClassAssignment>>() {
-					public void onFailure(Throwable caught) {}
-					public void onSuccess(ArrayList<ClassAssignmentInterface.ClassAssignment> result) {
-						if (iNext.isVisible()) {
-							iLastResult.clear(); iLastResult.addAll(result);
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+			}
+			public void onSuccess(final CourseRequestInterface request) {
+				if (request.isSaved() && request.getCourses().isEmpty()) {
+					LoadingWidget.getInstance().hide();
+					return;
+				}
+				clear();
+				iCourseRequests.setRequest(request);
+				if (iSchedule.isVisible()) {
+					iSectioningService.lastResult(request.getAcademicSessionId(), new AsyncCallback<ClassAssignmentInterface>() {
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
 						}
-					}
-				});
+						public void onSuccess(final ClassAssignmentInterface saved) {
+							if (request.isSaved()) {
+								fillIn(saved);
+								addHistory();
+							} else {
+								iCourseRequests.validate(new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+									}
+									@Override
+									public void onSuccess(Boolean result) {
+										if (result) {
+											ArrayList<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+											for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments())
+												classes.addAll(course.getClassAssignments());
+											iSectioningService.section(request, classes, new AsyncCallback<ClassAssignmentInterface>() {
+												public void onFailure(Throwable caught) {
+													LoadingWidget.getInstance().hide();
+												}
+												public void onSuccess(ClassAssignmentInterface result) {
+													fillIn(result);
+													addHistory();
+												}
+											});
+										} else {
+											LoadingWidget.getInstance().hide();
+										}
+									}
+								});
+							}
+						}
+					});
+				}
 			}
 		});
 	}
@@ -714,7 +786,7 @@ public class StudentSectioningWidget extends Composite {
 		private HistoryItem() {
 			iRequest = iCourseRequests.getRequest();
 			iAssignment = iLastAssignment;
-			iFirstPage = iNext.isVisible();
+			iFirstPage = iSchedule.isVisible();
 			iSessionId = iSessionSelector.getAcademicSessionId();
 			iUser = iUserAuthentication.getUser();
 			if (iErrorMessage.isVisible()) iError = iErrorMessage.getHTML();
@@ -733,7 +805,7 @@ public class StudentSectioningWidget extends Composite {
 									if (iTab != iAssignmentTab)
 										iAssignmentPanel.selectTab(iTab);
 									if (iFirstPage) {
-										if (!iNext.isVisible()) prev();
+										if (!iSchedule.isVisible()) prev();
 										iCourseRequests.changeTip();
 									} else {
 										if (iAssignment != null) fillIn(iAssignment);

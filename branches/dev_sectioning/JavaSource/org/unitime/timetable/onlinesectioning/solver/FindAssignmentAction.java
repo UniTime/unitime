@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -129,37 +128,38 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				HashSet<Section> preferredSections = new HashSet<Section>();
-				HashSet<Section> requiredSections = new HashSet<Section>();
-				a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-					if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
-						Section section = cr.getSection(a.getClassId());
-						if (section == null || section.getLimit() == 0) {
-							continue a;
+		if (getAssignment() != null)
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					HashSet<Section> preferredSections = new HashSet<Section>();
+					HashSet<Section> requiredSections = new HashSet<Section>();
+					a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
+						if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+							Section section = cr.getSection(a.getClassId());
+							if (section == null || section.getLimit() == 0) {
+								continue a;
+							}
+							if (a.isPinned())
+								requiredSections.add(section);
+							preferredSections.add(section);
+							cr.getSelectedChoices().add(section.getChoice());
 						}
-						if (a.isPinned() || a.isSaved()) 
-							requiredSections.add(section);
-						preferredSections.add(section);
-						cr.getSelectedChoices().add(section.getChoice());
+					}
+					preferredSectionsForCourse.put(cr, preferredSections);
+					requiredSectionsForCourse.put(cr, requiredSections);
+				} else {
+					FreeTimeRequest ft = (FreeTimeRequest)r;
+					for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
+						if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+							ft.getTime().getStartSlot() == a.getStart() &&
+							ft.getTime().getLength() == a.getLength() && 
+							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
+							requiredFreeTimes.add(ft);
 					}
 				}
-				preferredSectionsForCourse.put(cr, preferredSections);
-				requiredSectionsForCourse.put(cr, requiredSections);
-			} else {
-				FreeTimeRequest ft = (FreeTimeRequest)r;
-				for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-					if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
-						ft.getTime().getStartSlot() == a.getStart() &&
-						ft.getTime().getLength() == a.getLength() && 
-						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
-						requiredFreeTimes.add(ft);
-				}
 			}
-		}
 		long t1 = System.currentTimeMillis();
 		
         SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
@@ -544,7 +544,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
 							Section s = j.next();
 							if (s == section || s.getTime() == null) continue;
-							int d = distance(server, s, section);
+							int d = server.distance(s, section);
 							if (d > dist) {
 								dist = d;
 								from = "";
@@ -603,23 +603,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         
         return convert(server, enrollments, requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), savedClasses);
 	}
-    
-	private int distance(OnlineSectioningServer server, Section s1, Section s2) {
-        if (s1.getPlacement()==null || s2.getPlacement()==null) return 0;
-        TimeLocation t1 = s1.getTime();
-        TimeLocation t2 = s2.getTime();
-        if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
-        int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
-        if (a1+t1.getNrSlotsPerMeeting()==a2) {
-            return Placement.getDistanceInMinutes(server.getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
-        }
-        /*
-        else if (a2+t2.getNrSlotsPerMeeting()==a1) {
-        	return Placement.getDistance(s1.getPlacement(), s2.getPlacement());
-        }
-        */
-        return 0;
-    }
 	
 	@Override
 	public String name() {

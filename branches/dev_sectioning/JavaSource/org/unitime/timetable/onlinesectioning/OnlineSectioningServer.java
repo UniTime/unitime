@@ -20,7 +20,6 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,7 +42,7 @@ public interface OnlineSectioningServer {
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
 	
-	public ArrayList<ClassAssignmentInterface.ClassAssignment> getAssignment(Long studentId);
+	public ClassAssignmentInterface getAssignment(Long studentId);
 	public CourseRequestInterface getRequest(Long studentId);
 	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
@@ -87,6 +86,8 @@ public interface OnlineSectioningServer {
 	public void unlockOffering(Long offeringId);
 	public Collection<Long> getLockedOfferings();
 	public void releaseAllOfferingLocks();
+	
+	public int distance(Section s1, Section s2);
 	
 	public void unload();
 	

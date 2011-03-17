@@ -47,7 +47,7 @@ public interface SectioningService extends RemoteService {
 	String whoAmI() throws SectioningException;
 	String[] lastAcademicSession(boolean sectioning) throws SectioningException;
 	CourseRequestInterface lastRequest(Long sessionId) throws SectioningException;
-	ArrayList<ClassAssignmentInterface.ClassAssignment> lastResult(Long sessionId) throws SectioningException;
+	ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException;
 	ArrayList<Long> enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException;
 	public Boolean isAdmin() throws SectioningException;
