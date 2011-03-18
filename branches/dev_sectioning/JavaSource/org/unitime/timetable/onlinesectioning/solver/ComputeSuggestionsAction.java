@@ -126,7 +126,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				HashSet<Section> preferredSections = new HashSet<Section>();
 				HashSet<Section> requiredSections = new HashSet<Section>();
 				a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-					if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+					if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 						Section section = cr.getSection(a.getClassId());
 						if (section == null || section.getLimit() == 0) {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
@@ -148,7 +148,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(getSelection().getDays())))
 					selectedRequest = r;
 				for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-					if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+					if (a != null && a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
 						ft.getTime().getStartSlot() == a.getStart() &&
 						ft.getTime().getLength() == a.getLength() && 
 						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
@@ -166,7 +166,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
 
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-        	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, false, model.getDistanceConflict(), enrolled));
+        	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled));
         }
         
 		long t4 = System.currentTimeMillis();

@@ -289,9 +289,9 @@ public class OnlineSectioningTest extends Composite {
 													@Override
 													public void execute(List<ClassAssignmentInterface> success, Throwable failure) {
 														final long T3 = new Date().getTime();
-														enroll(request, assignment, new Callback<ArrayList<Long>>() {
+														enroll(request, assignment, new Callback<ClassAssignmentInterface>() {
 															@Override
-															public void execute(ArrayList<Long> success, Throwable failure) {
+															public void execute(ClassAssignmentInterface success, Throwable failure) {
 																final long T4 = new Date().getTime();
 																info("Run completed in " + iAvgF.format(0.001 * (T4 - T0)) + " s " + courses + ".");
 																iTotal += (T4 - T0);
@@ -318,7 +318,7 @@ public class OnlineSectioningTest extends Composite {
 			}
 		}
 		
-		public void enroll(final CourseRequestInterface request, final ClassAssignmentInterface assignment, final Callback<ArrayList<Long>> callback) {
+		public void enroll(final CourseRequestInterface request, final ClassAssignmentInterface assignment, final Callback<ClassAssignmentInterface> callback) {
 			if (request.getStudentId() == null) {
 				callback.execute(null, null);
 				return;
@@ -326,7 +326,7 @@ public class OnlineSectioningTest extends Composite {
 			ArrayList<ClassAssignment> assignments = new ArrayList<ClassAssignment>();
 			for (CourseAssignment cx: assignment.getCourseAssignments())
 				assignments.addAll(cx.getClassAssignments());
-			iSectioningService.enroll(request, assignments, new AsyncCallback<ArrayList<Long>>() {
+			iSectioningService.enroll(request, assignments, new AsyncCallback<ClassAssignmentInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;enroll(" + assignment.getCourseAssignments() + ") failed: " + caught.getMessage());
@@ -334,7 +334,7 @@ public class OnlineSectioningTest extends Composite {
 				}
 
 				@Override
-				public void onSuccess(ArrayList<Long> result) {
+				public void onSuccess(ClassAssignmentInterface result) {
 					callback.execute(result, null);
 				}
 			});

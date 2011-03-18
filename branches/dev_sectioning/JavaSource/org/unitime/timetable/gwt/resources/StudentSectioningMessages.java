@@ -404,6 +404,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not available.")
 	String classNotAvailable();
 	
+	@DefaultMessage("Not assigned.")
+	String courseNotAssigned();
+
 	@DefaultMessage("Conflicts with ")
 	String conflictWith();
 
@@ -421,4 +424,16 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Course {0} is locked.")
 	String courseLocked(String course);
+	
+	@DefaultMessage("You are currently enrolled in {0}.")
+	String saved(String clazz);
+
+	@DefaultMessage("You are currently enrolled in {0}, this enrollment will get dropped.")
+	String unassignment(String clazz);
+
+	@DefaultMessage("You are currently not enrolled in {0}.")
+	String assignment(String clazz);
+	
+	@DefaultMessage("Show unassignments")
+	String showUnassignments();
 }

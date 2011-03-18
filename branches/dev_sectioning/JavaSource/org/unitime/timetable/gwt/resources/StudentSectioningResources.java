@@ -88,4 +88,10 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/group.png")
 	ImageResource highDemand();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/action_delete.png")
+	ImageResource unassignment();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/action_add.png")
+	ImageResource assignment();
 }

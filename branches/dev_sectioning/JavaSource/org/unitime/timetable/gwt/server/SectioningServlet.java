@@ -945,7 +945,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public ArrayList<Long> enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
+	public ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException {
 		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
 		if (principal == null) throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AUTHENTICATED);
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
@@ -957,7 +957,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			throw new SectioningException(SectioningExceptionType.ENROLL_NOT_STUDENT, server.getAcademicSession().toString());
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
-		return new ArrayList<Long>(server.execute(new EnrollStudent(studentId, request, currentAssignment)));
+		return server.execute(new EnrollStudent(studentId, request, currentAssignment));
 	}
 
 	public Boolean isAdmin() throws SectioningException {

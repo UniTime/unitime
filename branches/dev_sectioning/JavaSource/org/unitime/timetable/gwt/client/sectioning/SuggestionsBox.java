@@ -133,11 +133,13 @@ public class SuggestionsBox extends DialogBox {
 							ArrayList<ClassAssignmentInterface.ClassAssignment> sameCourse = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 							if (!course.isFreeTime()) {
 								for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+									if (x == null) continue;
 									if (course.getCourseId().equals(x.getCourseId())) sameCourse.add(x);
 								}
 							} else {
 								ClassAssignmentInterface.ClassAssignment clazz = course.getClassAssignments().get(0);
 								for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+									if (x == null) continue;
 									if (x.isFreeTime() && x.getDaysString(CONSTANTS.shortDays()).equals(clazz.getDaysString(CONSTANTS.shortDays())) && x.getStart() == clazz.getStart() && x.getLength() == clazz.getLength()) sameCourse.add(x);
 								}
 							}
@@ -168,6 +170,7 @@ public class SuggestionsBox extends DialogBox {
 									if (selectSubpart != null) selected = selectSubpart.equals(clazz.getSubpart());
 									ClassAssignmentInterface.ClassAssignment old = null;
 									for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+										if (x == null) continue;
 										if (course.isFreeTime()) {
 											if (x.isFreeTime() && x.isCourseAssigned() && x.getDaysString(CONSTANTS.shortDays()).equals(clazz.getDaysString(CONSTANTS.shortDays())) &&
 												x.getStart() == clazz.getStart() && x.getLength() == clazz.getLength()) continue clazz;
@@ -269,7 +272,7 @@ public class SuggestionsBox extends DialogBox {
 						}
 						Long lastCourseId = null;
 						current: for (ClassAssignmentInterface.ClassAssignment old: iCurrent) {
-							if (old.isFreeTime()) continue;
+							if (old == null || old.isFreeTime()) continue;
 							for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
 								if (old.getCourseId().equals(course.getCourseId())) continue current;
 							}
