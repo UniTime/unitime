@@ -136,7 +136,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					HashSet<Section> preferredSections = new HashSet<Section>();
 					HashSet<Section> requiredSections = new HashSet<Section>();
 					a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-						if (!a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+						if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 							Section section = cr.getSection(a.getClassId());
 							if (section == null || section.getLimit() == 0) {
 								continue a;
@@ -152,7 +152,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				} else {
 					FreeTimeRequest ft = (FreeTimeRequest)r;
 					for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-						if (a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+						if (a != null && a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
 							ft.getTime().getStartSlot() == a.getStart() &&
 							ft.getTime().getLength() == a.getLength() && 
 							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))

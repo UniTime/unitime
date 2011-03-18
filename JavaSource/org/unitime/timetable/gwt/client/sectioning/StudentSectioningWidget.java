@@ -53,6 +53,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -93,9 +94,10 @@ public class StudentSectioningWidget extends Composite {
 	private WebTable iAssignments;
 	private TimeGrid iAssignmentGrid;
 	private SuggestionsBox iSuggestionsBox;
+	private CheckBox iShowUnassignments;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult;
-	private ClassAssignmentInterface iLastAssignment;
+	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null;
 	private ArrayList<HistoryItem> iHistory = new ArrayList<HistoryItem>();
 	private int iAssignmentTab = 0;
 	private boolean iInRestore = false;
@@ -234,8 +236,20 @@ public class StudentSectioningWidget extends Composite {
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
 			));
 		
+		VerticalPanel vp = new VerticalPanel();
+		vp.add(iAssignments);
+
+		iShowUnassignments = new CheckBox(MESSAGES.showUnassignments());
+		iShowUnassignments.getElement().getStyle().setMarginTop(2, Unit.PX);
+		vp.add(iShowUnassignments);
+		vp.setCellHorizontalAlignment(iShowUnassignments, HasHorizontalAlignment.ALIGN_RIGHT);
+		iShowUnassignments.setVisible(false);		
+		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
+		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
+		
+		
 		iAssignmentPanel = new UniTimeTabPanel();
-		iAssignmentPanel.add(iAssignments, MESSAGES.tabClasses(), true);
+		iAssignmentPanel.add(vp, MESSAGES.tabClasses(), true);
 		iAssignmentPanel.selectTab(0);
 		
 		iAssignmentGrid = new TimeGrid();
@@ -332,10 +346,14 @@ public class StudentSectioningWidget extends Composite {
 		iAssignmentPanelWithFocus.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode()==KeyCodes.KEY_DOWN) {
-					iAssignments.setSelectedRow(iAssignments.getSelectedRow()+1);
+					do {
+						iAssignments.setSelectedRow(iAssignments.getSelectedRow()+1);
+					} while (iAssignments.getRows()[iAssignments.getSelectedRow()] != null && !iAssignments.getRows()[iAssignments.getSelectedRow()].isSelectable());
 				}
 				if (event.getNativeKeyCode()==KeyCodes.KEY_UP) {
-					iAssignments.setSelectedRow(iAssignments.getSelectedRow()==0?iAssignments.getRowsCount()-1:iAssignments.getSelectedRow()-1);
+					do {
+						iAssignments.setSelectedRow(iAssignments.getSelectedRow()==0?iAssignments.getRowsCount()-1:iAssignments.getSelectedRow()-1);
+					} while (iAssignments.getRows()[iAssignments.getSelectedRow()] != null && !iAssignments.getRows()[iAssignments.getSelectedRow()].isSelectable());
 				}
 				if (event.getNativeKeyCode()==KeyCodes.KEY_ENTER) {
 					updateHistory();
@@ -378,23 +396,11 @@ public class StudentSectioningWidget extends Composite {
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				LoadingWidget.getInstance().show("Enrolling...");
-				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ArrayList<Long>>() {
-					public void onSuccess(ArrayList<Long> result) {
+				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+					public void onSuccess(ClassAssignmentInterface result) {
 						LoadingWidget.getInstance().hide();
-						int idx = 0;
-						for (ClassAssignmentInterface.ClassAssignment ca: iLastResult) {
-							if (ca.getClassId() != null) {
-								ca.setSaved(result.contains(ca.getClassId()));
-								WebTable.Row row = iAssignments.getRows()[idx];
-								WebTable.Cell c = (ca.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell(""));
-								c.setStyleName(row.getCell(row.getNrCells() - 1).getStyleName());
-								row.setCell(row.getNrCells() - 2, c);
-								ArrayList<Meeting> meetings = iAssignmentGrid.getMeetings(idx);
-								if (meetings != null)
-									for (TimeGrid.Meeting m: meetings) m.setSaved(ca.isSaved());
-							}
-							idx++;
-						}
+						iSavedAssignment = result;
+						fillIn(result);
 						iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.enrollOK() + "</font>");
 						iErrorMessage.setVisible(true);
 						updateHistory();
@@ -413,7 +419,7 @@ public class StudentSectioningWidget extends Composite {
 			public void onClick(ClickEvent event) {
 				boolean allSaved = true;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iLastResult) {
-					if (!clazz.isFreeTime() && clazz.isAssigned() && !clazz.isSaved()) allSaved = false;
+					if (clazz != null && !clazz.isFreeTime() && clazz.isAssigned() && !clazz.isSaved()) allSaved = false;
 				}
 				ToolBox.print((allSaved ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
 						(CONSTANTS.printReportShowUserName() ? iUserAuthentication.getUser() : ""),
@@ -494,6 +500,14 @@ public class StudentSectioningWidget extends Composite {
 				});
 			}
 		});
+		
+		iShowUnassignments.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				Cookies.setCookie("UniTime:Unassignments", "1");
+				fillIn(iLastAssignment);
+			}
+		});
 	}
 	
 	public void openSuggestionsBox(int rowIndex) {
@@ -556,7 +570,8 @@ public class StudentSectioningWidget extends Composite {
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 								new WebTable.Cell(clazz.getParentSection()),
-								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
+								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : 
+								 clazz.isFreeTime() || !result.isCanEnroll() ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null)),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 						final ArrayList<TimeGrid.Meeting> meetings = (clazz.isFreeTime() ? null : iAssignmentGrid.addClass(clazz, rows.size()));
 						// row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString() + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
@@ -583,7 +598,7 @@ public class StudentSectioningWidget extends Composite {
 				} else {
 					String style = "unitime-ClassRowRed" + (!rows.isEmpty() ? "First": "");
 					WebTable.Row row = null;
-					String unassignedMessage = "";
+					String unassignedMessage = MESSAGES.courseNotAssigned();
 					if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 						unassignedMessage = MESSAGES.conflictWith();
 						for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
@@ -632,6 +647,70 @@ public class StudentSectioningWidget extends Composite {
 						cell.setStyleName(style);
 					row.getCell(row.getNrCells() - 1).setStyleName("unitime-ClassRowProblem" + (!rows.isEmpty() ? "First": ""));
 					rows.add(row);
+				}
+				if (iSavedAssignment != null && !course.isFreeTime() && iShowUnassignments.getValue()) {
+					for (ClassAssignmentInterface.CourseAssignment saved: iSavedAssignment.getCourseAssignments()) {
+						if (!saved.isAssigned() || saved.isFreeTime() || !course.getCourseId().equals(saved.getCourseId())) continue;
+						classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
+							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
+								if (clazz.getClassId().equals(x.getClassId())) continue classes;
+							String style = "unitime-ClassRowUnused";
+							WebTable.Row row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(""),
+									new WebTable.Cell(""),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+									new WebTable.Cell(clazz.getStartString()),
+									new WebTable.Cell(clazz.getEndString()),
+									new WebTable.Cell(clazz.getDatePattern()),
+									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+									new WebTable.Cell(clazz.getParentSection()),
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+							rows.add(row);
+							row.setSelectable(false);
+							iLastResult.add(null);
+							for (WebTable.Cell cell: row.getCells())
+								cell.setStyleName(style);
+						}
+					}
+				}
+			}
+			if (iSavedAssignment != null && iShowUnassignments.getValue()) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime()) continue;
+					for (ClassAssignmentInterface.CourseAssignment x: result.getCourseAssignments())
+						if (course.getCourseId().equals(x.getCourseId())) continue courses;
+					boolean firstClazz = true;
+					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+						String style = "unitime-ClassRowUnused" + (firstClazz && !rows.isEmpty() ? "First": "");
+						WebTable.Row row = new WebTable.Row(
+								new WebTable.Cell(null),
+								new WebTable.Cell(firstClazz ? course.getSubject() : ""),
+								new WebTable.Cell(firstClazz ? course.getCourseNbr() : ""),
+								new WebTable.Cell(clazz.getSubpart()),
+								new WebTable.Cell(clazz.getSection()),
+								new WebTable.Cell(clazz.getLimitString()),
+								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+								new WebTable.Cell(clazz.getStartString()),
+								new WebTable.Cell(clazz.getEndString()),
+								new WebTable.Cell(clazz.getDatePattern()),
+								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+								new WebTable.Cell(clazz.getParentSection()),
+								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						rows.add(row);
+						row.setSelectable(false);
+						iLastResult.add(null);
+						for (WebTable.Cell cell: row.getCells())
+							cell.setStyleName(style);
+						firstClazz = false;
+					}
 				}
 			}
 			for (CourseRequestInterface.Request r: req.getCourses()) {
@@ -696,6 +775,9 @@ public class StudentSectioningWidget extends Composite {
 	}
 	
 	public void clear() {
+		if (iShowUnassignments != null)
+			iShowUnassignments.setVisible(false);
+		iSavedAssignment = null;
 		iCourseRequests.clear();
 		iLastResult.clear();
 		if (iRequests.isVisible()) {
@@ -722,6 +804,8 @@ public class StudentSectioningWidget extends Composite {
 							LoadingWidget.getInstance().hide();
 						}
 						public void onSuccess(final ClassAssignmentInterface saved) {
+							iSavedAssignment = saved;
+							iShowUnassignments.setVisible(true);
 							if (request.isSaved()) {
 								fillIn(saved);
 								addHistory();
@@ -754,6 +838,8 @@ public class StudentSectioningWidget extends Composite {
 							}
 						}
 					});
+				} else {
+					LoadingWidget.getInstance().hide();
 				}
 			}
 		});

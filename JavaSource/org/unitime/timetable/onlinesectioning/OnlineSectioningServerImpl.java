@@ -341,6 +341,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						overlaps: for (Request q: student.getRequests()) {
 							if (q.equals(request)) continue;
 							Enrollment x = q.getAssignment();
+							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 					        for (Iterator<Assignment> i = x.getAssignments().iterator(); i.hasNext();) {
 					        	Assignment a = i.next();
 								if (r.isOverlapping(a)) {

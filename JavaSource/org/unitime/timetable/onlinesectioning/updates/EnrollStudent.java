@@ -18,8 +18,6 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -29,7 +27,6 @@ import java.util.Set;
 
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -49,7 +46,7 @@ import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 /**
  * @author Tomas Muller
  */
-public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
+public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInterface> {
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
@@ -65,11 +62,10 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
 
 	@Override
-	public Collection<Long> execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Set<Long> offeringIds = new HashSet<Long>();
-		List<Long> ret = new ArrayList<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
-			if (!ca.isFreeTime()) {
+			if (ca != null && !ca.isFreeTime()) {
 				Course course = server.getCourse(ca.getCourseId());
 				if (server.isOfferingLocked(course.getOffering().getId()))
 					throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
@@ -94,7 +90,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 
 				Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca.isFreeTime() || ca.getClassId() == null) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 					Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), helper.getHibSession());
 					if (clazz == null)
 						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
@@ -105,7 +101,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 				Date ts = new Date();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca.isFreeTime() || ca.getClassId() == null) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 					Class_ clazz = classes.get(ca.getClassId());
 					org.unitime.timetable.model.CourseRequest cr = req.get(ca.getCourseId());
 					if (clazz == null || cr == null) continue;
@@ -140,11 +136,6 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 				}
 				server.notifyStudentChanged(getStudentId(), oldStudent.getRequests(), newStudent.getRequests());
 				
-				for (Request r: server.getStudent(getStudentId()).getRequests())
-					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
-						for (Section s: r.getInitialAssignment().getSections())
-							ret.add(s.getId());
-			
 				helper.commitTransaction();
 			} catch (Exception e) {
 				helper.rollbackTransaction();
@@ -168,7 +159,7 @@ public class EnrollStudent implements OnlineSectioningAction<Collection<Long>> {
 				}
 			});
 		
-		return ret;
+		return server.getAssignment(getStudentId());
 	}
 	
 	@Override
