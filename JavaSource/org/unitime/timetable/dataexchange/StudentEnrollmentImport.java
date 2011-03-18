@@ -36,6 +36,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.test.UpdateExamConflicts;
 
 public class StudentEnrollmentImport extends BaseImport {
@@ -202,14 +203,17 @@ public class StudentEnrollmentImport extends BaseImport {
         }
 
         if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","true"))){
+        	org.hibernate.Session hibSession = new _RootDAO().createNewSession();
             try {
                 info("  Updating class enrollments...");
-                Class_.updateClassEnrollmentForSession(session, getHibSession());
+                Class_.updateClassEnrollmentForSession(session, hibSession);
                 info("  Updating course offering enrollments...");
-                CourseOffering.updateCourseOfferingEnrollmentForSession(session, getHibSession());
+                CourseOffering.updateCourseOfferingEnrollmentForSession(session, hibSession);
             } catch (Exception e) {
                 fatal("Exception: " + e.getMessage(), e);
-            } 
+            } finally {
+            	hibSession.close();
+            }
         }
 	}
 	
