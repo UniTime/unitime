@@ -254,8 +254,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 									}
 								}
 							}
-							if (avEnrls.isEmpty()) ca.setNotAvailable(true);
 						}
+						if (avEnrls.isEmpty()) ca.setNotAvailable(true);
 					} else {
 						if (r.isAlternative() && r.isAssigned()) nrAssignedAlt++;
 						TreeSet<Section> sections = new TreeSet<Section>(new EnrollmentSectionComparator());
@@ -793,6 +793,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 	}
 	
+	@Override
 	public Lock readLock() {
 		iLock.readLock().lock();
 		return new Lock() {
@@ -802,6 +803,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		};
 	}
 
+	@Override
 	public Lock lockAll() {
 		iLock.writeLock().lock();
 		return new Lock() {
@@ -811,20 +813,23 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		};
 	}
 	
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds) {
+	@Override
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
 		Set<Long> ids = new HashSet<Long>();
 		iLock.readLock().lock();
 		try {
 			ids.add(-studentId);
 			if (offeringIds != null)
-				ids.addAll(offeringIds);
+				for (Long offeringId: offeringIds)
+					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
+						ids.add(offeringId);
 			
 			Student student = iStudentTable.get(studentId);
 			
 			if (student != null)
 				for (Request r: student.getRequests()) {
 					Offering o = (r.getAssignment() == null ? null : r.getAssignment().getOffering());
-					if (o != null) ids.add(o.getId());
+					if (o != null && (!excludeLockedOfferings || !iOfferingLocks.containsKey(o.getId()))) ids.add(o.getId());
 				}
 		} finally {
 			iLock.readLock().unlock();
@@ -832,11 +837,14 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		return iMultiLock.lock(ids);
 	}
 	
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds) {
+	@Override
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
 		Set<Long> ids = new HashSet<Long>();
 		iLock.readLock().lock();
 		try {
-			ids.add(offeringId);
+			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
+				ids.add(offeringId);
+			
 			if (studentIds != null)
 				for (Long studentId: studentIds)
 				ids.add(-studentId);
@@ -844,15 +852,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			Offering offering = iOfferingTable.get(offeringId);
 			
 			if (offering != null)
-				for (Config config: offering.getConfigs())
-					for (Enrollment enrollment: config.getEnrollments())
-						ids.add(-enrollment.getStudent().getId());
+				for (Course course: offering.getCourses())
+					for (CourseRequest request: course.getRequests())
+						ids.add(-request.getStudent().getId());
 		} finally {
 			iLock.readLock().unlock();
 		}
 		return iMultiLock.lock(ids);
 	}
 	
+	@Override
 	public Lock lockClass(Long classId, Collection<Long> studentIds) {
 		Set<Long> ids = new HashSet<Long>();
 		iLock.readLock().lock();

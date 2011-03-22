@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -64,16 +65,21 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Set<Long> offeringIds = new HashSet<Long>();
+		Set<Long> lockedCourses = new HashSet<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime()) {
 				Course course = server.getCourse(ca.getCourseId());
-				if (server.isOfferingLocked(course.getOffering().getId()))
-					throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
+				if (server.isOfferingLocked(course.getOffering().getId())) {
+					lockedCourses.add(course.getId());
+					continue;
+					// throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
+				}
 				if (course != null) offeringIds.add(course.getOffering().getId());
 			}
 		
 		Set<Long> reloadOfferingIds = new HashSet<Long>();
-		Lock lock = server.lockStudent(getStudentId(), offeringIds);
+		Set<Long> updateEnrollmentCountOfferingIds = new HashSet<Long>();
+		Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
 		try {
 			helper.beginTransaction();
 			try {
@@ -105,6 +111,19 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					Class_ clazz = classes.get(ca.getClassId());
 					org.unitime.timetable.model.CourseRequest cr = req.get(ca.getCourseId());
 					if (clazz == null || cr == null) continue;
+					if (lockedCourses.contains(ca.getCourseId())) {
+						ClassWaitList cwl = new ClassWaitList();
+						cwl.setClazz(clazz);
+						cwl.setCourseRequest(cr);
+						cwl.setStudent(student);
+						cwl.setType(ClassWaitList.Type.LOCKED.ordinal());
+						cwl.setTimestamp(ts);
+						if (cr.getClassWaitLists() == null)
+							cr.setClassWaitLists(new HashSet<ClassWaitList>());
+						cr.getClassWaitLists().add(cwl);
+						helper.getHibSession().saveOrUpdate(cwl);
+						continue;
+					}
 					StudentClassEnrollment enrl = new StudentClassEnrollment();
 					enrl.setClazz(clazz);
 					clazz.getStudentEnrollments().add(enrl);
@@ -134,6 +153,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						throw (RuntimeException)e;
 					throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 				}
+				
+				if (newStudent != null)
+					for (Request r: newStudent.getRequests())
+						if (r.getAssignment() != null && r.getAssignment().isCourseRequest())
+							if (!reloadOfferingIds.contains(r.getAssignment().getCourse().getOffering().getId()))
+								updateEnrollmentCountOfferingIds.add(r.getAssignment().getCourse().getOffering().getId());
+				
 				server.notifyStudentChanged(getStudentId(), oldStudent.getRequests(), newStudent.getRequests());
 				
 				helper.commitTransaction();
@@ -146,6 +172,18 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		} finally {
 			lock.release();
 		}
+		
+		if (!updateEnrollmentCountOfferingIds.isEmpty())
+			server.execute(new UpdateEnrollmentCountsAction(updateEnrollmentCountOfferingIds), new OnlineSectioningServer.Callback<Boolean>() {
+				@Override
+				public void onFailure(Throwable exception) {
+					helper.error("Update enrollment counts failed: " + exception.getMessage(), exception);
+				}
+				@Override
+				public void onSuccess(Boolean result) {
+					helper.info("All enrollment counts are updated.");
+				}
+			});
 		
 		if (!reloadOfferingIds.isEmpty())
 			server.execute(new CheckOfferingAction(reloadOfferingIds), new OnlineSectioningServer.Callback<Boolean>() {

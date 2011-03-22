@@ -767,9 +767,8 @@ public class Session extends BaseSession implements Comparable {
 	public void unlockOffering(Long offeringId) {
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		if (server != null) {
-			//FIXME: synchronize offering unlock and reload offering lock so that nothing gets in between
-			server.unlockOffering(offeringId);
 			server.execute(new ReloadOfferingAction(offeringId));
+			server.unlockOffering(offeringId);
 		}
 	}
 }

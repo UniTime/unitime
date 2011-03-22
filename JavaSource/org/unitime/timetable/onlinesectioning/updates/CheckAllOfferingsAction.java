@@ -61,8 +61,37 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 		} finally {
 			lock.release();
 		}
+		
+		helper.info("Updating enrollment counts...");
+		updateAllEnrollmentCounters(server, helper);
+		
 		helper.info("Check done.");
 		return true;
+	}
+	
+	public void updateAllEnrollmentCounters(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		helper.beginTransaction();
+		try {
+	     	helper.getHibSession().createQuery(
+	     			"update CourseOffering c set c.enrollment = " +
+	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.courseOffering.uniqueId = c.uniqueId) " + 
+	                 "where c.subjectArea.uniqueId in " +
+	                 "(select s.uniqueId from SubjectArea s where s.session.uniqueId = :sessionId)").
+	                 setLong("sessionId", server.getAcademicSession().getUniqueId()).executeUpdate();
+	     	
+	     	helper.getHibSession().createQuery(
+	     			"update Class_ c set c.enrollment = " +
+	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.clazz.uniqueId = c.uniqueId) " + 
+	                 "where c.schedulingSubpart.uniqueId in " +
+	                 "(select s.uniqueId from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId)").
+	                 setLong("sessionId", server.getAcademicSession().getUniqueId()).executeUpdate();
+			helper.commitTransaction();
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+		}
 	}
 	
 	@Override

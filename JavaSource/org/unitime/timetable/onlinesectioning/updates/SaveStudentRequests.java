@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -254,6 +255,17 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				helper.getHibSession().delete(enrl);
 				i.remove();
 			}
+		}
+		
+		if (!keepEnrollments) {
+			for (CourseDemand cd: student.getCourseDemands())
+				if (cd.getCourseRequests() != null)
+					for (CourseRequest cr: cd.getCourseRequests())
+						if (cr.getClassWaitLists() != null)
+							for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
+								helper.getHibSession().delete(i.next());
+								i.remove();
+							}
 		}
 		
 		for (CourseRequest cr: unusedRequests)

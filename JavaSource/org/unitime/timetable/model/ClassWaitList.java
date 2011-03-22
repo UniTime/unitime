@@ -42,5 +42,8 @@ public class ClassWaitList extends BaseClassWaitList {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	public static enum Type {
+		LOCKED
+	}
 
 }

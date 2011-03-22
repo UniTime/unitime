@@ -85,7 +85,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 						"left outer join s.courseDemands d inner join d.courseRequests r " +
 						"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
 						"r.courseOffering.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
-				Lock lock = server.lockOffering(offeringId, studentIds);
+				Lock lock = server.lockOffering(offeringId, studentIds, true);
 				try {
 
 					reloadOffering(server, helper, offeringId, studentIds);
