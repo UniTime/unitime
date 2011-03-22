@@ -69,9 +69,14 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		for (Long offeringId: getOfferingIds()) {
-			Lock lock = server.lockOffering(offeringId, null);
+			// offering is locked -> assuming that the offering will get checked when it is unlocked
+			if (server.isOfferingLocked(offeringId)) continue;
+			// lock and check the offering
+			Lock lock = server.lockOffering(offeringId, null, false);
 			try {
-				checkOffering(server, helper, server.getOffering(offeringId));
+				Offering offering = server.getOffering(offeringId);
+				checkOffering(server, helper, offering);
+				updateEnrollmentCounters(server, helper, offering);
 			} finally {
 				lock.release();
 			}
@@ -139,12 +144,11 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 						}
 					}
 					CourseDemand cd = null;
-					demands: for (CourseDemand x: student.getCourseDemands())
-						for (org.unitime.timetable.model.CourseRequest q: x.getCourseRequests())
-							if (q.getUniqueId().equals(r.getRequest().getId())) {
-								cd = x;
-								break demands;
-							}
+					for (CourseDemand x: student.getCourseDemands())
+						if (x.getUniqueId().equals(r.getRequest().getId())) {
+							cd = x;
+							break;
+						}
 					if (r.getRequest().getAssignment() != null) { // save enrollment
 						org.unitime.timetable.model.CourseRequest cr = null;
 						CourseOffering co = null;
@@ -201,28 +205,31 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 				}
 			}
-
-			helper.beginTransaction();
-			try {
-		     	helper.getHibSession().createQuery(
-		     			"update CourseOffering c set c.enrollment = " +
-		     			"(select count(distinct e.student) from StudentClassEnrollment e where e.courseOffering.uniqueId = c.uniqueId) " + 
-		                 "where c.instructionalOffering.uniqueId = :offeringId").
-		                 setLong("offeringId", offering.getId()).executeUpdate();
-		     	
-		     	helper.getHibSession().createQuery(
-		     			"update Class_ c set c.enrollment = " +
-		     			"(select count(distinct e.student) from StudentClassEnrollment e where e.clazz.uniqueId = c.uniqueId) " + 
-		                 "where c.schedulingSubpart.uniqueId in " +
-		                 "(select s.uniqueId from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId)").
-		                 setLong("offeringId", offering.getId()).executeUpdate();
-				helper.commitTransaction();
-			} catch (Exception e) {
-				helper.rollbackTransaction();
-				if (e instanceof SectioningException)
-					throw (SectioningException)e;
-				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
-			}
+		}
+	}
+	
+	public static void updateEnrollmentCounters(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
+		if (offering == null) return;
+		helper.beginTransaction();
+		try {
+	     	helper.getHibSession().createQuery(
+	     			"update CourseOffering c set c.enrollment = " +
+	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.courseOffering.uniqueId = c.uniqueId) " + 
+	                 "where c.instructionalOffering.uniqueId = :offeringId").
+	                 setLong("offeringId", offering.getId()).executeUpdate();
+	     	
+	     	helper.getHibSession().createQuery(
+	     			"update Class_ c set c.enrollment = " +
+	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.clazz.uniqueId = c.uniqueId) " + 
+	                 "where c.schedulingSubpart.uniqueId in " +
+	                 "(select s.uniqueId from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId)").
+	                 setLong("offeringId", offering.getId()).executeUpdate();
+			helper.commitTransaction();
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 		}
 	}
 

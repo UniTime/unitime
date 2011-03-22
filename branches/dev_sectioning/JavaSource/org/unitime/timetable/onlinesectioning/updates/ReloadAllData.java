@@ -37,6 +37,7 @@ import java.util.Vector;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
+import net.sf.cpsolver.studentsct.model.Choice;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -61,6 +62,7 @@ import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -120,6 +122,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		                    "select distinct s from Student s " +
 		                    "left join fetch s.courseDemands as cd " +
 		                    "left join fetch cd.courseRequests as cr " +
+		                    "left join fetch cr.classWaitLists as cwl " + 
 		                    "left join fetch s.classEnrollments as e " +
 		                    "left join fetch s.academicAreaClassifications as a " +
 		                    "left join fetch s.posMajors as mj " +
@@ -354,6 +357,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     	}
     				});
                     crs.addAll(cd.getCourseRequests());
+                    List<Choice> classSelections = new ArrayList<Choice>();
                     for (org.unitime.timetable.model.CourseRequest cr: crs) {
                         Course course = server.getCourse(cr.getCourseOffering().getUniqueId());
                         if (course==null) {
@@ -391,6 +395,13 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             }
                         }
                         courses.addElement(course);
+                        if (cr.getClassWaitLists() != null) {
+                        	for (ClassWaitList cwl: cr.getClassWaitLists()) {
+                        		Section section = course.getOffering().getSection(cwl.getClazz().getUniqueId());
+                        		if (section != null)
+                        			classSelections.add(section.getChoice());
+                        	}
+                        }
                     }
                     if (courses.isEmpty())
                     	continue;
@@ -402,6 +413,10 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             courses,
                             (cd.isWaitlist() != null && cd.isWaitlist()) || assignedConfig != null,
                             (cd.getTimestamp() == null ? ts.getTime() : cd.getTimestamp().getTime()));
+                    if (!classSelections.isEmpty()) {
+                    	request.getSelectedChoices().addAll(classSelections);
+            			helper.info("Selections for " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): " + classSelections);
+                    }
                     if (assignedConfig != null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         request.setInitialAssignment(enrollment);

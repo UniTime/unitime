@@ -76,8 +76,8 @@ public interface OnlineSectioningServer {
 	
 	public Lock readLock();
 	public Lock lockAll();
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds);
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds);
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings);
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering);
 	public Lock lockClass(Long classId, Collection<Long> studentIds);
 	public Lock lockRequest(CourseRequestInterface request);
 	

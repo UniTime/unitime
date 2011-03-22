@@ -65,7 +65,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 					if (course != null) offeringIds.add(course.getOffering().getId());
 				}
 			
-			Lock lock = server.lockStudent(getStudentId(), offeringIds);
+			Lock lock = server.lockStudent(getStudentId(), offeringIds, false);
 			try {
 				return check(server, helper);
 			} finally {
