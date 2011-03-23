@@ -50,19 +50,133 @@
 			<name>Solver Changes</name>
 			<description>
 				<line>Reservations are now being loaded into the student sectioning solver.</line>
-				<line>Constraint solver updated with the latest version (1.2.32)
+				<line>Constraint solver updated with the latest version (1.2.38)
 					<line>Student sectioning: Added ability to ignore (not create) all the hard constraint</line>
 				</line>
 			</description>
 		</item>
 	</category>
 	<category>
-		<title>Student Scheduling Assistant</title>
+		<title>Online Student Sectioning</title>
 		<item>
-			<name>Data Model</name>
+			<name>Online Student Sectioning Server</name>
 			<description>
+				<line>Server part of the student scheduling assistant code cleaned up and refactored so that it can be better extended.</line>
 				<line>Do not impose hard constraints in the reference model.
 					<line>This is useful as there may be inconsistencies we cannot avoid (lowered limit, new reservation, etc.).</line>
+				</line>
+				<line>Removed CustomSectionNames interface (using course-dependent names on sections instead, populated in course load using Class_.getClassSuffix(CourseOffeing)).</line>
+				<line>Added student / offering dependent locking
+					<line>(e.g., when a student is being enrolled, only related courses (and the student) are being locked)</line>
+				</line>
+				<line>Online Sectioning Updater -- a failure of an update should not stop the update thread.</line>
+				<line>Added interface for locking instructional offerings.</line>
+				<line>Added ability to execute an action asynchronously.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver (Find Assignments / Compute Suggestions)</name>
+			<description>
+				<line>Over-enrolled classes with the student enrolled in them should have the limit of 1 (not zero, the enrolled student should be able to use them).</line>
+				<line>Show available space (do not +1 if the student is enrolled in the class), do not show negative numbers (available space will show as zero).</line>
+				<line>Compute suggestions -- saved sections are not required (pinned), when clicked on a locked section.</line>
+				<line>Compute suggestions -- it is allowed to provide alternatives (when computing suggestions, the section on which was clicked is always treated as un-pinned).</line>
+				<line>Retrieve list of classes into which the student is enrolled during the modeling phase (when there already is a read-lock).</line>
+				<line>Compute suggestions -- speedup (CourseRequest.getAvailableEnrollemntsSkipSameTime is a list, room distances in distance conflicts are cached).</line>
+				<line>If no suggestion is found that assigns some other unassigned request too (i.e., if I cannot increase the number of assigned requests), also compute suggestions that keep the number of assigned requests the same.
+					<line>This fixes the issue with three requests A, B, C where only A or B can be assigned and C is unavailable -- no suggestions were provided on the unassigned A or B.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Requests</name>
+			<description>
+				<line>Student course requests and class assignments are taken from the online sectioning server (instead of being loaded from the database).</line>
+				<line>If the student id (taken from the authenticated user) is null and the user is administrator, take the student id from the request.</line>
+				<line>Save requests action rewritten to preserve unchanged course demands (so that the time stamp is not reset if needed for the  wait lists).</line>
+			</description>
+		</item>		
+		<item>
+			<name>Student Enrollment</name>
+			<description>
+				<line>Enroll action is rewritten to follow the following strategy:
+					<line>1) it is checked that the student can still be enrolled into the classes he/she requested (this is in a write lock, one student at a time)
+						<line>reservations are also considered, if the student is already enrolled in a class / config / course, its limit / reservations are ignored</line>
+						<line>in-memory model is used (no database access)</line>
+					</line>
+					<line>2) than the database is modified accordingly (student's class enrollments and requests are updated)</line>
+					<line>3) at last, the student is reloaded (the in-memory model will reflect the new enrollment)</line>
+				</line>
+				<line>If the student id (taken from the authenticated user) is null and the user is administrator, take the student id from the request.</line>
+				<line>Update enrollment counts after a student is enrolled.</line>
+				<line>Wait-list requests for courses that are being locked.</line>
+			</description>
+		</item>
+		<item>
+			<name>Re-sectioning</name>
+			<description>
+				<line>Re-section students enrolled in the offering or wait-listed.</line>
+				<line>Reload offering action -- re-section students enrolled in the offering or wait-listed.</line>
+				<line>Re-sectioning functions moved away from the reload offering action (see the new  SectioningRequest and ResectioningWeights classes).
+					<line>Added new actions check offering and check all offerings that re-check all enrolled students (for conflicts) and all unassigned requests if students with an incomplete schedule (students on wait-lists).
+						<line>After a student is enrolled, re-check the involved offerings (if some sections became available, some waiting student can be assigned to a course too).</line>
+						<line>In the case of online sectioning, re-check all offerings after the model is loaded into the memory (e.g., on startup)</line>
+					</line>
+				</line>
+				<line>When an offering is unlocked, reload the offering in the lock (only lock all the related students).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Student lookup (when logged in as admin): People Lookup dialog will only show students from the selected academic session.</line>
+				<line>Course Finder dialog -- List of classes:
+					<line>Show available space (do not +1 if the student is enrolled in the class), do not show negative numbers (available space will show as zero).</line>
+					<line>Show classes that the student is enrolled into with the save icon (and do not gray them out if they are not available).</line>
+				</line>
+				<line>Do not allow Enroll button to be clicked multiple times (using the page loading widget).</line>
+				<line>Renamed buttons Previous and Next to Requests and Schedule.</line>
+				<line>Added button Re-schedule (that ignores current assignment).</line>
+				<line>For students that are already enrolled in classes: open the page with the class timetable (showing classes in which the student is enrolled).</line>
+				<line>Do not automatically lock saved sections.</line>
+				<line>On page refresh: showing saved enrollments (for a student that is already enrolled in classes).
+					<line>If the latest requests are different from the saved ones, recompute solution (preferring saved sections).</line>
+				</line>
+				<line>Added ability to always show all saved (currently enrolled) classes on the List of Classes.</line>
+				<line>When enrollment succeeds, update the displayed (saved) schedule.</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Sectioning Test</name>
+			<description>
+				<line>Added Online Student Sectioning Test page (UniTime/gwt.jsp?page=sectioningtest, requires admin).
+					<line>This test simulates 1 or more students (running in parallel) trying to get a schedule using the given list of courses (no alternatives or free times yet).</line>
+					<line>Using most of the student sectioning GWT api.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Changes</name>
+			<description>
+				<line>Constraint solver updated with the latest version (1.2.38)
+					<line>Added link Course -> Course Requests (listing all course requests requesting the course).</line>
+					<line>CourseRequest -- time stamp added to all course requests.
+						<line>A course change may unassign existing enrollments which will be put back to a wait-list and ordered (among other criteria like priority) by the time stamps (creation time) of the request.</line>
+					</line>
+					<line>Student sectioning distance conflicts: distance conflicts within the enrollment were not considered in some cases.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other User Interface Changes</name>
+			<description>
+				<line>Added session status for online student sectioning.
+					<line>Changing student class enrollments is only enabled in the online sectioning state (instead of using unitime.enrollment.enabled property).</line>
+				</line>
+				<line>Added user interface for locking / unlocking a course.
+					<line>When online sectioning is enabled, a course is only editable when it is locked.</line>
+					<line>Unlock is causing the online sectioning server to reload the offering (including reassigning of conflicting and unassigned student requests).</line>
+					<line>Locked courses are marked with a warning sign.</line>
 				</line>
 			</description>
 		</item>
@@ -79,7 +193,7 @@
 			</description>
 		</item>
 		<item>
-			<name>People lookup</name>
+			<name>People Lookup</name>
 			<description>
 				<line>Use departmental instructor table too.</line>
 				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line>
@@ -109,6 +223,19 @@
 			<description>
 				<line>Curricula page: added More button (drop down with all the available operations).</line>
 				<line>Instructional Offering Detail page, Curricula table: added Curricula Operations button (drop down with operations available on the table).</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Student Import: Do not require students to have a major filled in.</line>
+				<line>Student Enrollment Import: update class / course enrollments -- ensure that there is a Hibernate session open for the update (the commitTransaction() called a few lines above the update leaves the session closed).</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Properties</name>
+			<description>
+				<line>Allow to override the default data folder using the unitime.data.dir property (this allows two UniTime instances to co-exist on the same Tomcat server).</line>
 			</description>
 		</item>
 	</category>
