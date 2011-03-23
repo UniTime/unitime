@@ -52,7 +52,7 @@
 			</description> 
 		</item> 
 		<item> 
-			<name>People lookup</name> 
+			<name>People Lookup</name> 
 			<description> 
 				<line>Use departmental instructor table too.</line> 
 				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line> 
@@ -79,6 +79,20 @@
 				<line>Do not impose hard constraints in the reference model.
 					<line>This is useful as there may be inconsistencies we cannot avoid (lowered limit, new reservation, etc.).</line>
 				</line>
+				<line>CourseDemand.waitlist can be null -- fixed NullPointerException.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Student Import: Do not require students to have a major filled in.</line>
+				<line>Student Enrollment Import: update class / course enrollments -- ensure that there is a Hibernate session open for the update (the commitTransaction() called a few lines above the update leaves the session closed).</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Properties</name>
+			<description>
+				<line>Allow to override the default data folder using the unitime.data.dir property (this allows two UniTime instances to co-exist on the same Tomcat server).</line>
 			</description>
 		</item>
 	</category>
