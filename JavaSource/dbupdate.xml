@@ -2119,34 +2119,34 @@
 		<plsql>alter table %SCHEMA%.event_note add meetings varchar2(1000)</plsql>
 	</update>
 	<update version="35" date="5-Aug-2008" comment="Event phone, session dates">
-		<mysql>alter table event_contact modify phone varchar(25)</mysql>
-		<mysql>alter table sessions add event_begin_date date</mysql>
-		<mysql>update sessions set event_begin_date = adddate(session_begin_date_time,-31)</mysql>
-		<mysql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</mysql>
-		<mysql>alter table sessions add event_end_date date</mysql>
-		<mysql>update sessions set event_end_date = adddate(session_end_date_time,31)</mysql>
-		<mysql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</mysql>
-		<plsql>alter table event_contact modify phone varchar2(25)</plsql>
-		<plsql>alter table sessions add event_begin_date date</plsql>
-		<plsql>update sessions set event_begin_date = session_begin_date_time-31</plsql>
-		<plsql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</plsql>
-		<plsql>alter table sessions add event_end_date date</plsql>
-		<plsql>update sessions set event_end_date = session_end_date_time+31</plsql>
-		<plsql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify phone varchar(25)</mysql>
+		<mysql>alter table %SCHEMA%.sessions add event_begin_date date</mysql>
+		<mysql>update %SCHEMA%.sessions set event_begin_date = adddate(session_begin_date_time,-31)</mysql>
+		<mysql>alter table %SCHEMA%.sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</mysql>
+		<mysql>alter table %SCHEMA%.sessions add event_end_date date</mysql>
+		<mysql>update %SCHEMA%.sessions set event_end_date = adddate(session_end_date_time,31)</mysql>
+		<mysql>alter table %SCHEMA%.sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify phone varchar2(25)</plsql>
+		<plsql>alter table %SCHEMA%.sessions add event_begin_date date</plsql>
+		<plsql>update %SCHEMA%.sessions set event_begin_date = session_begin_date_time-31</plsql>
+		<plsql>alter table %SCHEMA%.sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</plsql>
+		<plsql>alter table %SCHEMA%.sessions add event_end_date date</plsql>
+		<plsql>update %SCHEMA%.sessions set event_end_date = session_end_date_time+31</plsql>
+		<plsql>alter table %SCHEMA%.sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</plsql>
 	</update>
 	<update version="36" date="9-Sep-2008" comment="Added (optional) exam size">
-		<mysql>alter table exam add exam_size int(10)</mysql>
-		<plsql>alter table exam add exam_size number(10,0)</plsql>
+		<mysql>alter table %SCHEMA%.exam add exam_size int(10)</mysql>
+		<plsql>alter table %SCHEMA%.exam add exam_size number(10,0)</plsql>
 	</update>
 	<update version="37" date="9-Sep-2008" comment="Float data types">
-		<sql onFail="next">alter table class_ modify room_ratio float</sql>
-		<sql onFail="next">alter table course_subpart_credit modify fixed_min_credit float</sql>
-		<sql onFail="next">alter table course_subpart_credit modify max_credit float</sql>
-		<sql onFail="next">alter table course_credit_unit_config modify fixed_units float</sql>
-		<sql onFail="next">alter table course_credit_unit_config modify min_units float</sql>
-		<sql onFail="next">alter table course_credit_unit_config modify max_units float</sql>
-		<sql onFail="next">alter table course_catalog modify fixed_min_credit float</sql>
-		<sql onFail="next">alter table course_catalog modify max_credit float</sql>
+		<sql onFail="next">alter table %SCHEMA%.class_ modify room_ratio float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_subpart_credit modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_subpart_credit modify max_credit float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_credit_unit_config modify fixed_units float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_credit_unit_config modify min_units float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_credit_unit_config modify max_units float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_catalog modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table %SCHEMA%.course_catalog modify max_credit float</sql>
 	</update>
 	<update version="38" date="9-Sep-2008" comment="Curricula tables">
 		<!-- Create tables -->
@@ -3264,5 +3264,9 @@
 			alter table %SCHEMA%.reservation_major add constraint fk_res_majors_reservation foreign key (reservation_id)
 			references %SCHEMA%.reservation (uniqueid) on delete cascade
 		</sql>
+	</update>
+	<update version="66" date="23-Mar-2011" comment="Room ratio">
+		<mysql onFail="next">alter table %SCHEMA%.class_ modify room_ratio double</mysql>
+		<mysql onFail="next">alter table %SCHEMA%.course_credit_unit_config modify fixed_units double</mysql>
 	</update>
 </dbupdate>
