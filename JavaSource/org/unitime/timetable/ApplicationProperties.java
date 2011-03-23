@@ -229,6 +229,11 @@ public class ApplicationProperties {
 	}
 	
 	public static File getDataFolder() {
+		if (getProperty("unitime.data.dir") != null) {
+			File dir = new File(getProperty("unitime.data.dir"));
+			dir.mkdirs();
+			return dir;
+		}
 		File dir = new File(getBasePath());
 		if (!dir.getName().equals("webapps")) dir = dir.getParentFile();
 		dir = dir.getParentFile().getParentFile();
