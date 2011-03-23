@@ -3083,6 +3083,11 @@
 		<plsql>
 			alter table %SCHEMA%.course_offering add reservation number(10)
 		</plsql>
+		<plsql><![CDATA[
+			delete from %SCHEMA%.course_reservation where uniqueid in
+				(select r2.uniqueid from %SCHEMA%.course_reservation r1, %SCHEMA%.course_reservation r2 where
+				 r1.course_offering = r2.course_offering and r1.uniqueid < r2.uniqueid)
+		]]></plsql>
 		<sql>
 			update course_offering c set c.reservation = 
 				(select r.reserved from course_reservation r where r.course_offering = c.uniqueid)
