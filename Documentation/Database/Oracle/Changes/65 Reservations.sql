@@ -19,6 +19,9 @@
 
 alter table course_offering add reservation number(10);
 
+delete from course_reservation where uniqueid in
+	(select r2.uniqueid from course_reservation r1, course_reservation r2 where r1.course_offering = r2.course_offering and r1.uniqueid < r2.uniqueid);
+
 update course_offering c set c.reservation = 
 		(select r.reserved from course_reservation r where r.course_offering = c.uniqueid)
 	where exists
