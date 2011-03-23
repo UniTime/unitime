@@ -107,8 +107,10 @@ Calendar.setup = function (params) {
 		var update = (cal.dateClicked || p.electric);
 		if (update && p.inputField) {
 			p.inputField.value = cal.date.print(p.ifFormat);
-			if (typeof p.inputField.onchange == "function")
-				p.inputField.onchange();
+			try {
+				if (typeof p.inputField.onchange == "function")
+					p.inputField.onchange();
+			} catch (err) {}
 		}
 		if (update && p.displayArea)
 			p.displayArea.innerHTML = cal.date.print(p.daFormat);

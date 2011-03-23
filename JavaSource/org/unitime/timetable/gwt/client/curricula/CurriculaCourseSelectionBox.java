@@ -582,7 +582,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	}
 	
 	public boolean isEnabled() {
-		return iTextField.isEnabled();
+		return !iTextField.isReadOnly();
 	}
 	
 	private void updateCourses() {

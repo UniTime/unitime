@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.studentsct;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -31,6 +32,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -40,13 +42,13 @@ import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -63,6 +65,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -89,6 +92,11 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.reservation.CourseReservation;
+import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
+import net.sf.cpsolver.studentsct.reservation.GroupReservation;
+import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 /**
  * @author Tomas Muller
@@ -99,7 +107,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iIncludeLastLikeStudents = true;
     private boolean iIncludeUseCommittedAssignments = false;
     private boolean iMakeupAssignmentsFromRequiredPrefs = false;
-    private boolean iLoadStudentInfo = false;
+    private boolean iLoadStudentInfo = true;
     private String iInitiative = null;
     private String iTerm = null;
     private String iYear = null;
@@ -298,11 +306,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 if (ioc.isUnlimitedEnrollment()) unlimited = true;
                 limit += ioc.getLimit();
             }
-            for (Iterator<CourseOfferingReservation> k = co.getCourseReservations().iterator(); k.hasNext(); ) {
-            	CourseOfferingReservation reservation = k.next();
-                if (reservation.getCourseOffering().equals(co) && reservation.getReserved()!=null)
-                    limit = reservation.getReserved();
-            }
+            if (co.getReservation() != null)
+            	limit = co.getReservation();
             if (limit >= 9999) unlimited = true;
             if (unlimited) limit=-1;
             Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
@@ -354,12 +359,67 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
                     		getInstructorIds(c), getInstructorNames(c), parentSection);
                     class2section.put(c.getUniqueId(), section);
                     classTable.put(c.getUniqueId(), section);
                 }
             }
+        }
+        for (org.unitime.timetable.model.Reservation reservation: io.getReservations()) {
+        	if (reservation.isExpired()) continue;
+        	Reservation r = null;
+        	if (reservation instanceof org.unitime.timetable.model.IndividualReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
+        			studentIds.add(s.getUniqueId());
+        		r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
+        	} else if (reservation instanceof StudentGroupReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
+        			studentIds.add(s.getUniqueId());
+        		r = new GroupReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
+        				offering, studentIds);
+        	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
+        		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
+        		List<String> classifications = new ArrayList<String>();
+        		for (AcademicClassification clasf: cr.getClassifications())
+        			classifications.add(clasf.getCode());
+        		List<String> majors = new ArrayList<String>();
+        		for (PosMajor major: cr.getMajors())
+        			majors.add(major.getCode());
+        		r = new CurriculumReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
+        				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+        	} else if (reservation instanceof org.unitime.timetable.model.CourseReservation) {
+        		CourseOffering co = ((org.unitime.timetable.model.CourseReservation)reservation).getCourse();
+        		for (Course course: offering.getCourses()) {
+        			if (co.getUniqueId().equals(course.getId()))
+        				r = new CourseReservation(reservation.getUniqueId(), course);
+        		}
+        	}
+        	if (r == null) {
+        		iProgress.warn("Failed to load reservation " + reservation.getUniqueId() + "."); continue;
+        	}
+        	configs: for (InstrOfferingConfig ioc: reservation.getConfigurations()) {
+        		for (Config config: offering.getConfigs()) {
+        			if (ioc.getUniqueId().equals(config.getId())) {
+        				r.addConfig(config);
+        				continue configs;
+        			}
+        		}
+        	}
+        	classes: for (Class_ c: reservation.getClasses()) {
+        		for (Config config: offering.getConfigs()) {
+        			for (Subpart subpart: config.getSubparts()) {
+        				for (Section section: subpart.getSections()) {
+        					if (c.getUniqueId().equals(section.getId())) {
+        						r.addSection(section);
+        						continue classes;
+        					}
+        				}
+        			}
+        		}
+        	}
         }
         return offering;
     }
@@ -448,7 +508,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isAlternative(),
                         student,
                         courses,
-                        cd.isWaitlist());
+                        cd.isWaitlist(),
+                        cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
@@ -468,6 +529,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
         		}
         	});
+        	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
         	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
         		StudentClassEnrollment enrl = i.next();
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
@@ -475,6 +537,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
+                if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
@@ -486,7 +549,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         false,
                         student,
                         cx,
-                        false);
+                        false,
+                        timeStamp.get(course.getId()));
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
@@ -676,7 +740,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 false,
                 student,
                 courses,
-                false);
+                false,
+                null);
         iProgress.trace("added request "+request);
         if (classAssignments!=null && !classAssignments.isEmpty()) {
             HashSet assignedSections = new HashSet();
@@ -726,7 +791,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     minors.add(minor);
                     iProgress.trace("mn: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+minor.getCode());
                 }
-                    
             }
         }
         for (Iterator i=s.getPosMajors().iterator();i.hasNext();) {
@@ -845,6 +909,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch io.instrOfferingConfigs as ioc "+
                 "left join fetch ioc.schedulingSubparts as ss "+
                 "left join fetch ss.classes as c "+
+                "left join fetch io.reservations as r "+
                 "where " +
                 "io.session.uniqueId=:sessionId and io.notOffered=false").
                 setLong("sessionId",session.getUniqueId().longValue()).
@@ -864,6 +929,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch s.classEnrollments as e " +
+                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();

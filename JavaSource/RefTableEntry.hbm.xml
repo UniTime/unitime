@@ -117,11 +117,6 @@
             abstract="false"/>
 
         <union-subclass
-            name="ReservationType"
-            table="reservation_type"
-            abstract="false"/>
-
-        <union-subclass
             name="CourseCreditFormat"
             table="crse_credit_format"
             abstract="false">

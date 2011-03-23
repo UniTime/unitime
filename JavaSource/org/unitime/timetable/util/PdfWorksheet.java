@@ -36,12 +36,10 @@ import java.util.Vector;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -305,11 +303,8 @@ public class PdfWorksheet {
         iCourseOffering = co;
         int courseLimit = -1;
         InstructionalOffering offering = co.getInstructionalOffering();
-        for (Iterator i=offering.getCourseReservations().iterator();i.hasNext();) {
-            CourseOfferingReservation r = (CourseOfferingReservation)i.next();
-            if (r.getCourseOffering().equals(co))
-                courseLimit = r.getReserved().intValue();
-        }
+        if (co.getReservation() != null)
+        	courseLimit = co.getReservation();
         if (courseLimit<0) {
             if (offering.getCourseOfferings().size()==1 && offering.getLimit()!=null)
                 courseLimit = offering.getLimit().intValue();
@@ -387,7 +382,8 @@ public class PdfWorksheet {
         println("----  -----  ----  ---- | ----- ------ ---------------------------------------- ----- ------------------ --------------------- ------");
 
         Vector rTable = new Vector();
-        Vector cTable = new Vector();
+        //TODO: Print request data based on curricula
+        /*
         int a=0,b=0,c=0;
         for (Iterator i=co.getAcadAreaReservations().iterator();i.hasNext();) {
             AcadAreaReservation ar = (AcadAreaReservation)i.next();
@@ -411,6 +407,8 @@ public class PdfWorksheet {
             rTable.add("                       ");
             rTable.add(" *Please check requests");
         }
+        */
+        Vector cTable = new Vector();
         if (offering.isNotOffered().booleanValue())
             cTable.add(" ** Course not offered");
         Vector gTable = new Vector();

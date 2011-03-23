@@ -72,6 +72,13 @@
             not-null="false"/>
 
         <property
+            name="reservation"
+            column="reservation"
+            type="java.lang.Integer"
+            length="10"
+            not-null="false"/>
+
+        <property
             name="subjectAreaAbbv"
             type="java.lang.String"
             formula=" ( select sa.subject_area_abbreviation from %SCHEMA%.subject_area sa where sa.uniqueid = subject_area_id ) "/>
@@ -131,34 +138,7 @@
                 length="10"/>
 
         </properties>
-        <set
-            name="courseReservations"
-            inverse="true"
-            lazy="true"
-            cascade="all-delete-orphan"
-            table="course_reservation">
 
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="course_offering"/>
-            <one-to-many class="CourseOfferingReservation"/>
-        </set>
-
-        <!-- TODO Reservations functionality to be removed later -->
-        <set
-            name="acadAreaReservations"
-            table="acad_area_reservation"
-            order-by="priority, acad_area"
-            where="owner_class_id='U'"
-            cascade="all-delete-orphan"
-            inverse="true"
-            lazy="true">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="AcadAreaReservation"/>
-        </set>
-
-        <!-- End -->
         <many-to-one
             name="subjectArea"
             class="SubjectArea"

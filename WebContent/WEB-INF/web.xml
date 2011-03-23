@@ -116,6 +116,11 @@
     	<servlet-class>org.unitime.timetable.gwt.server.EventServlet</servlet-class>
     </servlet>
 
+	<servlet>
+    	<servlet-name>reservationServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.ReservationServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
         <url-pattern>/unitime/sectioning.gwt</url-pattern>
@@ -149,6 +154,11 @@
     <servlet-mapping>
         <servlet-name>eventServiceServlet</servlet-name>
         <url-pattern>/unitime/event.gwt</url-pattern>
+    </servlet-mapping>
+
+	<servlet-mapping>
+        <servlet-name>reservationServiceServlet</servlet-name>
+        <url-pattern>/unitime/reservation.gwt</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->
