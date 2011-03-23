@@ -50,6 +50,7 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.timetable.ApplicationProperties;
@@ -254,9 +255,12 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					if (reservationLimit <= 0) continue;
 				}
+				boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
+				if (reservation instanceof CourseReservation)
+					applicable = (course.getId() == ((CourseReservation)reservation).getCourse().getId());
 				Reservation clonedReservation = new DummyReservation(reservation.getId(), clonedOffering,
 						reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
-						originalStudent != null && reservation.isApplicable(originalStudent));
+						applicable);
 				for (Config config: reservation.getConfigs())
 					clonedReservation.addConfig(configs.get(config));
 				for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
