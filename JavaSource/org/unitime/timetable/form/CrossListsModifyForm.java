@@ -32,7 +32,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -350,25 +349,19 @@ public class CrossListsModifyForm extends ActionForm {
      * @param resv
      * @param isOwner
      */
-    public void addToCourseOfferings(CourseOffering co, CourseOfferingReservation resv, Boolean isOwner) {
+    public void addToCourseOfferings(CourseOffering co, Boolean isOwner) {
         this.courseOfferingIds.add(co.getUniqueId().toString());
         this.courseOfferingNames.add((co.getCourseName() + " - " + co.getTitle()));
         this.ownedCourse.add(isOwner);
-        if (resv!=null) {
-            this.resvId.add(resv.getUniqueId().toString());
-            this.limits.add(resv.getReserved().toString());
-            this.requested.add(resv.getRequested()!=null ? resv.getRequested().toString() : "");
-            this.projected.add(resv.getProjectedEnrollment()!=null ? resv.getProjectedEnrollment().toString() : "");
-            this.lastTerm.add(resv.getPriorEnrollment()!=null ? resv.getPriorEnrollment().toString() : "");
-        }
-        else {
-            this.resvId.add("");
+        this.resvId.add("");
+        if (co.getReservation() != null)
+        	this.limits.add(co.getReservation().toString());
+        else
             this.limits.add(co.getInstructionalOffering().getCourseOfferings().size() == 1 && co.getInstructionalOffering().getLimit() != null ? co.getInstructionalOffering().getLimit().toString()
             		: co.getProjectedDemand() != null ? co.getProjectedDemand().toString() : co.getDemand().toString());
-            this.requested.add("");
-            this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
-            this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
-        }
+        this.requested.add("");
+        this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
+        this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
     }
     
     /**

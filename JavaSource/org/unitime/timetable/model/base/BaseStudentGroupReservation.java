@@ -21,14 +21,14 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.CharacteristicReservation;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 
-public abstract class BaseStudentGroupReservation extends CharacteristicReservation implements Serializable {
+public abstract class BaseStudentGroupReservation extends Reservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private StudentGroup iStudentGroup;
+	private StudentGroup iGroup;
 
 
 	public BaseStudentGroupReservation() {
@@ -42,8 +42,8 @@ public abstract class BaseStudentGroupReservation extends CharacteristicReservat
 
 	protected void initialize() {}
 
-	public StudentGroup getStudentGroup() { return iStudentGroup; }
-	public void setStudentGroup(StudentGroup studentGroup) { iStudentGroup = studentGroup; }
+	public StudentGroup getGroup() { return iGroup; }
+	public void setGroup(StudentGroup group) { iGroup = group; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentGroupReservation)) return false;
@@ -62,15 +62,10 @@ public abstract class BaseStudentGroupReservation extends CharacteristicReservat
 
 	public String toDebugString() {
 		return "StudentGroupReservation[" +
-			"\n	Owner: " + getOwner() +
-			"\n	OwnerClassId: " + getOwnerClassId() +
-			"\n	PriorEnrollment: " + getPriorEnrollment() +
-			"\n	Priority: " + getPriority() +
-			"\n	ProjectedEnrollment: " + getProjectedEnrollment() +
-			"\n	Requested: " + getRequested() +
-			"\n	ReservationType: " + getReservationType() +
-			"\n	Reserved: " + getReserved() +
-			"\n	StudentGroup: " + getStudentGroup() +
+			"\n	ExpirationDate: " + getExpirationDate() +
+			"\n	Group: " + getGroup() +
+			"\n	InstructionalOffering: " + getInstructionalOffering() +
+			"\n	Limit: " + getLimit() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

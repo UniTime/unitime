@@ -20,7 +20,7 @@
  * 
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
-    <class name="Reservation" abstract="true">
+    <class name="Reservation" table="reservation" abstract="true" discriminator-value="-1">
         <cache include="non-lazy" usage="read-write"/>
         <id
             name="uniqueId"
@@ -31,143 +31,124 @@
             </generator>
         </id>
 
+        <discriminator column="reservation_type" type="java.lang.Integer"/>
+        
         <property
-            name="ownerClassId"
-            column="owner_class_id"
-            type="java.lang.String"
-            not-null="true"
-            length="1"/>
-
-        <property
-            name="owner"
-            column="owner"
-            type="java.lang.Long"
-            not-null="true"
-            length="20"/>
-
-        <property
-            name="priority"
-            column="priority"
-            type="java.lang.Integer"
-            not-null="true"
-            length="5"/>
-
+            name="expirationDate"
+            column="expiration_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+       	
+       	<property
+       		name="limit"
+       		column="reservation_limit"
+       		type="java.lang.Integer"
+       		not-null="false"/>
+        
         <many-to-one
-            name="reservationType"
-            class="ReservationType"
-            column="reservation_type"
-            not-null="true"/>
+            name="instructionalOffering"
+            class="InstructionalOffering"
+            column="offering_id"
+            not-null="true"
+            foreign-key="fk_reservation_offering"/>
+        
+        <set
+            name="configurations"
+            table="reservation_config"
+            inverse="false"
+            lazy="true">
 
-        <union-subclass
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="reservation_id" foreign-key="fk_res_config_reservation"/>
+            <many-to-many class="InstrOfferingConfig" column="config_id" foreign-key="fk_res_config_config"/>
+        </set>
+        
+        <set
+            name="classes"
+            table="reservation_class"
+            inverse="false"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="reservation_id" foreign-key="fk_res_class_reservation"/>
+            <many-to-many class="Class_" column="class_id" foreign-key="fk_res_class_class"/>
+        </set>
+        
+        <subclass
             name="IndividualReservation"
-            table="individual_reservation"
-            abstract="false">
-            <property
-                name="externalUniqueId"
-                column="external_uid"
-                type="java.lang.String"
-                not-null="true"
-                length="40"/>
+            abstract="false"
+            discriminator-value="0">
+        	<set
+            	name="students"
+            	table="reservation_student"
+            	inverse="false"
+            	lazy="true">
 
-            <property
-                name="overLimit"
-                column="over_limit"
-                type="java.lang.Boolean"
-                not-null="true"/>
+            	<cache include="non-lazy" usage="read-write"/>
+        	    <key column="reservation_id" foreign-key="fk_res_student_reservation"/>
+    	        <many-to-many class="Student" column="student_id" foreign-key="fk_res_student_student"/>
+	        </set>
+        </subclass>
 
-            <property
-                name="expirationDate"
-                column="expiration_date"
-                type="java.sql.Timestamp"
-                not-null="true"/>
+        <subclass
+            name="StudentGroupReservation"
+            abstract="false"
+            discriminator-value="1">
+            
+        	<many-to-one
+            	name="group"
+            	class="StudentGroup"
+        	    column="group_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_student_group"/>
+        </subclass>
 
-        </union-subclass>
+        <subclass
+            name="CurriculumReservation"
+            abstract="false"
+            discriminator-value="2">
+            
+        	<many-to-one
+            	name="area"
+            	class="AcademicArea"
+        	    column="area_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_area"/>
 
-        <union-subclass name="CharacteristicReservation" abstract="true">
-            <property
-                name="reserved"
-                column="reserved"
-                type="java.lang.Integer"
-                not-null="true"
-                length="10"/>
+    	    <set
+        	    name="majors"
+            	table="reservation_major"
+        	    inverse="false"
+    	        lazy="true">
 
-            <property
-                name="requested"
-                column="requested"
-                type="java.lang.Integer"
-                not-null="false"
-                length="10"/>
+	            <cache include="non-lazy" usage="read-write"/>
+            	<key column="reservation_id" foreign-key="fk_res_majors_reservation"/>
+        	    <many-to-many class="PosMajor" column="major_id" foreign-key="fk_res_majors_major"/>
+    	    </set>
+        
+	        <set
+            	name="classifications"
+        	    table="reservation_clasf"
+    	        inverse="false"
+	            lazy="true">
 
-            <property
-                name="priorEnrollment"
-                column="prior_enrollment"
-                type="java.lang.Integer"
-                not-null="false"
-                length="10"/>
+            	<cache include="non-lazy" usage="read-write"/>
+        	    <key column="reservation_id" foreign-key="fk_res_clasf_reservation"/>
+    	        <many-to-many class="AcademicClassification" column="acad_clasf_id" foreign-key="fk_res_clasf_clasf"/>
+	        </set>
+        </subclass>
+        
+        <subclass
+        	name="CourseReservation"
+            abstract="false"
+            discriminator-value="3">
 
-            <property
-                name="projectedEnrollment"
-                column="projected_enrollment"
-                type="java.lang.Integer"
-                not-null="false"
-                length="10"/>
-
-            <union-subclass
-                name="StudentGroupReservation"
-                table="student_group_reservation"
-                abstract="false">
-                <many-to-one
-                    name="studentGroup"
-                    class="StudentGroup"
-                    column="student_group"
-                    not-null="true"/>
-
-            </union-subclass>
-
-            <union-subclass
-                name="CourseOfferingReservation"
-                table="course_reservation"
-                abstract="false">
-                <many-to-one
-                    name="courseOffering"
-                    class="CourseOffering"
-                    column="course_offering"
-                    not-null="true"/>
-
-            </union-subclass>
-
-            <union-subclass name="AcadAreaPosReservation" abstract="true">
-                <many-to-one
-                    name="academicClassification"
-                    class="AcademicClassification"
-                    column="acad_classification"
-                    not-null="false"/>
-
-                <union-subclass
-                    name="AcadAreaReservation"
-                    table="acad_area_reservation"
-                    abstract="false">
-                    <many-to-one
-                        name="academicArea"
-                        class="AcademicArea"
-                        column="acad_area"
-                        not-null="true"/>
-
-                </union-subclass>
-
-                <union-subclass
-                    name="PosReservation"
-                    table="pos_reservation"
-                    abstract="false">
-                    <many-to-one
-                        name="posMajor"
-                        class="PosMajor"
-                        column="pos_major"
-                        not-null="true"/>
-
-                </union-subclass>
-
-            </union-subclass>
-        </union-subclass>
+        	<many-to-one
+            	name="course"
+            	class="CourseOffering"
+        	    column="course_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_course"/>
+		</subclass>        	
     </class>
 </hibernate-mapping>

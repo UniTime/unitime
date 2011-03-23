@@ -21,6 +21,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
+	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <!--[if IE]>
@@ -29,6 +30,9 @@
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime 3.2| University Timetabling Application</title>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar-setup.js"></script>
   </head>
   <body class="unitime-Body">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>

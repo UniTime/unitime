@@ -159,6 +159,38 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Reservations</title>
+		<item>
+			<name>Database Changes</name>
+			<description>
+				<line>Deleted the old database model.
+					<line>Course reservations replaced by "reservation" attribute.</line>
+				</line>
+				<line>Create a new database model that better follows the latest design.
+					<line>A reservation is set to an instructional offering with optional relations to (many-to-many) configurations and classes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>User Interface Changes</name>
+			<description>
+				<line>The old (and mostly disabled) interface replaced by a new (GWT-based) one</line>
+				<line>A new Reservations page created, and there is a Reservations table under the Instructional Offering Details page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Changes</name>
+			<description>
+				<line>Reservations are now being loaded into the student sectioning solver.</line>
+				<line>Constraint solver updated with the latest version (1.2.31).
+					<line>Added course reservations.</line>
+					<line>Added ability to enroll students with individual reservation over the class / course / section limit.</line>
+					<line>Fixed NullPointerException when last-like student course requests are involved (after a recent change (reservations), first last-like adept got ignored).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

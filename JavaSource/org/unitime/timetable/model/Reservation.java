@@ -19,27 +19,13 @@
 */
 package org.unitime.timetable.model;
 
-import org.unitime.timetable.model.base.BaseReservation;
+import java.util.Calendar;
+import java.util.Locale;
 
-/*
- * OwnerID Discriminator
- * 		InstructionalOffering: "I"
- * 		InstrOfferingConfig:   "R"
- * 		Class_:                "C"
- *		CourseOffering:        "U"
- */
+import org.unitime.timetable.model.base.BaseReservation;
 
 public class Reservation extends BaseReservation {
 	private static final long serialVersionUID = 1L;
-
-	/** Request Attribute name for Reservations **/
-    public static final String RESV_REQUEST_ATTR = "reservationsList";
-
-	/** Request Attribute name for Reservation Class **/
-    public static final String RESV_CLASS_REQUEST_ATTR = "reservationsClassList";
-
-	/** Request Attribute name for Reservation Priorities **/
-    public static final String RESV_PRIORITY_REQUEST_ATTR = "reservationsPriorityList";
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public Reservation () {
@@ -54,6 +40,22 @@ public class Reservation extends BaseReservation {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public boolean isExpired() {
+		if (getExpirationDate() == null) return false;
+		Calendar c = Calendar.getInstance(Locale.US);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		return getExpirationDate().before(c.getTime());
+	}
 
+	public boolean isEditableBy(org.unitime.commons.User user) {
+		if (user == null) return false;
+		if (user.isAdmin()) return true;
+		Department d = getInstructionalOffering().getDepartment();
+		return d != null && d.isLimitedEditableBy(user);
+	}
 
 }

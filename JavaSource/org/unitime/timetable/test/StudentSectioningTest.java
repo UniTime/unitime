@@ -68,7 +68,6 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -307,11 +306,8 @@ public class StudentSectioningTest {
         Offering offering = new Offering(co.getInstructionalOffering().getUniqueId().longValue(), co.getInstructionalOffering().getCourseName());
         int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
         int courseLimit = co.getInstructionalOffering().getLimit().intValue();
-        for (Iterator j=co.getInstructionalOffering().getCourseReservations().iterator();j.hasNext();) {
-            CourseOfferingReservation reservation = (CourseOfferingReservation)j.next();
-            if (reservation.getCourseOffering().equals(co) && reservation.getReserved()!=null)
-                courseLimit = reservation.getReserved().intValue();
-        }
+        if (co.getReservation() != null)
+        	courseLimit = co.getReservation();
         Course course = new Course(co.getUniqueId().longValue(), co.getSubjectAreaAbbv(), co.getCourseNbr(), offering, courseLimit, projected);
         Hashtable class2section = new Hashtable();
         Hashtable ss2subpart = new Hashtable();
@@ -485,7 +481,8 @@ public class StudentSectioningTest {
                         cd.isAlternative().booleanValue(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue());
+                        cd.isWaitlist().booleanValue(),
+                        cd.getTimestamp().getTime());
                 ((CourseRequest)request).getWaitlistedChoices().addAll(wlChoices);
                 ((CourseRequest)request).getSelectedChoices().addAll(selChoices);
                 if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
@@ -717,6 +714,7 @@ public class StudentSectioningTest {
                     String subjectArea = requestElement.attributeValue("subjectArea");
                     String courseNumber = requestElement.attributeValue("courseNumber");
                     boolean waitlist = "true".equals(requestElement.attributeValue("waitlist"));
+                    Long timeStamp = (requestElement.attributeValue("timeStamp") == null ? null : Long.parseLong(requestElement.attributeValue("timeStamp")));
                     CourseOffering co = null;
 
         	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
@@ -745,7 +743,7 @@ public class StudentSectioningTest {
                         if (aco!=null)
                             courses.add(loadCourse(aco, student.getId()));
                     }
-                    CourseRequest cRequest = new CourseRequest(reqId++, priority++, alternative, student, courses, waitlist);
+                    CourseRequest cRequest = new CourseRequest(reqId++, priority++, alternative, student, courses, waitlist, timeStamp);
                     cRequest.values();
                     sLog.info("    added "+cRequest);
                 }
@@ -847,6 +845,8 @@ public class StudentSectioningTest {
                     element.addAttribute("title", (co.getTitle()!=null?co.getTitle():""));
                 }
                 reqElement.addAttribute("waitlist", (courseRequest.isWaitlist()?"true":"false"));
+                if (courseRequest.getTimeStamp() != null)
+                	reqElement.addAttribute("timeStamp", ((CourseRequest)request).getTimeStamp().toString());
                 sLog.info("  added "+courseRequest);
             }
             if (request.isAlternative()) reqElement.addAttribute("alternative", "true");
@@ -890,7 +890,9 @@ public class StudentSectioningTest {
                     courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
                     CourseOffering co = CourseOffering.findByUniqueId(course.getId());
                     courseOfferingElement.addAttribute("title", co.getTitle());
-                    courseOfferingElement.addAttribute("waitlist", "true");
+                    courseOfferingElement.addAttribute("waitlist", ((CourseRequest)request).isWaitlist() ? "true": "false");
+                    if (((CourseRequest)request).getTimeStamp() != null)
+                    	courseOfferingElement.addAttribute("timeStamp", ((CourseRequest)request).getTimeStamp().toString());
                 }
                 continue;
             }
