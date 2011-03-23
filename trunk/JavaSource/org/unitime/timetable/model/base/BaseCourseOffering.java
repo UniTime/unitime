@@ -20,12 +20,8 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SubjectArea;
@@ -40,6 +36,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private Integer iNbrExpectedStudents;
 	private Integer iDemand;
 	private Integer iEnrollment;
+	private Integer iReservation;
 	private String iSubjectAreaAbbv;
 	private String iCourseNbr;
 	private String iTitle;
@@ -51,8 +48,6 @@ public abstract class BaseCourseOffering implements Serializable {
 	private InstructionalOffering iInstructionalOffering;
 	private CourseOffering iDemandOffering;
 	private DemandOfferingType iDemandOfferingType;
-	private Set<CourseOfferingReservation> iCourseReservations;
-	private Set<AcadAreaReservation> iAcadAreaReservations;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_IS_CONTROL = "isControl";
@@ -61,6 +56,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	public static String PROP_NBR_EXPECTED_STDENTS = "nbrExpectedStudents";
 	public static String PROP_LASTLIKE_DEMAND = "demand";
 	public static String PROP_ENROLLMENT = "enrollment";
+	public static String PROP_RESERVATION = "reservation";
 	public static String PROP_COURSE_NBR = "courseNbr";
 	public static String PROP_TITLE = "title";
 	public static String PROP_SCHEDULE_BOOK_NOTE = "scheduleBookNote";
@@ -100,6 +96,9 @@ public abstract class BaseCourseOffering implements Serializable {
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
+	public Integer getReservation() { return iReservation; }
+	public void setReservation(Integer reservation) { iReservation = reservation; }
+
 	public String getSubjectAreaAbbv() { return iSubjectAreaAbbv; }
 	public void setSubjectAreaAbbv(String subjectAreaAbbv) { iSubjectAreaAbbv = subjectAreaAbbv; }
 
@@ -130,20 +129,6 @@ public abstract class BaseCourseOffering implements Serializable {
 	public DemandOfferingType getDemandOfferingType() { return iDemandOfferingType; }
 	public void setDemandOfferingType(DemandOfferingType demandOfferingType) { iDemandOfferingType = demandOfferingType; }
 
-	public Set<CourseOfferingReservation> getCourseReservations() { return iCourseReservations; }
-	public void setCourseReservations(Set<CourseOfferingReservation> courseReservations) { iCourseReservations = courseReservations; }
-	public void addTocourseReservations(CourseOfferingReservation courseOfferingReservation) {
-		if (iCourseReservations == null) iCourseReservations = new HashSet<CourseOfferingReservation>();
-		iCourseReservations.add(courseOfferingReservation);
-	}
-
-	public Set<AcadAreaReservation> getAcadAreaReservations() { return iAcadAreaReservations; }
-	public void setAcadAreaReservations(Set<AcadAreaReservation> acadAreaReservations) { iAcadAreaReservations = acadAreaReservations; }
-	public void addToacadAreaReservations(AcadAreaReservation acadAreaReservation) {
-		if (iAcadAreaReservations == null) iAcadAreaReservations = new HashSet<AcadAreaReservation>();
-		iAcadAreaReservations.add(acadAreaReservation);
-	}
-
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseOffering)) return false;
 		if (getUniqueId() == null || ((CourseOffering)o).getUniqueId() == null) return false;
@@ -172,6 +157,7 @@ public abstract class BaseCourseOffering implements Serializable {
 			"\n	NbrExpectedStudents: " + getNbrExpectedStudents() +
 			"\n	PermId: " + getPermId() +
 			"\n	ProjectedDemand: " + getProjectedDemand() +
+			"\n	Reservation: " + getReservation() +
 			"\n	ScheduleBookNote: " + getScheduleBookNote() +
 			"\n	SubjectArea: " + getSubjectArea() +
 			"\n	Title: " + getTitle() +

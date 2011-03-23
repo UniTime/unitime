@@ -175,40 +175,6 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String APP_ACL_ALL = "all";
     public static final String APP_ACL_ADMIN = "admin";
 
-    /** Reservation Owner Type */
-    public static final String RESV_OWNER_IO = "I";
-    public static final String RESV_OWNER_CLASS = "C";
-    public static final String RESV_OWNER_CONFIG = "R";
-    public static final String RESV_OWNER_IO_LBL = "Instructional Offering";
-    public static final String RESV_OWNER_CLASS_LBL = "Class";
-    public static final String RESV_OWNER_CONFIG_LBL = "Configuration";
-    //TODO Reservations - functionality to be removed later
-    public static final String RESV_OWNER_COURSE = "U";
-    public static final String RESV_OWNER_COURSE_LBL = "Course Offering";
-    // End Bypass
-    
-    /** Reservation Classification */
-    public static final String RESV_INDIVIDUAL = "Individual";
-    public static final String RESV_STU_GROUP = "Student Group";
-    public static final String RESV_COURSE = "Course";
-    public static final String RESV_ACAD_AREA = "Academic Area";
-    public static final String RESV_POS = "Program of Study";
-    
-    /** Array of Reservation Classifications */
-    public static final String[] RESV_CLASS_LABELS = {
-            RESV_ACAD_AREA, RESV_COURSE }; //, RESV_INDIVIDUAL, RESV_POS, RESV_STU_GROUP };
-    
-    /** Array of Reservation Priorities */
-    public static final int[] RESV_PRIORITIES = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    
-    /** Default Reservation Priority */
-    public static final int RESV_DEFAULT_PRIORITY = 1;
-    
-    /** Reservation Types */
-    public static final String RESV_TYPE_PERM_REF = "perm";
-    public static final String RESV_TYPE_TEMP_REF = "temp";
-    public static final String RESV_TYPE_INFO_REF = "info";
-    
     /** (Http)Request attributes */
     public static final String REQUEST_OPEN_URL = "RqOpenUrl";
     public static final String REQUEST_WARN = "RqWarn";

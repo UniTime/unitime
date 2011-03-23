@@ -46,10 +46,8 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -62,7 +60,6 @@ import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 import org.unitime.timetable.webutil.RequiredTimeTable;
-import org.unitime.timetable.webutil.ReservationsTableBuilder;
 
 
 /**
@@ -118,7 +115,6 @@ public class ClassDetailAction extends PreferencesAction {
 	                || op.equals(rsc.getMessage("button.backToInstrOffrDet"))
 	                || op.equals(rsc.getMessage("button.nextClass"))
 	                || op.equals(rsc.getMessage("button.previousClass"))
-	                || op.equals(rsc.getMessage("button.addReservation"))
 	                ) {
 	            classId = frm.getClassId().toString();
 	        } else {
@@ -223,30 +219,6 @@ public class ClassDetailAction extends PreferencesAction {
 	        		"Class ("+frm.getClassName()+")",
 	        		true, false);
 
-			// Add Reservation
-			if(op.equals(rsc.getMessage("button.addReservation"))) {
-			    //TODO Reservations Bypass - to be removed later
-			    request.setAttribute("ownerId", frm.getClassId());
-			    request.setAttribute("ownerName", frm.getClassName());
-			    request.setAttribute("ownerType", Constants.RESV_OWNER_CLASS);
-			    request.setAttribute("ownerTypeLabel", Constants.RESV_OWNER_CLASS_LBL);
-			    InstrOfferingConfig ioc = c.getSchedulingSubpart().getInstrOfferingConfig();
-                request.setAttribute("ioLimit", 
-                		ioc.getInstructionalOffering().getLimit()!=null 
-	                		? ioc.getInstructionalOffering().getLimit().toString()
-	                		: null);
-                request.setAttribute("unlimited", ioc.isUnlimitedEnrollment());
-			    return mapping.findForward("displayCourseReservation");
-			    // End Bypass
-
-		        //TODO Reservations - functionality to be made visible later
-			    /*
-			    request.setAttribute("ownerId", frm.getClassId().toString());
-			    request.setAttribute("ownerClassId", Constants.RESV_OWNER_CLASS);
-			    return mapping.findForward("addReservation");
-			    */
-			}
-
 	        return mapping.findForward("displayClass");
 
 	    	} catch (Exception e) {
@@ -308,9 +280,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        	frm.setSubpart(null);
 	        frm.setCourseName(cco.getInstructionalOffering().getCourseName());
 	        frm.setCourseTitle(cco.getTitle());
-		    //TODO Reservations Bypass - to be removed later
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
-	        // End Bypass
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());
@@ -345,11 +315,6 @@ public class ClassDetailAction extends PreferencesAction {
 		    	ClassInstructor classInstr = (ClassInstructor) iter.next();
 		        frm.addToInstructors(classInstr);
 		    }
-
-	        ReservationsTableBuilder resvTbl = new ReservationsTableBuilder();
-	        String resvHtml = resvTbl.htmlTableForReservations(c.effectiveReservations(true, true, true, true, true), true, c.isEditableBy(user), c.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().isLimitedEditableBy(user));
-	        if (resvHtml!=null)
-	        	request.setAttribute(Reservation.RESV_REQUEST_ATTR, resvHtml);
 
 	        if (c.getNbrRooms().intValue()>0) {
 	        	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);

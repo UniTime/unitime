@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +34,6 @@ import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
 import org.unitime.timetable.model.base.BaseCourseOffering;
-import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -379,32 +376,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return getCourseOfferingDemands();
     }
 
-    //TODO Reservations functionality to be removed later
-    /**
-     * Returns a list containing academic area reservations for a Course Offering
-     * @param acadArea include academic area reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection getReservations( boolean acadArea ) {
-        Collection resv = new Vector();
-        if (acadArea && this.getAcadAreaReservations()!=null) {
-            List c = new Vector(this.getAcadAreaReservations());
-            Collections.sort(c, new AcadAreaReservationComparator());
-            resv.addAll(c);
-        }
-        return resv;
-    }
-
-    /**
-     * Returns effective reservations for the config
-     * @param acadArea include academic area reservations
-     * @return collection of reservations (collection is empty is none found)
-     */
-    public Collection effectiveReservations( boolean acadArea ) {
-        //TODO hfernan - effective reservations - if applicable
-        return getReservations( acadArea );
-    }
-    
     /**
      * Clones the course Offering
      * Note: It does not set the Instructional Offering

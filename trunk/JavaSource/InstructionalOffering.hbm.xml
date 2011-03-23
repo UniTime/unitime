@@ -99,73 +99,14 @@
         </set>
 
         <set
-            name="courseReservations"
-            table="course_reservation"
-            order-by="priority, course_offering"
-            where="owner_class_id='I'"
-            cascade="all-delete-orphan"
+            name="reservations"
+            table="reservation"
             inverse="true"
             lazy="true">
 
             <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="CourseOfferingReservation"/>
-        </set>
-
-        <set
-            name="individualReservations"
-            table="individual_reservation"
-            order-by="priority, expiration_date"
-            where="owner_class_id='I'"
-            cascade="all-delete-orphan"
-            inverse="true"
-            lazy="true">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="IndividualReservation"/>
-        </set>
-
-        <set
-            name="studentGroupReservations"
-            table="student_group_reservation"
-            order-by="priority, student_group"
-            where="owner_class_id='I'"
-            cascade="all-delete-orphan"
-            inverse="true"
-            lazy="true">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="StudentGroupReservation"/>
-        </set>
-
-        <set
-            name="acadAreaReservations"
-            table="acad_area_reservation"
-            order-by="priority, acad_area"
-            where="owner_class_id='I'"
-            cascade="all-delete-orphan"
-            inverse="true"
-            lazy="true">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="AcadAreaReservation"/>
-        </set>
-
-        <set
-            name="posReservations"
-            table="pos_reservation"
-            order-by="priority, pos_major"
-            where="owner_class_id='I'"
-            cascade="all-delete-orphan"
-            inverse="true"
-            lazy="true">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="owner"/>
-            <one-to-many class="PosReservation"/>
+            <key column="offering_id"/>
+            <one-to-many class="Reservation"/>
         </set>
 
         <many-to-one

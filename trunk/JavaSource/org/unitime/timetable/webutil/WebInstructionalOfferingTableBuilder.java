@@ -1488,17 +1488,7 @@ public class WebInstructionalOfferingTableBuilder {
 			}
 		}
         
-        // Config Reservations
-		if (printConfigReservation) {
-	        ReservationsTableBuilder r = new ReservationsTableBuilder();
-	        String resvTable = r.htmlTableForReservations(ioc.effectiveReservations(true, true, true, true, true), true, ioc.isViewableBy(user), ioc.getControllingCourseOffering().isLimitedEditableBy(user));
-	        if (resvTable!=null && resvTable.trim().length()>0) {
-			    TableRow row = this.initRow(false);
-		        TableCell cell = initColSpanCell(r.createTable(resvTable, "margin:0;", null, null), false, 12);
-		        row.addContent(cell);
-		        table.addContent(row);
-	        }
-		}
+
    }
 
     private void buildConfigRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, Set instrOfferingConfigs, User user, boolean printConfigLine, boolean printConfigReservation) {

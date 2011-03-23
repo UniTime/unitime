@@ -54,8 +54,6 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Reservation;
-import org.unitime.timetable.model.ReservationType;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
@@ -520,48 +518,6 @@ public class LookupTables {
     }
 
     /**
-     * Retrieves list of reservation classifications 
-     * @param request
-     * @param excludeList Reservation classes to be excluded from the list
-     * @throws Exception
-     */
-    public static void setupReservationClass(
-            HttpServletRequest request,
-            String[] excludeList ) throws Exception{
-        
-        Vector v = new Vector();
-        String[] rc = Constants.RESV_CLASS_LABELS;
-        
-        outer: for (int i=0; i<rc.length; i++) {
-            String val = rc[i];
-        
-            if (excludeList!=null && excludeList.length>0) {
-                for (int j=0; j<excludeList.length; j++) {
-                    if (val.equals(excludeList[j]))
-                        continue outer;
-                }
-            }
-            
-            v.addElement(new ComboBoxLookup(val, val));
-        }
-        request.setAttribute(Reservation.RESV_CLASS_REQUEST_ATTR, v);
-    }
-
-    /**
-     * Retrieves list of reservation priorities 
-     * @param request
-     * @throws Exception
-     */
-    public static void setupReservationPriorities(HttpServletRequest request) throws Exception{
-        Vector v = new Vector();
-        int[] rp = Constants.RESV_PRIORITIES;
-        for (int i=0; i<rp.length; i++) {
-           v.addElement(new ComboBoxLookup(rp[i]+"", rp[i]+""));
-        }
-        request.setAttribute(Reservation.RESV_PRIORITY_REQUEST_ATTR, v);
-    }
-
-    /**
      * Retrieves list of academic areas for the current academic session 
      * @param request
      * @throws Exception
@@ -581,16 +537,6 @@ public class LookupTables {
 		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
         Vector v = new Vector(AcademicClassification.getAcademicClassificationList(acadSessionId)); 
         request.setAttribute(AcademicClassification.ACAD_CLASS_REQUEST_ATTR, v);
-    }
-
-    /**
-     * Retrieves list of reservation types
-     * @param request
-     * @throws Exception
-     */
-    public static void setupReservationTypes(HttpServletRequest request) throws Exception{
-        Vector v = new Vector(ReservationType.getReservationTypeList(false)); 
-        request.setAttribute(ReservationType.RESVTYPE_ATTR_NAME, v);
     }
 
     /**

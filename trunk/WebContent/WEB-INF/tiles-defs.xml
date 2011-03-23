@@ -648,48 +648,6 @@
 		<put name="title" type="string" value="Edit Application Setting"/>
   	</definition>
 
-  	<definition name="reservationListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Reservations"/>
-		<put name="body" value="/user/reservationList.jsp" />
-  	</definition>
-  	
-  	<definition name="reservationAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Reservation"/>
-		<put name="body" value="/user/reservationEdit.jsp" />
-  	</definition>
-  	
-  	<definition name="reservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Reservation"/>
-		<put name="body" value="/user/reservationEdit.jsp" />
-  	</definition>
-  	
-  	<definition name="courseReservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Course Reservations"/>
-		<put name="body" value="/user/courseReservationEdit.jsp" />
-		<put name="showNavigation" value="true" />	
-  	</definition>
-  	
-  	<definition name="academicAreaReservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Academic Area Reservations"/>
-		<put name="body" value="/user/academicAreaReservationEdit.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-  	<definition name="posReservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Program of Study Reservations"/>
-		<put name="body" value="/user/posReservationEdit.jsp" />
-  	</definition>
-  	
-  	<definition name="individualReservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Individual Reservations"/>
-		<put name="body" value="/user/individualReservationEdit.jsp" />
-  	</definition>
-  	
-  	<definition name="studentGroupReservationEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Student Group Reservations"/>
-		<put name="body" value="/user/studentGroupReservationEdit.jsp" />
-  	</definition>
-  	
   	<definition name="departmentAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Department"/>
 		<put name="body" value="/admin/departmentEdit.jsp" />

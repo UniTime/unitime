@@ -753,13 +753,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 return ((InstrOfferingConfig)owner).getLimit();
             case sOwnerTypeCourse : 
                 CourseOffering course = ((CourseOffering)owner);
-                if (course.getInstructionalOffering().getCourseOfferings().size()>1) {
-                    for (Iterator k=course.getInstructionalOffering().getCourseReservations().iterator();k.hasNext();) {
-                        CourseOfferingReservation reservation = (CourseOfferingReservation)k.next();
-                        if (reservation.getCourseOffering().equals(course)) return reservation.getReserved();
-                    }
-                    return 0;
-                } else return (course.getInstructionalOffering().getLimit()==null?0:course.getInstructionalOffering().getLimit());
+                if (course.getReservation() != null)
+                	return course.getReservation();
+                return (course.getInstructionalOffering().getLimit() == null ? 0 : course.getInstructionalOffering().getLimit());
             case sOwnerTypeOffering : 
                 return (((InstructionalOffering)owner).getLimit()==null?0:((InstructionalOffering)owner).getLimit());
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());

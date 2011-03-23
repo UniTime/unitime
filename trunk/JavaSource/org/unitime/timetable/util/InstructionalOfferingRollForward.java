@@ -31,7 +31,6 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCatalog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.CourseSubpartCredit;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
@@ -195,9 +194,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			}
 			toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
 			toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
-			if (toInstructionalOffering.getCourseOfferings().size() > 1){
-				rollForwardCourseReservations(fromInstructionalOffering, toInstructionalOffering);
-			}
 			InstrOfferingConfig fromInstrOffrConfig = null;
 			InstrOfferingConfig toInstrOffrConfig = null;
 			if (fromInstructionalOffering.getInstrOfferingConfigs() != null && fromInstructionalOffering.getInstrOfferingConfigs().size() > 0){
@@ -233,27 +229,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}		
 	}
 	
-	private void rollForwardCourseReservations(
-			InstructionalOffering fromInstructionalOffering,
-			InstructionalOffering toInstructionalOffering) {
-		if (fromInstructionalOffering.getCourseReservations() != null && !fromInstructionalOffering.getCourseReservations().isEmpty() && toInstructionalOffering.getCourseOfferings().size() > 1){
-			CourseOffering toCo = null;
-			CourseOfferingReservation fromCor = null;
-			for (Iterator coIt = toInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
-				toCo = (CourseOffering) coIt.next();
-				boolean found = false;
-				for(Iterator corIt = fromInstructionalOffering.getCourseReservations().iterator(); (corIt.hasNext() && !found);){
-					fromCor = (CourseOfferingReservation) corIt.next();
-					if (fromCor.getCourseOffering().getUniqueId().equals(toCo.getUniqueIdRolledForwardFrom())){
-						CourseOfferingReservation toCor = (CourseOfferingReservation)fromCor.clone();
-						toCor.setCourseOffering(toCo);
-						toCor.setOwner(toInstructionalOffering.getUniqueId());
-						toInstructionalOffering.addTocourseOfferingsReservations(toCor);
-					}
-				}
-			}
-		}
-	}
 
 	private void rollForwardCourseCreditUnitConfigForSchedSubpart(SchedulingSubpart fromSubpart, SchedulingSubpart toSubpart){
 		if (sessionHasCourseCatalog(toSubpart.getSession())){
@@ -472,6 +447,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setTitle(fromCourseOffering.getTitle());
 			toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 			toCourseOffering.setInstructionalOffering(toInstructionalOffering);
+			toCourseOffering.setReservation(fromCourseOffering.getReservation());
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 		}
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){

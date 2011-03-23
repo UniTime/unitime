@@ -75,18 +75,6 @@
 						<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 							<bean:message key="button.addDistPref" />
 						</html:submit>
-	
-						<!-- TODO Reservations Bypass to be removed later -->				
-						<logic:equal name="<%=frmName%>" property="isCrosslisted" value="true">
-						<!-- End Bypass -->
-						&nbsp;				
-						<html:submit property="op" 
-							styleClass="btn" accesskey="R" titleKey="title.addReservation">
-							<bean:message key="button.addReservation" />
-						</html:submit>
-						<!-- TODO Reservations Bypass to be removed later -->				
-						</logic:equal>
-						<!-- End Bypass -->
 					</logic:equal>
 					
 					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
@@ -347,21 +335,6 @@
 		</TR>
 		<%@ include file="preferencesDetail.jspf" %>
 
-
-<!-- Reservations -->
-		<% if (request.getAttribute(Reservation.RESV_REQUEST_ATTR)!=null) { %>
-			<TR>
-				<TD colspan="2" >&nbsp;</TD>
-			</TR>
-
-			<TR>
-				<TD colspan="2">
-					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-						<%=request.getAttribute(Reservation.RESV_REQUEST_ATTR)%>
-					</TABLE>
-				</TD>
-			</TR>
-		<% } %>
 		
 		<TR>
 			<TD colspan="2">
@@ -392,18 +365,6 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
-
-					<!-- TODO Reservations Bypass to be removed later -->				
-					<logic:equal name="<%=frmName%>" property="isCrosslisted" value="true">
-					<!-- End Bypass -->
-					&nbsp;				
-					<html:submit property="op" 
-						styleClass="btn" accesskey="R" titleKey="title.addReservation">
-						<bean:message key="button.addReservation" />
-					</html:submit>
-					<!-- TODO Reservations Bypass to be removed later -->				
-					</logic:equal>
-					<!-- End Bypass -->
 				</logic:equal>
 
 				<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
