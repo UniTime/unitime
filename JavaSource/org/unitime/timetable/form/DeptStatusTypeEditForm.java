@@ -61,8 +61,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanNoRoleReportExamFin = false;
     private boolean iCanNoRoleReportExamMid = false;
     private boolean iCanNoRoleReportClass   = false;
-    private boolean iCanSectioningStudents = false;
+    private boolean iCanSectioningStudents  = false;
     private boolean iCanPreRegisterStudents = false;
+    private boolean iCanOnlineSectionStudents = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -108,8 +109,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanNoRoleReportExamFin = false;
         iCanNoRoleReportExamMid = false;
         iCanNoRoleReportClass   = false;
-        iCanSectioningStudents = false;
+        iCanSectioningStudents  = false;
         iCanPreRegisterStudents = false;
+        iCanOnlineSectionStudents = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -166,6 +168,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanSectioningStudents() { return iCanSectioningStudents; }
     public void setCanPreRegisterStudents(boolean canPreRegisterStudents) { iCanPreRegisterStudents = canPreRegisterStudents; }
     public boolean getCanPreRegisterStudents() { return iCanPreRegisterStudents; }
+    public void setCanOnlineSectionStudents(boolean canOnlineSectionStudents) { iCanOnlineSectionStudents = canOnlineSectionStudents; }
+    public boolean getCanOnlineSectionStudents() { return iCanOnlineSectionStudents; }
 
     public int getRights() {
         int rights = 0;
@@ -184,8 +188,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.sCanNoRoleReportExamFin;
         if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.sCanNoRoleReportExamMid;
         if (getCanNoRoleReportClass()) rights += DepartmentStatusType.sCanNoRoleReportClass;
-        if (getCanSectioningStudents()) rights += DepartmentStatusType.sCanSectioningStudents;
+        if (getCanSectioningStudents()) rights += DepartmentStatusType.sCanSectAssistStudents;
         if (getCanPreRegisterStudents()) rights += DepartmentStatusType.sCanPreRegisterStudents;
+        if (getCanOnlineSectionStudents()) rights += DepartmentStatusType.sCanOnlineSectionStudents;
         return rights;
     }
     public void setRights(int rights) {
@@ -204,8 +209,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanNoRoleReportExamFin((rights&DepartmentStatusType.sCanNoRoleReportExamFin)==DepartmentStatusType.sCanNoRoleReportExamFin);
         setCanNoRoleReportExamMid((rights&DepartmentStatusType.sCanNoRoleReportExamMid)==DepartmentStatusType.sCanNoRoleReportExamMid);
         setCanNoRoleReportClass((rights&DepartmentStatusType.sCanNoRoleReportClass)==DepartmentStatusType.sCanNoRoleReportClass);
-        setCanSectioningStudents((rights&DepartmentStatusType.sCanSectioningStudents)==DepartmentStatusType.sCanSectioningStudents);
+        setCanSectioningStudents((rights&DepartmentStatusType.sCanSectAssistStudents)==DepartmentStatusType.sCanSectAssistStudents);
         setCanPreRegisterStudents((rights&DepartmentStatusType.sCanPreRegisterStudents)==DepartmentStatusType.sCanPreRegisterStudents);
+        setCanOnlineSectionStudents((rights&DepartmentStatusType.sCanOnlineSectionStudents)==DepartmentStatusType.sCanOnlineSectionStudents);
     }
 	
 	public void load(DepartmentStatusType s) {

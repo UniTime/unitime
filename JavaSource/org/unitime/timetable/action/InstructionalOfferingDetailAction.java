@@ -197,8 +197,24 @@ public class InstructionalOfferingDetailAction extends Action {
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getPreviousId()));
         	return null;
         }
+        
+        if (op.equals("Lock")) {
+		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        io.getSession().lockOffering(io.getUniqueId());
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
+        	return null;
+        }
 		
-		BackTracker.markForBack(
+        if (op.equals("Unlock")) {
+		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        io.getSession().unlockOffering(io.getUniqueId());
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
+        	return null;
+        }
+
+        BackTracker.markForBack(
 				request,
 				"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
 				"Instructional Offering ("+frm.getInstrOfferingName()+")",
@@ -303,6 +319,15 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setUnlimited(Boolean.FALSE);
         frm.setDesignatorRequired(io.isDesignatorRequired());
         frm.setCreditText((io.getCredit() != null)?io.getCredit().creditText():"");
+		frm.setCanLock(false);
+        frm.setCanUnlock(false);
+        if (io.isLockableBy(user)) {
+        	if (io.getSession().isOfferingLocked(io.getUniqueId())) {
+        		frm.setCanUnlock(true);
+        	} else {
+        		frm.setCanLock(true);
+        	}
+        }
         
         if (io.getConsentType()==null)
             frm.setConsentType("None Required");

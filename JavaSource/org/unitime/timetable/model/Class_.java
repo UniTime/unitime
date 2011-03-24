@@ -636,6 +636,16 @@ public class Class_ extends BaseClass_ {
 		return false;
 	}
 
+	@Override
+	public boolean isEditableBy(User user) {
+    	if (getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSession().getStatusType().canOnlineSectionStudents() &&
+    		!getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLocked(
+    				getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
+    		return false;
+        }
+    	return super.isEditableBy(user);
+	}
+
 	public boolean isLimitedEditable(User user) {
 		if (isEditableBy(user)) return true;
 		if (user==null) return false;

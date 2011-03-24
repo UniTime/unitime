@@ -30,6 +30,7 @@ public class CourseRequestInterface implements IsSerializable {
 	private Long iSessionId, iStudentId;
 	private ArrayList<Request> iCourses = new ArrayList<Request>();
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
+	private boolean iSaved = false;
 	
 	public CourseRequestInterface() {}
 
@@ -41,6 +42,9 @@ public class CourseRequestInterface implements IsSerializable {
 	
 	public ArrayList<Request> getCourses() { return iCourses; }
 	public ArrayList<Request> getAlternatives() { return iAlternatives; }
+	
+	public boolean isSaved() { return iSaved; }
+	public void setSaved(boolean saved) { iSaved = saved; }
 
 	public static class FreeTime implements IsSerializable {
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
@@ -124,7 +128,7 @@ public class CourseRequestInterface implements IsSerializable {
 	}
 	
 	public String toString() {
-		String ret = "CourseRequests(student = " + iSessionId + ", session = " + iSessionId + ", requests = {";
+		String ret = "CourseRequests(student = " + iStudentId + ", session = " + iSessionId + ", requests = {";
 		int idx = 1;
 		for (Request r: iCourses)
 			ret += "\n   " + (idx++) + ". " + r;

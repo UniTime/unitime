@@ -66,7 +66,10 @@ public interface StudentSectioningExceptions extends Messages {
 	
 	@DefaultMessage("Unable to retrive class details ({0}).")
 	String customSectionLimitsFailed(String reason);
-
+	
+	@DefaultMessage("Course {0} is locked.")
+	String courseLocked(String course);
+	
 	@DefaultMessage("Course detail interface not provided.")
 	String noCustomCourseDetails();
 	

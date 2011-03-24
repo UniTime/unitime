@@ -144,6 +144,21 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	}
 
 
+	public boolean isLockableBy(User user) {
+		if (user == null) return false;
+		if (!getSession().getStatusType().canOnlineSectionStudents()) return false;
+		if (user.isAdmin()) return true;
+		if (getDepartment() == null) return false;
+		
+		TimetableManager tm = TimetableManager.getManager(user);
+		if (tm == null) return false;
+		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
+		if (!tm.getDepartments().contains(getDepartment())) return false;
+		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
+
+		return true;
+	}
+	
 	public boolean isEditableBy(User user){
     	Debug.debug("Checking edit permission on: " + this.getCourseName());
 
@@ -151,6 +166,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         	Debug.debug(" - Cannot Edit: User Info not found ");
     		return(false);
     	}
+
+    	if (getSession().getStatusType().canOnlineSectionStudents() && !getSession().isOfferingLocked(getUniqueId())) {
+    		return false;
+        }
+    	
     	if (user.isAdmin()){
         	Debug.debug(" - Can Edit: User is admin");
     		return(true);

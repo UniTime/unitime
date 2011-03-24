@@ -398,6 +398,19 @@ h1 {
 	white-space: nowrap;
 }
 
+.unitime-ClassRowUnused {
+	color: gray;
+	font-style: italic;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowUnusedFirst {
+	color: gray;
+	font-style: italic;
+	border-top: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
 .unitime-ClassRowUnavail {
 	color: #AAAAAA;
 	font-style: italic;;

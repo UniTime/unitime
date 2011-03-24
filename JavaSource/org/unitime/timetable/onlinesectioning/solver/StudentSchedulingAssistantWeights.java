@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -43,9 +43,9 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 	/** deduction for section with no time assignment */
     private double iNoTimeFactor = 0.050;
     /** deduction for sections that are not preferred (different time & instructor) */
-    private double iPreferenceFactor = 0.250;
+    private double iPreferenceFactor = 0.125;
     /** deduction for over expected sections */
-    private double iPenaltyFactor = 0.500;
+    private double iPenaltyFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
     private double iAvailabilityFactor;
 	private Hashtable<CourseRequest, Double> iBestTime = new Hashtable<CourseRequest, Double>();
@@ -84,11 +84,15 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
     	return bestTime;
     }
 	
+	public double getBaseWeight(Enrollment enrollment) {
+		return super.getWeight(enrollment);
+	}
+	
 	@Override
 	public double getWeight(Enrollment enrollment) {
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
-		double base = super.getWeight(enrollment);
+		double base = getBaseWeight(enrollment);
 		double weight = base;
 		
 		int size = enrollment.getAssignments().size();

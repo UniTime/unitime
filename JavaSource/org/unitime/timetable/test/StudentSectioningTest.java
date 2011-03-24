@@ -481,8 +481,7 @@ public class StudentSectioningTest {
                         cd.isAlternative().booleanValue(),
                         student,
                         courses,
-                        cd.isWaitlist().booleanValue(),
-                        cd.getTimestamp().getTime());
+                        cd.isWaitlist(), cd.getTimestamp().getTime());
                 ((CourseRequest)request).getWaitlistedChoices().addAll(wlChoices);
                 ((CourseRequest)request).getSelectedChoices().addAll(selChoices);
                 if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
@@ -713,7 +712,7 @@ public class StudentSectioningTest {
                 } else if ("courseOffering".equals(requestElement.getName())) {
                     String subjectArea = requestElement.attributeValue("subjectArea");
                     String courseNumber = requestElement.attributeValue("courseNumber");
-                    boolean waitlist = "true".equals(requestElement.attributeValue("waitlist"));
+                    boolean waitlist = "true".equals(requestElement.attributeValue("waitlist","false"));
                     Long timeStamp = (requestElement.attributeValue("timeStamp") == null ? null : Long.parseLong(requestElement.attributeValue("timeStamp")));
                     CourseOffering co = null;
 
@@ -844,9 +843,9 @@ public class StudentSectioningTest {
                     CourseOffering co = CourseOffering.findByUniqueId(course.getId());
                     element.addAttribute("title", (co.getTitle()!=null?co.getTitle():""));
                 }
-                reqElement.addAttribute("waitlist", (courseRequest.isWaitlist()?"true":"false"));
+            	reqElement.addAttribute("waitlist", courseRequest.isWaitlist() ? "true": "false");
                 if (courseRequest.getTimeStamp() != null)
-                	reqElement.addAttribute("timeStamp", ((CourseRequest)request).getTimeStamp().toString());
+                	reqElement.addAttribute("timeStamp", courseRequest.getTimeStamp().toString());
                 sLog.info("  added "+courseRequest);
             }
             if (request.isAlternative()) reqElement.addAttribute("alternative", "true");

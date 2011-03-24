@@ -856,12 +856,12 @@ public class CourseSelectionBox extends Composite {
 									new WebTable.Cell(clazz.getRooms(", ")),
 									new WebTable.Cell(clazz.getInstructors(", ")),
 									new WebTable.Cell(clazz.getParentSection()),
-									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 							row.setId(clazz.getClassId().toString());
 							String styleName = "unitime-ClassRow";
 							if (lastSubpartId != null && !clazz.getSubpartId().equals(lastSubpartId))
 								styleName += "First";
-							if (!clazz.isAvailable())
+							if (!clazz.isSaved() && !clazz.isAvailable())
 								styleName += "Unavail";
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(styleName);

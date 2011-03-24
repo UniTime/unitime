@@ -117,13 +117,11 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iDialog.hide();
 		iSessionLabel.setText(MESSAGES.sessionSelectorLabel(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue()));
 		iName = MESSAGES.sessionName(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue());
-		boolean changed = !row.getId().equals(iSessionId.getValue());
+		Long oldValue = (iSessionId.getValue().isEmpty() ? null : Long.valueOf(iSessionId.getValue()));
 		iSessionId.setValue(row.getId());
-		if (changed) {
-			AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(Long.valueOf(row.getId()));
-			for (AcademicSessionChangeHandler handler: iAcademicSessionChangeHandlers)
-				handler.onAcademicSessionChange(changeEvent);
-		}
+		AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(oldValue, Long.valueOf(row.getId()));
+		for (AcademicSessionChangeHandler handler: iAcademicSessionChangeHandlers)
+			handler.onAcademicSessionChange(changeEvent);
 		iSessions.setSelectedRow(row.getRowIdx());
 	}
 	
@@ -212,11 +210,19 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 	
 	public static class AcademicSessionChangeEvent implements AcademicSessionProvider.AcademicSessionChangeEvent {
 		private Long iSessionId;
-		private AcademicSessionChangeEvent(Long sessionId) {
+		private Long iOldSessionId;
+		private AcademicSessionChangeEvent(Long oldSessionId, Long sessionId) {
+			iOldSessionId = oldSessionId;
 			iSessionId = sessionId;
+		}
+		public Long getOldAcademicSessionId() {
+			return iOldSessionId;
 		}
 		public Long getNewAcademicSessionId() {
 			return iSessionId;
+		}
+		public boolean isChanged() {
+			return (iSessionId == null ? iOldSessionId != null : !iSessionId.equals(iOldSessionId));
 		}
 	}
 	

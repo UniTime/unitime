@@ -74,6 +74,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String previousId;
     private String catalogLinkLabel;
     private String catalogLinkLocation;
+    private Boolean canLock, canUnlock;
 
     // --------------------------------------------------------- Classes
 
@@ -130,6 +131,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         creditText = "";
         catalogLinkLabel = null;
         catalogLinkLocation = null;
+        canLock = null; canUnlock = null;
     }
     
     public List getCourseOfferings() {
@@ -333,5 +335,18 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 
 	public void setEnrollment(Integer enrollment) {
 		this.enrollment = enrollment;
+	}
+	
+	public Boolean getCanLock() {
+		return canLock;
+	}
+	public void setCanLock(Boolean canLock) {
+		this.canLock = canLock;
+	}
+	public Boolean getCanUnlock() {
+		return canUnlock;
+	}
+	public void setCanUnlock(Boolean canUnlock) {
+		this.canUnlock = canUnlock;
 	}
 }

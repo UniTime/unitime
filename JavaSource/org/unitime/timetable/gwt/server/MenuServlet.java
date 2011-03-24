@@ -60,6 +60,7 @@ import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -270,11 +271,11 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		} else if ("isChameleon".equals(cond)) {
 			return getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1");
 		} else if ("isSectioningEnabled".equals(cond)) {
-			return SectioningServer.isEnabled();
+			return OnlineSectioningService.isEnabled();
 		} else if ("isStudent".equals(cond)) {
 			return userInfo != null && userInfo.isStudent();
 		} else if ("isRegistrationEnabled".equals(cond)) {
-			return SectioningServer.isRegistrationEnabled();
+			return OnlineSectioningService.isRegistrationEnabled();
 		} else {
 			User user = userInfo.getUser();
 			if (user == null) return false;

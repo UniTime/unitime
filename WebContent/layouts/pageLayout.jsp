@@ -127,6 +127,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<logic:equal name="showSolverWarnings" value="true">
 		<tt:solver-warnings/>
 	</logic:equal>
+	<tt:offering-locks/>
 		
 	<tiles:importAttribute/>
 	<tiles:importAttribute name="title" scope="request"/>
