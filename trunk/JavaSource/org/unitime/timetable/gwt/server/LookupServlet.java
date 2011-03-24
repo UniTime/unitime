@@ -95,6 +95,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 				boolean displayWithoutId = true;
 				int maxResults = -1;
 				boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
+				Long sessionId = getAcademicSessionId();
 				if (options != null) {
 					for (String option: options.split(",")) {
 						option = option.trim();
@@ -106,6 +107,8 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 							displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
 						else if (option.startsWith("maxResults="))
 							maxResults = Integer.parseInt(option.substring("maxResults=".length()));
+						else if (options.startsWith("session="))
+							sessionId = Long.valueOf(option.substring("session=".length()));
 						else if (option.startsWith("source=")) {
 							ldap = students = staff = managers = events = instructors = false;
 							for (String s: option.substring("source=".length()).split(":")) {
@@ -121,7 +124,6 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 				}
 				Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
 				TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
-				Long sessionId = getAcademicSessionId();
 				String q = query.trim().toLowerCase();
 		        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
 		        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);

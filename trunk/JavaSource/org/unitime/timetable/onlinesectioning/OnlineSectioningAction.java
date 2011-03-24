@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -17,24 +17,15 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom.purdue;
-
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.server.custom.CustomSectionNames;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
+package org.unitime.timetable.onlinesectioning;
 
 /**
  * @author Tomas Muller
  */
-public class PurdueSectionNames implements CustomSectionNames {
-
-	public String getClassSuffix(Long sessionId, Long courseId, Long classId) {
-		Class_ clazz = Class_DAO.getInstance().get(classId);
-		return clazz.getClassSuffix(CourseOfferingDAO.getInstance().get(courseId));
-	}
+public interface OnlineSectioningAction<T> {
 	
-	public void update(AcademicSessionInfo session) {	
-	}
+	public T execute(OnlineSectioningServer server, OnlineSectioningHelper helper);
+	
+	public String name();
+
 }

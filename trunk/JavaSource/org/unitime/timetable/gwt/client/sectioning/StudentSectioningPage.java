@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.sectioning.UserAuthentication.UserAuthenticatedEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -59,6 +60,7 @@ public class StudentSectioningPage extends Composite {
 		titlePanel.getCellFormatter().getElement(0, 2).getStyle().setPaddingLeft(10, Unit.PX);
 		titlePanel.setHTML(0, 0, "&nbsp;");
 		
+		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
 		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning());
 		titlePanel.setWidget(0, 1, userAuthentication);
 		
@@ -103,7 +105,7 @@ public class StudentSectioningPage extends Composite {
 			public void onLogOut(UserAuthenticatedEvent event) {
 				if (!event.isGuest()) {
 					widget.clear();
-					sessionSelector.selectSession(null);
+					// sessionSelector.selectSession(null);
 				}
 				userAuthentication.authenticate();
 			}
@@ -111,8 +113,10 @@ public class StudentSectioningPage extends Composite {
 		
 		sessionSelector.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
 			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
-				widget.clear();
+				if (event.isChanged())
+					widget.clear();
 				widget.lastRequest(event.getNewAcademicSessionId());
+				Lookup.getInstance().setOptions("mustHaveExternalId,source=students,session=" + event.getNewAcademicSessionId());
 			}
 		});
 		
@@ -124,6 +128,7 @@ public class StudentSectioningPage extends Composite {
 			public void onSuccess(String[] result) {
 				sessionSelector.selectSession(result);
 				widget.lastRequest(sessionSelector.getAcademicSessionId());
+				Lookup.getInstance().setOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
 			}
 		});
 	}

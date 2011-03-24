@@ -17,13 +17,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.onlinesectioning;
 
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.server.custom.CourseDetailsProvider;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 
 /**
  * @author Tomas Muller
@@ -59,7 +59,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		iCourseNbr = courseNbr;
 		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
 	}
-
+	
 	public Long getUniqueId() { return iUniqueId; }
 	public Long getAcademicSessionId() { return iAcademicSessionId; }
 	public String getSubjectArea() { return iSubjectArea; }
@@ -102,8 +102,12 @@ public class CourseInfo implements Comparable<CourseInfo> {
 			} catch (Exception e) {
 				throw new SectioningException(SectioningExceptionType.NO_CUSTOM_COURSE_DETAILS);
 			}
-			iDetails = provider.getDetails(SectioningServer.getInstance(iAcademicSessionId).getAcademicSession(), iSubjectArea, iCourseNbr);
+			iDetails = provider.getDetails(OnlineSectioningService.getInstance(iAcademicSessionId).getAcademicSession(), iSubjectArea, iCourseNbr);
 		}
 		return iDetails;
+	}
+	
+	public String toString() {
+		return (getSubjectArea() + " " + getCourseNbr()).toLowerCase();
 	}
 }

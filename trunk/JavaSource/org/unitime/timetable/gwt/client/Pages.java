@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
+import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
 
 import com.google.gwt.user.client.ui.Widget;
 
@@ -43,7 +44,9 @@ public enum Pages {
 	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(null); } }),
 	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable("room"); } }),
 	reservation("Reservation", new PageFactory() { public Widget create() { return new ReservationEdit(true); } }),
-	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } });
+	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } }),
+	sectioningtest("Online Student Sectioning Test", new PageFactory() { public Widget create() { return new OnlineSectioningTest(); } }),
+	;
 	
 	private String iTitle;
 	private PageFactory iFactory;

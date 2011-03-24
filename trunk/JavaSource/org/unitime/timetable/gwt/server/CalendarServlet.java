@@ -83,6 +83,9 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
@@ -135,7 +138,7 @@ public class CalendarServlet extends HttpServlet {
 		}
 		if (sessionId == null)
 			throw new ServletException("No academic session provided.");
-		SectioningServer server = SectioningServer.getInstance(sessionId);
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
     	String classIds = params.get("cid");
     	String fts = params.get("ft");
     	String examIds = params.get("xid");
@@ -458,8 +461,8 @@ public class CalendarServlet extends HttpServlet {
     	cal.setTime(dpFirstDate);
     	int idx = time.getWeekCode().nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
     	Date first = null;
     	while (idx < time.getWeekCode().size() && first == null) {
@@ -494,17 +497,17 @@ public class CalendarServlet extends HttpServlet {
     		}
     	}
     	if (first == null) return;
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     	Date firstEnd = cal.getTime();
     	int fidx = idx;
     	
     	cal.setTime(dpFirstDate);
     	idx = time.getWeekCode().length() - 1;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     	Date last = null;
     	while (idx >= 0 && last == null) {
     		if (time.getWeekCode().get(idx)) {
@@ -542,8 +545,8 @@ public class CalendarServlet extends HttpServlet {
     	cal.setTime(dpFirstDate);
     	idx = fidx;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
 
         out.println("BEGIN:VEVENT");
@@ -586,15 +589,15 @@ public class CalendarServlet extends HttpServlet {
         		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
         		continue;
     		}
-        	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-        	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+        	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+        	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
         	cal.set(Calendar.SECOND, 0);
     		if (time.getWeekCode().get(idx)) {
     			if (!tf.format(first).equals(tf.format(cal.getTime()))) {
     				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
     		        x.add("RECURRENCE-ID:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
     		        x.add("DTSTART:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    		    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    		    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     		        x.add("DTEND:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
     			}
     		} else {
@@ -641,7 +644,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private void printSection(SectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
+	private void printSection(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
 		TimeLocation time = section.getTime();
 		if (time == null || time.getWeekCode().isEmpty()) return;
 		
@@ -654,8 +657,8 @@ public class CalendarServlet extends HttpServlet {
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
     	int idx = time.getWeekCode().nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
     	Date first = null;
     	while (idx < time.getWeekCode().size() && first == null) {
@@ -690,17 +693,17 @@ public class CalendarServlet extends HttpServlet {
     		}
     	}
     	if (first == null) return;
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     	Date firstEnd = cal.getTime();
     	int fidx = idx;
     	
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
     	idx = time.getWeekCode().length() - 1;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     	Date last = null;
     	while (idx >= 0 && last == null) {
     		if (time.getWeekCode().get(idx)) {
@@ -738,8 +741,8 @@ public class CalendarServlet extends HttpServlet {
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
     	idx = fidx;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
 
         out.println("BEGIN:VEVENT");
@@ -782,15 +785,15 @@ public class CalendarServlet extends HttpServlet {
         		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
         		continue;
     		}
-        	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(time.getStartSlot()));
-        	cal.set(Calendar.MINUTE, TimeSlot.toMinute(time.getStartSlot()));
+        	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
+        	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
         	cal.set(Calendar.SECOND, 0);
     		if (time.getWeekCode().get(idx)) {
     			if (!tf.format(first).equals(tf.format(cal.getTime()))) {
     				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
     		        x.add("RECURRENCE-ID:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
     		        x.add("DTSTART:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    		    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * time.getLength() - time.getBreakTime());
+    		    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     		        x.add("DTEND:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
     			}
     		} else {
@@ -807,11 +810,11 @@ public class CalendarServlet extends HttpServlet {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void printMeetingRest(SectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
+	private void printMeetingRest(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
         out.println("UID:" + section.getId());
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
-        		section.getSubpart().getName() + " " + server.getSectionName(course.getUniqueId(), section));
+        		section.getSubpart().getName() + " " + section.getName(course.getUniqueId()));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
 		if (course.getConsent() != null && !course.getConsent().isEmpty())
 			desc += " (" + course.getConsent() + ")";
@@ -859,8 +862,8 @@ public class CalendarServlet extends HttpServlet {
 
     	int idx = weekCode.nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(start));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(start));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(start));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(start));
     	cal.set(Calendar.SECOND, 0);
     	Date first = null;
     	while (idx < weekCode.size() && first == null) {
@@ -897,10 +900,10 @@ public class CalendarServlet extends HttpServlet {
     	cal.setTime(dpFirstDate);
     	idx = weekCode.length() - 1;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(start));
-    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(start));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(start));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(start));
     	cal.set(Calendar.SECOND, 0);
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * len);
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
     	Date last = null;
     	while (idx >= 0 && last == null) {
     		if (weekCode.get(idx)) {
@@ -935,7 +938,7 @@ public class CalendarServlet extends HttpServlet {
     	
     	out.println("BEGIN:VFREEBUSY");
         out.println("DTSTART:" + df.format(first) + "T" + tf.format(first) + "Z");
-    	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * len);
+    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
         out.println("DTEND:" + df.format(last) + "T" + tf.format(last) + "Z");
         out.println("COMMENT:Free Time");
 
@@ -970,11 +973,11 @@ public class CalendarServlet extends HttpServlet {
         			break;
         		}
         		if (offered) {
-        	    	cal.set(Calendar.HOUR_OF_DAY, TimeSlot.toHour(start));
-        	    	cal.set(Calendar.MINUTE, TimeSlot.toMinute(start));
+        	    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(start));
+        	    	cal.set(Calendar.MINUTE, Constants.toMinute(start));
         	    	cal.set(Calendar.SECOND, 0);
                     out.print("FREEBUSY:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-                	cal.add(Calendar.MINUTE, TimeSlot.SLOT_LENGTH_MINS.value() * len);
+                	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
                     out.println("/" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
         		}
     		}

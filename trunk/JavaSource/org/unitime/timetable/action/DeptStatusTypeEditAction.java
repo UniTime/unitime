@@ -299,7 +299,10 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                 }
             }
-            if (s.canSectioningStudents()) {
+            if (s.canOnlineSectionStudents()) {
+            	if (rights.length()>0) rights+="; ";
+            	rights += "sectioning";
+            } else if (s.canSectionAssistStudents()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "assistant";
             } else if (s.canPreRegisterStudents()) {

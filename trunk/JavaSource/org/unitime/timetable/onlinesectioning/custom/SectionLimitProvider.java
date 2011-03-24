@@ -17,14 +17,22 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom;
+package org.unitime.timetable.onlinesectioning.custom;
 
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.shared.SectioningException;
+import java.util.Collection;
+import java.util.Map;
+
+import net.sf.cpsolver.studentsct.model.Section;
+
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
  * @author Tomas Muller
  */
-public interface CourseDetailsProvider {
-	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException;
+public interface SectionLimitProvider {
+
+	public int[] getSectionLimit(AcademicSessionInfo session, Long courseId, Section section);
+	public Map<Long, int[]> getSectionLimits(AcademicSessionInfo session, Long courseId, Collection<Section> sections);
+	public Map<Long, int[]> getSectionLimitsFromCache(AcademicSessionInfo session, Long courseId, Collection<Section> sections);
+
 }

@@ -315,6 +315,7 @@ public class WebTable extends Composite {
 		private Cell[] iCells;
 		private int iRowIdx = -1;
 		private WebTable iTable;
+		private boolean iSelectable = true;
 		public Row(Cell... cells) {
 			iCells = cells;
 		}
@@ -337,6 +338,8 @@ public class WebTable extends Composite {
 		public void setRowIdx(int rowIdx) { iRowIdx = rowIdx; }
 		public void setTable(WebTable table) { iTable = table; }
 		public WebTable getTable() { return iTable; }
+		public boolean isSelectable() { return iSelectable; }
+		public void setSelectable(boolean selectable) { iSelectable = selectable; }
 		public void setCell(int col, Cell cell) {
 			iCells[col] = cell;
 			if (iTable != null) {
@@ -543,7 +546,10 @@ public class WebTable extends Composite {
 		    Element body = DOM.getParent(tr);
 		    int row = DOM.getChildIndex(body, tr);
 
-		    switch (DOM.eventGetType(event)) {
+			if (row >= getHeaderRowsCount() && row < getHeaderRowsCount() + iRows.length && !iRows[row - getHeaderRowsCount()].isSelectable())
+				return;
+			
+			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
 				if (row >= getHeaderRowsCount() && row < getHeaderRowsCount() + iRows.length) {
 					if (isSelectSameIdRows()) {

@@ -468,4 +468,10 @@
 			<type>java.lang.Boolean</type>
 		</attribute>
 	</tag>
+	
+	<tag>
+		<name>offering-locks</name>
+		<tag-class>org.unitime.timetable.tags.OfferingLocks</tag-class>
+		<body-content>empty</body-content>
+	</tag>
 </taglib>

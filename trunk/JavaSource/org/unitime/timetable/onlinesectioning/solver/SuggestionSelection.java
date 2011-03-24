@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.Hashtable;
 import java.util.List;

@@ -54,7 +54,8 @@ public enum SectioningExceptionType {
 	CUSTOM_SECTION_NAMES_FAILURE,
 	CUSTOM_COURSE_DETAILS_FAILURE,
 	CUSTOM_SECTION_LIMITS_FAILURE,
-	NO_CUSTOM_COURSE_DETAILS;
+	NO_CUSTOM_COURSE_DETAILS,
+	COURSE_LOCKED;
 	
 	private static StudentSectioningExceptions sMessages = null;
 	
@@ -94,6 +95,7 @@ public enum SectioningExceptionType {
 		case CUSTOM_COURSE_DETAILS_FAILURE: return sMessages.customCourseDetailsFailed(problem);
 		case NO_CUSTOM_COURSE_DETAILS: return sMessages.noCustomCourseDetails();
 		case CUSTOM_SECTION_LIMITS_FAILURE: return sMessages.customSectionLimitsFailed(problem);
+		case COURSE_LOCKED: return sMessages.courseLocked(problem);
 		case UNKNOWN: return sMessages.unknown(problem);
 		default: return name() + (problem == null ? "" : ": " + problem);
 		}

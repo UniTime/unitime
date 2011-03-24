@@ -75,12 +75,14 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -247,11 +249,14 @@ public class ClassInfoModel implements Serializable {
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
         List<Long> classIds = new ArrayList<Long>();
+        Set<Long> offeringIds = new HashSet<Long>();
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
                 classIds.add(assignment.getClassId());
-        		String m = assignment.getClazz(hibSession).unassignCommited(iManagerExternalId, hibSession);
+                Class_ clazz = assignment.getClazz(hibSession);
+        		String m = clazz.unassignCommited(iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
+                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Unassignment of "+assignment.getClassName()+" failed, reason: "+e.getMessage();
             }
@@ -259,14 +264,26 @@ public class ClassInfoModel implements Serializable {
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
                 classIds.add(assignment.getClassId());
-                String m = assignment.getClazz(hibSession).assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
+                Class_ clazz = assignment.getClazz(hibSession);
+                String m = clazz.assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
+                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
             }
         }
         
-        StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        Session session = SessionDAO.getInstance().get(sessionId, hibSession); 
+        if (session.getStatusType().canOnlineSectionStudents()) {
+        	List<Long> unlockedOfferings = new ArrayList<Long>();
+        	for (Long offeringId: offeringIds)
+        		if (!session.isOfferingLocked(offeringId))
+        			unlockedOfferings.add(offeringId);
+        	if (!unlockedOfferings.isEmpty())
+        		StudentSectioningQueue.offeringChanged(hibSession, sessionId, offeringIds);
+        } else if (session.getStatusType().canSectionAssistStudents()) {
+        	StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        }
         hibSession.flush();
         
         return message;

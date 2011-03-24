@@ -508,7 +508,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isAlternative(),
                         student,
                         courses,
-                        cd.isWaitlist(),
+                        cd.isWaitlist(), 
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
@@ -549,7 +549,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         false,
                         student,
                         cx,
-                        false,
+                        true,
                         timeStamp.get(course.getId()));
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
@@ -929,7 +929,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch s.classEnrollments as e " +
-                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a " : "") +
+                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();

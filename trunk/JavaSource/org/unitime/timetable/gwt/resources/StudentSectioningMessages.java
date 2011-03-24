@@ -121,6 +121,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Saving...")
 	String courseRequestsSaving();
 
+	@DefaultMessage("Loading...")
+	String courseRequestsLoading();
+
 	@DefaultMessage("Validation failed, see above for errors.")
 	String validationFailed();
 
@@ -285,16 +288,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Student Sectioning widget messags
 	 */
-	@DefaultMessage("<u>P</u>revious")
-	String buttonPrev();
+	@DefaultMessage("<u>R</u>equests")
+	String buttonRequests();
 	
-	@DefaultMessage("<u>N</u>ext")
-	String buttonNext();
+	@DefaultMessage("Re-schedule")
+	String buttonReset();
+
+	@DefaultMessage("<u>S</u>chedule")
+	String buttonSchedule();
 	
 	@DefaultMessage("<u>E</u>nroll")
 	String buttonEnroll();
 	
-	@DefaultMessage("P<u>r</u>int")
+	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
 	
 	@DefaultMessage("E<u>x</u>port")
@@ -398,6 +404,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not available.")
 	String classNotAvailable();
 	
+	@DefaultMessage("Not assigned.")
+	String courseNotAssigned();
+
 	@DefaultMessage("Conflicts with ")
 	String conflictWith();
 
@@ -412,4 +421,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Expected {0} students, but only {1} spaces are available, please try to avoid this class.")
 	String highDemand(int expected, int available);
+
+	@DefaultMessage("Course {0} is locked.")
+	String courseLocked(String course);
+	
+	@DefaultMessage("You are currently enrolled in {0}.")
+	String saved(String clazz);
+
+	@DefaultMessage("You are currently enrolled in {0}, this enrollment will get dropped.")
+	String unassignment(String clazz);
+
+	@DefaultMessage("You are currently not enrolled in {0}.")
+	String assignment(String clazz);
+	
+	@DefaultMessage("Show unassignments")
+	String showUnassignments();
 }
