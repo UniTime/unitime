@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server.custom.purdue;
+package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,10 +28,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.gwt.server.AcademicSessionInfo;
-import org.unitime.timetable.gwt.server.custom.CourseDetailsProvider;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 
 /**
  * @author Tomas Muller
@@ -64,6 +64,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 		return session.getYear();
 	}
 
+	@Override
 	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
 			if (courseNbr.length() > 5) courseNbr = courseNbr.substring(0, 5);
@@ -80,7 +81,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 		}
 	}
 	
-	public String getDetails(URL courseUrl) throws SectioningException {
+	protected String getDetails(URL courseUrl) throws SectioningException {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(courseUrl.openStream()));
 			StringBuffer content = new StringBuffer();

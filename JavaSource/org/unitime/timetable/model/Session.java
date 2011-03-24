@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,9 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
+import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
@@ -745,4 +749,26 @@ public class Session extends BaseSession implements Comparable {
                 setLong("sessionId",getUniqueId()).uniqueResult()).longValue()>0;
 	}
 
+	public Collection<Long> getLockedOfferings() {
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		return (server == null ? null : server.getLockedOfferings());		
+	}
+	
+	public boolean isOfferingLocked(Long offeringId) {
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		return server != null && server.isOfferingLocked(offeringId);
+	}
+	
+	public void lockOffering(Long offeringId) {
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		if (server != null) server.lockOffering(offeringId);
+	}
+	
+	public void unlockOffering(Long offeringId) {
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		if (server != null) {
+			server.execute(new ReloadOfferingAction(offeringId));
+			server.unlockOffering(offeringId);
+		}
+	}
 }

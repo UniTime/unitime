@@ -69,7 +69,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
 		private ArrayList<String> iOverlaps = null;
-		private boolean iNotAvailable = false;
+		private boolean iNotAvailable = false, iLocked = false;
 		private String iInstead;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
@@ -105,6 +105,9 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public boolean isNotAvailable() { return iNotAvailable; }
 		public void setNotAvailable(boolean notAvailable) { iNotAvailable = notAvailable; }
 		
+		public boolean isLocked() { return iLocked; }
+		public void setLocked(boolean locked) { iLocked = locked; }
+
 		public void setInstead(String instead) { iInstead = instead; }
 		public String getInstead() { return iInstead; }
 		
@@ -145,6 +148,10 @@ public class ClassAssignmentInterface implements IsSerializable {
 			if (iEnrollment == null || iEnrollment == 0)  return "";
 			if (iEnrollment < 0) return "&infin;";
 			return iEnrollment.toString();
+		}
+		
+		public String toString() {
+			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? "NOT ASSIGNED" : getClassAssignments());
 		}
 	}
 	
@@ -307,7 +314,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 			if (iLimit == null) return "";
 			if (iLimit[1] >= 9999 || iLimit[1] < 0) return "&infin;";
 			if (iLimit[0] < 0) return String.valueOf(iLimit[1]);
-			return (iLimit[1] - iLimit[0]) + " / " + iLimit[1];
+			return (iLimit[1] > iLimit[0] ? iLimit[1] - iLimit[0] : 0) + " / " + iLimit[1];
 		}
 		public boolean isAvailable() {
 			if (iLimit == null) return true;
@@ -344,6 +351,15 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public int getExpected() { return (iExpected == null ? 0 : iExpected); }
 		public boolean isOfHighDemand() {
 			return isAvailable() && !isUnlimited() && hasExpected() && getExpected() > getAvailableLimit();
+		}
+		
+		public String toString() {
+			return (isFreeTime() ? "Free Time" : getSubpart() + " " + getSection()) + 
+					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}) : "") +
+					(hasRoom() ? " " + getRooms(",") : "") +
+					(isSaved() || isPinned() || isOfHighDemand() || hasAlternatives() || hasDistanceConflict() || isUnlimited() ? "[" +
+							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +
+							"]" : "");
 		}
 	}
 }

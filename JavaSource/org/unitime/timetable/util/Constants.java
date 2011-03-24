@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -577,5 +577,16 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 			return DAY_MON;
 		}
     }
+    
+	public static int toHour(int slot) {
+		int min = slot * SLOT_LENGTH_MIN + FIRST_SLOT_TIME_MIN;
+		return min / 60;
+	}
+	
+	public static int toMinute(int slot) {
+		int min = slot * SLOT_LENGTH_MIN + FIRST_SLOT_TIME_MIN;
+		return min % 60;
+	}
+
 
 }

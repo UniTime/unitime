@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.onlinesectioning;
 
 import java.util.BitSet;
 import java.util.Date;
@@ -36,6 +36,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	private BitSet iFreeTimePattern = null;
 	private Date iSessionBegin = null;
 	private Date iDatePatternFirstDate = null;
+	private boolean iSectioningEnabled = false;;
 	
 	public AcademicSessionInfo(Session session) {
 		iUniqueId = session.getUniqueId();
@@ -49,6 +50,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 		iFreeTimePattern = getFreeTimeBitSet(session);
 		iSessionBegin = session.getEventBeginDate();
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
+		iSectioningEnabled = session.getStatusType().canOnlineSectionStudents();
 	}
 	
 	public AcademicSessionInfo(Long uniqueId, String year, String term, String campus) {
@@ -102,4 +104,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	public String toCompactString() {
 		return getTerm() + getYear() + getCampus();
 	}
+	
+	public boolean isSectioningEnabled() { return iSectioningEnabled; }
+	public void setSectioningEnabled(boolean enable) { iSectioningEnabled = enable; }
 }

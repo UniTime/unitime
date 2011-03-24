@@ -165,6 +165,13 @@
 						</logic:notEqual>
 			
 					</logic:equal>
+					
+					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Lock Offering (Alt+X)">Lock</html:submit> 
+					</logic:equal>
+					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Unlock Offering (Alt+X)">Unlock</html:submit> 
+					</logic:equal>
 				
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
@@ -437,6 +444,8 @@
 					<html:hidden property="instrOfferingId"/>	
 					<html:hidden property="nextId"/>
 					<html:hidden property="previousId"/>
+					<html:hidden property="canLock"/>
+					<html:hidden property="canUnlock"/>
 					
 				<!-- Display buttons only if editable by current user -->
 				<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
@@ -493,6 +502,13 @@
 						</html:submit>
 					</logic:notEqual>
 		
+				</logic:equal>
+
+				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Lock Offering (Alt+X)">Lock</html:submit> 
+				</logic:equal>
+				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Unlock Offering (Alt+X)">Unlock</html:submit> 
 				</logic:equal>
 
 				<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
