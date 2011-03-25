@@ -173,6 +173,11 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		}
 		
 		// Save results
+		String majors = "";
+		for (PosMajor major: clasf.getCurriculum().getMajors()) {
+			if (!majors.isEmpty()) majors += "|";
+			majors += major.getCode();
+		}
 		for (CurriculumCourse course: clasf.getCourses()) {
 			Set<WeightedStudentId> courseStudents = iDemands.get(course.getCourse().getUniqueId());
 			if (courseStudents == null) {
@@ -181,7 +186,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			}
 			for (CurStudent s: m.getCourse(course.getUniqueId()).getStudents()) {
 				WeightedStudentId student = new WeightedStudentId(s.getStudentId());
-				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), null);
+				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
 				student.setCurriculum(clasf.getCurriculum().getAbbv());
 				courseStudents.add(student);
 				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getStudentId());
