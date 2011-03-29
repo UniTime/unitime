@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.curricula;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -74,7 +75,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
 		iFallback.init(hibSession, progress, session, offerings);
 		
 		List<Curriculum> curricula = null;
