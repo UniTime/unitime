@@ -57,7 +57,6 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     private static Log sLog = LogFactory.getLog(StudentSectioningDatabaseSaver.class);
     private boolean iIncludeCourseDemands = true;
-    private boolean iIncludeLastLikeStudents = true;
     private String iInitiative = null;
     private String iTerm = null;
     private String iYear = null;
@@ -69,15 +68,16 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     private int iInsert = 0;
     
     private Progress iProgress = null;
+	private boolean iProjections = false;
 
     public StudentSectioningDatabaseSaver(Solver solver) {
         super(solver);
         iIncludeCourseDemands = solver.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
-        iIncludeLastLikeStudents = solver.getProperties().getPropertyBoolean("Load.IncludeLastLikeStudents", iIncludeLastLikeStudents);
         iInitiative = solver.getProperties().getProperty("Data.Initiative");
         iYear = solver.getProperties().getProperty("Data.Year");
         iTerm = solver.getProperties().getProperty("Data.Term");
         iProgress = Progress.getInstance(getModel());
+        iProjections = "Projection".equals(solver.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
     }
     
     public void save() {
@@ -96,7 +96,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             save(session, hibSession);
             
-            StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
+            StudentSectioningQueue.sessionStatusChanged(hibSession, session.getUniqueId(), true);
+            
+            hibSession.flush();
             
             tx.commit(); tx = null;
             
@@ -207,7 +209,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         iProgress.incProgress();
         
-        if (iIncludeCourseDemands) {
+        if (iIncludeCourseDemands && !iProjections) {
             iStudents = new Hashtable();
             iCourses = new Hashtable();
             iRequests = new Hashtable();
@@ -231,7 +233,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             flush(hibSession);
         }
         
-        if (iIncludeLastLikeStudents) {
+        if (getModel().getNrLastLikeRequests(false) > 0 || iProjections) {
             iProgress.setPhase("Computing expected/held space for online sectioning...", 0);
             getModel().computeOnlineSectioningInfos();
             iProgress.incProgress();
@@ -271,30 +273,32 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         // Update class enrollments
-        iProgress.setPhase("Updating class enrollments...", getModel().getOfferings().size());
-        for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
-            Offering offering = (Offering)e.next(); iProgress.incProgress();
-            for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
-                Config config = (Config)f.next();
-                for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
-                    Subpart subpart = (Subpart)g.next();
-                    for (Iterator h=subpart.getSections().iterator();h.hasNext();) {
-                        Section section = (Section)h.next();
-                        Class_ clazz = iClasses.get(section.getId());
-                        if (clazz==null) continue;
-                        int enrl = 0;
-                        for (Iterator i=section.getEnrollments().iterator();i.hasNext();) {
-                        	Enrollment en = (Enrollment)i.next();
-                        	if (!en.getStudent().isDummy()) enrl++;
+        if (!iProjections) {
+            iProgress.setPhase("Updating class enrollments...", getModel().getOfferings().size());
+            for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
+                Offering offering = (Offering)e.next(); iProgress.incProgress();
+                for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
+                    Config config = (Config)f.next();
+                    for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
+                        Subpart subpart = (Subpart)g.next();
+                        for (Iterator h=subpart.getSections().iterator();h.hasNext();) {
+                            Section section = (Section)h.next();
+                            Class_ clazz = iClasses.get(section.getId());
+                            if (clazz==null) continue;
+                            int enrl = 0;
+                            for (Iterator i=section.getEnrollments().iterator();i.hasNext();) {
+                            	Enrollment en = (Enrollment)i.next();
+                            	if (!en.getStudent().isDummy()) enrl++;
+                            }
+                            clazz.setEnrollment(enrl);
+                            hibSession.saveOrUpdate(clazz);
+                            flushIfNeeded(hibSession);
                         }
-                        clazz.setEnrollment(enrl);
-                        iProgress.debug(section.getName()+" has an enrollment of "+enrl);
-                        hibSession.saveOrUpdate(clazz);
-                        flushIfNeeded(hibSession);
                     }
                 }
             }
         }
+        
         flush(hibSession);
         
         iProgress.setPhase("Done",1);iProgress.incProgress();
