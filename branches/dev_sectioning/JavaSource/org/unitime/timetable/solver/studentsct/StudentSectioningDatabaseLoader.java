@@ -24,15 +24,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -57,7 +58,6 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
@@ -70,16 +70,20 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
+import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.DateUtils;
 
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.studentsct.StudentSectioningLoader;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.Test;
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
 import net.sf.cpsolver.studentsct.model.Choice;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -104,7 +108,6 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private static Log sLog = LogFactory.getLog(StudentSectioningDatabaseLoader.class);
     private boolean iIncludeCourseDemands = true;
-    private boolean iIncludeLastLikeStudents = true;
     private boolean iIncludeUseCommittedAssignments = false;
     private boolean iMakeupAssignmentsFromRequiredPrefs = false;
     private boolean iLoadStudentInfo = true;
@@ -117,13 +120,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private Date iDatePatternFirstDate = null;
 	private boolean iTweakLimits = false;
 	private boolean iLoadSectioningInfos = false;
+	private boolean iProjections = false;
     
     private Progress iProgress = null;
-
+    
+    private StudentCourseDemands iStudentCourseDemands = null;
+    
     public StudentSectioningDatabaseLoader(StudentSectioningModel model) {
         super(model);
         iIncludeCourseDemands = model.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
-        iIncludeLastLikeStudents = model.getProperties().getPropertyBoolean("Load.IncludeLastLikeStudents", iIncludeLastLikeStudents);
         iIncludeUseCommittedAssignments = model.getProperties().getPropertyBoolean("Load.IncludeUseCommittedAssignments", iIncludeUseCommittedAssignments);
         iLoadStudentInfo = model.getProperties().getPropertyBoolean("Load.LoadStudentInfo", iLoadStudentInfo);
         iMakeupAssignmentsFromRequiredPrefs = model.getProperties().getPropertyBoolean("Load.MakeupAssignmentsFromRequiredPrefs", iMakeupAssignmentsFromRequiredPrefs);
@@ -134,6 +139,24 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iTweakLimits = model.getProperties().getPropertyBoolean("Load.TweakLimits", iTweakLimits);
         iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
         iProgress = Progress.getInstance(getModel());
+        
+        try {
+        	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
+        	if (studentCourseDemandsClassName.indexOf(' ') >= 0) studentCourseDemandsClassName = studentCourseDemandsClassName.replace(" ", "");
+        	if (studentCourseDemandsClassName.indexOf('.') < 0) studentCourseDemandsClassName = "org.unitime.timetable.solver.curricula." + studentCourseDemandsClassName;
+            Class studentCourseDemandsClass = Class.forName(studentCourseDemandsClassName);
+            iStudentCourseDemands = (StudentCourseDemands)studentCourseDemandsClass.getConstructor(DataProperties.class).newInstance(getModel().getProperties());
+            iProgress.info("Projected demands: " + getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName()));
+        } catch (Exception e) {
+        	if (model.getProperties().getPropertyBoolean("Load.IncludeLastLikeStudents", false)) {
+        		iStudentCourseDemands = new ProjectedStudentCourseDemands(model.getProperties());
+            	iProgress.info("Projected demands: Projected Student Course Demands");
+        	} else {
+        		iProgress.info("Projected demands: None");
+        	}
+        }
+
+        iProjections = "Projection".equals(model.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
     }
     
     public void load() {
@@ -298,7 +321,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Offering offering = new Offering(io.getUniqueId().longValue(), courseName);
         for (Iterator<CourseOffering> i = io.getCourseOfferings().iterator(); i.hasNext(); ) {
         	CourseOffering co = i.next();
-            int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
+            int projected = (co.getProjectedDemand()==null ? 0 : co.getProjectedDemand().intValue());
             boolean unlimited = false;
             int limit = 0;
             for (Iterator<InstrOfferingConfig> j = io.getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
@@ -601,7 +624,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                } else {
                	CourseRequest cr = (CourseRequest)r;
                	Enrollment enrl = (Enrollment)r.getInitialAssignment();
-               	iProgress.error("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ")");
+               	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ")" ));
                	boolean hasLimit = false, hasOverlap = false;
                	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
                		Section section = i.next();
@@ -678,17 +701,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
    }
     
-    private void fixWeights() {
-        Hashtable lastLike = new Hashtable();
-        Hashtable real = new Hashtable();
+    /*
+    private void fixWeights(org.hibernate.Session hibSession) {
+        Hashtable<Course, Integer> lastLike = new Hashtable<Course, Integer>();
+        Hashtable<Course, Integer> real = new Hashtable<Course, Integer>();
         iProgress.setPhase("Computing last-like request weights...", 2*getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
         	iProgress.incProgress();
             for (Request request: student.getRequests()) {
                 if (request instanceof CourseRequest) {
                     CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().get(0);
-                    Integer cnt = (Integer)(student.isDummy()?lastLike:real).get(course);
+                    Course course = courseRequest.getCourses().get(0);
+                    Integer cnt = (student.isDummy()?lastLike:real).get(course);
                     (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
                 }
             }
@@ -717,9 +741,115 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
     }
+    */
+    
+    private String curriculum(Student student) {
+    	return (student.getAcademicAreaClasiffications().isEmpty() ? "" : student.getAcademicAreaClasiffications().get(0).getArea() + ":" + student.getAcademicAreaClasiffications().get(0).getCode()) + ":" +
+			(student.getMajors().isEmpty() ? "" : ":" + student.getMajors().get(0).getCode());
+    }
+    
+    Map<Long, Map<String, Integer>> iCourse2Curricula2Weight = new Hashtable<Long, Map<String, Integer>>();
+    private void updateCurriculumCounts(Student student) {
+    	String curriculum = curriculum(student);
+    	for (Request request: student.getRequests()) {
+    		if (request instanceof CourseRequest) {
+    			Course course = (request.getInitialAssignment() != null ? request.getInitialAssignment().getCourse() : ((CourseRequest)request).getCourses().get(0));
+    			Map<String, Integer> c2w = iCourse2Curricula2Weight.get(course.getId());
+    			if (c2w == null) {
+    				c2w = new Hashtable<String, Integer>();
+    				iCourse2Curricula2Weight.put(course.getId(), c2w);
+    			}
+    			Integer cx = c2w.get(curriculum);
+    			c2w.put(curriculum, 1 + (cx == null ? 0 : cx));
+    		}
+    	}
+    }
+    
+    private void fixWeights(org.hibernate.Session hibSession, Collection<Course> courses) {
+    	iProgress.setPhase("Computing projected request weights...", courses.size());
+    	for (Course course: courses) {
+    		iProgress.incProgress();
+    		
+    		Map<String, Integer> cur2real = iCourse2Curricula2Weight.get(course.getId());
+    		if (cur2real != null) {
+        		Map<String, Double> cur2proj = new Hashtable<String, Double>();
+        		for (CourseRequest request: course.getRequests()) {
+        			if (!request.getCourses().get(0).equals(course) || !request.getStudent().isDummy()) continue;
+    				Double proj = cur2proj.get(curriculum(request.getStudent()));
+    				cur2proj.put(curriculum(request.getStudent()), request.getWeight() + (proj == null ? 0.0 : proj));
+        		}
+        		
+        		for (String cur: cur2proj.keySet()) {
+        			double proj = cur2proj.get(cur);
+        			Integer real = cur2real.get(cur);
+        			if (real == null) continue;
+        			iProgress.debug("Projected demands for course " + course.getName() + ": " + cur.replace(':', ' ') + " multiplies by " + (real >= proj ? 0.0 : (proj - real) / proj) + " (projected=" + proj + ", real=" + real + ")");
+        		}
+        		
+        		for (CourseRequest request: course.getRequests()) {
+        			if (!request.getCourses().get(0).equals(course) || !request.getStudent().isDummy()) continue;
+        			double proj = cur2proj.get(curriculum(request.getStudent()));
+        			Integer real = cur2real.get(curriculum(request.getStudent()));
+        			if (real == null) continue;
+        			request.setWeight(request.getWeight() * (real >= proj ? 0.0 : (proj - real) / proj));
+        		}
+    		}
+
+    		double nrStudents = 0.0;
+    		double nrLastLike = 0.0;
+    		int lastLikeCount = 0;
+    		for (CourseRequest request: course.getRequests()) {
+    			if (!request.getCourses().get(0).equals(course)) continue;
+    			nrStudents += request.getWeight();
+    			if (request.getStudent().isDummy()) {
+    				nrLastLike += request.getWeight();
+    				lastLikeCount ++;
+    			}
+    		}
+	        double projected = course.getProjected();
+	        int limit = course.getLimit();
+	        if (course.getLimit() < 0) {
+	            iProgress.debug("Course " + course.getName() + " is unlimited.");
+	            continue;
+	        }
+	        if (projected <= 0) {
+	        	iProgress.info("No projected demand for course " + course.getName() + ", using course limit (" + limit + ")");
+	            projected = limit;
+	        } else if (limit < projected) {
+	        	if (!iProjections)
+	        		iProgress.info("Projected number of students is over course limit for course " + course.getName() + " (" + Math.round(projected) + ">" + limit + ")");
+	        	projected = limit;
+	        }
+    		if (lastLikeCount <= 0) {
+				iProgress.info("No projected course demands for course " + course.getName());
+    			continue;
+    		}
+	        double weight = (nrLastLike <= 0 ? 0 : Math.max(0.0, projected - (nrStudents - nrLastLike)) / nrLastLike);
+	        iProgress.debug("Projected student weight for " + course.getName() + " is " + weight + " (projected=" + nrLastLike + ", real=" + (nrStudents - nrLastLike) + ", limit=" + projected + ")");
+	        int left = 0;
+	        for (CourseRequest request: new ArrayList<CourseRequest>(course.getRequests())) {
+	        	if (request.getStudent().isDummy()) {
+	        		request.setWeight(weight * request.getWeight());
+	        		if (request.getWeight() <= 0.0) {
+	                    Student student = request.getStudent();
+	                    getModel().removeVariable(request);
+	                    student.getRequests().remove(request);
+	                    for (Course c: request.getCourses())
+	                    	c.getRequests().remove(request);
+	                    if (student.getRequests().isEmpty())
+	                    	getModel().removeStudent(student);
+	        		} else {
+	        			left++;
+	        		}
+	        	}
+	        }
+	        if (left <= 0)
+	        	iProgress.info("No projected course demands needed for course " + course.getName());
+    	}
+    }
     
     public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, Long courseOfferingId, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable classAssignments) {
-        iProgress.debug("Loading last like demand of student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+") for "+courseOfferingId);
+        iProgress.debug("Loading projected course demands of student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+") for "+courseOfferingId);
         Student student = (Student)studentTable.get(s.getUniqueId());
         if (student==null) {
             student = new Student(s.getUniqueId().longValue(),true);
@@ -766,6 +896,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
+        for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
+            AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
+            student.getAcademicAreaClasiffications().add(
+                    new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
+            for (Iterator j=aac.getAcademicArea().getPosMajors().iterator();j.hasNext();) {
+                PosMajor major = (PosMajor)j.next();
+                if (s.getPosMajors().contains(major)) {
+                    student.getMajors().add(
+                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),major.getCode()));
+                }
+                    
+            }
+        }
+        /*
         HashSet majors = new HashSet();
         HashSet minors = new HashSet();
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
@@ -807,6 +951,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 iProgress.trace("mn: "+minor.getCode());
             }
         }
+        */
     }
 	public static BitSet getFreeTimeBitSet(Session session) {
 		int startMonth = session.getPatternStartMonth();
@@ -903,7 +1048,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	
         Hashtable<Long, Course> courseTable = new Hashtable<Long, Course>();
         Hashtable<Long, Section> classTable = new Hashtable<Long, Section>();
-        List offerings = hibSession.createQuery(
+        List<InstructionalOffering> offerings = hibSession.createQuery(
                 "select distinct io from InstructionalOffering io " +
                 "left join fetch io.courseOfferings as co "+
                 "left join fetch io.instrOfferingConfigs as ioc "+
@@ -911,19 +1056,17 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch ss.classes as c "+
                 "left join fetch io.reservations as r "+
                 "where " +
-                "io.session.uniqueId=:sessionId and io.notOffered=false").
+                "io.session.uniqueId = :sessionId and io.notOffered = false").
                 setLong("sessionId",session.getUniqueId().longValue()).
                 setFetchSize(1000).list();
         iProgress.setPhase("Loading course offerings...", offerings.size());
-        for (Iterator i=offerings.iterator();i.hasNext();) {
-            InstructionalOffering io = (InstructionalOffering)i.next(); iProgress.incProgress();
-            if (io.isNotOffered()) continue;
+        for (InstructionalOffering io: offerings) {
+        	iProgress.incProgress();
             Offering offering = loadOffering(io, courseTable, classTable);
             if (offering!=null) getModel().addOffering(offering);
         }
         
-        HashSet loadedStudentIds = new HashSet();
-        if (iIncludeCourseDemands) {
+        if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
                     "select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd "+
@@ -938,16 +1081,123 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); iProgress.incProgress();
                 if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
                 Student student = loadStudent(s, courseTable, classTable);
-                if (student!=null)
+                if (student == null) continue;
+                updateCurriculumCounts(student);
+                if (iProjections) {
+                	// Decrease the limits accordingly
+                	for (Request request: student.getRequests()) {
+                		if (request.getInitialAssignment() != null && request.getInitialAssignment().isCourseRequest()) {
+                			Enrollment enrollment = request.getInitialAssignment();
+                			if (enrollment.getConfig().getLimit() > 0)
+                				enrollment.getConfig().setLimit(enrollment.getConfig().getLimit());
+                			for (Section section: enrollment.getSections())
+                				if (section.getLimit() > 0)
+                					section.setLimit(section.getLimit() - 1);
+                			if (enrollment.getCourse() != null && enrollment.getCourse().getLimit() > 0)
+                				enrollment.getCourse().setLimit(enrollment.getCourse().getLimit() - 1);
+                			if (enrollment.getReservation() != null) {
+                				if (enrollment.getReservation() instanceof IndividualReservation)
+                					((IndividualReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
+                				else if (enrollment.getReservation() instanceof GroupReservation)
+                					((GroupReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
+                				else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getLimit() > 0)
+                					((CurriculumReservation)enrollment.getReservation()).setLimit(enrollment.getReservation().getLimit() - 1);
+                			}
+                		}
+                		if (request instanceof CourseRequest) {
+                			for (Course course: ((CourseRequest)request).getCourses()) {
+                				course.getRequests().remove(request);
+                			}
+                		}
+                	}
+                } else {
                     getModel().addStudent(student);
-                if (s.getExternalUniqueId()!=null)
-                    loadedStudentIds.add(s.getExternalUniqueId());
-            	assignStudent(student, s);
+                    assignStudent(student, s);
+                }
             }
         }
         
+        if (iStudentCourseDemands != null) {
+        	iStudentCourseDemands.init(hibSession, iProgress, SessionDAO.getInstance().get(iSessionId, hibSession), offerings);
+    		Hashtable<Long, Student> students = new Hashtable<Long, Student>();
+    		
+            Hashtable<Long, Set<Long>> classAssignments = null;
+            if (iIncludeUseCommittedAssignments && !iStudentCourseDemands.isMakingUpStudents()) {
+                classAssignments = new Hashtable();
+                List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
+                    "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
+                    setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
+                iProgress.setPhase("Loading projected class assignments...", enrollments.size());
+                for (Iterator i=enrollments.iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next(); iProgress.incProgress();
+                    Long studentId = (Long)o[0];
+                    Long classId = (Long)o[1];
+                    Set<Long> classIds = classAssignments.get(studentId);
+                    if (classIds==null) {
+                        classIds = new HashSet<Long>();
+                        classAssignments.put(studentId, classIds);
+                    }
+                    classIds.add(classId);
+                }
+            }
+    		
+            iProgress.setPhase("Loading projected course requests...", offerings.size());
+        	long requestId = -1;
+            for (InstructionalOffering io: offerings) {
+            	iProgress.incProgress();
+            	for (CourseOffering co: io.getCourseOfferings()) {
+        	        Course course = courseTable.get(co.getUniqueId());
+        	        if (course == null) continue;
+            		Set<WeightedStudentId> demands = iStudentCourseDemands.getDemands(co);
+            		if (demands == null) continue;
+            		for (WeightedStudentId demand: demands) {
+            	        Student student = (Student)students.get(demand.getStudentId());
+            	        if (student == null) {
+            	            student = new Student(demand.getStudentId(), true);
+            	            if (demand.getArea() != null && demand.getClasf() != null)
+            	            	student.getAcademicAreaClasiffications().add(new AcademicAreaCode(demand.getArea(), demand.getClasf()));
+            	            if (demand.getArea() != null && demand.getMajor() != null && !demand.getMajor().isEmpty())
+            	            	for (String mj: demand.getMajor().split("\\|"))
+            	            		student.getMajors().add(new AcademicAreaCode(demand.getArea(), mj));
+            	            students.put(demand.getStudentId(), student);
+            	        }
+            	        List<Course> courses = new ArrayList<Course>();
+            	        courses.add(course);
+            	        CourseRequest request = new CourseRequest(
+            	        		requestId--,
+            	                0,
+            	                false,
+            	                student,
+            	                courses,
+            	                false,
+            	                null);
+            	        request.setWeight(demand.getWeight());
+            	        if (classAssignments != null && !classAssignments.isEmpty()) {
+            	        	Set<Long> classIds = classAssignments.get(demand.getStudentId());
+            	        	if (classIds != null) {
+            	                enrollments: for (Enrollment enrollment: request.values()) {
+            	                	for (Section section: enrollment.getSections())
+            	                		if (!classIds.contains(section.getId())) continue enrollments;
+            	                	request.setInitialAssignment(enrollment);
+            	                	break;
+            	                }
+            	        	}
+            	        }
+            		}
+            	}
+            }
+            
+            for (Student student: students.values()) {
+                getModel().addStudent(student);
+                assignStudent(student, null);
+            }
+            
+            fixWeights(hibSession, courseTable.values());
+        }
+        
+        /*
         if (iIncludeLastLikeStudents) {
-            Hashtable classAssignments = null;
+            Hashtable<Long, Set<Long>> classAssignments = null;
             if (iIncludeUseCommittedAssignments) {
                 classAssignments = new Hashtable();
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
@@ -958,9 +1208,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     Object[] o = (Object[])i.next(); iProgress.incProgress();
                     Long studentId = (Long)o[0];
                     Long classId = (Long)o[1];
-                    HashSet classIds = (HashSet)classAssignments.get(studentId);
+                    Set<Long> classIds = classAssignments.get(studentId);
                     if (classIds==null) {
-                        classIds = new HashSet();
+                        classIds = new HashSet<Long>();
                         classAssignments.put(studentId, classIds);
                     }
                     classIds.add(classId);
@@ -994,6 +1244,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	assignStudent(student, students.get(student.getId()));
             }
         }
+		*/
         
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
@@ -1014,8 +1265,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		}
         	}	
         }
-        
-        fixWeights();
         
         iProgress.setPhase("Done",1);iProgress.incProgress();
     }
