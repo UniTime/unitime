@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.curricula;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -45,7 +46,7 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	}
 
 	@Override
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings) {
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
 		iHibSession = hibSession;
 		iSessionId = session.getUniqueId();
 	}

@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.curricula;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -72,7 +73,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	@Override
 	public void init(Session hibSession, Progress progress,
 			org.unitime.timetable.model.Session session,
-			Set<InstructionalOffering> offerings) {
+			Collection<InstructionalOffering> offerings) {
 
 		iProjectedDemands.init(hibSession, progress, session, offerings);
 		
