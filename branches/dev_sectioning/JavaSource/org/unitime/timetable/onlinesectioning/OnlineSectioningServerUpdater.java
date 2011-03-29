@@ -188,17 +188,17 @@ public class OnlineSectioningServerUpdater extends Thread {
 			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
 			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) load = false;
 
-			if (!load) {
-				if (server != null) {
-					iLog.info("Unloading " + server.getAcademicSession());
-					OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
-				}
-				return;
+			if ((!load || reload) && server != null) {
+				iLog.info("Unloading " + server.getAcademicSession());
+				OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
+				server = null;
 			}
+
+			if (!load) return;
 			
-			if (server == null || reload)
+			if (server == null) { 
 				OnlineSectioningService.createInstance(academicSessionId);
-			else {
+			} else {
 				if (server.getAcademicSession().isSectioningEnabled() && !session.getStatusType().canOnlineSectionStudents())
 					server.releaseAllOfferingLocks();
 				server.getAcademicSession().setSectioningEnabled(session.getStatusType().canOnlineSectionStudents());
