@@ -3269,4 +3269,32 @@
 		<mysql onFail="next">alter table %SCHEMA%.class_ modify room_ratio double</mysql>
 		<mysql onFail="next">alter table %SCHEMA%.course_credit_unit_config modify fixed_units double</mysql>
 	</update>
+	<update version="67" date="29-Mar-2011" comment="Student Sectioning Projection">
+		<plsql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctBasic'</plsql>
+		<plsql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentSct.ProjectedCourseDemadsClass' as name, 
+				'None' as default_value, 
+				'Projected student course demands' as description, 
+				'enum(None,Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Student Course Requests,Enrolled Student Course Demands)' as type, 
+				%ORD% as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='StudentSctBasic')
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctBasic'</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%, 'StudentSct.ProjectedCourseDemadsClass', 'None', 'Projected student course demands', 'enum(None,Last Like Student Course Demands,Projected Student Course Demands,Curricula Course Demands,Curricula Last Like Course Demands,Student Course Requests,Enrolled Student Course Demands)', %ORD%, 1, %GID%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			type = 'enum(Initial,MPP,Projection)'
+			where name = 'StudentSctBasic.Mode'
+		</sql>
+	</update>
 </dbupdate>
