@@ -227,18 +227,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						// limited section, deduct enrollments
 						limit -= section.getEnrollments().size();
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
-						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
-							Enrollment enrollment = i.next();
-							if (enrollment.getStudent().getId() == studentId) { limit++; break; }
-						}
+						if (studentId >= 0)
+							for (Enrollment enrollment: section.getEnrollments())
+								if (enrollment.getStudent().getId() == studentId) { limit++; break; }
 					}
 					Section clonedSection = new Section(section.getId(), limit,
-							section.getName(), clonedSubpart, section.getPlacement(),
+							section.getName(course.getId()), clonedSubpart, section.getPlacement(),
 							section.getChoice().getInstructorIds(), section.getChoice().getInstructorNames(),
 							(section.getParent() == null ? null : sections.get(section.getParent())));
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
-					clonedSection.setPenalty(section.getOnlineSectioningPenalty());
+			        if (limit >= 0)
+						clonedSection.setPenalty(Math.round(section.getSpaceExpected() - limit));
 					sections.put(section, clonedSection);
 				}
 			}
@@ -566,7 +566,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(server.getCourseInfo(course.getId()).getConsent());
-					a.setExpected(section.getSpaceExpected());
+					a.setExpected(Math.round(section.getSpaceExpected()));
 				}
 				ret.add(ca);
 			} else {

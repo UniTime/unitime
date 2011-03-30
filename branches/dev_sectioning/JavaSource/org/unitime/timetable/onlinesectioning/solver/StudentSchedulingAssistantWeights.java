@@ -102,7 +102,7 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
     		for (Section section: enrollment.getSections()) {
         		if (section.getTime() != null) hasTime++;
-        		if (section.getPenalty() > 0.0) penalty++;
+        		if (section.getPenalty() >= 0.0) penalty++;
         	}
 		} else {
 			hasTime = 1.0;
