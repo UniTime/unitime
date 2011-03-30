@@ -127,7 +127,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
 						r.getRequest(),
 						r.getLastEnrollment());
-
+				
 				helper.beginTransaction();
 				try {
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudent().getId(), helper.getHibSession());
@@ -186,6 +186,8 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					
 					helper.getHibSession().save(student);
 		
+					EnrollStudent.updateSpace(helper, r.getRequest().getAssignment(), r.getLastEnrollment());
+
 					server.notifyStudentChanged(r.getRequest().getStudent().getId(),
 							r.getRequest(),
 							r.getLastEnrollment());
