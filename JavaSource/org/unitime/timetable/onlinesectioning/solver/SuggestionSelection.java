@@ -45,10 +45,13 @@ public class SuggestionSelection extends BranchBoundSelection {
 	protected Hashtable<CourseRequest, Config> iRequiredConfig = new Hashtable<CourseRequest, Config>();
 	protected Hashtable<CourseRequest, Hashtable<Subpart, Section>> iRequiredSection = new Hashtable<CourseRequest, Hashtable<Subpart,Section>>();
 	protected Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
+	/** add up to 50% for preferred sections */
+	private double iPreferenceFactor = 0.500;
 	
     public SuggestionSelection(DataProperties properties, Hashtable<CourseRequest, Set<Section>> preferredSections,
     		Hashtable<CourseRequest, Set<Section>> requiredSections, Set<FreeTimeRequest> requiredFreeTimes) {
     	super(properties);
+    	iPreferenceFactor = properties.getPropertyDouble("StudentWeights.PreferenceFactor", iPreferenceFactor);
     	iRequiredFreeTimes = requiredFreeTimes;
     	if (requiredSections != null) {
     		for (Map.Entry<CourseRequest, Set<Section>> entry: requiredSections.entrySet()) {
@@ -122,7 +125,7 @@ public class SuggestionSelection extends BranchBoundSelection {
         			for (Section section: enrollment.getSections())
         				if (preferred.contains(section)) nrPreferred ++;
         			double preferredFraction = nrPreferred / preferred.size();
-        			weight *= 1.0 + 0.5 * preferredFraction; // add up to 50% for preferred sections
+        			weight *= 1.0 + iPreferenceFactor * preferredFraction; // add up to 50% for preferred sections
         		}
         	}
         	return weight;
@@ -134,7 +137,7 @@ public class SuggestionSelection extends BranchBoundSelection {
         	if (r instanceof CourseRequest) {
         		Set<Section> preferred = iPreferredSections.get((CourseRequest)r);
         		if (preferred != null && !preferred.isEmpty())
-        			bound *= 1.5; // add 50% if can be preferred
+        			bound *= (1.0 + iPreferenceFactor); // add 50% if can be preferred
         	}
         	return bound;
         }
