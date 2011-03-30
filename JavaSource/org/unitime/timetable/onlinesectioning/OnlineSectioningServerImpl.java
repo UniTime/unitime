@@ -330,7 +330,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							a.setSaved(true);
 							if (a.getParentSection() == null)
 								a.setParentSection(getCourseInfo(course.getId()).getConsent());
-							a.setExpected(section.getSpaceExpected());
+							a.setExpected(Math.round(section.getSpaceExpected()));
 						}
 					}
 				} else if (request instanceof FreeTimeRequest) {
