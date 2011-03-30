@@ -237,8 +237,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							(section.getParent() == null ? null : sections.get(section.getParent())));
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
-			        if (limit >= 0)
-						clonedSection.setPenalty(Math.round(section.getSpaceExpected() - limit));
+			        if (limit >= 0) {
+			        	double available = Math.round(section.getSpaceExpected() - limit);
+						clonedSection.setPenalty(available / section.getLimit());
+			        }
 					sections.put(section, clonedSection);
 				}
 			}
