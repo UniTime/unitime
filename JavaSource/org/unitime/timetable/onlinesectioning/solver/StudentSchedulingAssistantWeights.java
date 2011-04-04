@@ -43,18 +43,21 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 	/** deduction for section with no time assignment */
     private double iNoTimeFactor = 0.050;
     /** deduction for sections that are not preferred (different time & instructor) */
-    private double iPreferenceFactor = 0.125;
+    private double iSelectionFactor = 0.125;
     /** deduction for over expected sections */
     private double iPenaltyFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
     private double iAvailabilityFactor;
 	private Hashtable<CourseRequest, Double> iBestTime = new Hashtable<CourseRequest, Double>();
+	/** negative penalty means there is space available */
+	private double iAvgPenaltyFactor = 0.001;
 	
 	public StudentSchedulingAssistantWeights(DataProperties properties) {
 		super(properties);
 		iNoTimeFactor = properties.getPropertyDouble("StudentWeights.NoTimeFactor", iNoTimeFactor);
-		iPreferenceFactor = properties.getPropertyDouble("StudentWeights.PreferenceFactor", iPreferenceFactor);
+		iSelectionFactor = properties.getPropertyDouble("StudentWeights.SelectionFactor", iSelectionFactor);
 		iPenaltyFactor = properties.getPropertyDouble("StudentWeights.PenaltyFactor", iPenaltyFactor);
+		iAvgPenaltyFactor = properties.getPropertyDouble("StudentWeights.AvgPenaltyFactor", iAvgPenaltyFactor);
 		iAvailabilityFactor = iBalancingFactor; iBalancingFactor = 0.0;
 	}
 	
@@ -99,16 +102,19 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		
 		double hasTime = 0;
 		double penalty = 0;
+		double totalPenalty = 0.0;
 		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
     		for (Section section: enrollment.getSections()) {
         		if (section.getTime() != null) hasTime++;
-        		if (section.getPenalty() > 0.0) penalty++;
+        		if (section.getPenalty() >= 0.0) penalty++;
+        		totalPenalty += section.getPenalty();
         	}
 		} else {
 			hasTime = 1.0;
 		}
     	double noTime = bestTime(enrollment.getRequest()) - (hasTime / size);
     	double penaltyFraction = penalty / size;
+    	double avgPenalty = totalPenalty / size;
 
     	double selectedFraction = 1.0;
 		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
@@ -143,11 +149,13 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		
 		weight -= penaltyFraction * base * iPenaltyFactor;
 		
-		weight -= selectedFraction * base * iPreferenceFactor;
+		weight -= selectedFraction * base * iSelectionFactor;
 		
 		weight -= noTime * base * iNoTimeFactor;
 		
 		weight -= unavailableSizeFraction * base * iAvailabilityFactor;
+		
+		weight -= avgPenalty * iAvgPenaltyFactor;
 		
 		return weight;
 		
