@@ -19,7 +19,7 @@
 
 select 32767 * next_hi into @id from hibernate_unique_key;
 select uniqueid into @gid from solver_parameter_group where name='StudentSctBasic';
-select max(ord)+1 into @ord from solver_parameter_def where solver_param_group_id=@gid_basic;
+select max(ord)+1 into @ord from solver_parameter_def where solver_param_group_id=@gid;
 
 insert into solver_parameter_def
 	(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
