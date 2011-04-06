@@ -96,6 +96,11 @@ public class SuggestionSelection extends BranchBoundSelection {
         }
         
         @Override
+        public boolean inConflict(int idx, Enrollment enrollment) {
+        	return super.inConflict(idx, enrollment) || !isAllowed(idx, enrollment);
+        }
+        
+        @Override
         public Enrollment firstConflict(int idx, Enrollment enrollment) {
             Enrollment conflict = super.firstConflict(idx, enrollment);
             if (conflict!=null) return conflict;
