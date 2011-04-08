@@ -50,7 +50,7 @@
 			<name>Solver Changes</name>
 			<description>
 				<line>Reservations are now being loaded into the student sectioning solver.</line>
-				<line>Constraint solver updated with the latest version (1.2.38)
+				<line>Constraint solver updated with the latest version (1.2.40)
 					<line>Student sectioning: Added ability to ignore (not create) all the hard constraint</line>
 				</line>
 			</description>
@@ -86,6 +86,13 @@
 				<line>If no suggestion is found that assigns some other unassigned request too (i.e., if I cannot increase the number of assigned requests), also compute suggestions that keep the number of assigned requests the same.
 					<line>This fixes the issue with three requests A, B, C where only A or B can be assigned and C is unavailable -- no suggestions were provided on the unassigned A or B.</line>
 				</line>
+				<line>Round expected space (rather than ceiling it).</line>
+				<line>Compute section penalty as a difference between actual limit (space available in the section excluding the student in question) and expected space
+					<line>Section is over expected when round(expected space) &gt;= available space</line>
+				</line>
+				<line>Added a tiny weight on the online penalty.
+					<line>I.e., from sections that are otherwise equal, prefer the one that is (proportionally) most available.</line>
+				</line>		
 			</description>
 		</item>
 		<item>
@@ -110,6 +117,7 @@
 				<line>If the student id (taken from the authenticated user) is null and the user is administrator, take the student id from the request.</line>
 				<line>Update enrollment counts after a student is enrolled.</line>
 				<line>Wait-list requests for courses that are being locked.</line>
+				<line>Update expected / held space counters when student enrollment is changed.</line>
 			</description>
 		</item>
 		<item>
@@ -158,7 +166,7 @@
 		<item>
 			<name>Solver Changes</name>
 			<description>
-				<line>Constraint solver updated with the latest version (1.2.38)
+				<line>Constraint solver updated with the latest version (1.2.40)
 					<line>Added link Course -> Course Requests (listing all course requests requesting the course).</line>
 					<line>CourseRequest -- time stamp added to all course requests.
 						<line>A course change may unassign existing enrollments which will be put back to a wait-list and ordered (among other criteria like priority) by the time stamps (creation time) of the request.</line>
@@ -182,6 +190,49 @@
 		</item>
 	</category>
 	<category>
+		<title>Batch Student Sectioning</title>
+		<item>
+			<name>Data Load</name>
+			<description>
+				<line>Added Projected Student Course Demands parameter.
+					<line>Allow using other than last-like student course demands -- same model is now used as for the course timetabling (last-like, projected, or curricula can be used to create projected demands).</line>
+					<line>Projected demands are weighted based on their academic area, classification and major (if provided).
+						<line>E.g., if it is expected to have 100 1st year engineers in the course, and there already are 25 (real students), the projected demands (for 1st year engineers) will be weighted to fill in the remaining 75 spaces.</line>
+					</line>
+				</line>
+				<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
+					<line>Only projected course demands are used in this mode.</line>
+					<line>The actual student class enrollments are only used to decrease class / course / configuration / reservation limits.
+						<line>Projected demands are sectioned in the remaining space. This is used to help the online student sectioning solver to know how to section incoming students (what classes will be over expected and therefore avoided if possible).</line>
+					</line>
+				</line>
+				<line>When course demands are not used, WaitList objects are used to record unassigned course requests.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Save</name>
+			<description>
+				<line>Avoid LazyInitializationException when saving student enrollments.</line>
+				<line>Fixed ObjectDeletedException when saving the same schedule for the second time.</line>
+				<line>Save class enrollments that do not have course requests too (when no course requests are present).</line>
+				<line>Few other small improvements.</line>
+				<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
+					<line>Only expected / held space is updated (student enrollments are left untouched).</line>
+				</line>
+				<line>When course demands are not used, WaitList objects are used to record unassigned course requests.</line>
+			</description>
+		</item>
+		<item>
+			<name>Sectioning Solver</name>
+			<description>
+				<line>Show extended info about the current solution (includes how  sections are balanced etc).</line>
+				<line>Reload Input Data operation corrected (request ids may be only unique within a student) and improved (assigned prior solutions is much faster).</line>
+				<line>Many speed improvements.</line>
+				<line>Better handling of projected students and their combination with real students.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item>
 			<name>Registration</name>
@@ -199,34 +250,6 @@
 				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line>
 			</description>
 		</item>
-		<item>
-			<name>Batch Student Sectioning</name> 
-			<description> 
-				<line>Database save:
-					<line>Avoid LazyInitializationException when saving student enrollments.</line>
-					<line>Fixed ObjectDeletedException when saving the same schedule for the second time.</line>
-					<line>Save class enrollments that do not have course requests too (when no course requests are present).</line>
-					<line>Few other small improvements.</line>
-					<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
-						<line>Only expected / held space is updated (student enrollments are left untouched).</line>
-					</line>
-				</line> 
-				<line>Database load:
-					<line>Added Projected Student Course Demands parameter.
-						<line>Allow using other than last-like student course demands -- same model is now used as for the course timetabling (last-like, projected, or curricula can be used to create projected demands).</line>
-						<line>Projected demands are weighted based on their academic area, classification and major (if provided).
-							<line>E.g., if it is expected to have 100 1st year engineers in the course, and there already are 25 (real students), the projected demands (for 1st year engineers) will be weighted to fill in the remaining 75 spaces.</line>
-						</line>
-					</line>
-					<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
-						<line>Only projected course demands are used in this mode.</line>
-						<line>The actual student class enrollments are only used to decrease class / course / configuration / reservation limits.
-							<line>Projected demands are sectioned in the remaining space. This is used to help the online student sectioning solver to know how to section incoming students (what classes will be over expected and therefore avoided if possible).</line>
-						</line>
-					</line>
-				</line>
-			</description> 
-		</item> 
 		<item>
 			<name>Course Timetabling Solver</name> 
 			<description> 
