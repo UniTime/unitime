@@ -3297,4 +3297,30 @@
 			where name = 'StudentSctBasic.Mode'
 		</sql>
 	</update>
+	<update version="68" date="6-Apr-2011" comment="Student Sectioning Save Best">
+		<sql>
+			update %SCHEMA%.solver_parameter_def set default_value='0' where name='General.SaveBestUnassigned' and solver_param_group_id = 
+			(select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSct')
+		</sql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+				(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.ProjectedStudentWeight' as name, 
+				'0.0100' as default_value, 
+				'Projected student request' as description, 
+				'double' as type, 
+				9 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='StudentSctWeights')
+		</plsql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctWeights'</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%;</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%, 'StudentWeights.ProjectedStudentWeight', '0.0100', 'Projected student request', 'double', %ORD%, 1, %GID%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+	</update>
 </dbupdate>
