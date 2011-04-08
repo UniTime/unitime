@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.curricula;
 
+import java.util.Collection;
 import java.util.Set;
 
 import net.sf.cpsolver.ifs.util.Progress;
@@ -41,7 +42,7 @@ public interface StudentCourseDemands {
 	 * @param session current academic session
 	 * @param offerings instructional offerings of the problem that is being loaded
 	 */
-	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Set<InstructionalOffering> offerings);
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings);
 	
 	/**
 	 * Called once for each course

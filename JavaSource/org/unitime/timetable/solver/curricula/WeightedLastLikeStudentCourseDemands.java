@@ -30,5 +30,6 @@ public class WeightedLastLikeStudentCourseDemands extends LastLikeStudentCourseD
 		super(properties);
 	}
 	
+	@Override
 	public boolean isWeightStudentsToFillUpOffering() { return true; }
 }
