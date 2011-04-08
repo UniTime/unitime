@@ -26,10 +26,20 @@
  		<class externalId="123412"/>
  		<class externalId="123674"/>
  	</student>
- 	<student externalId="9999111111">
+ 	<!-- when a student with the given external id does not exist, it is created -->
+ 	<!-- for such a case, it is helpful if student name and email is provided (these are only used when a new student is created) -->
+ 	<student externalId="9999111111" firstName="Jacob" middleName="Lucas" lastName="Simth" email="smith@university.edu">
 		<class externalId="423675"/>
   		<class externalId="998543"/>
-  		<class externalId="129854"/>
+  		<!-- if there is no external id on the class, class name can be used instead -->
+  		<!-- only in UniTime 3.1.283 or later -->
+  		<class externalId="ALG 101 Lec 1"/>
+  		<!-- course (external) id is optional, and only useful for cross-listed courses to import enrollments to a non-controlling course -->
+  		<!-- since UniTime 3.3.24 -->
+  		<class externalId="129854" courseId="12432"/>
+  		<!-- if external ids are not available, subject, courseNbr, type and suffix can be used instead -->
+  		<!-- since UniTime 3.3.24 -->
+  		<class subject="ALG" courseNbr="101H" type="Lec" suffix="1"/>
   		<!-- ... -->
  	</student>
  	<!-- ... -->
