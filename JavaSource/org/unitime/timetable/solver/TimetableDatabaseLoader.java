@@ -73,6 +73,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
+import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -80,6 +81,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
+import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -89,6 +91,7 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
@@ -2398,7 +2401,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (totalCourseLimit != offering.getLimit())
     			factor = new Double(((double)offering.getLimit()) / totalCourseLimit);
     		
-        	for (CourseOffering course: offering.getCourseOfferings()) {
+    		for (CourseOffering course: offering.getCourseOfferings()) {
         		Set<WeightedStudentId> studentIds = iStudentCourseDemands.getDemands(course);
         		
 				float studentWeight = 0.0f;
@@ -2519,6 +2522,80 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     students.add(student);
 
         			student.addCanNotEnroll(offering.getUniqueId(), cannotAttendLectures);
+        			
+					Set<Long> reservedClasses = new HashSet<Long>();
+        			for (Reservation reservation: offering.getReservations()) {
+        				if (reservation.getClasses().isEmpty() && reservation.getConfigurations().isEmpty()) continue;
+        				if (reservation instanceof CourseReservation) continue;
+        				if (reservation instanceof CurriculumReservation) {
+        					CurriculumReservation cr = (CurriculumReservation)reservation;
+        					if (student.getAcademicArea() == null) continue;
+        					if (!cr.getArea().getAcademicAreaAbbreviation().equals(student.getAcademicArea())) continue;
+        					if (!cr.getClassifications().isEmpty()) {
+        						boolean match = false;
+        						for (AcademicClassification clasf: cr.getClassifications()) {
+        							if (clasf.getCode().equals(student.getAcademicClassification())) { match = true; break; }
+        						}
+        						if (!match) continue;
+        					}
+        					if (!cr.getMajors().isEmpty()) {
+        						if (student.getMajor() == null) continue;
+        						if (!student.getMajor().isEmpty()) {
+            						boolean match = false;
+            						majors: for (PosMajor major: cr.getMajors()) {
+            							for (String code: student.getMajor().split("\\|")) {
+            								if (major.getCode().equals(code)) { match = true; break majors; }
+            							}
+            						}
+        							if (!match) continue;
+        						}
+        					}
+        				} else continue;
+        				for (Class_ clazz: reservation.getClasses()) {
+    						propagateReservedClasses(clazz, reservedClasses);
+    						Class_ parent = clazz.getParentClass();
+        					while (parent != null) {
+        						reservedClasses.add(parent.getUniqueId());
+        						parent = parent.getParentClass();
+        					}
+        				}
+        				for (InstrOfferingConfig config: reservation.getConfigurations()) {
+        					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        						for (Class_ clazz: subpart.getClasses())
+                					reservedClasses.add(clazz.getUniqueId());
+        				}        				
+        			}
+        			
+        			if (!reservedClasses.isEmpty()) {
+        				iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " has reserved classes " + reservedClasses);
+        				Set<Lecture> prohibited = new HashSet<Lecture>();
+                        for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+                    		boolean hasConfigReservation = false;
+                        	subparts: for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+                        		for (Class_ clazz: subpart.getClasses())
+                        			if (reservedClasses.contains(clazz.getUniqueId())) {
+                        				hasConfigReservation = true; break subparts;
+                        			}
+                    		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+                        		boolean hasSubpartReservation = false;
+                        		for (Class_ clazz: subpart.getClasses())
+                        			if (reservedClasses.contains(clazz.getUniqueId())) {
+                            			hasSubpartReservation = true; break;
+                        			}
+                        		// !hasConfigReservation >> all lectures are cannot attend (there is a reservation on a different config)
+                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpoart --> can attend any of the classes of this subpart
+                        		if (!hasConfigReservation || hasSubpartReservation)
+                            		for (Class_ clazz: subpart.getClasses()) {
+                            			if (reservedClasses.contains(clazz.getUniqueId())) continue;
+                            			Lecture lecture = iLectures.get(clazz.getUniqueId());
+                            			if (lecture != null && !lecture.isCommitted())
+                            				prohibited.add(lecture);
+                            		}
+                        	}
+                        }
+        				iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " cannot attend classes " + prohibited);
+        				student.addCanNotEnroll(offering.getUniqueId(), prohibited);
+        			}
         		}
         	}
     		

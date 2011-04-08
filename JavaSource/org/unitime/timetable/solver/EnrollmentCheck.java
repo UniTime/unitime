@@ -227,7 +227,7 @@ public class EnrollmentCheck {
             double w = 0;
             for (Iterator i = lecture.students().iterator(); i.hasNext();)
                 w = Math.max(w, ((Student)i.next()).getOfferingWeight(lecture.getConfiguration().getOfferingId()));
-            if (lecture.nrWeightedStudents()-w>FinalSectioning.sEps+lecture.classLimit()) {
+            if (lecture.nrWeightedStudents() - w + FinalSectioning.sEps > lecture.classLimit()) {
                 if (hasSubpartMixedOwnership(lecture))
                     p.message(iMessageLowerLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
                 else
