@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -40,13 +44,49 @@ public class DataImportForm extends ActionForm {
 	private static final long serialVersionUID = 7165669008085313647L;
 	private FormFile iFile;
 	private String iOp;
-	private boolean iExportCourses;
-	private boolean iExportFinalExams;
-	private boolean iExportMidtermExams;
-	private boolean iExportTimetable;
-	private boolean iExportCurricula;
+	private String iExport;
     private boolean iEmail = false;
     private String iAddr = null;
+    
+    public static enum ExportType {
+    	COURSES("offerings", "Course Offerings",
+    			"tmtbl.export.timetable", "false",
+    			"tmtbl.export.exam.type", "none"),
+    	COURSES_WITH_TIME("offerings", "Course Offerings (including course timetable)",
+    			"tmtbl.export.timetable", "true",
+    			"tmtbl.export.exam.type", "none"),
+    	COURSES_WITH_EXAMS("offerings", "Course Offerings (including exams)", 
+    			"tmtbl.export.timetable", "false",
+    			"tmtbl.export.exam.type", "all"),
+    	COURSES_ALL("offerings", "Course Offerings (including course timetable and exams)", 
+    			"tmtbl.export.timetable", "true",
+    			"tmtbl.export.exam.type", "all"),
+    	TIMETABLE("timetable", "Course Timetable"),
+    	EXAMS("exams", "Examinations",
+    			"tmtbl.export.exam", "true",
+    			"tmtbl.export.exam.type", "all"),
+    	EXAMS_FINAL("exams", "Examinations (only finals)",
+    			"tmtbl.export.exam", "true",
+    			"tmtbl.export.exam.type", "final"),
+    	EXAMS_MIDTERM("exams", "Examinations (only midterm)",
+    			"tmtbl.export.exam", "true",
+    			"tmtbl.export.exam.type", "midterm"),
+    	CURRICULA("curricula", "Curricula"),
+    	STUDENT_ENRL("studentEnrollments", "Student class enrollments"),
+    	;
+    	
+    	private String iType, iLabel;
+    	private String[] iOptions;
+    	ExportType(String type, String label, String... options) {
+    		iType = type; iLabel = label; iOptions = options;
+    	}
+    	public String getType() { return iType; }
+    	public String getLabel() { return iLabel; }
+    	public void setOptions(Properties config) {
+    		for (int i = 0; i < iOptions.length; i += 2)
+    			config.put(iOptions[i], iOptions[i + 1]);
+    	}
+    }
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -55,14 +95,8 @@ public class DataImportForm extends ActionForm {
         	errors.add("name", new ActionMessage("errors.required", "File") );
         }
         
-        if ("Export".equals(iOp)) {
-            if (!getExportCourses() && !getExportFinalExams() && !getExportMidtermExams() && !getExportTimetable() && !getExportCurricula()) {
-                errors.add("export", new ActionMessage("errors.generic", "Nothing to export") );
-            }
-            
-            if (getExportCurricula() && (getExportCourses() || getExportFinalExams() || getExportMidtermExams() || getExportTimetable())) {
-            	errors.add("export", new ActionMessage("errors.generic", "Curricula need to be exported separately") );
-            }
+        if ("Export".equals(iOp) && getExportType() == null) {
+        	errors.add("export", new ActionMessage("errors.generic", "Nothing to export") );
         }
         
         return errors;
@@ -70,7 +104,7 @@ public class DataImportForm extends ActionForm {
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iFile = null;
-		iExportCourses = false; iExportFinalExams = false; iExportMidtermExams = false; iExportTimetable = false; iExportCurricula = false;
+		iExport = null;
 		iEmail = false; iAddr = null;
         TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
         if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
@@ -81,16 +115,8 @@ public class DataImportForm extends ActionForm {
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
 	
-    public boolean getExportCourses() { return iExportCourses; }
-    public void setExportCourses(boolean exportCourses) { iExportCourses = exportCourses; }
-    public boolean getExportFinalExams() { return iExportFinalExams; }
-    public void setExportFinalExams(boolean exportFinalExams) { iExportFinalExams = exportFinalExams; }
-    public boolean getExportMidtermExams() { return iExportMidtermExams; }
-    public void setExportMidtermExams(boolean exportMidtermExams) { iExportMidtermExams = exportMidtermExams; }
-    public boolean getExportTimetable() { return iExportTimetable; }
-    public void setExportTimetable(boolean exportTimetable) { iExportTimetable = exportTimetable; }
-    public boolean getExportCurricula() { return iExportCurricula; }
-    public void setExportCurricula(boolean exportCurricula) { iExportCurricula = exportCurricula; }
+    public String getExport() { return iExport; }
+    public void setExport(String export) { iExport = export; }
     
     public boolean getEmail() { return iEmail; }
     public void setEmail(boolean email) { iEmail = email; }
@@ -101,14 +127,29 @@ public class DataImportForm extends ActionForm {
     	DataImportForm form = new DataImportForm();
     	form.iFile = iFile;
     	form.iOp = iOp;
-    	form.iExportCourses= iExportCourses;
-    	form.iExportFinalExams = iExportFinalExams;
-    	form.iExportMidtermExams = iExportMidtermExams;
-    	form.iExportTimetable = iExportTimetable;
-    	form.iExportCurricula = iExportCurricula;
+    	form.iExport = iExport;
         form.iEmail = iEmail;
         form.iAddr = iAddr;
         return form;
+    }
+    
+    public List<ListItem> getExportTypes() {
+    	ArrayList<ListItem> items = new ArrayList<ListItem>();
+    	for (ExportType t: ExportType.values())
+    		items.add(new ListItem(t.name(), t.getLabel()));
+    	return items;
+    }
+    
+    public ExportType getExportType() {
+    	if (getExport() == null || getExport().isEmpty()) return null;
+    	return ExportType.valueOf(getExport());
+    }
+    
+    public static class ListItem {
+    	String iValue, iText;
+    	public ListItem(String value, String text) { iValue = value; iText = text; }
+    	public String getValue() { return iValue; }
+    	public String getLabel() { return iText; }
     }
 }
 
