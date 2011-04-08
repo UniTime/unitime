@@ -52,6 +52,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
 import org.unitime.timetable.form.DataImportForm;
+import org.unitime.timetable.form.DataImportForm.ExportType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
@@ -267,31 +268,15 @@ public class DataImportAction extends Action {
 			String xmlName = null;
 			File xmlFile = null;
             try {
-                String root = (iForm.getExportCourses()?"offerings":iForm.getExportFinalExams() || iForm.getExportMidtermExams()?"exams":iForm.getExportTimetable()?"timetable":"curricula");
+            	ExportType type = iForm.getExportType();
                 Properties params = new Properties();
-                xmlName = getSession().getAcademicTerm() + getSession().getSessionStartYear()+"_"+root;
-                params.setProperty("tmtbl.export.exam", (iForm.getExportCourses()?"false":"true"));
-                params.setProperty("tmtbl.export.timetable", (iForm.getExportTimetable()?"true":"false")); //exam only
-                if (iForm.getExportFinalExams()) {
-                    if (iForm.getExportMidtermExams()) {
-                        params.setProperty("tmtbl.export.exam.type","all");
-                    } else {
-                        params.setProperty("tmtbl.export.exam.type","final");
-                        xmlName+="_final";
-                    }
-                } else {
-                    if (iForm.getExportMidtermExams()) {
-                        params.setProperty("tmtbl.export.exam.type","midterm");
-                        xmlName+="_midterm";
-                    } else {
-                        params.setProperty("tmtbl.export.exam.type","none");
-                    }
-                }
-                log("Exporting "+root+"...");
+                type.setOptions(params);
+                xmlName = getSession().getAcademicTerm() + getSession().getSessionStartYear()+"_"+type.getType();
+                log("Exporting "+type.getType()+"...");
                 xmlName += ".xml";
-                xmlFile = createOutput(root, "xml");
+                xmlFile = createOutput(type.getType(), "xml");
                 Long start = System.currentTimeMillis() ;
-                Document document = DataExchangeHelper.exportDocument(root, getSession(), params, this);
+                Document document = DataExchangeHelper.exportDocument(type.getType(), getSession(), params, this);
                 if (document==null) {
                     error("XML document not created: unknown reason.");
                 } else {
@@ -343,7 +328,7 @@ public class DataImportAction extends Action {
 
 		@Override
 		public String name() {
-            return "Export of " + (iForm.getExportCourses()?"offerings":iForm.getExportFinalExams() || iForm.getExportMidtermExams()?"exams":iForm.getExportTimetable()?"timetable":"curricula");
+            return "Export of " + iForm.getExportType().getLabel();
 		}
 
 		@Override
