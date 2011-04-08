@@ -37,7 +37,6 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.StudentDAO;
 
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
@@ -64,6 +63,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     private Hashtable<Long,CourseOffering> iCourses = null;
     private Hashtable<Long,Class_> iClasses = null;
     private Hashtable<String,org.unitime.timetable.model.CourseRequest> iRequests = null;
+    private Date iTimeStamp = null;
     
     private int iInsert = 0;
     
@@ -82,6 +82,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void save() {
         iProgress.setStatus("Saving solution ...");
+        iTimeStamp = new Date();
         org.hibernate.Session hibSession = null;
         Transaction tx = null;
         try {
@@ -127,12 +128,11 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void saveStudent(org.hibernate.Session hibSession, Student student) {
         org.unitime.timetable.model.Student s = iStudents.get(student.getId());
-        if (s==null)
-        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
         if (s==null) {
             iProgress.warn("Student "+student.getId()+" not found.");
             return;
         }
+        
         for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
             StudentClassEnrollment sce = i.next();
             sce.getClazz().getStudentEnrollments().remove(sce);
@@ -144,6 +144,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             WaitList wl = i.next();
             hibSession.delete(wl); i.remove();
         }
+        
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
             Enrollment enrollment = (Enrollment)request.getAssignment();
@@ -159,7 +160,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         WaitList wl = new WaitList();
                         wl.setStudent(s);
                         wl.setCourseOffering(co);
-                        wl.setTimestamp(new Date());
+                        wl.setTimestamp(iTimeStamp);
                         wl.setType(new Integer(0));
                         s.getWaitlists().add(wl);
                         hibSession.save(wl);
@@ -188,7 +189,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                             sce.setCourseOffering(cr.getCourseOffering());
                         	cr.getClassEnrollments().add(sce);
                         }
-                        sce.setTimestamp(new Date());
+                        sce.setTimestamp(iTimeStamp);
                         s.getClassEnrollments().add(sce);
                         hibSession.save(sce);
                     }
@@ -203,27 +204,54 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     public void save(Session session, org.hibernate.Session hibSession) {
         iClasses = new Hashtable<Long, Class_>();
         iProgress.setPhase("Loading classes...", 1);
-        for (Iterator i=Class_.findAll(hibSession, session.getUniqueId()).iterator();i.hasNext();) {
-            Class_ clazz = (Class_)i.next();
+        for (Class_ clazz: (List<Class_>)hibSession.createQuery(
+        		"select distinct c from Class_ c where " +
+        		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+        		.setLong("sessionId", session.getUniqueId()).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
         iProgress.incProgress();
         
         if (iIncludeCourseDemands && !iProjections) {
-            iStudents = new Hashtable();
-            iCourses = new Hashtable();
-            iRequests = new Hashtable();
-            List courseDemands = CourseDemand.findAll(hibSession, session.getUniqueId());
-            iProgress.setPhase("Loading course demands...", courseDemands.size());
-            for (Iterator i=courseDemands.iterator();i.hasNext();) {
-                CourseDemand demand = (CourseDemand)i.next(); iProgress.incProgress();
-                iStudents.put(demand.getStudent().getUniqueId(), demand.getStudent());
-                for (Iterator j=demand.getCourseRequests().iterator();j.hasNext();) {
-                    org.unitime.timetable.model.CourseRequest request = (org.unitime.timetable.model.CourseRequest)j.next();
+            iCourses = new Hashtable<Long, CourseOffering>();
+            iProgress.setPhase("Loading courses...", 1);
+            for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
+            		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
+            		.setLong("sessionId", session.getUniqueId()).list()) {
+                iCourses.put(course.getUniqueId(), course);
+            }
+            iProgress.incProgress();
+
+            iStudents = new Hashtable<Long, org.unitime.timetable.model.Student>();
+            iProgress.setPhase("Loading students...", 1);
+            for (org.unitime.timetable.model.Student student: (List<org.unitime.timetable.model.Student>)hibSession.createQuery(
+            		"select distinct s from Student s " +
+                    "left join fetch s.courseDemands as cd "+
+                    "left join fetch cd.courseRequests as cr "+
+                    "left join fetch s.classEnrollments as e " +
+                    "left join fetch s.waitlists as w " +
+            		"where s.session.uniqueId = :sessionId")
+            		.setLong("sessionId", session.getUniqueId()).list()) {
+            	iStudents.put(student.getUniqueId(), student);
+            }
+            iProgress.incProgress();
+            
+            
+            iRequests = new Hashtable<String, org.unitime.timetable.model.CourseRequest>();
+            iProgress.setPhase("Loading course demands...", 1);
+            for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
+            		"select distinct c from CourseDemand c " +
+            		"left join fetch c.courseRequests r " +
+            		"left join fetch r.courseOffering as co " +
+            		"left join fetch co.instructionalOffering as io " +
+            		"where c.student.session.uniqueId=:sessionId")
+            		.setLong("sessionId", session.getUniqueId()).list()) {
+                for (org.unitime.timetable.model.CourseRequest request: demand.getCourseRequests()) {
                     iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
-                    iCourses.put(request.getCourseOffering().getUniqueId(), request.getCourseOffering());
                 }
             }
+            iProgress.incProgress();
+            
             iProgress.setPhase("Saving student enrollments...", getModel().getStudents().size());
             for (Iterator e=getModel().getStudents().iterator();e.hasNext();) {
                 Student student = (Student)e.next(); iProgress.incProgress();
