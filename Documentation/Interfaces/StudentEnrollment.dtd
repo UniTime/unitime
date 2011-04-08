@@ -31,4 +31,9 @@
 <!ATTLIST student email CDATA #IMPLIED >
 
 <!ELEMENT class EMPTY >
-<!ATTLIST class externalId CDATA #REQUIRED >
+<!ATTLIST class externalId CDATA #IMPLIED >
+<!ATTLIST class courseId CDATA #IMPLIED >
+<!ATTLIST class subject CDATA #IMPLIED >
+<!ATTLIST class courseNbr CDATA #IMPLIED >
+<!ATTLIST class type CDATA #IMPLIED >
+<!ATTLIST class suffix CDATA #IMPLIED >
