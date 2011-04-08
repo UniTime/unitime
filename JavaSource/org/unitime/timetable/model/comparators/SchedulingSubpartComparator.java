@@ -59,6 +59,25 @@ public class SchedulingSubpartComparator implements Comparator {
         if (isParent(s1,s2)) return 1;
         if (isParent(s2,s1)) return -1;
         
+        if (s1.getParentSubpart() != null || s2.getParentSubpart() != null) {
+        	SchedulingSubpart p1 = s1; int d1 = 0;
+        	while (p1.getParentSubpart() != null) { p1 = p1.getParentSubpart(); d1 ++; }
+        	
+        	SchedulingSubpart p2 = s2; int d2 = 0;
+        	while (p2.getParentSubpart() != null) { p2 = p2.getParentSubpart(); d2 ++; }
+        	
+        	if (d1 < d2) {
+        		int cmp = compare(s1, s2.getParentSubpart());
+        		if (cmp != 0) return cmp;
+        	} else if (d1 > d2) {
+        		int cmp = compare(s1.getParentSubpart(), s2);
+        		if (cmp != 0) return cmp;
+        	} else {
+        		int cmp = compare(s1.getParentSubpart(), s2.getParentSubpart());
+        		if (cmp != 0) return cmp;
+        	}
+        }
+        
         int cmp = s1.getItype().getItype().compareTo(s2.getItype().getItype());
         if (cmp!=0) return cmp;
         
