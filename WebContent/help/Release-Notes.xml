@@ -207,6 +207,12 @@
 					</line>
 				</line>
 				<line>When course demands are not used, WaitList objects are used to record unassigned course requests.</line>
+				<line>Always try to load all student class enrollments.
+					<line>Even when a student does have course demands, but (some) class enrollments do not have the appropriate course request filled in.
+						<line>Before this change enrollments that did not have the course request populated were ignored in this case</line>
+					</line>
+					<line>This is useful when (some) class enrollments are created outside of UniTime (and imported e.g. using student class enrollment import).</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -277,7 +283,13 @@
 			<name>Data Exchange</name>
 			<description>
 				<line>Student Import: Do not require students to have a major filled in.</line>
-				<line>Student Enrollment Import: update class / course enrollments -- ensure that there is a Hibernate session open for the update (the commitTransaction() called a few lines above the update leaves the session closed).</line>
+				<line>Student Enrollment Import:
+					<line>Update class / course enrollments -- ensure that there is a Hibernate session open for the update (the commitTransaction() called a few lines above the update leaves the session closed).</line>
+					<line>Added ability to identify course together with the class (useful for cross-listed courses)</line>
+					<line>Added ability to identify a class / course by subject, course number, itype, and class suffix (useful when classes do not have external ids)</line>
+				</line>
+				<line>Student Enrollment Export: Export of student class enrollments added, using the same format as student enrollment import.</line>
+				<line>Data Exchange Page: Selection of the export type changed to be a drop down list.</line>
 			</description>
 		</item>
 		<item>
