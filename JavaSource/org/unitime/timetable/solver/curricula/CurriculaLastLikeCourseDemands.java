@@ -176,9 +176,14 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		if (2 * totalWeight < clasf.getNrStudents()) { // students are less than 1/2 of the requested size -> make up some students
 			int studentsToMakeUp = Math.round(clasf.getNrStudents() - totalWeight);
 			sLog.debug("    making up " + studentsToMakeUp + " students");
+			String majors = "";
+			for (PosMajor major: clasf.getCurriculum().getMajors()) {
+				if (!majors.isEmpty()) majors += "|";
+				majors += major.getCode();
+			}
 			for (int i = 0; i < studentsToMakeUp; i++) {
 				WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId());
-				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), null);
+				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
 				students.put(student, new HashSet<CourseOffering>());
 			}
 		} else { // change weights to fit the requested size
