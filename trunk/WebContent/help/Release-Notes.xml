@@ -199,7 +199,7 @@
 				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line>
 			</description>
 		</item>
-		<item> 
+		<item>
 			<name>Batch Student Sectioning</name> 
 			<description> 
 				<line>Database save:
@@ -207,6 +207,31 @@
 					<line>Fixed ObjectDeletedException when saving the same schedule for the second time.</line>
 					<line>Save class enrollments that do not have course requests too (when no course requests are present).</line>
 					<line>Few other small improvements.</line>
+					<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
+						<line>Only expected / held space is updated (student enrollments are left untouched).</line>
+					</line>
+				</line> 
+				<line>Database load:
+					<line>Added Projected Student Course Demands parameter.
+						<line>Allow using other than last-like student course demands -- same model is now used as for the course timetabling (last-like, projected, or curricula can be used to create projected demands).</line>
+						<line>Projected demands are weighted based on their academic area, classification and major (if provided).
+							<line>E.g., if it is expected to have 100 1st year engineers in the course, and there already are 25 (real students), the projected demands (for 1st year engineers) will be weighted to fill in the remaining 75 spaces.</line>
+						</line>
+					</line>
+					<line>Added solver mode (named Projection) to be used for update of expected / held spaces.
+						<line>Only projected course demands are used in this mode.</line>
+						<line>The actual student class enrollments are only used to decrease class / course / configuration / reservation limits.
+							<line>Projected demands are sectioned in the remaining space. This is used to help the online student sectioning solver to know how to section incoming students (what classes will be over expected and therefore avoided if possible).</line>
+						</line>
+					</line>
+				</line>
+			</description> 
+		</item> 
+		<item>
+			<name>Course Timetabling Solver</name> 
+			<description> 
+				<line>Consider curriculum reservations when projected student course demands, or curriculum (last-like) course demands are used.
+					<line>Students matching curriculum reservations are restricted to classes / configurations associated with the reservation.</line>
 				</line> 
 			</description> 
 		</item> 
