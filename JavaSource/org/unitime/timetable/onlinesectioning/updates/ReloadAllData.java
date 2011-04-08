@@ -74,6 +74,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
@@ -126,6 +127,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		                    "left join fetch s.classEnrollments as e " +
 		                    "left join fetch s.academicAreaClassifications as a " +
 		                    "left join fetch s.posMajors as mj " +
+		                    "left join fetch s.waitlists as w " +
 		                    "where s.session.uniqueId=:sessionId").
 		                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 		            for (org.unitime.timetable.model.Student student: students) {
@@ -194,7 +196,9 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         DecimalFormat df = new DecimalFormat("000");
         for (Iterator<InstrOfferingConfig> i = io.getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
         	InstrOfferingConfig ioc = i.next();
-            Config config = new Config(ioc.getUniqueId(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), courseName + " [" + ioc.getName() + "]", offering);
+        	int configLimit = (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit());
+        	if (configLimit >= 9999) configLimit = -1;
+            Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (SchedulingSubpart ss: subparts) {
@@ -241,7 +245,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     	instructorIds += ci.getInstructor().getUniqueId().toString();
                     	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
                     }
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString(helper.getHibSession()) : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p, instructorIds, instructorNames, parentSection);
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getClassSuffix() == null ? c.getSectionNumberString(helper.getHibSession()) : c.getClassSuffix()), subpart, p, instructorIds, instructorNames, parentSection);
                     for (CourseOffering co: io.getCourseOfferings())
                     	section.setName(co.getUniqueId(), c.getClassSuffix(co));
                     class2section.put(c.getUniqueId(), section);
@@ -436,7 +440,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
             }
         }
         
-        if (student.getRequests().isEmpty() && !s.getClassEnrollments().isEmpty()) {
+        if (student.getRequests().isEmpty() && (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty())) {
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
@@ -451,6 +455,15 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
+                courses.add(course);
+        	}
+        	for (WaitList w: s.getWaitlists()) {
+        		Course course = server.getCourse(w.getCourseOffering().getUniqueId());
+                if (course==null) {
+                	helper.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
+                    continue;
+                }
+                if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
