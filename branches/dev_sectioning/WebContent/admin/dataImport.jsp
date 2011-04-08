@@ -107,37 +107,12 @@
 		</TR>
 	
 		<TR>
-			<TD nowrap>Course Offerings:</TD>
+			<TD nowrap>Type:</TD>
 			<TD>
-				<html:checkbox property="exportCourses"/>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD nowrap>Final Examinations:</TD>
-			<TD>
-				<html:checkbox property="exportFinalExams"/>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD nowrap>Midterm Examinations:</TD>
-			<TD>
-				<html:checkbox property="exportMidtermExams"/>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD nowrap>Course Timetable:</TD>
-			<TD>
-				<html:checkbox property="exportTimetable"/>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD nowrap>Curricula:</TD>
-			<TD>
-				<html:checkbox property="exportCurricula"/>
+				<html:select property="export">
+					<html:option value="">Select...</html:option>
+					<html:optionsCollection name="dataImportForm" property="exportTypes" value="value" label="label"/>
+				</html:select>
 			</TD>
 		</TR>
 
