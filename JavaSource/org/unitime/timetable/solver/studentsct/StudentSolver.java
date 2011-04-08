@@ -113,6 +113,8 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public void saveBest() {
         currentSolution().saveBest();
+        if (currentSolution().getBestInfo() != null)
+        	currentSolution().getBestInfo().putAll(currentSolution().getModel().getExtendedInfo());
     }
     
     public Map getProgress() {
@@ -171,7 +173,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
-            return super.currentSolution().getInfo();
+            return super.currentSolution().getExtendedInfo();
         }
     }
 
@@ -282,27 +284,40 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     }
 
     public class ReloadingDoneCallback implements Callback {
-        Hashtable iCurrentAssignmentTable = new Hashtable();
-        Hashtable iBestAssignmentTable = new Hashtable();
-        Hashtable iInitialAssignmentTable = new Hashtable();
+        Map<Long, Map<Long, Enrollment>> iCurrentAssignmentTable = new Hashtable<Long, Map<Long,Enrollment>>();
+        Map<Long, Map<Long, Enrollment>> iBestAssignmentTable = new Hashtable<Long, Map<Long,Enrollment>>();
+        Map<Long, Map<Long, Enrollment>> iInitialAssignmentTable = new Hashtable<Long, Map<Long,Enrollment>>();
         String iSolutionId = null;
         Progress iProgress = null;
+        
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
             for (Request request: currentSolution().getModel().variables()) {
-                if (request.getAssignment()!=null)
-                    iCurrentAssignmentTable.put(request.getId(),request.getAssignment());
-                if (request.getBestAssignment()!=null)
-                    iBestAssignmentTable.put(request.getId(),request.getBestAssignment());
-                if (request.getInitialAssignment()!=null)
-                    iInitialAssignmentTable.put(request.getId(),request.getInitialAssignment());
+            	if (request.getAssignment() != null) {
+                	Map<Long, Enrollment> assignments = iCurrentAssignmentTable.get(request.getStudent().getId());
+                	if (assignments == null) {
+                		assignments = new Hashtable<Long, Enrollment>();
+                		iCurrentAssignmentTable.put(request.getStudent().getId(), assignments);
+                	}
+                	assignments.put(request.getId(), request.getAssignment());
+            	}
+            	if (request.getBestAssignment() != null) {
+                	Map<Long, Enrollment> assignments = iBestAssignmentTable.get(request.getStudent().getId());
+                	if (assignments == null) {
+                		assignments = new Hashtable<Long, Enrollment>();
+                		iBestAssignmentTable.put(request.getStudent().getId(), assignments);
+                	}
+                	assignments.put(request.getId(), request.getBestAssignment());
+            	}
+            	if (request.getInitialAssignment() != null) {
+                	Map<Long, Enrollment> assignments = iInitialAssignmentTable.get(request.getStudent().getId());
+                	if (assignments == null) {
+                		assignments = new Hashtable<Long, Enrollment>();
+                		iInitialAssignmentTable.put(request.getStudent().getId(), assignments);
+                	}
+                	assignments.put(request.getId(), request.getInitialAssignment());
+            	}
             }
-        }
-        private Request getRequest(long id) {
-            for (Request request: currentSolution().getModel().variables()) {
-                if (request.getId()==id) return request;
-            }
-            return null;
         }
         
         private Enrollment getEnrollment(Request request, Enrollment enrollment) {
@@ -310,11 +325,10 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
                 return ((FreeTimeRequest)request).createEnrollment();
             } else {
                 CourseRequest cr = (CourseRequest)request;
-                Set sections = new HashSet();
-                for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
-                    Section s = (Section)i.next();
+                Set<Section> sections = new HashSet<Section>();
+                for (Section s: enrollment.getSections()) {
                     Section section = cr.getSection(s.getId());
-                    if (section==null) {
+                    if (section == null) {
                         iProgress.warn("WARNING: Section "+s.getName()+" is not available for "+cr.getName());
                         return null;
                     }
@@ -323,10 +337,11 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
                 return cr.createEnrollment(sections);
             }
         }
+        
         private void assign(Enrollment enrollment) {
         	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
             if (conflictConstraints.isEmpty()) {
-                enrollment.variable().assign(0,enrollment);
+                enrollment.variable().assign(0, enrollment);
             } else {
                 iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
@@ -339,49 +354,69 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
                 }
             }
         }
+        
         private void unassignAll() {
             for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null) request.unassign(0);
             }
         }
+        
         public void execute() {
             iProgress = Progress.getInstance(currentSolution().getModel());
             
+            Map<Long, Map<Long, Request>> requests = new Hashtable<Long, Map<Long,Request>>();
+            for (Request request: currentSolution().getModel().variables()) {
+            	Map<Long, Request> r = requests.get(request.getStudent().getId());
+            	if (r == null) {
+            		r = new Hashtable<Long, Request>();
+            		requests.put(request.getStudent().getId(), r);
+            	}
+            	r.put(request.getId(), request);
+            }
+            
             if (!iBestAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating best assignment ...",iBestAssignmentTable.size());
+                iProgress.setPhase("Creating best assignment ...", iBestAssignmentTable.size());
                 unassignAll();
-                for (Iterator i=iBestAssignmentTable.entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry = (Map.Entry)i.next();
+                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iBestAssignmentTable.entrySet()) {
+                	Map<Long, Request> r = requests.get(e1.getKey());
                     iProgress.incProgress();
-                    Request request = getRequest((Long)entry.getKey()); 
-                    if (request==null) continue;
-                    Enrollment enrollment = getEnrollment(request,(Enrollment)entry.getValue());
-                    if (enrollment!=null) assign(enrollment);
+                	if (r == null) continue;
+                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
+                		Request request = r.get(e2.getKey());
+                		if (request == null) continue;
+                		Enrollment enrollment = getEnrollment(request, e2.getValue());
+                        if (enrollment!=null) assign(enrollment);
+                	}
                 }
-                
                 currentSolution().saveBest();
             }
             if (!iInitialAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating initial assignment ...",iInitialAssignmentTable.size());
-                for (Iterator i=iInitialAssignmentTable.entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry = (Map.Entry)i.next();
+                iProgress.setPhase("Creating initial assignment ...", iInitialAssignmentTable.size());
+                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iInitialAssignmentTable.entrySet()) {
+                	Map<Long, Request> r = requests.get(e1.getKey());
                     iProgress.incProgress();
-                    Request request = getRequest((Long)entry.getKey()); 
-                    if (request==null) continue;
-                    Enrollment enrollment = getEnrollment(request,(Enrollment)entry.getValue());
-                    if (enrollment!=null) request.setInitialAssignment(enrollment);
+                	if (r == null) continue;
+                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
+                		Request request = r.get(e2.getKey());
+                		if (request == null) continue;
+                		Enrollment enrollment = getEnrollment(request, e2.getValue());
+                        if (enrollment!=null) request.setInitialAssignment(enrollment);
+                	}
                 }
             }
             if (!iCurrentAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating current assignment ...",iCurrentAssignmentTable.size());
+                iProgress.setPhase("Creating current assignment ...", iCurrentAssignmentTable.size());
                 unassignAll();
-                for (Iterator i=iCurrentAssignmentTable.entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry = (Map.Entry)i.next();
+                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iCurrentAssignmentTable.entrySet()) {
+                	Map<Long, Request> r = requests.get(e1.getKey());
                     iProgress.incProgress();
-                    Request request = getRequest((Long)entry.getKey()); 
-                    if (request==null) continue;
-                    Enrollment enrollment = getEnrollment(request,(Enrollment)entry.getValue());
-                    if (enrollment!=null) assign(enrollment);
+                	if (r == null) continue;
+                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
+                		Request request = r.get(e2.getKey());
+                		if (request == null) continue;
+                		Enrollment enrollment = getEnrollment(request, e2.getValue());
+                        if (enrollment!=null) assign(enrollment);
+                	}
                 }
             }
             iCurrentAssignmentTable.clear();
@@ -398,6 +433,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
         }
     }
+    
     public class LoadingDoneCallback implements Callback {
         public void execute() {
             iLoadedDate = new Date();
@@ -408,6 +444,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
                 start();
         }
     }
+    
     public class SavingDoneCallback implements Callback {
         public void execute() {
             iWorking = false;
