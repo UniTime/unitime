@@ -440,7 +440,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
             }
         }
         
-        if (student.getRequests().isEmpty() && (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty())) {
+        if (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty()) {
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
@@ -449,6 +449,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
         	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
         		StudentClassEnrollment enrl = i.next();
+        		if (enrl.getCourseRequest() != null) continue; // already loaded
         		Course course = server.getCourse(enrl.getCourseOffering().getUniqueId());
                 if (course==null) {
                     helper.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
@@ -466,17 +467,25 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                 if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
                 courses.add(course);
         	}
-        	int priority = 0;
         	for (Course course: courses) {
         		Vector<Course> cx = new Vector<Course>(); cx.add(course);
-                CourseRequest request = new CourseRequest(
-                        - course.getId(),
-                        priority++,
-                        false,
-                        student,
-                        cx,
-                        true,
-                        timeStamp.get(course.getId()));
+        		CourseRequest request = null;
+        		for (Request r: student.getRequests()) {
+        			if (r instanceof CourseRequest && r.getAssignment() == null && ((CourseRequest)r).getCourses().contains(course)) {
+        				request = (CourseRequest)r;
+        				break;
+        			}
+        		}
+        		if (request == null) {
+                    request = new CourseRequest(
+                            - course.getId(),
+                            student.getRequests().size(),
+                            false,
+                            student,
+                            cx,
+                            true,
+                            timeStamp.get(course.getId()));
+        		}
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
