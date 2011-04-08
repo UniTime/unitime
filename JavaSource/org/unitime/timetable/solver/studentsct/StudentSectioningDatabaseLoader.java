@@ -68,6 +68,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -341,7 +342,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         DecimalFormat df = new DecimalFormat("000");
         for (Iterator<InstrOfferingConfig> i = io.getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
         	InstrOfferingConfig ioc = i.next();
-            Config config = new Config(ioc.getUniqueId(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), courseName + " [" + ioc.getName() + "]", offering);
+        	int configLimit = (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit());
+        	if (configLimit >= 9999) configLimit = -1;
+            Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (SchedulingSubpart ss: subparts) {
@@ -546,21 +549,29 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
 
-        if (student.getRequests().isEmpty() && !s.getClassEnrollments().isEmpty()) {
+        if (student.getRequests().isEmpty() && (!s.getClassEnrollments().isEmpty() || !s.getWaitlists().isEmpty())) {
         	TreeSet<Course> courses = new TreeSet<Course>(new Comparator<Course>() {
         		public int compare(Course c1, Course c2) {
         			return (c1.getSubjectArea() + " " + c1.getCourseNumber()).compareTo(c2.getSubjectArea() + " " + c2.getCourseNumber());
         		}
         	});
         	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
-        	for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
-        		StudentClassEnrollment enrl = i.next();
+        	for (StudentClassEnrollment enrl: s.getClassEnrollments()) {
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
                 if (course==null) {
                     iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
+                courses.add(course);
+        	}
+        	for (WaitList w: s.getWaitlists()) {
+        		Course course = courseTable.get(w.getCourseOffering().getUniqueId());
+                if (course==null) {
+                    iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
+                    continue;
+                }
+                if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
                 courses.add(course);
         	}
         	int priority = 0;
@@ -649,6 +660,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        							" has no space available (limit is "+ section.getLimit() + ")");
        					if (iTweakLimits) {
        						section.setLimit(section.getEnrollments().size() + 1);
+       						section.clearReservationCache();
        						iProgress.info("    limit increased to "+section.getLimit());
        					}
                			hasLimit = true;
@@ -659,6 +671,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
    					iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
    					if (iTweakLimits) {
    						enrl.getConfig().setLimit(enrl.getConfig().getEnrollments().size() + 1);
+   						enrl.getConfig().clearReservationCache();
    						iProgress.info("    limit increased to "+enrl.getConfig().getLimit());
    					}
            			hasLimit = true;
@@ -806,25 +819,58 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				lastLikeCount ++;
     			}
     		}
+    		
 	        double projected = course.getProjected();
-	        int limit = course.getLimit();
-	        if (course.getLimit() < 0) {
+	        double limit = course.getLimit();
+	        if (limit >= 9999) limit = -1;
+	        
+	        int configLimit = 0;
+	        for (Config config: course.getOffering().getConfigs()) {
+	        	if (config.getLimit() < 0 || config.getLimit() >= 9999) { configLimit = -1; break; }
+	        	int cLimit = config.getLimit();
+	        	for (Subpart subpart: config.getSubparts()) {
+	        		int subpartLimit = 0;
+	        		for (Section section: subpart.getSections()) {
+	        			if (section.getLimit() < 0 || section.getLimit() >= 9999) { subpartLimit = -1; break; }
+	        			subpartLimit += section.getLimit();
+	        		}
+	        		if (subpartLimit >= 0 && subpartLimit < cLimit) { cLimit = subpartLimit; }
+	        	}
+	        	configLimit += cLimit;
+	        }
+	        
+	        if (course.getOffering().getCourses().size() > 1) {
+		        int offeringLimit = 0;
+		        for (Course c: course.getOffering().getCourses()) {
+		        	if (c.getLimit() < 0 || c.getLimit() >= 9999) { offeringLimit = -1; break; }
+	        		offeringLimit += c.getLimit();
+		        }
+		        if (configLimit >= 0 && configLimit < offeringLimit)
+		        	limit = (limit * configLimit) / offeringLimit;
+		        else if (configLimit >= 0 && offeringLimit < 0)
+		        	limit = configLimit / course.getOffering().getCourses().size();
+	        } else {
+	        	if (configLimit >= 0 && (configLimit < limit || limit < 0))
+	        		limit = configLimit;
+	        }
+	        
+	        if (limit < 0) {
 	            iProgress.debug("Course " + course.getName() + " is unlimited.");
 	            continue;
 	        }
 	        if (projected <= 0) {
-	        	iProgress.info("No projected demand for course " + course.getName() + ", using course limit (" + limit + ")");
+	        	iProgress.info("No projected demand for course " + course.getName() + ", using course limit (" + Math.round(limit) + ")");
 	            projected = limit;
 	        } else if (limit < projected) {
 	        	if (!iProjections)
-	        		iProgress.info("Projected number of students is over course limit for course " + course.getName() + " (" + Math.round(projected) + ">" + limit + ")");
+	        		iProgress.info("Projected number of students is over course limit for course " + course.getName() + " (" + Math.round(projected) + ">" + Math.round(limit) + ")");
 	        	projected = limit;
 	        }
     		if (lastLikeCount <= 0) {
 				iProgress.info("No projected course demands for course " + course.getName());
     			continue;
     		}
-	        double weight = (nrLastLike <= 0 ? 0 : Math.max(0.0, projected - (nrStudents - nrLastLike)) / nrLastLike);
+	        double weight = (nrLastLike <= 0 ? 0.0 : Math.max(0.0, projected - (nrStudents - nrLastLike)) / nrLastLike);
 	        iProgress.debug("Projected student weight for " + course.getName() + " is " + weight + " (projected=" + nrLastLike + ", real=" + (nrStudents - nrLastLike) + ", limit=" + projected + ")");
 	        int left = 0;
 	        for (CourseRequest request: new ArrayList<CourseRequest>(course.getRequests())) {
@@ -846,6 +892,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	        if (left <= 0)
 	        	iProgress.info("No projected course demands needed for course " + course.getName());
     	}
+    	getModel().requestWeightsChanged();
     }
     
     public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, Long courseOfferingId, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable classAssignments) {
@@ -1072,6 +1119,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch s.classEnrollments as e " +
+                    "left join fetch s.waitlists as w " +
                     (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
@@ -1079,7 +1127,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             iProgress.setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); iProgress.incProgress();
-                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty()) continue;
+                if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
                 Student student = loadStudent(s, courseTable, classTable);
                 if (student == null) continue;
                 updateCurriculumCounts(student);
