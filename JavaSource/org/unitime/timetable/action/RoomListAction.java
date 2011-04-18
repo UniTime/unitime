@@ -252,7 +252,8 @@ public class RoomListAction extends Action {
 			saveErrors(request, errors);
 		} else {
 			User user = Web.getUser(httpSession);
-			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+			Session session = Session.getCurrentAcadSession(user);
+			Long sessionId = session.getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
 			Set deptRoomFeatures = new TreeSet();
 			int colspan=0;
@@ -655,13 +656,19 @@ public class RoomListAction extends Action {
 	                }
 	                TreeSet ts = new TreeSet(new DepartmentNameComparator());
 	                ts.addAll(departments);
-	                for (Iterator it = ts.iterator(); it.hasNext();) {
-	                    Department d = (Department) it.next();
-	                    if (text[idx].length() > 0)
-	                        text[idx] = text[idx] + "<br>";
-	                    else
-	                        comp[idx] = d.getDeptCode();
-	                    text[idx] = text[idx] + d.htmlShortLabel(); 
+	                if (ts.size() == session.getDepartments().size()) {
+	                	text[idx] = "<b>All</b>";
+	                	comp[idx] = ""; 
+	                } else {
+	                	int cnt = 0;
+		                for (Iterator it = ts.iterator(); it.hasNext(); cnt++) {
+		                    Department d = (Department) it.next();
+		                    if (text[idx].length() > 0)
+		                        text[idx] = text[idx] + (ts.size() <= 5 || cnt % 5 == 0 ? "<br>" : ", ");
+		                    else
+		                        comp[idx] = d.getDeptCode();
+		                    text[idx] = text[idx] + d.htmlShortLabel(); 
+		                }
 	                }
 	                idx++;
 	                
@@ -805,7 +812,8 @@ public class RoomListAction extends Action {
 		
     		Collection rooms = roomListForm.getRooms();
 			User user = Web.getUser(httpSession);
-			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+			Session session = Session.getCurrentAcadSession(user);
+			Long sessionId = session.getSessionId();
 			ArrayList globalRoomFeatures = new ArrayList();
 			Set deptRoomFeatures = new TreeSet();
 			
@@ -1161,13 +1169,19 @@ public class RoomListAction extends Action {
 	                }
 	                TreeSet ts = new TreeSet(new DepartmentNameComparator());
 	                ts.addAll(departments);
-	                for (Iterator it = ts.iterator(); it.hasNext();) {
-	                    Department d = (Department) it.next();
-	                    if (text[idx].length() > 0)
-	                        text[idx] = text[idx] + "\n";
-	                    else
-	                        comp[idx] = d.getDeptCode();
-	                    text[idx] = text[idx] + "@@COLOR "+d.getRoomSharingColor(null)+" "+d.getShortLabel(); 
+	                if (ts.size() == session.getDepartments().size()) {
+	                	text[idx] = "@@BOLD All";
+	                	comp[idx] = ""; 
+	                } else {
+	                	int cnt = 0;
+		                for (Iterator it = ts.iterator(); it.hasNext(); cnt++) {
+		                    Department d = (Department) it.next();
+		                    if (text[idx].length() > 0)
+		                        text[idx] = text[idx] + (ts.size() <= 5 || cnt % 5 == 0 ? "\n" : ", ");
+		                    else
+		                        comp[idx] = d.getDeptCode();
+		                    text[idx] = text[idx] + "@@COLOR "+d.getRoomSharingColor(null)+" "+d.getShortLabel(); 
+		                }
 	                }
 	                idx++;
 	                

@@ -298,6 +298,13 @@
 				<line>Allow to override the default data folder using the unitime.data.dir property (this allows two UniTime instances to co-exist on the same Tomcat server).</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>If a room is being shared between all departments, print All instead of all the abbreviations of all the departments.</line>
+				<line>If there is more than 5 departments between which a room is being shared, display 5 departments per line (instead of a single department on each line).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
