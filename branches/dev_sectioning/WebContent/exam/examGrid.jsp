@@ -145,7 +145,7 @@ try {
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
 	
 	<br><br>
-	<a name='timetable'/>
+	<a name='timetable'></a>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
@@ -178,7 +178,7 @@ try {
 %>
 		
 	<BR>
-	<a name='legend'/>
+	<a name='legend'></a>
 	<TABLE width="100%" border="0" >
 		<TR>
 			<TD colspan="3">

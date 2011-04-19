@@ -93,7 +93,7 @@
 	<% if (request.getAttribute("roomGroupsGlobal") != null) {%>
 		<TR>
 			<TD valign="middle" colspan="3">
-				&nbsp;<A name="roomGroupsGlobal"/>
+				&nbsp;<A name="roomGroupsGlobal"></A>
 			</TD>
 		</TR>
 		<%=request.getAttribute("roomGroupsGlobal")%>
@@ -102,7 +102,7 @@
 	<% if (request.getAttribute("roomGroupsDepartment") != null) {%>
 		<TR>
 			<TD valign="middle" colspan="3">
-				&nbsp;<A name="roomGroupsDepartment"/>
+				&nbsp;<A name="roomGroupsDepartment"></A>
 			</TD>
 		</TR>
 		<%=request.getAttribute("roomGroupsDepartment")%>
@@ -118,7 +118,7 @@
 
 	<TR>
 		<TD valign="middle" colspan="5">&nbsp;</TD>
-	<TR>
+	</TR>
 
 	<TR>
 		<TD valign="middle" colspan="5">
@@ -133,7 +133,7 @@
 			</tt:section-title>
 			</tt:section-header>
 		</TD>
-	<TR>
+	</TR>
 
 	<TR>
 		<TD align="right" colspan='5'>

@@ -129,7 +129,7 @@
 			</TABLE>
 		</tt:section-header>
 		</TD>
-	<TR>
+	</TR>
 
 <!--
 	<logic:messagesPresent>
@@ -157,9 +157,9 @@
 			<% empty = false; %>
 			<TR>
 				<TD valign="middle" colspan="<%=colspan%>">
-					&nbsp;<A name="<%=(String)ref%>"/>
+					&nbsp;<A name="<%=(String)ref%>"></A>
 				</TD>
-			<TR>
+			</TR>
 			<TR>
 				<bean:write name="<%=(String)ref%>" scope="request" filter="false"/>
 			</TR>
@@ -171,7 +171,7 @@
 
 	<TR>
 		<TD valign="middle" colspan="<%=colspan%>">&nbsp;</TD>
-	<TR>
+	</TR>
 
 	<TR>
 		<TD valign="middle" colspan="<%=colspan%>">
@@ -188,7 +188,7 @@
 			</tt:section-title>
 			</tt:section-header>
 		</TD>
-	<TR>
+	</TR>
 
 	<TR>
 		<TD valign="middle" colspan="<%=colspan%>" align="right">
@@ -268,7 +268,7 @@
 				</TR>
 			</TABLE>
 		</TD>
-	<TR>
+	</TR>
 <%}%>
 
 </TABLE>

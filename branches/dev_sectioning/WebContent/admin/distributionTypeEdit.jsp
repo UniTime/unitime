@@ -155,7 +155,7 @@
 			<td valign="middle" colspan="2">
 				<tt:section-title/>
 			</td>
-		<tr>
+		</tr>
 		
 		<TR>
 			<TD colspan='2' align='right'>

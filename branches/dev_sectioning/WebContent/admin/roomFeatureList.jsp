@@ -72,7 +72,7 @@
 				</TABLE>
 			</tt:section-header>
 		</TD>
-	<TR>
+	</TR>
 
 	<logic:messagesPresent>
 	<TR>
@@ -95,7 +95,7 @@
 	<% if (request.getAttribute("roomFeaturesGlobal") != null) {%>
 		<TR>
 			<TD valign="middle" colspan="4">
-				&nbsp;<A name="roomFeaturesGlobal"/>
+				&nbsp;<A name="roomFeaturesGlobal"></A>
 			</TD>
 		</TR>
 		<%=request.getAttribute("roomFeaturesGlobal")%>
@@ -104,7 +104,7 @@
 	<% if (request.getAttribute("roomFeaturesDepartment") != null) {%>
 		<TR>
 			<TD valign="middle" colspan="4">
-				&nbsp;<A name="roomFeaturesDepartment"/>
+				&nbsp;<A name="roomFeaturesDepartment"></A>
 			</TD>
 		</TR>
 		<%=request.getAttribute("roomFeaturesDepartment")%>
@@ -120,7 +120,7 @@
 
 	<TR>
 		<TD valign="middle" colspan="4">&nbsp;</TD>
-	<TR>
+	</TR>
 
 	<TR>
 		<TD valign="middle" colspan="4">
@@ -135,7 +135,7 @@
 			</tt:section-title>
 			</tt:section-header>
 		</TD>
-	<TR>
+	</TR>
 
 <!-- Buttons -->
 	<TR>

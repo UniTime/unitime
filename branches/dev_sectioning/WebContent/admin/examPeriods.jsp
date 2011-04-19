@@ -378,9 +378,7 @@
 		inputField : "date",		// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("date")!=null && request.getParameter("date").length()>=10) { %>
-	    date		: <%=request.getParameter("date")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("date") != null && request.getParameter("date").length() >= 10 ? request.getParameter("date") : null%>,
 		button     : "show_date"	// ID of the button
 	} );
 

@@ -97,7 +97,8 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	</tt:hasProperty>
 	<% if (request.getAttribute(Constants.REQUEST_OPEN_URL)!=null) { %>
 		<script language="JavaScript">
-			window.open('<%=request.getAttribute(Constants.REQUEST_OPEN_URL)%>');
+			<% String url = request.getAttribute(Constants.REQUEST_OPEN_URL).toString(); %>
+			window.open('<%=url%>');
 		</script>
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>
 			<td class="popupBlocked" width='5'>&nbsp;</td>

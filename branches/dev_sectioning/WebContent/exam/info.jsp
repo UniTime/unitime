@@ -209,7 +209,7 @@
 				</tr></table>
 			</td></tr>
 			<logic:empty name="model" property="roomTable">
-				<tr><td colspan='2'><i>No room matching the above criteria was found.</td></tr>
+				<tr><td colspan='2'><i>No room matching the above criteria was found.</i></td></tr>
 			</logic:empty>
 			<logic:notEmpty name="model" property="roomTable">
 				<tr><td colspan='2'>
