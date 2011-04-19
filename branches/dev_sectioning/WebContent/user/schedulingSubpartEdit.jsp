@@ -119,7 +119,7 @@
 				<TD>Manager:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="managingDeptName" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="parentSubpartId">
@@ -127,7 +127,7 @@
 				<TD>Parent Scheduling Subpart:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="parentSubpartLabel" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
@@ -142,13 +142,6 @@
 						<html:option value="less" style="background-color:rgb(223,231,242);">&lt;&lt;&lt; Less Options</html:option>
 					</logic:equal>
 				</html:select>
-				<!-- 
-				<logic:iterate scope="request" name="<%=ItypeDesc.ITYPE_ATTR_NAME%>" id="itp">
-					<logic:equal name="<%=frmName%>" property="instructionalType" value="<%=((ItypeDesc)itp).getItype().toString()%>">
-						<bean:write name="itp" property="desc"/>
-					</logic:equal>
-				</logic:iterate>
-				 -->
 			</TD>
 		</TR>
 		<TR>
@@ -158,19 +151,19 @@
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD>Automatic Spread In Time:</TD>
 			<TD>
 				<html:checkbox property="autoSpreadInTime"/> <i>If checked, spread in time constraint will be automatically posted between classes of this subpart.</i>
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD>Student Overlaps:</TD>
 			<TD>
 				<html:checkbox property="studentAllowOverlap"/> <i>If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.</i>
-			<TD>
+			</TD>
 		</TR>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
 		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="true">
@@ -181,7 +174,7 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=org.unitime.timetable.model.CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME%>" property="reference" labelProperty="label"/>
 				</html:select>
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD> &nbsp;</TD>
@@ -222,7 +215,7 @@
 				</td>
 				</tr>
 				</table>
-			<TD>
+			</TD>
 		</TR>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="false">
@@ -237,29 +230,29 @@
 					<html:hidden property="units"/>
 					<html:hidden property="maxUnits"/>				
 					<html:hidden property="fractionalIncrementsAllowed"/>				
-			<TD>
+			</TD>
 			
 		</TR>
 		</logic:equal>
 		</logic:equal>
 <!-- Preferences -->
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = true;
-			boolean restorePrefsDisabled = false;
-			boolean timePrefDisabled = false;
-			boolean periodPrefDisabled = true;
-			
-			if (frm.getUnlimitedEnroll().booleanValue()) {
-				roomGroupDisabled = true;
-				bldgPrefDisabled = true;
-				roomFeaturePrefDisabled = true;
-			}
-		%>
-		<%@ include file="preferencesEdit.jspf" %>
+		<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
+			<jsp:include page="preferencesEdit.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="distPref" value="false"/>
+				<jsp:param name="periodPref" value="false"/>
+				<jsp:param name="bldgPref" value="false"/>
+				<jsp:param name="roomFeaturePref" value="false"/>
+				<jsp:param name="roomGroupPref" value="false"/>
+			</jsp:include>
+		</logic:equal>
+		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
+			<jsp:include page="preferencesEdit.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="distPref" value="false"/>
+				<jsp:param name="periodPref" value="false"/>
+			</jsp:include>
+		</logic:notEqual>
 
 	</TABLE>
 </html:form>

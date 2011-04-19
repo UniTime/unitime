@@ -101,17 +101,10 @@
 		</logic:messagesPresent>
 
 <!-- Preferences -->
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = false;
-			boolean restorePrefsDisabled = true;
-			boolean timePrefDisabled = false;
-			boolean periodPrefDisabled = true;
-		%>
-		<%@ include file="preferencesEdit.jspf" %>
+		<jsp:include page="preferencesEdit.jspf">
+			<jsp:param name="frmName" value="<%=frmName%>"/>
+			<jsp:param name="periodPref" value="false"/>
+		</jsp:include>
 		
 	</TABLE>
 </html:form>

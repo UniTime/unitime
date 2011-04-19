@@ -19,7 +19,11 @@
 <%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.Staff" %>
-
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<bean:parameter id="frmName" name="frmName"/>
 <logic:notEmpty name="<%=frmName%>" property="matchFound">
 			<logic:equal name="<%=frmName%>" property="matchFound" value="true">
 
