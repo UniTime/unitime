@@ -179,7 +179,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
         	</span>
 	    </td></tr></table>
     </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer">
+    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
     		<tr>
     			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span>
     				<logic:notEmpty scope="request" name="TimeStamp">
