@@ -4,6 +4,4 @@
     <basePackage>org.unitime.timetable</basePackage>
     <strutsPattern>0</strutsPattern>
     <servletName>action</servletName>
-    <useWorkspaceSettings>true</useWorkspaceSettings>
-    <disableDesigner>false</disableDesigner>
 </MyEclipseStrutsProperties>
