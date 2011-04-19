@@ -48,6 +48,9 @@
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
+    <tt:hasProperty name="tmtbl.custom.css">
+		<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </HEAD>
@@ -115,13 +118,20 @@
 	<% } %>	    
 	    </td></tr></table>
     </td></tr><tr><td>
-    	<table class="unitime-Footer">
+    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
     		<tr>
     			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span></td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
     			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
     			<td width="33%" align="right" class="unitime-FooterText"><tt:registration/></td>
     		</tr>
+    		<tt:hasProperty name="tmtbl.page.disclaimer">
+    			<tr>
+    				<td colspan="3" class="unitime-Disclaimer">
+    					<tt:property name="tmtbl.page.disclaimer"/>
+    				</td>
+    			</tr>
+    		</tt:hasProperty>
     	</table>
 	</td></tr></table>
   </body>
