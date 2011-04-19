@@ -56,7 +56,7 @@ StrutsLayoutExpert.getPositionLeft = function( elem ) {
 	}
 	
 	return offsetLeft;
-}
+};
 
 StrutsLayoutExpert.getPositionTop = function( elem ) {
 	var offsetTop = elem.offsetTop;
@@ -68,7 +68,7 @@ StrutsLayoutExpert.getPositionTop = function( elem ) {
 	}
 	
 	return offsetTop;
-}
+};
 
 StrutsLayoutExpert.setTextareaFieldValue = function(node, value, cursorPosition) {
 	// On the textarea
@@ -82,7 +82,7 @@ StrutsLayoutExpert.setTextareaFieldValue = function(node, value, cursorPosition)
 		StrutsLayoutExpert.elementSuggested = value.substring(StrutsLayoutExpert.lenElementToSuggest);
 		textAreaNode.focus();
 	}
-}
+};
 
 StrutsLayoutExpert.selectTextareaFieldText = function(expertNode, startPos, endPos) {
 	if (StrutsLayoutExpert.isIE()) {
@@ -95,23 +95,23 @@ StrutsLayoutExpert.selectTextareaFieldText = function(expertNode, startPos, endP
 	else {			
 		expertNode.setSelectionRange(startPos, endPos);
 	}
-}
+};
 
 StrutsLayoutExpert.getSelectedSuggestionIndex = function(textareaFieldId) {
 	return parseInt(document.getElementById(textareaFieldId + "SuggestionList_selectedSuggestionIndex").value);
-}
+};
 
 StrutsLayoutExpert.setSelectedSuggestionIndex = function(textareaFieldId, value) {
 	document.getElementById(textareaFieldId + "SuggestionList_selectedSuggestionIndex").value = value;
-}
+};
 
 StrutsLayoutExpert.getTypedWord = function(textareaFieldId) {
 	return document.getElementById(textareaFieldId + "SuggestionList_typedWord").value;
-}
+};
 
 StrutsLayoutExpert.setTypedWord = function(textareaFieldId, value) {
 	document.getElementById(textareaFieldId + "SuggestionList_typedWord").value = value;
-}
+};
 
 StrutsLayoutExpert.displaySuggestionList = function(expertNode, textareaFieldId) {
 	var suggestionList = document.getElementById( textareaFieldId + "SuggestionList" );
@@ -119,7 +119,7 @@ StrutsLayoutExpert.displaySuggestionList = function(expertNode, textareaFieldId)
 	suggestionList.style.top = StrutsLayoutExpert.getPositionTop(expertNode) + 25;
 	suggestionList.style.left = StrutsLayoutExpert.getPositionLeft(expertNode);
 	suggestionList.style.visibility = "visible";	
-}
+};
 
 StrutsLayoutExpert.hideSuggestionList = function(textareaFieldId) {
 	var suggestionList = document.getElementById( textareaFieldId + "SuggestionList" );
@@ -130,7 +130,7 @@ StrutsLayoutExpert.hideSuggestionList = function(textareaFieldId) {
 		suggestionList.style.left = 0;
 		suggestionList.style.visibility = "hidden";				
 	}
-}
+};
 
 StrutsLayoutExpert.displayCursor = function(textareaFieldId, suggestionIndex) {
 	var suggestionList = document.getElementById( textareaFieldId + "SuggestionList" );
@@ -146,7 +146,7 @@ StrutsLayoutExpert.displayCursor = function(textareaFieldId, suggestionIndex) {
 	
 	var newSelection = suggestions.item(suggestionIndex);
 	newSelection.className="suggestionList_element_on";
-}
+};
 
 StrutsLayoutExpert.hideCursor = function(textareaFieldId, suggestionIndex) {
 	var suggestionList = document.getElementById( textareaFieldId + "SuggestionList" );
@@ -154,7 +154,7 @@ StrutsLayoutExpert.hideCursor = function(textareaFieldId, suggestionIndex) {
 		
 	var newSelection = suggestions.item(suggestionIndex);
 	newSelection.className="suggestionList_element_off";
-}
+};
 
 StrutsLayoutExpert.getSelectionCrossBrowser = function() {
 	var txt;
@@ -167,19 +167,19 @@ StrutsLayoutExpert.getSelectionCrossBrowser = function() {
 	else
 		txt = 'Navigateur non compatible';
 	return txt;
-}
+};
 
 StrutsLayoutExpert.getKey = function( keyCode, which ) {
 	if (keyCode)	// IE
 		return keyCode;
 	else	// Reste
 		return which;
-}
+};
 
 StrutsLayoutExpert.isSpecialKey = function(keyCode) {
 	var pattern = "|9|16|17|18|19|20|33|34|35|36|37|39|44|45|112|113|114|115|116|117|118|119|120|121|122|123|144|145|";
 	return pattern.indexOf("|" + keyCode + "|") > -1;
-}
+};
 
 StrutsLayoutExpert.isIE = function() {
 	if (navigator.appName=="Microsoft Internet Explorer") {
@@ -188,11 +188,11 @@ StrutsLayoutExpert.isIE = function() {
 	else {
 		return false;
 	}
-}
+};
 
 StrutsLayoutExpert.expertLastWrittenText = function(value) {
 	StrutsLayoutExpert.lastWrittenText = value;
-}
+};
 
 StrutsLayoutExpert.getLastCharWrittenPosition = function(lastText, currentText) {
 	var i, maxSize, find, lastCharPosition;
@@ -213,7 +213,7 @@ StrutsLayoutExpert.getLastCharWrittenPosition = function(lastText, currentText) 
 	if(find==false)
 		lastCharPosition = currentText.length;
 	return lastCharPosition;
-}
+};
 
 StrutsLayoutExpert.getCurrentExpertText = function(value, cursorPosition, leftCharacter, rightCharacter) {
 	var i;
@@ -250,11 +250,11 @@ StrutsLayoutExpert.getCurrentExpertText = function(value, cursorPosition, leftCh
 		end = currentPosition;
 	
 	return value.substring(start, end);
-}
+};
 
 StrutsLayoutExpert.expertLastWrittenText = function(value) {
 	StrutsLayoutExpert.lastWrittenText = value;
-}
+};
 
 StrutsLayoutExpert.getFormTag = function(tagToUpdate) {
 	var nodeName, hasNode, currentNodePosition, find, next;
@@ -291,7 +291,7 @@ StrutsLayoutExpert.getFormTag = function(tagToUpdate) {
 							do {
 								currentElement = currentElement.parentNode;
 							} while (currentElement.nextSibling==null);
-							currentElement = currentElement.nextSibling
+							currentElement = currentElement.nextSibling;
 							next = true;
 						}
 						else {
@@ -310,7 +310,7 @@ StrutsLayoutExpert.getFormTag = function(tagToUpdate) {
 	} while (find==false);
 	
 	return currentElement;
-}
+};
 
 
 /******************
@@ -377,7 +377,7 @@ StrutsLayoutExpert.init = function (arrayId) {
 	}
 	StrutsLayoutExpert.arrayExpertLetter = letterUnavailable;
 	StrutsLayoutExpert.arrayExpertTag = equivalentTag;
-}
+};
 
 
 /**
@@ -468,7 +468,7 @@ StrutsLayoutExpert.expertUpdate = function(value, forceUpdate) {
 			currentCharPosition++;
 		} while (currentCharPosition!=arrayContentText.length);
 	}
-}
+};
 
 
 /**
@@ -565,7 +565,7 @@ StrutsLayoutExpert.expertSuggest = function(expertNode, selectFirstWord, maxSugg
 										if((currentElement.childNodes.item(i).nodeName).toLowerCase()=="option") {
 											if((((currentElement.childNodes.item(i).value).replace(/(\s*)/g,"")).substr(0,valueToSelect.length)).toLowerCase()==valueToSelect) {
 												elementsMenu[currentSuggestPosition] = (currentElement.childNodes.item(i).value).replace(/(\s*)/g,"");
-												currentSuggestPosition++
+												currentSuggestPosition++;
 											}
 										}
 									}
@@ -583,7 +583,7 @@ StrutsLayoutExpert.expertSuggest = function(expertNode, selectFirstWord, maxSugg
 										if((currentElement.childNodes.item(i).nodeName).toLowerCase()=="option") {
 											if((((currentElement.childNodes.item(i).value).replace(/(\s*)/g,"")).substr(0,arrayValueToSelect[arrayValueToSelect.length-1].length)).toLowerCase()==arrayValueToSelect[arrayValueToSelect.length-1]) {
 												elementsMenu[currentSuggestPosition] = currentElement.childNodes.item(i).value;
-												currentSuggestPosition++
+												currentSuggestPosition++;
 											}
 										}
 									}
@@ -666,7 +666,7 @@ StrutsLayoutExpert.expertSuggest = function(expertNode, selectFirstWord, maxSugg
 		divMenu = document.getElementById( StrutsLayoutExpert.textareaFieldId + "SuggestionList" ) ;
 		divMenu.innerHTML = '';
 	}
-}
+};
 
 
 StrutsLayoutExpert.computeKeyUp = function(expertNode, key, maxSuggestionsCount, minWordLength) {
@@ -684,7 +684,7 @@ StrutsLayoutExpert.computeKeyUp = function(expertNode, key, maxSuggestionsCount,
 			StrutsLayoutExpert.expertSuggest(expertNode, true, maxSuggestionsCount, minWordLength);
 		}
 	}
-}
+};
 
 
 StrutsLayoutExpert.computeKeyDown = function(expertNode, key) {	
@@ -781,10 +781,10 @@ StrutsLayoutExpert.computeKeyDown = function(expertNode, key) {
 		StrutsLayoutExpert.cursorPosition++;*/
 		StrutsLayoutExpert.selectTextareaFieldText(expertNode, parseInt(StrutsLayoutExpert.cursorPosition)+parseInt(StrutsLayoutExpert.elementSuggested.length), parseInt(StrutsLayoutExpert.cursorPosition)+parseInt(StrutsLayoutExpert.elementSuggested.length));
 	}
-}
+};
 
 
 StrutsLayoutExpert.computeKeyPress = function(expertNode, key) {
 	if (key == StrutsLayoutExpert.KEY_ENTER)
 		return false;
-}
+};

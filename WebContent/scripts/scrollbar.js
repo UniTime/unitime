@@ -41,7 +41,7 @@ function initScrollbar(collectionTableId, collectionDivId) {
 
 	// ok, set the header div position
 	layer.style.left = x;
-	layer.style.top = y
+	layer.style.top = y;
 			
 	// copy the table in it.
 	var copy = element.cloneNode(true);
@@ -58,7 +58,7 @@ function initScrollbar(collectionTableId, collectionDivId) {
 	// create horizontal scroll synchronize handler.
 	var scrollX = function() {
 		layer.scrollLeft = elementLayer.scrollLeft;
-	}
+	};
 	
 	//new Function("document.getElementById('" + collectionDivId + "').scrollLeft = findDiv('" + collectionTableId + "').scrollLeft;");
 
@@ -74,6 +74,6 @@ function addLoadEvent(func) {
     window.onload = function() {
       oldonload();
       func();
-    }
+    };
   }
 }

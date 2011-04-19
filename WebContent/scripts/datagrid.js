@@ -13,13 +13,13 @@ StrutsLayout.Column = function (in_property, in_styleClass, in_type, in_values) 
 	this.styleClass = in_styleClass;
 	this.type = in_type;
 	this.values = in_values;
-}
+};
 
 // definition of an option
 StrutsLayout.Option = function (in_label, in_value) {
 	this.label = in_label;
 	this.value = in_value;
-}
+};
 
 // definition of the Struts-Layout datagrid js object.
 StrutsLayout.Datagrid = function Datagrid(in_property, in_styleId, in_styleClass, in_styleClass2, in_allowSelection, in_allowMultipleSelection) {
@@ -44,12 +44,12 @@ StrutsLayout.Datagrid = function Datagrid(in_property, in_styleId, in_styleClass
 	// add a column
 	StrutsLayout.Datagrid.prototype.addColumn = function addColumn(in_property, in_styleClass, in_type, in_values) {
 		this.columns[this.columns.length] = new StrutsLayout.Column(in_property, in_styleClass, in_type, in_values);
-	}
+	};
 		
 	// add a styleClass
 	StrutsLayout.Datagrid.prototype.addStyleClass = function addStyleClass(in_styleName, in_styleClass) {
 		this.rowStyleClassMap[in_styleName] = in_styleClass;
-	}
+	};
 	
 	// set the state
 	StrutsLayout.Datagrid.prototype.initState = function initState(in_index, in_state) {
@@ -62,7 +62,7 @@ StrutsLayout.Datagrid = function Datagrid(in_property, in_styleId, in_styleClass
 		var hidden = this.createStateElement(in_index, in_state);
 		table.parentNode.appendChild(hidden);
 		
-	}
+	};
 				
 	this.getDatagridRowStateField = getDatagridRowStateField;		
 	this.addDatagridCell = addDatagridCell;	
@@ -206,7 +206,7 @@ StrutsLayout.Datagrid = function Datagrid(in_property, in_styleId, in_styleClass
 		}
 		return array;
 	}	
-}
+};
 
 // add a line, PUBLIC
 StrutsLayout.addDatagridLine = function(property) {				
@@ -241,7 +241,7 @@ StrutsLayout.addDatagridLine = function(property) {
 	
 	var hidden = datagrid.createStateElement(table.rows.length-2, "");
 	table.parentNode.appendChild(hidden);		
-}
+};
 
 // set the state of the selected lines.
 StrutsLayout.setDatagridLineState = function(property, state) {
@@ -261,5 +261,5 @@ StrutsLayout.setDatagridLineState = function(property, state) {
 		// Hide the line
 		table.rows[parseInt(i)+1].className = datagrid.rowStyleClassMap[state];
 	}
-}	
+};
 	
