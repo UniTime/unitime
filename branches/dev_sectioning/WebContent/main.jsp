@@ -88,14 +88,12 @@
 	<table align="center" width="900px">
     <tr>
     <td valign="top" rowspan="2">
-    	<logic:equal name="showMenu" value="true">
-    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
-    			<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
-	    	</tt:propertyEquals>
-    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
-    			<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
-	    	</tt:propertyEquals>
-	    </logic:equal>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
+    		<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
+    		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
     </td>
     <td valign="top" >
 	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
