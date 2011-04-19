@@ -54,7 +54,7 @@
 			<TD>Event Name:</TD>
 			<TD>
 				<html:text property="eventNameSubstring" maxlength="50" size="50" /> 
-			<TD>
+			</TD>
 		</TR>
 		<logic:equal name="eventListForm" property="noRole" value="false">
 		<TR>
@@ -129,9 +129,8 @@
 					</html:multibox>
 					<bean:write name="type"/><br>
 				</logic:iterate>
-			<TD>
+			</TD>
 		</TR>
-		<TR>
 		<TR>
 			<TD valign="top">Mode:</TD>
 			<TD>
@@ -141,7 +140,7 @@
 				<logic:equal name="eventListForm" property="noRole" value="false">
 					&nbsp;&nbsp;&nbsp;<html:checkbox property="dispConflicts"/> Display Conflicts
 				</logic:equal>
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
@@ -195,9 +194,7 @@
   inputField : "event_date_from",  // ID of the input field
      ifFormat   : "%m/%d/%Y",    // Format of the input field
      showOthers : true,     // Show overlap of dates from other months     
-     <% if (request.getAttribute("eventDateFrom")!=null && ((String)request.getAttribute("eventDateFrom")).length()>=10) { %>
-     date  : <%=((String)request.getAttribute("eventDateFrom"))%>,
-     <% }%>
+  date		: <%=request.getAttribute("eventDateFrom") != null && ((String)request.getAttribute("eventDateFrom")).length() >= 10 ? (String)request.getAttribute("eventDateFrom") : null%>,
   button     : "show_event_date_from" // ID of the button
  } );
 
@@ -207,9 +204,7 @@
   inputField : "event_date_to",  // ID of the input field
      ifFormat   : "%m/%d/%Y",    // Format of the input field
      showOthers : true,     // Show overlap of dates from other months     
-     <% if (request.getAttribute("eventDateTo")!=null && ((String)request.getAttribute("eventDateTo")).length()>=10) { %>
-     date  : <%=((String)request.getAttribute("eventDateTo"))%>,
-     <% }%>
+  date		: <%=request.getAttribute("eventDateTo") != null && ((String)request.getAttribute("eventDateTo")).length() >= 10 ? (String)request.getAttribute("eventDateTo") : null%>,
   button     : "show_event_date_to" // ID of the button
  } );
  

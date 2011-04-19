@@ -94,14 +94,14 @@
 			<TD>Name: <font class="reqField">*</font></TD>
 			<TD>
 				<html:text property="name" maxlength="20" size="20" />
-			<TD>
+			</TD>
 		</TR>
 			
 		<TR>
 			<TD>Abbreviation: <font class="reqField">*</font></TD>
 			<TD>
 				<html:text property="abbv" maxlength="20" size="20" />
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
@@ -246,7 +246,7 @@
 			<TD valign="middle" colspan="2">
 				<tt:section-title/>
 			</TD>
-		<TR>
+		</TR>
 			
 		<TR>
 			<TD colspan='2' align='right'>

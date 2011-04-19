@@ -117,7 +117,7 @@
 		} catch(e) {
 			out.innerHTML = "<i><font color='red'>Error: "+e+"</font></i>";
 		}
-	}
+	};
 	
 	// Request
 	var vars = "query="+query+"<%=sid==null?"":"&session="+sid%>";

@@ -336,7 +336,7 @@
 		
 		<logic:equal name="<%=frmName%>" property="editable" value="true">
 			<TR>
-				<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
+				<TD colspan="2" align='center' style='border-top:black 1px dashed'>
 					<font size='-1'><i>
 						Room Availability table is read-only. To edit this table, please click Edit Room Availability button.
 					</i></font>
@@ -358,7 +358,7 @@
 				</TR>
 				<logic:equal name="<%=frmName%>" property="editable" value="true">
 					<TR>
-						<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
+						<TD colspan="2" align="center" style='border-top:black 1px dashed'>
 							<font size='-1'><i>
 								Final Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
 							</i></font>
@@ -380,7 +380,7 @@
 				</TR>
 				<logic:equal name="<%=frmName%>" property="editable" value="true">
 					<TR>
-						<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
+						<TD colspan="2" align='center' style='border-top:black 1px dashed'>
 							<font size='-1'><i>
 								Midterm Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
 							</i></font>

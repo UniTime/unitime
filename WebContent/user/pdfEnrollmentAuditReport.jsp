@@ -95,7 +95,6 @@
 		</TD>
 	</TR>
 	<TR>
-	<TR>
   		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
 		<TD>
 			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas<br>

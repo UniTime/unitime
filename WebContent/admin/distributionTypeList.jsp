@@ -102,17 +102,5 @@ webTable.addLine(
 
 </logic:iterate> <%-- end interate --%>
 <%	out.println( webTable.printTable(WebTable.getOrder(session,"DistributionTypeList.ord")) ); %>
-
-<%-- print out the add link --%>
-<br><br>
-<tr>
-<td colspan="10" align="center">
-<%--
-	<html:form action="distributionTypeEdit">
-		<html:hidden property="do" value="addDistributionType"/>
-		<html:submit value="Add Distribution Type"/>
-	</html:form>
---%>
-
 </table>
 

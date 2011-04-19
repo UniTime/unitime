@@ -19,6 +19,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.model.ApplicationConfig"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <HTML>

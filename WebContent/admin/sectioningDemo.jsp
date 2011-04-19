@@ -613,6 +613,11 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 										</span>
 										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>a' style='display:inline'></span>
 										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>b' style='display:none'>
+											<input 
+												type='hidden' 
+												id='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
+												name='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
+												value=''>
 											<table border='0' cellspacing='0' cellpadding='3' style='border-left:40px solid transparent;'>
 												<tr>
 													<td><i>Sel</i></td>
@@ -622,11 +627,6 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 													<td><i>Instructor</i></td>
 													<td><i>Requires</i></td>
 												</tr>
-												<input 
-													type='hidden' 
-													id='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
-													name='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
-													value=''>
 												<nested:iterate property="choices" id="choice">
 													<nested:define id="chId" name="choice" property="id"/>
 													<nested:define id="disp" name="choice" property="display"/>

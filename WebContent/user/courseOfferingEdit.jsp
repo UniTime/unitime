@@ -158,7 +158,7 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=org.unitime.timetable.model.CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME%>" property="reference" labelProperty="label"/>
 				</html:select>
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD> &nbsp;</TD>
@@ -199,7 +199,7 @@
 				</td>
 				</tr>
 				</table>
-			<TD>
+			</TD>
 		</TR>
 		</logic:notEmpty>
 

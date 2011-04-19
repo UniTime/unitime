@@ -21,11 +21,11 @@
 <%@ page import="org.unitime.timetable.model.TimePattern" %>
 <%@ page import="org.unitime.timetable.model.TimePatternModel" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
-<script language="javascript" src="../scripts/rtt.js"></script>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html style="background-color:white">
+<html>
   <head>
     <title>Combining time patterns</title>
+	<script language="javascript" src="../scripts/rtt.js"></script>
   </head>
   <body><form method="post" action="tpcomb.jsp">
 <%

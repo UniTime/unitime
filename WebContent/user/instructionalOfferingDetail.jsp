@@ -340,7 +340,7 @@
 			<TD>Credit:</TD>
 			<TD>
 				<bean:write name="instructionalOfferingDetailForm" property="creditText" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
