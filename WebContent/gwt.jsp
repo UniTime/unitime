@@ -122,7 +122,7 @@
 	    	<span id='UniTimeGWT:Body'></span>
 	    </td></tr></table>
     </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer">
+    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
     		<tr>
     			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span></td>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
