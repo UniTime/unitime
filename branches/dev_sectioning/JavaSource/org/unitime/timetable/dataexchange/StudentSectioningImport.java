@@ -211,7 +211,7 @@ public class StudentSectioningImport extends BaseImport {
                 warn("Academic area "+abbv+" not found."); continue;
             }
             AcademicClassification clasf = AcademicClassification.findByCode(student.getSession().getUniqueId(),code); 
-            if (area==null) {
+            if (clasf==null) {
                 warn("Academic classification "+code+" not found."); continue;
             }
             AcademicAreaClassification aac = new AcademicAreaClassification();

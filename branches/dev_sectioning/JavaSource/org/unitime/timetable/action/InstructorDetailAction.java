@@ -121,6 +121,10 @@ public class InstructorDetailAction extends PreferencesAction {
 	            op = "";
 	            frm.setOp(op);
 	        }
+
+	        //Check op exists
+	        if(op==null) 
+	            throw new Exception ("Null Operation not supported.");
 	        
 	        // Read instructor id from form
 	        if(op.equals(rsc.getMessage("button.editInstructorInfo"))
@@ -134,10 +138,6 @@ public class InstructorDetailAction extends PreferencesAction {
 	        }else {
 	        	frm.reset(mapping, request);
 	        }
-	        
-	        //Check op exists
-	        if(op==null) 
-	            throw new Exception ("Null Operation not supported.");
 	        
 	        Debug.debug("op: " + op);
 	        Debug.debug("instructor: " + instructorId);
