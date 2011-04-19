@@ -58,6 +58,8 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		// Requests with last enrollment (recently unassigned requests) have priority
 		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
 		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
+		
+		// TODO: Check individual reservations
 
 		if (getLastEnrollment() == null) {
 			// Use time stamp

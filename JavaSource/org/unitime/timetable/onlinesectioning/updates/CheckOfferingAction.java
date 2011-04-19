@@ -152,8 +152,6 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					if (r.getRequest().getAssignment() != null) { // save enrollment
 						org.unitime.timetable.model.CourseRequest cr = null;
 						CourseOffering co = null;
-						if (cr != null)
-							co = cr.getCourseOffering();
 						if (co == null) 
 							co = CourseOfferingDAO.getInstance().get(r.getRequest().getAssignment().getCourse().getId(), helper.getHibSession());
 						for (Section section: r.getRequest().getAssignment().getSections()) {
