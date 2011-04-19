@@ -17,120 +17,52 @@
  * 
 */
 
-.MenuBody A:link {
-	color: black;
-	font-family: sans-serif, verdana, arial;
-	text-decoration: none;
-	background-color: transparent;
-	border: none;
-	padding: 1px;
-	white-space: no-wrap;
+BODY {
+	background-color: #a37b2c;
 }
 
-.MenuBody A:visited {
-	color: black;
-	font-family: sans-serif, verdana, arial;
-	text-decoration: none;
-	background-color: transparent;
-	border: none;
-	padding: 1px;
-	white-space: no-wrap;
+.unitime-Page {
+	border: 1px solid #101010;
 }
 
-.MenuBody A:active {
-	color: black;
-	font-family: sans-serif, verdana, arial;
-	text-decoration: none;
-	background-color: #FFFFFF;
-	border: #ce8409 1px solid; /* WAS 8EACD0*/
-	padding: 1px;
-	white-space: no-wrap;
+.unitime-FooterText {
+	color: #101010;
 }
 
-.MenuBody A:hover {
-	color: black;
-	font-family: sans-serif, verdana, arial;
-	text-decoration: none;
-	background-color: #e3b25c; /* WAS DFE7F2*/
-	border: #ce8409 1px solid; /* WAS 8EACD0*/
-	padding: 1px;
-	white-space: no-wrap;
+a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:active,a.unitime-FooterLink:hover {
+	color: #101010;
 }
 
-.MenuBody {
-	background-color: #f6ebc8; /* WAS BBCDD0 */
-	color: black;
-	font-size: 80%;
-	font-family: sans-serif, verdana, arial;
+.unitime-Disclaimer {
+	color: #101010;
+	font-size: 9pt;
 }
 
-.UserInfo {
-	background-color: #f6ebc8; /* WAS BBCDD0 */
-	color: black;
-	font-size: 80%;
-	font-family: sans-serif, verdana, arial;
-	border-bottom:1px solid #ce8409; /* WAS 8EACD0 */
-	border-left:1px solid #ce8409;
-	border-right:1px solid #ce8409;
+.unitime-MenuHeaderLabel {
+	color: #101010;
 }
 
-.UserInfoTabSelect {
-	border-top:1px solid #ce8409; /* WAS 8EACD0 */
-	border-right:1px solid #ce8409;
-	border-left:1px solid #ce8409;
+.unitime-MenuHeaderOpen {
+	border: 1px solid #101010;
+  background-color: #FCDD89;
 }
 
-.UserInfoTabLeft {
-	border-bottom:1px solid #ce8409;
-	border-top:1px solid #f4c87a;
-	border-left:1px solid #f4c87a;
-	background-color: e4e4e4;
+.gwt-DisclosurePanel .content {
+  border-left: 1px solid #101010;
+  border-bottom: 1px solid #101010;
+  border-right: 1px solid #101010;
+  padding-right: 5px;
+  background-color: white;
 }
 
-.UserInfoTabRight {
-	border-bottom:1px solid #ce8409;
-	border-top:1px solid #f4c87a;
-	border-right:1px solid #f4c87a;
-	background-color: e4e4e4;
+.gwt-StackPanel {
+  border-bottom: 1px solid #505050;
 }
 
-.UserInfoTabDisabled {
-	border-bottom:1px solid #ce8409;
-	border-right:1px solid #f4c87a;
-	border-top:1px solid #f4c87a;
-	color:#e3b25c; /* WAS 8EACD0 */
-	background-color: e4e4e4;
+.gwt-StackPanel .gwt-StackPanelItem {
+  border: 1px solid #505050;
 }
 
-.UserInfoTabBg {
-	border-bottom:1px solid #ce8409;
-	background-color: e4e4e4;
-}
-
-.HelpBody A:link {
-	text-decoration: none;
-	background-color: #8EACD0;
-	border: none;
-}
-
-.HelpBody A:visited {
-	text-decoration: none;
-	background-color: #8EACD0;
-	border: none;
-}
-
-.HelpBody A:active {
-	text-decoration: none;
-	background-color: #8EACD0;
-	border: none;
-}
-
-.HelpBody A:hover {
-	text-decoration: none;
-	background-color: #8EACD0;
-	border: none;
-}
-
-.HelpBody {
-	background-color: #ce8409; /* WAS 8EACD0*/
+.gwt-StackPanel .gwt-StackPanelContent {
+  border: 1px solid #505050;
 }
