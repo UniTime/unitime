@@ -27,6 +27,9 @@
     <!--[if IE]>
 	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
     <![endif]-->
+    <tt:hasProperty name="tmtbl.custom.css">
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime 3.2| University Timetabling Application</title>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
