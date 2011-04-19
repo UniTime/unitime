@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.form.PreferencesForm"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.action.PreferencesAction" %>
 <%@ page import="org.unitime.timetable.model.Building" %>
@@ -27,13 +28,17 @@
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.Preference" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <% try { %>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
+	<bean:parameter id="frmName" name="frmName"/>
 
 <!-- Time Preferences -->
-	<% if (!timePrefDisabled) { %>
+	<logic:notEmpty name="<%=frmName%>" property="timePatterns">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -77,7 +82,7 @@
 			</TR>
 			<% idx++; %>
 		</logic:iterate>
-	<% } %>
+	</logic:notEmpty>
 		
 <!-- Period Preferences -->
 	<logic:notEmpty scope="request" name="ExamPeriodGrid">
@@ -95,15 +100,17 @@
 	</logic:notEmpty>
 	
 <!-- Room Group -->
-	<% PreferenceLevel pr = null; %>
-	<% if (!roomGroupDisabled) { %>
+	<%
+		PreferenceLevel pr = null;
+		PreferencesForm frm = (PreferencesForm)request.getAttribute(frmName);
+	%>
+	<logic:notEqual value="false" parameter="roomGroupPref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header title="<A name='RoomGroupPref'>Room Group Preferences</A>">
 					<html:submit property="op"
-						styleClass="btn" accesskey="G" titleKey="title.addRoomGroup"
-						disabled="<%=roomGroupDisabled%>">
+						styleClass="btn" accesskey="G" titleKey="title.addRoomGroup">
 						<bean:message key="button.addRoomGroupPref" />
 					</html:submit> 			
 				</tt:section-header>
@@ -153,10 +160,10 @@
 				</TD>
 			</TR>
 	   	</logic:iterate>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Room Preferences -->
-	<% if (!roomPrefDisabled) { %>
+	<logic:notEqual value="false" parameter="roomPref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -211,17 +218,16 @@
 				</TD>
 			</TR>
 	   	</logic:iterate>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Building Preferences -->
-	<% if (!bldgPrefDisabled) { %>
+	<logic:notEqual value="false" parameter="bldgPref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header title="<A name='BldgPref'>Building Preferences</A>">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="D" titleKey="title.addBldgPref"
-						disabled="<%=bldgPrefDisabled%>">
+						styleClass="btn" accesskey="D" titleKey="title.addBldgPref">
 						<bean:message key="button.addBldgPref" />
 					</html:submit> 			
 				</tt:section-header>
@@ -270,17 +276,16 @@
 				</TD>
 			</TR>
 	   	</logic:iterate>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Room Feature Preferences -->
-	<% if (!roomFeaturePrefDisabled) { %>
+	<logic:notEqual value="false" parameter="roomFeaturePref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header title="<A name='RoomFeatPref'>Room Feature Preferences</A>">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="F" titleKey="title.addRoomFeaturePref"
-						disabled="<%=roomFeaturePrefDisabled%>">
+						styleClass="btn" accesskey="F" titleKey="title.addRoomFeaturePref">
 						<bean:message key="button.addRoomFeaturePref" />
 					</html:submit> 			
 				</tt:section-header>
@@ -329,17 +334,16 @@
 				</TD>
 			</TR>
 	   	</logic:iterate>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Distribution Preferences -->
-	<% if (!distPrefDisabled) { %>
+	<logic:notEqual value="false" parameter="distPref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header title="<A name='DistPref'>Distribution Preferences</A>">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="D" titleKey="title.addDistPref"
-						disabled="<%=distPrefDisabled%>">
+						styleClass="btn" accesskey="D" titleKey="title.addDistPref">
 						<bean:message key="button.addDistPref" />
 					</html:submit> 			
 				</tt:section-header>
@@ -388,7 +392,7 @@
 				</TD>
 			</TR>
 	   	</logic:iterate>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Buttons -->
 		<TR>

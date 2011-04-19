@@ -137,7 +137,6 @@
 		<TR>
 			<TD nowrap>Maximum Number of Rooms:</TD><TD> <bean:write name="<%=frmName%>" property="maxNbrRooms" /></TD>
 		</TR>
-		</TR>
 		<TR>
 			<TD>Size:</TD><TD> <bean:write name="<%=frmName%>" property="size" /></TD>
 		</TR>
@@ -249,16 +248,10 @@
 			</TD>
 		</TR>
 		
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean timePrefDisabled = true;
-			boolean distPrefDisabled = false;
-			boolean restorePrefsDisabled = true;
-		%>
-		<%@ include file="preferencesDetail.jspf" %>
+		<jsp:include page="preferencesDetail.jspf">
+			<jsp:param name="frmName" value="<%=frmName%>"/>
+			<jsp:param name="timePref" value="false"/>
+		</jsp:include>
 	
 		<TR>
 			<TD colspan="2" class="WelcomeRowHead">
