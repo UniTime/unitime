@@ -262,44 +262,49 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 					conditionElement.attributeValue("defaultValue", "false")));
 		} else if ("hasProperty".equals(cond)) {
 			return ApplicationProperties.getProperty(conditionElement.attributeValue("name", "dummy")) != null;
-		} else if ("canSeeEvents".equals(cond)) {
-			return userInfo.getUser() != null && TimetableManager.canSeeEvents(userInfo.getUser());
-		} else if ("hasRoomAvailability".equals(cond)) {
-			return RoomAvailability.getInstance() != null;
-		} else if ("hasPersonalReport".equals(cond)) {
-			return userInfo.getUser() != null && PersonalizedExamReportAction.hasPersonalReport(userInfo.getUser());
-		} else if ("isChameleon".equals(cond)) {
-			return getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1");
-		} else if ("isSectioningEnabled".equals(cond)) {
-			return OnlineSectioningService.isEnabled();
-		} else if ("isStudent".equals(cond)) {
-			return userInfo != null && userInfo.isStudent();
-		} else if ("isRegistrationEnabled".equals(cond)) {
-			return OnlineSectioningService.isRegistrationEnabled();
-		} else {
-			User user = userInfo.getUser();
-			if (user == null) return false;
-			TimetableManager manager = userInfo.getManager();
-			if (manager == null) return false;
-			Session session = userInfo.getSession();
-			if (session == null) return false;
-			if ("canSeeCourses".equals(cond)) {
-				return manager.canSeeCourses(session, user);
-			} else if ("canSeeTimetable".equals(cond)) {
-				return manager.canSeeTimetable(session, user);
-			} else if ("canDoTimetable".equals(cond)) {
-				return manager.canDoTimetable(session, user);
-			} else if ("hasASolverGroup".equals(cond)) {
-				return manager.hasASolverGroup(session, user);
-			} else if ("canSectionStudents".equals(cond)) {
-				return manager.canSectionStudents(session, user);
-			} else if ("canSeeExams".equals(cond)) {
-				return manager.canSeeExams(session, user);
-			} else if ("canTimetableExams".equals(cond)) {
-				return manager.canTimetableExams(session, user);
-			} else if ("canAudit".equals(cond)) {
-				return manager.canAudit(session, user);
+		} else if ("hasRight".equals(cond)) {
+			String right = conditionElement.attributeValue("name", "unknown");
+			if ("canSeeEvents".equals(right)) {
+				return userInfo.getUser() != null && TimetableManager.canSeeEvents(userInfo.getUser());
+			} else if ("hasRoomAvailability".equals(right)) {
+				return RoomAvailability.getInstance() != null;
+			} else if ("hasPersonalReport".equals(right)) {
+				return userInfo.getUser() != null && PersonalizedExamReportAction.hasPersonalReport(userInfo.getUser());
+			} else if ("isChameleon".equals(right)) {
+				return getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1");
+			} else if ("isSectioningEnabled".equals(right)) {
+				return OnlineSectioningService.isEnabled();
+			} else if ("isStudent".equals(right)) {
+				return userInfo != null && userInfo.isStudent();
+			} else if ("isRegistrationEnabled".equals(right)) {
+				return OnlineSectioningService.isRegistrationEnabled();
+			} else {
+				User user = userInfo.getUser();
+				if (user == null) return false;
+				TimetableManager manager = userInfo.getManager();
+				if (manager == null) return false;
+				Session session = userInfo.getSession();
+				if (session == null) return false;
+				if ("canSeeCourses".equals(right)) {
+					return manager.canSeeCourses(session, user);
+				} else if ("canSeeTimetable".equals(right)) {
+					return manager.canSeeTimetable(session, user);
+				} else if ("canDoTimetable".equals(right)) {
+					return manager.canDoTimetable(session, user);
+				} else if ("hasASolverGroup".equals(right)) {
+					return manager.hasASolverGroup(session, user);
+				} else if ("canSectionStudents".equals(right)) {
+					return manager.canSectionStudents(session, user);
+				} else if ("canSeeExams".equals(right)) {
+					return manager.canSeeExams(session, user);
+				} else if ("canTimetableExams".equals(right)) {
+					return manager.canTimetableExams(session, user);
+				} else if ("canAudit".equals(right)) {
+					return manager.canAudit(session, user);
+				}
 			}
+			sLog.warn("Unknown right " + right + ".");
+			return true;
 		}
 		sLog.warn("Unknown condition " + cond + ".");
 		return true;
