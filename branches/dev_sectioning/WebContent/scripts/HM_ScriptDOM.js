@@ -48,7 +48,7 @@ HM_a_Parameters = [
 	["RightToLeft",        false],
 	["CreateTopOnly",      0],
 	["ShowLinkCursor",     false]
-]
+];
 
 HM_MenuIDPrefix = "HM_Menu";
 HM_ItemIDPrefix = "HM_Item";
@@ -57,8 +57,8 @@ HM_ArrayIDPrefix = "HM_Array";
 function HM_f_StringTrim(){
 	var TestString = this;
 	var SpaceChar  = " ";
-	while (TestString.charAt(0) == SpaceChar) {TestString = TestString.substr(1)};
-	while (TestString.charAt(TestString.length-1) == SpaceChar) {TestString = TestString.substr(0,TestString.length-1)};
+	while (TestString.charAt(0) == SpaceChar) {TestString = TestString.substr(1);};
+	while (TestString.charAt(TestString.length-1) == SpaceChar) {TestString = TestString.substr(0,TestString.length-1);};
 	return TestString.toString();
 }
 
@@ -115,7 +115,7 @@ for (i=0;i<HM_a_Parameters.length;i++) {
 HM_ChildPerCentOver = (isNaN(parseFloat(HM_ChildPerCentOver))) ? null : parseFloat(HM_ChildPerCentOver)/100;
 
 function HM_f_ValidateArray(arrayname){
-	return ((typeof eval("window." + arrayname) == "object") && (eval(arrayname).length > 1))
+	return ((typeof eval("window." + arrayname) == "object") && (eval(arrayname).length > 1));
 }
 
 if(!window.HM_a_TreesToBuild) {
@@ -143,7 +143,7 @@ function HM_f_StartIt() {
 	HM_AreLoaded = true;
 	if (HM_ClickKill) {
 		HM_f_OtherMouseDown = (document.onmousedown) ? document.onmousedown :  new Function;
-    	document.onmousedown = function(){HM_f_PageClick();HM_f_OtherMouseDown()}
+    	document.onmousedown = function(){HM_f_PageClick();HM_f_OtherMouseDown();};
     }
 	else {
 		HM_TopMilliSecondsVisible = HM_TopSecondsVisible * 1000;
@@ -160,7 +160,7 @@ function HM_f_AssignTreeParameters(arrayvalue,defaultvalue){
 	var TestString = arrayvalue;
 	if(eval("typeof(TestString)") == "string") {
 		if(TestString.charAt(0)=="#")return arrayvalue;
-		TestString = TestString.strip()
+		TestString = TestString.strip();
 	}
 	if (eval("typeof("+ TestString+" )") != 'undefined') {
 		eval("arrayvalue = eval(arrayvalue)");
@@ -183,7 +183,7 @@ function HM_f_MakeTrees(){
 
 		for(var i=1; i<HM_CurrentArray.length; i++) {
 			ItemArray = HM_CurrentArray[i];
-			if(ItemArray[ItemArray.length-1]) {TreeHasChildren = true; break}
+			if(ItemArray[ItemArray.length-1]) {TreeHasChildren = true; break;}
 		}
 
 		HM_CurrentTree = {
@@ -209,7 +209,7 @@ function HM_f_MakeTrees(){
 			UponDisplay      : HM_f_AssignTreeParameters(TreeParams[15],HM_UponDisplay),
 			UponHide         : HM_f_AssignTreeParameters(TreeParams[16],HM_UponHide),
 			RightToLeft      : HM_f_AssignTreeParameters(TreeParams[17],HM_RightToLeft)
-		}
+		};
 
 		HM_CurrentMenu = null;
 		HM_f_MakeMenu(HM_a_TreesToBuild[t]);
@@ -308,7 +308,7 @@ function HM_f_MakeMenu(menucount) {
 		HM_CurrentMenu.keepInWindow = HM_f_KeepInWindow;
 	    HM_CurrentMenu.onmouseover = HM_f_MenuOver;
 	    HM_CurrentMenu.onmouseout = HM_f_MenuOut;
-	    HM_CurrentMenu.hideTree = HM_f_HideTree
+	    HM_CurrentMenu.hideTree = HM_f_HideTree;
 	    HM_CurrentMenu.hideParents = HM_f_HideParents;
 	    HM_CurrentMenu.hideChildren = HM_f_HideChildren;
 	    HM_CurrentMenu.hideTop = HM_f_HideTop;
@@ -432,15 +432,15 @@ function HM_f_SetItemStyle() {
 
 		if(this.menu.isHorizontal){
 			if(HM_IE){
-				if(this.isLastItem) width = (HM_CurrentTree.MenuWidth - HM_BorderWidth - HM_SeparatorSize) + "px"
-				else width = (HM_CurrentTree.MenuWidth - HM_BorderWidth) + "px"
+				if(this.isLastItem) width = (HM_CurrentTree.MenuWidth - HM_BorderWidth - HM_SeparatorSize) + "px";
+				else width = (HM_CurrentTree.MenuWidth - HM_BorderWidth) + "px";
 			}
 			if(HM_NS6) width = (HM_CurrentTree.MenuWidth - HM_BorderWidth - parseInt(paddingLeft) - parseInt(paddingRight) - HM_SeparatorSize) + "px";
 			top = "0px";
 			if(HM_IE) left = (this.index * (HM_CurrentTree.MenuWidth - HM_BorderWidth)) + "px";
 			if(HM_NS6) left = ((this.index * parseInt(width)) + ((HM_SeparatorSize * this.index)))  + ((parseInt(paddingLeft) + parseInt(paddingRight)) * this.index) + "px";
 			var LeftAndWidth = parseInt(left) + parseInt(width);
-			this.menu.style.width = LeftAndWidth + (HM_IE ? (HM_BorderWidth * 2) : (parseInt(paddingLeft) + parseInt(paddingRight))) + "px"
+			this.menu.style.width = LeftAndWidth + (HM_IE ? (HM_BorderWidth * 2) : (parseInt(paddingLeft) + parseInt(paddingRight))) + "px";
 		}
 		else {
 			left = "0px";
@@ -520,8 +520,8 @@ function HM_f_PopMenu(e){
 }
 
 function HM_f_MenuOver() {
-	if(!this.tree.startChild){this.tree.startChild = this}
-	if(this.tree.startChild == this) HM_f_HideAll(this)
+	if(!this.tree.startChild){this.tree.startChild = this;}
+	if(this.tree.startChild == this) HM_f_HideAll(this);
     this.isOn = true;
     HM_UserOverMenu = true;
     HM_CurrentMenu = this;
@@ -541,7 +541,7 @@ function HM_f_ItemOver(){
         if (this.menu.currentItem && this.menu.currentItem != this && this.menu.currentItem.hasRollover) {
 			with(this.menu.currentItem.style){
 				backgroundColor = this.tree.BGColor;
-            	color = this.tree.FontColor
+            	color = this.tree.FontColor;
 			}
         }
     }
@@ -618,7 +618,7 @@ function HM_f_ItemOut() {
     if ( (!HM_KeepHilite || ((this.tree.TopIsPermanent && (this.tree.treeParent==this)) && !this.menu.hasChildVisible)) && this.hasRollover) {
         with(this.style) {
 			backgroundColor = this.tree.BGColor;
-        	color = this.tree.FontColor
+        	color = this.tree.FontColor;
 		}
     }
 }
@@ -633,7 +633,7 @@ function HM_f_ShowIt(on) {
 		if(!this.hasParent || (this.hasParent && this.tree.TopIsPermanent)) {
 			var IsVisible = (this.style.visibility == "visible");
 			if ((on && !IsVisible) || (!on && IsVisible))
-				eval(on ? this.tree.UponDisplay : this.tree.UponHide)
+				eval(on ? this.tree.UponDisplay : this.tree.UponHide);
 		}
 		if(HM_IE5M && on && !this.sizeFixed) this.fixSize(false); 
 		this.style.visibility = (on) ? "visible" : "hidden";
@@ -682,13 +682,13 @@ function HM_f_KeepInWindow() {
 		if (this.hasParent) {
 			this.xPos = ParentLeftEdge + this.tree.HorizOffsetLeft;
 		}
-		else {this.xPos = 5}
+		else {this.xPos = 5;}
 	}       
 }
 
 function HM_f_LinkIt() {
 	HM_f_HideAll();
-    if (this.linkText.indexOf("javascript:")!=-1) eval(this.linkText)
+    if (this.linkText.indexOf("javascript:")!=-1) eval(this.linkText);
     else location.href = this.linkText;
 }
 
@@ -704,7 +704,7 @@ function HM_f_PopDown(menuname){
 function HM_f_HideAll(callingmenu) {
 	for(var i=0; i<HM_TotalTrees; i++) {
         var TopMenu = HM_a_TopMenus[i].tree.startChild;
-		if(TopMenu == callingmenu)continue
+		if(TopMenu == callingmenu)continue;
         TopMenu.isOn = false;
         if (TopMenu.hasChildVisible) TopMenu.hideChildren();
         TopMenu.showIt(false);
@@ -752,7 +752,7 @@ function HM_f_HideChildren(callingitem) {
     }
 }
 
-function HM_f_CancelSelect(){return false}
+function HM_f_CancelSelect(){return false;}
 
 function HM_f_PageClick() {
     if (!HM_UserOverMenu && HM_CurrentMenu!=null && !HM_CurrentMenu.isOn) HM_f_HideAll();
@@ -762,5 +762,5 @@ popUp = HM_f_PopUp;
 popDown = HM_f_PopDown;
 
 HM_f_OtherOnLoad = (window.onload) ? window.onload :  new Function;
-window.onload = function(){setTimeout("HM_f_StartIt()",10)};
+window.onload = function(){setTimeout("HM_f_StartIt()",10);};
 //end

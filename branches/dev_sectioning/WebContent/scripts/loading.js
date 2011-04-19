@@ -17,7 +17,7 @@
  * 
 */
 
-	<!-- Hide script from old browsers
+	// <!-- Hide script from old browsers
 
 	function getBrowser() {
 		var browser = "";  
