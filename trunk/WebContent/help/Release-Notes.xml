@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
+<!DOCTYPE release-history PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "Release-Notes.dtd">
 <!-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2011, UniTime LLC
@@ -311,6 +312,12 @@
 				<line>Personal (student) timetable: Examinations that are set on multiple classes or configurations -- display only relevant classes / configurations
 				(based on student class enrollments).</line>
 				<line>When displaying examinations with multiple owners (classes, courses, etc.), display owners in proper order.</line>
+			</description>
+		</item>
+		<item>
+			<name>Customizations</name>
+			<description>
+				<line>Improved customization abilities, see http://help.unitime.org/Customizations for more details.</line>
 			</description>
 		</item>
 	</category>
