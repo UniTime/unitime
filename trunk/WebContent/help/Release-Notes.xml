@@ -305,6 +305,14 @@
 				<line>If there is more than 5 departments between which a room is being shared, display 5 departments per line (instead of a single department on each line).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>Personal (student) timetable: Examinations that are set on multiple classes or configurations -- display only relevant classes / configurations
+				(based on student class enrollments).</line>
+				<line>When displaying examinations with multiple owners (classes, courses, etc.), display owners in proper order.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

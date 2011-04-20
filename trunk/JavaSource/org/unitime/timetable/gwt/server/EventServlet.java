@@ -373,6 +373,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(resource.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
+				Collection<Long> curriculumConfigs = null;
+				Collection<Long> curriculumClasses = null;
 				Department department = null;
 				switch (resource.getType()) {
 				case ROOM:
@@ -554,6 +556,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					break;
 				case PERSON:
 					curriculumCourses = new HashSet<Long>();
+					curriculumConfigs = new HashSet<Long>();
+					curriculumClasses = new HashSet<Long>();
 					meetings = new ArrayList<Meeting>();
 					for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery("select i from DepartmentalInstructor i " +
 							"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId").
@@ -563,11 +567,21 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 		                	for (Exam exam: instructor.getExams(Exam.sExamTypeFinal)) {
 		                		if (exam.getEvent() != null)
 		                			meetings.addAll(exam.getEvent().getMeetings());
+		                		for (ExamOwner owner: exam.getOwners()) {
+		                			if (curriculumCourses.add(owner.getCourse().getUniqueId()));
+					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) curriculumClasses.add(owner.getOwnerId());
+					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) curriculumConfigs.add(owner.getOwnerId());
+		                		}
 		                	}
 	                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
 		                	for (Exam exam: instructor.getExams(Exam.sExamTypeMidterm)) {
 		                		if (exam.getEvent() != null)
 		                			meetings.addAll(exam.getEvent().getMeetings());
+		                		for (ExamOwner owner: exam.getOwners()) {
+		                			if (curriculumCourses.add(owner.getCourse().getUniqueId()));
+					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) curriculumClasses.add(owner.getOwnerId());
+					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) curriculumConfigs.add(owner.getOwnerId());
+		                		}
 		                	}
                         for (ClassInstructor ci: instructor.getClasses()) {
                         	if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass() && ci.getClassInstructing().getEvent() != null) {
@@ -596,6 +610,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
                         	if (student.getSession().getStatusType().canNoRoleReportClass() && sce.getClazz().getEvent() != null) {
                     			meetings.addAll(sce.getClazz().getEvent().getMeetings());
                         	}
+                    		curriculumConfigs.add(sce.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
+                    		curriculumClasses.add(sce.getClazz().getUniqueId());
                 			curriculumCourses.add(sce.getCourseOffering().getUniqueId());
                         }
     					meetings.addAll(
@@ -744,7 +760,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			    			}
 			    			event.setInstructor(instructor);
 			    			event.setEmail(email);
-			    			for (ExamOwner owner: xe.getExam().getOwners()) {
+			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
 			    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						    		switch (resource.getType()) {
 						    		case SUBJECT:
@@ -757,6 +773,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						    		case CURRICULUM:
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
+						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig && !curriculumConfigs.contains(owner.getOwnerId())) continue;
 						    			break;
 						    		}
 				    				String courseName = owner.getCourse().getCourseName();
@@ -768,8 +786,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				    				event.addExternalId(label.trim());
 			    				}
 			    			}
-			    			if (event.hasCourseNames() && event.getCourseNames().size() > 1)
-			    				event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
+			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && resource.getType() == ResourceType.PERSON)
+		    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
 				    	}
 					}
 					MeetingInterface meeting = new MeetingInterface();
