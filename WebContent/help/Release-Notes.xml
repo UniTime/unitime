@@ -299,6 +299,12 @@
 				<line>Allow to override the default data folder using the unitime.data.dir property (this allows two UniTime instances to co-exist on the same Tomcat server).</line>
 			</description>
 		</item>
+		<item>
+			<name>Customizations</name>
+			<description>
+				<line>Improved customization abilities, see http://help.unitime.org/Customizations for more details.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
