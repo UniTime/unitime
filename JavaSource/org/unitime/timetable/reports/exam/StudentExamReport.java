@@ -378,9 +378,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 setHeader(new String[] {
                                         "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
                                         "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
-                                println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
+                                println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
-                                setCont(shortName+"  STUDENT CONFLICTS");
+                                setCont(shortName+"  EXAMINATION CONFLICTS");
                                 headerPrinted = true;
                             }
                             println(
@@ -407,9 +407,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             setHeader(new String[] {
                                     "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
                                     "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
-                            println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
+                            println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
-                            setCont(shortName+"  STUDENT CONFLICTS");
+                            setCont(shortName+"  EXAMINATION CONFLICTS");
                             headerPrinted = true;
                         }
                         if (conflict.isOtherClass()) {
@@ -455,9 +455,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 setHeader(new String[] {
                                         "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
                                         "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
-                                println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
+                                println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
-                                setCont(shortName+"  STUDENT CONFLICTS");
+                                setCont(shortName+"  EXAMINATION CONFLICTS");
                                 headerPrinted = true;
                             }
                             println(
@@ -490,9 +490,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             setHeader(new String[] {
                                     "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
                                     "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
-                            println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
+                            println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
-                            setCont(shortName+"  STUDENT CONFLICTS");
+                            setCont(shortName+"  EXAMINATION CONFLICTS");
                             headerPrinted = true;
                         }
                         println(
