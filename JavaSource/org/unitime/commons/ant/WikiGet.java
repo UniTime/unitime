@@ -210,6 +210,7 @@ public class WikiGet extends Task {
                     imageUrl = new URL(iURL,imageName);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return null;
                 };
                 if (imageUrl.getHost().equals(iWikiUrl.getHost()) && imageUrl.getPath().startsWith(sWikiPrefix) && !imageUrl.getPath().startsWith(sWikiImagesPrefix) && !imageUrl.getPath().startsWith(sWikiSkinsPrefix)) {
                     if (imageUrl.getPath().startsWith(sWikiIndex)) {
@@ -242,7 +243,6 @@ public class WikiGet extends Task {
                     addPage(pageName);
                     return getPageFileName(pageName);
                 }
-                if (imageUrl==null) return null;
                 if ("mailto".equalsIgnoreCase(imageUrl.getProtocol())) {
                     //System.out.println("Skip: "+imageName);
                     return imageName;

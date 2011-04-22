@@ -161,7 +161,6 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 			
 			// No results returned
 			if (instrOfferings.isEmpty()) {
-			    if(errors==null) errors = new ActionMessages();
 			    errors.add("searchResult", new ActionMessage("errors.generic", "No records matching the search criteria were found."));
 			    saveErrors(request, errors);
 			    return mapping.findForward("showInstructionalOfferingSearch");

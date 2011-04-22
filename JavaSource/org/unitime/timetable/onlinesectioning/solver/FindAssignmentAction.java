@@ -168,13 +168,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         
 
         BranchBoundNeighbour neighbour = onlineSelection.getSelection(student).select();
+		if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
+
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
         
 		long t2 = System.currentTimeMillis();
 
-		if (neighbour == null) throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
-        
 		ClassAssignmentInterface ret = convert(server, model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, enrolled);
 		
 		long t3 = System.currentTimeMillis();
