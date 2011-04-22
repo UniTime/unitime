@@ -29,7 +29,6 @@ import com.google.gwt.user.client.ui.Widget;
  * To be used only for pages not based on LayoutPanel (and preferably avoided in the future development).
  */
 
-@SuppressWarnings("deprecation")
 public class UniTimeTabPanel extends TabPanel {
 	public UniTimeTabPanel() {
 		super();
