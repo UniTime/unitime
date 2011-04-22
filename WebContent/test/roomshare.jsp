@@ -23,11 +23,11 @@
 <%@ page import="org.unitime.timetable.model.dao.RoomDAO" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
-<script language="javascript" src="../scripts/rtt.js"></script>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html style="background-color:white">
+<html>
   <head>
     <title>Room sharing test</title>
+	<script language="javascript" src="../scripts/rtt.js"></script>
   </head>
   <body><form method="post" action="roomshare.jsp">
   <input type='hidden' name='canEdit' value='1'/>

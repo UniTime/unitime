@@ -99,14 +99,14 @@
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="value" labelProperty="label"/>
 					</html:select>
-				<TD>
+				</TD>
 			</TR>
 
 			<TR>
 				<TD>Room Number:</TD>
 				<TD width='100%'>
 					<html:text property="name" maxlength="10" size="10" />
-				<TD>
+				</TD>
 			</TR>
 
 			<TR>
@@ -128,7 +128,7 @@
 						<bean:write name="<%=frmName%>" property="bldgName"/>
 						<bean:write name="<%=frmName%>" property="name"/>
 						<html:hidden property="name"/>
-					<TD>
+					</TD>
 				<% } else {%>
 				<TD width='100%'>
 					<bean:write name="<%=frmName%>" property="bldgName"/>
@@ -138,7 +138,7 @@
 					<logic:notEmpty name="<%=frmName%>" property="bldgName">
 						<html:text property="name" maxlength="10" size="10" />
 					</logic:notEmpty>
-				<TD>
+				</TD>
 				<% } %>
 			</TR>
 		</logic:notEmpty>
@@ -149,7 +149,7 @@
 					<TD>External Id:</TD>
 					<TD width='100%'>
 						<html:text property="externalId" maxlength="40" size="40" />
-					<TD>
+					</TD>
 				</TR>
 			<% } else { %>
 				<html:hidden property="externalId"/>
@@ -163,7 +163,7 @@
 					<html:select property="type">
 						<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
 					</html:select>
-				<TD>
+				</TD>
 			</TR>
 		<% } else { %>
 			<html:hidden property="type"/>

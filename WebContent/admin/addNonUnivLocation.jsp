@@ -88,7 +88,7 @@
 				<TD>Name:</TD>
 				<TD width='100%'>
 					<html:text property="name" maxlength="20" size="20" />
-				<TD>
+				</TD>
 			</TR>
 			
 			<TR>
@@ -97,7 +97,7 @@
 					<html:select property="type">
 						<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
 					</html:select>
-				<TD>
+				</TD>
 			</TR>
 
 			<TR>

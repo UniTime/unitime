@@ -63,7 +63,7 @@
 					<html:option value="LLR">LLR Manager</html:option>
 					<html:option value="LAB">Lab Manager</html:option>
 				</html:select>
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
@@ -75,13 +75,13 @@
 					onkeydown="return checkKey(event, this);" >	
 					<html:options collection="ownerList" property="value" labelProperty="label" />
 				</html:select>
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
@@ -97,7 +97,7 @@
 				<html:submit property="op" accesskey="C">
 					<bean:message key="button.cancel" />
 				</html:submit>
-			<TD>
+			</TD>
 		</TR>
 
 	</TABLE>
