@@ -28,9 +28,12 @@
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.Location" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <% try { %>
+	<bean:parameter id="frmName" name="frmName"/>
 
 <!-- Time Preferences -->
 	<logic:notEmpty name="<%=frmName%>" property="timePatterns">
@@ -64,7 +67,7 @@
 	</logic:notEmpty>
 	
 <!-- Room Group -->
-	<% if (!roomGroupDisabled) { %>
+	<logic:notEqual value="false" parameter="roomGroupPref">
 		<logic:notEmpty name="<%=frmName%>" property="roomGroups">
 		<TR>
 			<TD valign="top">Room Groups:</TD>
@@ -85,12 +88,11 @@
 		   	</TD>
 	   	</TR>
 	   	</logic:notEmpty>
-	<% } %>
-
+	</logic:notEqual>
 
 <!-- Room Preferences -->
 	<% PreferenceLevel pr = null; %>
-	<% if (!roomPrefDisabled) { %>
+	<logic:notEqual value="false" parameter="roomPref">
 		<logic:notEmpty name="<%=frmName%>" property="roomPrefs">
 		<TR>
 			<TD valign="top">Rooms:</TD>
@@ -111,10 +113,10 @@
 		   	</TD>
 	   	</TR>
 	   	</logic:notEmpty>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Building Preferences -->
-	<% if (!bldgPrefDisabled) { %>
+	<logic:notEqual value="false" parameter="bldgPref">
 		<logic:notEmpty name="<%=frmName%>" property="bldgPrefs">
 		<TR>
 			<TD valign="top">Buildings:</TD>
@@ -135,10 +137,10 @@
 		   	</TD>
 	   	</TR>
 	   	</logic:notEmpty>
-	<% } %>
+	</logic:notEqual>
 
 <!-- Room Feature Preferences -->
-	<% if (!roomFeaturePrefDisabled) { %>
+	<logic:notEqual value="false" parameter="roomFeaturePref">
 		<logic:notEmpty name="<%=frmName%>" property="roomFeaturePrefs">
 		<TR>
 			<TD valign="top">Room Features:</TD>
@@ -159,9 +161,10 @@
 		   	</TD>
 	   	</TR>
 	   	</logic:notEmpty>
-	<% } %>
+	</logic:notEqual>
 
-	<% if (!distPrefDisabled && request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>
+	<logic:notEqual value="false" parameter="distPref">
+		<logic:empty name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
 		<logic:notEmpty name="<%=frmName%>" property="distPrefs">
 		<TR>
 			<TD valign="top">Distribution:</TD>
@@ -182,16 +185,17 @@
 		   	</TD>
 	   	</TR>
 	   	</logic:notEmpty>
-	<% } %>
+	   	</logic:empty>
+	</logic:notEqual>
 	
-	<% if (request.getAttribute(Location.AVAILABLE_LOCATIONS_ATTR)!=null) { %>
+	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">
 		<TR>
 			<TD valign="top">Available Rooms:</TD>
 			<TD>
-				<%=request.getAttribute(Location.AVAILABLE_LOCATIONS_ATTR).toString()%>
+				<bean:write name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request" filter="false"/>
 			</TD>
 		</TR>
-	<% } %>
+	</logic:notEmpty>
 	
 		<TR>
 			<TD valign="middle" colspan='3' align='left'>
@@ -205,23 +209,22 @@
 		</TR>
 
 <!-- Distribution Preferences -->
-	<% if (!distPrefDisabled) {
-		String distPrefs = (String) request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR);
-		if (distPrefs!=null && distPrefs.indexOf("No preferences found")<0) { %>
+	<logic:notEqual value="false" parameter="distPref">
+		<logic:notEmpty name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
+		<logic:notMatch value="No preferences found" name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
 		<TR>
 			<TD colspan="2" align="right">
 				&nbsp;<BR>
 				<TABLE align="left" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-				<%=distPrefs%>
+					<bean:write name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request" filter="false"/>
 				</TABLE>
 			</TD>
 		</TR>
-	<% 		}
-		} %>
+		</logic:notMatch>
+		</logic:notEmpty>
+	</logic:notEqual>
 		
 <% } catch (Exception e) { 
 	 Debug.error(e);
 	 throw e;
-   }%>	   	
-
-   
+   } %>	   	

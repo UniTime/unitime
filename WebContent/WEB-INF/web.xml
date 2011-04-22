@@ -21,7 +21,7 @@
 	version="2.4"
 	xmlns="http://java.sun.com/xml/ns/j2ee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-app_2_4.xsd">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
 	<display-name>
 		UniTime
@@ -302,4 +302,10 @@
 		<filter-name>Google Chrome Frame No Cache Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
+	
+	<jsp-config>
+		<jsp-property-group>
+			<url-pattern>*.jspf</url-pattern>
+		</jsp-property-group>
+	</jsp-config>
 </web-app>

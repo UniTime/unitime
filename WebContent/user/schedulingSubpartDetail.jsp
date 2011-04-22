@@ -138,7 +138,7 @@
 				<TD>Manager:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="managingDeptName" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="parentSubpartLabel">
@@ -153,7 +153,7 @@
 							<bean:write name="<%=frmName%>" property="parentSubpartLabel" />
 						</A>
 					</logic:notEmpty>
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
@@ -164,7 +164,7 @@
 						<bean:write name="itp" property="desc"/>
 					</logic:equal>
 				</logic:iterate>
-			<TD>
+			</TD>
 		</TR>
 		<TR>
 			<TD>Date Pattern:</TD>
@@ -175,14 +175,14 @@
 						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
 					</logic:equal>
 				</logic:iterate>
-			<TD>
+			</TD>
 		</TR>
 		<logic:equal name="<%=frmName%>" property="autoSpreadInTime" value="false">
 			<TR>
 				<TD>Automatic Spread In Time:</TD>
 				<TD>
 					<font color='red'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>
-				<TD>
+				</TD>
 			</TR>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="studentAllowOverlap" value="true">
@@ -190,7 +190,7 @@
 			<TD>Student Overlaps:</TD>
 			<TD>
 				<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>
-			<TD>
+			</TD>
 		</TR>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
@@ -198,7 +198,7 @@
 			<TD>Subpart Credit:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="creditText" />
-			<TD>
+			</TD>
 		</TR>
 		</logic:equal>
 		
@@ -207,26 +207,25 @@
 		</tt:last-change>		
 
 <!-- Preferences -->
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = false;
-			
-			if (frm.getUnlimitedEnroll().booleanValue()) {
-				roomGroupDisabled = true;
-				bldgPrefDisabled = true;
-				roomFeaturePrefDisabled = true;
-			}
-		%>
 		<TR>
 			<TD colspan="2" valign="middle">
 				&nbsp;<BR>
 				<tt:section-title>Preferences</tt:section-title>
 			</TD>
 		</TR>
-		<%@ include file="preferencesDetail.jspf" %>
+		<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
+			<jsp:include page="preferencesDetail.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="bldgPref" value="false"/>
+				<jsp:param name="roomFeaturePref" value="false"/>
+				<jsp:param name="roomGroupPref" value="false"/>
+			</jsp:include>
+		</logic:equal>
+		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
+			<jsp:include page="preferencesDetail.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+			</jsp:include>
+		</logic:notEqual>
 
 <!-- Classes -->
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
