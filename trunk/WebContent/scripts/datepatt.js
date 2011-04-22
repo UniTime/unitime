@@ -268,8 +268,8 @@ function calGenFieldBlankTBR() {
 function calGetMonth(name, year, month, monthIdx, highlight, editable, nameSuffix) {
 	document.writeln("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
 	var xmonth=month; var xyear = year;
-	if (xmonth<0) {  do { xmonth+=12; xyear--; } while (xmonth < 0) }
-	if (xmonth>=12) { do { xmonth-=12; xyear++; } while (xmonth >= 12) }
+	if (xmonth<0) {  do { xmonth+=12; xyear--; } while (xmonth < 0); }
+	if (xmonth>=12) { do { xmonth-=12; xyear++; } while (xmonth >= 12); }
 	document.writeln("<tr><th colspan='8' align='center'>"+CAL_MONTHS[xmonth]+" "+xyear+" "+nameSuffix+"</th></tr>");
 	calGenHeader(name,xyear,xmonth,editable);
 	document.writeln("<tr>");

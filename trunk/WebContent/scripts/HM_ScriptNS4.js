@@ -43,7 +43,7 @@ HM_a_Parameters = [
 	["CreateTopOnly",      true],
 	["ShowLinkCursor",     false],
 	["NSFontOver",		   true]
-]
+];
 
 HM_MenuIDPrefix = "HM_Menu";
 HM_ItemIDPrefix = "HM_Item";
@@ -52,8 +52,8 @@ HM_ArrayIDPrefix = "HM_Array";
 function HM_f_StringTrim(){
 	var TestString = this;
 	var SpaceChar  = " ";
-	while (TestString.charAt(0) == SpaceChar) {TestString = TestString.substr(1)};
-	while (TestString.charAt(TestString.length-1) == SpaceChar) {TestString = TestString.substr(0,TestString.length-1)};
+	while (TestString.charAt(0) == SpaceChar) {TestString = TestString.substr(1);};
+	while (TestString.charAt(TestString.length-1) == SpaceChar) {TestString = TestString.substr(0,TestString.length-1);};
 	return TestString.toString();
 }
 
@@ -110,7 +110,7 @@ for (i=0;i<HM_a_Parameters.length;i++) {
 HM_ChildPerCentOver = (isNaN(parseFloat(HM_ChildPerCentOver))) ? null : parseFloat(HM_ChildPerCentOver)/100;
 
 function HM_f_ValidateArray(arrayname){
-	return ((typeof eval("window." + arrayname) == "object") && (eval(arrayname).length > 1))
+	return ((typeof eval("window." + arrayname) == "object") && (eval(arrayname).length > 1));
 }
 
 if(!window.HM_a_TreesToBuild) {
@@ -152,7 +152,7 @@ function HM_f_Initialize() {
 
 Layer.prototype.showIt = HM_f_ShowIt;
 Layer.prototype.keepInWindow = HM_f_KeepInWindow;
-Layer.prototype.hideTree = HM_f_HideTree
+Layer.prototype.hideTree = HM_f_HideTree;
 Layer.prototype.hideParents = HM_f_HideParents;
 Layer.prototype.hideChildren = HM_f_HideChildren;
 Layer.prototype.hideTop = HM_f_HideTop;
@@ -173,14 +173,14 @@ window.onresize = function (){
     if (window.innerWidth == HM_NS_OrigWidth && window.innerHeight == HM_NS_OrigHeight) return;
     HM_f_Initialize();
     window.location.reload();
-}
+};
 
 function HM_f_StartIt() {
 	HM_AreLoaded = true;
 	if (HM_ClickKill) {
 		HM_f_OtherMouseDown = (document.onmousedown) ? document.onmousedown :  new Function;
 		document.captureEvents(Event.MOUSEDOWN);
-    	document.onmousedown = function(){HM_f_PageClick();HM_f_OtherMouseDown()}
+    	document.onmousedown = function(){HM_f_PageClick();HM_f_OtherMouseDown();};
     }
 	else {
 		HM_TopMilliSecondsVisible = HM_TopSecondsVisible * 1000;
@@ -197,7 +197,7 @@ function HM_f_AssignTreeParameters(arrayvalue,defaultvalue){
 	var TestString = arrayvalue;
 	if(eval("typeof(TestString)") == "string") {
 		if(TestString.charAt(0)=="#")return arrayvalue;
-		TestString = TestString.strip()
+		TestString = TestString.strip();
 	}
 	if (eval("typeof("+ TestString+" )") != 'undefined') {
 		eval("arrayvalue = eval(arrayvalue)");
@@ -220,7 +220,7 @@ function HM_f_MakeTrees(){
 
 		for(var i=1; i<HM_CurrentArray.length; i++) {
 			ItemArray = HM_CurrentArray[i];
-			if(ItemArray[ItemArray.length-1]) {TreeHasChildren = true; break}
+			if(ItemArray[ItemArray.length-1]) {TreeHasChildren = true; break;}
 		}
 
 		HM_CurrentTree = {
@@ -246,7 +246,7 @@ function HM_f_MakeTrees(){
 			UponHide         : HM_f_AssignTreeParameters(TreeParams[16],HM_UponHide),
 			RightToLeft      : HM_f_AssignTreeParameters(TreeParams[17],HM_RightToLeft),
 			NSFontOver		 : HM_NSFontOver ? (FontColor != FontColorOver) : false
-		}
+		};
 
 		HM_CurrentMenu = null;
 		HM_f_MakeMenu(HM_a_TreesToBuild[t]);
@@ -281,7 +281,7 @@ function HM_f_MakeMenu(menucount) {
 
 	NewMenu = eval("window." + HM_MenuIDPrefix + menucount);
 	if(!NewMenu) {
-		eval(HM_MenuIDPrefix + menucount + " = new Layer(HM_CurrentTree.MenuWidth,window)")
+		eval(HM_MenuIDPrefix + menucount + " = new Layer(HM_CurrentTree.MenuWidth,window)");
 		NewMenu = eval(HM_MenuIDPrefix + menucount);
 	
 		if(HM_CurrentMenu) {
@@ -312,7 +312,7 @@ function HM_f_MakeMenu(menucount) {
 		HM_CurrentMenu.itemCount++;
 		HM_CurrentItem = eval("window." + HM_ItemIDPrefix + menucount + "_" + HM_CurrentMenu.itemCount);
 		if(!HM_CurrentItem) {
-			eval(HM_ItemIDPrefix + menucount + "_" + HM_CurrentMenu.itemCount + " = new Layer(HM_CurrentTree.ItemWidth - (HM_ItemPadding*2),HM_CurrentMenu)")
+			eval(HM_ItemIDPrefix + menucount + "_" + HM_CurrentMenu.itemCount + " = new Layer(HM_CurrentTree.ItemWidth - (HM_ItemPadding*2),HM_CurrentMenu)");
 			if(HM_StatusDisplayBuild) status = "Creating Hierarchical Menus: " + menucount + " / " + HM_CurrentMenu.itemCount;
 			HM_CurrentItem = eval(HM_ItemIDPrefix + menucount + "_" + HM_CurrentMenu.itemCount);
 			HM_CurrentItem.itemSetup(menucount + "_" + HM_CurrentMenu.itemCount);
@@ -367,7 +367,7 @@ function HM_f_ItemSetup(itemidsuffix) {
 	else {
 		this.left = (HM_BorderWidth + HM_ItemPadding);
 	    if (this.index) this.top = this.siblingBelow.top + this.siblingBelow.clip.height + HM_SeparatorSize;
-    	else this.top = (HM_BorderWidth + HM_ItemPadding)
+    	else this.top = (HM_BorderWidth + HM_ItemPadding);
 	}
     this.clip.top = this.clip.left = -HM_ItemPadding;
     this.clip.right = this.tree.ItemWidth - HM_ItemPadding;
@@ -457,8 +457,8 @@ function HM_f_PopMenu(e){
 }
 
 function HM_f_MenuOver() {
-	if(!this.tree.startChild){this.tree.startChild = this}
-	if(this.tree.startChild == this) HM_f_HideAll(this)
+	if(!this.tree.startChild){this.tree.startChild = this;}
+	if(this.tree.startChild == this) HM_f_HideAll(this);
     this.isOn = true;
     HM_UserOverMenu = true;
     HM_CurrentMenu = this;
@@ -556,7 +556,7 @@ function HM_f_ShowIt(on) {
 	if (!(this.tree.TopIsPermanent && (this.tree.treeParent==this))) {
 		if(!this.hasParent || (this.hasParent && this.tree.TopIsPermanent)) {
 			if (on == this.hidden)
-				eval(on ? this.tree.UponDisplay : this.tree.UponHide)
+				eval(on ? this.tree.UponDisplay : this.tree.UponHide);
 		}
 		this.visibility = on ? "show" : "hide";
 	}
@@ -608,13 +608,13 @@ function HM_f_KeepInWindow() {
 		if (this.hasParent) {
 			this.xPos = ParentLeftEdge + this.tree.HorizOffsetLeft;
 		}
-		else {this.xPos = 5}
+		else {this.xPos = 5;}
 	}       
 }
 
 function HM_f_LinkIt() {
 	HM_f_HideAll();
-    if (this.linkText.indexOf("javascript:")!=-1) eval(this.linkText)
+    if (this.linkText.indexOf("javascript:")!=-1) eval(this.linkText);
     else location.href = this.linkText;
 }
 
@@ -630,7 +630,7 @@ function HM_f_PopDown(menuname){
 function HM_f_HideAll(callingmenu) {
 	for(var i=0; i<HM_TotalTrees; i++) {
         var TopMenu = HM_a_TopMenus[i].tree.startChild;
-		if(TopMenu == callingmenu)continue
+		if(TopMenu == callingmenu) continue;
         TopMenu.isOn = false;
         if (TopMenu.hasChildVisible) TopMenu.hideChildren();
         TopMenu.showIt(false);

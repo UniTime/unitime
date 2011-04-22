@@ -169,7 +169,7 @@ function getAllFormTag() {
 									if(arrayFormTags[i].selectedIndex>=0)
 										arrayTagAndValue.push(arrayFormTags[i].options[arrayFormTags[i].selectedIndex].value);
 									else
-										arrayTagAndValue.push("")
+										arrayTagAndValue.push("");
 									currentArrayTagAndValuePosition += 2;
 								}
 								else {

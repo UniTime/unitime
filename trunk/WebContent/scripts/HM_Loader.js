@@ -14,8 +14,8 @@ HM_IsMenu = (HM_DOM || HM_NS4 || (HM_IE4 && !HM_IE4M));
 HM_BrowserString = HM_NS4 ? "NS4" : HM_DOM ? "DOM" : "IE4";
 
 if(window.event + "" == "undefined") event = null;
-function HM_f_PopUp(){return false};
-function HM_f_PopDown(){return false};
+function HM_f_PopUp(){return false;};
+function HM_f_PopDown(){return false;};
 popUp = HM_f_PopUp;
 popDown = HM_f_PopDown;
 
