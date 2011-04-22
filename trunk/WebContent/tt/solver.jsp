@@ -250,6 +250,7 @@ try {
  			int idx=0;
  			for (StringTokenizer s = new StringTokenizer(id,",");s.hasMoreTokens();idx++) {
  				Solution solution = (new SolutionDAO()).get(Long.valueOf(s.nextToken()));
+ 				if (solution==null) continue;
  				if (idx>0) {
 %>
 					<TR><TD colspan="2">&nbsp;</TD></TR>
@@ -264,7 +265,6 @@ try {
 					</TD>
 				</TR>
 <%
- 				if (solution==null) continue;
 	 			PropertiesInfo info = (PropertiesInfo)solution.getInfo("GlobalInfo");
 				Vector keys = new Vector(info.keySet());
 				Collections.sort(keys,new ListSolutionsForm.InfoComparator());

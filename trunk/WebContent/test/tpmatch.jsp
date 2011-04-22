@@ -20,11 +20,11 @@
 <%@ page import="org.unitime.timetable.webutil.RequiredTimeTable" %>
 <%@ page import="org.unitime.timetable.model.*" %>
 <%@ page import="org.unitime.timetable.model.dao.*"%>
-<script language="javascript" src="../scripts/rtt.js"></script>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html style="background-color:white">
+<html>
   <head>
     <title>Matching time patterns</title>
+	<script language="javascript" src="../scripts/rtt.js"></script>
   </head>
   <body><form method="post" action="tpmatch.jsp">
 <% 

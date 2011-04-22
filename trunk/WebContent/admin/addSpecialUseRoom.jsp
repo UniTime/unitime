@@ -111,7 +111,7 @@
 				<TD>Room Number:</TD>
 				<TD>
 					<html:text property="roomNum" maxlength="10" size="6" />
-				<TD>
+				</TD>
 			</TR>
 			
 			<!-- 

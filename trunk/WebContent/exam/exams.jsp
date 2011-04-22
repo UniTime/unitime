@@ -28,12 +28,12 @@
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<html:hidden property="op"/>
 	<TR>
-		<TD nowspan>
+		<TD>
 			<tt:section-title>Filter</tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-		<TD nowspan>
+		<TD>
 			Term:
 			<html:select property="session">
 				<html:optionsCollection property="sessions" label="label" value="value"/>
@@ -93,26 +93,26 @@
 		<a name="login"></a>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD nowspan>
+			<TD>
 				<tt:section-title>Personal Schedule</tt:section-title>
 			</TD>
 		</TR>
  		<logic:notEmpty name="examsForm" property="message">
 			<TR>
-				<TD nowspan style='color:red;font-weight:bold;'>
+				<TD style='color:red;font-weight:bold;'>
 					<bean:write name="examsForm" property="message"/>
 				</TD>
 			</TR>
  		</logic:notEmpty>
  		<logic:notEmpty name="message" scope="request">
 			<TR>
-				<TD nowspan style='color:red;font-weight:bold;'>
+				<TD style='color:red;font-weight:bold;'>
 					<bean:write name="message" scope="request"/>
 				</TD>
 			</TR>
  		</logic:notEmpty>
 		<TR>
-			<TD nowspan>
+			<TD>
 				User:
 				<html:text property="username" size="25"/>,&nbsp;&nbsp;&nbsp;
 				Password:

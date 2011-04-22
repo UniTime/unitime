@@ -119,7 +119,7 @@
 			<td valign="middle" colspan="3">
 				<tt:section-title/>
 			</td>
-		<tr>
+		</tr>
 		
 		<TR>
 			<TD align="right" colspan="3">

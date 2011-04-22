@@ -130,14 +130,14 @@
 				</html:select>
 			    </td></tr>
 			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td valign="right">Scheduling Subpart Level Time Preference Options:</td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
-			<tr><td></td><td valign="right"></td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td></td><td align="right">Scheduling Subpart Level Time Preference Options:</td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td></td><td align="right"></td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
 			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td valign="right">Scheduling Subpart Level Location Preference Options:</td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
-			<tr><td></td><td valign="right"></td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td></td><td align="right">Scheduling Subpart Level Location Preference Options:</td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td></td><td align="right"></td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
 			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td valign="right">Class Level Preference Options:</td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
-			<tr><td></td><td valign="right"></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
+			<tr><td></td><td align="right">Class Level Preference Options:</td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
+			<tr><td></td><td align="right"></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
 			</table>
 			</td>
 		</tr>
