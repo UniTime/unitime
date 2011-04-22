@@ -101,6 +101,11 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 									: request.getParameter("ssuid");
 
 	        String op = frm.getOp();
+	        
+	        // Check op exists
+	        if(op==null)
+	            throw new Exception ("Null Operation not supported.");
+
 	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
 	        // Read subpart id from form
@@ -114,10 +119,6 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        } else {
 	        	frm.reset(mapping, request);
 	        }
-
-	        // Check op exists
-	        if(op==null)
-	            throw new Exception ("Null Operation not supported.");
 
 	        Debug.debug("op: " + op);
 	        Debug.debug("subpart: " + subpartId);

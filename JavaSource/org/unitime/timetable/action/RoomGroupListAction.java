@@ -578,9 +578,6 @@ public class RoomGroupListAction extends Action {
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
     				iWriter.setPageEvent(new PdfEventHandler());
     				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
     			}
     			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
     			doc.add(pdfTable);

@@ -255,8 +255,6 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				if (r.getRequest().getAssignment() != null) { // save enrollment
 					org.unitime.timetable.model.CourseRequest cr = null;
 					CourseOffering co = null;
-					if (cr != null)
-						co = cr.getCourseOffering();
 					if (co == null) 
 						for (CourseOffering x: io.getCourseOfferings())
 							if (x.getUniqueId().equals(r.getRequest().getAssignment().getCourse().getId()))
