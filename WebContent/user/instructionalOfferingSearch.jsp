@@ -47,7 +47,7 @@
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].roomLimit.checked = true} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].roomLimit.checked = false};"/>
+							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].roomLimit.checked = true;} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].roomLimit.checked = false;};"/>
 							Enrollment Information
 						</TD>
 					</TR>
@@ -93,7 +93,7 @@
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="dateTimeInformation" value="1" onclick="if (document.forms[0].dateTimeInformation.checked){document.forms[0].datePattern.checked = true;document.forms[0].minPerWk.checked = true;document.forms[0].timePattern.checked = true} else {document.forms[0].datePattern.checked = false;document.forms[0].minPerWk.checked = false;document.forms[0].timePattern.checked = false};"/>
+							<html:checkbox property="dateTimeInformation" value="1" onclick="if (document.forms[0].dateTimeInformation.checked){document.forms[0].datePattern.checked = true;document.forms[0].minPerWk.checked = true;document.forms[0].timePattern.checked = true;} else {document.forms[0].datePattern.checked = false;document.forms[0].minPerWk.checked = false;document.forms[0].timePattern.checked = false;};"/>
 							Date/Time Information
 						</TD>
 					</TR>
@@ -147,7 +147,7 @@
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].designatorRequired.checked = true;document.forms[0].schedulePrintNote.checked = true} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].designatorRequired.checked = false;document.forms[0].schedulePrintNote.checked = false};"/>
+							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].designatorRequired.checked = true;document.forms[0].schedulePrintNote.checked = true;} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].designatorRequired.checked = false;document.forms[0].schedulePrintNote.checked = false;};"/>
 							Catalog Information
 						</TD>
 					</TR>

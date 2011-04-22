@@ -272,11 +272,9 @@
   cache      : true,      // Single object used for all calendars
   electric   : false,     // Changes date only when calendar is closed
   inputField : "since_date",  // ID of the input field
-     ifFormat   : "%m/%d/%Y",    // Format of the input field
-     showOthers : true,     // Show overlap of dates from other months     
-     <% if (request.getParameter("since")!=null && request.getParameter("since").length()>=10) { %>
-     date  : <%=request.getParameter("since")%>,
-     <% }%>
+  ifFormat   : "%m/%d/%Y",    // Format of the input field
+  showOthers : true,     // Show overlap of dates from other months     
+  date		: <%=request.getParameter("since") != null && request.getParameter("since").length() >= 10 ? request.getParameter("since") : null%>,
   button     : "show_since_date" // ID of the button
  } );
  }

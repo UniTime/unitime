@@ -42,7 +42,6 @@
 		<BR>
 		<BR>
 	<% } %>
-	</logic:notEmpty>
 	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
 	<BR><BR>
 </DIV>

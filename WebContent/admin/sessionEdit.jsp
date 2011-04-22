@@ -270,8 +270,6 @@
 			
 			</TD>
 		</TR>
-
-
 	</TABLE>
 	
 	<html:hidden property="sessionId" />
@@ -285,9 +283,7 @@
 		inputField : "session_start",		// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("sessionStart")!=null && request.getParameter("sessionStart").length()>=10) { %>
-	    date		: <%=request.getParameter("sessionStart")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("sessionStart") != null && request.getParameter("sessionStart").length() >= 10 ? request.getParameter("sessionStart") : null%>,
 		button     : "show_session_start"	// ID of the button
 	} );
 
@@ -297,9 +293,7 @@
 		inputField : "session_end",			// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("sessionEnd")!=null && request.getParameter("sessionEnd").length()>=10) { %>
-	    date		: <%=request.getParameter("sessionEnd")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("sessionEnd") != null && request.getParameter("sessionEnd").length() >= 10 ? request.getParameter("sessionEnd") : null%>,
 		button     : "show_session_end" 	// ID of the button
 	} );
 	
@@ -309,9 +303,7 @@
 		inputField : "classes_end",			// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("classesEnd")!=null && request.getParameter("classesEnd").length()>=10) { %>
-	    date		: <%=request.getParameter("classesEnd")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("classesEnd") != null && request.getParameter("classesEnd").length() >= 10 ? request.getParameter("classesEnd") : null%>,
 		button     : "show_classes_end" 	// ID of the button
 	} );
 
@@ -321,9 +313,7 @@
 		inputField : "exam_start",		// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("examStart")!=null && request.getParameter("examStart").length()>=10) { %>
-	    date		: <%=request.getParameter("examStart")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("examStart") != null && request.getParameter("examStart").length() >= 10 ? request.getParameter("examStart") : null%>,
 		button     : "show_exam_start"	// ID of the button
 	} );
 
@@ -333,9 +323,7 @@
 		inputField : "event_start",		// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("eventStart")!=null && request.getParameter("eventStart").length()>=10) { %>
-	    date		: <%=request.getParameter("eventStart")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("eventStart") != null && request.getParameter("eventStart").length() >= 10 ? request.getParameter("eventStart") : null%>,
 		button     : "show_event_start"	// ID of the button
 	} );
 
@@ -345,9 +333,7 @@
 		inputField : "event_end",		// ID of the input field
 	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
 	    showOthers : true,					// Show overlap of dates from other months	    
-	    <% if (request.getParameter("eventEnd")!=null && request.getParameter("eventEnd").length()>=10) { %>
-	    date		: <%=request.getParameter("eventEnd")%>,
-	    <% }%>
+	    date		: <%=request.getParameter("eventEnd") != null && request.getParameter("eventEnd").length() >= 10 ? request.getParameter("eventEnd") : null%>,
 		button     : "show_event_end"	// ID of the button
 	} );
 
