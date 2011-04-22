@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
+<!DOCTYPE unitime-menu PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/menu.dtd">
+
 <!-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC
@@ -25,7 +27,7 @@
 				<propertyEquals name="tmtbl.menu.display_course_timetabling" value="true" defaultValue="true"/>
 				<hasRole name="Administrator"/>
 			</or>
-			<canSeeCourses/>
+			<hasRight name="canSeeCourses"/>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
 			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do"/>
@@ -48,15 +50,15 @@
 			<menu name="Reservations" page="reservations" type="gwt"/>
 			<item name="Class Assignments" page="classAssignmentsReportShowSearch.do">
 				<condition>
-					<canSeeTimetable/>
+					<hasRight name="canSeeTimetable"/>
 				</condition>
 			</item>
 		</menu>
 		<menu name="Course Timetabling" title="Course Timetabling Solver">
 			<condition>
-				<hasASolverGroup/>
-				<canSeeTimetable/>
-				<canDoTimetable/>
+				<hasRight name="hasASolverGroup"/>
+				<hasRight name="canSeeTimetable"/>
+				<hasRight name="canDoTimetable"/>
 			</condition>
 			<item name="Saved Timetables" page="listSolutions.do"/>
 			<item name="Solver" page="solver.do"/>
@@ -82,10 +84,10 @@
 		</menu>
 		<menu name="Course Timetabling" title="Course Timetabling Solver">
 			<condition>
-				<hasASolverGroup/>
-				<canSeeTimetable/>
+				<hasRight name="hasASolverGroup"/>
+				<hasRight name="canSeeTimetable"/>
 				<not>
-					<canDoTimetable/>
+					<hasRight name="canDoTimetable"/>
 				</not>
 			</condition>
 			<item name="Saved Timetables" page="listSolutions.do"/>
@@ -93,11 +95,11 @@
 		</menu>
 		<menu name="Course Audit" title="Course Timetabling Audit">
 			<condition>
-				<hasASolverGroup/>
+				<hasRight name="hasASolverGroup"/>
 				<not>
-					<canSeeTimetable/>
+					<hasRight name="canSeeTimetable"/>
 				</not>
-				<canAudit/>
+				<hasRight name="canAudit"/>
 			</condition>
 			<item name="Solver" page="solver.do"/>
 			<item name="Conflict Statistics" page="cbs.do"/>
@@ -118,7 +120,7 @@
 				<propertyEquals name="tmtbl.menu.display_student_sectioning" value="true" defaultValue="true"/>
 				<hasRole name="Administrator"/>
 			</or>
-			<canSectionStudents/>
+			<hasRight name="canSectionStudents"/>
 		</condition>
 		<menu name="Batch Solver" page="studentSolver.do">
 			<item name="Solver Log" page="studentSolverLog.do"/>
@@ -126,12 +128,12 @@
 		<separator/>
 		<item name="Scheduling Assistant" page="sectioning" type="gwt">
 			<condition>
-				<isSectioningEnabled/>
+				<hasRight name="isSectioningEnabled"/>
 			</condition>
 		</item>
 		<item name="Course Requests" page="requests" type="gwt">
 			<condition>
-				<isRegistrationEnabled/>
+				<hasRight name="isRegistrationEnabled"/>
 			</condition>
 		</item>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
@@ -142,7 +144,7 @@
 				<propertyEquals name="tmtbl.menu.display_exam_timetabling" value="true" defaultValue="true"/>
 				<hasRole name="Administrator"/>
 			</or>
-			<canSeeExams/>
+			<hasRight name="canSeeExams"/>
 		</condition>
 		<menu name="Input Data">
 			<item name="Instructors" page="instructorSearch.do"/>
@@ -152,7 +154,7 @@
 				<item name="Room Groups" page="roomGroupSearch.do?default=Exam"/>
 				<item name="Room Availability" page="roomAvailability.do">
 					<condition>
-						<hasRoomAvailability/>
+						<hasRight name="hasRoomAvailability"/>
 					</condition>
 				</item>
 			</menu>
@@ -162,7 +164,7 @@
 		</menu>
 		<menu name="Examination Timetabling">
 			<condition>
-				<canTimetableExams/>
+				<hasRight name="canTimetableExams"/>
 			</condition>
 			<item name="Examination Solver" page="examSolver.do"/>
 			<item name="Timetable Grid" page="examGrid.do"/>
@@ -224,7 +226,7 @@
 				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
 				<hasRole name="Administrator"/>
 			</or>
-			<canSeeEvents/>
+			<hasRight name="canSeeEvents"/>
 		</condition>
 		<menu name="Rooms" page="roomSearch.do?default=Exam">
 			<condition>
@@ -248,8 +250,8 @@
 	<item name="Course Requests" page="requests" type="gwt">
 		<condition>
 			<and>
-				<isStudent/>
-				<isRegistrationEnabled/>
+				<hasRight name="isStudent"/>
+				<hasRight name="isRegistrationEnabled"/>
 			</and>
 		</condition>
 	</item>
@@ -264,7 +266,7 @@
 						<hasRole/>
 					</not>
 				</or>
-				<isSectioningEnabled/>
+				<hasRight name="isSectioningEnabled"/>
 			</and>
 		</condition>
 	</item>
@@ -274,7 +276,7 @@
 				<hasRole name="Administrator"/>
 				<and>
 					<propertyEquals name="tmtbl.menu.display_personal_schedule" value="true" defaultValue="true"/>
-					<hasPersonalReport/>
+					<hasRight name="hasPersonalReport"/>
 				</and>
 			</or>
 		</condition>
@@ -342,7 +344,7 @@
 			<condition>
 				<or>
 					<hasRole name="Administrator"/>
-					<isChameleon/>
+					<hasRight name="isChameleon"/>
 				</or>
 			</condition>
 		</item>
@@ -354,20 +356,20 @@
 		</condition>
 		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
 			<condition>
-				<canSeeEvents/>
+				<hasRight name="canSeeEvents"/>
 			</condition>
 		</item>
 		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download">
 			<condition>
-				<canSeeCourses/>
+				<hasRight name="canSeeCourses"/>
 			</condition>
 		</item>
 		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download">
 			<condition>
 				<or>
-					<canDoTimetable/>
-					<canAudit/>
-					<canSeeTimetable/>
+					<hasRight name="canDoTimetable"/>
+					<hasRight name="canAudit"/>
+					<hasRight name="canSeeTimetable"/>
 				</or>
 			</condition>
 		</item>
