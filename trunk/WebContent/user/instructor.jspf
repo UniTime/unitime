@@ -16,7 +16,15 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-		<TR>
+<%@ page import="org.unitime.timetable.model.PositionType"%>
+<%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<TR>
+	<bean:parameter id="operation" name="operation"/>
+	<bean:parameter id="frmName" name="frmName"/>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>		
 					<tt:section-title>&nbsp;</tt:section-title>
@@ -93,14 +101,14 @@
 					<bean:write name="<%=frmName%>"  property="puId"/>	
 					<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
 				</tt:propertyNotEquals>
-			<TD>
+			</TD>
 		</TR>
 		
 		<TR>
 			<TD>Account Name:</TD>
 			<TD>
 				<html:text property="careerAcct" maxlength="20" size="20"/> 
-			<TD>
+			</TD>
 		</TR>
 		
 		<TR>
@@ -108,28 +116,28 @@
 			<TD>
 				<html:text property="fname" maxlength="100" size="30" styleId="fname" />
 				<input type='button' value='Lookup' onclick="lookup();" style="btn">
-			<TD>
+			</TD>
 		</TR>	
 		
 		<TR>
 			<TD>Middle Name:</TD>
 			<TD>
 				<html:text property="mname" maxlength="100" size="30" styleId="mname" />
-			<TD>
+			</TD>
 		</TR>	
 		
 		<TR>
 			<TD>Last Name: <font class="reqField">*</font></TD>
 			<TD>
 				<html:text property="lname" maxlength="100" size="30" styleId="lname" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<TR>
 			<TD>Email:</TD>
 			<TD>
 				<html:text property="email" maxlength="200" size="50" styleId="email" /> 
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>

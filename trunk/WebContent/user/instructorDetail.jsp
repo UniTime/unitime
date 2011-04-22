@@ -213,15 +213,9 @@
 				</tt:section-title>
 			</TD>
 		</TR>
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = false;
-			boolean restorePrefsDisabled = true;
-		%>
-		<%@ include file="preferencesDetail.jspf" %>
+		<jsp:include page="preferencesDetail.jspf">
+			<jsp:param name="frmName" value="<%=frmName%>"/>
+		</jsp:include>
 	<% } else { %>
 		<TR>
 			<TD colspan="2" valign="middle">

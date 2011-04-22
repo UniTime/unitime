@@ -229,18 +229,11 @@
 			</TD>
 		</TR>
 		
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = true;
-			boolean restorePrefsDisabled = true;
-			boolean timePrefDisabled = true;
-			boolean periodPrefDisabled = false;
-		%>
-		
-		<%@ include file="preferencesEdit.jspf" %>
+		<jsp:include page="preferencesEdit.jspf">
+			<jsp:param name="frmName" value="<%=frmName%>"/>
+			<jsp:param name="distPref" value="false"/>
+			<jsp:param name="timePref" value="false"/>
+		</jsp:include>
 	
 	</TABLE>
 </html:form>
