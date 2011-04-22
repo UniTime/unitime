@@ -26,23 +26,18 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<%
-	// Get Form 
-	String operation = "add";	
-	String frmName = "instructorEditForm";	
-	InstructorEditForm frm = (InstructorEditForm) request.getAttribute(frmName);
-%>	
-
 <html:form action="instructorAdd">
 	<html:hidden property="instructorId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<%@include file="instructorLookup.jspf" %>
-		<% 
-		if (frm.getMatchFound()==null || !frm.getMatchFound().booleanValue()) {
-		%>
-		<%@include file="instructor.jspf" %>
-	<% } %>
-		
+		<jsp:include page="instructorLookup.jspf">
+			<jsp:param name="frmName" value="instructorEditForm"/>
+		</jsp:include>
+		<logic:notEqual value="true" property="matchFound" name="instructorEditForm">
+			<jsp:include page="instructor.jspf">
+				<jsp:param name="operation" value="add"/>
+				<jsp:param name="frmName" value="instructorEditForm"/>
+			</jsp:include>
+		</logic:notEqual>
 	</TABLE>
 </html:form>

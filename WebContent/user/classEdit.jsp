@@ -160,7 +160,7 @@
 			<TD>Manager:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="managingDeptLabel" />
-			<TD>
+			</TD>
 		</TR>
 
 		<logic:notEqual name="<%=frmName%>" property="parentClassName" value="-">
@@ -168,7 +168,7 @@
 				<TD>Parent Class:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="parentClassName" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEqual>
 
@@ -186,7 +186,7 @@
 				<TD>External Id:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 
@@ -262,7 +262,7 @@
 			<TD>Enrollment:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="enrollment" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
@@ -271,20 +271,20 @@
 					<TD>Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 			<% } else { %>
 				<TR>
 					<TD>Minimum Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 				<TR>
 					<TD>Maximum Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="maxExpectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 			<% } %>
 		</logic:notEqual>
@@ -293,7 +293,7 @@
 			<TD>Number of Rooms:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="nbrRooms" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
@@ -302,7 +302,7 @@
 				<TD>
 					<bean:write name="<%=frmName%>" property="roomRatio" />
 					&nbsp;&nbsp;&nbsp;&nbsp; ( Minimum Room Capacity: <bean:write name="<%=frmName%>" property="minRoomLimit" /> )
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEqual>
 		
@@ -314,28 +314,28 @@
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
 			<TD>Display Instructors:</TD>
 			<TD>
 				<html:checkbox property="displayInstructor" />
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
 			<TD>Display In Schedule Book:</TD>
 			<TD>
 				<html:checkbox property="displayInScheduleBook" />
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
 			<TD valign="top">Student Schedule Note:</TD>
 			<TD>
 				<html:textarea property="schedulePrintNote" cols="70" rows="4"  />
-			<TD>
+			</TD>
 		</TR>
 
 <%
@@ -362,7 +362,7 @@
 		<TR>
 			<TD colspan="2" align="left">
 			<html:textarea property="notes" rows="3" cols="80"></html:textarea>
-			<TD>
+			</TD>
 		</TR>
 
 <!-- Instructors -->
@@ -424,34 +424,41 @@
 				   	</logic:iterate>
 					
 				</TABLE>
-			<TD>
+			</TD>
 		</TR>
 
 <!-- Preferences -->
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = true;
-			boolean restorePrefsDisabled = false;
-			boolean timePrefDisabled = false;
-			boolean periodPrefDisabled = true;
-			
-			if (frm.getUnlimitedEnroll().booleanValue()) {
-				roomGroupDisabled = true;
-				//roomPrefDisabled = true;
-				bldgPrefDisabled = true;
-				roomFeaturePrefDisabled = true;
-			}
-			if (frm.getNbrRooms().intValue()==0) {
-				roomGroupDisabled = true;
-				//roomPrefDisabled = true;
-				bldgPrefDisabled = true;
-				roomFeaturePrefDisabled = true;
-			}
-		%>
-		<%@ include file="preferencesEdit.jspf" %>
+		<logic:equal value="0" name="<%=frmName%>" property="nbrRooms">
+			<jsp:include page="preferencesEdit.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="distPref" value="false"/>
+				<jsp:param name="periodPref" value="false"/>
+				<jsp:param name="bldgPref" value="false"/>
+				<jsp:param name="roomFeaturePref" value="false"/>
+				<jsp:param name="roomGroupPref" value="false"/>
+			</jsp:include>
+		</logic:equal>
+		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
+			<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
+				<jsp:include page="preferencesEdit.jspf">
+					<jsp:param name="frmName" value="<%=frmName%>"/>
+					<jsp:param name="distPref" value="false"/>
+					<jsp:param name="periodPref" value="false"/>
+					<jsp:param name="bldgPref" value="false"/>
+					<jsp:param name="roomFeaturePref" value="false"/>
+					<jsp:param name="roomGroupPref" value="false"/>
+				</jsp:include>
+			</logic:equal>
+			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
+				<jsp:include page="preferencesEdit.jspf">
+					<jsp:param name="frmName" value="<%=frmName%>"/>
+					<jsp:param name="distPref" value="false"/>
+					<jsp:param name="periodPref" value="false"/>
+				</jsp:include>
+			</logic:notEqual>
+		</logic:notEqual>
+		
+		
 	</TABLE>
 </html:form>
 

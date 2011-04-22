@@ -128,7 +128,7 @@
 			<TD>Manager:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="managingDeptLabel" />
-			<TD>
+			</TD>
 		</TR>
 
 		<logic:notEqual name="<%=frmName%>" property="parentClassName" value="-">
@@ -152,14 +152,14 @@
 				<TD>External Id:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
 			<TD>Enrollment:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="enrollment" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
@@ -168,20 +168,20 @@
 					<TD>Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 			<% } else { %>
 				<TR>
 					<TD>Minimum Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 				<TR>
 					<TD>Maximum Class Limit:</TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="maxExpectedCapacity" />
-					<TD>
+					</TD>
 				</TR>
 			<% } %>
 		</logic:notEqual>
@@ -190,7 +190,7 @@
 			<TD>Number of Rooms:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="nbrRooms" />
-			<TD>
+			</TD>
 		</TR>
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
@@ -199,7 +199,7 @@
 				<TD>
 					<bean:write name="<%=frmName%>" property="roomRatio" />
 					&nbsp;&nbsp;&nbsp;&nbsp; ( Minimum Room Capacity: <bean:write name="<%=frmName%>" property="minRoomLimit" /> )
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEqual>
 
@@ -212,7 +212,7 @@
 						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'840','520');">
 					</logic:equal>
 				</logic:iterate>
-			<TD>
+			</TD>
 		</TR>
 		
 		<TR>
@@ -224,7 +224,7 @@
 				<logic:notEqual name="<%=frmName%>" property="displayInstructor" value="true">
 					<IMG src="images/delete.gif" border="0" alt="Instructor Displayed" title="Instructor Displayed">
 				</logic:notEqual>
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
@@ -236,14 +236,14 @@
 				<logic:notEqual name="<%=frmName%>" property="displayInScheduleBook" value="true">
 					<IMG src="images/delete.gif" border="0" alt="Displayed in Schedule Book" title="Displayed in Schedule Book">
 				</logic:notEqual>
-			<TD>
+			</TD>
 		</TR>
 
 		<TR>
 			<TD valign="top">Student Schedule Note:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
-			<TD>
+			</TD>
 		</TR>
 
 		<logic:notEmpty name="<%=frmName%>" property="notes">
@@ -251,7 +251,7 @@
 				<TD valign="top">Requests / Notes:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="notes" filter="false"/>
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 		
@@ -278,7 +278,7 @@
 								</td>
 								<td>
 									<logic:equal name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="true"> 
-										<IMG border='0' alt='true' align='absmiddle' src='images/tick.gif'>
+										<IMG border='0' alt='true' align="middle" src='images/tick.gif'>
 										<%-- <input type='checkbox' checked disabled> --%>
 									</logic:equal>
 									<%-- 
@@ -291,7 +291,7 @@
 							</tr>
 						</logic:iterate>
 					</table>
-				<TD>
+				</TD>
 			</TR>
 		</logic:notEmpty>
 
@@ -314,27 +314,35 @@
 %>
 
 <!-- Preferences -->
-		<%
-			boolean roomGroupDisabled = false;
-			boolean roomPrefDisabled = false;
-			boolean bldgPrefDisabled = false;
-			boolean roomFeaturePrefDisabled = false;
-			boolean distPrefDisabled = false;
-			if (frm.getNbrRooms().intValue()==0) {
-				roomGroupDisabled = true;
-				//roomPrefDisabled = true;
-				bldgPrefDisabled = true;
-				roomFeaturePrefDisabled = true;
-			}
-		%>
 		<TR>
 			<TD colspan="2" valign="middle">
 				&nbsp;<BR>
 				<tt:section-title>Preferences</tt:section-title>
 			</TD>
 		</TR>
-		<%@ include file="preferencesDetail.jspf" %>
-
+		<logic:equal value="0" name="<%=frmName%>" property="nbrRooms">
+			<jsp:include page="preferencesDetail.jspf">
+				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="bldgPref" value="false"/>
+				<jsp:param name="roomFeaturePref" value="false"/>
+				<jsp:param name="roomGroupPref" value="false"/>
+			</jsp:include>
+		</logic:equal>
+		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
+			<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
+				<jsp:include page="preferencesDetail.jspf">
+					<jsp:param name="frmName" value="<%=frmName%>"/>
+					<jsp:param name="bldgPref" value="false"/>
+					<jsp:param name="roomFeaturePref" value="false"/>
+					<jsp:param name="roomGroupPref" value="false"/>
+				</jsp:include>
+			</logic:equal>
+			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
+				<jsp:include page="preferencesDetail.jspf">
+					<jsp:param name="frmName" value="<%=frmName%>"/>
+				</jsp:include>
+			</logic:notEqual>
+		</logic:notEqual>
 		
 		<TR>
 			<TD colspan="2">
