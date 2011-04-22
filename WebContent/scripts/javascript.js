@@ -350,7 +350,7 @@ function setTabCookie(name, value) {
 	if (cookie=="???") cookie = "";	
 	start = cookie.indexOf(name + "=");
 	if (start==-1) {
-		cookie = cookie + name + "=" + value + ";"
+		cookie = cookie + name + "=" + value + ";";
 	} else {
 		end = cookie.substring(start).indexOf(";");
 		cookie = cookie.substring(0, start) + name + "=" + value + cookie.substring(start+end);
@@ -1020,7 +1020,7 @@ function loadTree(url, tree) {
 	element.style.display = "";
 	element = document.getElementById("treeViewNode" + url);
 	element.href = "javascript://";
-	setMenuCookie("treeView" + url, "show")	
+	setMenuCookie("treeView" + url, "show");
 }
 
 function changeTree(tree, image1, image2) {
