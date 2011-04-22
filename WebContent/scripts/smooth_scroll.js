@@ -76,5 +76,5 @@
 	      return window.pageYOffset;
 	    return 0;
 	  }
-	}
+	};
 	
