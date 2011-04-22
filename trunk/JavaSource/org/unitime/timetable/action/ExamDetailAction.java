@@ -91,15 +91,16 @@ public class ExamDetailAction extends PreferencesAction {
                 op = "";
                 frm.setOp(op);
             }
+            
+            //Check op exists
+            if (op==null) throw new Exception ("Null Operation not supported.");
+            
             // Read exam id from form
             if (op.equals(rsc.getMessage("button.editExam")) || op.equals(rsc.getMessage("button.cloneExam")) || op.equals(rsc.getMessage("button.addDistPref")) || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))) {
                 examId = frm.getExamId();
             } else {
                 frm.reset(mapping, request);
             }
-            
-            //Check op exists
-            if (op==null) throw new Exception ("Null Operation not supported.");
             
             Debug.debug("op: " + op);
             Debug.debug("exam: " + examId);

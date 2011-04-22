@@ -113,7 +113,6 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            	getHibSession().flush();
 	            	getHibSession().refresh(student);
 	            }
-	            if(student == null) continue;
 	            loadCourses(element, student, session);
 	            flushIfNeeded(true);
 	        }
@@ -178,10 +177,6 @@ public class LastLikeCourseDemandImport extends BaseImport {
 					continue;
 				}
 				permId = courseOfferings.get(courseNumber + area.getUniqueId().toString());
-			}
-			if(area == null) {
-				System.out.println("Subject area " + subject + " not found");
-				continue;
 			}
 
 	        LastLikeCourseDemand demand = new LastLikeCourseDemand();
