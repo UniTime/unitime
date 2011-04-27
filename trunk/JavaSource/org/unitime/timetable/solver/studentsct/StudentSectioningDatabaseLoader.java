@@ -1130,6 +1130,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
+                    "left join fetch cr.classEnrollments as cre "+
                     (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
