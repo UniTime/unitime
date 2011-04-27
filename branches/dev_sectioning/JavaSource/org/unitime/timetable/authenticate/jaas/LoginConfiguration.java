@@ -42,17 +42,17 @@ public class LoginConfiguration extends Configuration {
 	
 	public void init() {
 		Debug.info("Configuring authentication service ...");
-		HashMap<String, Object> options = new HashMap<String, Object>();
-		String[] module = ApplicationProperties.getProperty("tmtbl.authenticate.modules",
+		String[] modules = ApplicationProperties.getProperty("tmtbl.authenticate.modules",
 				"sufficient " + DbAuthenticateModule.class.getName() + ";" +
 				"sufficient " + LdapAuthenticateModule.class.getName()).split(";");
-		sEntries = new AppConfigurationEntry[module.length];
-		for (int idx = 0; idx < module.length; idx++) {
+		sEntries = new AppConfigurationEntry[modules.length];
+		for (int idx = 0; idx < modules.length; idx++) {
+			HashMap<String, Object> options = new HashMap<String, Object>();
+			String[] module = modules[idx].split(" ");
 			LoginModuleControlFlag flag = LoginModuleControlFlag.SUFFICIENT;
-			String m = module[idx];
-			if (m.indexOf(' ') > 0) {
-				String f = m.substring(0, m.indexOf(' '));
-				m = m.substring(m.indexOf(' ') + 1);
+			String name = module[module.length == 1 ? 0 : 1];
+			if (module.length > 1) {
+				String f = module[0];
 				if (f.equalsIgnoreCase("sufficient"))
 					flag = LoginModuleControlFlag.SUFFICIENT;
 				else if (f.equalsIgnoreCase("optional"))
@@ -62,8 +62,16 @@ public class LoginConfiguration extends Configuration {
 				else if (f.equalsIgnoreCase("requisite"))
 					flag = LoginModuleControlFlag.REQUISITE;
 			}
-			Debug.info("  Using " + m + " (" + flag + ")");
-			sEntries[idx] = new AppConfigurationEntry(m, flag, options);
+			if (module.length > 2)
+				for (int i = 2; i < module.length; i++) {
+					String[] option = module[i].split("=");
+					if (option.length == 1)
+						options.put(option[0], "true");
+					else
+						options.put(option[0], option[1]);						
+				}
+			Debug.info("  Using " + flag + " " + name + " " + options);
+			sEntries[idx] = new AppConfigurationEntry(name, flag, options);
 		}
 	}
 	
