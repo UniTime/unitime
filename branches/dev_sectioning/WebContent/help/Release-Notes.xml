@@ -305,6 +305,13 @@
 				<line>Improved customization abilities, see http://help.unitime.org/Customizations for more details.</line>
 			</description>
 		</item>
+		<item>
+			<name>Authentication</name>
+			<description>
+				<line>JAAS Login Configuration: Added ability to provide module options (space separated option=value pairs after the module name).</line>
+				<line>Added Kerberos login module (simple extension of Krb5LoginModule)</line>
+			</description>
+		</item>
 	</category>
 </release>
 
