@@ -151,6 +151,20 @@ public class HibernateUtil {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		sLog.debug("  -- document factory created");
         DocumentBuilder builder = factory.newDocumentBuilder();
+        builder.setEntityResolver(new EntityResolver() {
+    	    public InputSource resolveEntity(String publicId, String systemId) {
+    	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
+        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+        	    }
+    	        return null;
+    	    }
+    	});
         sLog.debug("  -- document builder created");
         Document document = builder.parse(classLoader.getResource("hibernate.cfg.xml").openStream());
         sLog.debug("  -- hibernate.cfg.xml parsed");
