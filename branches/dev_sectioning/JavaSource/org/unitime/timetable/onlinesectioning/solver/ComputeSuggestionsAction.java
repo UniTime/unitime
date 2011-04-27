@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -39,7 +37,6 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -54,6 +51,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  */
 public class ComputeSuggestionsAction extends FindAssignmentAction {
 	private ClassAssignmentInterface.ClassAssignment iSelection;
+	private double iValue = 0.0;
 	
 	
 	public ComputeSuggestionsAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment) throws SectioningException {
@@ -67,14 +65,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 
-		DataProperties config = new DataProperties();
-		config.setProperty("Suggestions.Timeout", "1000");
-		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
-		config.setProperty("StudentWeights.LeftoverSpread", "true");
-		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
-		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
-		StudentSectioningModel model = new StudentSectioningModel(config);
+		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
 
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<Long> enrolled = null;
@@ -161,6 +152,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
         
         SuggestionsBranchAndBound suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse, selectedRequest, selectedSection);
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
+		iValue = (suggestions.isEmpty() ? 0.0 : - suggestions.first().getValue());
         
 		long t3 = System.currentTimeMillis();
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
@@ -180,7 +172,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		return "suggestions";
 	}
 	
-	
-	
+	public double value() {
+		return iValue;
+	}
 
 }
