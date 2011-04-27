@@ -68,7 +68,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		Lock readLock = server.readLock();
+		Lock lock = server.lockStudent(getStudentId(), null, true);
 		try {
 			helper.beginTransaction();
 			try {
@@ -105,7 +105,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
 			}
 		} finally {
-			readLock.release();
+			lock.release();
 		}
 	}
 
