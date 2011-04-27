@@ -33,8 +33,6 @@ import java.util.Vector;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -53,7 +51,6 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -75,6 +72,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
+	private double iValue;
 	
 	public FindAssignmentAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iRequest = request;
@@ -92,14 +90,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		DataProperties config = new DataProperties();
-		config.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		config.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-		config.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
-		config.setProperty("StudentWeights.LeftoverSpread", "true");
-		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
-		config.setProperty("Reservation.CanAssignOverTheLimit", "true");
-		StudentSectioningModel model = new StudentSectioningModel(config);
+		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
 		
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<Long> enrolled = null;
@@ -172,6 +163,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
+		iValue = -neighbour.value();
         
 		long t2 = System.currentTimeMillis();
 
@@ -184,6 +176,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		rets.add(ret);
 		return rets;
 	}
+	
+	public double value() { return iValue; }
 	
 	@SuppressWarnings("unchecked")
 	protected Course clone(Course course, long studentId, Student originalStudent) {
@@ -237,7 +231,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							(section.getParent() == null ? null : sections.get(section.getParent())));
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
-			        if (limit >= 0) {
+			        if (limit > 0) {
 			        	double available = Math.round(section.getSpaceExpected() - limit);
 						clonedSection.setPenalty(available / section.getLimit());
 			        }
