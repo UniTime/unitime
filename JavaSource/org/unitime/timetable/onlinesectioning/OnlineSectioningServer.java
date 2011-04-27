@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
+import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -41,6 +42,7 @@ import net.sf.cpsolver.studentsct.model.Student;
 public interface OnlineSectioningServer {
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
+	public DataProperties getConfig();
 	
 	public ClassAssignmentInterface getAssignment(Long studentId);
 	public CourseRequestInterface getRequest(Long studentId);
