@@ -311,10 +311,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
         		Section section = sections.remove(clazz.getUniqueId());
         		if (section == null) continue;
                 SectioningInfo info = new SectioningInfo();
-        		helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected()) +
+        		helper.debug(clazz.getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected()) +
         				", held " + sDF.format(section.getSpaceHeld()) + " (new)");
         		if (section.getLimit() >= 0 && section.getLimit() < section.getSpaceExpected())
-        			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
+        			helper.info(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
                 info.setClazz(clazz);
                 info.setNbrExpectedStudents(section.getSpaceExpected());
                 info.setNbrHoldingStudents(section.getSpaceHeld());
