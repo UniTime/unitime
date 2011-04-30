@@ -108,7 +108,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 	public void reloadOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
 		// Existing offering
 		Offering oldOffering = server.getOffering(offeringId);
-		server.remove(oldOffering);
+		if (oldOffering != null)
+			server.remove(oldOffering);
 		
 		// New offering
 		Offering newOffering = null;
