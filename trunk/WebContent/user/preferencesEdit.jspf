@@ -38,7 +38,7 @@
 	<bean:parameter id="frmName" name="frmName"/>
 
 <!-- Time Preferences -->
-	<logic:notEmpty name="<%=frmName%>" property="timePatterns">
+	<logic:notEqual value="false" parameter="timePref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -82,7 +82,7 @@
 			</TR>
 			<% idx++; %>
 		</logic:iterate>
-	</logic:notEmpty>
+	</logic:notEqual>
 		
 <!-- Period Preferences -->
 	<logic:notEmpty scope="request" name="ExamPeriodGrid">
