@@ -419,6 +419,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			Student student = iStudentTable.get(studentId);
 			if (student == null) return null;
 			CourseRequestInterface request = new CourseRequestInterface();
+			request.setStudentId(studentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(getAcademicSession().getUniqueId());
 			TreeSet<Request> requests = new TreeSet<Request>(new Comparator<Request>() {
