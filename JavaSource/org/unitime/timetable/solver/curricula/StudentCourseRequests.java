@@ -54,9 +54,9 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	protected Hashtable<Long, Set<WeightedStudentId>> loadDemandsForSubjectArea(SubjectArea subjectArea) {
 		Hashtable<Long, Set<WeightedStudentId>> demands = new Hashtable<Long, Set<WeightedStudentId>>();
 		for (Object[] o: (List<Object[]>) iHibSession.createQuery(
-					"select distinct e.courseOffering.uniqueId, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code from StudentClassEnrollment e inner join e.student s " +
+					"select distinct r.courseOffering.uniqueId, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code from CourseRequest r inner join r.courseDemand.student s " +
 					"left outer join s.academicAreaClassifications c left outer join s.posMajors m left outer join c.academicArea a left outer join c.academicClassification f " +
-					"where e.courseOffering.subjectArea.uniqueId = :subjectId")
+					"where r.courseOffering.subjectArea.uniqueId = :subjectId")
 					.setLong("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
 			Long courseId = (Long)o[0];
 			Long studentId = (Long)o[1];
@@ -81,8 +81,8 @@ public class StudentCourseRequests implements StudentCourseDemands {
 		if (iStudentRequests == null) {
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
-					"select distinct e.student.uniqueId, e.courseOffering " +
-					"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId")
+					"select distinct r.courseDemand.student.uniqueId, r.courseOffering " +
+					"from CourseRequest r where r.courseDemand.student.session.uniqueId = :sessionId")
 					.setLong("sessionId", iSessionId).setCacheable(true).list()) {
 				Long sid = (Long)o[0];
 				CourseOffering co = (CourseOffering)o[1];
