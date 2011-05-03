@@ -53,6 +53,6 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 	}
 	
 	public static void main(String args[]) {
-		new FindAssignmentsTest().test(-1, 100);
+		new OnlineSectioningTest().test(-1, 100);
 	}
 }
