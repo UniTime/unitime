@@ -227,8 +227,13 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
 				Enrollment e = r.resection(w, dc, toc);
 				if (e != null) {
-					r.getRequest().setInitialAssignment(e);
-					r.getRequest().assign(0, e);
+					Lock wl = server.writeLock();
+					try {
+						r.getRequest().setInitialAssignment(e);
+						r.getRequest().assign(0, e);
+					} finally {
+						wl.release();
+					}
 				}
 				helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				
