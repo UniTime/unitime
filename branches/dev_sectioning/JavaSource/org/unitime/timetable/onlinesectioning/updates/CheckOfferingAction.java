@@ -112,12 +112,17 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
 				Enrollment enrollment = r.resection(w, dc, toc);
-				if (enrollment != null) {
-					r.getRequest().setInitialAssignment(enrollment);
-					r.getRequest().assign(0, enrollment);
-				} else if (r.getRequest() != null) {
-					r.getRequest().setInitialAssignment(null);
-					r.getRequest().unassign(0);
+				Lock wl = server.writeLock();
+				try {
+					if (enrollment != null) {
+						r.getRequest().setInitialAssignment(enrollment);
+						r.getRequest().assign(0, enrollment);
+					} else if (r.getRequest() != null) {
+						r.getRequest().setInitialAssignment(null);
+						r.getRequest().unassign(0);
+					}
+				} finally {
+					wl.release();
 				}
 				// helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				if (r.getLastEnrollment() == null && r.getRequest().getAssignment() == null) continue;
