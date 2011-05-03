@@ -819,6 +819,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 
 	@Override
+	public Lock writeLock() {
+		iLock.writeLock().lock();
+		return new Lock() {
+			public void release() {
+				iLock.writeLock().unlock();
+			}
+		};
+	}
+
+	@Override
 	public Lock lockAll() {
 		iLock.writeLock().lock();
 		return new Lock() {
