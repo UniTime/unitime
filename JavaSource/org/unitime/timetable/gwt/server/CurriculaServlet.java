@@ -133,14 +133,14 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						AcademicAreaInterface ai = new AcademicAreaInterface();
 						ai.setId(c.getAcademicArea().getUniqueId());
 						ai.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
-						ai.setName(Constants.toInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+						ai.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
 						ci.setAcademicArea(ai);
 						for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 							PosMajor major = i.next();
 							MajorInterface mi = new MajorInterface();
 							mi.setId(major.getUniqueId());
 							mi.setCode(major.getCode());
-							mi.setName(Constants.toInitialCase(major.getName()));
+							mi.setName(Constants.curriculaToInitialCase(major.getName()));
 							ci.addMajor(mi);
 						}
 						results.add(ci);
@@ -279,14 +279,14 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 				areaIfc.setId(c.getAcademicArea().getUniqueId());
 				areaIfc.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
-				areaIfc.setName(Constants.toInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+				areaIfc.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
 				curriculumIfc.setAcademicArea(areaIfc);
 				for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 					PosMajor major = i.next();
 					MajorInterface majorIfc = new MajorInterface();
 					majorIfc.setId(major.getUniqueId());
 					majorIfc.setCode(major.getCode());
-					majorIfc.setName(Constants.toInitialCase(major.getName()));
+					majorIfc.setName(Constants.curriculaToInitialCase(major.getName()));
 					curriculumIfc.addMajor(majorIfc);
 				}
 				
@@ -956,7 +956,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				
 				if (mergedCurriculum.getAcademicArea() != null) {
 					String abbv = mergedCurriculum.getAcademicArea().getAcademicAreaAbbreviation();
-					String name = Constants.toInitialCase(mergedCurriculum.getAcademicArea().getLongTitle() == null ? mergedCurriculum.getAcademicArea().getShortTitle() : mergedCurriculum.getAcademicArea().getLongTitle());
+					String name = Constants.curriculaToInitialCase(mergedCurriculum.getAcademicArea().getLongTitle() == null ? mergedCurriculum.getAcademicArea().getShortTitle() : mergedCurriculum.getAcademicArea().getLongTitle());
 					
 					TreeSet<PosMajor> majors = new TreeSet<PosMajor>(new Comparator<PosMajor>() {
 						public int compare(PosMajor m1, PosMajor m2) {
@@ -972,7 +972,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							abbv += ","; name += ", ";
 						}
 						abbv += m.getCode();
-						name += Constants.toInitialCase(m.getName());
+						name += Constants.curriculaToInitialCase(m.getName());
 					}
 
 					if (abbv.length() > 20) abbv = abbv.substring(0, 20);
@@ -1171,7 +1171,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 				areaIfc.setId(curriculum.getAcademicArea().getUniqueId());
 				areaIfc.setAbbv(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
-				areaIfc.setName(Constants.toInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
+				areaIfc.setName(Constants.curriculaToInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
 				curriculumIfc.setAcademicArea(areaIfc);
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(curriculum.getDepartment().getUniqueId());
@@ -1184,7 +1184,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					MajorInterface mi = new MajorInterface();
 					mi.setId(major.getUniqueId());
 					mi.setCode(major.getCode());
-					mi.setName(Constants.toInitialCase(major.getName()));
+					mi.setName(Constants.curriculaToInitialCase(major.getName()));
 					curriculumIfc.addMajor(mi);
 				}
 				curricula.put(curriculum.getUniqueId(), curriculumIfc);
@@ -1434,7 +1434,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 			areaIfc.setId(a.getUniqueId());
 			areaIfc.setAbbv(a.getAcademicAreaAbbreviation());
-			areaIfc.setName(Constants.toInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
+			areaIfc.setName(Constants.curriculaToInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
 			otherCurriculumIfc.setAcademicArea(areaIfc);
 			otherCurriculumIfc.setAbbv(areaIfc.getAbbv());
 			otherCurriculumIfc.setName(areaIfc.getName());
@@ -1531,7 +1531,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					AcademicAreaInterface ai = new AcademicAreaInterface();
 					ai.setId(a.getUniqueId());
 					ai.setAbbv(a.getAcademicAreaAbbreviation());
-					ai.setName(Constants.toInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
+					ai.setName(Constants.curriculaToInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
 					results.add(ai);
 				}
 			} finally {
@@ -1573,7 +1573,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					MajorInterface mi = new MajorInterface();
 					mi.setId(m.getUniqueId());
 					mi.setCode(m.getCode());
-					mi.setName(Constants.toInitialCase(m.getName()));
+					mi.setName(Constants.curriculaToInitialCase(m.getName()));
 					results.add(mi);
 				}
 			} finally {
@@ -1666,7 +1666,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 						"select c from CourseOffering c where " +
 						"c.subjectArea.session.uniqueId = :sessionId and (" +
-						"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' " +
+						"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.courseNbr) like :q || '%' " +
 						(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 						"order by case " +
 						"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
@@ -1896,7 +1896,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					MajorInterface mi = new MajorInterface();
 					mi.setId(major.getUniqueId());
 					mi.setCode(major.getCode());
-					mi.setName(Constants.toInitialCase(major.getName()));
+					mi.setName(Constants.curriculaToInitialCase(major.getName()));
 					majorLookup.put(mi.getId(), mi);
 					for (Iterator<AcademicArea> i = major.getAcademicAreas().iterator(); i.hasNext(); ) {
 						AcademicArea a = i.next();

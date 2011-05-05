@@ -106,7 +106,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
 					ReservationInterface.IdName clasf = new ReservationInterface.IdName();
 					clasf.setId(classification.getUniqueId());
-					clasf.setName(Constants.toInitialCase(classification.getName()));
+					clasf.setName(Constants.curriculaToInitialCase(classification.getName()));
 					clasf.setAbbv(classification.getCode());
 					classifications.add(clasf);
 				}
@@ -116,12 +116,12 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 					ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
 					curriculum.setAbbv(area.getAcademicAreaAbbreviation());
 					curriculum.setId(area.getUniqueId());
-					curriculum.setName(Constants.toInitialCase(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
+					curriculum.setName(Constants.curriculaToInitialCase(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
 					for (PosMajor major: area.getPosMajors()) {
 						ReservationInterface.IdName mj = new ReservationInterface.IdName();
 						mj.setId(major.getUniqueId());
 						mj.setAbbv(major.getCode());
-						mj.setName(Constants.toInitialCase(major.getName()));
+						mj.setName(Constants.curriculaToInitialCase(major.getName()));
 						curriculum.getMajors().add(mj);
 					}
 					Collections.sort(curriculum.getMajors());
@@ -315,13 +315,13 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
 			curriculum.setId(cr.getArea().getUniqueId());
 			curriculum.setAbbv(cr.getArea().getAcademicAreaAbbreviation());
-			curriculum.setName(Constants.toInitialCase(cr.getArea().getLongTitle() == null ? cr.getArea().getShortTitle() : cr.getArea().getLongTitle()));
+			curriculum.setName(Constants.curriculaToInitialCase(cr.getArea().getLongTitle() == null ? cr.getArea().getShortTitle() : cr.getArea().getLongTitle()));
 			String cfCodes = "";
 			String cfIds = "";
 			for (AcademicClassification classification: cr.getClassifications()) {
 				ReservationInterface.IdName clasf = new ReservationInterface.IdName();
 				clasf.setId(classification.getUniqueId());
-				clasf.setName(Constants.toInitialCase(classification.getName()));
+				clasf.setName(Constants.curriculaToInitialCase(classification.getName()));
 				clasf.setAbbv(classification.getCode());
 				curriculum.getClassifications().add(clasf);
 				cfCodes += (cfCodes.isEmpty() ? "" : ",") + "'" + classification.getCode() + "'";
@@ -333,7 +333,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				ReservationInterface.IdName mj = new ReservationInterface.IdName();
 				mj.setId(major.getUniqueId());
 				mj.setAbbv(major.getCode());
-				mj.setName(Constants.toInitialCase(major.getName()));
+				mj.setName(Constants.curriculaToInitialCase(major.getName()));
 				curriculum.getMajors().add(mj);
 				mjCodes += (mjCodes.isEmpty() ? "" : ",") + "'" + major.getCode() + "'";
 				mjIds += (mjIds.isEmpty() ? "" : ",") + major.getUniqueId();

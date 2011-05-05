@@ -587,6 +587,14 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 		int min = slot * SLOT_LENGTH_MIN + FIRST_SLOT_TIME_MIN;
 		return min % 60;
 	}
-
+	
+	private static Boolean sCurriculaToInitialCase = null;
+	public static String curriculaToInitialCase(String text) {
+		if (sCurriculaToInitialCase == null)
+			sCurriculaToInitialCase = "true".equals(ApplicationProperties.getProperty("tmtbl.toInitialCase.curriculum", "false"));
+		if (sCurriculaToInitialCase)
+			return Constants.toInitialCase(text);
+		return text;
+	}
 
 }
