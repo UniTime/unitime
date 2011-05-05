@@ -170,6 +170,7 @@ public class Room extends BaseRoom {
 				b.setName(er.getBuilding().getDisplayName());
 				b.setSession(session);
 				hibSession.saveOrUpdate(b);
+				hibSession.flush();
 			} else if (updateExistingRooms) {
 				b.setAbbreviation(er.getBuilding().getAbbreviation());
 				b.setCoordinateX(er.getBuilding().getCoordinateX());
@@ -207,6 +208,7 @@ public class Room extends BaseRoom {
 				}
 				LocationPermIdGenerator.setPermanentId(r);
 				hibSession.saveOrUpdate(r);
+				hibSession.flush();
 				for (ExternalRoomDepartment erd: er.getRoomDepartments())
 					r.addExternalRoomDept(erd, er.getRoomDepartments());
 			} else if (updateExistingRooms) {
