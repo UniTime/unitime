@@ -217,9 +217,41 @@ public class CurriculaPage extends Composite {
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				if (event.getValue() != null && !event.getValue().isEmpty()) {
-					iFilter.setText(event.getValue().replace("%20", " "));
+				if (event.getValue() == null) return;
+				String command = event.getValue();
+				if (command.startsWith("detail=")) {
+					showLoading("Loading curriculum ...");
+					iService.loadCurriculum(Long.parseLong(command.substring("detail=".length())), new AsyncCallback<CurriculumInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							hideLoading();
+						}
+						@Override
+						public void onSuccess(CurriculumInterface result) {
+							iCurriculumPanel.edit(result, true);
+							iCurriculaPanel.setVisible(false);
+							iCurriculumPanel.setVisible(true);
+							hideLoading();
+							Client.fireGwtPageChanged(new GwtPageChangeEvent());
+						}
+					});
+				} else if ("new".equals(command)) {
+					iCurriculaPanel.setVisible(false);
+					UniTimePageLabel.getInstance().setPageName("Add Curriculum");
+					iCurriculumPanel.addNew();
+					iCurriculumPanel.setVisible(true);
+					Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				} else {
+					if (!"requests".equals(command))
+						iFilter.setText(command.replace("%20", " "));
 					loadCurricula();
+					if (iCurriculumPanel.isVisible()) {
+						iCurriculumPanel.setVisible(false);
+						UniTimePageLabel.getInstance().setPageName("Curricula");
+						iCurriculaPanel.setVisible(true);
+						iCurriculaTable.scrollIntoView();
+						Client.fireGwtPageChanged(new GwtPageChangeEvent());
+					}
 				}
 			}
 		});
@@ -238,6 +270,7 @@ public class CurriculaPage extends Composite {
 
 					@Override
 					public void onSuccess(CurriculumInterface result) {
+						History.newItem("detail=" + result.getId(), false);
 						iCurriculumPanel.edit(result, true);
 						iCurriculaPanel.setVisible(false);
 						iCurriculumPanel.setVisible(true);
@@ -250,6 +283,7 @@ public class CurriculaPage extends Composite {
 		
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				History.newItem("new", false);
 				iCurriculaPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Add Curriculum");
 				iCurriculumPanel.addNew();
@@ -267,6 +301,8 @@ public class CurriculaPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName("Curriculum Requested Enrollments");
 				iClassificationsEdit.setVisible(true);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem("requests", false);
+
 			}
 		});
 		
@@ -279,6 +315,7 @@ public class CurriculaPage extends Composite {
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem(iFilter.getText(), false);
 			}
 			
 			@Override
@@ -288,6 +325,7 @@ public class CurriculaPage extends Composite {
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem(iFilter.getText(), false);
 			}
 			
 			@Override
@@ -297,6 +335,7 @@ public class CurriculaPage extends Composite {
 				iCurriculaPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem(iFilter.getText(), false);
 			}
 		});
 		
@@ -309,6 +348,7 @@ public class CurriculaPage extends Composite {
 				iCurriculaPanel.setVisible(true);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem(iFilter.getText(), false);
 			}
 			
 			@Override
@@ -318,6 +358,7 @@ public class CurriculaPage extends Composite {
 				iCurriculaPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				History.newItem(iFilter.getText(), false);
 			}
 		});
 		

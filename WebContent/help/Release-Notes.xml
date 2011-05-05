@@ -278,6 +278,10 @@
 			<description>
 				<line>Curricula page: added More button (drop down with all the available operations).</line>
 				<line>Instructional Offering Detail page, Curricula table: added Curricula Operations button (drop down with operations available on the table).</line>
+				<line>Improved navigation (using back and forward browser buttons)</line>
+				<line>Only change case of academic area, classification, major and curriculum names (using Constant.toInitialCase) when tmtbl.toInitialCase.curriculum is set to true (defaults to false).</line>
+				<line>Course selection box made a little wider to fit longer course names.</line>
+				<line>Table of curricula: Department column, options "Show Code - Name" and "Show Abbv - Name" were reversed.</line>
 			</description>
 		</item>
 		<item>
