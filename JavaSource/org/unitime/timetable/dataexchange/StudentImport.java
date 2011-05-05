@@ -94,83 +94,69 @@ public class StudentImport extends BaseImport {
 		}
 	}
 	private void loadMajors(Element element, Student student, Session session) throws Exception {
-		if(element.element("studentMajors") == null) return;
-
+		if (element.element("studentMajors") == null) return;
 		for (Iterator it = element.element("studentMajors").elementIterator("major"); it.hasNext();) {
 			Element el = (Element) it.next();
 			String code = el.attributeValue("code");
-			if(code == null) {
-				throw new Exception("Major Code is required.");
-			}
+			if (code == null) continue;
 			String academicArea = el.attributeValue("academicArea");
 			PosMajor major = null;
-			if(academicArea != null) {
+			if (academicArea != null)
 				major = PosMajor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
-			}
-			else {
+			else
 				major = PosMajor.findByCode(session.getSessionId(), code);
-			}
-			if(major != null) {
+			if (major == null)
+				warn("Major " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
+			else
 				student.addToPosMajors(major);
-			}
 		}
 	}
 
 	private void loadMinors(Element element, Student student, Session session) throws Exception {
-		if(element.element("studentMinors") == null) return;
-
+		if (element.element("studentMinors") == null) return;
 		for (Iterator it = element.element("studentMinors").elementIterator("minor"); it.hasNext();) {
 			Element el = (Element) it.next();
 			String code = el.attributeValue("code");
-			if(code == null) {
-				throw new Exception("Minor Code is required.");
-			}
+			if (code == null) continue;
 			String academicArea = el.attributeValue("academicArea");
 			PosMinor minor = null;
-			if(academicArea != null) {
+			if(academicArea != null)
 				minor = PosMinor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
-			}
-			else {
+			else
 				minor = PosMinor.findByCode(session.getSessionId(), code);
-			}
-			if(minor != null) {
+			if (minor == null)
+				warn("Minor " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
+			else
 				student.addToPosMinors(minor);
-			}
 		}
 	}
 
 	private void loadAcadAreaClassifications(Element element, Student student, Session session) throws Exception {
-
+		if (element.element("studentAcadAreaClass") == null) return;
 		AcademicClassificationDAO acadClassDAO = new AcademicClassificationDAO();
-
-		if(element.element("studentAcadAreaClass") == null) return;
-
 		for (Iterator it = element.element("studentAcadAreaClass").elementIterator("acadAreaClass"); it.hasNext();) {
 			Element el = (Element) it.next();
 			String abbv = el.attributeValue("academicArea");
-			if(abbv == null) {
-				throw new Exception("Academic Area is required.");
-			}
 			AcademicArea acadArea = null;
-			acadArea = AcademicArea.findByAbbv(session.getSessionId(), abbv);
-			if(acadArea == null) {
-				throw new Exception("Academic Area " + abbv + " was not found.");
-			}
-			String code = el.attributeValue("academicClass");
-			if(code == null) {
-				throw new Exception("Academic Classification is required.");
+			if (abbv != null) {
+				acadArea = AcademicArea.findByAbbv(session.getSessionId(), abbv);
+				if (acadArea == null)
+					warn("Academic Area " + abbv + " was not found.");
 			}
 			AcademicClassification acadClass = null;
-			acadClass = findAcadClass(acadClassDAO, code, session.getSessionId());
-			if(acadClass == null) {
-				acadClass = findAcadClass(acadClassDAO, "00", session.getSessionId());
-				//throw new Exception("Academic Classification " + code + " was not found.");
+			String code = el.attributeValue("academicClass");
+			if (code != null) {
+				acadClass = findAcadClass(acadClassDAO, code, session.getSessionId());
+				if (acadClass == null)
+					warn("Academic Classification " + code + " was not found.");
 			}
-			AcademicAreaClassification acadAreaClass = new AcademicAreaClassification();
-			acadAreaClass.setStudent(student);
-			acadAreaClass.setAcademicArea(acadArea);
-			acadAreaClass.setAcademicClassification(acadClass);
-			student.addToacademicAreaClassifications(acadAreaClass);
+			if (acadArea != null && acadClass != null) {
+				AcademicAreaClassification acadAreaClass = new AcademicAreaClassification();
+				acadAreaClass.setStudent(student);
+				acadAreaClass.setAcademicArea(acadArea);
+				acadAreaClass.setAcademicClassification(acadClass);
+				student.addToacademicAreaClassifications(acadAreaClass);
+			}
 		}
 	}
 
