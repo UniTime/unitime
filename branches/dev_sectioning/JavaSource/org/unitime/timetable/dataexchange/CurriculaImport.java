@@ -189,10 +189,10 @@ public class CurriculaImport extends BaseImport {
                 curriculum.setAbbv(abbv);
                 
                 if (name == null) {
-                	name = Constants.toInitialCase(area.getShortTitle() == null ? area.getLongTitle() : area.getShortTitle()) + ( majors.isEmpty() ? "" : " / " );
+                	name = Constants.curriculaToInitialCase(area.getShortTitle() == null ? area.getLongTitle() : area.getShortTitle()) + ( majors.isEmpty() ? "" : " / " );
                 	for (PosMajor major: majors) {
                 		if (!name.endsWith(" / ")) name += ", ";
-                		name += Constants.toInitialCase(major.getName());
+                		name += Constants.curriculaToInitialCase(major.getName());
                 	}
                 }
                 if (name.length() > 60) name = name.substring(0, 60);

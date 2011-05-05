@@ -199,7 +199,7 @@ public class MakeCurriculaFromLastlikeDemands {
 		return (projection == null ? 1.0f : projection);
 	}
 
-    public void update(org.hibernate.Session hibSession, boolean lastLike) {
+	public void update(org.hibernate.Session hibSession, boolean lastLike) {
     	sLog.info("Deleting existing curricula...");
     	for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
         	setLong("sessionId", iSessionId).list().iterator(); i.hasNext(); ) {
@@ -215,8 +215,8 @@ public class MakeCurriculaFromLastlikeDemands {
         	Hashtable<String,Hashtable<String, Float>> rules = getRules(hibSession, e1.getKey().getUniqueId());
             for (Map.Entry<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> e2 : e1.getValue().entrySet()) {
             	if (!e1.getKey().getPosMajors().contains(e2.getKey())) {
-            		sLog.warn("Academic area " + e1.getKey().getAcademicAreaAbbreviation() + " - " + Constants.toInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) +
-            				" does not contain major " + e2.getKey().getCode() + " - " + Constants.toInitialCase(e2.getKey().getName()));
+            		sLog.warn("Academic area " + e1.getKey().getAcademicAreaAbbreviation() + " - " + Constants.curriculaToInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) +
+            				" does not contain major " + e2.getKey().getCode() + " - " + Constants.curriculaToInitialCase(e2.getKey().getName()));
             		continue;
             	}
             	
@@ -226,7 +226,7 @@ public class MakeCurriculaFromLastlikeDemands {
                 Curriculum curriculum = new Curriculum();
                 curriculum.setAcademicArea(e1.getKey());
                 curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "/" + e2.getKey().getCode());
-                curriculum.setName(Constants.toInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + Constants.toInitialCase(e2.getKey().getName()));
+                curriculum.setName(Constants.curriculaToInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + Constants.curriculaToInitialCase(e2.getKey().getName()));
 				if (curriculum.getName().length() > 60) curriculum.setName(curriculum.getName().substring(0, 60));
                 curriculum.setClassifications(new HashSet());
                 curriculum.setMajors(new HashSet());
