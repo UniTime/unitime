@@ -211,7 +211,7 @@ public class ReservationEdit extends Composite {
 		iPanel.addHeaderRow(iTitleAndButtons);
 		
 		iCourseBox = new CurriculaCourseSelectionBox("");
-		iCourseBox.setWidth("100px");
+		iCourseBox.setWidth("130px");
 		iPanel.addRow("Instructional Offering:", iCourseBox);
 
 		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
