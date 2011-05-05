@@ -901,7 +901,7 @@ public class CurriculaCourses extends Composite {
 				
 				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString());
 				cx.setCourse(course.getCourseName(), false);
-				cx.setWidth("100px");
+				cx.setWidth("130px");
 				cx.addCourseFinderDialogHandler(fx);
 				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
 				if (!iEditable) cx.setEnabled(false);
@@ -972,7 +972,7 @@ public class CurriculaCourses extends Composite {
 		line.add(hp);
 
 		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null);
-		cx.setWidth("100px");
+		cx.setWidth("130px");
 		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
 		cx.addCourseFinderDialogHandler(new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
 			@Override

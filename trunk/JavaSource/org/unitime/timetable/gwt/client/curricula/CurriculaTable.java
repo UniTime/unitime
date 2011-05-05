@@ -1328,7 +1328,7 @@ public class CurriculaTable extends Composite {
 				return (dept.getAbbv() == null || dept.getAbbv().isEmpty() ? dept.getCode() : dept.getAbbv());
 			case NAME:
 				return dept.getName();
-			case ABBV_NAME:
+			case CODE_NAME:
 				return dept.getCode() + " - " + dept.getName();
 			default:
 				return (dept.getAbbv() == null || dept.getAbbv().isEmpty() ? dept.getCode() : dept.getAbbv()) + " - " + dept.getName();
