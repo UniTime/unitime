@@ -198,7 +198,7 @@ public class ReservationsPage extends Composite {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					iReservationTable.setErrorMessage("Unable to retrieve curricula (" + caught.getMessage() + ").");
+					iReservationTable.setErrorMessage("Unable to retrieve reservations (" + caught.getMessage() + ").");
 					LoadingWidget.getInstance().hide();
 				}
 				
