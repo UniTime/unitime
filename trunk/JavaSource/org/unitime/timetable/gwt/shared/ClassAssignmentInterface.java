@@ -350,7 +350,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public boolean hasExpected() { return iExpected != null; }
 		public int getExpected() { return (iExpected == null ? 0 : iExpected); }
 		public boolean isOfHighDemand() {
-			return isAvailable() && !isUnlimited() && hasExpected() && getExpected() > getAvailableLimit();
+			return isAvailable() && !isUnlimited() && hasExpected() && getExpected() + (isSaved() ? -1 : 0) >= getAvailableLimit();
 		}
 		
 		public String toString() {
