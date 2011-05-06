@@ -37,7 +37,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.studentsct.extension.DistanceConflict;
+import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
@@ -61,6 +64,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 
@@ -74,6 +78,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Hashtable<String, TreeSet<CourseInfo>> iCourseForName = new Hashtable<String, TreeSet<CourseInfo>>();
 	private TreeSet<CourseInfo> iCourses = new TreeSet<CourseInfo>();
 	private DistanceMetric iDistanceMetric = null;
+	private DataProperties iConfig = null;
 	
 	private Hashtable<Long, Course> iCourseTable = new Hashtable<Long, Course>();
 	private Hashtable<Long, Section> iClassTable = new Hashtable<Long, Section>();
@@ -108,6 +113,15 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		iDistanceMetric = new DistanceMetric(
 				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+		iConfig = new DataProperties();
+		iConfig.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+		iConfig.setProperty("Suggestions.Timeout", "1000");
+		iConfig.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
+		iConfig.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
+		iConfig.setProperty("StudentWeights.LeftoverSpread", "true");
+		iConfig.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		iConfig.setProperty("Reservation.CanAssignOverTheLimit", "true");
+		iConfig.putAll(ApplicationProperties.getProperties());
 	}
 	
 	@Override
@@ -1104,5 +1118,10 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				iExecutorQueue.notify();
 			}
 		}
+	}
+
+	@Override
+	public DataProperties getConfig() {
+		return iConfig;
 	}
 }
