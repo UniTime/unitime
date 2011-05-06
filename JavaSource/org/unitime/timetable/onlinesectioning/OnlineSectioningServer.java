@@ -75,6 +75,7 @@ public interface OnlineSectioningServer {
 	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment);
 	
 	public Lock readLock();
+	public Lock writeLock();
 	public Lock lockAll();
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings);
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering);
