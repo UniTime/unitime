@@ -103,6 +103,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 					throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
 				config2course.put(config, course);
 			}
+			sections.add(section);
 		}
 		
 		for (Map.Entry<Config, List<Section>> entry: config2sections.entrySet()) {
