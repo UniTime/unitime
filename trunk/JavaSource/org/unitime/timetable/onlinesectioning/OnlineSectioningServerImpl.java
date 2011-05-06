@@ -405,6 +405,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			Student student = iStudentTable.get(studentId);
 			if (student == null) return null;
 			CourseRequestInterface request = new CourseRequestInterface();
+			request.setStudentId(studentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(getAcademicSession().getUniqueId());
 			TreeSet<Request> requests = new TreeSet<Request>(new Comparator<Request>() {
@@ -799,6 +800,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		return new Lock() {
 			public void release() {
 				iLock.readLock().unlock();
+			}
+		};
+	}
+
+	@Override
+	public Lock writeLock() {
+		iLock.writeLock().lock();
+		return new Lock() {
+			public void release() {
+				iLock.writeLock().unlock();
 			}
 		};
 	}
