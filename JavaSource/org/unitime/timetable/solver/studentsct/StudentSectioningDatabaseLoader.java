@@ -1128,6 +1128,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
+                    "left join fetch cr.classWaitLists as cw " +
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
                     "left join fetch cr.classEnrollments as cre "+
