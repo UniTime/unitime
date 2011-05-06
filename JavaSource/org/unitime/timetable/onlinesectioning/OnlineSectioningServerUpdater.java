@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
+import org.unitime.timetable.onlinesectioning.updates.ExpireReservationsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
@@ -41,6 +43,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 	private long iSleepTimeInSeconds = 5;
 	private Date iLastTimeStamp;
 	private boolean iRun = true;
+	private Long iLastReservationCheck = null;
 	
 	private AcademicSessionInfo iSession = null; 
 	
@@ -69,6 +72,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater started.");
 			while (iRun) {
 				checkForUpdates();
+				checkForExpiredReservations();
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
@@ -112,6 +116,26 @@ public class OnlineSectioningServerUpdater extends Thread {
 			}
 		} finally {
 			hibSession.close();
+		}
+	}
+	
+	public void checkForExpiredReservations() {
+		if (getAcademicSession() == null) return; // no work for general updater
+		long ts = System.currentTimeMillis(); // current time stamp
+		// the check was done within the last hour -> no need to repeat
+		if (iLastReservationCheck != null && ts - iLastReservationCheck < 3600000) return;
+		
+		if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) == 0) {
+			// first time after midnight (TODO: allow change)
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(getAcademicSession().getUniqueId());
+			if (server != null) {
+				iLastReservationCheck = ts;
+				try {
+					server.execute(new ExpireReservationsAction());
+				} catch (Exception e) {
+					iLog.error("Expire reservations failed: " + e.getMessage(), e);
+				}
+			}
 		}
 	}
 	
