@@ -20,7 +20,6 @@
 package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -30,8 +29,6 @@ import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.weights.PriorityStudentWeights;
@@ -48,10 +45,11 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
     private double iPenaltyFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
     private double iAvailabilityFactor;
-	private Hashtable<CourseRequest, Double> iBestTime = new Hashtable<CourseRequest, Double>();
 	/** negative penalty means there is space available */
 	private double iAvgPenaltyFactor = 0.001;
 	
+	private Hashtable<CourseRequest, double[]> iCache = new Hashtable<CourseRequest, double[]>();
+
 	public StudentSchedulingAssistantWeights(DataProperties properties) {
 		super(properties);
 		iNoTimeFactor = properties.getPropertyDouble("StudentWeights.NoTimeFactor", iNoTimeFactor);
@@ -61,31 +59,47 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		iAvailabilityFactor = iBalancingFactor; iBalancingFactor = 0.0;
 	}
 	
-	private double bestTime(Request r) {
-    	if (r instanceof FreeTimeRequest) return 1.0;
-    	CourseRequest cr = (CourseRequest)r;
-    	Double cached = iBestTime.get(cr);
-    	if (cached != null) return cached.doubleValue();
-    	double bestTime = 0;
-    	for (Iterator<Course> e = cr.getCourses().iterator(); e.hasNext();) {
-    		Course course = e.next();
-    		for (Iterator<Config> f = course.getOffering().getConfigs().iterator(); f.hasNext();) {
-    			Config config = f.next();
-    			int nrSubpartsWithTime = 0;
-    			subparts: for (Iterator<Subpart> g = config.getSubparts().iterator(); g.hasNext(); ) {
-    				Subpart subpart = g.next();
-    				for (Iterator<Section> h = subpart.getSections().iterator(); h.hasNext(); ) {
-    					Section section = h.next();
-    					if (section.getTime() != null) { nrSubpartsWithTime++; continue subparts; }
-    				}
-    			}
-    			double time = ((double)nrSubpartsWithTime / config.getSubparts().size());
-    			if (time > bestTime) bestTime = time;
-    		}
-    	}
-    	iBestTime.put(cr, bestTime);
-    	return bestTime;
-    }
+	private double[] best(CourseRequest cr) {
+		double[] cached = iCache.get(cr);
+		if (cached != null) return cached;
+		double bestTime = 0;
+		double bestPenalty = 1.0;
+		Double bestAvgPenalty = null;
+		double bestSelected = 0.0;
+		for (Course course: cr.getCourses()) {
+			for (Config config: course.getOffering().getConfigs()) {
+				int size = config.getSubparts().size();
+				double sectionsWithTime = 0;
+				double sectionsWithoutPenalty = 0;
+				double penalty = 0;
+				double selectedSections = 0;
+				for (Subpart subpart: config.getSubparts()) {
+					boolean hasTime = false;
+					boolean noPenalty = false;
+					Double sectionPenalty = null;
+					boolean hasSelection = false;
+					for (Section section: subpart.getSections()) {
+						if (section.getTime() != null) hasTime = true;
+						if (section.getPenalty() < 0.0) noPenalty = true;
+						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
+						if (sectionPenalty == null || sectionPenalty > section.getPenalty()) sectionPenalty = section.getPenalty();
+					}
+					if (hasTime) sectionsWithTime ++;
+					if (noPenalty) sectionsWithoutPenalty ++;
+					if (sectionPenalty != null) penalty += sectionPenalty;
+					if (hasSelection) selectedSections ++;
+				}
+				if (sectionsWithTime / size > bestTime) bestTime = sectionsWithTime / size;
+				double sectionsWithPenalty = size - sectionsWithoutPenalty;
+				if (sectionsWithPenalty / size < bestPenalty) bestPenalty = sectionsWithPenalty / size;
+				if (bestAvgPenalty == null || penalty / size < bestAvgPenalty) bestAvgPenalty = penalty / size;
+				if (selectedSections / size > bestSelected) bestSelected = selectedSections / size;
+			}
+		}
+		cached = new double[] { bestTime, bestPenalty, (bestAvgPenalty == null ? 0.0 : bestAvgPenalty), bestSelected };
+		iCache.put(cr, cached);
+		return cached;
+	}
 	
 	public double getBaseWeight(Enrollment enrollment) {
 		return super.getWeight(enrollment);
@@ -93,6 +107,7 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 	
 	@Override
 	public double getWeight(Enrollment enrollment) {
+		if (!enrollment.isCourseRequest()) return super.getWeight(enrollment);
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
 		double base = getBaseWeight(enrollment);
@@ -100,56 +115,46 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		
 		int size = enrollment.getAssignments().size();
 		
+		CourseRequest cr = (CourseRequest)enrollment.getRequest();
+		double[] best = best(cr);
+		
 		double hasTime = 0;
 		double penalty = 0;
 		double totalPenalty = 0.0;
-		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
-    		for (Section section: enrollment.getSections()) {
-        		if (section.getTime() != null) hasTime++;
-        		if (section.getPenalty() >= 0.0) penalty++;
-        		totalPenalty += section.getPenalty();
-        	}
-		} else {
-			hasTime = 1.0;
-		}
-    	double noTime = bestTime(enrollment.getRequest()) - (hasTime / size);
-    	double penaltyFraction = penalty / size;
-    	double avgPenalty = totalPenalty / size;
+		for (Section section: enrollment.getSections()) {
+    		if (section.getTime() != null) hasTime++;
+    		if (section.getPenalty() >= 0.0) penalty++;
+    		totalPenalty += section.getPenalty();
+    	}
+    	double noTime = best[0] - (hasTime / size);
+    	double penaltyFraction = (penalty / size) - best[1];
+    	double avgPenalty = (totalPenalty / size) - best[2];
 
-    	double selectedFraction = 1.0;
-		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
-    		CourseRequest cr = (CourseRequest)enrollment.getRequest();
-        	int nrSelected = 0;
-        	if (!cr.getSelectedChoices().isEmpty()) {
-            	for (Section section: enrollment.getSections()) {
-            		if (cr.getSelectedChoices().contains(section.getChoice())) nrSelected++;
-            	}
-        	}
-        	selectedFraction = (size - nrSelected) / size;
-		}
+    	int nrSelected = 0;
+    	if (!cr.getSelectedChoices().isEmpty()) {
+        	for (Section section: enrollment.getSections())
+        		if (cr.getSelectedChoices().contains(section.getChoice())) nrSelected++;
+    	}
+    	double unselectedFraction = best[3] - (nrSelected / size);
 		
-		double unavailableSizeFraction = 0.0;
-		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null) {
-            double unavailableSize = 0;
-            double total = 0;
-            for (Section section: enrollment.getSections()) {
-                Subpart subpart = section.getSubpart();
-                // skip unlimited and single section subparts
-                if (subpart.getSections().size() <= 1 || subpart.getLimit() <= 0) continue;
-                // average size
-                double averageSize = ((double)subpart.getLimit()) / subpart.getSections().size();
-                // section is below average
-                if (section.getLimit() < averageSize)
-                    unavailableSize += (averageSize - section.getLimit()) / averageSize;
-                total ++;
-            }
-            if (unavailableSize > 0)
-            	unavailableSizeFraction = unavailableSize / total;
-		}
+        double unavailableSize = 0;
+        double altSectionsWithLimit = 0;
+        for (Section section: enrollment.getSections()) {
+            Subpart subpart = section.getSubpart();
+            // skip unlimited and single section subparts
+            if (subpart.getSections().size() <= 1 || subpart.getLimit() <= 0) continue;
+            // average size
+            double averageSize = ((double)subpart.getLimit()) / subpart.getSections().size();
+            // section is below average
+            if (section.getLimit() < averageSize)
+                unavailableSize += (averageSize - section.getLimit()) / averageSize;
+            altSectionsWithLimit ++;
+        }
+        double unavailableSizeFraction = (unavailableSize > 0 ? unavailableSize / altSectionsWithLimit : 0.0);
 		
 		weight -= penaltyFraction * base * iPenaltyFactor;
 		
-		weight -= selectedFraction * base * iSelectionFactor;
+		weight -= unselectedFraction * base * iSelectionFactor;
 		
 		weight -= noTime * base * iNoTimeFactor;
 		
@@ -157,8 +162,7 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		
 		weight -= avgPenalty * iAvgPenaltyFactor;
 		
-		return weight;
-		
+		return round(weight);
 	}
 	
 	@Override
