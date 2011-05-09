@@ -114,7 +114,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		// New offering
 		Offering newOffering = null;
 		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, helper.getHibSession());
-		if (oldOffering != null) {
+		if (io != null) {
 			newOffering = ReloadAllData.loadOffering(io, server, helper);
 			server.update(newOffering);
 			for (CourseOffering co: io.getCourseOfferings())
@@ -195,7 +195,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			
 			if (oldEnrollment == null) {
 				if (newRequest.getStudent().canAssign(newRequest))
-					queue.add(new SectioningRequest(newRequest, student[0], null));
+					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null));
 				continue;
 			}
 			
@@ -214,7 +214,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				newRequest.unassign(0);
 			if (newRequest.getInitialAssignment() != null)
 				newRequest.setInitialAssignment(null);
-			queue.add(new SectioningRequest(newRequest, student[0], oldEnrollment));
+			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment));
 		}
 		
 		if (!queue.isEmpty()) {
