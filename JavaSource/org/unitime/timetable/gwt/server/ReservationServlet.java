@@ -42,12 +42,14 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.Department;
@@ -95,9 +97,9 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 	}
 
 	@Override
-	public List<ReservationInterface.Curriculum> getCurricula() throws ReservationException {
+	public List<ReservationInterface.Area> getAreas() throws ReservationException {
 		try {
-			List<ReservationInterface.Curriculum> results = new ArrayList<ReservationInterface.Curriculum>();
+			List<ReservationInterface.Area> results = new ArrayList<ReservationInterface.Area>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
 				List<ReservationInterface.IdName> classifications = new ArrayList<ReservationInterface.IdName>();
@@ -113,7 +115,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				for (AcademicArea area: (List<AcademicArea>)hibSession.createQuery(
 						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.longTitle, a.shortTitle")
 						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
-					ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
+					ReservationInterface.Area curriculum = new ReservationInterface.Area();
 					curriculum.setAbbv(area.getAcademicAreaAbbreviation());
 					curriculum.setId(area.getUniqueId());
 					curriculum.setName(Constants.curriculaToInitialCase(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
@@ -291,9 +293,9 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				((ReservationInterface.IndividualReservation) r).getStudents().add(s);
 				sId += (sId.isEmpty() ? "" : ",") + student.getUniqueId();
 			}
-			Collections.sort(((ReservationInterface.IndividualReservation) r).getStudents(), new Comparator<IdName>() {
+			Collections.sort(((ReservationInterface.IndividualReservation) r).getStudents(), new Comparator<ReservationInterface.IdName>() {
 				@Override
-				public int compare(IdName s1, IdName s2) {
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
 					int cmp = s1.getName().compareTo(s2.getName());
 					if (cmp != 0) return cmp;
 					return s1.getAbbv().compareTo(s2.getAbbv());
@@ -312,7 +314,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 		} else if (reservation instanceof CurriculumReservation) {
 			CurriculumReservation cr = (CurriculumReservation) reservation;
 			r = new ReservationInterface.CurriculumReservation();
-			ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
+			ReservationInterface.Area curriculum = new ReservationInterface.Area();
 			curriculum.setId(cr.getArea().getUniqueId());
 			curriculum.setAbbv(cr.getArea().getAcademicAreaAbbreviation());
 			curriculum.setName(Constants.curriculaToInitialCase(cr.getArea().getLongTitle() == null ? cr.getArea().getShortTitle() : cr.getArea().getLongTitle()));
@@ -338,9 +340,9 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				mjCodes += (mjCodes.isEmpty() ? "" : ",") + "'" + major.getCode() + "'";
 				mjIds += (mjIds.isEmpty() ? "" : ",") + major.getUniqueId();
 			}
-			Collections.sort(curriculum.getMajors(), new Comparator<IdName>() {
+			Collections.sort(curriculum.getMajors(), new Comparator<ReservationInterface.IdName>() {
 				@Override
-				public int compare(IdName s1, IdName s2) {
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
 					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
 					if (cmp != 0) return cmp;
 					cmp = s1.getName().compareTo(s2.getName());
@@ -348,9 +350,9 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 					return s1.getId().compareTo(s2.getId());
 				}
 			});
-			Collections.sort(curriculum.getClassifications(), new Comparator<IdName>() {
+			Collections.sort(curriculum.getClassifications(), new Comparator<ReservationInterface.IdName>() {
 				@Override
-				public int compare(IdName s1, IdName s2) {
+				public int compare(ReservationInterface.IdName s1, ReservationInterface.IdName s2) {
 					int cmp = s1.getAbbv().compareTo(s2.getAbbv());
 					if (cmp != 0) return cmp;
 					cmp = s1.getName().compareTo(s2.getName());
@@ -601,7 +603,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 						ir.setStudents(new HashSet<Student>());
 					else
 						ir.getStudents().clear();
-					for (IdName student: ((ReservationInterface.IndividualReservation) reservation).getStudents()) {
+					for (ReservationInterface.IdName student: ((ReservationInterface.IndividualReservation) reservation).getStudents()) {
 						Student s = Student.findByExternalId(offering.getSessionId(), student.getAbbv());
 						if (s != null)
 							ir.getStudents().add(s);
@@ -611,7 +613,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				} else if (r instanceof StudentGroupReservation) {
 					((StudentGroupReservation)r).setGroup(StudentGroupDAO.getInstance().get(((ReservationInterface.GroupReservation) reservation).getGroup().getId(), hibSession));
 				} else if (r instanceof CurriculumReservation) {
-					ReservationInterface.Curriculum curriculum = ((ReservationInterface.CurriculumReservation)reservation).getCurriculum();
+					ReservationInterface.Area curriculum = ((ReservationInterface.CurriculumReservation)reservation).getCurriculum();
 					CurriculumReservation cr = (CurriculumReservation)r;
 					cr.setArea(AcademicAreaDAO.getInstance().get(curriculum.getId(), hibSession));
 					if (cr.getMajors() == null)
@@ -861,5 +863,66 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			return false;
 		}
 	
+	}
+
+	@Override
+	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException {
+		try {
+			List<ReservationInterface.Curriculum> results = new ArrayList<ReservationInterface.Curriculum>();
+			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
+			try {
+				for (Curriculum c : (List<Curriculum>)hibSession.createQuery(
+						"select distinct c.classification.curriculum from CurriculumCourse c where c.course.instructionalOffering = :offeringId ")
+						.setLong("offeringId", offeringId).setCacheable(true).list()) {
+
+					ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
+					curriculum.setAbbv(c.getAbbv());
+					curriculum.setId(c.getUniqueId());
+					curriculum.setName(c.getName());
+					
+					ReservationInterface.IdName area = new ReservationInterface.IdName();
+					area.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
+					area.setId(c.getAcademicArea().getUniqueId());
+					area.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+					curriculum.setArea(area);
+					
+					int limit = 0;
+					for (CurriculumClassification cc: c.getClassifications()) {
+						AcademicClassification classification = cc.getAcademicClassification();
+						ReservationInterface.IdName clasf = new ReservationInterface.IdName();
+						clasf.setId(classification.getUniqueId());
+						clasf.setName(Constants.curriculaToInitialCase(classification.getName()));
+						clasf.setAbbv(classification.getCode());
+						clasf.setLimit(0);
+						curriculum.getClassifications().add(clasf);
+						for (CurriculumCourse cr: cc.getCourses())
+							if (cr.getCourse().getInstructionalOffering().getUniqueId().equals(offeringId)) {
+								limit += Math.round(cr.getPercShare() * cc.getNrStudents());
+								clasf.setLimit(clasf.getLimit() + Math.round(cr.getPercShare() * cc.getNrStudents()));
+							}
+					}
+					curriculum.setLimit(limit);
+					Collections.sort(curriculum.getMajors());					
+					
+					for (PosMajor major: c.getMajors()) {
+						ReservationInterface.IdName mj = new ReservationInterface.IdName();
+						mj.setId(major.getUniqueId());
+						mj.setAbbv(major.getCode());
+						mj.setName(Constants.curriculaToInitialCase(major.getName()));
+						curriculum.getMajors().add(mj);
+					}
+					Collections.sort(curriculum.getMajors());					
+					
+					results.add(curriculum);
+				}
+			} finally {
+				hibSession.close();
+			}
+			return results;
+		} catch (Exception e) {
+			if (e instanceof ReservationException) throw (ReservationException)e;
+			sLog.error(e.getMessage(), e);
+			throw new ReservationException(e.getMessage());
+		}
 	}
 }
