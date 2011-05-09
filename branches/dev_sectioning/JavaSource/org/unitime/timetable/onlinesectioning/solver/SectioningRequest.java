@@ -28,24 +28,37 @@ import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 public class SectioningRequest implements Comparable<SectioningRequest>, LastSectionProvider {
 	private CourseRequest iRequest;
 	private Student iOldStudent;
 	private Enrollment iLastEnrollment;
+	private Offering iOffering;
+	private boolean iHasIndividualReservation;
 
-	public SectioningRequest(CourseRequest request, Student oldStudent, Enrollment lastEnrollment) {
+	public SectioningRequest(Offering offering, CourseRequest request, Student oldStudent, Enrollment lastEnrollment) {
 		iRequest = request;
 		iOldStudent = oldStudent;
 		iLastEnrollment = lastEnrollment;
+		iOffering = (offering != null ? offering : iRequest.getCourses().get(0).getOffering());
+		iHasIndividualReservation = false;
+		for (Reservation reservation: iOffering.getReservations())
+			if (reservation instanceof IndividualReservation && reservation.isApplicable(iRequest.getStudent())) {
+				iHasIndividualReservation = true; break;
+			}
 	}
 	
 	public CourseRequest getRequest() { return iRequest; }
 	public Student getOldStudent() { return iOldStudent; }
 	public Enrollment getLastEnrollment() { return iLastEnrollment; }
+	public Offering getOffering() { return iOffering; }
+	public boolean hasIndividualReservation() { return iHasIndividualReservation; }
 	
 	public int hashCode() { return new Long(getRequest().getStudent().getId()).hashCode(); }
 	
@@ -59,7 +72,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		if (getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
 		if (getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
 		
-		// TODO: Check individual reservations
+		// Check individual reservations
+		if (hasIndividualReservation() && !r.hasIndividualReservation()) return -1;
+		if (!hasIndividualReservation() && r.hasIndividualReservation()) return 1;
 
 		if (getLastEnrollment() == null) {
 			// Use time stamp
@@ -82,8 +97,6 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 					(r.getRequest().getTimeStamp() != null ? r.getRequest().getTimeStamp() : Long.MAX_VALUE));
 			if (cmp != 0) return cmp;
 		}
-		
-		// Do we need to consider reservations ???
 		
 		return new Long(getRequest().getStudent().getId()).compareTo(r.getRequest().getStudent().getId());
 	}
