@@ -93,6 +93,7 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     	if (iEmail == null || iEmail.isEmpty()) iEmail = person.getEmail();
     	if (iPhone == null || iPhone.isEmpty()) iPhone = person.getPhone();
     	if (iDept == null || iDept.isEmpty()) iDept = person.getDepartment();
-    	iSource += ", " + person.getSource();
+    	if (!iSource.contains(person.getSource()))
+    		iSource += ", " + person.getSource();
     }
 }
