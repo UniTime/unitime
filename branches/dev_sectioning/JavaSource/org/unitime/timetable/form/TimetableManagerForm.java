@@ -187,7 +187,7 @@ public class TimetableManagerForm extends ActionForm {
             
             if (externalId==null || externalId.trim().length()==0)
                 errors.add("externalId", 
-                        new ActionMessage("errors.required", "PuID / Account Name"));
+                        new ActionMessage("errors.required", "External ID"));
                 
             /*
             if (User.canIdentify()) {
@@ -206,12 +206,14 @@ public class TimetableManagerForm extends ActionForm {
                 errors.add("primaryRole", 
                         new ActionMessage("errors.required", "Primary Role"));
             
+            /*
             if(depts.size()==0) {
                 Roles deptRole = Roles.getRole(Roles.DEPT_SCHED_MGR_ROLE);
                 if (deptRole!=null && roles.contains(deptRole.getRoleId().toString()))
                     errors.add("depts",
                             new ActionMessage("errors.generic", "At least one department must be assigned for role "+deptRole.getAbbv()));
             }
+            */
 
             if(roles.size()==0)
                 errors.add("roles", 
@@ -222,6 +224,16 @@ public class TimetableManagerForm extends ActionForm {
             	if (mgr!=null && !mgr.getUniqueId().toString().equals(getUniqueId()))
                     errors.add("roles", 
                             new ActionMessage("errors.generic", "Duplicate Record - This manager already exists"));
+            }
+            
+            if (!lookupEnabled) {
+            	if (firstName == null || firstName.isEmpty()) {
+            		errors.add("firstName", new ActionMessage("errors.required", "First Name"));
+            	}
+
+            	if (lastName == null || lastName.isEmpty()) {
+            		errors.add("lastName", new ActionMessage("errors.required", "Last Name"));
+            	}
             }
         }
         

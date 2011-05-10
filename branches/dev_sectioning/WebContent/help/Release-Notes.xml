@@ -317,6 +317,14 @@
 				<line>Added Kerberos login module (simple extension of Krb5LoginModule)</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Timetable Manager</name>
+			<description>
+				<line>Allow removal of the last department (for any role) as this is the only way how a manager can be removed off a particular academic session.</line>
+				<line>If lookup is disabled, require first and last name (as there is a not null constraint in the database).</line>
+				<line>Changed the required error message on External ID field to say External ID instead of PuID / Account Name.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
