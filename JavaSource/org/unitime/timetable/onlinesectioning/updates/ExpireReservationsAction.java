@@ -83,10 +83,14 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 				offering.getReservations().remove(reservation);
 				offering.clearReservationCache();
 			}
-			// Re-check offering
-			checkOffering(server, helper, offering);
-			// Update enrollment counters
-			updateEnrollmentCounters(server, helper, offering);
+
+			if (server.getAcademicSession().isSectioningEnabled()) {
+				// Re-check offering
+				checkOffering(server, helper, offering);
+				// Update enrollment counters
+				updateEnrollmentCounters(server, helper, offering);
+			}
+			
 		} finally {
 			lock.release();
 		}
