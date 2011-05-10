@@ -42,7 +42,8 @@ public class ITypesAjax extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
-        response.addHeader("Content-Type", "text/xml");
+        response.addHeader("Content-Type", "text/xml; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         
         PrintWriter out = response.getWriter();
         
