@@ -67,6 +67,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
+import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 
 /**
  * @author Tomas Muller
@@ -1001,6 +1002,17 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+				execute(new StudentEmail(studentId, oldRequests, newRequests), new Callback<Boolean>() {
+					@Override
+					public void onFailure(Throwable exception) {
+						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+					}
+				});
+			}
 		}
 	}
 	
