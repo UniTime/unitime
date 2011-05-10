@@ -341,6 +341,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Add/Edit Distribution Preference</name>
+			<description>
+				<line>Subject area field made a little wider.</line>
+				<line>Course number field made much wider (to cover remaining width of the page).
+					<line>This makes the field wide enough to include the course title.</line>
+				</line>
+				<line>Only replace _ with indent spaces in itype column (underscore can be a valid character in the course number).</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Ajax calls: encode the resultant XML on UTF-8.</line>
