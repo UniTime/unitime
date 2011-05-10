@@ -20,9 +20,9 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,11 +42,12 @@ public class ITypesAjax extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
-        response.addHeader("Content-Type", "text/xml");
+        response.addHeader("Content-Type", "text/xml; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
-        out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         computeResponse(request, out);
         out.print("</results>");
@@ -55,11 +56,11 @@ public class ITypesAjax extends Action {
 
     }
     
-    protected void print(ServletOutputStream out, String id, String value) throws IOException {
+    protected void print(PrintWriter out, String id, String value) throws IOException {
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
-    protected void computeResponse(HttpServletRequest request, ServletOutputStream out) throws Exception {
+    protected void computeResponse(HttpServletRequest request, PrintWriter out) throws Exception {
         try {
             boolean basic = "true".equals(request.getParameter("basic"));
             for (Iterator i=ItypeDesc.findAll(basic).iterator();i.hasNext();) {

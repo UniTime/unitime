@@ -20,6 +20,7 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -33,7 +34,6 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -73,12 +73,13 @@ public class PeopleLookupAjax extends Action {
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
-        response.addHeader("Content-Type", "text/xml");
+        response.addHeader("Content-Type", "text/xml; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
         try {
-            out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+            out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
             out.print("<results>");
             if (request.getParameter("query")!=null)
                 for (Person p : findPeople(request.getParameter("query").toLowerCase(),request.getParameter("session")))
@@ -98,7 +99,7 @@ public class PeopleLookupAjax extends Action {
         return sTranslation.translate(uid, source, Source.User);
     }
     
-    protected void print(ServletOutputStream out, String id, String fname, String mname, String lname, String email, String phone, String source) throws IOException {
+    protected void print(PrintWriter out, String id, String fname, String mname, String lname, String email, String phone, String source) throws IOException {
         out.print("<result id=\""+id+"\" ");
         if (fname!=null) out.print("fname=\""+fname+"\" ");
         if (mname!=null) out.print("mname=\""+mname+"\" ");
