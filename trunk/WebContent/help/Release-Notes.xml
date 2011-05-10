@@ -255,6 +255,7 @@
 			<description>
 				<line>Use departmental instructor table too.</line>
 				<line>Added ability to filter the sources (e.g., only lookup students for an individual reservation).</line>
+				<line>List every source just once.</line>
 			</description>
 		</item>
 		<item>
