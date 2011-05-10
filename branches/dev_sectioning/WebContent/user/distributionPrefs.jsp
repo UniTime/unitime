@@ -178,7 +178,7 @@
 			<TD colspan="3">
 			
 				<!-- Class / Subpart -->
-				<html:select style="width:80;" 
+				<html:select style="width:90;" 
 					property='<%= "subjectArea[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
@@ -189,11 +189,10 @@
 					<html:options collection="<%=DistributionPrefsForm.SUBJ_AREA_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
 				</html:select>
 
-				<html:select style="width:80;" 
+				<html:select style="width:470;" 
 					property='<%= "courseNbr[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('courseNbr', '\" + ctr + \"');\" %>"
-					onfocus="<%= \"setUp(); changeWidth('courseNbr\" + ctr + \"', 275)\" %>"
-					onblur="<%= \" changeWidth('courseNbr\" + ctr + \"', 80);\" %>"
+					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('courseNbr', '\" + ctr + \"'); }return y;\" %>" 
 					styleId='<%="courseNbr"+ctr%>' >
@@ -439,7 +438,7 @@
 						for(i=0; i<count; i++) {
 							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
 							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
-							while (optVal.indexOf('_')>=0)
+							while (optVal.indexOf('_')>=0 && type=='itype')
 								optVal = optVal.replace("_",String.fromCharCode(160,160,160,160));
 							options[i+1]=new Option(optVal, optId, false);
 						}
