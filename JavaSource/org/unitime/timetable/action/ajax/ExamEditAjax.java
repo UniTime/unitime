@@ -20,11 +20,11 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,9 +55,9 @@ public class ExamEditAjax extends Action {
         
         response.addHeader("Content-Type", "text/xml");
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
-        out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         coumputeSuggestionList(request, out);
         out.print("</results>");
@@ -66,15 +66,15 @@ public class ExamEditAjax extends Action {
 
     }
     
-    protected void print(ServletOutputStream out, String id, String value) throws IOException {
+    protected void print(PrintWriter out, String id, String value) throws IOException {
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
-    protected void print(ServletOutputStream out, String id, String value, String extra) throws IOException {
+    protected void print(PrintWriter out, String id, String value, String extra) throws IOException {
         out.print("<result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
     }
 
-    protected void coumputeSuggestionList(HttpServletRequest request, ServletOutputStream out) throws Exception {
+    protected void coumputeSuggestionList(HttpServletRequest request, PrintWriter out) throws Exception {
         if ("subjectArea".equals(request.getParameter("type"))) {
             coumputeCourseNumbers(request.getParameter("id"),out);
         } else if ("courseNbr".equals(request.getParameter("type"))) {
@@ -84,7 +84,7 @@ public class ExamEditAjax extends Action {
         }
     }
     
-    protected void coumputeCourseNumbers(String subjectAreaId, ServletOutputStream out) throws Exception {
+    protected void coumputeCourseNumbers(String subjectAreaId, PrintWriter out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) {
             print(out, "-1", "N/A");
             return;
@@ -107,7 +107,7 @@ public class ExamEditAjax extends Action {
         }
     }
     
-    protected void coumputeSubparts(String courseOfferingId, ServletOutputStream out) throws Exception {
+    protected void coumputeSubparts(String courseOfferingId, PrintWriter out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) {
             print(out, "0", "N/A");
             return;
@@ -164,7 +164,7 @@ public class ExamEditAjax extends Action {
         }
     }
     
-    protected void coumputeClasses(String schedulingSubpartId, ServletOutputStream out) throws Exception {
+    protected void coumputeClasses(String schedulingSubpartId, PrintWriter out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) {
             print(out, "-1", "N/A");
             return;

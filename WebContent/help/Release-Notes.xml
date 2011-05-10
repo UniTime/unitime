@@ -326,6 +326,12 @@
 				<line>Changed the required error message on External ID field to say External ID instead of PuID / Account Name.</line>
 			</description>
 		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Ajax calls: encode the resultant XML on UTF-8.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

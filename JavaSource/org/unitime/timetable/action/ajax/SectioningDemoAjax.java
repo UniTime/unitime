@@ -20,10 +20,10 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -48,9 +48,9 @@ public class SectioningDemoAjax extends Action {
         
         response.addHeader("Content-Type", "text/xml");
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
-        out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         coumputeSuggestionList(request, out);
         out.print("</results>");
@@ -59,11 +59,11 @@ public class SectioningDemoAjax extends Action {
 
     }
     
-    protected void print(ServletOutputStream out, String id, String value) throws IOException {
+    protected void print(PrintWriter out, String id, String value) throws IOException {
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
-    protected void coumputeSuggestionList(HttpServletRequest request, ServletOutputStream out) throws Exception {
+    protected void coumputeSuggestionList(HttpServletRequest request, PrintWriter out) throws Exception {
         if ("subjectArea".equals(request.getParameter("type"))) {
             coumputeCourseNumbers(request.getParameter("id"),out);
         } else if ("timePattern".equals(request.getParameter("type"))) {
@@ -76,7 +76,7 @@ public class SectioningDemoAjax extends Action {
         }
     }
     
-    protected void coumputeCourseNumbers(String subjectAreaId, ServletOutputStream out) throws Exception {
+    protected void coumputeCourseNumbers(String subjectAreaId, PrintWriter out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0) return;
         List courseNumbers = new InstructionalOfferingDAO().
             getSession().
@@ -95,7 +95,7 @@ public class SectioningDemoAjax extends Action {
         }
     }
     
-    protected void coumputeTimes(String timePatternId, ServletOutputStream out) throws Exception {
+    protected void coumputeTimes(String timePatternId, PrintWriter out) throws Exception {
         if (timePatternId==null || timePatternId.length()==0) return;
         TimePattern tp = new TimePatternDAO().get(Long.valueOf(timePatternId));
         if (tp==null) return;
@@ -104,7 +104,7 @@ public class SectioningDemoAjax extends Action {
             print(out, String.valueOf(i), m.getStartTime(i)+" - "+m.getEndTime(i));
     }
 
-    protected void coumputeDays(String timePatternId, ServletOutputStream out) throws Exception {
+    protected void coumputeDays(String timePatternId, PrintWriter out) throws Exception {
         if (timePatternId==null || timePatternId.length()==0) return;
         TimePattern tp = new TimePatternDAO().get(Long.valueOf(timePatternId));
         if (tp==null) return;
