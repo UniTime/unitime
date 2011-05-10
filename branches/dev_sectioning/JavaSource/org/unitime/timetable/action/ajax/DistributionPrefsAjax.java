@@ -55,7 +55,8 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 public class DistributionPrefsAjax extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
-        response.addHeader("Content-Type", "text/xml");
+        response.addHeader("Content-Type", "text/xml; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         
         //System.out.println("type:"+request.getParameter("type")); 
         //System.out.println("id:  "+request.getParameter("id"));
