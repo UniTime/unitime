@@ -20,12 +20,12 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,10 +60,10 @@ public class DistributionPrefsAjax extends Action {
         //System.out.println("type:"+request.getParameter("type")); 
         //System.out.println("id:  "+request.getParameter("id"));
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
         //System.out.println("response:");
-        out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         coumputeSuggestionList(request, out);
         out.print("</results>");
@@ -72,17 +72,17 @@ public class DistributionPrefsAjax extends Action {
 
     }
     
-    protected void print(ServletOutputStream out, String id, String value) throws IOException {
+    protected void print(PrintWriter out, String id, String value) throws IOException {
         //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
-    protected void print(ServletOutputStream out, String id, String value, String extra) throws IOException {
+    protected void print(PrintWriter out, String id, String value, String extra) throws IOException {
         //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
         out.print("<result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
     }
 
-    protected void coumputeSuggestionList(HttpServletRequest request, ServletOutputStream out) throws Exception {
+    protected void coumputeSuggestionList(HttpServletRequest request, PrintWriter out) throws Exception {
         if ("subjectArea".equals(request.getParameter("type"))) {
             coumputeCourseNumbers(request.getParameter("id"),out);
         } else if ("courseNbr".equals(request.getParameter("type"))) {
@@ -98,7 +98,7 @@ public class DistributionPrefsAjax extends Action {
         }
     }
     
-    protected void coumputeGroupingDesc(String groupingId, ServletOutputStream out) throws Exception {
+    protected void coumputeGroupingDesc(String groupingId, PrintWriter out) throws Exception {
         try {
             for (int i=0;i<DistributionPref.sGroupings.length;i++)
                 if (DistributionPref.sGroupings[i].equals(groupingId))
@@ -108,7 +108,7 @@ public class DistributionPrefsAjax extends Action {
         }
     }
     
-    protected void computePreferenceLevels(String distTypeId, ServletOutputStream out) throws Exception {
+    protected void computePreferenceLevels(String distTypeId, PrintWriter out) throws Exception {
         if (distTypeId==null || distTypeId.length()==0 || distTypeId.equals(Preference.BLANK_PREF_VALUE)) return;
         DistributionType dist = new DistributionTypeDAO().get(Long.valueOf(distTypeId));
         print(out, "desc", dist.getDescr().replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
@@ -120,7 +120,7 @@ public class DistributionPrefsAjax extends Action {
     }
     
     
-    protected void coumputeCourseNumbers(String subjectAreaId, ServletOutputStream out) throws Exception {
+    protected void coumputeCourseNumbers(String subjectAreaId, PrintWriter out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) return;
         List courseNumbers = new CourseOfferingDAO().
             getSession().
@@ -138,7 +138,7 @@ public class DistributionPrefsAjax extends Action {
         }
     }
     
-    protected void coumputeSubparts(String courseOfferingId, ServletOutputStream out) throws Exception {
+    protected void coumputeSubparts(String courseOfferingId, PrintWriter out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) return;
         TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
         subparts.addAll(new SchedulingSubpartDAO().
@@ -165,7 +165,7 @@ public class DistributionPrefsAjax extends Action {
         }
     }
     
-    protected void coumputeClasses(String schedulingSubpartId, ServletOutputStream out) throws Exception {
+    protected void coumputeClasses(String schedulingSubpartId, PrintWriter out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) return;
         TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         classes.addAll(new Class_DAO().
@@ -183,7 +183,7 @@ public class DistributionPrefsAjax extends Action {
         }
     }
    
-    protected void coumputeExams(String courseOfferingId, Integer examType, ServletOutputStream out) throws Exception {
+    protected void coumputeExams(String courseOfferingId, Integer examType, PrintWriter out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) return;
         TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(Long.valueOf(courseOfferingId),examType));
         if (exams.size()>1 || exams.isEmpty())

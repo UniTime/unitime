@@ -20,8 +20,8 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,9 +44,9 @@ public class BuildingCoordsAjax extends Action {
         
         response.addHeader("Content-Type", "text/xml");
         
-        ServletOutputStream out = response.getOutputStream();
+        PrintWriter out = response.getWriter();
         
-        out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         computeResponse(request, out);
         out.print("</results>");
@@ -55,11 +55,11 @@ public class BuildingCoordsAjax extends Action {
 
     }
     
-    protected void print(ServletOutputStream out, String id, String value) throws IOException {
+    protected void print(PrintWriter out, String id, String value) throws IOException {
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
-    protected void computeResponse(HttpServletRequest request, ServletOutputStream out) throws Exception {
+    protected void computeResponse(HttpServletRequest request, PrintWriter out) throws Exception {
         try {
             Building building = new BuildingDAO().get(Long.valueOf(request.getParameter("id")));
             print(out, "x", 
