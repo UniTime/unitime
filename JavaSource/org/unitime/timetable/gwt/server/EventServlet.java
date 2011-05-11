@@ -771,6 +771,8 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(resource.getId())) continue courses;
 						    			break;
 						    		case CURRICULUM:
+						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+						    			break;
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
