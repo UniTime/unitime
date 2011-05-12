@@ -35,8 +35,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface ReservationService extends RemoteService {
 	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException;
 	public ReservationInterface.Offering getOfferingByCourseName(String course) throws ReservationException;
-	public List<ReservationInterface.Curriculum> getCurricula() throws ReservationException;
+	public List<ReservationInterface.Area> getAreas() throws ReservationException;
 	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException;
+	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException;
 
 	public ReservationInterface getReservation(Long reservationId) throws ReservationException;
 	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException;
