@@ -126,14 +126,14 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 
 	public static class CurriculumReservation extends ReservationInterface {
-		private Curriculum iCurriculum;
+		private Area iCurriculum;
 		
 		public CurriculumReservation() {
 			super();
 		}
 		
-		public Curriculum getCurriculum() { return iCurriculum; }
-		public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
+		public Area getCurriculum() { return iCurriculum; }
+		public void setCurriculum(Area curriculum) { iCurriculum = curriculum; }
 		
 		public String toString() { return getCurriculum().toString(); }
 
@@ -227,16 +227,35 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public List<Config> getConfigs() { return iConfigs; }
 	}
 	
-	public static class Curriculum extends IdName {
+	public static class Area extends IdName {
 		private List<IdName> iClassifications = new ArrayList<IdName>();
 		private List<IdName> iMajors = new ArrayList<IdName>();
 
-		public Curriculum() { super(); }
+		public Area() { super(); }
 		
 		public List<IdName> getClassifications() { return iClassifications; }
 		public List<IdName> getMajors() { return iMajors; }
 		
 		public String toString() { return super.toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
 	}
+	
+	public static class Curriculum extends IdName {
+		private List<IdName> iClassifications = new ArrayList<IdName>();
+		private List<IdName> iMajors = new ArrayList<IdName>();
+		private IdName iArea = null;
+		private Integer iLimit = null;
+		
+		public Curriculum() { super(); }
 
+		public List<IdName> getClassifications() { return iClassifications; }
+		public List<IdName> getMajors() { return iMajors; }
+		
+		public IdName getArea() { return iArea; }
+		public void setArea(IdName area) { iArea = area; }
+
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
+
+		public String toString() { return super.toString() + " " + getArea().toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
+	}
 }
