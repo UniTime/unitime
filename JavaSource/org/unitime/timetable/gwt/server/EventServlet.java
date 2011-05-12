@@ -370,6 +370,12 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
 			try {
 				
+				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
+					userInfo.getUser() == null)
+						throw new EventException(resource.getType().getPageTitle().substring(0, 1).toUpperCase() +
+								resource.getType().getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
+
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(resource.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
@@ -889,6 +895,13 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
+				
+				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
+					userInfo.getUser() == null)
+						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
+								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
+
 				Session academicSession = findSession(hibSession, session);
 				List<ResourceInterface> resources = new ArrayList<ResourceInterface>();
 				switch (type) {
