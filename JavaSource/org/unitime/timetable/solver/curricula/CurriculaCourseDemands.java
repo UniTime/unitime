@@ -251,7 +251,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	}
 	
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
-		if (studentId >= 0 || iStudentRequests.isEmpty()) return iFallback.getCourses(studentId);
+		if (iIncludeOtherStudents && studentId >= 0) return iFallback.getCourses(studentId);
 		return iStudentRequests.get(studentId);
 	}
 }
