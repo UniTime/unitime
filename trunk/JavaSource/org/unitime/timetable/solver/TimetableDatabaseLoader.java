@@ -1870,7 +1870,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (!hasSomethingCommitted) return false;
     	if (!iOfferings.containsKey(course.getInstructionalOffering()))
-			iOfferings.put(course.getInstructionalOffering(), loadOffering(course.getInstructionalOffering()));
+			iOfferings.put(course.getInstructionalOffering(), loadOffering(course.getInstructionalOffering(), true));
     	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight);
         Set<Student> students = iCourse2students.get(course);
         if (students==null) {
@@ -1935,7 +1935,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iProgress.message(msglevel("badCourseReservation", Progress.MSGLEVEL_WARN), "Inconsistent course reservations for course "+getOfferingLabel(course));
     }
 
-    private Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> loadOffering(InstructionalOffering offering) {
+    private Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> loadOffering(InstructionalOffering offering, boolean assignCommitted) {
     	// solver group ids for fast check
     	HashSet<Long> solverGroupIds = new HashSet<Long>();
     	for (Long solverGroupId: iSolverGroupId)
@@ -1968,6 +1968,24 @@ public class TimetableDatabaseLoader extends TimetableLoader {
            				iClasses.put(lecture.getClassId(), clazz);
            				iSubparts.put(subpart.getUniqueId(), subpart);
     	    			getModel().addVariable(lecture);
+    	    			
+    	    			if (assignCommitted) {
+        	        		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(committedPlacement);
+        	                if (conflictConstraints.isEmpty()) {
+        	                    lecture.assign(0,committedPlacement);
+        	                } else {
+        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getName();
+        	                	warn+="<br>&nbsp;&nbsp;Reason:";
+        	                    for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
+        	                    	Set<Placement> vals = conflictConstraints.get(c);
+        	                        for (Placement v: vals) {
+        	                            warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
+        	                        }
+        	                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
+        	                        iProgress.message(msglevel("cannotAssignCommitted", Progress.MSGLEVEL_WARN), warn);
+        	                    }
+        	                }
+    	    			}
     				}
     			}
     		}
@@ -2168,7 +2186,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			InstructionalOffering offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
 			if (!loadedOfferings.add(offering.getUniqueId())) continue; // already loaded
 			
-			iOfferings.put(offering, loadOffering(offering));
+			iOfferings.put(offering, loadOffering(offering, false));
 		}
 		
 		/*
@@ -2714,7 +2732,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         if (student==null) continue;
                         
                         Lecture lecture = (Lecture)iLectures.get(clazzId);
-                        if (lecture!=null) {
+                        if (lecture != null && lecture.getConfiguration() != null) {
 
                     		Set<Lecture> preEnrollments = iPreEnrollments.get(student);
                     		if (preEnrollments == null) {
@@ -2722,7 +2740,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     			iPreEnrollments.put(student, preEnrollments);
                     		}
                     		preEnrollments.add(lecture);
-                    		
+                    		                    		
                     		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                         		student.addLecture(lecture);
                         		lecture.addStudent(student);
