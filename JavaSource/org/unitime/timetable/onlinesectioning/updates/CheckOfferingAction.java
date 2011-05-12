@@ -93,12 +93,12 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			for (CourseRequest request: course.getRequests()) {
 				if (request.getAssignment() == null) {
 					if (request.getStudent().canAssign(request)) 
-						queue.add(new SectioningRequest(request, null, null));
+						queue.add(new SectioningRequest(offering, request, null, null));
 				} else if (!check(request.getAssignment())) {
 					request.getSelectedChoices().clear();
 					for (Section s: request.getAssignment().getSections())
 						request.getSelectedChoices().add(s.getChoice());
-					queue.add(new SectioningRequest(request, null, request.getAssignment()));
+					queue.add(new SectioningRequest(offering, request, null, request.getAssignment()));
 				}
 			}
 		}
