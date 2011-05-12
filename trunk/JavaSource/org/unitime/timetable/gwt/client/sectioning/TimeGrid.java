@@ -299,7 +299,7 @@ public class TimeGrid extends Composite {
 			@Override
 			public void execute() {
 				if (iScrollPanel instanceof ScrollPanel)
-					((ScrollPanel)iScrollPanel).setScrollPosition(350);
+					((ScrollPanel)iScrollPanel).setVerticalScrollPosition(350);
 			}
 		});
 	}
