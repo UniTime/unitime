@@ -67,6 +67,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
+import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 
 /**
  * @author Tomas Muller
@@ -100,11 +101,26 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iAcademicSession = new AcademicSessionInfo(session);
 			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
 			iMultiLock = new MultiLock(iAcademicSession);
-			execute(new ReloadAllData());
-			if (iAcademicSession.isSectioningEnabled())
-				execute(new CheckAllOfferingsAction());
 			iExecutor = new AsyncExecutor();
 			iExecutor.start();
+			execute(new ReloadAllData(), new Callback<Boolean>() {
+				@Override
+				public void onSuccess(Boolean result) {
+					if (iAcademicSession.isSectioningEnabled())
+						execute(new CheckAllOfferingsAction(), new Callback<Boolean>() {
+							@Override
+							public void onSuccess(Boolean result) {}
+							@Override
+							public void onFailure(Throwable exception) {
+								iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
+							}
+						});
+				}
+				@Override
+				public void onFailure(Throwable exception) {
+					iLog.error("Failed to load server: " + exception.getMessage(), exception);
+				}
+			});
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, t);
@@ -986,6 +1002,17 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "false"))) {
+				execute(new StudentEmail(studentId, oldRequests, newRequests), new Callback<Boolean>() {
+					@Override
+					public void onFailure(Throwable exception) {
+						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+					}
+				});
+			}
 		}
 	}
 	
