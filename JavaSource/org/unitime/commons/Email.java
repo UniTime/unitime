@@ -169,6 +169,13 @@ public class Email {
         attachement.setFileName(file.getFileName());
         iBody.addBodyPart(attachement);
 	}
+	
+	public void addAttachement(DataSource source) throws MessagingException {
+        BodyPart attachement = new MimeBodyPart();
+        attachement.setDataHandler(new DataHandler(source));
+        attachement.setFileName(source.getName());
+        iBody.addBodyPart(attachement);
+	}
 
 	public void send() throws MessagingException, UnsupportedEncodingException {
 		long t0 = System.currentTimeMillis();
