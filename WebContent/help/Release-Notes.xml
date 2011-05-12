@@ -355,6 +355,7 @@
 			<name>Other</name>
 			<description>
 				<line>Ajax calls: encode the resultant XML on UTF-8.</line>
+				<line>GWT updated to version 2.3.0 (was 2.2.0) -- include support for IE9.</line>
 			</description>
 		</item>
 	</category>
