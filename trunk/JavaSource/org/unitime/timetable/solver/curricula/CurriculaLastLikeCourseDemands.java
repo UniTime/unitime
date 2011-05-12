@@ -337,7 +337,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 
 	@Override
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
-		if (studentId >= 0 || iStudentRequests.isEmpty()) return iProjectedDemands.getCourses(studentId);
+		Set<WeightedCourseOffering> courses = iStudentRequests.get(studentId);
+		if (iIncludeOtherStudents && studentId >= 0 && courses == null)
+			return iProjectedDemands.getCourses(studentId);
 		return iStudentRequests.get(studentId);
 	}
 	
