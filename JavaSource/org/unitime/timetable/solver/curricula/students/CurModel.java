@@ -496,17 +496,17 @@ public class CurModel extends Model<CurVariable, CurValue> {
     	if (getMinStudentWidth() != m.getMinStudentWidth()) return false;
     	if (getCourses().size() != m.getCourses().size()) return false;
     	students: for (CurStudent s: getStudents()) {
-    		if (s.getStudentId() != null && s.getStudentId() >= 0)
-    			for (CurStudent z: m.getStudents()) {
-    				if (z.getStudentId().equals(s.getStudentId()) && z.getWeight() == s.getWeight()) continue students;
-    			}
+    		if (s.getStudentId() == null || s.getStudentId() < 0) continue;
+			for (CurStudent z: m.getStudents()) {
+				if (z.getStudentId().equals(s.getStudentId()) && z.getWeight() == s.getWeight()) continue students;
+			}
     		return false;
     	}
     	students: for (CurStudent s: m.getStudents()) {
-    		if (s.getStudentId() != null && s.getStudentId() >= 0)
-    			for (CurStudent z: getStudents()) {
-    				if (z.getStudentId().equals(s.getStudentId()) && z.getWeight() == s.getWeight()) continue students;
-    			}
+    		if (s.getStudentId() == null || s.getStudentId() < 0) continue;
+			for (CurStudent z: getStudents()) {
+				if (z.getStudentId().equals(s.getStudentId()) && z.getWeight() == s.getWeight()) continue students;
+			}
     		return false;
     	}
     	for (int idx = 0; idx < getStudents().size(); idx++) {
