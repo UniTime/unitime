@@ -40,7 +40,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.Clazz;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Config;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
 import org.unitime.timetable.gwt.shared.ReservationInterface.CourseReservation;
-import org.unitime.timetable.gwt.shared.ReservationInterface.Curriculum;
+import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
 import org.unitime.timetable.gwt.shared.ReservationInterface.CurriculumReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.GroupReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
@@ -523,7 +523,7 @@ public class ReservationTable extends Composite {
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));				
 			} else if (reservation instanceof CurriculumReservation) {
 				line.add(new Label("Curriculum"));
-				Curriculum curriculum = ((CurriculumReservation) reservation).getCurriculum();
+				Area curriculum = ((CurriculumReservation) reservation).getCurriculum();
 				VerticalPanel owner = new VerticalPanel();
 				owner.add(new Label(curriculum.getAbbv() + " - " + curriculum.getName()));
 				for (IdName clasf: curriculum.getClassifications()) {

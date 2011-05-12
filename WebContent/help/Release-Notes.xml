@@ -45,6 +45,7 @@
 			<description>
 				<line>The old (and mostly disabled) interface replaced by a new (GWT-based) one</line>
 				<line>A new Reservations page created, and there is a Reservations table under the Instructional Offering Details page.</line>
+				<line>Curriculum reservation may get copied from an existing curriculum.</line>
 			</description>
 		</item>
 		<item>
