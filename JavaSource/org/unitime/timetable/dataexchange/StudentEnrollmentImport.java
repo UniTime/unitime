@@ -220,7 +220,6 @@ public class StudentEnrollmentImport extends BaseImport {
             		getHibSession().update(student);
             	}
 
-	            flushIfNeeded(true);
 	        }
  	        
  	        for (Student student: students.values()) {
