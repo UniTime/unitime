@@ -166,7 +166,7 @@ public class EventResourceTimetable extends Composite {
 				resourceTypeChanged(false);
 			}
 		});
-		iFilter.addRow("Resoure Type:", iResourceTypes);
+		iFilter.addRow("Resource Type:", iResourceTypes);
 		if (type != null)
 			iFilter.getRowFormatter().setVisible(iFilter.getRowCount() - 1, false);
 		
