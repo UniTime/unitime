@@ -156,7 +156,7 @@ public class ToolBox {
     		"</td></tr><tr><td>" +
     		"<table class=\"unitime-Footer\"><tr>" +
     		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.2 | University Timetabling Application</td>" +
-    		"<td width=\"34%\" align=\"center\">&copy; 2008 - 2010 UniTime LLC</td>" +
+    		"<td width=\"34%\" align=\"center\">&copy; 2008 - 2011 UniTime LLC</td>" +
     		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
     		"</tr></table></td></tr></table>" +
     		"</body></html>";
