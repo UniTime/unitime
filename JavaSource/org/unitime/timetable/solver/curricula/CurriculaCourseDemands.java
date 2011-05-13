@@ -81,16 +81,22 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		List<Curriculum> curricula = null;
 		if (offerings != null && offerings.size() <= 1000) {
 			String courses = "";
+			int nrCourses = 0;
 			for (InstructionalOffering offering: offerings)
 				for (CourseOffering course: offering.getCourseOfferings()) {
 					if (!courses.isEmpty()) courses += ",";
 					courses += course.getUniqueId();
+					nrCourses++;
 				}
-			curricula = hibSession.createQuery(
-					"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
-					"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-					.setLong("sessionId", session.getUniqueId()).list();
-		} else {
+			if (nrCourses <= 1000) {
+				curricula = hibSession.createQuery(
+						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
+						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+						.setLong("sessionId", session.getUniqueId()).list();
+			}
+		}
+		
+		if (curricula == null) {
 			curricula = hibSession.createQuery(
 					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
 					.setLong("sessionId", session.getUniqueId()).list();
