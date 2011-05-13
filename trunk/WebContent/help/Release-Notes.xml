@@ -284,6 +284,12 @@
 				<line>Only change case of academic area, classification, major and curriculum names (using Constant.toInitialCase) when tmtbl.toInitialCase.curriculum is set to true (defaults to false).</line>
 				<line>Course selection box made a little wider to fit longer course names.</line>
 				<line>Table of curricula: Department column, options "Show Code - Name" and "Show Abbv - Name" were reversed.</line>
+				<line>Timetable page: added Curriculum view (Resource: Curriculum)
+					<line>Shows all classes (including committed) that are associated with a student of the given curriculum (or academic area / major if curricula are not used).</line>
+					<line>Shows number of students (of the given curriculum) in each class.</line>
+					<line>Only works when data are loaded into the solver.</line>
+				</line>
+				<line>Fixed a few issues with data load.</line>
 			</description>
 		</item>
 		<item>
@@ -318,6 +324,8 @@
 				<line>Personal (student) timetable: Examinations that are set on multiple classes or configurations -- display only relevant classes / configurations
 				(based on student class enrollments).</line>
 				<line>When displaying examinations with multiple owners (classes, courses, etc.), display owners in proper order.</line>
+				<line>Check for authentication when application property unitime.event_timetable.requires_authentication is true.</line>
+				<line>Fixed a typo in the Filter (Resource Type).</line>
 			</description>
 		</item>
 		<item>
@@ -356,6 +364,7 @@
 			<description>
 				<line>Ajax calls: encode the resultant XML on UTF-8.</line>
 				<line>GWT updated to version 2.3.0 (was 2.2.0) -- include support for IE9.</line>
+				<line>Manage Instructor List: When Clear All is clicked, do not stop by the first disabled toggle (bugfix).</line>
 			</description>
 		</item>
 	</category>
