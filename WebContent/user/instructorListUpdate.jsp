@@ -43,8 +43,9 @@
 		for (;;) {
 			var idName = styleId + '_' + i;
 			var idVal = document.getElementById(idName);
-			if (idVal!=null && idVal.value!=null && !idVal.disabled) {
-				idVal.checked = checked;
+			if (idVal!=null && idVal.value!=null) {
+				if (!idVal.disabled)
+					idVal.checked = checked;
 			}
 			else {
 				break;
