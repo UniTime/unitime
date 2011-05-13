@@ -98,7 +98,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 
 		public void addOverlap(String overlap) {
 			if (iOverlaps == null) iOverlaps = new ArrayList<String>();
-			iOverlaps.add(overlap);
+			if (!iOverlaps.contains(overlap))
+				iOverlaps.add(overlap);
 		}
 		public ArrayList<String> getOverlaps() { return iOverlaps; }
 		
