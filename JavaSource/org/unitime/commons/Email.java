@@ -201,5 +201,14 @@ public class Email {
 				sLog.info("It took " + new DecimalFormat("0.00").format(t / 1000.0) + " seconds to send an email.");
 		}
 	}
+	
+	public void setInReplyTo(String messageId) throws MessagingException {
+		if (messageId != null)
+			iMail.setHeader("In-Reply-To", messageId);
+	}
+	
+	public String getMessageId() throws MessagingException {
+		return iMail.getHeader("Message-Id", null);
+	}
 
 }

@@ -128,11 +128,6 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 				if (r.getLastEnrollment() == null && r.getRequest().getAssignment() == null) continue;
 				if (r.getLastEnrollment() != null && r.getLastEnrollment().equals(r.getRequest().getAssignment())) continue;
 				
-				
-				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
-						r.getRequest(),
-						r.getLastEnrollment());
-				
 				helper.beginTransaction();
 				try {
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudent().getId(), helper.getHibSession());
