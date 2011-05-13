@@ -1042,6 +1042,20 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "false"))) {
+				if (oldEnrollment == null) {
+					oldEnrollment = new Enrollment(request, 0, (request instanceof CourseRequest ? ((CourseRequest)request).getCourses().get(0) : null), null, null, null);
+				}
+				execute(new StudentEmail(studentId, oldEnrollment, student.getRequests()), new Callback<Boolean>() {
+					@Override
+					public void onFailure(Throwable exception) {
+						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+					}
+				});
+			}
 		}
 	}
 
