@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,6 +97,7 @@ import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
@@ -586,21 +588,59 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     	Query q = (findString == null ? null : new Query(findString));
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
-    		if (resourceType==TimetableGridModel.sResourceTypeRoom) {
+    		switch (resourceType) {
+    		case TimetableGridModel.sResourceTypeRoom:
     			for (RoomConstraint rc: model.getRoomConstraints()) {
     				if (!match(q, rc.getName())) continue;
     				models.add(new SolverGridModel(this,rc,startDay,bgMode,showEvents));
     			}
-    		} else if (resourceType==TimetableGridModel.sResourceTypeInstructor) {
+    			break;
+    		case TimetableGridModel.sResourceTypeInstructor:
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {
     				if (!match(q, ic.getName())) continue;
     				models.add(new SolverGridModel(this,ic,startDay,bgMode));
     			}
-    		} else if (resourceType==TimetableGridModel.sResourceTypeDepartment) {
+    			break;
+    		case TimetableGridModel.sResourceTypeDepartment:
     			for (DepartmentSpreadConstraint dc: model.getDepartmentSpreadConstraints()) {
     				if (!match(q, dc.getName())) continue;
     				models.add(new SolverGridModel(this,dc,startDay,bgMode));
     			}
+    			break;
+    		case TimetableGridModel.sResourceTypeCurriculum:
+    			Hashtable<String, List<Student>> curricula = new Hashtable<String, List<Student>>();
+    			boolean hasCurricula = false;
+    			HashSet<String> ignore = new HashSet<String>(), tested = new HashSet<String>();
+    			for (Student student: model.getAllStudents()) {
+    				if (student.getCurriculum() != null && student.getAcademicClassification() != null) {
+    					if (!hasCurricula) {
+    						curricula.clear(); hasCurricula = true;
+    					}
+    					String c = student.getCurriculum() + " " + student.getAcademicClassification();
+    					if (tested.add(c) && !match(q, c)) ignore.add(c);
+    					if (ignore.contains(c)) continue;
+    					List<Student> students = curricula.get(c);
+    					if (students == null) {
+    						students = new ArrayList<Student>();
+    						curricula.put(c, students);
+    					}
+    					students.add(student);
+    				} else if (!hasCurricula && student.getAcademicArea() != null && student.getAcademicClassification() != null) {
+    					String c = student.getAcademicArea() + (student.getMajor() == null ? "" : " " + student.getMajor()) + " " + student.getAcademicClassification();
+    					if (tested.add(c) && !match(q, c)) ignore.add(c);
+    					if (ignore.contains(c)) continue;
+    					List<Student> students = curricula.get(c);
+    					if (students == null) {
+    						students = new ArrayList<Student>();
+    						curricula.put(c, students);
+    					}
+    					students.add(student);
+    				}
+    			}
+				for (Map.Entry<String, List<Student>> curriculum: curricula.entrySet()) {
+					models.add(new SolverGridModel(this, curriculum.getKey(), curriculum.getValue(), startDay, bgMode));
+				}
+    			break;
     		}
     	}
 		return models;

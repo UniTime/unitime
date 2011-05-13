@@ -20,10 +20,12 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -41,6 +43,7 @@ import net.sf.cpsolver.coursett.constraint.RoomConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
 
@@ -144,6 +147,39 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		init(solver, placements, bgMode, firstDay);
 	}
 
+	public SolverGridModel(Solver solver, String name, List<Student> students, int firstDay, int bgMode) {
+		super(sResourceTypeCurriculum, -1l);
+		setName(name);
+		double size = 0;
+		Hashtable<Placement, Double> placements = new Hashtable<Placement, Double>();
+		for (Student student: students) {
+			int cnt = 0; double w = 0;
+			for (Lecture lecture: student.getLectures()) {
+				w += student.getOfferingWeight(lecture.getConfiguration()); cnt ++;
+				if (lecture.getAssignment() != null)  {
+					Double old = placements.get(lecture.getAssignment());
+					placements.put(lecture.getAssignment(), student.getOfferingWeight(lecture.getConfiguration()) + (old == null ? 0 : old));
+				}
+			}
+			if (student.getCommitedPlacements() != null)
+				for (Placement placement: student.getCommitedPlacements()) {
+					w += student.getOfferingWeight(placement.variable().getConfiguration()); cnt ++;
+					Double old = placements.get(placement);
+					placements.put(placement, student.getOfferingWeight(placement.variable().getConfiguration()) + (old == null ? 0 : old));
+				}
+			if (cnt > 0)
+				size += w / cnt;
+		}
+		setSize((int) Math.round(size));
+		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
+			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : bgMode), firstDay);
+			while (cell != null) {
+				cell.setName(cell.getName() + " (" + Math.round(entry.getValue()) + ")");
+				cell = cell.getParent();
+			}
+		}
+	}
+
 	private void init(Solver solver, Placement[] resource, int bgMode) {
 		Hashtable processed = new Hashtable();
 		for (int i=0;i<Constants.DAY_CODES.length;i++) {
@@ -164,16 +200,14 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		}
 	}
 	
-	private void init(Solver solver, Vector placements, int bgMode, int firstDay) {
-		for (Enumeration e=placements.elements();e.hasMoreElements();) {
-			Placement placement = (Placement)e.nextElement();
-			Lecture lecture = (Lecture)placement.variable();
-			if (lecture.isCommitted()) continue;
+	private void init(Solver solver, Collection<Placement> placements, int bgMode, int firstDay) {
+		for (Placement placement: placements) {
+			if (placement.variable().isCommitted()) continue;
 			init(solver, placement, bgMode, firstDay);
 		}
 	}
 	
-	private void init(Solver solver, Placement placement, int bgMode, int firstDay) {
+	private TimetableGridCell init(Solver solver, Placement placement, int bgMode, int firstDay) {
 		TimetableGridCell cell = null;
 		for (Enumeration<Integer> f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
 			int slot = f.nextElement();
@@ -185,6 +219,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			}
 			addCell(slot,cell);
 		}
+		return cell;
 	}
 
 	public static String hardConflicts2pref(Lecture lecture, Placement placement) {

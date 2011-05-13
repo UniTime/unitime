@@ -67,6 +67,8 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public static String sBgColorNotAvailable = "rgb(200,200,200)";
 	public static String sBgColorNotAvailableButAssigned = sBgColorProhibited;
 	
+	private TimetableGridCell iParent = null;
+	
 	public TimetableGridCell(int day, int slot, long assignmentId, long roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor) {
 		iDay = day;
 		iSlot = slot;
@@ -88,7 +90,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	}
 	
 	public TimetableGridCell copyCell(int day, int mtgNumber) {
-		return new TimetableGridCell(
+		TimetableGridCell cell = new TimetableGridCell(
 				day,
 				iSlot,
 				iAssignmentId,
@@ -106,9 +108,12 @@ public class TimetableGridCell implements Serializable, Comparable {
 				iDatePatternName,
 				iWeekCode,
 				iInstructor);
+		cell.iParent = this;
+		return cell;
 	}
 	
 	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 	public String getShortComment() { return iShortComment; }
 	public String getShortCommentNoColors() { return iShortCommentNoColors; }
 	public String getOnClick() { return iOnClick; }
@@ -253,5 +258,9 @@ public class TimetableGridCell implements Serializable, Comparable {
     	if (last == null) return dp.getName();
         SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
     	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    }
+    
+    public TimetableGridCell getParent() {
+    	return iParent;
     }
 }
