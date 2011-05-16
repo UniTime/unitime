@@ -1,5 +1,5 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
+ * UniTime 3.3 (University Timetabling Application)
  * Copyright (C) 2008-2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -71,7 +71,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static int EVENING_SLOTS_LAST = (23*60 + 00)/5 - 1; // evening ends at 23:00
 
     /** version */
-    public static String VERSION = "3.2";
+    public static String VERSION = "3.3";
 
     /** release date */
     public static String REL_DATE = "@build.date@";

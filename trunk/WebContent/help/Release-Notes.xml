@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!DOCTYPE release-history PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "Release-Notes.dtd">
 <!-- 
- * UniTime 3.2 (University Timetabling Application)
+ * UniTime 3.3 (University Timetabling Application)
  * Copyright (C) 2008 - 2011, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -22,11 +22,26 @@
 
 <release-history>
 
-<doc-title>UniTime 3.2 Release Notes</doc-title>
+<doc-title>UniTime 3.3 Release Notes</doc-title>
 
 <release>
-	<version>3.2.@build.number@</version>
+	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>First Release of UniTime 3.3</title>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Version number changed to 3.3.</line>
+			</description>
+		</item>
+	</category>
+</release>
+	
+
+<release>
+	<version>3.2.149</version>
+	<release-date>Sat, 14 May 2011</release-date>
 	<category>
 		<title>Reservations</title>
 		<item>
