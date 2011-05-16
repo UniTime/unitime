@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2010 - 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -142,7 +142,7 @@ public class ToolBox {
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime/gwt/standard/standard.css\">" +
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime.css\">" +
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
-    	    "<title>UniTime 3.2 | University Timetabling Application</title>" +
+    	    "<title>UniTime 3.3 | University Timetabling Application</title>" +
     		"</header><body>" + 
     		"<table align=\"center\"><tr><td>" +
     		"<table class=\"unitime-Page\"><tr><td>" +
@@ -155,7 +155,7 @@ public class ToolBox {
     		"</td></tr></table>" +
     		"</td></tr><tr><td>" +
     		"<table class=\"unitime-Footer\"><tr>" +
-    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.2 | University Timetabling Application</td>" +
+    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.3 | University Timetabling Application</td>" +
     		"<td width=\"34%\" align=\"center\">&copy; 2008 - 2011 UniTime LLC</td>" +
     		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
     		"</tr></table></td></tr></table>" +
