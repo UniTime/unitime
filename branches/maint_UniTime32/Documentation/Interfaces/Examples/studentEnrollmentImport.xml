@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentEnrollments PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentEnrollment.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<studentEnrollments campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+ 	<student externalId="9999111110">
+ 		<class externalId="123124"/>
+ 		<class externalId="123412"/>
+ 		<class externalId="123674"/>
+ 	</student>
+ 	<!-- when a student with the given external id does not exist, it is created -->
+ 	<!-- for such a case, it is helpful if student name and email is provided (these are only used when a new student is created) -->
+ 	<student externalId="9999111111" firstName="Jacob" middleName="Lucas" lastName="Simth" email="smith@university.edu">
+		<class externalId="423675"/>
+  		<class externalId="998543"/>
+  		<!-- if there is no external id on the class, class name can be used instead -->
+  		<!-- only in UniTime 3.1.283 or later -->
+  		<class externalId="ALG 101 Lec 1"/>
+  		<!-- course (external) id is optional, and only useful for cross-listed courses to import enrollments to a non-controlling course -->
+  		<!-- since UniTime 3.3.24 -->
+  		<class externalId="129854" courseId="12432"/>
+  		<!-- if external ids are not available, subject, courseNbr, type and suffix can be used instead -->
+  		<!-- since UniTime 3.3.24 -->
+  		<class subject="ALG" courseNbr="101H" type="Lec" suffix="1"/>
+  		<!-- ... -->
+ 	</student>
+ 	<!-- ... -->
+</studentEnrollments>

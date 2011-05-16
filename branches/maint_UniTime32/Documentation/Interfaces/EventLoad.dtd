@@ -1,0 +1,79 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2009 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT eventContact EMPTY >
+<!ATTLIST eventContact email CDATA #IMPLIED >
+<!ATTLIST eventContact externalId NMTOKEN #REQUIRED >
+<!ATTLIST eventContact firstName NMTOKEN #IMPLIED >
+<!ATTLIST eventContact lastName NMTOKEN #REQUIRED >
+<!ATTLIST eventContact middleName NMTOKEN #IMPLIED >
+<!ATTLIST eventContact phone NMTOKEN #IMPLIED >
+
+<!ELEMENT course EMPTY >
+<!ATTLIST course courseExternalId NMTOKEN #IMPLIED >
+<!ATTLIST course relatedExternalId NMTOKEN #REQUIRED >
+<!ATTLIST course relationshipType ( class | instructionalOffering | courseOffering ) #REQUIRED >
+<!ATTLIST course term NMTOKEN #REQUIRED >
+<!ATTLIST course year NMTOKEN #REQUIRED >
+
+<!ELEMENT courseRelatedEvent ( ( meetings | relatedCourses | eventContact? | sponsoringOrganization? | notes? )* ) >
+<!ATTLIST courseRelatedEvent attendanceRequired ( false | true ) #IMPLIED >  <!-- defaults to false -->
+<!ATTLIST courseRelatedEvent email CDATA #IMPLIED >
+<!ATTLIST courseRelatedEvent eventName CDATA #REQUIRED >
+<!ATTLIST courseRelatedEvent maxCapacity NMTOKEN #IMPLIED >
+<!ATTLIST courseRelatedEvent minCapacity NMTOKEN #IMPLIED >
+
+<!ELEMENT events ( specialEvent | courseRelatedEvent )* >
+<!ATTLIST events academicInitiative NMTOKEN #REQUIRED >
+<!ATTLIST events created CDATA #REQUIRED >
+<!ATTLIST events dateFormat CDATA #REQUIRED >
+<!ATTLIST events timeFormat NMTOKEN #REQUIRED >
+
+<!ELEMENT meeting EMPTY >
+<!ATTLIST meeting approvedDateTime CDATA #IMPLIED >
+<!ATTLIST meeting buildingAbbv NMTOKEN #IMPLIED >
+<!ATTLIST meeting classCanOverride ( false | true ) #IMPLIED >  <!-- defaults to true -->
+<!ATTLIST meeting stopOffset NMTOKEN #IMPLIED >  
+<!ATTLIST meeting endTime NMTOKEN #REQUIRED >
+<!ATTLIST meeting location CDATA #IMPLIED >
+<!ATTLIST meeting meetingDate CDATA #REQUIRED >
+<!ATTLIST meeting roomNumber NMTOKEN #IMPLIED >
+<!ATTLIST meeting startOffset NMTOKEN #IMPLIED >
+<!ATTLIST meeting startTime NMTOKEN #REQUIRED >
+
+<!ELEMENT meetings ( meeting+ ) >
+
+<!ELEMENT note EMPTY >
+<!ATTLIST note noteText CDATA #REQUIRED >
+<!ATTLIST note noteType ( create | update | approve | reject | delete | edit ) #REQUIRED >
+<!ATTLIST note timestamp CDATA #IMPLIED >
+<!ATTLIST note userName CDATA #IMPLIED >  
+
+<!ELEMENT notes ( note+ ) >
+
+<!ELEMENT relatedCourses ( course+ ) >
+
+<!ELEMENT specialEvent ( ( meetings | eventContact | sponsoringOrganization? | notes? )* ) >
+<!ATTLIST specialEvent email CDATA #IMPLIED >
+<!ATTLIST specialEvent eventName CDATA #REQUIRED >
+<!ATTLIST specialEvent maxCapacity NMTOKEN #IMPLIED >
+<!ATTLIST specialEvent minCapacity NMTOKEN #IMPLIED >
+
+<!ELEMENT sponsoringOrganization EMPTY >
+<!ATTLIST sponsoringOrganization name CDATA #REQUIRED >

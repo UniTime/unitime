@@ -1,0 +1,177 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+package org.unitime.timetable.dataexchange;
+
+import java.util.Iterator;
+import java.util.List;
+
+import org.dom4j.Element;
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.AcademicClassificationDAO;
+
+public class StudentImport extends BaseImport {
+
+	public StudentImport() {
+		super();
+	}
+
+	@Override
+	public void loadXml(Element rootElement) throws Exception {
+		try {
+	        String campus = rootElement.attributeValue("campus");
+	        String year   = rootElement.attributeValue("year");
+	        String term   = rootElement.attributeValue("term");
+
+	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+	        if(session == null) {
+	           	throw new Exception("No session found for the given campus, year, and term.");
+	        }
+
+			beginTransaction();
+            
+            /* 
+             * If some records of a table related to students need to be explicitly deleted, 
+             * hibernate can also be used to delete them. For instance, the following query 
+             * deletes all last-like course demands for given academic session:
+             *   
+             * delete LastLikeCourseDemand ll where ll.student.uniqueId in
+             *      (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)
+             */
+            
+            getHibSession().createQuery("delete Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
+            
+            flush(true);
+            
+	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
+	            Element element = (Element) it.next();
+            	Student student = new Student();
+                student.setSession(session);
+	            student.setFirstName(element.attributeValue("firstName"));
+	            student.setMiddleName(element.attributeValue("middleName"));
+	            student.setLastName(element.attributeValue("lastName"));
+	            student.setEmail(element.attributeValue("email"));
+	            student.setExternalUniqueId(element.attributeValue("externalId"));
+	            student.setFreeTimeCategory(new Integer(0));
+	            student.setSchedulePreference(new Integer(0));
+	            
+	            loadAcadAreaClassifications(element, student, session);
+	            loadMajors(element, student, session);
+	            loadMinors(element, student, session);
+                
+                getHibSession().save(student);
+
+	            flushIfNeeded(true);
+	        }
+            
+            commitTransaction();
+		} catch (Exception e) {
+			fatal("Exception: " + e.getMessage(), e);
+			rollbackTransaction();
+			throw e;
+		}
+	}
+	private void loadMajors(Element element, Student student, Session session) throws Exception {
+		if (element.element("studentMajors") == null) return;
+		for (Iterator it = element.element("studentMajors").elementIterator("major"); it.hasNext();) {
+			Element el = (Element) it.next();
+			String code = el.attributeValue("code");
+			if (code == null) continue;
+			String academicArea = el.attributeValue("academicArea");
+			PosMajor major = null;
+			if (academicArea != null)
+				major = PosMajor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
+			else
+				major = PosMajor.findByCode(session.getSessionId(), code);
+			if (major == null)
+				warn("Major " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
+			else
+				student.addToPosMajors(major);
+		}
+	}
+
+	private void loadMinors(Element element, Student student, Session session) throws Exception {
+		if (element.element("studentMinors") == null) return;
+		for (Iterator it = element.element("studentMinors").elementIterator("minor"); it.hasNext();) {
+			Element el = (Element) it.next();
+			String code = el.attributeValue("code");
+			if (code == null) continue;
+			String academicArea = el.attributeValue("academicArea");
+			PosMinor minor = null;
+			if(academicArea != null)
+				minor = PosMinor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
+			else
+				minor = PosMinor.findByCode(session.getSessionId(), code);
+			if (minor == null)
+				warn("Minor " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
+			else
+				student.addToPosMinors(minor);
+		}
+	}
+
+	private void loadAcadAreaClassifications(Element element, Student student, Session session) throws Exception {
+		if (element.element("studentAcadAreaClass") == null) return;
+		AcademicClassificationDAO acadClassDAO = new AcademicClassificationDAO();
+		for (Iterator it = element.element("studentAcadAreaClass").elementIterator("acadAreaClass"); it.hasNext();) {
+			Element el = (Element) it.next();
+			String abbv = el.attributeValue("academicArea");
+			AcademicArea acadArea = null;
+			if (abbv != null) {
+				acadArea = AcademicArea.findByAbbv(session.getSessionId(), abbv);
+				if (acadArea == null)
+					warn("Academic Area " + abbv + " was not found.");
+			}
+			AcademicClassification acadClass = null;
+			String code = el.attributeValue("academicClass");
+			if (code != null) {
+				acadClass = findAcadClass(acadClassDAO, code, session.getSessionId());
+				if (acadClass == null)
+					warn("Academic Classification " + code + " was not found.");
+			}
+			if (acadArea != null && acadClass != null) {
+				AcademicAreaClassification acadAreaClass = new AcademicAreaClassification();
+				acadAreaClass.setStudent(student);
+				acadAreaClass.setAcademicArea(acadArea);
+				acadAreaClass.setAcademicClassification(acadClass);
+				student.addToacademicAreaClassifications(acadAreaClass);
+			}
+		}
+	}
+
+	private AcademicClassification findAcadClass(AcademicClassificationDAO acadClassDAO, String code, Long sessionId) {
+		List results = acadClassDAO.
+			getSession().
+			createQuery("select distinct a from AcademicClassification as a where a.code=:code and a.session.uniqueId=:sessionId").
+			setLong("sessionId", sessionId.longValue()).
+			setString("code", code).
+			setCacheable(true).list();
+		if(results.size() > 0 ) {
+			return (AcademicClassification) results.get(0);
+		} else {
+			return null;
+		}
+	}
+
+}

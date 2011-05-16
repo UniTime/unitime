@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="InstrOfferingConfig" table="instr_offering_config">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long"
+            length="10">
+
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">instr_offr_config_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="limit"
+            column="config_limit"
+            type="java.lang.Integer"
+            not-null="true"
+            length="4"/>
+
+        <many-to-one
+            name="instructionalOffering"
+            class="InstructionalOffering"
+            column="instr_offr_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_inst_config_instr_offr"/>
+
+        <set
+            name="schedulingSubparts"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="scheduling_subpart">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="config_id"/>
+            <one-to-many class="SchedulingSubpart"/>
+        </set>
+
+        <property
+            name="unlimitedEnrollment"
+            column="unlimited_enrollment"
+            type="java.lang.Boolean"
+            not-null="true"
+            insert="true"
+            update="true"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="false"
+            length="10"
+            insert="true"
+            update="true"/>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+    </class>
+</hibernate-mapping>

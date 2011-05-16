@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE response PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentSectioning.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<response campus='puWestLafayetteTrdtn' year='2007' term='Fal'>
+	<student key='123456'>
+		<acknowledgement result='ok'> <!-- result is either ok or fail -->
+			<message type='INFO'>Some message.</message>
+			<message type='WARN'>Another message.</message>
+		</acknowledgement>
+		<courseRequests distribution='dense'> <!--  distribution is either dense or spread -->
+			<courseOffering subjectArea='MA' courseNumber='101' waitlist='false' credit='4'>
+				<alternative subjectArea='MA' courseNumber='102'/>
+				<alternative subjectArea='MA' courseNumber='103'/>
+			</courseOffering>
+			<freeTime days='MWF' startTime='0730' endTime='0820' length='60'/>
+			<!-- ... -->
+			<courseOffering alternative='true' subjectArea='STAT' courseNumber='101' waitlist='false'>
+				<alternative subjectArea='STAT' courseNumber='102'/>
+				<!-- ... -->
+			</courseOffering>
+			<!-- ... -->
+		</courseRequests>
+		<schedule type='actual'> <!--  schedule is either actual or proposed -->
+			<courseOffering subjectArea='MA' courseNumber='101'>
+				<class id='1' assignmentId='1' name='Lecture' time='MWF 7:30a - 8:20a' date='Odd Wks' location='WTHR 200' instructor='Doe, Joe'
+					days='MWF' startTime='0730' endTime='0820' note='Schedule note.'>
+					<choice id='1:1' available='true' time='MWF 7:30a - 8:20a' date='Odd Wks' instructor='Doe, Joe' selection='select'/>
+					<choice id='1:2' available='true' time='MWF 8:30a - 9:20a' date='Odd Wks' instructor='Doe, Joe'/>
+					<choice id='1:3' available='false' time='MWF 8:30a - 9:20a' date='Odd Wks' instructor='Simpson, Bart' selection='wait'/>
+				</class>
+				<class id='2' assignmentId='2' name='Recitation' time='TTh 7:30a - 8:20a' location='WTHR 202, WTHR 203' days='TTh' startTime='0730' endTime='0820' parent='1'>
+					<!-- parent: id of the parent class (to be able to indent classes) -->
+					<choice id='2:1' available='true' time='TTh 7:30a - 8:20a' selection='select'>
+						<depends class='1' choice='1:1' selection='select'/> <!--  this choice can only be selected when choice 1:1 of class 1 is selected -->
+					</choice>
+					<choice id='2:2' available='true' time='TTh 8:30a - 9:20a' selection='wait'>
+						<!--  this choice can only be selected when either choice 1:2 or 1:3 of class 1 is selected -->
+						<depends class='1' choice='1:2'/>
+						<depends class='1' choice='1:3'/> 
+					</choice>
+				</class>
+				<class id='3' assignmentId='3' name='Laboratory' time='F 10:30a - 12:20p' location='ENAD 402' days='F' startTime='1030' endTime='1220' parent='2'>
+					<choice id='3:1' available='true' time='F 10:30a - 12:20p' selection='select'>
+						<depends class='2' choice='2:1'/>
+						<depends class='2' choice='2:2'>
+							<depends class='1' choice='1:2'/>
+						</depends>
+					</choice>
+					<choice id='3:2' available='false' time='F 12:30p - 2:20p' selection='wait'>
+						<depends class='2' choice='2:2'>
+							<depends class='1' choice='1:3'/>
+						</depends>
+					</choice>
+					<choice id='3:3' available='true' time='F 2:30p - 4:20p' selection='wait'>
+						<depends class='2' choice='2:1'/>
+						<depends class='2' choice='2:2'>
+							<depends class='1' choice='1:3'/>
+						</depends>
+					</choice>
+				</class>
+				<!-- possible choices for MA 101:
+					Lecture MWF 7:30a - 8:20a WTHR 200 Doe, Joe
+						Sel Que Time              Instructor
+						(.)     MWF 7:30a - 8:20a Doe, Joe
+						( )     MWF 8:30a - 9:20a Doe, Joe
+						    [x] MWF 8:30a - 9:20a Simpson, Bart
+					Recitation TTh 7:30a - 8:20a WTHR 202, WTHR 203
+						Sel Que Time
+						(.)     TTh 7:30a - 8:20a  (available when Lecture MWF 7:30 Doe, Joe is selected)
+						( ) [x] TTh 8:30a - 9:20a  (available when Lecture MWF 8:30 Doe, Joe is selected, 
+						                            wait-list when Lecture MWF 8:30 Simpson, Bart is wait-listed)
+					Laboratory F 10:30a - 12:20p ENAD 402
+						Sel Que Time
+						(.)     F 10:30a - 12:20p  (available when Recitation TTh 7:30 is selected
+						                            or available when Recitation TTh 8:30 is selected together with Lecture MWF 8:30a - 9:20a Doe, Joe is selected)
+						    [x] F 12:30p -  2:20p  (wait-list when Recitation TTh 8:30 is selected together with Lecture MWF 8:30a - 9:20a Simpson, Bart is wait-listed)
+						( ) [x] F  2:30p -  4:20p  (available when Recitation TTh 7:30 is selected,
+						                            wait-list when Recitation TTh 8:30 is selected together with Lecture MWF 8:30a - 9:20a Simpson, Bart is wait-listed)
+				 -->
+			</courseOffering>
+			<freeTime time='MWF 8:30a - 9:20a' days='MWF' startTime='0830' endTime='0920'/>
+			<courseOffering subjectArea='MA' courseNumber='105' waitlist='true'/>
+			<!-- ... -->
+		</schedule>
+	</student>
+</response>
