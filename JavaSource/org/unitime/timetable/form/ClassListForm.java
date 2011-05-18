@@ -30,6 +30,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -39,6 +41,7 @@ import org.unitime.timetable.util.LookupTables;
  * @author Stephanie Schluttenhofer
  */
 public class ClassListForm extends ActionForm implements ClassListFormInterface {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     /**
      * Comment for <code>serialVersionUID</code>
@@ -85,17 +88,17 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private String filterAssignedTimeLength;
 	private boolean sortByKeepSubparts;
 	
-	public static String sSortByName = "Name";
-	public static String sSortByDivSec = "External Id";
-	public static String sSortByEnrollment = "Enrollment";
-	public static String sSortByLimit = "Limit";
-	public static String sSortByRoomSize = "Room Size";
-	public static String sSortByDatePattern = "Date Pattern";
-	public static String sSortByTimePattern = "Time Pattern";
-	public static String sSortByInstructor = "Instructor";
-	public static String sSortByAssignedTime = "Assigned Time";
-	public static String sSortByAssignedRoom = "Assigned Room";
-	public static String sSortByAssignedRoomCap = "Assigned Room Capacity";
+	public static String sSortByName = MSG.sortByName();
+	public static String sSortByDivSec = MSG.sortByDivSec();
+	public static String sSortByEnrollment = MSG.sortByEnrollment();
+	public static String sSortByLimit = MSG.sortByLimit();
+	public static String sSortByRoomSize = MSG.sortByRoomSize();
+	public static String sSortByDatePattern = MSG.sortByDatePattern();
+	public static String sSortByTimePattern = MSG.sortByTimePattern();
+	public static String sSortByInstructor = MSG.sortByInstructor();
+	public static String sSortByAssignedTime = MSG.sortByAssignedTime();
+	public static String sSortByAssignedRoom = MSG.sortByAssignedRoom();
+	public static String sSortByAssignedRoomCap = MSG.sortByAssignedRoomCapacity();
 	public static String[] sSortByOptions = {
 		sSortByName,
 		sSortByDivSec,

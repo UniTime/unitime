@@ -36,6 +36,8 @@ import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -51,6 +53,8 @@ import org.unitime.timetable.util.Constants;
 
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public Exam () {
@@ -69,12 +73,12 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	public static final int sSeatingTypeNormal = 0;
 	public static final int sSeatingTypeExam = 1;
 	
-	public static final String sSeatingTypes[] = new String[] {"Normal","Exam"};
+	public static final String sSeatingTypes[] = new String[] {MSG.seatingNormal(), MSG.seatingExam()};
 	
 	public static final int sExamTypeFinal = 0;
 	public static final int sExamTypeMidterm = 1;
 	
-	public static final String sExamTypes[] = new String[] {"Final", "Midterm"};
+	public static final String sExamTypes[] = new String[] {MSG.typeFinal(), MSG.typeMidterm()};
 	
 	protected boolean canUserEdit(User user) {
         //admin

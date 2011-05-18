@@ -34,6 +34,8 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -46,6 +48,7 @@ import org.unitime.timetable.util.Constants;
  * @author Stephanie Schluttenhofer
  */
 public class InstructionalOfferingListForm extends ActionForm implements InstructionalOfferingListFormInterface {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	/**
 	 * Comment for <code>serialVersionUID</code>
@@ -314,7 +317,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		ActionErrors errors = new ActionErrors();
 
 		if (subjectAreaId == null || subjectAreaId.trim().length() == 0 || subjectAreaId.equals(Constants.BLANK_OPTION_VALUE)) {
-			errors.add("subjectAreaId", new ActionMessage("errors.required", "Subject Area"));
+			errors.add("subjectAreaId", new ActionMessage("errors.required", MSG.labelSubjectArea()));
 		}
 
 		return errors;

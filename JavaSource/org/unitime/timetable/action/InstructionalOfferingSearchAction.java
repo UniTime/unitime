@@ -21,10 +21,8 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -39,13 +37,16 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.impl.LocalizedLookupDispatchAction;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
@@ -74,8 +75,15 @@ import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
  * @author Stephanie Schluttenhofer
  */
 
-public class InstructionalOfferingSearchAction extends LookupDispatchAction {
+public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAction {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Override
+	protected Messages getMessages() {
+		return MSG;
+	}
 
+	/*
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();
 	      map.put("button.searchInstructionalOfferings", "searchInstructionalOfferings");
@@ -87,6 +95,12 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 //	      map.put("button.delete", "deleteCourseOffering");
 	      map.put("button.cancel", "searchInstructionalOfferings");
 	      return map;
+	}
+	*/
+	
+	protected String getMethodName(ActionMapping mapping, ActionForm form,  HttpServletRequest request, HttpServletResponse response, String parameter) throws Exception {
+		
+		return super.getMethodName(mapping, form, request, response, parameter);
 	}
 	
 	/** 
@@ -161,7 +175,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 			
 			// No results returned
 			if (instrOfferings.isEmpty()) {
-			    errors.add("searchResult", new ActionMessage("errors.generic", "No records matching the search criteria were found."));
+			    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
 			    saveErrors(request, errors);
 			    return mapping.findForward("showInstructionalOfferingSearch");
 			} 
@@ -170,7 +184,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 				BackTracker.markForBack(
 						request, 
 						"instructionalOfferingSearch.do?op=Back&doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaId()+"&courseNbr="+frm.getCourseNbr(), 
-						"Instructional Offerings ("+
+						MSG.labelInstructionalOfferings() + " ("+
 							(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaId()))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
 							(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
 							")", 
@@ -220,7 +234,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
                 request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
                 //response.sendRedirect("temp/"+pdfFile.getName());
             } else {
-                getErrors(request).add("searchResult", new ActionMessage("errors.generic", "Unable to create PDF file."));
+                getErrors(request).add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreatePdf()));
             }
         }
         
@@ -249,12 +263,12 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
                     request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
                 else {
                     ActionMessages errors = getErrors(request);
-                    errors.add("searchResult", new ActionMessage("errors.generic", "Unable to create worksheet PDF file -- nothing to export."));
+                    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreateWorksheetPdfNoData()));
                     saveErrors(request, errors);
                 }
             } catch (Exception e) {
                 ActionMessages errors = getErrors(request);
-                errors.add("searchResult", new ActionMessage("errors.generic", "Unable to create worksheet PDF file -- "+e.getMessage()+"."));
+                errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreateWorksheetPdf(e.getMessage())));
                 saveErrors(request, errors);
                 Debug.error(e);
             }
@@ -436,7 +450,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		    	}
 	    	}
 	    	catch (Exception e) {
-		        errors.add("courseNbr", new ActionMessage("errors.generic", "Course Number cannot be matched to regular expression: " + courseNbrRegex + ". Reason: " + e.getMessage()));
+		        errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseDoesNotMatchRegEx(courseNbrRegex, e.getMessage())));
 	    	}
 	    }
 	    
@@ -481,7 +495,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	    CourseOffering newCourseOffering = CourseOffering.addNew(subjAreaId, courseNbr);
 	    
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
         Debug.debug("before get collection");
 	    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));
