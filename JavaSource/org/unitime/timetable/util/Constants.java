@@ -29,6 +29,8 @@ import java.util.Locale;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
@@ -45,18 +47,18 @@ import org.unitime.timetable.model.TimePref;
  * @author Tomas Muller
  */
 public class Constants extends net.sf.cpsolver.coursett.Constants {
+	public static final ConstantsMessages MSG = Localization.create(ConstantsMessages.class);
 
     // --------------------------------------------------------- Class Properties
     
     /** Day names in 3-character format (e.g. Mon) */
     public static String DAY_NAME[] = new String[] {
-            "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+    	MSG.mon(), MSG.tue(), MSG.wed(), MSG.thu(), MSG.fri(), MSG.sat(), MSG.sun()
         };
 
     /** Day names */
     public static String DAY_NAMES_FULL[] = new String[] {
-            "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
-            "Sunday"
+    	MSG.monday(), MSG.tuesday(), MSG.wednesday(), MSG.thursday(), MSG.friday(), MSG.saturday(), MSG.sunday()
         };
 
     public static int DAY_MON = 0;
@@ -116,9 +118,9 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static String[] LLR_DEPTS = { "1994", "1980" };
     
     /** Blank Select Box Label/Value */
-    public static String BLANK_OPTION_LABEL = "Select ...";
+    public static String BLANK_OPTION_LABEL = MSG.select();
     public static String BLANK_OPTION_VALUE = ""; 
-    public static String ALL_OPTION_LABEL = "All";
+    public static String ALL_OPTION_LABEL = MSG.all();
     public static String ALL_OPTION_VALUE = "All";
     
     /** Facility group references */
