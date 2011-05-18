@@ -41,6 +41,8 @@ import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
 import org.unitime.commons.web.htmlgen.TableStream;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.InstructionalOfferingListFormInterface;
 import org.unitime.timetable.model.Assignment;
@@ -82,6 +84,7 @@ import org.unitime.timetable.util.Constants;
  * @author Stephanie Schluttenhofer
  */
 public class WebInstructionalOfferingTableBuilder {
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd", Locale.US);
 	protected static DecimalFormat sRoomRatioFormat = new DecimalFormat("0.00");
 
@@ -95,44 +98,45 @@ public class WebInstructionalOfferingTableBuilder {
     
     //available columns for table
     protected static String LABEL = "&nbsp;";
-    public static final String DIV_SEC = "External Id";
-    public static final String DEMAND = "Enrollment";
-    public static final String PROJECTED_DEMAND = "Projected Demand";
-    public static final String LIMIT = "Limit";
-    public static final String ROOM_RATIO = "Room Ratio";
-    public static final String MIN_PER_WK = "Mins Per Week";
-    public static final String MANAGER = "Manager";
-    public static final String DATE_PATTERN = "Date Pattern";
-    public static final String TIME_PATTERN = "Time Pattern";
-    public static final String INSTRUCTOR = "Instructor";
-    public static final String PREFERENCES = "Preferences";
-    public static final String TIMETABLE = "Timetable";
-    public static final String CREDIT = "Offering Credit";
-    public static final String SCHEDULING_SUBPART_CREDIT = "Subpart Credit";
-    public static final String SCHEDULE_PRINT_NOTE_FILTER = "Schedule of Classes Notes";
-    public static String SCHEDULE_PRINT_NOTE = "Schedule of Classes Notes";
-    public static final String NOTE = "Note to Schedule Manager";
-    public static final String TITLE = "Title";
-    public static final String CONSENT = "Consent";
-    public static final String DESIGNATOR_REQ = "Designator Required";
-    public static final String EXAM = "Examination";
-    public static final String EXAM_NAME = "Name";
-    public static final String EXAM_PER = "Period";
-    public static final String EXAM_ROOM = "Room";
+    public static final String DIV_SEC = MSG.columnExternalId();
+    public static final String DEMAND = MSG.columnDemand();
+    public static final String LAST_DEMAND = MSG.columnLastDemand();
+    public static final String PROJECTED_DEMAND = MSG.columnProjectedDemand();
+    public static final String LIMIT = MSG.columnLimit();
+    public static final String ROOM_RATIO = MSG.columnRoomRatio();
+    public static final String MIN_PER_WK = MSG.columnMinPerWk();
+    public static final String MANAGER = MSG.columnManager();
+    public static final String DATE_PATTERN = MSG.columnDatePattern();
+    public static final String TIME_PATTERN = MSG.columnTimePattern();
+    public static final String INSTRUCTOR = MSG.columnInstructor();
+    public static final String PREFERENCES = MSG.columnPreferences();
+    public static final String TIMETABLE = MSG.columnTimetable();
+    public static final String CREDIT = MSG.columnOfferingCredit();
+    public static final String SCHEDULING_SUBPART_CREDIT = MSG.columnSubpartCredit();
+    public static final String SCHEDULE_PRINT_NOTE_FILTER = MSG.columnSchedulePrintNote();
+    public static String SCHEDULE_PRINT_NOTE = MSG.columnSchedulePrintNote();
+    public static final String NOTE = MSG.columnNote();
+    public static final String TITLE = MSG.columnTitle();
+    public static final String CONSENT = MSG.columnConsent();
+    public static final String DESIGNATOR_REQ = MSG.columnDesignatorRequired();
+    public static final String EXAM = MSG.columnExam();
+    public static final String EXAM_NAME = MSG.columnExamName();
+    public static final String EXAM_PER = MSG.columnExamPeriod();
+    public static final String EXAM_ROOM = MSG.columnExamRoom();
     
     // Preference Labels
-    protected static String TIME = "Time";
-    protected static String ROOMGR = "Room&nbsp;Group";
-    protected static String BLDG = "Bldg";
-    protected static String ROOM = "Room";
-    protected static String FEATURES = "Features";
-    protected static String DISTRIBUTION = "Distribution";
-    protected static String ALL_ROOM = "Room";
+    protected static String TIME = MSG.columnTimePref();
+    protected static String ROOMGR = MSG.columnRoomGroupPref();
+    protected static String BLDG = MSG.columnBuildingPref();
+    protected static String ROOM = MSG.columnRoomPref();
+    protected static String FEATURES = MSG.columnRoomFeaturePref();
+    protected static String DISTRIBUTION = MSG.columnDistributionPref();
+    protected static String ALL_ROOM = MSG.columnAllRoomPref();
 
     // Timetable Labels
-    protected static String ASSIGNED_TIME = "Time";
-    protected static String ASSIGNED_ROOM = "Room";
-    protected static String ASSIGNED_ROOM_CAPACITY = "Room Cap";
+    protected static String ASSIGNED_TIME = MSG.columnAssignedTime();
+    protected static String ASSIGNED_ROOM = MSG.columnAssignedRoom();
+    protected static String ASSIGNED_ROOM_CAPACITY = MSG.columnAssignedRoomCapacity();
 
     
     protected static String[] COLUMNS = {LABEL,
@@ -418,7 +422,7 @@ public class WebInstructionalOfferingTableBuilder {
     		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
         		cell = this.headerCell(DEMAND, 2, 1);
     		} else {
-        		cell = this.headerCell(("Last " + DEMAND), 2, 1);    			
+        		cell = this.headerCell((LAST_DEMAND), 2, 1);    			
     		}
     		row.addContent(cell);
     	}
@@ -597,7 +601,7 @@ public class WebInstructionalOfferingTableBuilder {
         if (prefGroup instanceof Class_) {
 			Class_ aClass = (Class_) prefGroup;
 			if (!aClass.isDisplayInScheduleBook().booleanValue()){
-				cell.setTitle(aClass.getClassLabelWithTitle() + " - Do Not Display In Schedule Book.");
+				cell.setTitle(MSG.tooltipDoNotDisplayInScheduleBook(aClass.getClassLabelWithTitle()));
 				label = "<i>" + label + "</i>";
 			} else {
 				cell.setTitle(aClass.getClassLabelWithTitle());
@@ -834,7 +838,7 @@ public class WebInstructionalOfferingTableBuilder {
     		if (c.getSchedulePrintNote()!=null && c.getSchedulePrintNote().trim().length() != 0) {
     			String note = (c.getSchedulePrintNote().length() <= 20?c.getSchedulePrintNote():c.getSchedulePrintNote().substring(0, 20) + "...");
     			if(!Constants.showPrintNoteAsShortenedText(user) && !Constants.showPrintNoteAsFullText(user) ){
-    	    		cell = initNormalCell("<IMG border='0' alt='Has Schedule Print Note' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
     	    		cell.setAlign("center");
     			} else if (Constants.showPrintNoteAsShortenedText(user)) {
 	    			cell = initNormalCell(note, isEditable);
@@ -857,7 +861,7 @@ public class WebInstructionalOfferingTableBuilder {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
+                    "title='"+MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
             sb.append(exam.getLabel());
             if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
@@ -873,7 +877,7 @@ public class WebInstructionalOfferingTableBuilder {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
+                    "title='"+MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
@@ -896,7 +900,7 @@ public class WebInstructionalOfferingTableBuilder {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
+                    "title='" + MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
@@ -946,7 +950,7 @@ public class WebInstructionalOfferingTableBuilder {
 		}
 		if (hasNote){
 			if (!Constants.showCrsOffrAsShortenedText(user) && !Constants.showCrsOffrAsFullText(user)){
-	    		cell = initNormalCell("<IMG border='0' alt='Has Course Offering Note' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
 	    		cell.setAlign("center");	
 			} else {
 				if (note.length() == 0){
@@ -975,7 +979,7 @@ public class WebInstructionalOfferingTableBuilder {
     				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
         			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='Has Note to Mgr' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else { 
@@ -1367,7 +1371,7 @@ public class WebInstructionalOfferingTableBuilder {
         	            indent + "<u>Configuration</u>: <font class='configTitle'>" + configName + "</font> ", 
         	            isEditable);
         	    */
-        	    cell = this.initNormalCell(indent + "Configuration " + configName, isEditable);
+        	    cell = this.initNormalCell(indent + MSG.labelConfiguration(configName), isEditable);
         	    cell.setNoWrap(true);
         	    row.addContent(cell);
 
@@ -1833,8 +1837,8 @@ public class WebInstructionalOfferingTableBuilder {
     		if(displayHeader) {
     		    try {
     		    	if (allCoursesAreGiven)
-    		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered\">Courses Not Offered</A></DIV>");
-    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered\"></A>Offered Courses</DIV>");
+    		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered\">" + MSG.labelNotOfferedCourses() + "</A></DIV>");
+    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered\"></A>" + MSG.labelOfferedCourses() + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -1853,7 +1857,7 @@ public class WebInstructionalOfferingTableBuilder {
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"error\">There are no courses currently offered for this subject.</font>");
+    					outputStream.print("<font class=\"error\">" + MSG.errorNoCoursesOffered() + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}
@@ -1865,8 +1869,8 @@ public class WebInstructionalOfferingTableBuilder {
     	        try {
     				outputStream.print("<br>");
     				if (allCoursesAreGiven)
-    					outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#offered\">Offered Courses</A></DIV>");
-    		        outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered\"></A>Not Offered Courses</DIV>");
+    					outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#offered\">" + MSG.labelOfferedCourses() + "</A></DIV>");
+    		        outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered\"></A>" + MSG.labelNotOfferedCourses() + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -1884,7 +1888,7 @@ public class WebInstructionalOfferingTableBuilder {
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"normal\">&nbsp;<br>All courses are currently being offered for this subject.</font>");
+    					outputStream.print("<font class=\"normal\">&nbsp;<br>" + MSG.errorAllCoursesOffered() + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}

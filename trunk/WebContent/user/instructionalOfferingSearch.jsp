@@ -25,30 +25,31 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-
 <tiles:importAttribute />
 <html:form action="/instructionalOfferingSearch">
+<loc:bundle name="CourseMessages">
 	<html:hidden property="doit" value="Search"/>
 	<TABLE border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="5">
-				<script language="JavaScript" type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 				<TABLE border="0" cellspacing="0" cellpadding="3">
 					<TR>
 						<TD>
-							<B>Optional Columns:</B>
+							<B><loc:message name="filterOptionalColumns" /></B>
 						</TD>
 						<TD colspan="2">
 							<html:checkbox property="divSec" />
-							<%=WebInstructionalOfferingTableBuilder.DIV_SEC%>
+							<loc:message name="columnExternalId"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].roomLimit.checked = true;} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].roomLimit.checked = false;};"/>
-							Enrollment Information
+							<loc:message name="columnEnrollmentInformation"/>
 						</TD>
 					</TR>
 					<TR>
@@ -56,7 +57,7 @@
 						<TD width="10%"></TD>						
 						<TD>
 							<html:checkbox property="demand"  />
-							<%=WebInstructionalOfferingTableBuilder.DEMAND%>
+							<loc:message name="columnDemand"/>
 						</TD>
 					</TR>
 					<TR>
@@ -64,7 +65,7 @@
 						<TD></TD>						
 						<TD>
 							<html:checkbox property="projectedDemand" />
-							<%=WebInstructionalOfferingTableBuilder.PROJECTED_DEMAND%>
+							<loc:message name="columnProjectedDemand"/>
 						</TD>
 					</TR>
 					<TR>
@@ -72,7 +73,7 @@
 						<TD></TD>						
 						<TD>
 							<html:checkbox property="limit" />
-							<%=WebInstructionalOfferingTableBuilder.LIMIT%>
+							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
 					<TR>
@@ -80,21 +81,21 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="roomLimit" />
-							<%=WebInstructionalOfferingTableBuilder.ROOM_RATIO%>
+							<loc:message name="columnRoomRatio"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="manager" />
-							<%=WebInstructionalOfferingTableBuilder.MANAGER%>
+							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="dateTimeInformation" value="1" onclick="if (document.forms[0].dateTimeInformation.checked){document.forms[0].datePattern.checked = true;document.forms[0].minPerWk.checked = true;document.forms[0].timePattern.checked = true;} else {document.forms[0].datePattern.checked = false;document.forms[0].minPerWk.checked = false;document.forms[0].timePattern.checked = false;};"/>
-							Date/Time Information
+							<loc:message name="columnDateTimeInformation"/>
 						</TD>
 					</TR>
 					<TR>
@@ -102,7 +103,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="datePattern" />
-							<%=WebInstructionalOfferingTableBuilder.DATE_PATTERN%>
+							<loc:message name="columnDatePattern"/>
 						</TD>
 					</TR>
 					<TR>
@@ -110,7 +111,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="minPerWk" />
-							<%=WebInstructionalOfferingTableBuilder.MIN_PER_WK%>
+							<loc:message name="columnMinPerWk"/>
 						</TD>
 					</TR>
 					<TR>
@@ -118,21 +119,21 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="timePattern" />
-							<%=WebInstructionalOfferingTableBuilder.TIME_PATTERN%>
+							<loc:message name="columnTimePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="preferences" />
-							<%=WebInstructionalOfferingTableBuilder.PREFERENCES%>
+							<loc:message name="columnPreferences"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="instructor" />
-							<%=WebInstructionalOfferingTableBuilder.INSTRUCTOR%>
+							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
 					<logic:notEmpty name="instructionalOfferingListForm" property="timetable">
@@ -140,7 +141,7 @@
 							<TD></TD>
 							<TD colspan="2">
 								<html:checkbox property="timetable" />
-								<%=WebInstructionalOfferingTableBuilder.TIMETABLE%>
+								<loc:message name="columnTimetable"/>
 							</TD>
 						</TR>
 					</logic:notEmpty>
@@ -148,7 +149,7 @@
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].designatorRequired.checked = true;document.forms[0].schedulePrintNote.checked = true;} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].designatorRequired.checked = false;document.forms[0].schedulePrintNote.checked = false;};"/>
-							Catalog Information
+							<loc:message name="columnCatalogInformation"/>
 						</TD>
 					</TR>
 					<TR>
@@ -156,7 +157,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="title" />
-							<%=WebInstructionalOfferingTableBuilder.TITLE%>
+							<loc:message name="columnTitle"/>
 						</TD>
 					</TR>
 					<TR>
@@ -164,7 +165,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="credit" />
-							<%=WebInstructionalOfferingTableBuilder.CREDIT%>
+							<loc:message name="columnOfferingCredit"/>
 						</TD>
 					</TR>
 					<TR>
@@ -172,7 +173,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="subpartCredit" />
-							<%=WebInstructionalOfferingTableBuilder.SCHEDULING_SUBPART_CREDIT%>
+							<loc:message name="columnSubpartCredit"/>
 						</TD>
 					</TR>
 					<TR>
@@ -180,7 +181,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="consent" />
-							<%=WebInstructionalOfferingTableBuilder.CONSENT%>
+							<loc:message name="columnConsent"/>
 						</TD>
 					</TR>
 					<TR>
@@ -188,7 +189,7 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="designatorRequired" />
-							<%=WebInstructionalOfferingTableBuilder.DESIGNATOR_REQ%>
+							<loc:message name="columnDesignatorRequired"/>
 						</TD>
 					</TR>
 					<TR>
@@ -196,14 +197,14 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="schedulePrintNote" />
-							<%=WebInstructionalOfferingTableBuilder.SCHEDULE_PRINT_NOTE_FILTER%>
+							<loc:message name="columnSchedulePrintNote"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
 							<html:checkbox property="note" />
-							<%=WebInstructionalOfferingTableBuilder.NOTE%>
+							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
 					<logic:equal name="instructionalOfferingListForm" property="canSeeExams" value="true">
@@ -211,14 +212,14 @@
 							<TD></TD>
 							<TD colspan="2">
 								<html:checkbox property="exams" />
-								Examinations
+								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
 					</logic:equal>
 					<html:hidden property="canSeeExams"/>
 					<TR>
 						<TD>
-							<B>Sort By:</B>
+							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD colspan="2">
 							<html:select property="sortBy">
@@ -241,7 +242,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TH valign="top">Subject:</TH>
+			<TH valign="top"><loc:message name="filterSubject"/></TH>
 			<TD valign="top">
 				<html:select name="instructionalOfferingListForm" property="subjectAreaId"
 					onfocus="setUp();" 
@@ -251,42 +252,42 @@
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
-			<TH valign="top">Course Number:</TH>
+			<TH valign="top"><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top">
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
 				<layout:suggest 
 					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbr" 
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 					minWordLength="2" 
-					tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
+					tooltip="<%=MSG.tooltipCourseNumber()%>"
 					onblur="hideSuggestionList('courseNbr');" />
 			</TD>
 			<TD valign="top">
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
-					accesskey="S" styleClass="btn" titleKey="title.searchOffering"
+					accesskey="<%=MSG.accessSearchInstructionalOfferings()%>" styleClass="btn" title='<%=MSG.titleSearchInstructionalOfferings(MSG.accessSearchInstructionalOfferings())%>'
 					onclick="doit.value=this.value;displayLoading();">
-					<bean:message key="button.searchInstructionalOfferings" />
+					<loc:message name="actionSearchInstructionalOfferings"/>
 				</html:submit> 
 				
 				<html:submit
-					accesskey="P" styleClass="btn" titleKey="title.exportPDF"
+					accesskey="<%=MSG.accessExportPdf()%>" styleClass="btn" title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
 					onclick="doit.value=this.value;displayLoading();">
-					<bean:message key="button.exportPDF" />
+					<loc:message name="actionExportPdf"/>
 				</html:submit> 
 
 				<tt:propertyEquals name="tmtbl.pdf.worksheet" value="true">
 					<html:submit
-						accesskey="W" styleClass="btn" titleKey="title.worksheetPDF"
+						accesskey="<%=MSG.accessWorksheetPdf()%>" styleClass="btn" title='<%=MSG.titleWorksheetPdf(MSG.accessWorksheetPdf())%>'
 						onclick="doit.value=this.value;displayLoading();">
-						<bean:message key="button.worksheetPDF" />
+						<loc:message name="actionWorksheetPdf"/>
 					</html:submit>
 				</tt:propertyEquals> 
 
 				<html:submit
-					accesskey="A" styleClass="btn" titleKey="title.addNewOffering"
+					accesskey="<%=MSG.accessAddNewInstructionalOffering()%>" styleClass="btn" title='<%=MSG.titleAddNewInstructionalOffering(MSG.accessAddNewInstructionalOffering())%>'
 					onclick="doit.value=this.value;">
-					<bean:message key="button.addNew" />
+					<loc:message name="actionAddNewInstructionalOffering"/>
 				</html:submit>
 				
 			</TD>
@@ -297,6 +298,7 @@
 			</TD>
 		</TR>
 	</TABLE>
+</loc:bundle>
 </html:form>
 
 
@@ -305,4 +307,3 @@
 	<tiles:insert attribute="body2" />
 	<script language="javascript">displayElement('loading', false);</script>
 </logic:notEmpty>
-
