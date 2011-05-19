@@ -40,19 +40,23 @@ import org.unitime.timetable.ApplicationProperties;
  */
 public class Localization {
 	private static Log sLog = LogFactory.getLog(Localization.class);
-	public static final String ROOT = "org.unitime.localization.messages."; 
-
+	public static final String ROOT = "org.unitime.localization.messages.";
+	
 	public static <T> T create(Class<? extends Messages> bundle) {
-		return (T)Proxy.newProxyInstance(Localization.class.getClassLoader(), new Class[] {bundle, StrutsActionsRetriever.class}, new Bundle(bundle));
+		return create(bundle, ApplicationProperties.getProperty("unitime.locale", "en"));
+	}
+
+	public static <T> T create(Class<? extends Messages> bundle, String locale) {
+		return (T)Proxy.newProxyInstance(Localization.class.getClassLoader(), new Class[] {bundle, StrutsActionsRetriever.class}, new Bundle(bundle, locale));
 	}
 		
 	public static class Bundle implements InvocationHandler {
 		List<Properties> iProperties = new ArrayList<Properties>();
 		Class<? extends Messages> iMessages = null;
 
-		public Bundle(Class<? extends Messages> messages) {
+		public Bundle(Class<? extends Messages> messages, String locale) {
 			iMessages = messages;
-			for (String loc: ApplicationProperties.getProperty("unitime.locale", "en").split(",")) {
+			for (String loc: locale.split(",")) {
 				String resource = messages.getName().replace('.', '/') + "_" + loc + ".properties"; 
 				try {
 					InputStream is = Localization.class.getClassLoader().getResourceAsStream(resource);
