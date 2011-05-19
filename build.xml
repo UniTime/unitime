@@ -115,7 +115,7 @@
 			<fileset dir="${src.dir}">
 				<include name="*.xml" />
 				<include name="*.dtd" />
-				<include name="*.properties" />
+				<include name="**/*.properties" />
 				<include name="solver.key" />
 			</fileset>
 			<manifest>
