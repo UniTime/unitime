@@ -97,12 +97,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	      return map;
 	}
 	*/
-	
-	protected String getMethodName(ActionMapping mapping, ActionForm form,  HttpServletRequest request, HttpServletResponse response, String parameter) throws Exception {
 		
-		return super.getMethodName(mapping, form, request, response, parameter);
-	}
-	
 	/** 
 	 * Method execute
 	 * @param mapping
