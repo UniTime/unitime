@@ -546,7 +546,6 @@ public class StudentSectioningWidget extends Composite {
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear();
-			CourseRequestInterface req = iCourseRequests.getRequest();
 			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				if (course.isAssigned()) {
 					boolean firstClazz = true;
@@ -713,20 +712,18 @@ public class StudentSectioningWidget extends Composite {
 					}
 				}
 			}
-			for (CourseRequestInterface.Request r: req.getCourses()) {
-				if (r.hasRequestedFreeTime()) {
-					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
+			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					if (clazz.isFreeTime()) {
+						CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+						ft.setLength(clazz.getLength());
+						ft.setStart(clazz.getStart());
+						for (int d: clazz.getDays()) ft.addDay(d);
 						iAssignmentGrid.addFreeTime(ft);
 					}
 				}
 			}
-			for (CourseRequestInterface.Request r: req.getAlternatives()) {
-				if (r.hasRequestedFreeTime()) {
-					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-						iAssignmentGrid.addFreeTime(ft);
-					}
-				}
-			}
+
 			WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
 			int idx = 0;
 			for (WebTable.Row row: rows) rowArray[idx++] = row;

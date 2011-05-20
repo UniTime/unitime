@@ -436,4 +436,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Show unassignments")
 	String showUnassignments();
+	
+	@DefaultMessage("Free time is not allowed.")
+	String freeTimeNotAllowed();
+	
+	@DefaultMessage("{0} is a course.")
+	String notFreeTimeIsCourse(String text);
 }
