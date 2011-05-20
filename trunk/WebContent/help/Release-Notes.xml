@@ -28,6 +28,18 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Online Student Sectioning</title>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>When a course name can be also parsed as a free-time request, make sure that it is only interpreted as a course request.
+					<line>Free time request like FS 655 can still be entered, but with the Free prefix (i.e., as Free FS 655).</line>
+					<line>This fixes the unwanted free-times showing up on the Timetable as well as interpreting course requests as free time requests during save requests / enroll actions.</line>
+				</line>
+			</description>
+		</item>	
+	</category>
+	<category>
 		<title>User Interface</title>
 		<item>
 			<name>Add Event Meetings</name>
