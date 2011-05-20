@@ -1031,6 +1031,10 @@ public class CourseSelectionBox extends Composite {
 	}
 	
 	public ArrayList<CourseRequestInterface.FreeTime> parseFreeTime(String text) throws IllegalArgumentException {
+		if (!iAllowFreeTime)
+			throw new IllegalArgumentException(MESSAGES.freeTimeNotAllowed());
+		if (iValidCourseNames.contains(text))
+			throw new IllegalArgumentException(MESSAGES.notFreeTimeIsCourse(text));
 		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
 		if (text.isEmpty()) throw new IllegalArgumentException(MESSAGES.courseSelectionNoFreeTime());
 		ArrayList<Integer> lastDays = new ArrayList<Integer>();
