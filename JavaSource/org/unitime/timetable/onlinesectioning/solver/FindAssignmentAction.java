@@ -296,6 +296,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, Student originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache) {
+		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourseInfo(request.getRequestedCourse()) != null)
+			request.getRequestedFreeTime().clear();			
 		if (request.hasRequestedFreeTime()) {
 			for (CourseRequestInterface.FreeTime freeTime: request.getRequestedFreeTime()) {
 				int dayCode = 0;
