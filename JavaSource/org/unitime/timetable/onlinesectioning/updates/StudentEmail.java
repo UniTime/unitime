@@ -19,7 +19,15 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,9 +41,11 @@ import java.util.Hashtable;
 import java.util.List;
 
 import javax.activation.DataSource;
+import javax.imageio.ImageIO;
 
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
@@ -66,6 +76,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MMMM dd, yyyy hh:mm:ss aa");
 	private String iSubject = "Class schedule change for %session%";
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
+	private byte[] iTimetableImage = null;
 	
 	public StudentEmail(Long studentId, List<Request> oldRequests, List<Request> newRequests) {
 		iStudentId = studentId; iOldRequests = oldRequests; iNewRequests = newRequests;
@@ -86,7 +97,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public void setSubject(String subject) { iSubject = subject; }
 
 	@Override
-	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Lock lock = server.lockStudent(getStudentId(), null, true);
 		try {
 			Student student = server.getStudent(getStudentId());
@@ -103,7 +114,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 						
 						email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
-
+						
 						email.addAttachement(new DataSource() {
 							@Override
 							public OutputStream getOutputStream() throws IOException {
@@ -117,7 +128,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							
 							@Override
 							public InputStream getInputStream() throws IOException {
-								return new ByteArrayInputStream(html.getBytes());
+								StringWriter buffer = new StringWriter();
+								PrintWriter out = new PrintWriter(buffer);
+								generateTimetable(out, server, helper);
+								out.flush(); out.close();
+								return new ByteArrayInputStream(
+										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes());
 							}
 							
 							@Override
@@ -125,6 +141,58 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								return "text/html";
 							}
 						});
+						
+						if (iTimetableImage != null) {
+							email.addAttachement(new DataSource() {
+								@Override
+								public OutputStream getOutputStream() throws IOException {
+									throw new IOException("No output stream.");
+								}
+								
+								@Override
+								public String getName() {
+									return "timetable.png";
+								}
+								
+								@Override
+								public InputStream getInputStream() throws IOException {
+									return new ByteArrayInputStream(iTimetableImage);
+								}
+								
+								@Override
+								public String getContentType() {
+									return "image/png";
+								}
+							});
+						}
+						
+						try {
+							final String calendar = CalendarServlet.getCalendar(server, student);
+							if (calendar != null)
+								email.addAttachement(new DataSource() {
+									@Override
+									public OutputStream getOutputStream() throws IOException {
+										throw new IOException("No output stream.");
+									}
+									
+									@Override
+									public String getName() {
+										return "timetable.ics";
+									}
+									
+									@Override
+									public InputStream getInputStream() throws IOException {
+										return new ByteArrayInputStream(calendar.getBytes());
+									}
+									
+									@Override
+									public String getContentType() {
+										return "text/calendar";
+									}
+								});
+						} catch (IOException e) {
+							helper.warn("Unable to create calendar for student " + student.getId() + ":" + e.getMessage());
+						}
 						
 						String lastMessageId = sLastMessage.get(student.getId());
 						if (lastMessageId != null)
@@ -246,7 +314,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					"Timetable</td></tr>");
 			out.println("		<tr><td>");
 			
-			generateTimetable(out, server, helper);
+			try {
+				iTimetableImage = generateTimetableImage();
+			} catch (Exception e) {
+				helper.error("Unable to create PDF timetable: " + e.getMessage(), e);
+				generateTimetable(out, server, helper);
+			}
+			if (iTimetableImage != null)
+				out.println("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>");
 			
 			out.println("		</td></tr>");
 		}
@@ -421,6 +496,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
 			for (String instructor: section.getChoice().getInstructorNames().split(":")) {
 				String[] nameEmail = instructor.split("\\|");
+				if (!instructors.isEmpty()) instructors += ", ";
 				if (nameEmail.length < 2) {
 					instructors += nameEmail[0];
 				} else {
@@ -802,13 +878,185 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		out.println("</div></td></tr></table></div></td></tr>");
 		
+		/*
 		out.println("	<tr><td style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
 		out.println("		If the timetable is not displayed correctly, please check out the attached file.");
 		out.println("	</td></tr>");
-
+		 */
 		
 		out.println("</table>");
+	}
+	
+	public byte[] generateTimetableImage() throws IOException {
+		int nrDays = 5, firstHour = 7, lastHour = 18;
+		boolean hasSat = false, hasSun = false;
+		List<Assignment> table[][] = new List[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
+		for (Request request: getNewRequests()) {
+			if (request.getAssignment() == null) continue;
+			for (Assignment assignment: request.getAssignment().getAssignments()) {
+				if (assignment.getTime() == null) continue;
+				int dayCode = assignment.getTime().getDayCode();
+				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) hasSat = true;
+				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) hasSun = true;
+				int startHour = (assignment.getTime().getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
+				if (startHour < firstHour) firstHour = startHour;
+				int endHour = ((assignment.getTime().getStartSlot() + assignment.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
+				if (endHour > lastHour) lastHour = endHour;
+				for (Enumeration<Integer> e = assignment.getTime().getSlots(); e.hasMoreElements(); ) {
+					int slot = e.nextElement();
+					int day = slot / Constants.SLOTS_PER_DAY;
+					int time = slot % Constants.SLOTS_PER_DAY;
+					if (table[day][time] == null)
+						table[day][time] = new ArrayList<Assignment>();
+					table[day][time].add(assignment);
+				}
+			}
+		}
+		if (hasSat) nrDays = 6;
+		if (hasSun) nrDays = 7;
 		
+        BufferedImage image = new BufferedImage(39 + 180 * nrDays, 21 + 50 * (lastHour - firstHour), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+
+        g.setFont(new Font("Sans Serif", Font.PLAIN, 11));
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(0xff, 0xff, 0xff));
+        g.fillRect(0, 0, image.getWidth(), image.getHeight());
+        
+        int fh = g.getFontMetrics().getHeight();
+        
+        g.setColor(new Color(0x69, 0x91, 0xce));
+		for (int i = 0; i < nrDays; i++) {
+	        g.drawString(DayCode.values()[i].getName(), 40 + i * 180, 17);
+		}
+		
+		for (int h = firstHour; h < lastHour; h++) {
+			int top = 20 + 50 * (h - firstHour);
+			g.drawString((h > 12 ? h - 12 : h) + (h < 12 ? "am" : "pm"), 2, top + fh);
+		}
+		
+		g.setColor(new Color(0xff, 0xfd, 0xdd));
+		g.fillRect(35, 20 + 25  + 50 * (7 - firstHour), 5 + 180 * nrDays, 501);
+		
+		Stroke noStroke = g.getStroke();
+		Stroke dotted = new BasicStroke(1f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1f, new float[] {2f, 2f}, 0f);
+		g.setColor(new Color(0xdd, 0xdd, 0xdd));
+		for (int h = firstHour; h < lastHour; h++) {
+			int top = 20 + 50 * (h - firstHour);
+			g.setStroke(noStroke);
+			g.drawLine(35, top, (39 + 180 * nrDays), top);
+			g.setStroke(dotted);
+			g.drawLine(35, top + 25, (39 + 180 * nrDays), top + 25);
+		}
+		g.setStroke(noStroke);
+		g.drawLine(35, 20 + 50 * (lastHour - firstHour), (39 + 180 * nrDays), 20 + 50 * (lastHour - firstHour));
+		
+		g.setColor(new Color(0xff, 0xe1, 0xdd));
+		for (Request request: getNewRequests()) {
+			if (request instanceof FreeTimeRequest) {
+				FreeTimeRequest fr = (FreeTimeRequest)request;
+				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
+					g.fillRect(36 + 180 * dow.getIndex(), 21 + 125 * fr.getTime().getStartSlot() / 30 - 50 * firstHour, 182, 125 * fr.getTime().getLength() / 30 - 1);
+				}
+			}
+		}
+
+		g.setColor(new Color(0xdd, 0xdd, 0xdd));
+		for (int i = 0; i <= nrDays; i++) {
+			g.drawLine(35 + 180 * i, 20, 35 + 180 * i, 20 + 50 * (lastHour - firstHour));
+			g.drawLine(38 + 180 * i, 20, 38 + 180 * i, 20 + 50 * (lastHour - firstHour));
+		}
+		
+		g.setColor(new Color(0xba, 0x53, 0x53));
+		for (Request request: getNewRequests()) {
+			if (request instanceof FreeTimeRequest) {
+				FreeTimeRequest fr = (FreeTimeRequest)request;
+				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
+					g.drawString("Free " + DayCode.toString(fr.getTime().getDayCode()) + " " + fr.getTime().getStartTimeHeader() + " - " + fr.getTime().getEndTimeHeader(),
+							42 + 180 * dow.getIndex(),
+							20 + 125 * fr.getTime().getStartSlot() / 30 - 50 * firstHour + fh);
+				}
+			}
+		}
+		
+		int color = 0;
+		for (Request request: getNewRequests()) {
+			if (request instanceof CourseRequest && request.getAssignment() != null) {
+				for (Section section: request.getAssignment().getSections()) {
+					if (section.getTime() == null) continue;
+					for (DayCode dow: DayCode.toDayCodes(section.getTime().getDayCode())) {
+						int col = 0;
+						int index = 0;
+						for (int i = 0; i < section.getTime().getLength(); i++) {
+							col = Math.max(col, table[dow.getIndex()][section.getTime().getStartSlot() + i].size());
+							index = Math.max(index, table[dow.getIndex()][section.getTime().getStartSlot() + i].indexOf(section));
+						}
+						int w = 176 / col + (index + 1 < col ? -2 : 0);
+						int h = 125 * section.getTime().getLength() / 30 - 1;
+						int l = 39 + 180 * dow.getIndex() + index * 174 / col;
+						int t = 21 + 125 * section.getTime().getStartSlot() / 30 - 50 * firstHour;
+						
+						g.setColor(new Color(Integer.valueOf(sColor2[color], 16)));
+						g.fillRoundRect(l, t, w, h, 6, 6);
+						
+						g.setColor(new Color(Integer.valueOf(sColor1[color], 16)));
+						g.drawRoundRect(l, t, w, h, 6, 6);
+						g.fillRoundRect(l, t, w, 2 + fh, 6, 6);
+						g.fillRect(l, t + fh - 2, w, 4);
+						
+				        g.setColor(new Color(0xff, 0xff, 0xff));
+				        String text = request.getAssignment().getCourse().getSubjectArea() + " " + 
+							request.getAssignment().getCourse().getCourseNumber() + " " +
+							section.getSubpart().getName();
+				        while (g.getFontMetrics().stringWidth(text) > w - 10)
+				        	text = text.substring(0, text.length() - 1);
+				        g.drawString(text, l + 5, t + fh - 2);
+				        
+				        List<String> texts = new ArrayList<String>();
+						if (section.getRooms() != null)
+							for (RoomLocation room: section.getRooms())
+								texts.add(room.getName());
+						if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
+							String[] instructors = section.getChoice().getInstructorNames().split(":");
+							for (String instructor: instructors) {
+								String[] nameEmail = instructor.split("\\|");
+								texts.add(nameEmail[0]);
+							}
+						}
+						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty())
+							texts.add(section.getTime().getDatePatternName());
+						
+						int tt = t + fh; 
+						String next = "";
+						int idx = 0;
+						while (idx < texts.size()) {
+							next += texts.get(idx);
+							if (idx + 1 < texts.size()) next += ", ";
+							while (g.getFontMetrics().stringWidth(next.trim()) < w - 10 && idx + 1 < texts.size()) {
+								if (g.getFontMetrics().stringWidth(next + texts.get(idx + 1) + ",") < w - 10) {
+									idx ++;
+									next += texts.get(idx);
+									if (idx + 1 < texts.size()) next += ", ";
+								} else  break;
+							}
+							text = next; next = ""; idx ++;
+					        while (g.getFontMetrics().stringWidth(text.trim()) > w - 10) {
+					        	next = text.substring(text.length() - 1, text.length()) + next;
+					        	text = text.substring(0, text.length() - 1);
+							}
+					        if (tt + fh - 2 > t + h) break;
+					        g.drawString(text, l + 5, tt + fh - 2);
+					        tt += fh;
+						}
+					}
+				}
+				color = (1 + color) % sColor1.length;
+			}
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", out);
+		out.flush();out.close();
+		return out.toByteArray();
 	}
 
 }

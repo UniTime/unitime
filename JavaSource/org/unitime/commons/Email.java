@@ -174,6 +174,7 @@ public class Email {
         BodyPart attachement = new MimeBodyPart();
         attachement.setDataHandler(new DataHandler(source));
         attachement.setFileName(source.getName());
+        attachement.setHeader("Content-ID", source.getName());
         iBody.addBodyPart(attachement);
 	}
 
