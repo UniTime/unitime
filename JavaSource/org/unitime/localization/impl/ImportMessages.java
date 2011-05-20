@@ -34,23 +34,23 @@ public class ImportMessages {
 		try {
 			PrintStream out = new PrintStream(System.out, true, "UTF-8");
 			
-			out.println("# UniTime 3.3 (University Timetabling Application");
+			out.println("# UniTime 3.3 (University Timetabling Application)");
 			out.println("# Copyright (C) 2011, UniTime LLC, and individual contributors");
 			out.println("# as indicated by the @authors tag.");
-			out.println("#");
+			out.println("# ");
 			out.println("# This program is free software; you can redistribute it and/or modify");
 			out.println("# it under the terms of the GNU General Public License as published by");
 			out.println("# the Free Software Foundation; either version 3 of the License, or");
 			out.println("# (at your option) any later version.");
-			out.println("#");
+			out.println("# ");
 			out.println("# This program is distributed in the hope that it will be useful,");
 			out.println("# but WITHOUT ANY WARRANTY; without even the implied warranty of");
 			out.println("# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
 			out.println("# GNU General Public License for more details.");
-			out.println("#");
+			out.println("# ");
 			out.println("# You should have received a copy of the GNU General Public License along");
 			out.println("# with this program.  If not, see <http://www.gnu.org/licenses/>.");
-			out.println("#");
+			out.println("# ");
 			
 			CSVFile csv = new CSVFile(new File(System.getProperty("file", "/Users/muller/Downloads/UniTime Localization Czech.csv")));
 			for (CSVLine line: csv.getLines()) {
