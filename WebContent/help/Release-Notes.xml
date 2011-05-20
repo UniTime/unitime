@@ -37,6 +37,13 @@
 					<line>This fixes the unwanted free-times showing up on the Timetable as well as interpreting course requests as free time requests during save requests / enroll actions.</line>
 				</line>
 			</description>
+		</item>
+		<item>
+			<name>Student Notification Emails</name>
+			<description>
+				<line>Include timetable in the iCalendar format.</line>
+				<line>Include timetable grid as a PNG (to ensure it is displayed properly by an email client).</line>
+			</description>
 		</item>	
 	</category>
 	<category>
