@@ -28,7 +28,20 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
-		<title>First Release of UniTime 3.3</title>
+		<title>User Interface</title>
+		<item>
+			<name>Add Event Meetings</name>
+			<description>
+				<line>When adding a course related event:
+					<line>Subject area field made a little wider.</line>
+					<line>Course number field made much wider (to cover remaining width of the page).
+						<line>This makes the field wide enough to include the course title.</line>
+					</line>
+					<line>Only replace _ with indent spaces in itype column (underscore can be a valid character in the course number).</line>
+					<line>This is also fixing the problem of course numbers not showing up (introduced in revision 2290).</line>
+				</line>
+			</description>
+		</item>
 		<item>
 			<name>Other</name>
 			<description>
