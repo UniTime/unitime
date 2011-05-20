@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
@@ -91,6 +92,9 @@ import org.unitime.timetable.util.DateUtils;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
+import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 
 /**
@@ -300,6 +304,36 @@ public class CalendarServlet extends HttpServlet {
         		hibSession.close();
         	out.close();
         }
+	}
+	
+	public static String getCalendar(OnlineSectioningServer server, net.sf.cpsolver.studentsct.model.Student student) throws IOException {
+		if (student == null) return null;
+		StringWriter buffer = new StringWriter();
+		PrintWriter out = new PrintWriter(buffer);
+        out.println("BEGIN:VCALENDAR");
+        out.println("VERSION:2.0");
+        out.println("CALSCALE:GREGORIAN");
+        out.println("METHOD:PUBLISH");
+        out.println("X-WR-CALNAME:UniTime Schedule");
+        out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
+        out.println("PRODID:-//UniTime " + Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@", "?") + "/Schedule Calendar//NONSGML v1.0//EN");
+		for (Request request: student.getRequests()) {
+			Enrollment enrollment = request.getAssignment();
+			if (enrollment == null) continue;
+			if (enrollment.isCourseRequest()) {
+				CourseInfo course = server.getCourseInfo(enrollment.getCourse().getId());
+				for (Section section: enrollment.getSections())
+					printSection(server, course, section, out);
+			} else {
+				FreeTimeRequest ft = (FreeTimeRequest)request;
+				printFreeTime(server.getAcademicSession().getDatePatternFirstDate(), server.getAcademicSession().getFreeTimePattern(), 
+						DayCode.toString(ft.getTime().getDayCode()), ft.getTime().getStartSlot(), ft.getTime().getLength(), out);
+			}
+		}
+	    out.println("END:VCALENDAR");
+    	out.flush();
+		out.close();
+		return buffer.toString();		
 	}
 	
 	private void printEvent(EventInterface event, PrintWriter out) throws IOException {
@@ -644,7 +678,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private void printSection(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
+	private static void printSection(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
 		TimeLocation time = section.getTime();
 		if (time == null || time.getWeekCode().isEmpty()) return;
 		
@@ -810,7 +844,7 @@ public class CalendarServlet extends HttpServlet {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void printMeetingRest(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
+	private static void printMeetingRest(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
         out.println("UID:" + section.getId());
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
@@ -851,7 +885,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, PrintWriter out) throws IOException {
+	private static void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, PrintWriter out) throws IOException {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
