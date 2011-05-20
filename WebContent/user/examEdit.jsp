@@ -188,14 +188,14 @@
 				<table border='0'>
 				<tr>
 					<td width='100'><i>Subject</i></td>
-					<td width='100'><i>Course<br>Number</i></td>
-					<td width='170'><i>Config<br>Subpart</i></td>
-					<td width='100'><i>Class<br>Number</i></td>
+					<td width='410'><i>Course<br>Number</i></td>
+					<td width='160'><i>Config<br>Subpart</i></td>
+					<td width='90'><i>Class<br>Number</i></td>
 					<td></td>
 				</tr>
 				<logic:iterate name="<%=frmName%>" property="subjectAreaList" id="m" indexId="idx">
 					<tr><td>
-					<html:select style="width:80;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
+					<html:select style="width:90;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('subjectArea', '\"+idx+\"');\" %>" >
@@ -203,9 +203,8 @@
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:80;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
-						onfocus="<%= \"setUp(); changeWidth('courseNbr[\" + idx + \"]', 275)\" %>"
-						onblur="<%= \" changeWidth('courseNbr[\" + idx + \"]', 80);\" %>"
+					<html:select style="width:400;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
+						onfocus="setUp();"
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
 						<html:optionsCollection property='<%="courseNbrs["+idx+"]"%>' label="value" value="id"/>
@@ -292,7 +291,7 @@
 						for(i=0; i<count; i++) {
 							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
 							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
-							while (optVal.indexOf('_')>=0)
+							while (optVal.indexOf('_')>=0 && type=='itype')
 								optVal = optVal.replace("_",String.fromCharCode(160,160,160,160));
 							options[i]=new Option(optVal, optId, false);
 						}
