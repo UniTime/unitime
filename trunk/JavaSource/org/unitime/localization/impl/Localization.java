@@ -85,7 +85,7 @@ public class Localization {
 				if (val != null) {
 					if (args != null)
 						for (int i = 0; i < args.length; i++)
-							val = val.replaceAll("\\{" + (1 + i) + "\\}", (args[i] == null ? "" : args[i].toString()));
+							val = val.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
 					return val;
 				}
 			}
@@ -94,7 +94,7 @@ public class Localization {
 				String val = dm.value();
 				if (args != null)
 					for (int i = 0; i < args.length; i++)
-						val = val.replaceAll("\\{" + (1 + i) + "\\}", (args[i] == null ? "" : args[i].toString()));
+						val = val.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
 				return val;
 			}				
 			return method.getName();
@@ -105,8 +105,12 @@ public class Localization {
 			for (Method m: iMessages.getDeclaredMethods()) {
 				if (m.getParameterTypes().length > 0) continue;
 				Messages.StrutsAction action = m.getAnnotation(Messages.StrutsAction.class);
-				if (action != null)
-					ret.put((String)invoke(proxy, m, new Object[] {}), action.value());
+				if (action != null) {
+					ret.put((String)invoke(proxy, m, new Object[] {}), action.value()); 
+					Messages.DefaultMessage dm = m.getAnnotation(Messages.DefaultMessage.class);
+					if (dm != null)
+						ret.put(dm.value(), action.value());
+				}
 			}
 			return ret;
 		}
