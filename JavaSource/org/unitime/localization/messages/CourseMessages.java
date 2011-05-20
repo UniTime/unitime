@@ -105,7 +105,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Examination")
 	String columnExam();
 
-	@DefaultMessage("{1} {2} Examination")
+	@DefaultMessage("{0} {1} Examination")
 	String tooltipExam(String label, String type);
 
 	@DefaultMessage("Name")
@@ -147,7 +147,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room Cap")
 	String columnAssignedRoomCapacity();
 
-	@DefaultMessage("{1} - Do Not Display In Schedule Book.")
+	@DefaultMessage("{0} - Do Not Display In Schedule Book.")
 	String tooltipDoNotDisplayInScheduleBook(String classLabelWithTitle);
 	
 	@DefaultMessage("Has Schedule Print Note")
@@ -159,7 +159,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Has Note to Mgr")
 	String altHasNoteToMgr();
 	
-	@DefaultMessage("Configuration {1}")
+	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
 	
 	@DefaultMessage("Not Offered Courses")
@@ -211,16 +211,16 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("A")
 	String accessAddNewInstructionalOffering();
 	
-	@DefaultMessage("Search/Display Offerings (Alt+{1})")
+	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
-	@DefaultMessage("Export PDF (Alt+{1})")
+	@DefaultMessage("Export PDF (Alt+{0})")
 	String titleExportPdf(String accessKey);
 
-	@DefaultMessage("Export Worksheet PDF (Alt+{1})")
+	@DefaultMessage("Export Worksheet PDF (Alt+{0})")
 	String titleWorksheetPdf(String accessKey);
 
-	@DefaultMessage("Add New Offering (Alt+{1})")
+	@DefaultMessage("Add New Offering (Alt+{0})")
 	String titleAddNewInstructionalOffering(String accessKey);
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
@@ -241,10 +241,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Unable to create worksheet PDF file: nothing to export.")
 	String errorUnableToCreateWorksheetPdfNoData();
 
-	@DefaultMessage("Unable to create worksheet PDF file: {1}.")
+	@DefaultMessage("Unable to create worksheet PDF file: {0}.")
 	String errorUnableToCreateWorksheetPdf(String reason);
 	
-	@DefaultMessage("Course Number cannot be matched to regular expression: {1}. Reason: {2}")
+	@DefaultMessage("Course Number cannot be matched to regular expression: {0}. Reason: {1}")
 	String errorCourseDoesNotMatchRegEx(String regEx, String reason);
 	
 	@DefaultMessage("Access Denied.")

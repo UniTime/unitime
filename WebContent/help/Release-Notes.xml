@@ -59,6 +59,21 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Internationalization</title>
+		<item>
+			<name>Added support for localization</name>
+			<description>
+				<line>Using a GWT-like approach (to ease transitionfrom Apache Struts to GWT)
+					<line>That is using the same annotation, but it is server side.</line>
+					<line>Multiple resource (message) bundles.</line>
+					<line>Added support for JSP tags and Struts.</line>
+					<line>Added export/import of messages to/from CSV.</line>
+					<line>Instructional Offerings page made localizable (as an example).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 	
 
