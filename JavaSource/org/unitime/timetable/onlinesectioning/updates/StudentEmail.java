@@ -802,6 +802,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			if (request instanceof FreeTimeRequest) {
 				FreeTimeRequest fr = (FreeTimeRequest)request;
 				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
+					if (dow.getIndex() >= nrDays) continue;
+					if (fr.getTime().getStartSlot() + fr.getTime().getLength() < 12 * firstHour) continue;
+					if (fr.getTime().getStartSlot() > 12 * lastHour) continue;
 					out.println("<div style='background: #FFE1DD; width: 100%; color: #BA5353; font-size: x-small; text-align: left; white-space: nowrap; overflow: hidden;" +
 							"width: 183px; height: " + (125 * fr.getTime().getLength() / 30) + "px; " +
 							"position: absolute; left: " + (180 * dow.getIndex()) + "px;" +
