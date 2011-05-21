@@ -42,11 +42,11 @@ public class Localization {
 	private static Log sLog = LogFactory.getLog(Localization.class);
 	public static final String ROOT = "org.unitime.localization.messages.";
 	
-	public static <T> T create(Class<? extends Messages> bundle) {
+	public static <T extends Messages> T create(Class<T> bundle) {
 		return create(bundle, ApplicationProperties.getProperty("unitime.locale", "en"));
 	}
 
-	public static <T> T create(Class<? extends Messages> bundle, String locale) {
+	public static <T extends Messages> T create(Class<T> bundle, String locale) {
 		return (T)Proxy.newProxyInstance(Localization.class.getClassLoader(), new Class[] {bundle, StrutsActionsRetriever.class}, new Bundle(bundle, locale));
 	}
 		
