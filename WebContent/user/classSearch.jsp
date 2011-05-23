@@ -27,6 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <%
 	String frmName = "classListForm";	
@@ -34,19 +35,20 @@
 %>	
 <tiles:importAttribute />
 <html:form action="/classSearch">
+<loc:bundle name="CourseMessages">
 	<html:hidden property="doit" value="Search"/>
 	<TABLE border="0" cellspacing="5" width='100%'>
 		<TR>
 			<TD colspan="6">
-				<script language="JavaScript" type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 				<TABLE border="0" cellspacing="0" cellpadding="3">
 					<TR>
 						<TD>
-							<B>Optional Columns:</B>
+							<B><loc:message name="filterOptionalColumns" /></B>
 						</TD>
 						<TD>
 							<html:checkbox property="divSec" />
-							<%=WebInstructionalOfferingTableBuilder.DIV_SEC%>
+							<loc:message name="columnExternalId"/>
 						</TD>
 					</TR>
 					<logic:equal name="<%=frmName%>" property="demandIsVisible" value="true">
@@ -54,7 +56,7 @@
 							<TD></TD>
 							<TD>
 								<html:checkbox property="demand" />
-								<%=WebInstructionalOfferingTableBuilder.DEMAND%>
+								<loc:message name="columnDemand"/>
 							</TD>
 						</TR>
 					</logic:equal>
@@ -63,49 +65,49 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="limit" />
-							<%=WebInstructionalOfferingTableBuilder.LIMIT%>
+							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="roomLimit" />
-							<%=WebInstructionalOfferingTableBuilder.ROOM_RATIO%>
+							<loc:message name="columnRoomRatio"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="manager" />
-							<%=WebInstructionalOfferingTableBuilder.MANAGER%>
+							<loc:message name="columnManager"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="datePattern" />
-							<%=WebInstructionalOfferingTableBuilder.DATE_PATTERN%>
+							<loc:message name="columnDatePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="timePattern" />
-							<%=WebInstructionalOfferingTableBuilder.TIME_PATTERN%>
+							<loc:message name="columnTimePattern"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="preferences" />
-							<%=WebInstructionalOfferingTableBuilder.PREFERENCES%>
+							<loc:message name="columnPreferences"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="instructor" />
-							<%=WebInstructionalOfferingTableBuilder.INSTRUCTOR%>
+							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
 					<logic:notEmpty name="classListForm" property="timetable">
@@ -113,7 +115,7 @@
 							<TD></TD>
 							<TD>
 								<html:checkbox property="timetable" />
-								<%=WebInstructionalOfferingTableBuilder.TIMETABLE%>
+								<loc:message name="columnTimetable"/>
 							</TD>
 						</TR>
 					</logic:notEmpty>
@@ -121,14 +123,14 @@
 						<TD></TD>
 						<TD>
 							<html:checkbox property="schedulePrintNote" />
-							<%=WebInstructionalOfferingTableBuilder.SCHEDULE_PRINT_NOTE%>
+							<loc:message name="columnSchedulePrintNote"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
 							<html:checkbox property="note" />
-							<%=WebInstructionalOfferingTableBuilder.NOTE%>
+							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
 					<logic:equal name="classListForm" property="canSeeExams" value="true">
@@ -136,37 +138,37 @@
 							<TD></TD>
 							<TD>
 								<html:checkbox property="exams" />
-								Examinations
+								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
 					</logic:equal>
 					<html:hidden property="canSeeExams"/>
 					<TR>
 						<TD>
-							<B>Manager:</B>
+							<B><loc:message name="filterManager" /></B>
 						</TD>
 						<TD>
 							<html:select property="filterManager">	
-								<html:option value="">All</html:option>				
-								<html:option value="-2">Department</html:option>
+								<html:option value=""><loc:message name="dropDeptAll"/></html:option>				
+								<html:option value="-2"><loc:message name="dropDeptDepartment"/></html:option>
 								<html:options collection="<%=Department.EXTERNAL_DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="managingDeptLabel" />
 							</html:select>
 						</TD>
 					</TR>
 					<TR>
 						<TD>
-							<B>Instructional Type:</B>
+							<B><loc:message name="filterInstructionalType"/></B>
 						</TD>
 						<TD>
 							<html:select property="filterIType">
-								<html:option value="">All</html:option>
+								<html:option value=""><loc:message name="dropITypeAll"/></html:option>
 								<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
 							</html:select>
 						</TD>
 					</TR>
 					<TR>
 						<TD>
-							<B>Instructor:</B>
+							<B><loc:message name="filterInstructor"/></B>
 						</TD>
 						<TD>
 							<html:text property="filterInstructor" size="25"/>
@@ -175,29 +177,31 @@
 					<logic:notEmpty name="classListForm" property="timetable">
 						<TR>
 							<TD>
-								<B>Assigned Time:</B>
+								<B><loc:message name="filterAssignedTime"/></B>
 							</TD>
 							<TD>
+								<loc:bundle name="ConstantsMessages" id="CONST">
 								<html:checkbox property="filterAssignedTimeMon"/>
-								Mon&nbsp;
+								<loc:message name="mon" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeTue"/>
-								Tue&nbsp;
+								<loc:message name="tue" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeWed"/>
-								Wed&nbsp;
+								<loc:message name="wed" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeThu"/>
-								Thu&nbsp;
+								<loc:message name="thu" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeFri"/>
-								Fri&nbsp;
+								<loc:message name="fri" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeSat"/>
-								Sat&nbsp;
+								<loc:message name="sat" id="CONST"/>&nbsp;
 								<html:checkbox property="filterAssignedTimeSun"/>
-								Sun
+								<loc:message name="sun" id="CONST"/>&nbsp;
+								</loc:bundle>
 							</TD>
 						</TR>
 						<TR>
 							<TD></TD>
 							<TD>
-								from
+								<loc:message name="filterTimeFrom"/>
 								<html:select property="filterAssignedTimeHour">
 									<html:options property="filterAssignedTimeHours"/>
 								</html:select>
@@ -209,14 +213,14 @@
 									<html:options property="filterAssignedTimeAmPms"/>
 								</html:select>
 								&nbsp;&nbsp;
-								for
+								<loc:message name="filterTimeFor"/>
 								<html:text property="filterAssignedTimeLength" size="3" maxlength="4"/>
-								minutes
+								<loc:message name="filterTimeMinutes"/>
 							</TD>
 						</TR>
 						<TR>
 							<TD>
-								<B>Assigned Room:</B>
+								<B><loc:message name="filterAssignedRoom"/></B>
 							</TD>
 							<TD colspan='2'>
 								<html:text property="filterAssignedRoom" size="25"/>
@@ -225,7 +229,7 @@
 					</logic:notEmpty>
 					<TR>
 						<TD>
-							<B>Sort By:</B>
+							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD>
 							<html:select property="sortBy">
@@ -233,7 +237,7 @@
 							</html:select>
 							<BR>
 							<html:checkbox property="sortByKeepSubparts"/>
-							Sort classes only within scheduling subparts
+							<loc:message name="checkSortWithinSubparts"/>
 						</TD>
 					</TR>
 					<TR>
@@ -256,7 +260,7 @@
 		</TR>
 		<TR>
 			<TD valign="top">
-				<b><A name="Search">Subject:</A></b>
+				<b><A name="Search"></A><loc:message name="filterSubject"/></b>
 			</TD>
 			<TD>
 				<% if (frm.getSubjectAreas().size()==1) { %>
@@ -270,7 +274,7 @@
 				<% } %>
 			</TD>
 			<TD valign="top" nowrap>
-				<B>Course Number:</B>
+				<B><loc:message name="filterCourseNumber"/></B>
 			</TD>
 			<TD valign="top">
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
@@ -282,14 +286,19 @@
 			</TD>
 			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;
-				<html:submit onclick="doit.value=this.value;displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchClasses">
-					<bean:message key="button.searchClasses" />
+				<html:submit onclick="doit.value=this.value;displayLoading();" 
+					accesskey="<%=MSG.accessSearchClasses()%>"
+					styleClass="btn" 
+					title="<%=MSG.titleSearchClasses(MSG.accessSearchClasses())%>">
+					<loc:message name="actionSearchClasses"/>
 				</html:submit>
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
-					accesskey="P" styleClass="btn" titleKey="title.exportPDF"
+					accesskey="<%=MSG.accessExportPdf()%>" 
+					styleClass="btn" 
+					title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
 					onclick="doit.value=this.value;displayLoading();">
-					<bean:message key="button.exportPDF" />
+					<loc:message name="actionExportPdf"/>
 				</html:submit> 
 			</TD>
 			<TD width='100%'></TD>
@@ -300,6 +309,7 @@
 			</TD>
 		</TR>
 	</TABLE>
+</loc:bundle>
 </html:form>
 
 <logic:notEmpty name="body2">

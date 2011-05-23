@@ -29,7 +29,43 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Optional Columns:")
 	String filterOptionalColumns();
+	
+	@DefaultMessage("Manager:")
+	String filterManager();
+	
+	@DefaultMessage("Instructional Type:")
+	String filterInstructionalType();
 
+	@DefaultMessage("Instructor:")
+	String filterInstructor();
+	
+	@DefaultMessage("Assigned Time:")
+	String filterAssignedTime();
+	
+	@DefaultMessage("Assigned Room:")
+	String filterAssignedRoom();
+	
+	@DefaultMessage("from")
+	String filterTimeFrom();
+	
+	@DefaultMessage("for")
+	String filterTimeFor();
+	
+	@DefaultMessage("minutes")
+	String filterTimeMinutes();
+	
+	@DefaultMessage("Sort classes only within scheduling subparts")
+	String checkSortWithinSubparts();
+	
+	@DefaultMessage("All")
+	String dropDeptAll();
+	
+	@DefaultMessage("Department")
+	String dropDeptDepartment();
+	
+	@DefaultMessage("All")
+	String dropITypeAll();
+	
 	@DefaultMessage("External Id")
 	String columnExternalId();
 
@@ -186,6 +222,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Search")
 	@StrutsAction("searchInstructionalOfferings")
 	String actionSearchInstructionalOfferings();
+	
+	@DefaultMessage("Search")
+	@StrutsAction("searchClasses")
+	String actionSearchClasses();
 
 	@DefaultMessage("Export PDF")
 	@StrutsAction("exportPdf")
@@ -201,6 +241,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
+	
+	@DefaultMessage("S")
+	String accessSearchClasses();
 
 	@DefaultMessage("P")
 	String accessExportPdf();
@@ -214,6 +257,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
+	@DefaultMessage("Search/Display Classes (Alt+{0})")
+	String titleSearchClasses(String accessKey);
+	
 	@DefaultMessage("Export PDF (Alt+{0})")
 	String titleExportPdf(String accessKey);
 
@@ -283,4 +329,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Assigned Room Capacity")
 	String sortByAssignedRoomCapacity();
 
+	@DefaultMessage("Classes ({0})")
+	String backClasses(String classes);
+	
+	@DefaultMessage("am")
+	String timeAm();
+	
+	@DefaultMessage("pm")
+	String timePm();
 }

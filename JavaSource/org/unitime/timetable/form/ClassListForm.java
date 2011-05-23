@@ -399,7 +399,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		return new String[] { "", "00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55" };
 	}
 	public String[] getFilterAssignedTimeAmPms() {
-		return new String[] { "", "am", "pm"};
+		return new String[] { "", MSG.timeAm(), MSG.timePm()};
 	}
 	public String[] getFilterAssignedTimeLengths() {
 		String[] ret = new String[41];
