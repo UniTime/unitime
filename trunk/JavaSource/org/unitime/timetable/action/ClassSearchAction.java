@@ -21,10 +21,8 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -42,13 +40,16 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.impl.LocalizedLookupDispatchAction;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
@@ -78,8 +79,10 @@ import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
  * @author Stephanie Schluttenhofer
  */
 
-public class ClassSearchAction extends LookupDispatchAction {
-
+public class ClassSearchAction extends LocalizedLookupDispatchAction {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	/*
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();
 	      map.put("button.searchClasses", "searchClasses");
@@ -87,6 +90,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 //	      map.put("button.cancel", "searchClasses");
 	      return map;
 	}
+	*/
 	
 	/** 
 	 * Method execute
@@ -123,7 +127,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 			HttpServletResponse response, String action) throws Exception {
 		
 			if(!Web.isLoggedIn( request.getSession() )) {
-	            throw new Exception ("Access Denied.");
+	            throw new Exception (MSG.errorAccessDenied());
 	        }
 			HttpSession httpSession = request.getSession();
 			
@@ -173,7 +177,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 			Collection classes = classListForm.getClasses();
 			if (classes.isEmpty()) {
 			    ActionMessages errors = new ActionMessages();
-			    errors.add("searchResult", new ActionMessage("errors.generic", "No records matching the search criteria were found."));
+			    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
 			    saveErrors(request, errors);
 			    return mapping.findForward("showClassSearch");
 			} else {
@@ -208,9 +212,9 @@ public class ClassSearchAction extends LookupDispatchAction {
 				BackTracker.markForBack(
 						request, 
 						"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
-						"Classes ("+names+
-							(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())+
-							")", 
+						MSG.backClasses(names+
+							(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())
+							), 
 						true, true);
 				
 			    return mapping.findForward("showClassList");
@@ -632,6 +636,9 @@ public class ClassSearchAction extends LookupDispatchAction {
 
     }
 
-
+	@Override
+	protected Messages getMessages() {
+		return MSG;
+	}
 
 }
