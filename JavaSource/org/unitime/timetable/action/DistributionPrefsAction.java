@@ -745,7 +745,8 @@ public class DistributionPrefsAction extends Action {
         		if (currentMgr.isExternalManager() && !currentMgr.getDepartments().contains(dp.getOwner()))
         			throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
         	
-        		if (((Department)dp.getOwner()).isExternalManager().booleanValue() && !currentMgr.getDepartments().contains(dp.getOwner())) {
+        		Department dept = (Department)dp.getOwner();
+        		if (dept.isExternalManager() && !dept.isAllowReqDistribution() && !currentMgr.getDepartments().contains(dp.getOwner())) {
         			if (dp.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) {
         				if (dp.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyPreferred)>=0)
         					dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
