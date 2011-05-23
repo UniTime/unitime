@@ -191,6 +191,12 @@
 			</TD>
 		</TR>
 		
+		<TR>
+			<TD nowrap>Allow Required Distribution:</TD>
+			<TD>
+				<html:checkbox property="allowReqDist"/>
+			</TD>
+		</TR>
 
 		<TR>
 			<TD colspan="2">

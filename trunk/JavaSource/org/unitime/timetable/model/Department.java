@@ -397,6 +397,7 @@ public class Department extends BaseDepartment implements Comparable {
 		d.setAbbreviation(getAbbreviation());
 		d.setAllowReqRoom(isAllowReqRoom());
 		d.setAllowReqTime(isAllowReqTime());
+		d.setAllowReqDistribution(isAllowReqDistribution());
 		d.setDeptCode(getDeptCode());
 		d.setDistributionPrefPriority(getDistributionPrefPriority());
 		d.setExternalManager(isExternalManager());

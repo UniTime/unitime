@@ -459,6 +459,12 @@
                 not-null="true"/>
 
             <property
+                name="allowReqDistribution"
+                column="allow_req_dist"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
                 name="roomSharingColor"
                 column="rs_color"
                 type="java.lang.String"
