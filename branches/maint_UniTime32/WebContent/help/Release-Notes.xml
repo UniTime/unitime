@@ -64,6 +64,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>For an externally managed department, added ability to allow required/prohibited distribution preferences to be entered by all schedule managers.
+					<line>This completes the functionality of allow required time and room toggles.</line> 
+				</line>
+				
+			</description>
+		</item>
 	</category>
 </release>
 

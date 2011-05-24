@@ -53,6 +53,7 @@ public class DepartmentEditForm extends ActionForm {
 	public String iExtName = null;
     public boolean iAllowReqTime = false;
     public boolean iAllowReqRoom = false;
+    public boolean iAllowReqDist = false;
     
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -124,7 +125,7 @@ public class DepartmentEditForm extends ActionForm {
 		canChangeExternalManagement=Boolean.TRUE;
 		iId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
-        iAllowReqTime = false; iAllowReqRoom = false;
+        iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false;
 	}
 
 	public Long getId() { return iId; }
@@ -173,6 +174,8 @@ public class DepartmentEditForm extends ActionForm {
     public void setAllowReqTime(boolean allowReqTime) { iAllowReqTime = allowReqTime; }
     public boolean getAllowReqRoom() { return iAllowReqRoom; }
     public void setAllowReqRoom(boolean allowReqRoom) { iAllowReqRoom = allowReqRoom; }
+    public boolean getAllowReqDist() { return iAllowReqDist; }
+    public void setAllowReqDist(boolean allowReqDist) { iAllowReqDist = allowReqDist; }
 	public String getExtAbbv() { return iExtAbbv; }
 	public void setExtAbbv(String extAbbv) { iExtAbbv = extAbbv; }
 	public String getExtName() { return iExtName; }
@@ -216,6 +219,7 @@ public class DepartmentEditForm extends ActionForm {
 		}
         setAllowReqRoom(department.isAllowReqRoom()!=null && department.isAllowReqRoom().booleanValue());
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
+        setAllowReqDist(department.isAllowReqDistribution()!=null && department.isAllowReqDistribution().booleanValue());
 	}
 
 	public void save(User user, HttpServletRequest request) throws Exception {
@@ -246,6 +250,7 @@ public class DepartmentEditForm extends ActionForm {
 			department.setExternalMgrAbbv(getExtAbbv());
             department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
             department.setAllowReqTime(new Boolean(getAllowReqTime()));
+            department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
 
 			dao.saveOrUpdate(department);
 //			if( acadSession != null) {

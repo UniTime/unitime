@@ -108,23 +108,26 @@
 					lastChangeCmp = new Long(lastChange == null ? 0
 							: lastChange.getTimeStamp().getTime());
 			}
-			String allowReq = "&nbsp;";
-			int allowReqOrd = 0;
-			if (d.isAllowReqRoom() != null
-				&& d.isAllowReqRoom().booleanValue()) {
-				if (d.isAllowReqTime() != null
-						&& d.isAllowReqTime().booleanValue()) {
-					allowReq = "both";
-					allowReqOrd = 3;
-				} else {
-					allowReq = "room";
-					allowReqOrd = 2;
-				}
-			} else if (d.isAllowReqTime() != null
-				&& d.isAllowReqTime().booleanValue()) {
-				allowReq = "time";
-				allowReqOrd = 1;
-			}
+			
+                    String allowReq = "";
+                    int allowReqOrd = 0;
+                    if (d.isAllowReqRoom() != null && d.isAllowReqRoom().booleanValue()) {
+                    	if (!allowReq.isEmpty()) allowReq += ", ";
+                    	allowReq += "room";
+                    	allowReqOrd += 1;
+                    }
+                    if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {
+                    	if (!allowReq.isEmpty()) allowReq += ", ";
+                    	allowReq += "time";
+                    	allowReqOrd += 2;
+                    }
+                    if (d.isAllowReqDistribution() != null && d.isAllowReqDistribution().booleanValue()) {
+                    	if (!allowReq.isEmpty()) allowReq += ", ";
+                    	allowReq += "distribution";
+                    	allowReqOrd += 4;
+                    }
+                    if (allowReqOrd == 7) allowReq = "all";
+                    if (allowReqOrd == 0) allowReq = "&nbsp;";
 
 			webTable.addLine(
 				"onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"",
