@@ -3324,4 +3324,8 @@
 		</mysql>
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 	</update>
+	<update version="69" date="23-May-2011" comment="Department allow required distribution">
+		<mysql>alter table %SCHEMA%.department add allow_req_dist int(1) null default 0</mysql>
+		<plsql>alter table %SCHEMA%.department add allow_req_dist number(1) default 0</plsql>
+	</update>
 </dbupdate>
