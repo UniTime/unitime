@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -75,6 +76,16 @@ public class CurriculumCourse extends BaseCurriculumCourse implements Comparable
 	    cmp = getCourse().getCourseNbr().compareToIgnoreCase(c.getCourse().getCourseNbr());
 	    if (cmp!=0) return cmp;
 	    return getCourse().getUniqueId().compareTo(c.getCourse().getUniqueId());
+	}
+	
+	public CurriculumCourse clone(CourseOffering newCourse) {
+		CurriculumCourse cc = new CurriculumCourse();
+		cc.setPercShare(getPercShare());
+		cc.setOrd(getOrd());
+		cc.setClassification(getClassification());
+		cc.setCourse(newCourse);
+		cc.setGroups(new HashSet<CurriculumCourseGroup>(getGroups()));
+		return cc;
 	}
 	
 }
