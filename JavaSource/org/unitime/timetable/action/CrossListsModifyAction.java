@@ -52,6 +52,7 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingInCrosslist
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
@@ -258,6 +259,7 @@ public class CrossListsModifyAction extends Action {
         hibSession.setFlushMode(FlushMode.MANUAL);
         Transaction tx = null;
         HashMap saList = new HashMap();
+        List<CurriculumCourse> cc = new ArrayList<CurriculumCourse>();
         
         try {
 	        tx = hibSession.beginTransaction();
@@ -285,7 +287,14 @@ public class CrossListsModifyAction extends Action {
 	                // Copy attributes of old crs offering - set controlling	                
                     CourseOffering co2 = (CourseOffering)co1.clone();                    
                     co2.setIsControl(new Boolean(true));
-
+                    
+                    for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
+                    		"from CurriculumCourse where course.uniqueId = :courseId")
+                    		.setLong("courseId", co1.getUniqueId()).list()) {
+                    	cc.add(x.clone(co2));
+                    	x.getClassification().getCourses().remove(x);
+                    	hibSession.delete(x);
+                    }
                     
 /*	                
 	                hibSession.saveOrUpdate(io1);
@@ -391,6 +400,14 @@ public class CrossListsModifyAction extends Action {
 	                        co3.setIsControl(new Boolean(true));
 	                    else
 	                        co3.setIsControl(new Boolean(false));
+	                    
+	                    for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
+	                    		"from CurriculumCourse where course.uniqueId = :courseId")
+	                    		.setLong("courseId", co2.getUniqueId()).list()) {
+	                    	cc.add(x.clone(co3));
+	                    	x.getClassification().getCourses().remove(x);
+	                    	hibSession.delete(x);
+	                    }
 
 	                    addedOfferings.addElement(co3);
 
@@ -451,6 +468,8 @@ public class CrossListsModifyAction extends Action {
 
 	            hibSession.saveOrUpdate(io);
 	        }
+	        for (CurriculumCourse x: cc)
+	        	hibSession.saveOrUpdate(x);
             
 	        // Update managing department on all classes
 	        Department dept = io.getControllingCourseOffering().getDepartment();
