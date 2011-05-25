@@ -46,8 +46,8 @@ public abstract class LocalizedLookupDispatchAction extends LookupDispatchAction
 	protected String getLookupMapName(HttpServletRequest request, String keyName, ActionMapping mapping) throws ServletException {
 		try {
 			synchronized (localeMap) {
-				if (keyMethodMap == null)
-					keyMethodMap = ((Localization.StrutsActionsRetriever)getMessages()).getStrutsActions();
+				if (keyMethodMap == null || true)
+					keyMethodMap = ((Localization.StrutsActionsRetriever)getMessages()).getStrutsActions((Class<LocalizedLookupDispatchAction>)this.getClass());
 			}
 			return (String)keyMethodMap.get(keyName);
 		} catch (Exception e) {
