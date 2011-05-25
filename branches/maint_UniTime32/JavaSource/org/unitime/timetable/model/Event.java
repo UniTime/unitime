@@ -91,7 +91,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
         for (Iterator i=hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
                 "r.ownerType=:ownerType and r.ownerId=:ownerId")
                 .setInteger("ownerType", ownerType)
-                .setLong("ownerId", ownerId).iterate();i.hasNext();) {
+                .setLong("ownerId", ownerId).list().iterator();i.hasNext();) {
             RelatedCourseInfo relatedCourse = (RelatedCourseInfo)i.next();
             CourseEvent event = relatedCourse.getEvent();
             event.getRelatedCourses().remove(relatedCourse);
