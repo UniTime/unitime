@@ -24,6 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.unitime.localization.impl.LocalizedLookupDispatchAction;
+
 /**
  * @author Tomas Muller
  */
@@ -32,5 +34,6 @@ public interface Messages extends com.google.gwt.i18n.client.Messages {
 	@Target(ElementType.METHOD)
 	public @interface StrutsAction {
 		String value();
+		Class<? extends LocalizedLookupDispatchAction>[] apply() default {};
 	}
 }
