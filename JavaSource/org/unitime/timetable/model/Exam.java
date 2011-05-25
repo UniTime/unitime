@@ -433,7 +433,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         for (Iterator i=hibSession.createQuery("select o from Exam x inner join x.owners o where "+
                 "o.ownerType=:ownerType and o.ownerId=:ownerId")
                 .setInteger("ownerType", ownerType)
-                .setLong("ownerId", ownerId).iterate();i.hasNext();) {
+                .setLong("ownerId", ownerId).list().iterator();i.hasNext();) {
             ExamOwner owner = (ExamOwner)i.next();
             Exam exam = owner.getExam();
             exam.getOwners().remove(owner);
