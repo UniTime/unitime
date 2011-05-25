@@ -30,8 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
 
@@ -78,8 +83,8 @@ public class Localization {
 		
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 0)
-				return getStrutsActions(proxy);
+			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 1)
+				return getStrutsActions(proxy, (Class<? extends LocalizedLookupDispatchAction>) args[0]);
 			for (Properties p: iProperties) {
 				String val = p.getProperty(method.getName());
 				if (val != null) {
@@ -100,16 +105,31 @@ public class Localization {
 			return method.getName();
 		}
 		
-		private Map<String, String> getStrutsActions(Object proxy) throws Throwable {
+		private Map<String, String> getStrutsActions(Object proxy, Class<? extends LocalizedLookupDispatchAction> apply) throws Throwable {
 			Map<String, String> ret = new HashMap<String, String>();
 			for (Method m: iMessages.getDeclaredMethods()) {
 				if (m.getParameterTypes().length > 0) continue;
 				Messages.StrutsAction action = m.getAnnotation(Messages.StrutsAction.class);
 				if (action != null) {
-					ret.put((String)invoke(proxy, m, new Object[] {}), action.value()); 
 					Messages.DefaultMessage dm = m.getAnnotation(Messages.DefaultMessage.class);
-					if (dm != null)
-						ret.put(dm.value(), action.value());
+					if (action.apply() == null || action.apply().length == 0) {
+						try {
+							if (apply.getMethod(action.value(), new Class<?>[] {
+								ActionMapping.class, ActionForm.class, HttpServletRequest.class, HttpServletResponse.class
+								}) != null) {
+								ret.put((String)invoke(proxy, m, new Object[] {}), action.value());
+								if (dm != null)
+									ret.put(dm.value(), action.value());
+							}
+						} catch (NoSuchMethodException e) {}
+					} else {
+						for (Class<? extends LocalizedLookupDispatchAction> a: action.apply())
+							if (a.equals(apply)) {
+								ret.put((String)invoke(proxy, m, new Object[] {}), action.value());
+								if (dm != null)
+									ret.put(dm.value(), action.value());
+							}
+					}
 				}
 			}
 			return ret;
@@ -123,7 +143,7 @@ public class Localization {
 	}
 	
 	public static interface StrutsActionsRetriever {
-		Map<String, String> getStrutsActions();
+		Map<String, String> getStrutsActions(Class<? extends LocalizedLookupDispatchAction> apply);
 	}
 
 }

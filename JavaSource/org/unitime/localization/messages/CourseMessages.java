@@ -19,6 +19,9 @@
 */
 package org.unitime.localization.messages;
 
+import org.unitime.timetable.action.ClassSearchAction;
+import org.unitime.timetable.action.InstructionalOfferingSearchAction;
+
 /**
  * @author Tomas Muller
  */
@@ -220,11 +223,17 @@ public interface CourseMessages extends Messages {
 	String filterCourseNumber();
 
 	@DefaultMessage("Search")
-	@StrutsAction("searchInstructionalOfferings")
+	@StrutsAction(
+		value = "searchInstructionalOfferings",
+		apply = InstructionalOfferingSearchAction.class
+	)
 	String actionSearchInstructionalOfferings();
 	
 	@DefaultMessage("Search")
-	@StrutsAction("searchClasses")
+	@StrutsAction(
+		value = "searchClasses",
+		apply = ClassSearchAction.class
+	)
 	String actionSearchClasses();
 
 	@DefaultMessage("Export PDF")
