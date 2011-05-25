@@ -81,6 +81,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Curriculum Timetabling</name>
+			<description>
+				<line>Instructional Offering Cross Lists: do not delete the course that was added to a cross-list (or removed off a cross-list) from its curricula.</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Version number changed to 3.3.</line>
