@@ -147,7 +147,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    		if (section != null) {
 		    			section.setSpaceExpected(info.getNbrExpectedStudents());
 		    			section.setSpaceHeld(info.getNbrHoldingStudents());
-		    			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
+		    			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) < Math.round(section.getSpaceExpected()))
 		    				helper.debug("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
 		    						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
 		    						", expected: " + section.getSpaceExpected() + ")");
@@ -313,6 +313,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     
     public static Student loadStudent(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
         Student student = new Student(s.getUniqueId());
+        student.setExternalId(s.getExternalUniqueId());
         
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
             AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
@@ -620,4 +621,5 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     
 	@Override
     public String name() { return "reload-all"; }
+	
 }

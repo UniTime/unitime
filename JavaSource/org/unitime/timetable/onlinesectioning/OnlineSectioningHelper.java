@@ -19,11 +19,23 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.studentsct.model.Assignment;
+import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
+import net.sf.cpsolver.studentsct.model.Request;
+import net.sf.cpsolver.studentsct.model.Section;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.dao._RootDAO;
 
 /**
@@ -32,16 +44,23 @@ import org.unitime.timetable.model.dao._RootDAO;
 public class OnlineSectioningHelper {
     protected static Log sLog = LogFactory.getLog(OnlineSectioningHelper.class);
     public static enum LogLevel {
-    	DEBUG,
-    	INFO,
-    	WARN,
-    	ERROR,
-    	FATAL
+    	DEBUG(OnlineSectioningLog.Message.Level.DEBUG),
+    	INFO(OnlineSectioningLog.Message.Level.INFO),
+    	WARN(OnlineSectioningLog.Message.Level.WARN),
+    	ERROR(OnlineSectioningLog.Message.Level.ERROR),
+    	FATAL(OnlineSectioningLog.Message.Level.FATAL);
+    	
+    	private OnlineSectioningLog.Message.Level iProtoLevel;
+    	
+    	LogLevel(OnlineSectioningLog.Message.Level level) { iProtoLevel = level; }
+    	
+    	OnlineSectioningLog.Message.Level level() { return iProtoLevel; }
     };
     protected List<MessageHandler> iMessageHandlers = new ArrayList<MessageHandler>();
     protected org.hibernate.Session iHibSession = null;
     protected org.hibernate.Transaction iTx = null;
     protected int iFlushIfNeededCounter = 0;
+    protected OnlineSectioningLog.Log.Builder iLog = OnlineSectioningLog.Log.newBuilder();
     protected static int sBatchSize = 100;
     
     public OnlineSectioningHelper() {
@@ -52,6 +71,15 @@ public class OnlineSectioningHelper {
     }
 
     public void log(Message m) {
+    	if (m.getLevel() != LogLevel.DEBUG) {
+        	OnlineSectioningLog.Message.Builder l = OnlineSectioningLog.Message.newBuilder()
+        		.setLevel(m.getLevel().level())
+				.setText(m.getMessage())
+				.setTimeStamp(System.currentTimeMillis());
+        	if (m.getThrowable() != null)
+        		l.setException(m.getThrowable().getClass().getName() + ": " + m.getThrowable().getMessage());
+        	iLog.addMessage(l);
+    	}
     	for (MessageHandler h: iMessageHandlers)
     		h.onMessage(m);
     }
@@ -240,4 +268,202 @@ public class OnlineSectioningHelper {
 			}
 		}
     }
+    
+    public OnlineSectioningLog.Action.Builder addAction(OnlineSectioningAction<?> action, AcademicSessionInfo session) {
+    	OnlineSectioningLog.Action.Builder a = OnlineSectioningLog.Action.newBuilder();
+    	a.setOperation(action.name());
+    	a.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(session.getUniqueId())
+    			.setName(session.toCompactString())
+    			);
+    	a.setStartTime(System.currentTimeMillis());
+    	iLog.addAction(a);
+    	return iLog.getActionBuilder(iLog.getActionCount() - 1);
+    }
+    
+    public OnlineSectioningLog.Action.Builder getAction() {
+    	return iLog.getActionBuilder(0);
+    }
+    
+    public OnlineSectioningLog.Log getLog() {
+    	return iLog.build();
+    }
+    
+    public static OnlineSectioningLog.Section toProto(ClassAssignmentInterface.ClassAssignment assignment) {
+		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
+		if (assignment.getClassId() != null) {
+			section.setClazz(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(assignment.getClassId())
+					.setType(OnlineSectioningLog.Entity.EntityType.CLAZZ));
+		}
+		if (assignment.isAssigned()) {
+			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
+			time.setDays(DayCode.toInt(DayCode.toDayCodes(assignment.getDays())));
+			time.setStart(assignment.getStart());
+			time.setLength(assignment.getLength());
+			if (assignment.hasDatePattern())
+				time.setPattern(assignment.getDatePattern());
+		}
+		if (assignment.hasInstructors()) {
+			for (String instructor: assignment.getInstructors())
+				section.addInstructor(OnlineSectioningLog.Entity.newBuilder()
+						.setName(instructor)
+						.setType(OnlineSectioningLog.Entity.EntityType.INSTRUCTOR)
+						);
+		}
+		if (assignment.hasRoom()) {
+			for (String room: assignment.getRooms())
+				section.addLocation(OnlineSectioningLog.Entity.newBuilder()
+						.setName(room)
+						.setType(OnlineSectioningLog.Entity.EntityType.LOCATION)
+						);
+		}
+		return section.build();
+    }
+    
+    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Course c) {
+		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
+		if (a instanceof Section) {
+			Section s = (Section)a;
+			section.setClazz(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(s.getId())
+					.setExternalId(c == null ? s.getName() : s.getName(c.getId()))
+					.setName(c == null ? s.getSubpart().getConfig().getOffering().getName() + " " + s.getSubpart().getName() + " " + s.getName() :
+						c.getName() + " " + s.getSubpart().getName() + " " + s.getName(c.getId()))
+					);
+			if (s.getChoice().getInstructorNames() != null && !s.getChoice().getInstructorNames().isEmpty()) {
+				String[] instructors = s.getChoice().getInstructorNames().split(":");
+				String[] instructorIds = s.getChoice().getInstructorIds().split(":");
+				for (int i = 0; i < Math.min(instructorIds.length, instructors.length); i++) {
+					String[] nameEmail = instructors[i].split("\\|");
+					String id = instructorIds[i];
+					OnlineSectioningLog.Entity.Builder instructor = OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(Long.valueOf(id))
+						.setName(nameEmail[0]);
+					if (nameEmail.length >= 2)
+						instructor.setExternalId( nameEmail[1]);
+					section.addInstructor(instructor);
+				}
+			}
+		}
+		if (a.getTime() != null) {
+			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
+			time.setDays(a.getTime().getDayCode());
+			time.setStart(a.getTime().getStartSlot());
+			time.setLength(a.getTime().getLength());
+			if (a.getTime().getDatePatternName() != null && !a.getTime().getDatePatternName().isEmpty())
+				time.setPattern(a.getTime().getDatePatternName());
+			else if (a instanceof FreeTimeRequest)
+				time.setPattern("Free Time");
+			section.setTime(time);
+		}
+		if (a.getRooms() != null) {
+			for (RoomLocation room: a.getRooms()) {
+				section.addLocation(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(room.getId())
+						.setName(room.getName())
+						);
+			}
+		}
+		return section;
+    }
+    
+    public static OnlineSectioningLog.Request.Builder toProto(Request r) {
+    	OnlineSectioningLog.Request.Builder request = OnlineSectioningLog.Request.newBuilder();
+    	request.setPriority(r.getPriority());
+    	request.setAlternative(r.isAlternative());
+    	if (r instanceof FreeTimeRequest) {
+    		FreeTimeRequest ft = (FreeTimeRequest)r;
+    		if (ft.getTime() != null) {
+    			request.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+    					.setDays(ft.getTime().getDayCode())
+    					.setStart(ft.getTime().getStartSlot())
+    					.setLength(ft.getTime().getLength()));
+    		}
+    	} else if (r instanceof CourseRequest) {
+    		CourseRequest cr = (CourseRequest)r;
+    		for (Course course: cr.getCourses()) {
+    			request.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setUniqueId(course.getId())
+    					.setName(course.getName()));
+    		}
+    		if (cr.getTimeStamp() != null)
+    			request.setTimeStamp(cr.getTimeStamp());
+    	}
+    	return request;
+    }
+    
+    public static List<OnlineSectioningLog.Request> toProto(CourseRequestInterface request) {
+    	List<OnlineSectioningLog.Request> ret = new ArrayList<OnlineSectioningLog.Request>();
+    	int priority = 0;
+    	for (CourseRequestInterface.Request r: request.getCourses()) {
+    		if (!r.hasRequestedCourse() && !r.hasRequestedFreeTime()) continue;
+    		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
+    		rq.setPriority(priority++);
+    		rq.setAlternative(false);
+    		if (r.hasRequestedFreeTime()) {
+        		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
+        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
+        					.setStart(ft.getStart())
+        					.setLength(ft.getLength()));
+        		}
+    		}
+    		if (r.hasRequestedCourse()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getRequestedCourse())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		if (r.hasFirstAlternative()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getFirstAlternative())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		if (r.hasSecondAlternative()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getSecondAlternative())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		ret.add(rq.build());
+    	}
+    	priority = 0;
+    	for (CourseRequestInterface.Request r: request.getAlternatives()) {
+    		if (!r.hasRequestedCourse() && !r.hasRequestedFreeTime()) continue;
+    		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
+    		rq.setPriority(priority++);
+    		rq.setAlternative(true);
+    		if (r.hasRequestedFreeTime()) {
+        		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
+        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
+        					.setStart(ft.getStart())
+        					.setLength(ft.getLength()));
+        		}
+    		}
+    		if (r.hasRequestedCourse()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getRequestedCourse())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		if (r.hasFirstAlternative()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getFirstAlternative())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		if (r.hasSecondAlternative()) {
+    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setName(r.getSecondAlternative())
+    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    		}
+    		ret.add(rq.build());
+    	}
+    	return ret;
+    }
+    
+	public static long getCpuTime() {
+		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : System.currentTimeMillis();
+	}
+
 }

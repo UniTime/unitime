@@ -53,6 +53,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.util.Constants;
@@ -100,8 +101,44 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Lock lock = server.lockStudent(getStudentId(), null, true);
 		try {
+			OnlineSectioningLog.Action.Builder action = helper.getAction();
+			action.setStudent(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(getStudentId()));
+			
+			if (getOldEnrollment() != null && getOldEnrollment().getAssignments() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				for (Assignment assignment: getOldEnrollment().getAssignments())
+					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, getOldEnrollment().getCourse()));
+				action.addEnrollment(enrollment);
+			} else if (getOldRequests() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				for (Request r: getNewRequests())
+					if (r.getInitialAssignment() != null)
+						for (Assignment assignment: r.getInitialAssignment().getAssignments())
+							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getInitialAssignment().getCourse()));
+				action.addEnrollment(enrollment);
+			}
+			
+			if (getNewRequests() != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+				for (Request r: getNewRequests()) {
+					action.addRequest(OnlineSectioningHelper.toProto(r));
+					if (r.getAssignment() != null)
+						for (Assignment assignment: r.getAssignment().getAssignments())
+							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getAssignment().getCourse()));
+				}
+				action.addEnrollment(enrollment);
+			}
+			
 			Student student = server.getStudent(getStudentId());
 			if (student == null) return false;
+			action.getStudentBuilder().setUniqueId(student.getId()).setExternalId(student.getExternalId());
+			
+			boolean ret = false;
 			
 			helper.beginTransaction();
 			try {
@@ -204,6 +241,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						String messageId = email.getMessageId();
 						if (messageId != null)
 							sLastMessage.put(student.getId(), messageId);
+						
+						ret = true;
 					}
 				}
 				helper.commitTransaction();
@@ -212,7 +251,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				throw e;
 			}
 			
-			return true;
+			return ret;
 		} catch (Exception e) {
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
@@ -688,7 +727,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									for (Section section: nr.getAssignment().getSections())
 										if (old.getSubpart().getId() == section.getSubpart().getId()) continue sections;
 									String style = "text-decoration: line-through; white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, or.getAssignment().getRequest(), old, style);
+									generateListOfClassesLine(out, or, old, style);
 									nrLines++;
 									first = false;
 								}
@@ -1061,5 +1100,5 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.flush();out.close();
 		return out.toByteArray();
 	}
-
+	
 }

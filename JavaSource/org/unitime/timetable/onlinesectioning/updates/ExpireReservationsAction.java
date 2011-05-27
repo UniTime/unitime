@@ -30,6 +30,7 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
@@ -79,6 +80,10 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 		try {
 			// Remove reservation from the model
 			for (Reservation reservation: reservations) {
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(reservation.getId())
+						.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION));
+				
 				helper.info("Expiring reservation " + reservation.getId() + "...");
 				offering.getReservations().remove(reservation);
 				offering.clearReservationCache();

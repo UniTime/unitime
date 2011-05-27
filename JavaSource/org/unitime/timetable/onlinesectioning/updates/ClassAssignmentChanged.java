@@ -37,6 +37,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -80,6 +81,10 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 		try {
 			helper.beginTransaction();
 			try {
+				OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder()
+					.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder()
+					.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 				for (Long classId: getClassIds()) {
 					Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
 					if (clazz == null) {
@@ -93,9 +98,10 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 					try {
 						Section section = server.getSection(clazz.getUniqueId());
 						if (section == null) {
-							helper.warn("Class " + clazz.getClassLabel() + " wos added -- unsupported operation (use reload offering instead).");
+							helper.warn("Class " + clazz.getClassLabel() + " was added -- unsupported operation (use reload offering instead).");
 							continue;
 						}
+						previous.addSection(OnlineSectioningHelper.toProto(section, null));
 						helper.info("Reloading " + clazz.getClassLabel());
 		                org.unitime.timetable.model.Assignment a = clazz.getCommittedAssignment();
 		                Placement p = (a == null ? null : a.getPlacement());
@@ -134,10 +140,14 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 						helper.info("  -- instructor: " + instructorNames);
 
 		                section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() == null ? clazz.getSectionNumberString(helper.getHibSession()) : clazz.getClassSuffix() : clazz.getExternalUniqueId());
+						stored.addSection(OnlineSectioningHelper.toProto(section, null));
 					} finally {
 						lock.release();
 					}
 				}
+				
+				helper.getAction().addEnrollment(previous);
+				helper.getAction().addEnrollment(stored);
 				
 				helper.commitTransaction();
 				return true;
@@ -156,4 +166,5 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 	public String name() {
 		return "class-reassigned";
 	}
+	
 }

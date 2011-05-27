@@ -3328,4 +3328,33 @@
 		<mysql>alter table %SCHEMA%.department add allow_req_dist int(1) null default 0</mysql>
 		<plsql>alter table %SCHEMA%.department add allow_req_dist number(1) default 0</plsql>
 	</update>
+	<update version="70" date="27-May-2011" comment="Online student sectioning log">
+		<mysql>
+			create table %SCHEMA%.sectioning_log (
+				uniqueid decimal(20,0) primary key not null,
+				time_stamp datetime not null,
+				student varchar(40) not null,
+				session_id decimal(20,0) not null,
+				operation varchar(20) not null,
+				action blob not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.sectioning_log (
+				uniqueid number(20,0) constraint nn_section_log_uniqueid not null,
+				time_stamp timestamp constraint nn_section_log_time_stamp not null,
+				student varchar2(40)  constraint nn_section_log__student not null,
+				session_id number(20,0)  constraint nn_section_log_session_id not null,
+				operation varchar2(20)  constraint nn_section_log_operation not null,
+				action blob constraint nn_section_log_action not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add constraint pk_sectioning_log primary key (uniqueid)</plsql>
+		<sql>
+			alter table %SCHEMA%.sectioning_log add constraint fk_sectioning_log_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<plsql>create index %SCHEMA%.idx_sectioning_log on %SCHEMA%.sectioning_log(time_stamp, student, session_id, operation)</plsql>
+		<mysql>create index idx_sectioning_log on %SCHEMA%.sectioning_log(time_stamp, student, session_id, operation)</mysql>
+	</update>
 </dbupdate>

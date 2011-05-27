@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -39,12 +40,14 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -110,10 +113,29 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		try {
 			helper.beginTransaction();
 			try {
+				OnlineSectioningLog.Action.Builder action = helper.getAction();
+				
+				if (getRequest().getStudentId() != null)
+					action.setStudent(
+							OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(getStudentId()));
+				
+				OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
+				requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED);
+				for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
+					if (assignment != null && assignment.isAssigned())
+						requested.addSection(OnlineSectioningHelper.toProto(assignment));
+				action.addEnrollment(requested);
+				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
+					action.addRequest(r);
+
 				new CheckAssignmentAction(getStudentId(), getAssignment()).check(server, helper);
 				
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				action.getStudentBuilder().setUniqueId(student.getUniqueId())
+					.setExternalId(student.getExternalUniqueId())
+					.setName(student.getName(DepartmentalInstructor.sNameFormatFirstMiddleLast));
 
 				Hashtable<Long, Class_> classes = new Hashtable<Long, Class_>();
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
@@ -190,6 +212,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						server.execute(new CheckOfferingAction(oldEnrollment.getOffering().getId()), offeringChecked);
 						updateSpace(helper, newEnrollment, oldEnrollment);
 					}
+					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+					for (Request oldRequest: oldStudent.getRequests()) {
+						if (oldRequest.getInitialAssignment() != null)
+							for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
+								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment().getCourse()));
+					}
+					action.addEnrollment(enrollment);
 				}
 				
 				if (newStudent != null) {
@@ -203,7 +233,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						updateSpace(helper, newEnrollment, null);
 						server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), enrollmentsUpdated);
 					}
-					
+					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+					for (Request newRequest: newStudent.getRequests()) {
+						if (newRequest.getInitialAssignment() != null && newRequest.getInitialAssignment().isCourseRequest())
+							for (Assignment assignment: newRequest.getInitialAssignment().getAssignments())
+								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment().getCourse()));
+					}
+					action.addEnrollment(enrollment);
 				}
 
 				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));

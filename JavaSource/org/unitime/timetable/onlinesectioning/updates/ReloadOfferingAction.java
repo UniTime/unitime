@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -50,6 +51,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -79,6 +81,11 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		helper.beginTransaction();
 		try {
 			for (Long offeringId: getOfferingIds()) {
+				
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(offeringId)
+						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
+				
 				List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
 						"select distinct s.uniqueId from Student s " +
 						"left outer join s.classEnrollments e " +
@@ -187,23 +194,55 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 							}
 					}
 			}
+			
+			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+			action.setStudent(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(student[0] == null ? student[1].getId() : student[0].getId())
+					.setExternalId(student[0] == null ? student[1].getExternalId() : student[0].getExternalId()));
+			action.addOther(OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(offeringId)
+					.setName(newOffering == null ? oldOffering.getName() : newOffering.getName())
+					.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
+			
+			if (oldEnrollment != null) {
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+				for (Assignment assignment: oldEnrollment.getAssignments())
+					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldEnrollment.getCourse()));
+				action.addEnrollment(enrollment);
+				if (newRequest == null)
+					action.addRequest(OnlineSectioningHelper.toProto(oldEnrollment.getRequest()));
+			}
+			
 			if (newRequest == null) {
 				// nothing to re-assign
-				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), student[0].getRequests(), student[1].getRequests());
+				action.setEndTime(System.currentTimeMillis());
+				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), newRequest, oldEnrollment);
 				continue;
+			} else {
+				action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 			}
 			
 			if (oldEnrollment == null) {
 				if (newRequest.getStudent().canAssign(newRequest))
-					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null));
+					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action));
 				continue;
 			}
 			
 			if (newEnrollment != null) {
 				// new enrollment is valid and / or has all the same times
 				if (check(newEnrollment)) {// || isSame(oldEnrollment, newEnrollment)) {
+					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+					for (Assignment assignment: newEnrollment.getAssignments())
+						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newEnrollment.getCourse()));
+					action.addEnrollment(enrollment);
+					action.addRequest(OnlineSectioningHelper.toProto(newEnrollment.getRequest()));
+					action.setEndTime(System.currentTimeMillis());
+					
 					if (!ResectioningWeights.isVerySame(newEnrollment, oldEnrollment))
-						server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), student[0].getRequests(), student[1].getRequests());
+						server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), newRequest, oldEnrollment);
 					continue;
 				}
 				newRequest.getSelectedChoices().clear();
@@ -214,7 +253,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				newRequest.unassign(0);
 			if (newRequest.getInitialAssignment() != null)
 				newRequest.setInitialAssignment(null);
-			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment));
+			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment, action));
 		}
 		
 		if (!queue.isEmpty()) {
@@ -225,6 +264,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
+				long c0 = OnlineSectioningHelper.getCpuTime();
 				Enrollment e = r.resection(w, dc, toc);
 				if (e != null) {
 					Lock wl = server.writeLock();
@@ -234,6 +274,11 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 					} finally {
 						wl.release();
 					}
+					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+					for (Assignment assignment: e.getAssignments())
+						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, e.getCourse()));
+					r.getAction().addEnrollment(enrollment);
 				}
 				helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				
@@ -298,8 +343,11 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				EnrollStudent.updateSpace(helper, r.getRequest().getAssignment(), r.getLastEnrollment());
 
 				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
-						r.getOldStudent() == null ? null : r.getOldStudent().getRequests(),
-						r.getRequest().getStudent().getRequests());
+						r.getRequest(), r.getLastEnrollment());
+				
+				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
+				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+				r.getAction().setEndTime(System.currentTimeMillis());
 			}			
 		}
 		
@@ -331,4 +379,5 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		
 	@Override
     public String name() { return "reload-offering"; }
+	
 }

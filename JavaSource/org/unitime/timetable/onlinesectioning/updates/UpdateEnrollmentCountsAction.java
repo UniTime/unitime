@@ -63,5 +63,4 @@ public class UpdateEnrollmentCountsAction implements OnlineSectioningAction<Bool
 		return "update-enrollment-counts";
 	}
 	
-
 }

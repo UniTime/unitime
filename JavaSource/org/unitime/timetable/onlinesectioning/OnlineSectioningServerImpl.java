@@ -809,18 +809,45 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.writeLock().unlock();
 		}
     }
-
+	
 	@Override
 	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException {
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		OnlineSectioningHelper h = new OnlineSectioningHelper();
 		try {
-			OnlineSectioningHelper h = new OnlineSectioningHelper();
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
-			return action.execute(this, h);
+			h.addAction(action, getAcademicSession());
+			E ret = action.execute(this, h);
+			if (h.getAction() != null) {
+				if (ret == null)
+					h.getAction().setResult(OnlineSectioningLog.Action.ResultType.NULL);
+				else if (ret instanceof Boolean)
+					h.getAction().setResult((Boolean)ret ? OnlineSectioningLog.Action.ResultType.TRUE : OnlineSectioningLog.Action.ResultType.FALSE);
+				else
+					h.getAction().setResult(OnlineSectioningLog.Action.ResultType.SUCCESS);
+			}
+			return ret;
 		} catch (Exception e) {
-			iLog.error("Execution of " + action.name() + " failed: " + e.getMessage(), e);
+			h.error("Execution failed: " + e.getMessage(), e);
+			if (h.getAction() != null) {
+				h.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+				if (e.getCause() != null && e instanceof SectioningException)
+					h.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+							.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+				else
+					h.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+							.setText(e.getMessage() == null ? "null" : e.getMessage()));
+			}
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
 			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+		} finally {
+			if (h.getAction() != null)
+				h.getAction().setEndTime(System.currentTimeMillis()).setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+			iLog.debug("Executed: " + h.getLog() + " (" + h.getLog().toByteArray().length + " bytes)");
+			OnlineSectioningLogger.getInstance().record(h.getLog());
 		}
 	}
 	
@@ -1002,7 +1029,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "false"))) {
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 				execute(new StudentEmail(studentId, oldRequests, newRequests), new Callback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
@@ -1042,7 +1069,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "false"))) {
+			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 				if (oldEnrollment == null) {
 					oldEnrollment = new Enrollment(request, 0, (request instanceof CourseRequest ? ((CourseRequest)request).getCourses().get(0) : null), null, null, null);
 				}
