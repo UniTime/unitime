@@ -161,3 +161,9 @@ Struts-Layout-1.3.jar
 	URL: http://struts.improve-technologies.com/
 	Copyright: (C) 2001-2010, Improve SA
 	License: The Apache Software License, Version 2.0
+
+protobuf-java-2.4.1.jar
+	Google Protocol Buffers
+	URL: http://code.google.com/p/protobuf/
+	Copyright: 2011 Google
+	License: BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)

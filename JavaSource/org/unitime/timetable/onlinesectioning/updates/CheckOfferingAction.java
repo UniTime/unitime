@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -46,6 +47,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
@@ -75,6 +77,10 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			Lock lock = server.lockOffering(offeringId, null, false);
 			try {
 				Offering offering = server.getOffering(offeringId);
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(offeringId)
+						.setName(offering.getName())
+						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 				checkOffering(server, helper, offering);
 				updateEnrollmentCounters(server, helper, offering);
 			} finally {
@@ -92,13 +98,34 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		for (Course course: offering.getCourses()) {
 			for (CourseRequest request: course.getRequests()) {
 				if (request.getAssignment() == null) {
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+					action.setStudent(
+							OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(request.getStudent().getId())
+							.setExternalId(request.getStudent().getExternalId()));
+					action.addOther(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(offering.getId())
+							.setName(offering.getName())
+							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
+					action.addRequest(OnlineSectioningHelper.toProto(request));
 					if (request.getStudent().canAssign(request)) 
-						queue.add(new SectioningRequest(offering, request, null, null));
+						queue.add(new SectioningRequest(offering, request, null, null, action));
 				} else if (!check(request.getAssignment())) {
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+					action.setStudent(
+							OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(request.getStudent().getId())
+							.setExternalId(request.getStudent().getExternalId()));
+					action.addRequest(OnlineSectioningHelper.toProto(request));
+					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+					for (Assignment assignment: request.getAssignment().getAssignments())
+						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, request.getAssignment().getCourse()));
+					action.addEnrollment(enrollment);
 					request.getSelectedChoices().clear();
 					for (Section s: request.getAssignment().getSections())
 						request.getSelectedChoices().add(s.getChoice());
-					queue.add(new SectioningRequest(offering, request, null, request.getAssignment()));
+					queue.add(new SectioningRequest(offering, request, null, request.getAssignment(), action));
 				}
 			}
 		}
@@ -111,6 +138,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
+				long c0 = OnlineSectioningHelper.getCpuTime();
 				Enrollment enrollment = r.resection(w, dc, toc);
 				Lock wl = server.writeLock();
 				try {
@@ -123,6 +151,13 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					}
 				} finally {
 					wl.release();
+				}
+				if (enrollment != null) {
+					OnlineSectioningLog.Enrollment.Builder e = OnlineSectioningLog.Enrollment.newBuilder();
+					e.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+					for (Assignment assignment: enrollment.getAssignments())
+						e.addSection(OnlineSectioningHelper.toProto(assignment, enrollment.getCourse()));
+					r.getAction().addEnrollment(e);
 				}
 				// helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				if (r.getLastEnrollment() == null && r.getRequest().getAssignment() == null) continue;
@@ -191,6 +226,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 							r.getLastEnrollment());
 					
 					helper.commitTransaction();
+					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				} catch (Exception e) {
 					r.getRequest().setInitialAssignment(r.getLastEnrollment());
 					if (r.getLastEnrollment() == null) {
@@ -199,11 +235,16 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					} else {
 						r.getRequest().assign(0, r.getLastEnrollment());
 					}
+					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+					r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+							.setText(e.getMessage()));
 					helper.rollbackTransaction();
-					if (e instanceof SectioningException)
-						throw (SectioningException)e;
-					throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+					helper.error("Unable to resection student: " + e.getMessage(), e);
 				}
+				
+				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+				r.getAction().setEndTime(System.currentTimeMillis());
 			}
 		}
 	}
@@ -250,6 +291,4 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 	public String name() {
 		return "check-offering";
 	}
-
-
 }

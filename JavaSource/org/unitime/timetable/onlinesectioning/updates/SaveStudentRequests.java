@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.studentsct.model.Request;
+
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -44,6 +46,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -75,6 +78,13 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
 				
+				OnlineSectioningLog.Action.Builder action = helper.getAction();
+				
+				if (getRequest().getStudentId() != null)
+					action.setStudent(
+							OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(getStudentId()));
+				
 				// Save requests
 				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
 				
@@ -86,6 +96,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						server.remove(oldStudent);
 					newStudent = ReloadAllData.loadStudent(student, server, helper);
 					server.update(newStudent);
+					action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
+					
+					for (Request r: newStudent.getRequests())
+						action.addRequest(OnlineSectioningHelper.toProto(r));
+						
 				} catch (Exception e) {
 					// Put back the old student (the database will get rollbacked)
 					server.update(oldStudent);
@@ -287,4 +302,5 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		
 		return course2request;
 	}
+	
 }

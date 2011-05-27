@@ -27,10 +27,13 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
+import net.sf.cpsolver.studentsct.model.Assignment;
+import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Student;
 
 /**
@@ -61,6 +64,15 @@ public class ReloadStudent extends ReloadAllData {
 		helper.beginTransaction();
 		try {
 			for (Long studentId: getStudentIds()) {
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(studentId)
+						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+				
+				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+				action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(studentId)
+						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+				
 				Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
 						"select distinct e.courseOffering.instructionalOffering.uniqueId from StudentClassEnrollment e where "+
                 		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list(), false);
@@ -68,16 +80,37 @@ public class ReloadStudent extends ReloadAllData {
 					
 					// Unload student
 					Student oldStudent = server.getStudent(studentId);
-					if (oldStudent != null)
+					if (oldStudent != null) {
+						OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+						enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+						for (Request oldRequest: oldStudent.getRequests()) {
+							if (oldRequest.getInitialAssignment() != null)
+								for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
+									enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment().getCourse()));
+						}
+						action.addEnrollment(enrollment);
 						server.remove(oldStudent);
+						action.getStudentBuilder().setUniqueId(oldStudent.getId()).setExternalId(oldStudent.getExternalId());
+					}
 
 					// Load student
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					Student newStudent = null;
 					if (student != null) {
 						newStudent = loadStudent(student, server, helper);
-						if (newStudent != null)
+						if (newStudent != null) {
 							server.update(newStudent);
+							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+							enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+							for (Request newRequest: newStudent.getRequests()) {
+								action.addRequest(OnlineSectioningHelper.toProto(newRequest));
+								if (newRequest.getInitialAssignment() != null && newRequest.getInitialAssignment().isCourseRequest())
+									for (Assignment assignment: newRequest.getInitialAssignment().getAssignments())
+										enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment().getCourse()));
+							}
+							action.addEnrollment(enrollment);
+						}
+						action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
 					}
 					
 					server.notifyStudentChanged(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));
@@ -85,7 +118,8 @@ public class ReloadStudent extends ReloadAllData {
 				} finally {
 					lock.release();
 				}
-					
+				
+				action.setEndTime(System.currentTimeMillis());
 			}
 			
 			helper.commitTransaction();
