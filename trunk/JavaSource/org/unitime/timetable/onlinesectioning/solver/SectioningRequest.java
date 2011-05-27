@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights.LastSectionProvider;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -41,8 +42,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	private Enrollment iLastEnrollment;
 	private Offering iOffering;
 	private boolean iHasIndividualReservation;
+	private OnlineSectioningLog.Action.Builder iAction;
 
-	public SectioningRequest(Offering offering, CourseRequest request, Student oldStudent, Enrollment lastEnrollment) {
+	public SectioningRequest(Offering offering, CourseRequest request, Student oldStudent, Enrollment lastEnrollment, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iOldStudent = oldStudent;
 		iLastEnrollment = lastEnrollment;
@@ -52,6 +54,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 			if (reservation instanceof IndividualReservation && reservation.isApplicable(iRequest.getStudent())) {
 				iHasIndividualReservation = true; break;
 			}
+		iAction = action;
 	}
 	
 	public CourseRequest getRequest() { return iRequest; }
@@ -59,6 +62,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	public Enrollment getLastEnrollment() { return iLastEnrollment; }
 	public Offering getOffering() { return iOffering; }
 	public boolean hasIndividualReservation() { return iHasIndividualReservation; }
+	public OnlineSectioningLog.Action.Builder getAction() { return iAction; }
 	
 	public int hashCode() { return new Long(getRequest().getStudent().getId()).hashCode(); }
 	

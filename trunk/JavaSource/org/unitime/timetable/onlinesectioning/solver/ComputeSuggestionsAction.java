@@ -31,7 +31,9 @@ import java.util.TreeSet;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
@@ -42,6 +44,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
@@ -64,8 +67,14 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-
 		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
+
+		OnlineSectioningLog.Action.Builder action = helper.getAction();
+
+		if (getRequest().getStudentId() != null)
+			action.setStudent(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(getRequest().getStudentId()));
 
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 		Set<Long> enrolled = null;
@@ -74,11 +83,20 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		try {
 			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
+				action.getStudentBuilder().setUniqueId(original.getId()).setExternalId(original.getExternalId());
 				enrolled = new HashSet<Long>();
 				for (Request r: original.getRequests())
 					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
 						for (Section s: r.getInitialAssignment().getSections())
 							enrolled.add(s.getId());
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+				for (Request oldRequest: original.getRequests()) {
+					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
+						for (Section section: oldRequest.getInitialAssignment().getSections())
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment().getCourse()));
+				}
+				action.addEnrollment(enrollment);
 			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, true);
@@ -100,18 +118,27 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
         ArrayList<ClassAssignmentInterface> ret = new ArrayList<ClassAssignmentInterface>();
         ClassAssignmentInterface messages = new ClassAssignmentInterface();
         ret.add(messages);
+        
+		OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
+		requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+		for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
+			if (assignment != null && assignment.isAssigned())
+				requested.addSection(OnlineSectioningHelper.toProto(assignment));
+		action.addEnrollment(requested);
 
 		Request selectedRequest = null;
 		Section selectedSection = null;
 		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 			Request r = (Request)e.next();
+			OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				if (!getSelection().isFreeTime() && cr.getCourse(getSelection().getCourseId()) != null) {
 					selectedRequest = r;
 					if (getSelection().getClassId() != null) {
 						Section section = cr.getSection(getSelection().getClassId());
-						if (section != null) selectedSection = section;
+						if (section != null)
+							selectedSection = section;
 					}
 				}
 				HashSet<Section> preferredSections = new HashSet<Section>();
@@ -127,6 +154,9 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							requiredSections.add(section);
 						preferredSections.add(section);
 						cr.getSelectedChoices().add(section.getChoice());
+						rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
+								getSelection().equals(a) ? OnlineSectioningLog.Section.Preference.SELECTED :
+								a.isPinned() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 					}
 				}
 				preferredSectionsForCourse.put(cr, preferredSections);
@@ -136,16 +166,22 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				if (getSelection().isFreeTime() && ft.getTime() != null &&
 					ft.getTime().getStartSlot() == getSelection().getStart() &&
 					ft.getTime().getLength() == getSelection().getLength() && 
-					ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(getSelection().getDays())))
+					ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(getSelection().getDays()))) {
 					selectedRequest = r;
-				for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
+					for (OnlineSectioningLog.Time.Builder ftb: rq.getFreeTimeBuilderList())
+						ftb.setPreference(OnlineSectioningLog.Section.Preference.SELECTED);
+				} else for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
 					if (a != null && a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
 						ft.getTime().getStartSlot() == a.getStart() &&
 						ft.getTime().getLength() == a.getLength() && 
-						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
+						ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays()))) {
 						requiredFreeTimes.add(ft);
+						for (OnlineSectioningLog.Time.Builder ftb: rq.getFreeTimeBuilderList())
+							ftb.setPreference(OnlineSectioningLog.Section.Preference.REQUIRED);
+					}
 				}
 			}
+			action.addRequest(rq);
 		}
 		
 		long t2 = System.currentTimeMillis();
@@ -159,12 +195,21 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
         	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled));
+        	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
+        	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
+        	solution.setValue(- suggestion.getValue());
+    		for (Enrollment e: suggestion.getEnrollments()) {
+    			if (e != null && e.getSections() != null)
+    				for (Assignment section: e.getAssignments())
+    					solution.addSection(OnlineSectioningHelper.toProto(section, e.getCourse()));
+    		}
+			action.addEnrollment(solution);
         }
         
 		long t4 = System.currentTimeMillis();
 		helper.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
 
-        return ret;
+		return ret;
 	}
 
 	@Override

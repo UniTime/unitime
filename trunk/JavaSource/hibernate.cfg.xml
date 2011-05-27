@@ -197,5 +197,6 @@
 	<mapping resource="Curriculum.hbm.xml" />
 	<mapping resource="StudentSectQueue.hbm.xml" />
 	<mapping resource="QueryLog.hbm.xml"/>
+	<mapping resource="OnlineSectioningLog.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

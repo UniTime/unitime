@@ -58,6 +58,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -92,17 +93,35 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		long t0 = System.currentTimeMillis();
 		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
 		
+		OnlineSectioningLog.Action.Builder action = helper.getAction();
+		
+		if (getRequest().getStudentId() != null)
+			action.setStudent(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(getRequest().getStudentId()));
+	
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
+
 		Set<Long> enrolled = null;
 		Lock readLock = server.readLock();
 		try {
 			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
+				action.getStudentBuilder().setUniqueId(original.getId()).setExternalId(original.getExternalId());
 				enrolled = new HashSet<Long>();
-				for (Request r: original.getRequests())
+				for (Request r: original.getRequests()) {
 					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
 						for (Section s: r.getInitialAssignment().getSections())
 							enrolled.add(s.getId());
+				}
+				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+				for (Request oldRequest: original.getRequests()) {
+					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
+						for (Section section: oldRequest.getInitialAssignment().getSections())
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment().getCourse()));
+				}
+				action.addEnrollment(enrollment);
 			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, false);
@@ -120,9 +139,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 
-		if (getAssignment() != null)
+		if (getAssignment() != null && !getAssignment().isEmpty()) {
+
+			OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
+			requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+			for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
+				if (assignment.isAssigned())
+					requested.addSection(OnlineSectioningHelper.toProto(assignment));
+			action.addEnrollment(requested);
+			
 			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 				Request r = (Request)e.next();
+				OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
 				if (r instanceof CourseRequest) {
 					CourseRequest cr = (CourseRequest)r;
 					HashSet<Section> preferredSections = new HashSet<Section>();
@@ -137,6 +165,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								requiredSections.add(section);
 							preferredSections.add(section);
 							cr.getSelectedChoices().add(section.getChoice());
+							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
+									a.isPinned() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 						}
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
@@ -147,11 +177,19 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (a != null && a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
 							ft.getTime().getStartSlot() == a.getStart() &&
 							ft.getTime().getLength() == a.getLength() && 
-							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays())))
+							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays()))) {
 							requiredFreeTimes.add(ft);
+							for (OnlineSectioningLog.Time.Builder ftb: rq.getFreeTimeBuilderList())
+								ftb.setPreference(OnlineSectioningLog.Section.Preference.REQUIRED);
+						}
 					}
 				}
+				action.addRequest(rq);
 			}
+		} else {
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();)
+				action.addRequest(OnlineSectioningHelper.toProto(e.next())); 
+		}
 		long t1 = System.currentTimeMillis();
 		
         SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
@@ -164,6 +202,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
 		iValue = -neighbour.value();
+		
+    	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
+    	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
+    	solution.setValue(-neighbour.value());
+    	for (Enrollment e: neighbour.getAssignment()) {
+			if (e != null && e.getAssignments() != null)
+				for (Assignment section: e.getAssignments())
+					solution.addSection(OnlineSectioningHelper.toProto(section, e.getCourse()));
+		}
+    	action.addEnrollment(solution);
         
 		long t2 = System.currentTimeMillis();
 
@@ -174,6 +222,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
 		List<ClassAssignmentInterface> rets = new ArrayList<ClassAssignmentInterface>(1);
 		rets.add(ret);
+		
 		return rets;
 	}
 	
