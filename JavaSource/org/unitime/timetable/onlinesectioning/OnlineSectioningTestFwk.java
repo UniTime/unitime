@@ -86,6 +86,7 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	protected void close() {
+		OnlineSectioningLogger.stopLogger();
 		HibernateUtil.closeHibernate();
 	}
 	
