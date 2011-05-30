@@ -295,7 +295,13 @@ public class OnlineSectioningHelper {
 			section.setClazz(
 					OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(assignment.getClassId())
-					.setType(OnlineSectioningLog.Entity.EntityType.CLAZZ));
+					.setName(assignment.getSubject() + " " + assignment.getCourseNbr() + " " + assignment.getSubpart() + " " + assignment.getSection()));
+		}
+		if (assignment.getCourseId() != null) {
+			section.setCourse(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(assignment.getCourseId())
+					.setName(assignment.getSubject() + " " + assignment.getCourseNbr()));
 		}
 		if (assignment.isAssigned()) {
 			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
@@ -347,6 +353,12 @@ public class OnlineSectioningHelper {
 					section.addInstructor(instructor);
 				}
 			}
+		}
+		if (c != null) {
+			section.setCourse(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(c.getId())
+					.setName(c.getName()));
 		}
 		if (a.getTime() != null) {
 			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
@@ -463,7 +475,7 @@ public class OnlineSectioningHelper {
     }
     
 	public static long getCpuTime() {
-		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : System.currentTimeMillis();
+		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : 1000000l * System.currentTimeMillis();
 	}
 
 }
