@@ -56,6 +56,7 @@ message Section {
 	repeated Entity instructor = 3;
 	repeated Entity location = 4;
 	optional Preference preference = 5;
+	optional Entity course = 6;
 }
 
 message Request {
