@@ -47,5 +47,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.jar" sourcepath="/3rd_party/org.restlet"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.ext.net.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/protobuf-java-2.4.1.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
