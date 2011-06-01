@@ -55,6 +55,17 @@
 				<line>Added basic schema for reporting from online student sectioning logs.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Enrollments</name>
+			<description>
+				<line>Added Enrollments table at the bottom of the Instructional Offering Detail page.
+					<line>List of students enrolled / wait-listed for the offering.</line>
+					<line>Include student's curriculum, request priority / alternativity, requested course (if cross-listed), class enrollments, reservation (if used for enrollment), requested / enrolled dates.</line>
+					<line>Works both with and without the online sectioning server (enrollments are loaded from the database if online sectioning server is not enabled).</line>
+					<line>Show student class schedule when an individual student is clicked.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>User Interface</title>

@@ -314,6 +314,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     public static Student loadStudent(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
         Student student = new Student(s.getUniqueId());
         student.setExternalId(s.getExternalUniqueId());
+        student.setName(s.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
         
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
             AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
@@ -340,6 +341,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     				return d1.getUniqueId().compareTo(d2.getUniqueId());
     			}
     		});
+    		Date enrollmentTS = null;
     		demands.addAll(s.getCourseDemands());
             for (CourseDemand cd: demands) {
                 if (cd.getFreeTime()!=null) {
@@ -376,6 +378,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             	StudentClassEnrollment enrl = i.next();
                             	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                                 if (section!=null) {
+                                	if (enrollmentTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().after(enrollmentTS)))
+                                		enrollmentTS = enrl.getTimestamp();
                                 	if (section.getTime() != null && !assignedSections.isEmpty()) {
                                 		for (Section other: assignedSections) {
                             				if (other.getTime() != null && other.getTime().hasIntersection(section.getTime())) {
@@ -425,6 +429,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     }
                     if (assignedConfig != null) {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                        if (enrollmentTS != null)
+                        	enrollment.setTimeStamp(enrollmentTS.getTime());
                         request.setInitialAssignment(enrollment);
                         if (assignedSections.size() != assignedConfig.getSubparts().size()) {
                         	helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
@@ -491,9 +497,12 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
                 HashSet<Long> subparts = new HashSet<Long>();
+                Date enrollmentTS = null;
                 for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
                 	StudentClassEnrollment enrl = i.next();
                 	if (course.getId() != enrl.getCourseOffering().getUniqueId()) continue;
+                	if (enrollmentTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().after(enrollmentTS)))
+                		enrollmentTS = enrl.getTimestamp();
                 	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                     if (section!=null) {
                     	if (section.getTime() != null && !assignedSections.isEmpty()) {
@@ -525,6 +534,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                 }
                 if (assignedConfig!=null) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                    if (enrollmentTS != null)
+                    	enrollment.setTimeStamp(enrollmentTS.getTime());
                     request.setInitialAssignment(enrollment);
                     if (assignedSections.size() != assignedConfig.getSubparts().size()) {
                     	helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +

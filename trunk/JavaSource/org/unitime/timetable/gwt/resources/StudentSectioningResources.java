@@ -94,4 +94,13 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/action_add.png")
 	ImageResource assignment();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/expand_node_btn.gif")
+	ImageResource treeClosed();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/collapse_node_btn.gif")
+	ImageResource treeOpen();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/loading_small.gif")
+	ImageResource loading_small();
 }
