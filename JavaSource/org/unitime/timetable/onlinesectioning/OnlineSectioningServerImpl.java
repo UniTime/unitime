@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Hashtable;
@@ -41,6 +42,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
@@ -52,6 +54,10 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.reservation.CourseReservation;
+import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
+import net.sf.cpsolver.studentsct.reservation.GroupReservation;
+import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
@@ -507,6 +513,128 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 
 
+	@Override
+	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) {
+		iLock.readLock().lock();
+		try {
+			List<ClassAssignmentInterface.Enrollment> enrollments = new ArrayList<ClassAssignmentInterface.Enrollment>();
+			Offering offering = getOffering(offeringId);
+			if (offering == null) return enrollments;
+			for (Course course: offering.getCourses()) {
+				for (CourseRequest request: course.getRequests()) {
+					if (request.getAssignment() == null || !request.getStudent().canAssign(request)) continue;
+					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+					st.setId(request.getStudent().getId());
+					st.setExternalId(request.getStudent().getExternalId());
+					st.setName(request.getStudent().getName());
+					for (AcademicAreaCode ac: request.getStudent().getAcademicAreaClasiffications()) {
+						st.addArea(ac.getArea());
+						st.addClassification(ac.getCode());
+					}
+					for (AcademicAreaCode ac: request.getStudent().getMajors()) {
+						st.addMajor(ac.getCode());
+					}
+					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
+					e.setStudent(st);
+					e.setPriority(1 + request.getPriority());
+					e.setCourseId(course.getId());
+					e.setCourseName(course.getName());
+					if (!request.getCourses().get(0).equals(course))
+						e.setAlternative(request.getCourses().get(0).getName());
+					if (request.isAlternative()) {
+						for (Request r: request.getStudent().getRequests()) {
+							if (r instanceof CourseRequest && !r.isAlternative() && r.getAssignment() == null) {
+								e.setAlternative(((CourseRequest)r).getCourses().get(0).getName());
+							}
+						}
+					}
+					if (request.getTimeStamp() != null)
+						e.setRequestedDate(new Date(request.getTimeStamp()));
+					if (request.getAssignment() != null) {
+						if (request.getAssignment().getReservation() != null) {
+							Reservation r = request.getAssignment().getReservation();
+							if (r instanceof GroupReservation) {
+								e.setReservation("Group");
+							} else if (r instanceof IndividualReservation) {
+								e.setReservation("Individual");
+							} else if (r instanceof CourseReservation) {
+								e.setReservation("Course");
+							} else if (r instanceof CurriculumReservation) {
+								e.setReservation("Curriculum");
+							}
+						}
+						if (request.getAssignment().getTimeStamp() != null)
+							e.setEnrolledDate(new Date(request.getAssignment().getTimeStamp()));
+						for (Section section: request.getAssignment().getSections()) {
+							ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
+							a.setAlternative(request.isAlternative());
+							a.setClassId(section.getId());
+							a.setSubpart(section.getSubpart().getName());
+							a.setSection(section.getName(course.getId()));
+							a.setLimit(new int[] {section.getEnrollments().size(), section.getLimit()});
+							if (section.getTime() != null) {
+								for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
+									a.addDay(d.getIndex());
+								a.setStart(section.getTime().getStartSlot());
+								a.setLength(section.getTime().getLength());
+								a.setBreakTime(section.getTime().getBreakTime());
+								a.setDatePattern(section.getTime().getDatePatternName());
+							}
+							if (section.getRooms() != null) {
+								for (Iterator<RoomLocation> i = section.getRooms().iterator(); i.hasNext(); ) {
+									RoomLocation rm = i.next();
+									a.addRoom(rm.getName());
+								}
+							}
+							if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
+								String[] instructors = section.getChoice().getInstructorNames().split(":");
+								for (String instructor: instructors) {
+									String[] nameEmail = instructor.split("\\|");
+									a.addInstructor(nameEmail[0]);
+									a.addInstructoEmailr(nameEmail.length < 2 ? "" : nameEmail[1]);
+								}
+							}
+							if (section.getParent() != null)
+								a.setParentSection(section.getParent().getName(course.getId()));
+							a.setSubpartId(section.getSubpart().getId());
+							int dist = 0;
+							String from = null;
+							for (Request q: request.getStudent().getRequests()) {
+								Enrollment x = q.getAssignment();
+								if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+								for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
+									Section s = j.next();
+									if (s == section || s.getTime() == null) continue;
+									int d = distance(s, section);
+									if (d > dist) {
+										dist = d;
+										from = "";
+										for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
+											from += k.next().getName() + (k.hasNext() ? ", " : "");
+									}
+									if (d > s.getTime().getBreakTime()) {
+										a.setDistanceConflict(true);
+									}
+								}
+							}
+							a.setBackToBackDistance(dist);
+							a.setBackToBackRooms(from);
+							a.setSaved(true);
+							if (a.getParentSection() == null)
+								a.setParentSection(getCourseInfo(course.getId()).getConsent());
+							a.setExpected(Math.round(section.getSpaceExpected()));
+							e.add(a);
+						}
+					}
+					enrollments.add(e);
+				}
+			}
+			return enrollments;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
+	
 	@Override
 	public Collection<CourseInfo> findCourses(String query, Integer limit) {
 		iLock.readLock().lock();
