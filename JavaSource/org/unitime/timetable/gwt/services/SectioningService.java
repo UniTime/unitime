@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -50,5 +51,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException;
     ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException;
-	public Boolean isAdmin() throws SectioningException;
+	Boolean isAdmin() throws SectioningException;
+	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException;
+	ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException;
 }

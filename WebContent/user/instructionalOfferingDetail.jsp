@@ -428,6 +428,11 @@
 			<bean:write name="<%=frmName%>" property="instrOfferingId"/>
 		</tt:last-change>		
 
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:OfferingEnrollments' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+			</TD>
+		</TR>
 
 <!-- Buttons -->
 		<TR>

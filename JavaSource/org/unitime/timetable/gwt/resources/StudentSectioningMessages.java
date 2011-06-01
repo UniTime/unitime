@@ -407,6 +407,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();
 
+	@DefaultMessage("Wait-listed")
+	String courseWaitListed();
+
 	@DefaultMessage("Conflicts with ")
 	String conflictWith();
 
@@ -422,7 +425,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Expected {0} students, but only {1} spaces are available, please try to avoid this class.")
 	String highDemand(int expected, int available);
 
-	@DefaultMessage("Course {0} is locked.")
+	@DefaultMessage("Course {0} is undergoing maintenance / changes.")
 	String courseLocked(String course);
 	
 	@DefaultMessage("You are currently enrolled in {0}.")
@@ -442,4 +445,58 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} is a course.")
 	String notFreeTimeIsCourse(String text);
+	
+	@DefaultMessage("Failed to load enrollments: {0}")
+	String failedToLoadEnrollments(String message);
+
+	@DefaultMessage("The selected offering has no students enrolled.")
+	String offeringHasNoEnrollments();
+	
+	@DefaultMessage("Sort by {0}")
+	String sortBy(String column);
+	
+	@DefaultMessage("Student")
+	String colStudent();
+
+	@DefaultMessage("Area")
+	String colArea();
+
+	@DefaultMessage("Clasf")
+	String colClassification();
+
+	@DefaultMessage("Major")
+	String colMajor();
+
+	@DefaultMessage("Requested")
+	String colRequestTimeStamp();
+	
+	@DefaultMessage("Enrolled")
+	String colEnrollmentTimeStamp();
+
+	@DefaultMessage("Priority")
+	String colPriority();
+	
+	@DefaultMessage("Alternative")
+	String colAlternative();
+
+	@DefaultMessage("Reservation")
+	String colReservation();
+
+	@DefaultMessage("{0}.")
+	String priority(int priority);
+	
+	@DefaultMessage("Total Enrolled: {0}")
+	String totalEnrolled(int count);
+
+	@DefaultMessage("Total Requested: {0}")
+	String totalRequested(int count);
+
+	@DefaultMessage("Total Wait-Listed: {0}")
+	String totalWaitListed(int count);
+	
+	@DefaultMessage("Loading class for {0}...")
+	String loadingEnrollment(String student);
+
+	@DefaultMessage("Classes for {0}")
+	String dialogEnrollments(String student);
 }

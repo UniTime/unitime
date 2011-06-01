@@ -20,6 +20,9 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TreeSet;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -363,4 +366,152 @@ public class ClassAssignmentInterface implements IsSerializable {
 							"]" : "");
 		}
 	}
+	
+	public static class Student implements IsSerializable {
+		private long iId;
+		private String iExternalId, iName;
+		private List<String> iArea, iClassification, iMajor;
+		
+		public Student() {}
+
+		public void setId(long id) { iId = id; }
+		public long getId() { return iId; }
+		
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public boolean hasArea() { return iArea != null && !iArea.isEmpty(); }
+		public String getArea(String delim) { 
+			if (iArea == null) return "";
+			String ret = "";
+			for (String area: iArea) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += area;
+			}
+			return ret;
+		}
+		public void addArea(String area) {
+			if (iArea == null) iArea = new ArrayList<String>();
+			iArea.add(area);
+		}
+		public List<String> getAreas() { return iArea; }
+		
+		public boolean hasClassification() { return iClassification != null && !iClassification.isEmpty(); }
+		public String getClassification(String delim) { 
+			if (iClassification == null) return "";
+			String ret = "";
+			for (String classification: iClassification) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += classification;
+			}
+			return ret;
+		}
+		public void addClassification(String classification) {
+			if (iClassification == null) iClassification = new ArrayList<String>();
+			iClassification.add(classification);
+		}
+		public List<String> getClassifications() { return iClassification; }
+
+		public boolean hasMajor() { return iMajor != null && !iMajor.isEmpty(); }
+		public String getMajor(String delim) { 
+			if (iMajor == null) return "";
+			String ret = "";
+			for (String major: iMajor) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += major;
+			}
+			return ret;
+		}
+		public void addMajor(String major) {
+			if (iMajor == null) iMajor = new ArrayList<String>();
+			iMajor.add(major);
+		}
+		public List<String> getMajors() { return iMajor; }
+		
+		public String getCurriculum(String delim) {
+			if (!hasArea()) return "";
+			String ret = "";
+			for (int i = 0; i < iArea.size(); i++) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += iArea.get(i) + " " + iClassification.get(i);
+				if (iMajor != null && i < iMajor.size())
+					ret += " " + iMajor.get(i);
+			}
+			return ret;
+		}
+
+		public String getAreaClasf(String delim) {
+			if (!hasArea()) return "";
+			String ret = "";
+			for (int i = 0; i < iArea.size(); i++) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += iArea.get(i) + " " + iClassification.get(i);
+			}
+			return ret;
+		}
+	}
+	public static class Enrollment implements IsSerializable {
+		private Student iStudent;
+		private List<ClassAssignment> iClasses = null;
+		private int iPriority = 0;
+		private String iAlternative = null;
+		private Date iRequestedDate = null, iEnrolledDate = null;
+		private long iCourseId = 0;
+		private String iCourseName = null;
+		private String iReservation = null;
+		
+		public Enrollment() {}
+		
+		public Student getStudent() { return iStudent; }
+		public void setStudent(Student student) { iStudent = student; }
+		
+		public boolean hasClasses() {
+			return iClasses != null && !iClasses.isEmpty();
+		}
+		public List<ClassAssignment> getClasses() { return iClasses; }
+		public void add(ClassAssignment clazz) {
+			if (iClasses == null)
+				iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+			iClasses.add(clazz);
+		}
+		
+		public int getPriority() { return iPriority; }
+		public void setPriority(int priority) { iPriority = priority; }
+		
+		public boolean isAlternative() { return iAlternative != null; }
+		public void setAlternative(String course) { iAlternative = course; }
+		public String getAlternative() { return (iAlternative == null ? "" : iAlternative); }
+		
+		public Date getRequestedDate() { return iRequestedDate; }
+		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+
+		public Date getEnrolledDate() { return iEnrolledDate; }
+		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
+		
+		public long getCourseId() { return iCourseId; }
+		public void setCourseId(long courseId) { iCourseId = courseId; }
+		public String getCourseName() { return iCourseName; }
+		public void setCourseName(String courseName) { iCourseName = courseName; }
+		
+		public String getClasses(String subpart, String delim) {
+			if (!hasClasses()) return "";
+			String ret = "";
+			TreeSet<String> sections = new TreeSet<String>();
+			for (ClassAssignment c: getClasses()) {
+				if (subpart.equals(c.getSubpart()) && sections.add(c.getSection())) {
+					if (!ret.isEmpty()) ret += delim;
+					ret += c.getSection();
+				}
+			}
+			return ret;
+		}
+		
+		public String getReservation() { return iReservation; }
+		public void setReservation(String reservation) { iReservation = reservation; }
+	}
+	
+	
 }

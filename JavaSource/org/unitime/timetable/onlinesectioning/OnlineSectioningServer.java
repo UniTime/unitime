@@ -46,6 +46,7 @@ public interface OnlineSectioningServer {
 	
 	public ClassAssignmentInterface getAssignment(Long studentId);
 	public CourseRequestInterface getRequest(Long studentId);
+	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId);
 	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
 	public List<Section> getSections(CourseInfo courseInfo);

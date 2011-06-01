@@ -104,4 +104,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultIntValue(3)
 	int numberOfAlternatives();
+	
+	@DefaultStringValue("MM/dd/yyyy")
+	String requestDateFormat();
 }

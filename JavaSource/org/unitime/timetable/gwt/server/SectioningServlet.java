@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +50,12 @@ import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
 import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -61,6 +64,8 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -70,6 +75,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -83,6 +89,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
+import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -965,6 +972,279 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "not authenticated");
 			return Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch  (Exception e) {
+			if (e instanceof SectioningException) throw (SectioningException)e;
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e.getMessage());
+		}
+	}
+	
+	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "not authenticated");
+			if (user.getRole() == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "insufficient rigts");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
+				if (offering == null) 
+					throw new SectioningException(SectioningExceptionType.UNKNOWN, "bad offering");
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+				if (server == null) {
+					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
+					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
+							"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId"
+							).setLong("offeringId", offeringId).list()) {
+						ClassAssignmentInterface.Enrollment e = student2enrollment.get(enrollment.getStudent().getUniqueId());
+						if (e == null) {
+							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+							st.setId(enrollment.getStudent().getUniqueId());
+							st.setExternalId(enrollment.getStudent().getExternalUniqueId());
+							st.setName(enrollment.getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+							for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
+								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
+								st.addClassification(ac.getAcademicClassification().getCode());
+							}
+							for (PosMajor m: enrollment.getStudent().getPosMajors()) {
+								st.addMajor(m.getCode());
+							}
+							e = new ClassAssignmentInterface.Enrollment();
+							e.setStudent(st);
+							e.setEnrolledDate(enrollment.getTimestamp());
+							e.setCourseId(enrollment.getCourseOffering().getUniqueId());
+							e.setCourseName(enrollment.getCourseOffering().getCourseName());
+							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
+							if (enrollment.getCourseRequest() != null) {
+								e.setPriority(1 + enrollment.getCourseRequest().getCourseDemand().getPriority());
+								if (enrollment.getCourseRequest().getCourseDemand().getCourseRequests().size() > 1) {
+									CourseRequest first = null;
+									for (CourseRequest r: enrollment.getCourseRequest().getCourseDemand().getCourseRequests()) {
+										if (first == null || r.getOrder().compareTo(first.getOrder()) < 0) first = r;
+									}
+									if (!first.equals(enrollment.getCourseRequest()))
+										e.setAlternative(first.getCourseOffering().getCourseName());
+								}
+								if (enrollment.getCourseRequest().getCourseDemand().isAlternative()) {
+									CourseDemand first = enrollment.getCourseRequest().getCourseDemand();
+									demands: for (CourseDemand cd: enrollment.getStudent().getCourseDemands()) {
+										if (!cd.isAlternative() && cd.getPriority().compareTo(first.getPriority()) < 0 && !cd.getCourseRequests().isEmpty()) {
+											for (CourseRequest cr: cd.getCourseRequests())
+												if (cr.getClassEnrollments().isEmpty()) continue demands;
+											first = cd;
+										}
+									}
+									CourseRequest alt = null;
+									for (CourseRequest r: first.getCourseRequests()) {
+										if (alt == null || r.getOrder().compareTo(alt.getOrder()) < 0) alt = r;
+									}
+									e.setAlternative(alt.getCourseOffering().getCourseName());
+								}
+								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
+								
+							} else {
+								e.setPriority(-1);
+							}
+						}
+						ClassAssignmentInterface.ClassAssignment c = new ClassAssignmentInterface.ClassAssignment();
+						c.setClassId(enrollment.getClazz().getUniqueId());
+						c.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
+						if (c.getSection() == null)
+							c.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
+						e.add(c);
+					}
+					for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
+							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId"
+							).setLong("offeringId", offeringId).list()) {
+						ClassAssignmentInterface.Enrollment e = student2enrollment.get(request.getCourseDemand().getStudent().getUniqueId());
+						if (e != null) continue;
+						ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+						st.setId(request.getCourseDemand().getStudent().getUniqueId());
+						st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
+						st.setName(request.getCourseDemand().getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+						for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
+							st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
+							st.addClassification(ac.getAcademicClassification().getCode());
+						}
+						for (PosMajor m: request.getCourseDemand().getStudent().getPosMajors()) {
+							st.addMajor(m.getCode());
+						}
+						e = new ClassAssignmentInterface.Enrollment();
+						e.setStudent(st);
+						e.setCourseId(request.getCourseOffering().getUniqueId());
+						e.setCourseName(request.getCourseOffering().getCourseName());
+						student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
+						e.setPriority(1 + request.getCourseDemand().getPriority());
+						if (request.getCourseDemand().getCourseRequests().size() > 1) {
+							CourseRequest first = null;
+							for (CourseRequest r: request.getCourseDemand().getCourseRequests()) {
+								if (first == null || r.getOrder().compareTo(first.getOrder()) < 0) first = r;
+							}
+							if (!first.equals(request))
+								e.setAlternative(first.getCourseOffering().getCourseName());
+						}
+						if (request.getCourseDemand().isAlternative()) {
+							CourseDemand first = request.getCourseDemand();
+							demands: for (CourseDemand cd: request.getCourseDemand().getStudent().getCourseDemands()) {
+								if (!cd.isAlternative() && cd.getPriority().compareTo(first.getPriority()) < 0 && !cd.getCourseRequests().isEmpty()) {
+									for (CourseRequest cr: cd.getCourseRequests())
+										if (cr.getClassEnrollments().isEmpty()) continue demands;
+									first = cd;
+								}
+							}
+							CourseRequest alt = null;
+							for (CourseRequest r: first.getCourseRequests()) {
+								if (alt == null || r.getOrder().compareTo(alt.getOrder()) < 0) alt = r;
+							}
+							e.setAlternative(alt.getCourseOffering().getCourseName());
+						}
+						e.setRequestedDate(request.getCourseDemand().getTimestamp());
+					}
+					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
+				} else {
+					return server.listEnrollments(offeringId);
+				}
+			} finally {
+				hibSession.close();
+			}
+		} catch  (Exception e) {
+			if (e instanceof SectioningException) throw (SectioningException)e;
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(SectioningExceptionType.UNKNOWN, e.getMessage());
+		}
+	}
+	
+	public ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "not authenticated");
+			if (user.getRole() == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "insufficient rigts");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			try {
+				Student student = StudentDAO.getInstance().get(studentId, hibSession);
+				if (student == null) 
+					throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
+				if (server == null) {
+					ClassAssignmentInterface ret = new ClassAssignmentInterface();
+					Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
+					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
+							"from StudentClassEnrollment e where e.student.uniqueId = :studentId"
+							).setLong("studentId", studentId).list()) {
+						CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
+						if (course == null) {
+							course = new CourseAssignment();
+							courses.put(enrollment.getCourseOffering().getUniqueId(), course);
+							ret.add(course);
+							course.setAssigned(true);
+							course.setCourseId(enrollment.getCourseOffering().getUniqueId());
+							course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+							course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+							course.setTitle(enrollment.getCourseOffering().getTitle());
+						}
+						ClassAssignment clazz = course.addClassAssignment();
+						clazz.setClassId(enrollment.getClazz().getUniqueId());
+						clazz.setCourseId(enrollment.getCourseOffering().getUniqueId());
+						clazz.setCourseAssigned(true);
+						clazz.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+						clazz.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+						clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
+						if (clazz.getSection() == null)
+							clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+						clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
+						if (enrollment.getClazz().getParentClass() != null) {
+							clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
+							if (clazz.getParentSection() == null)
+								clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
+						}
+						Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
+						int minLimit = enrollment.getClazz().getExpectedCapacity();
+	                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
+	                	int limit = maxLimit;
+	                	if (minLimit < maxLimit && placement != null) {
+	                		int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+	                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+	                	}
+	                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+						clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
+						if (placement != null) {
+							if (placement.getTimeLocation() != null) {
+								for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
+									clazz.addDay(d.getIndex());
+								clazz.setStart(placement.getTimeLocation().getStartSlot());
+								clazz.setLength(placement.getTimeLocation().getLength());
+								clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
+								//clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
+								clazz.setDatePattern(ReloadAllData.datePatternName(placement.getTimeLocation(), new AcademicSessionInfo(student.getSession())));
+							}
+							if (placement.getNrRooms() == 1) {
+								clazz.addRoom(placement.getRoomLocation().getName());
+							} else if (placement.getNrRooms() > 1) {
+								for (RoomLocation rm: placement.getRoomLocations())
+									clazz.addRoom(rm.getName());
+							}
+						}
+						if (enrollment.getClazz().getDisplayInstructor())
+							for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
+								if (!ci.isLead()) continue;
+								clazz.addInstructor(ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
+								clazz.addInstructoEmailr(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+							}
+					}
+					demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
+							"from CourseDemand d where d.student.uniqueId = :studentId"
+							).setLong("studentId", studentId).list()) {
+						if (demand.getFreeTime() != null) {
+							CourseAssignment course = new CourseAssignment();
+							course.setAssigned(true);
+							ClassAssignment clazz = course.addClassAssignment();
+							clazz.setLength(demand.getFreeTime().getLength());
+							for (DayCode d: DayCode.toDayCodes(demand.getFreeTime().getDayCode()))
+								clazz.addDay(d.getIndex());
+							clazz.setStart(demand.getFreeTime().getStartSlot());
+							ca: for (CourseAssignment ca: ret.getCourseAssignments()) {
+								for (ClassAssignment c: ca.getClassAssignments()) {
+									if (!c.isAssigned()) continue;
+									for (int d: c.getDays())
+										if (clazz.getDays().contains(d)) {
+											if (c.getStart() + c.getLength() > clazz.getStart() && clazz.getStart() + clazz.getLength() > c.getStart()) {
+												course.setAssigned(false);
+												break ca;
+											}
+										}
+								}
+							}
+							ret.add(course);
+						} else {
+							CourseRequest request = null;
+							for (CourseRequest r: demand.getCourseRequests()) {
+								if (courses.containsKey(r.getCourseOffering().getUniqueId())) continue demands;
+								if (request == null || r.getOrder().compareTo(request.getOrder()) < 0)
+									request = r;
+							}
+							if (request == null) continue;
+							CourseAssignment course = new CourseAssignment();
+							courses.put(request.getCourseOffering().getUniqueId(), course);
+							ret.add(course);
+							course.setAssigned(false);
+							course.setCourseId(request.getCourseOffering().getUniqueId());
+							course.setCourseNbr(request.getCourseOffering().getCourseNbr());
+							course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+							course.setTitle(request.getCourseOffering().getTitle());
+							ClassAssignment clazz = course.addClassAssignment();
+							clazz.setCourseId(request.getCourseOffering().getUniqueId());
+							clazz.setCourseAssigned(false);
+							clazz.setCourseNbr(request.getCourseOffering().getCourseNbr());
+							clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+						}
+					}
+					return ret;
+				} else {
+					return server.getAssignment(studentId);
+				}
+			} finally {
+				hibSession.close();
+			}
 		} catch  (Exception e) {
 			if (e instanceof SectioningException) throw (SectioningException)e;
 			sLog.error(e.getMessage(), e);

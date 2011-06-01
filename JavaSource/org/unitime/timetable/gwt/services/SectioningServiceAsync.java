@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -49,4 +50,6 @@ public interface SectioningServiceAsync {
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException;
 	void enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException;
 	void isAdmin(AsyncCallback<Boolean> isAdmin) throws SectioningException;
+	void listEnrollments(Long offeringId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException;
+	void getEnrollment(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException;
 }
