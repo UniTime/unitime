@@ -44,7 +44,17 @@
 				<line>Include timetable in the iCalendar format.</line>
 				<line>Include timetable grid as a PNG (to ensure it is displayed properly by an email client).</line>
 			</description>
-		</item>	
+		</item>
+		<item>
+			<name>Logging</name>
+			<description>
+				<line>Added logging of student related actions.
+					<line>It should have enough information for data mining and to track down potential problems.</line>
+					<line>Using Google Protocol Buffers for its effectiveness and extensibility.</line>
+				</line>
+				<line>Added basic schema for reporting from online student sectioning logs.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>User Interface</title>
