@@ -23,7 +23,7 @@ create table sectioning_log (
 	student varchar(40) not null,
 	session_id decimal(20,0) not null,
 	operation varchar(20) not null,
-	action blob not null
+	action longblob not null
 ) engine = INNODB;
 
 alter table sectioning_log add constraint fk_sectioning_log_session foreign key (session_id)
