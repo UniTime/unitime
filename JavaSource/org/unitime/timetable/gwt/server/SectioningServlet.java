@@ -73,6 +73,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -979,21 +980,30 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException {
+	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long classOrOfferingId) throws SectioningException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "not authenticated");
 			if (user.getRole() == null) throw new SectioningException(SectioningExceptionType.UNKNOWN, "insufficient rigts");
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
-				if (offering == null) 
+				InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
+				Class_ clazz = (classOrOfferingId < 0 ? Class_DAO.getInstance().get(-classOrOfferingId, hibSession) : null);
+				if (offering == null && clazz == null) 
 					throw new SectioningException(SectioningExceptionType.UNKNOWN, "bad offering");
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+				Long offeringId = (clazz == null ? offering.getUniqueId() : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(
+						clazz == null ?
+						offering.getControllingCourseOffering().getSubjectArea().getSessionId() :
+						clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSessionId()
+						);
 				if (server == null) {
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
-							"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId"
+							clazz == null ?
+								"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId" :
+								"select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.student.uniqueId in " +
+								"(select f.student.uniqueId from StudentClassEnrollment f where f.clazz.uniqueId = " + clazz.getUniqueId() + ")"
 							).setLong("offeringId", offeringId).list()) {
 						ClassAssignmentInterface.Enrollment e = student2enrollment.get(enrollment.getStudent().getUniqueId());
 						if (e == null) {
@@ -1050,59 +1060,60 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						c.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 						if (c.getSection() == null)
 							c.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+						c.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
 						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
 						e.add(c);
 					}
-					for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
-							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId"
-							).setLong("offeringId", offeringId).list()) {
-						ClassAssignmentInterface.Enrollment e = student2enrollment.get(request.getCourseDemand().getStudent().getUniqueId());
-						if (e != null) continue;
-						ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
-						st.setId(request.getCourseDemand().getStudent().getUniqueId());
-						st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
-						st.setName(request.getCourseDemand().getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
-						for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
-							st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
-							st.addClassification(ac.getAcademicClassification().getCode());
-						}
-						for (PosMajor m: request.getCourseDemand().getStudent().getPosMajors()) {
-							st.addMajor(m.getCode());
-						}
-						e = new ClassAssignmentInterface.Enrollment();
-						e.setStudent(st);
-						e.setCourseId(request.getCourseOffering().getUniqueId());
-						e.setCourseName(request.getCourseOffering().getCourseName());
-						student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
-						e.setPriority(1 + request.getCourseDemand().getPriority());
-						if (request.getCourseDemand().getCourseRequests().size() > 1) {
-							CourseRequest first = null;
-							for (CourseRequest r: request.getCourseDemand().getCourseRequests()) {
-								if (first == null || r.getOrder().compareTo(first.getOrder()) < 0) first = r;
+					if (classOrOfferingId >= 0)
+						for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
+							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", classOrOfferingId).list()) {
+							ClassAssignmentInterface.Enrollment e = student2enrollment.get(request.getCourseDemand().getStudent().getUniqueId());
+							if (e != null) continue;
+							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+							st.setId(request.getCourseDemand().getStudent().getUniqueId());
+							st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
+							st.setName(request.getCourseDemand().getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+							for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
+								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
+								st.addClassification(ac.getAcademicClassification().getCode());
 							}
-							if (!first.equals(request))
-								e.setAlternative(first.getCourseOffering().getCourseName());
-						}
-						if (request.getCourseDemand().isAlternative()) {
-							CourseDemand first = request.getCourseDemand();
-							demands: for (CourseDemand cd: request.getCourseDemand().getStudent().getCourseDemands()) {
-								if (!cd.isAlternative() && cd.getPriority().compareTo(first.getPriority()) < 0 && !cd.getCourseRequests().isEmpty()) {
-									for (CourseRequest cr: cd.getCourseRequests())
-										if (cr.getClassEnrollments().isEmpty()) continue demands;
-									first = cd;
+							for (PosMajor m: request.getCourseDemand().getStudent().getPosMajors()) {
+								st.addMajor(m.getCode());
+							}
+							e = new ClassAssignmentInterface.Enrollment();
+							e.setStudent(st);
+							e.setCourseId(request.getCourseOffering().getUniqueId());
+							e.setCourseName(request.getCourseOffering().getCourseName());
+							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
+							e.setPriority(1 + request.getCourseDemand().getPriority());
+							if (request.getCourseDemand().getCourseRequests().size() > 1) {
+								CourseRequest first = null;
+								for (CourseRequest r: request.getCourseDemand().getCourseRequests()) {
+									if (first == null || r.getOrder().compareTo(first.getOrder()) < 0) first = r;
 								}
+								if (!first.equals(request))
+									e.setAlternative(first.getCourseOffering().getCourseName());
 							}
-							CourseRequest alt = null;
-							for (CourseRequest r: first.getCourseRequests()) {
-								if (alt == null || r.getOrder().compareTo(alt.getOrder()) < 0) alt = r;
+							if (request.getCourseDemand().isAlternative()) {
+								CourseDemand first = request.getCourseDemand();
+								demands: for (CourseDemand cd: request.getCourseDemand().getStudent().getCourseDemands()) {
+									if (!cd.isAlternative() && cd.getPriority().compareTo(first.getPriority()) < 0 && !cd.getCourseRequests().isEmpty()) {
+										for (CourseRequest cr: cd.getCourseRequests())
+											if (cr.getClassEnrollments().isEmpty()) continue demands;
+										first = cd;
+									}
+								}
+								CourseRequest alt = null;
+								for (CourseRequest r: first.getCourseRequests()) {
+									if (alt == null || r.getOrder().compareTo(alt.getOrder()) < 0) alt = r;
+								}
+								e.setAlternative(alt.getCourseOffering().getCourseName());
 							}
-							e.setAlternative(alt.getCourseOffering().getCourseName());
+							e.setRequestedDate(request.getCourseDemand().getTimestamp());
 						}
-						e.setRequestedDate(request.getCourseDemand().getTimestamp());
-					}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
-					return server.listEnrollments(offeringId);
+					return server.listEnrollments(classOrOfferingId);
 				}
 			} finally {
 				hibSession.close();
@@ -1129,7 +1140,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					ClassAssignmentInterface ret = new ClassAssignmentInterface();
 					Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
-							"from StudentClassEnrollment e where e.student.uniqueId = :studentId"
+							"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
 							).setLong("studentId", studentId).list()) {
 						CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
 						if (course == null) {
@@ -1151,6 +1162,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 						if (clazz.getSection() == null)
 							clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+						clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
 						clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
 						if (enrollment.getClazz().getParentClass() != null) {
 							clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
@@ -1192,7 +1204,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							}
 					}
 					demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
-							"from CourseDemand d where d.student.uniqueId = :studentId"
+							"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
 							).setLong("studentId", studentId).list()) {
 						if (demand.getFreeTime() != null) {
 							CourseAssignment course = new CourseAssignment();

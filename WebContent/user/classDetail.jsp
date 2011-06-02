@@ -351,6 +351,12 @@
 				</tt:exams>
 			</TD>
 		</TR>
+
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:OfferingEnrollments' style="display: none;">-<bean:write name="<%=frmName%>" property="classId"/></div>
+			</TD>
+		</TR>
 		
 
 <!-- Buttons -->

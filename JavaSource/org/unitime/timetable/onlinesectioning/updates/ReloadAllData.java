@@ -249,6 +249,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getClassSuffix() == null ? c.getSectionNumberString(helper.getHibSession()) : c.getClassSuffix()), subpart, p, instructorIds, instructorNames, parentSection);
                     for (CourseOffering co: io.getCourseOfferings())
                     	section.setName(co.getUniqueId(), c.getClassSuffix(co));
+                    section.setName(-1l, c.getSectionNumberString(helper.getHibSession()));
                     class2section.put(c.getUniqueId(), section);
                 }
             }
