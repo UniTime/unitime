@@ -110,7 +110,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 				for (Assignment assignment: getOldEnrollment().getAssignments())
-					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, getOldEnrollment().getCourse()));
+					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, getOldEnrollment()));
 				action.addEnrollment(enrollment);
 			} else if (getOldRequests() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
@@ -118,7 +118,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				for (Request r: getNewRequests())
 					if (r.getInitialAssignment() != null)
 						for (Assignment assignment: r.getInitialAssignment().getAssignments())
-							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getInitialAssignment().getCourse()));
+							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getInitialAssignment()));
 				action.addEnrollment(enrollment);
 			}
 			
@@ -129,7 +129,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					action.addRequest(OnlineSectioningHelper.toProto(r));
 					if (r.getAssignment() != null)
 						for (Assignment assignment: r.getAssignment().getAssignments())
-							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getAssignment().getCourse()));
+							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getAssignment()));
 				}
 				action.addEnrollment(enrollment);
 			}

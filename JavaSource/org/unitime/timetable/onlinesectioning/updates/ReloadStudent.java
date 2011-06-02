@@ -86,7 +86,7 @@ public class ReloadStudent extends ReloadAllData {
 						for (Request oldRequest: oldStudent.getRequests()) {
 							if (oldRequest.getInitialAssignment() != null)
 								for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
-									enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment().getCourse()));
+									enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment()));
 						}
 						action.addEnrollment(enrollment);
 						server.remove(oldStudent);
@@ -106,7 +106,7 @@ public class ReloadStudent extends ReloadAllData {
 								action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 								if (newRequest.getInitialAssignment() != null && newRequest.getInitialAssignment().isCourseRequest())
 									for (Assignment assignment: newRequest.getInitialAssignment().getAssignments())
-										enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment().getCourse()));
+										enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment()));
 							}
 							action.addEnrollment(enrollment);
 						}

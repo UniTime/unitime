@@ -119,7 +119,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (Request oldRequest: original.getRequests()) {
 					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
 						for (Section section: oldRequest.getInitialAssignment().getSections())
-							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment().getCourse()));
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment()));
 				}
 				action.addEnrollment(enrollment);
 			}
@@ -209,7 +209,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
     	for (Enrollment e: neighbour.getAssignment()) {
 			if (e != null && e.getAssignments() != null)
 				for (Assignment section: e.getAssignments())
-					solution.addSection(OnlineSectioningHelper.toProto(section, e.getCourse()));
+					solution.addSection(OnlineSectioningHelper.toProto(section, e));
 		}
     	action.addEnrollment(solution);
         
