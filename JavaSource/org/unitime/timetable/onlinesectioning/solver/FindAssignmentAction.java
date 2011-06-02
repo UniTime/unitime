@@ -144,7 +144,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 			requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 			for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
-				if (assignment.isAssigned())
+				if (assignment != null)
 					requested.addSection(OnlineSectioningHelper.toProto(assignment));
 			action.addEnrollment(requested);
 			
