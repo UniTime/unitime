@@ -132,3 +132,10 @@ message Log {
 	repeated Message message = 2;
 }
 
+message CourseRequestOption {
+	enum OptionType {
+		ORIGINAL_ENROLLMENT = 0;
+	}
+	required OptionType type = 1;
+	repeated Section section = 2;
+}

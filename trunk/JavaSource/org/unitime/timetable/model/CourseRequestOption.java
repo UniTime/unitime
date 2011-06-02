@@ -20,6 +20,9 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseCourseRequestOption;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 
 
@@ -40,5 +43,18 @@ public class CourseRequestOption extends BaseCourseRequestOption {
 	
 /*[CONSTRUCTOR MARKER END]*/
 
+	
+    public OnlineSectioningLog.CourseRequestOption.OptionType getType() {
+    	return (getOptionType() == null ? null : OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(getOptionType()));
+    }
+        
+    public OnlineSectioningLog.CourseRequestOption getOption() throws InvalidProtocolBufferException {
+    	return OnlineSectioningLog.CourseRequestOption.parseFrom(getValue());
+    }
+    
+    public void setOption(OnlineSectioningLog.CourseRequestOption option) {
+    	setValue(option.toByteArray());
+    	setOptionType(option.getType().getNumber());
+    }
 
 }

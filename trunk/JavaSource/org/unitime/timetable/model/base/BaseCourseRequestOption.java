@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.dom4j.Document;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
 
@@ -30,7 +29,7 @@ public abstract class BaseCourseRequestOption implements Serializable {
 
 	private Long iUniqueId;
 	private Integer iOptionType;
-	private Document iValue;
+	private byte[] iValue;
 
 	private CourseRequest iCourseRequest;
 
@@ -55,8 +54,8 @@ public abstract class BaseCourseRequestOption implements Serializable {
 	public Integer getOptionType() { return iOptionType; }
 	public void setOptionType(Integer optionType) { iOptionType = optionType; }
 
-	public Document getValue() { return iValue; }
-	public void setValue(Document value) { iValue = value; }
+	public byte[] getValue() { return iValue; }
+	public void setValue(byte[] value) { iValue = value; }
 
 	public CourseRequest getCourseRequest() { return iCourseRequest; }
 	public void setCourseRequest(CourseRequest courseRequest) { iCourseRequest = courseRequest; }

@@ -48,9 +48,9 @@
         <property
             name="value"
             column="value"
-            type="org.unitime.commons.hibernate.blob.XmlBlobType"
+            type="byte[]"
             not-null="true"
-            length="65535"/>
+            lazy="true"/>
 
     </class>
 </hibernate-mapping>

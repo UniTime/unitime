@@ -316,6 +316,7 @@ public class OnlineSectioningHelper {
 			time.setLength(assignment.getLength());
 			if (assignment.hasDatePattern())
 				time.setPattern(assignment.getDatePattern());
+			section.setTime(time);
 		}
 		if (assignment.hasInstructors()) {
 			for (String instructor: assignment.getInstructors())
@@ -461,18 +462,15 @@ public class OnlineSectioningHelper {
     		}
     		if (r.hasRequestedCourse()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getRequestedCourse())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getRequestedCourse()));
     		}
     		if (r.hasFirstAlternative()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getFirstAlternative())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getFirstAlternative()));
     		}
     		if (r.hasSecondAlternative()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getSecondAlternative())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getSecondAlternative()));
     		}
     		ret.add(rq.build());
     	}
@@ -492,18 +490,15 @@ public class OnlineSectioningHelper {
     		}
     		if (r.hasRequestedCourse()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getRequestedCourse())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getRequestedCourse()));
     		}
     		if (r.hasFirstAlternative()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getFirstAlternative())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getFirstAlternative()));
     		}
     		if (r.hasSecondAlternative()) {
     			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getSecondAlternative())
-    					.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
+    					.setName(r.getSecondAlternative()));
     		}
     		ret.add(rq.build());
     	}
