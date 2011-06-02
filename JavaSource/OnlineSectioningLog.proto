@@ -30,6 +30,10 @@ message Entity {
 		STUDENT = 4;
 		OFFERING = 5;
 		RESERVATION = 6;
+		INDIVIDUAL_RESERVATION = 7;
+		GROUP_RESERVATION = 8;
+		CURRICULUM_RESERVATION = 9;
+		COURSE_RESERVATION = 10;
 	}
 	optional int64 unique_id = 1;
 	optional EntityType type = 2;
@@ -57,6 +61,8 @@ message Section {
 	repeated Entity location = 4;
 	optional Preference preference = 5;
 	optional Entity course = 6;
+	optional Entity reservation = 7;
+	optional int64 time_stamp = 8;
 }
 
 message Request {

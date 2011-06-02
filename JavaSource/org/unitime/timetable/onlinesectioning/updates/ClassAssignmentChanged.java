@@ -101,7 +101,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 							helper.warn("Class " + clazz.getClassLabel() + " was added -- unsupported operation (use reload offering instead).");
 							continue;
 						}
-						previous.addSection(OnlineSectioningHelper.toProto(section, null));
+						previous.addSection(OnlineSectioningHelper.toProto(section));
 						helper.info("Reloading " + clazz.getClassLabel());
 		                org.unitime.timetable.model.Assignment a = clazz.getCommittedAssignment();
 		                Placement p = (a == null ? null : a.getPlacement());
@@ -140,7 +140,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 						helper.info("  -- instructor: " + instructorNames);
 
 		                section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() == null ? clazz.getSectionNumberString(helper.getHibSession()) : clazz.getClassSuffix() : clazz.getExternalUniqueId());
-						stored.addSection(OnlineSectioningHelper.toProto(section, null));
+						stored.addSection(OnlineSectioningHelper.toProto(section));
 					} finally {
 						lock.release();
 					}
