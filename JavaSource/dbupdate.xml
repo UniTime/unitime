@@ -3336,7 +3336,7 @@
 				student varchar(40) not null,
 				session_id decimal(20,0) not null,
 				operation varchar(20) not null,
-				action blob not null
+				action longblob not null
 			) engine = INNODB
 		</mysql>
 		<plsql>
