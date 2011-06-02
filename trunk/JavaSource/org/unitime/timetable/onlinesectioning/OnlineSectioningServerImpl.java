@@ -522,7 +522,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			if (offering == null) return enrollments;
 			for (Course course: offering.getCourses()) {
 				for (CourseRequest request: course.getRequests()) {
-					if (request.getAssignment() == null || !request.getStudent().canAssign(request)) continue;
+					if (request.getAssignment() == null && !request.getStudent().canAssign(request)) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 					st.setId(request.getStudent().getId());
 					st.setExternalId(request.getStudent().getExternalId());

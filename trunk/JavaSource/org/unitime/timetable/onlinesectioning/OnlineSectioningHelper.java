@@ -27,9 +27,15 @@ import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
+import net.sf.cpsolver.studentsct.reservation.CourseReservation;
+import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
+import net.sf.cpsolver.studentsct.reservation.GroupReservation;
+import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -328,7 +334,22 @@ public class OnlineSectioningHelper {
 		return section.build();
     }
     
+    public static OnlineSectioningLog.Section.Builder toProto(Assignment a) {
+    	return toProto(a, null, null);
+    }
+
+    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Enrollment e) {
+    	OnlineSectioningLog.Section.Builder section = toProto(a, e == null ? null: e.getCourse(), e == null ? null : e.getReservation());
+    	if (e.getTimeStamp() != null)
+    		section.setTimeStamp(e.getTimeStamp());
+    	return section;
+    }
+
     public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Course c) {
+    	return toProto(a, c, null);
+    }
+
+    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Course c, Reservation r) {
 		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
 		if (a instanceof Section) {
 			Section s = (Section)a;
@@ -379,7 +400,22 @@ public class OnlineSectioningHelper {
 						);
 			}
 		}
-		return section;
+    	if (r != null) {
+    		OnlineSectioningLog.Entity.Builder reservation = OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(r.getId());
+    		if (r instanceof GroupReservation)
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.GROUP_RESERVATION);
+    		else if (r instanceof IndividualReservation)
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.INDIVIDUAL_RESERVATION);
+    		else if (r instanceof CurriculumReservation) {
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.CURRICULUM_RESERVATION);
+    			CurriculumReservation cr = (CurriculumReservation)r;
+    			reservation.setName(cr.getAcademicArea() + (cr.getClassifications().isEmpty() ? "" : " " + cr.getClassifications()) + (cr.getMajors().isEmpty() ? "" : cr.getMajors()));
+    		} else if (r instanceof CourseReservation)
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION);
+    		section.setReservation(reservation);
+    	}
+    	return section;
     }
     
     public static OnlineSectioningLog.Request.Builder toProto(Request r) {

@@ -94,7 +94,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				for (Request oldRequest: original.getRequests()) {
 					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
 						for (Section section: oldRequest.getInitialAssignment().getSections())
-							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment().getCourse()));
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment()));
 				}
 				action.addEnrollment(enrollment);
 			}
@@ -201,7 +201,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
     		for (Enrollment e: suggestion.getEnrollments()) {
     			if (e != null && e.getSections() != null)
     				for (Assignment section: e.getAssignments())
-    					solution.addSection(OnlineSectioningHelper.toProto(section, e.getCourse()));
+    					solution.addSection(OnlineSectioningHelper.toProto(section, e));
     		}
 			action.addEnrollment(solution);
         }

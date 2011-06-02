@@ -209,7 +209,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 				for (Assignment assignment: oldEnrollment.getAssignments())
-					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldEnrollment.getCourse()));
+					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldEnrollment));
 				action.addEnrollment(enrollment);
 				if (newRequest == null)
 					action.addRequest(OnlineSectioningHelper.toProto(oldEnrollment.getRequest()));
@@ -218,7 +218,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			if (newRequest == null) {
 				// nothing to re-assign
 				action.setEndTime(System.currentTimeMillis());
-				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), newRequest, oldEnrollment);
+				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), oldEnrollment.getRequest(), oldEnrollment);
 				continue;
 			} else {
 				action.addRequest(OnlineSectioningHelper.toProto(newRequest));
@@ -236,7 +236,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 					for (Assignment assignment: newEnrollment.getAssignments())
-						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newEnrollment.getCourse()));
+						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newEnrollment));
 					action.addEnrollment(enrollment);
 					action.addRequest(OnlineSectioningHelper.toProto(newEnrollment.getRequest()));
 					action.setEndTime(System.currentTimeMillis());
@@ -274,10 +274,11 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 					} finally {
 						wl.release();
 					}
+					e.setTimeStamp(ts.getTime());
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 					for (Assignment assignment: e.getAssignments())
-						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, e.getCourse()));
+						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, e));
 					r.getAction().addEnrollment(enrollment);
 				}
 				helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));

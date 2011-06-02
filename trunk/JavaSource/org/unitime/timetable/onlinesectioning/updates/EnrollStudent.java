@@ -217,7 +217,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					for (Request oldRequest: oldStudent.getRequests()) {
 						if (oldRequest.getInitialAssignment() != null)
 							for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
-								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment().getCourse()));
+								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment()));
 					}
 					action.addEnrollment(enrollment);
 				}
@@ -238,7 +238,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					for (Request newRequest: newStudent.getRequests()) {
 						if (newRequest.getInitialAssignment() != null && newRequest.getInitialAssignment().isCourseRequest())
 							for (Assignment assignment: newRequest.getInitialAssignment().getAssignments())
-								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment().getCourse()));
+								enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment()));
 					}
 					action.addEnrollment(enrollment);
 				}
