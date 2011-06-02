@@ -63,7 +63,10 @@
 					<line>Include student's curriculum, request priority / alternativity, requested course (if cross-listed), class enrollments, reservation (if used for enrollment), requested / enrolled dates.</line>
 					<line>Works both with and without the online sectioning server (enrollments are loaded from the database if online sectioning server is not enabled).</line>
 					<line>Show student class schedule when an individual student is clicked.</line>
+					<line>Load enrollments only when the Enrollments table is open.</line>
+					<line>Added ability to switch between External Id and Class Number (click on any itype column).</line>
 				</line>
+				<line>Show Enrollments table on Class Detail page too.</line>
 			</description>
 		</item>
 	</category>

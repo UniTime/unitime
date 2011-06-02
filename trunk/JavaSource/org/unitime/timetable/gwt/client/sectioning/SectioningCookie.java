@@ -25,7 +25,7 @@ import com.google.gwt.user.client.Cookies;
  * @author Tomas Muller
  */
 public class SectioningCookie {
-	private boolean iCourseDetails = false;
+	private boolean iCourseDetails = false, iShowClassNumbers = false;
 	
 	private static SectioningCookie sInstance = null;
 	
@@ -35,6 +35,7 @@ public class SectioningCookie {
 			if (cookie != null && cookie.length() > 0) {
 				String[] values = cookie.split(":");
 				iCourseDetails = "T".equals(values[0]);
+				iShowClassNumbers = "T".equals(values.length >= 2 ? values[1] : "F");
 			}
 		} catch (Exception e) {
 		}
@@ -42,7 +43,8 @@ public class SectioningCookie {
 	
 	private void save() {
 		String cookie = 
-			(iCourseDetails ? "T": "F");
+			(iCourseDetails ? "T": "F") + ":" +
+			(iShowClassNumbers ? "T": "F");
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -58,6 +60,15 @@ public class SectioningCookie {
 	
 	public void setEnrollmentCoursesDetails(boolean details) {
 		iCourseDetails = details;
+		save();
+	}
+
+	public boolean getShowClassNumbers() {
+		return iShowClassNumbers;
+	}
+	
+	public void setShowClassNumbers(boolean showClassNumbers) {
+		iShowClassNumbers = showClassNumbers;
 		save();
 	}
 }

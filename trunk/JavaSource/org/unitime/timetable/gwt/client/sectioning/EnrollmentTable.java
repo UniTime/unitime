@@ -89,6 +89,8 @@ public class EnrollmentTable extends Composite {
 							iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
 						}
 					}
+					if (iEnrollments.getRowCount() == 0)
+						refresh();
 				}
 			});
 		}
@@ -253,7 +255,8 @@ public class EnrollmentTable extends Composite {
 				@Override
 				public void onSuccess(List<ClassAssignmentInterface.Enrollment> result) {
 					if (result.isEmpty()) {
-						setMessage(MESSAGES.offeringHasNoEnrollments());
+						setMessage(iOfferingId >= 0 ? MESSAGES.offeringHasNoEnrollments() : MESSAGES.classHasNoEnrollments());
+						iOpenCloseImage.setVisible(false);
 					} else {
 						populate(result);
 						if (iEnrollments.getRowCount() > 2) {
@@ -261,7 +264,6 @@ public class EnrollmentTable extends Composite {
 								iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
 							}
 						}
-						iLoadingImage.setVisible(false);
 						iOpenCloseImage.setVisible(true);
 					}
 					iLoadingImage.setVisible(false);
@@ -587,7 +589,7 @@ public class EnrollmentTable extends Composite {
 			header.add(hReservation);			
 		}
 		
-		TreeSet<String> subparts = new TreeSet<String>();
+		final TreeSet<String> subparts = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.hasClasses())
 				for (ClassAssignmentInterface.ClassAssignment c: e.getClasses())
@@ -597,13 +599,69 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			//hSubpart.setWidth("100px");
+			final int col = 1 + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasReservation ? 1 : 0);
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
+					SectioningCookie.getInstance().setShowClassNumbers(false);
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						ClassAssignmentInterface.Enrollment e = iEnrollments.getData(row);
+						if (e == null || !e.hasClasses()) continue;
+						int idx = 0;
+						for (String subpart: subparts) {
+							((HTML)iEnrollments.getWidget(row, col + idx)).setHTML(e.getClasses(subpart, ", ", false));
+							idx ++;
+						}
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					return SectioningCookie.getInstance().getShowClassNumbers();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.showExternalIds();
+				}
+			});
+			hSubpart.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					SectioningCookie.getInstance().setShowClassNumbers(true);
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						ClassAssignmentInterface.Enrollment e = iEnrollments.getData(row);
+						if (e == null || !e.hasClasses()) continue;
+						int idx = 0;
+						for (String subpart: subparts) {
+							((HTML)iEnrollments.getWidget(row, col + idx)).setHTML(e.getClasses(subpart, ", ", true));
+							idx ++;
+						}
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					return !SectioningCookie.getInstance().getShowClassNumbers();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.showClassNumbers();
+				}
+			});
+			hSubpart.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					final boolean showClassNumbers = SectioningCookie.getInstance().getShowClassNumbers();
 					iEnrollments.sort(new Comparator<ClassAssignmentInterface.Enrollment>() {
 						@Override
 						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
-							int cmp = e1.getClasses(subpart, "|").compareTo(e2.getClasses(subpart, "|"));
+							int cmp = e1.getClasses(subpart, "|", showClassNumbers).compareTo(e2.getClasses(subpart, "|", showClassNumbers));
 							if (cmp != 0) return cmp;
 							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
 							if (cmp != 0) return cmp;
@@ -617,7 +675,7 @@ public class EnrollmentTable extends Composite {
 				}
 				@Override
 				public boolean hasSeparator() {
-					return false;
+					return true;
 				}
 				@Override
 				public String getName() {
@@ -697,6 +755,7 @@ public class EnrollmentTable extends Composite {
 		iEnrollments.addRow(null, header);
 		
 		int enrolled = 0; int waitlisted = 0;
+		boolean suffix = SectioningCookie.getInstance().getShowClassNumbers();
 		for (ClassAssignmentInterface.Enrollment enrollment: enrollments) {
 			List<Widget> line = new ArrayList<Widget>();
 			line.add(new Label(enrollment.getStudent().getName(), false));
@@ -718,7 +777,7 @@ public class EnrollmentTable extends Composite {
 				if (!enrollment.hasClasses()) {
 					line.add(new WarningLabel(MESSAGES.courseWaitListed(), subparts.size()));
 				} else for (String subpart: subparts) {
-					line.add(new HTML(enrollment.getClasses(subpart, ", "), false));
+					line.add(new HTML(enrollment.getClasses(subpart, ", ", suffix), false));
 				}
 			}
 			if (hasRequestedDate)
@@ -788,7 +847,12 @@ public class EnrollmentTable extends Composite {
 	public void insert(final RootPanel panel) {
 		initCallbacks();
 		iOfferingId = Long.valueOf(panel.getElement().getInnerText());
-		refresh();
+		if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
+			refresh();
+		} else {
+			clear(false);
+			iOpenCloseImage.setVisible(true);
+		}
 		panel.getElement().setInnerText(null);
 		panel.add(this);
 		panel.setVisible(true);
