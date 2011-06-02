@@ -8724,6 +8724,712 @@ public final class OnlineSectioningLog {
     // @@protoc_insertion_point(class_scope:Log)
   }
   
+  public interface CourseRequestOptionOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+    
+    // required .CourseRequestOption.OptionType type = 1;
+    boolean hasType();
+    org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType getType();
+    
+    // repeated .Section section = 2;
+    java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> 
+        getSectionList();
+    org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section getSection(int index);
+    int getSectionCount();
+    java.util.List<? extends org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder> 
+        getSectionOrBuilderList();
+    org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder getSectionOrBuilder(
+        int index);
+  }
+  public static final class CourseRequestOption extends
+      com.google.protobuf.GeneratedMessage
+      implements CourseRequestOptionOrBuilder {
+    // Use CourseRequestOption.newBuilder() to construct.
+    private CourseRequestOption(Builder builder) {
+      super(builder);
+    }
+    private CourseRequestOption(boolean noInit) {}
+    
+    private static final CourseRequestOption defaultInstance;
+    public static CourseRequestOption getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public CourseRequestOption getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.internal_static_CourseRequestOption_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.internal_static_CourseRequestOption_fieldAccessorTable;
+    }
+    
+    public enum OptionType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      ORIGINAL_ENROLLMENT(0, 0),
+      ;
+      
+      public static final int ORIGINAL_ENROLLMENT_VALUE = 0;
+      
+      
+      public final int getNumber() { return value; }
+      
+      public static OptionType valueOf(int value) {
+        switch (value) {
+          case 0: return ORIGINAL_ENROLLMENT;
+          default: return null;
+        }
+      }
+      
+      public static com.google.protobuf.Internal.EnumLiteMap<OptionType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<OptionType>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<OptionType>() {
+              public OptionType findValueByNumber(int number) {
+                return OptionType.valueOf(number);
+              }
+            };
+      
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.getDescriptor().getEnumTypes().get(0);
+      }
+      
+      private static final OptionType[] VALUES = {
+        ORIGINAL_ENROLLMENT, 
+      };
+      
+      public static OptionType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+      
+      private final int index;
+      private final int value;
+      
+      private OptionType(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+      
+      // @@protoc_insertion_point(enum_scope:CourseRequestOption.OptionType)
+    }
+    
+    private int bitField0_;
+    // required .CourseRequestOption.OptionType type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType type_;
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType getType() {
+      return type_;
+    }
+    
+    // repeated .Section section = 2;
+    public static final int SECTION_FIELD_NUMBER = 2;
+    private java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> section_;
+    public java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> getSectionList() {
+      return section_;
+    }
+    public java.util.List<? extends org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder> 
+        getSectionOrBuilderList() {
+      return section_;
+    }
+    public int getSectionCount() {
+      return section_.size();
+    }
+    public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section getSection(int index) {
+      return section_.get(index);
+    }
+    public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder getSectionOrBuilder(
+        int index) {
+      return section_.get(index);
+    }
+    
+    private void initFields() {
+      type_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT;
+      section_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getSectionCount(); i++) {
+        if (!getSection(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      for (int i = 0; i < section_.size(); i++) {
+        output.writeMessage(2, section_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_.getNumber());
+      }
+      for (int i = 0; i < section_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, section_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOptionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.internal_static_CourseRequestOption_descriptor;
+      }
+      
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.internal_static_CourseRequestOption_fieldAccessorTable;
+      }
+      
+      // Construct using org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private Builder(BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getSectionFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        type_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (sectionBuilder_ == null) {
+          section_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          sectionBuilder_.clear();
+        }
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.getDescriptor();
+      }
+      
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption getDefaultInstanceForType() {
+        return org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.getDefaultInstance();
+      }
+      
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption build() {
+        org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption buildPartial() {
+        org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption result = new org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (sectionBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            section_ = java.util.Collections.unmodifiableList(section_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.section_ = section_;
+        } else {
+          result.section_ = sectionBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption) {
+          return mergeFrom((org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption other) {
+        if (other == org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (sectionBuilder_ == null) {
+          if (!other.section_.isEmpty()) {
+            if (section_.isEmpty()) {
+              section_ = other.section_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureSectionIsMutable();
+              section_.addAll(other.section_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.section_.isEmpty()) {
+            if (sectionBuilder_.isEmpty()) {
+              sectionBuilder_.dispose();
+              sectionBuilder_ = null;
+              section_ = other.section_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              sectionBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getSectionFieldBuilder() : null;
+            } else {
+              sectionBuilder_.addAllMessages(other.section_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasType()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getSectionCount(); i++) {
+          if (!getSection(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              onChanged();
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                onChanged();
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
+              }
+              break;
+            }
+            case 18: {
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder subBuilder = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addSection(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required .CourseRequestOption.OptionType type = 1;
+      private org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType type_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT;
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType getType() {
+        return type_;
+      }
+      public Builder setType(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT;
+        onChanged();
+        return this;
+      }
+      
+      // repeated .Section section = 2;
+      private java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> section_ =
+        java.util.Collections.emptyList();
+      private void ensureSectionIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          section_ = new java.util.ArrayList<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section>(section_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder> sectionBuilder_;
+      
+      public java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> getSectionList() {
+        if (sectionBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(section_);
+        } else {
+          return sectionBuilder_.getMessageList();
+        }
+      }
+      public int getSectionCount() {
+        if (sectionBuilder_ == null) {
+          return section_.size();
+        } else {
+          return sectionBuilder_.getCount();
+        }
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section getSection(int index) {
+        if (sectionBuilder_ == null) {
+          return section_.get(index);
+        } else {
+          return sectionBuilder_.getMessage(index);
+        }
+      }
+      public Builder setSection(
+          int index, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section value) {
+        if (sectionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSectionIsMutable();
+          section_.set(index, value);
+          onChanged();
+        } else {
+          sectionBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      public Builder setSection(
+          int index, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder builderForValue) {
+        if (sectionBuilder_ == null) {
+          ensureSectionIsMutable();
+          section_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          sectionBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addSection(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section value) {
+        if (sectionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSectionIsMutable();
+          section_.add(value);
+          onChanged();
+        } else {
+          sectionBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      public Builder addSection(
+          int index, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section value) {
+        if (sectionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSectionIsMutable();
+          section_.add(index, value);
+          onChanged();
+        } else {
+          sectionBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      public Builder addSection(
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder builderForValue) {
+        if (sectionBuilder_ == null) {
+          ensureSectionIsMutable();
+          section_.add(builderForValue.build());
+          onChanged();
+        } else {
+          sectionBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addSection(
+          int index, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder builderForValue) {
+        if (sectionBuilder_ == null) {
+          ensureSectionIsMutable();
+          section_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          sectionBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      public Builder addAllSection(
+          java.lang.Iterable<? extends org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section> values) {
+        if (sectionBuilder_ == null) {
+          ensureSectionIsMutable();
+          super.addAll(values, section_);
+          onChanged();
+        } else {
+          sectionBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      public Builder clearSection() {
+        if (sectionBuilder_ == null) {
+          section_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          sectionBuilder_.clear();
+        }
+        return this;
+      }
+      public Builder removeSection(int index) {
+        if (sectionBuilder_ == null) {
+          ensureSectionIsMutable();
+          section_.remove(index);
+          onChanged();
+        } else {
+          sectionBuilder_.remove(index);
+        }
+        return this;
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder getSectionBuilder(
+          int index) {
+        return getSectionFieldBuilder().getBuilder(index);
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder getSectionOrBuilder(
+          int index) {
+        if (sectionBuilder_ == null) {
+          return section_.get(index);  } else {
+          return sectionBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      public java.util.List<? extends org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder> 
+           getSectionOrBuilderList() {
+        if (sectionBuilder_ != null) {
+          return sectionBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(section_);
+        }
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder addSectionBuilder() {
+        return getSectionFieldBuilder().addBuilder(
+            org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.getDefaultInstance());
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder addSectionBuilder(
+          int index) {
+        return getSectionFieldBuilder().addBuilder(
+            index, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.getDefaultInstance());
+      }
+      public java.util.List<org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder> 
+           getSectionBuilderList() {
+        return getSectionFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder> 
+          getSectionFieldBuilder() {
+        if (sectionBuilder_ == null) {
+          sectionBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.SectionOrBuilder>(
+                  section_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          section_ = null;
+        }
+        return sectionBuilder_;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:CourseRequestOption)
+    }
+    
+    static {
+      defaultInstance = new CourseRequestOption(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:CourseRequestOption)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_Entity_descriptor;
   private static
@@ -8764,6 +9470,11 @@ public final class OnlineSectioningLog {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_Log_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_CourseRequestOption_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_CourseRequestOption_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8814,8 +9525,12 @@ public final class OnlineSectioningLog {
       "\t\022\022\n\ntime_stamp\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020" +
       "\000\022\010\n\004INFO\020\001\022\010\n\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATA",
       "L\020\004\"9\n\003Log\022\027\n\006action\030\001 \003(\0132\007.Action\022\031\n\007m" +
-      "essage\030\002 \003(\0132\010.MessageB(\n&org.unitime.ti" +
-      "metable.onlinesectioning"
+      "essage\030\002 \003(\0132\010.Message\"\206\001\n\023CourseRequest" +
+      "Option\022-\n\004type\030\001 \002(\0162\037.CourseRequestOpti" +
+      "on.OptionType\022\031\n\007section\030\002 \003(\0132\010.Section" +
+      "\"%\n\nOptionType\022\027\n\023ORIGINAL_ENROLLMENT\020\000B" +
+      "(\n&org.unitime.timetable.onlinesectionin" +
+      "g"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8886,6 +9601,14 @@ public final class OnlineSectioningLog {
               new java.lang.String[] { "Action", "Message", },
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log.class,
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log.Builder.class);
+          internal_static_CourseRequestOption_descriptor =
+            getDescriptor().getMessageTypes().get(8);
+          internal_static_CourseRequestOption_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_CourseRequestOption_descriptor,
+              new java.lang.String[] { "Type", "Section", },
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.class,
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.Builder.class);
           return null;
         }
       };

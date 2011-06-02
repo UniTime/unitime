@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Student;
@@ -122,9 +123,20 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 				requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED);
+				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 				for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
-					if (assignment != null && assignment.isAssigned())
-						requested.addSection(OnlineSectioningHelper.toProto(assignment));
+					if (assignment != null) {
+						OnlineSectioningLog.Section s = OnlineSectioningHelper.toProto(assignment); 
+						requested.addSection(s);
+						if (!assignment.isFreeTime()) {
+							OnlineSectioningLog.CourseRequestOption.Builder option = options.get(assignment.getCourseId());
+							if (option == null) {
+								option = OnlineSectioningLog.CourseRequestOption.newBuilder().setType(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT);
+								options.put(assignment.getCourseId(), option);
+							}
+							option.addSection(s);
+						}
+					}
 				action.addEnrollment(requested);
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
@@ -147,6 +159,20 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				
 				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
+				
+				// save requested enrollment
+				for (Map.Entry<Long, org.unitime.timetable.model.CourseRequest> e: req.entrySet()) {
+					OnlineSectioningLog.CourseRequestOption.Builder option = options.get(e.getKey());
+					if (option != null) {
+						CourseRequestOption o = new CourseRequestOption();
+						o.setCourseRequest(e.getValue());
+						o.setOption(option.build());
+						e.getValue().getCourseRequestOptions().add(o);
+						helper.getHibSession().saveOrUpdate(o);
+
+					}
+				}
+
 				Date ts = new Date();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {

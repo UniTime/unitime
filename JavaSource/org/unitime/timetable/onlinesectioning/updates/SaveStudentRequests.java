@@ -39,6 +39,7 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -229,10 +230,16 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						cr = requests.next();
 						if (cr.getClassEnrollments() != null)
 							cr.getClassEnrollments().clear();
+						if (cr.getCourseRequestOptions() != null) {
+							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
+								helper.getHibSession().delete(i.next());
+							cr.getCourseRequestOptions().clear();
+						}
 					} else {
 						cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
+						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
 					}
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);

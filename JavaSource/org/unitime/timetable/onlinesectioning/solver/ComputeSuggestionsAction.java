@@ -122,7 +122,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 		requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 		for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
-			if (assignment != null && assignment.isAssigned())
+			if (assignment != null)
 				requested.addSection(OnlineSectioningHelper.toProto(assignment));
 		action.addEnrollment(requested);
 
@@ -199,7 +199,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
         	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
         	solution.setValue(- suggestion.getValue());
     		for (Enrollment e: suggestion.getEnrollments()) {
-    			if (e != null && e.getSections() != null)
+    			if (e != null && e.getAssignments() != null)
     				for (Assignment section: e.getAssignments())
     					solution.addSection(OnlineSectioningHelper.toProto(section, e));
     		}
