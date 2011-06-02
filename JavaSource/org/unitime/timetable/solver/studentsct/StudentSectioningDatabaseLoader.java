@@ -55,7 +55,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -724,48 +723,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
    }
     
-    /*
-    private void fixWeights(org.hibernate.Session hibSession) {
-        Hashtable<Course, Integer> lastLike = new Hashtable<Course, Integer>();
-        Hashtable<Course, Integer> real = new Hashtable<Course, Integer>();
-        iProgress.setPhase("Computing last-like request weights...", 2*getModel().getStudents().size());
-        for (Student student: getModel().getStudents()) {
-        	iProgress.incProgress();
-            for (Request request: student.getRequests()) {
-                if (request instanceof CourseRequest) {
-                    CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = courseRequest.getCourses().get(0);
-                    Integer cnt = (student.isDummy()?lastLike:real).get(course);
-                    (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
-                }
-            }
-        }
-        for (Enumeration e=new Vector(getModel().getStudents()).elements();e.hasMoreElements();) {
-            Student student = (Student)e.nextElement(); iProgress.incProgress();
-            for (Enumeration f=new Vector(student.getRequests()).elements();f.hasMoreElements();) {
-                Request request = (Request)f.nextElement();
-                if (!student.isDummy()) {
-                    request.setWeight(1.0); continue;
-                }
-                if (request instanceof CourseRequest) {
-                    CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().get(0);
-                    Integer lastLikeCnt = (Integer)lastLike.get(course);
-                    Integer realCnt = (Integer)real.get(course);
-                    courseRequest.setWeight(Test.getLastLikeStudentWeight(course, realCnt==null?0:realCnt.intValue(), lastLikeCnt==null?0:lastLikeCnt.intValue()));
-                } else request.setWeight(1.0);
-                 if (request.getWeight()<=0.0) {
-                    getModel().removeVariable(request);
-                    student.getRequests().remove(request);
-                }
-            }
-            if (student.getRequests().isEmpty()) {
-                getModel().getStudents().remove(student);
-            }
-        }
-    }
-    */
-    
     private String curriculum(Student student) {
     	return (student.getAcademicAreaClasiffications().isEmpty() ? "" : student.getAcademicAreaClasiffications().get(0).getArea() + ":" + student.getAcademicAreaClasiffications().get(0).getCode()) + ":" +
 			(student.getMajors().isEmpty() ? "" : ":" + student.getMajors().get(0).getCode());
@@ -905,52 +862,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	getModel().requestWeightsChanged();
     }
     
-    public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, Long courseOfferingId, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable classAssignments) {
-        iProgress.debug("Loading projected course demands of student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+") for "+courseOfferingId);
-        Student student = (Student)studentTable.get(s.getUniqueId());
-        if (student==null) {
-            student = new Student(s.getUniqueId().longValue(),true);
-            if (iLoadStudentInfo) loadStudentInfo(student,s);
-            studentTable.put(s.getUniqueId(),student);
-        }
-        int priority = student.getRequests().size();
-        Vector courses = new Vector();
-        Course course = (Course)courseTable.get(courseOfferingId);
-        if (course==null) {
-            iProgress.warn("Course "+courseOfferingId+" not loaded");
-            return;
-        }
-        courses.addElement(course);
-        CourseRequest request = new CourseRequest(
-                d.getUniqueId().longValue(),
-                priority++,
-                false,
-                student,
-                courses,
-                false,
-                null);
-        iProgress.trace("added request "+request);
-        if (classAssignments!=null && !classAssignments.isEmpty()) {
-            HashSet assignedSections = new HashSet();
-            HashSet classIds = (HashSet)classAssignments.get(s.getUniqueId());
-            if (classIds!=null)
-                for (Iterator i=classIds.iterator();i.hasNext();) {
-                    Long classId = (Long)i.next();
-                    Section section = (Section)request.getSection(classId.longValue());
-                    if (section!=null) assignedSections.add(section);
-                }
-            if (!assignedSections.isEmpty()) {
-                iProgress.trace("committed assignment: "+assignedSections);
-                for (Enrollment enrollment: request.values()) {
-                    if (enrollment.getAssignments().containsAll(assignedSections)) {
-                        request.setInitialAssignment(enrollment);
-                        iProgress.trace("found: "+enrollment);
-                        break;
-                    }
-                }
-            }
-        }
-    }
     
     public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
@@ -966,50 +877,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     
             }
         }
-        /*
-        HashSet majors = new HashSet();
-        HashSet minors = new HashSet();
-        for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
-            AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
-            student.getAcademicAreaClasiffications().add(
-                    new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
-            iProgress.trace("aac: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getAcademicClassification().getCode());
-            for (Iterator j=aac.getAcademicArea().getPosMajors().iterator();j.hasNext();) {
-                PosMajor major = (PosMajor)j.next();
-                if (s.getPosMajors().contains(major)) {
-                    student.getMajors().add(
-                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),major.getCode()));
-                    majors.add(major);
-                    iProgress.trace("mj: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+major.getCode());
-                }
-                    
-            }
-            for (Iterator j=aac.getAcademicArea().getPosMinors().iterator();j.hasNext();) {
-                PosMinor minor = (PosMinor)j.next();
-                if (s.getPosMinors().contains(minor)) {
-                    student.getMinors().add(
-                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),minor.getCode()));
-                    minors.add(minor);
-                    iProgress.trace("mn: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+minor.getCode());
-                }
-            }
-        }
-        for (Iterator i=s.getPosMajors().iterator();i.hasNext();) {
-            PosMajor major = (PosMajor)i.next();
-            if (!majors.contains(major)) {
-                student.getMajors().add(new AcademicAreaCode(null,major.getCode()));
-                iProgress.trace("mj: "+major.getCode());
-            }
-        }
-        for (Iterator i=s.getPosMinors().iterator();i.hasNext();) {
-            PosMinor minor = (PosMinor)i.next();
-            if (!minors.contains(minor)) {
-                student.getMajors().add(new AcademicAreaCode(null,minor.getCode()));
-                iProgress.trace("mn: "+minor.getCode());
-            }
-        }
-        */
     }
+    
 	public static BitSet getFreeTimeBitSet(Session session) {
 		int startMonth = session.getPatternStartMonth();
 		int endMonth = session.getPatternEndMonth();

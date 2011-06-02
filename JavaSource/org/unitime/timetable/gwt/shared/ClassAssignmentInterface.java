@@ -169,7 +169,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private ArrayList<String> iRooms = new ArrayList<String>();
 		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false;
 		private String iDatePattern = null;
-		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection;
+		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber;
 		private int[] iLimit = null;
 		private boolean iPin = false;
 		private int iBackToBackDistance = 0;
@@ -365,6 +365,9 @@ public class ClassAssignmentInterface implements IsSerializable {
 							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +
 							"]" : "");
 		}
+		
+		public String getClassNumber() { return iNumber; }
+		public void setClassNumber(String number) { iNumber = number; }
 	}
 	
 	public static class Student implements IsSerializable {
@@ -496,15 +499,17 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public String getCourseName() { return iCourseName; }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
 		
-		public String getClasses(String subpart, String delim) {
+		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (!hasClasses()) return "";
 			String ret = "";
 			TreeSet<String> sections = new TreeSet<String>();
 			for (ClassAssignment c: getClasses()) {
-				if (subpart.equals(c.getSubpart()) && sections.add(c.getSection())) {
-					if (!ret.isEmpty()) ret += delim;
-					ret += c.getSection();
-				}
+				if (subpart.equals(c.getSubpart()))
+					sections.add(showClassNumbers && c.getClassNumber() != null ? c.getClassNumber() : c.getSection());
+			}
+			for (String section: sections) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += section;
 			}
 			return ret;
 		}

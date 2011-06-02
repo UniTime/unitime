@@ -407,7 +407,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();
 
-	@DefaultMessage("Wait-listed")
+	@DefaultMessage("Not Enrolled")
 	String courseWaitListed();
 
 	@DefaultMessage("Conflicts with ")
@@ -452,6 +452,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The selected offering has no students enrolled.")
 	String offeringHasNoEnrollments();
 	
+	@DefaultMessage("The selected class has no students enrolled.")
+	String classHasNoEnrollments();
+
 	@DefaultMessage("Sort by {0}")
 	String sortBy(String column);
 	
@@ -491,7 +494,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Total Requested: {0}")
 	String totalRequested(int count);
 
-	@DefaultMessage("Total Wait-Listed: {0}")
+	@DefaultMessage("Total Not Enrolled: {0}")
 	String totalWaitListed(int count);
 	
 	@DefaultMessage("Loading class for {0}...")
@@ -499,4 +502,10 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Classes for {0}")
 	String dialogEnrollments(String student);
+	
+	@DefaultMessage("Show External Ids")
+	String showExternalIds();
+	
+	@DefaultMessage("Show Class Numbers")
+	String showClassNumbers();
 }
