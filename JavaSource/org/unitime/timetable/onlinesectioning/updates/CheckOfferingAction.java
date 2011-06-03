@@ -21,7 +21,9 @@ package org.unitime.timetable.onlinesectioning.updates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -109,7 +111,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 					action.addRequest(OnlineSectioningHelper.toProto(request));
 					if (request.getStudent().canAssign(request)) 
-						queue.add(new SectioningRequest(offering, request, null, null, action));
+						queue.add(new SectioningRequest(offering, request, null, null, action, null));
 				} else if (!check(request.getAssignment())) {
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
@@ -125,12 +127,36 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					request.getSelectedChoices().clear();
 					for (Section s: request.getAssignment().getSections())
 						request.getSelectedChoices().add(s.getChoice());
-					queue.add(new SectioningRequest(offering, request, null, request.getAssignment(), action));
+					queue.add(new SectioningRequest(offering, request, null, request.getAssignment(), action, null));
 				}
 			}
 		}
 		
 		if (!queue.isEmpty()) {
+			
+			// Load course request options
+			Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
+			helper.beginTransaction();
+			try {
+				for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+						"select o.courseRequest.courseDemand.student.uniqueId, o.value from CourseRequestOption o " +
+						"where o.courseRequest.courseOffering.instructionalOffering.uniqueId = :offeringId and " +
+						"o.optionType = :type")
+						.setLong("offeringId", offering.getId())
+						.setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber())
+						.list()) {
+					Long studentId = (Long)o[0];
+					try {
+						options.put(studentId, OnlineSectioningLog.CourseRequestOption.parseFrom((byte[])o[1]));
+					} catch (Exception e) {
+						helper.warn("Unable to parse course request options for student " + studentId + ": " + e.getMessage());
+					}
+				}
+				helper.commitTransaction();
+			} catch (Exception e) {
+				helper.warn("Unable to parse course request options: " + e.getMessage());
+			}
+			
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
 			DistanceConflict dc = new DistanceConflict(null, properties);
@@ -138,6 +164,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
+				r.setOriginalEnrollment(options.get(r.getRequest().getStudent().getId()));
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				Enrollment enrollment = r.resection(w, dc, toc);
 				Lock wl = server.writeLock();

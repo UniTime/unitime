@@ -18,7 +18,14 @@
 */
 package org.unitime.timetable.onlinesectioning.solver;
 
+import java.util.List;
+
+import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.ToolBox;
+import net.sf.cpsolver.studentsct.model.Choice;
+import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
@@ -50,19 +57,17 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 			int sameRooms = 0;
 			int sameName = 0;
         	for (Section section: enrollment.getSections()) {
-        		Section last = iLastSectionProvider.getLastSection(section);
-        		if (last != null) {
-    				if (sameChoice(section, last)) sameChoice++;
-    				if (sameTime(section, last)) sameTime++;
-    				if (sameRooms(section, last)) sameRooms++;
-    				if (sameName(enrollment.getCourse().getId(), section, last)) sameName++;
-        		}
+				if (iLastSectionProvider.sameLastChoice(section)) sameChoice++;
+				if (iLastSectionProvider.sameLastTime(section)) sameTime++;
+				if (iLastSectionProvider.sameLastRoom(section)) sameRooms++;
+				if (iLastSectionProvider.sameLastName(section, enrollment.getCourse())) sameName++;
         	}
     		CourseRequest cr = (CourseRequest)enrollment.getRequest();
-        	int nrSelected = 0;
-        	if (!cr.getSelectedChoices().isEmpty()) {
+        	if (sameChoice == 0 && !cr.getSelectedChoices().isEmpty()) {
             	for (Section section: enrollment.getSections()) {
-            		if (cr.getSelectedChoices().contains(section.getChoice())) nrSelected++;
+            		if (cr.getSelectedChoices().contains(section.getChoice())) {
+            			sameChoice++; continue;
+            		}
             	}
         	}
     		int size = enrollment.getAssignments().size();
@@ -80,22 +85,32 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 		return weight;
 	}
 	
-	public static boolean sameRooms(Section s1, Section s2) {
-		if (s1.getPlacement() == null && s2.getPlacement() == null) return true;
-		if (s1.getPlacement() == null || s2.getPlacement() == null) return false;
-		return s1.getPlacement().sameRooms(s2.getPlacement());
+	public static boolean sameRooms(Section s, List<RoomLocation> rooms) {
+		if (s.getRooms() == null && rooms == null) return true;
+		if (s.getRooms() == null || rooms == null) return false;
+		return
+			s.getRooms().size() == rooms.size() &&
+			s.getRooms().containsAll(rooms);
 	}
 	
-	public static boolean sameTime(Section s1, Section s2) {
-		if (s1.getPlacement() == null && s2.getPlacement() == null) return true;
-		if (s1.getPlacement() == null || s2.getPlacement() == null) return false;
-		return s1.getPlacement().sameTime(s2.getPlacement());
+	public static boolean sameTime(Section s, TimeLocation t) {
+		if (s.getTime() == null && t == null) return true;
+		if (s.getTime() == null || t == null) return false;
+		return
+			s.getTime().getStartSlot() == t.getStartSlot() &&
+			s.getTime().getLength() == t.getLength() && 
+			s.getTime().getDayCode() == t.getDayCode() && 
+			ToolBox.equals(s.getTime().getDatePatternName(), t.getDatePatternName());
 	}
 	
-	public static boolean sameChoice(Section s1, Section s2) {
-		if (s1.getChoice() == null && s2.getChoice() == null) return true;
-		if (s1.getChoice() == null || s2.getChoice() == null) return false;
-		return s1.getChoice().equals(s2.getChoice());
+	public static boolean sameChoice(Section s, Choice ch) {
+		return sameChoice(s, ch == null ? null : ch.getId());
+	}
+	
+	public static boolean sameChoice(Section s, String ch) {
+		if (s.getChoice() == null && ch == null) return true;
+		if (s.getChoice() == null || ch == null) return false;
+		return s.getChoice().getId().equals(ch);
 	}
 
 	public static boolean sameName(Long courseId, Section s1, Section s2) {
@@ -106,7 +121,7 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 		if (e1.getSections().size() != e2.getSections().size()) return false;
 		s1: for (Section s1: e1.getSections()) {
 			for (Section s2: e2.getSections())
-				if (sameChoice(s1, s2)) continue s1;
+				if (sameChoice(s1, s2.getChoice())) continue s1;
 			return false;
 		}
 		return true;
@@ -116,13 +131,16 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 		if (e1.getSections().size() != e2.getSections().size()) return false;
 		s1: for (Section s1: e1.getSections()) {
 			for (Section s2: e2.getSections())
-				if (sameName(e1.getCourse().getId(), s1, s2) && sameTime(s1, s2) && sameRooms(s1, s2)) continue s1;
+				if (sameName(e1.getCourse().getId(), s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) continue s1;
 			return false;
 		}
 		return true;
 	}
 	
 	public static interface LastSectionProvider {
-		public Section getLastSection(Section current);
+		public boolean sameLastChoice(Section current);
+		public boolean sameLastTime(Section current);
+		public boolean sameLastRoom(Section current);
+		public boolean sameLastName(Section current, Course course);
 	}
 }

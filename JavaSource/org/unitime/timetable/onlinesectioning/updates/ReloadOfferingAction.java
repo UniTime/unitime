@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -113,6 +114,23 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 	}
 		
 	public void reloadOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
+		// Load course request options
+		Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
+		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+				"select o.courseRequest.courseDemand.student.uniqueId, o.value from CourseRequestOption o " +
+				"where o.courseRequest.courseOffering.instructionalOffering.uniqueId = :offeringId and " +
+				"o.optionType = :type")
+				.setLong("offeringId", offeringId)
+				.setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber())
+				.list()) {
+			Long studentId = (Long)o[0];
+			try {
+				options.put(studentId, OnlineSectioningLog.CourseRequestOption.parseFrom((byte[])o[1]));
+			} catch (Exception e) {
+				helper.warn("Unable to parse course request options for student " + studentId + ": " + e.getMessage());
+			}
+		}
+		
 		// Existing offering
 		Offering oldOffering = server.getOffering(offeringId);
 		if (oldOffering != null)
@@ -226,7 +244,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			
 			if (oldEnrollment == null) {
 				if (newRequest.getStudent().canAssign(newRequest))
-					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action));
+					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action,
+							options.get(student[0] == null ? student[1].getId() : student[0].getId())));
 				continue;
 			}
 			
@@ -253,7 +272,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				newRequest.unassign(0);
 			if (newRequest.getInitialAssignment() != null)
 				newRequest.setInitialAssignment(null);
-			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment, action));
+			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment, action,
+					options.get(student[0] == null ? student[1].getId() : student[0].getId())));
 		}
 		
 		if (!queue.isEmpty()) {
