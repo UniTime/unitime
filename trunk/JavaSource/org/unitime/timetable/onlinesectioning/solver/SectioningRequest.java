@@ -24,9 +24,11 @@ import java.util.List;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights.LastSectionProvider;
 
+import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.ifs.util.ToolBox;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
@@ -43,8 +45,10 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	private Offering iOffering;
 	private boolean iHasIndividualReservation;
 	private OnlineSectioningLog.Action.Builder iAction;
+	private OnlineSectioningLog.CourseRequestOption iOriginal;
 
-	public SectioningRequest(Offering offering, CourseRequest request, Student oldStudent, Enrollment lastEnrollment, OnlineSectioningLog.Action.Builder action) {
+	public SectioningRequest(Offering offering, CourseRequest request, Student oldStudent, Enrollment lastEnrollment,
+			OnlineSectioningLog.Action.Builder action, OnlineSectioningLog.CourseRequestOption original) {
 		iRequest = request;
 		iOldStudent = oldStudent;
 		iLastEnrollment = lastEnrollment;
@@ -55,6 +59,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				iHasIndividualReservation = true; break;
 			}
 		iAction = action;
+		iOriginal = original;
 	}
 	
 	public CourseRequest getRequest() { return iRequest; }
@@ -63,6 +68,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	public Offering getOffering() { return iOffering; }
 	public boolean hasIndividualReservation() { return iHasIndividualReservation; }
 	public OnlineSectioningLog.Action.Builder getAction() { return iAction; }
+	public OnlineSectioningLog.CourseRequestOption getOriginalEnrollment() { return iOriginal; }
+	public void setOriginalEnrollment(OnlineSectioningLog.CourseRequestOption original) { iOriginal = original; }
+	
 	
 	public int hashCode() { return new Long(getRequest().getStudent().getId()).hashCode(); }
 	
@@ -105,14 +113,6 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return new Long(getRequest().getStudent().getId()).compareTo(r.getRequest().getStudent().getId());
 	}
 
-	@Override
-	public Section getLastSection(Section current) {
-		if (getLastEnrollment() == null) return null;
-		for (Section section: getLastEnrollment().getSections())
-			if (section.getSubpart().getId() == current.getSubpart().getId()) return section;
-		return null;
-	}
-
 	public Enrollment resection(ResectioningWeights w, DistanceConflict dc, TimeOverlapsCounter toc) {
 		w.setLastSectionProvider(this);
 		
@@ -133,5 +133,157 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		}
 		
 		return (enrollments.isEmpty() ? null : ToolBox.random(enrollments));
+	}
+
+	@Override
+	public boolean sameLastChoice(Section current) {
+		if (getLastEnrollment() != null)
+			for (Section section: getLastEnrollment().getSections())
+				if (section.getSubpart().getInstructionalType().equals(current.getSubpart().getInstructionalType()))
+					if (ResectioningWeights.sameChoice(current, section.getChoice()))
+						return true;
+		
+		if (getOriginalEnrollment() != null)
+			for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
+				
+				if (!section.hasSubpart()) continue;
+				if (section.getSubpart().hasExternalId()) {
+					if (!section.getSubpart().getExternalId().equals(current.getSubpart().getInstructionalType())) continue;
+				} else if (section.getSubpart().hasName()) {
+					if (!section.getSubpart().getName().equals(current.getSubpart().getName())) continue;
+				} else if (section.getSubpart().hasUniqueId()) {
+					if (section.getSubpart().getUniqueId() != current.getSubpart().getId()) continue;
+				}
+				
+				if (section.hasTime()) {
+					if (current.getTime() == null) continue;
+					if (section.getTime().getDays() != current.getTime().getDayCode()) continue;
+					if (section.getTime().getStart() != current.getTime().getStartSlot()) continue;
+					if (section.getTime().getLength() != current.getTime().getLength()) continue;
+					if (section.getTime().hasPattern() && !ToolBox.equals(section.getTime().getPattern(), current.getTime().getDatePatternName())) continue;
+				} else {
+					if (current.getTime() != null) continue;
+				}
+				String instructorNames = "";
+				String instructorIds = "";
+				for (OnlineSectioningLog.Entity instructor: section.getInstructorList()) {
+					if (instructor.hasUniqueId()) {
+						if (!instructorIds.isEmpty()) instructorIds += ":";
+						instructorIds += instructor.getUniqueId();
+					}
+					if (instructor.hasName()) {
+						if (!instructorNames.isEmpty()) instructorNames += ":";
+						instructorNames += instructor.getName() + "|" + (instructor.hasExternalId() ? instructor.getExternalId() : "");
+					}
+				}
+				if (!instructorIds.equals(current.getChoice().getInstructorIds()) && !instructorNames.equals(current.getChoice().getInstructorNames()))
+					continue;
+
+				return true;
+			}
+		return false;
+	}
+
+	@Override
+	public boolean sameLastTime(Section current) {
+		if (getLastEnrollment() != null)
+			for (Section section: getLastEnrollment().getSections())
+				if (section.getSubpart().getInstructionalType().equals(current.getSubpart().getInstructionalType()))
+					if (ResectioningWeights.sameTime(current, section.getTime()))
+						return true;
+		
+		if (getOriginalEnrollment() != null)
+			for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
+				
+				if (!section.hasSubpart()) continue;
+				if (section.getSubpart().hasExternalId()) {
+					if (!section.getSubpart().getExternalId().equals(current.getSubpart().getInstructionalType())) continue;
+				} else if (section.getSubpart().hasName()) {
+					if (!section.getSubpart().getName().equals(current.getSubpart().getName())) continue;
+				} else if (section.getSubpart().hasUniqueId()) {
+					if (section.getSubpart().getUniqueId() != current.getSubpart().getId()) continue;
+				}
+				
+				if (section.hasTime()) {
+					if (current.getTime() == null) continue;
+					if (section.getTime().getDays() != current.getTime().getDayCode()) continue;
+					if (section.getTime().getStart() != current.getTime().getStartSlot()) continue;
+					if (section.getTime().getLength() != current.getTime().getLength()) continue;
+					if (section.getTime().hasPattern() && !ToolBox.equals(section.getTime().getPattern(), current.getTime().getDatePatternName())) continue;
+				} else {
+					if (current.getTime() != null) continue;
+				}
+				
+				return true;
+			}
+		return false;
+	}
+
+	@Override
+	public boolean sameLastRoom(Section current) {
+		if (getLastEnrollment() != null)
+			for (Section section: getLastEnrollment().getSections())
+				if (section.getSubpart().getInstructionalType().equals(current.getSubpart().getInstructionalType()))
+					if (ResectioningWeights.sameRooms(current, section.getRooms()))
+						return true;
+
+		if (getOriginalEnrollment() != null)
+			sections: for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
+				
+				if (!section.hasSubpart()) continue;
+				if (section.getSubpart().hasExternalId()) {
+					if (!section.getSubpart().getExternalId().equals(current.getSubpart().getInstructionalType())) continue;
+				} else if (section.getSubpart().hasName()) {
+					if (!section.getSubpart().getName().equals(current.getSubpart().getName())) continue;
+				} else if (section.getSubpart().hasUniqueId()) {
+					if (section.getSubpart().getUniqueId() != current.getSubpart().getId()) continue;
+				}
+				
+				if (section.getLocationCount() > 0) {
+					if (current.getRooms() == null || current.getRooms().isEmpty()) continue;
+					rooms: for (OnlineSectioningLog.Entity room: section.getLocationList()) {
+						for (RoomLocation loc: current.getRooms()) {
+							if (room.hasUniqueId() && room.getUniqueId() == loc.getId()) continue rooms;
+							if (room.hasName() && room.getName().equals(loc.getName())) continue rooms;
+						}
+						continue sections;
+					}
+				} else {
+					if (current.getRooms() != null && !current.getRooms().isEmpty()) continue;
+				}
+				
+				return true;
+			}
+		return false;
+	}
+
+	@Override
+	public boolean sameLastName(Section current, Course course) {
+		if (getLastEnrollment() != null)
+			for (Section section: getLastEnrollment().getSections())
+				if (section.getSubpart().getId() == current.getSubpart().getId())
+					return ResectioningWeights.sameName(course.getId(), current, section);
+		
+		if (getOriginalEnrollment() != null)
+			for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
+				
+				if (!section.hasSubpart()) continue;
+				if (section.getSubpart().hasExternalId()) {
+					if (!section.getSubpart().getExternalId().equals(current.getSubpart().getInstructionalType())) continue;
+				} else if (section.getSubpart().hasName()) {
+					if (!section.getSubpart().getName().equals(current.getSubpart().getName())) continue;
+				} else if (section.getSubpart().hasUniqueId()) {
+					if (section.getSubpart().getUniqueId() != current.getSubpart().getId()) continue;
+				}
+
+				if (!section.hasClazz()) continue;
+				
+				if (section.getClazz().hasName() && !section.getClazz().getName().equals(current.getName(-1l))) continue;
+
+				if (section.getClazz().hasExternalId() && !section.getClazz().getExternalId().equals(current.getName(course.getId()))) continue;
+				
+				return false;
+			}
+		return false;
 	}
 }
