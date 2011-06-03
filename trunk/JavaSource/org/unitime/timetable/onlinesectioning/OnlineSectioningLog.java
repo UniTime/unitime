@@ -1382,6 +1382,11 @@ public final class OnlineSectioningLog {
     // optional int64 time_stamp = 8;
     boolean hasTimeStamp();
     long getTimeStamp();
+    
+    // optional .Entity subpart = 9;
+    boolean hasSubpart();
+    org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity getSubpart();
+    org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder getSubpartOrBuilder();
   }
   public static final class Section extends
       com.google.protobuf.GeneratedMessage
@@ -1598,6 +1603,19 @@ public final class OnlineSectioningLog {
       return timeStamp_;
     }
     
+    // optional .Entity subpart = 9;
+    public static final int SUBPART_FIELD_NUMBER = 9;
+    private org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity subpart_;
+    public boolean hasSubpart() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity getSubpart() {
+      return subpart_;
+    }
+    public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder getSubpartOrBuilder() {
+      return subpart_;
+    }
+    
     private void initFields() {
       clazz_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
       time_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Time.getDefaultInstance();
@@ -1607,6 +1625,7 @@ public final class OnlineSectioningLog {
       course_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
       reservation_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
       timeStamp_ = 0L;
+      subpart_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1650,6 +1669,9 @@ public final class OnlineSectioningLog {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeInt64(8, timeStamp_);
       }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(9, subpart_);
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -1690,6 +1712,10 @@ public final class OnlineSectioningLog {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(8, timeStamp_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, subpart_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1813,6 +1839,7 @@ public final class OnlineSectioningLog {
           getLocationFieldBuilder();
           getCourseFieldBuilder();
           getReservationFieldBuilder();
+          getSubpartFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1861,6 +1888,12 @@ public final class OnlineSectioningLog {
         bitField0_ = (bitField0_ & ~0x00000040);
         timeStamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000080);
+        if (subpartBuilder_ == null) {
+          subpart_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
+        } else {
+          subpartBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       
@@ -1957,6 +1990,14 @@ public final class OnlineSectioningLog {
           to_bitField0_ |= 0x00000020;
         }
         result.timeStamp_ = timeStamp_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (subpartBuilder_ == null) {
+          result.subpart_ = subpart_;
+        } else {
+          result.subpart_ = subpartBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2042,6 +2083,9 @@ public final class OnlineSectioningLog {
         }
         if (other.hasTimeStamp()) {
           setTimeStamp(other.getTimeStamp());
+        }
+        if (other.hasSubpart()) {
+          mergeSubpart(other.getSubpart());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2142,6 +2186,15 @@ public final class OnlineSectioningLog {
             case 64: {
               bitField0_ |= 0x00000080;
               timeStamp_ = input.readInt64();
+              break;
+            }
+            case 74: {
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder subBuilder = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.newBuilder();
+              if (hasSubpart()) {
+                subBuilder.mergeFrom(getSubpart());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setSubpart(subBuilder.buildPartial());
               break;
             }
           }
@@ -2925,6 +2978,96 @@ public final class OnlineSectioningLog {
         timeStamp_ = 0L;
         onChanged();
         return this;
+      }
+      
+      // optional .Entity subpart = 9;
+      private org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity subpart_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder> subpartBuilder_;
+      public boolean hasSubpart() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity getSubpart() {
+        if (subpartBuilder_ == null) {
+          return subpart_;
+        } else {
+          return subpartBuilder_.getMessage();
+        }
+      }
+      public Builder setSubpart(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity value) {
+        if (subpartBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          subpart_ = value;
+          onChanged();
+        } else {
+          subpartBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder setSubpart(
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder builderForValue) {
+        if (subpartBuilder_ == null) {
+          subpart_ = builderForValue.build();
+          onChanged();
+        } else {
+          subpartBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder mergeSubpart(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity value) {
+        if (subpartBuilder_ == null) {
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+              subpart_ != org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance()) {
+            subpart_ =
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.newBuilder(subpart_).mergeFrom(value).buildPartial();
+          } else {
+            subpart_ = value;
+          }
+          onChanged();
+        } else {
+          subpartBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      public Builder clearSubpart() {
+        if (subpartBuilder_ == null) {
+          subpart_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
+          onChanged();
+        } else {
+          subpartBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
+        return this;
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder getSubpartBuilder() {
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return getSubpartFieldBuilder().getBuilder();
+      }
+      public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder getSubpartOrBuilder() {
+        if (subpartBuilder_ != null) {
+          return subpartBuilder_.getMessageOrBuilder();
+        } else {
+          return subpart_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder> 
+          getSubpartFieldBuilder() {
+        if (subpartBuilder_ == null) {
+          subpartBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder, org.unitime.timetable.onlinesectioning.OnlineSectioningLog.EntityOrBuilder>(
+                  subpart_,
+                  getParentForChildren(),
+                  isClean());
+          subpart_ = null;
+        }
+        return subpartBuilder_;
       }
       
       // @@protoc_insertion_point(builder_scope:Section)
@@ -9495,42 +9638,42 @@ public final class OnlineSectioningLog {
       "VATION\020\t\022\026\n\022COURSE_RESERVATION\020\n\"m\n\004Time" +
       "\022\014\n\004days\030\001 \002(\005\022\r\n\005start\030\002 \002(\005\022\016\n\006length\030",
       "\003 \002(\005\022\017\n\007pattern\030\004 \001(\t\022\'\n\npreference\030\005 \001" +
-      "(\0162\023.Section.Preference\"\233\002\n\007Section\022\026\n\005c" +
+      "(\0162\023.Section.Preference\"\265\002\n\007Section\022\026\n\005c" +
       "lazz\030\001 \001(\0132\007.Entity\022\023\n\004time\030\002 \001(\0132\005.Time" +
       "\022\033\n\ninstructor\030\003 \003(\0132\007.Entity\022\031\n\010locatio" +
       "n\030\004 \003(\0132\007.Entity\022\'\n\npreference\030\005 \001(\0162\023.S" +
       "ection.Preference\022\027\n\006course\030\006 \001(\0132\007.Enti" +
       "ty\022\034\n\013reservation\030\007 \001(\0132\007.Entity\022\022\n\ntime" +
-      "_stamp\030\010 \001(\003\"7\n\nPreference\022\014\n\010REQUIRED\020\000" +
-      "\022\r\n\tPREFERRED\020\001\022\014\n\010SELECTED\020\002\"\245\001\n\007Reques" +
-      "t\022\n\n\002id\030\001 \001(\003\022\020\n\010priority\030\002 \002(\005\022\032\n\013alter",
-      "native\030\003 \001(\010:\005false\022\030\n\tfree_time\030\004 \003(\0132\005" +
-      ".Time\022\027\n\006course\030\005 \003(\0132\007.Entity\022\031\n\007sectio" +
-      "n\030\006 \003(\0132\010.Section\022\022\n\ntime_stamp\030\010 \001(\003\"\251\001" +
-      "\n\nEnrollment\022(\n\004type\030\001 \002(\0162\032.Enrollment." +
-      "EnrollmentType\022\031\n\007section\030\002 \003(\0132\010.Sectio" +
-      "n\022\r\n\005value\030\003 \001(\001\"G\n\016EnrollmentType\022\r\n\tRE" +
-      "QUESTED\020\000\022\014\n\010COMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n" +
-      "\006STORED\020\003\"\341\002\n\006Action\022\021\n\toperation\030\001 \002(\t\022" +
-      "\030\n\007session\030\002 \002(\0132\007.Entity\022\030\n\007student\030\003 \001" +
-      "(\0132\007.Entity\022\022\n\nstart_time\030\004 \001(\003\022\020\n\010end_t",
-      "ime\030\005 \001(\003\022\020\n\010cpu_time\030\006 \001(\003\022\031\n\007request\030\007" +
-      " \003(\0132\010.Request\022\037\n\nenrollment\030\010 \003(\0132\013.Enr" +
-      "ollment\022\026\n\005other\030\t \003(\0132\007.Entity\022\031\n\007messa" +
-      "ge\030\n \003(\0132\010.Message\022\"\n\006result\030\013 \001(\0162\022.Act" +
-      "ion.ResultType\"E\n\nResultType\022\013\n\007SUCCESS\020" +
-      "\000\022\013\n\007FAILURE\020\001\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004N" +
-      "ULL\020\004\"\233\001\n\007Message\022\035\n\005level\030\001 \002(\0162\016.Messa" +
-      "ge.Level\022\014\n\004text\030\002 \002(\t\022\021\n\texception\030\003 \001(" +
-      "\t\022\022\n\ntime_stamp\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020" +
-      "\000\022\010\n\004INFO\020\001\022\010\n\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATA",
-      "L\020\004\"9\n\003Log\022\027\n\006action\030\001 \003(\0132\007.Action\022\031\n\007m" +
-      "essage\030\002 \003(\0132\010.Message\"\206\001\n\023CourseRequest" +
-      "Option\022-\n\004type\030\001 \002(\0162\037.CourseRequestOpti" +
-      "on.OptionType\022\031\n\007section\030\002 \003(\0132\010.Section" +
-      "\"%\n\nOptionType\022\027\n\023ORIGINAL_ENROLLMENT\020\000B" +
-      "(\n&org.unitime.timetable.onlinesectionin" +
-      "g"
+      "_stamp\030\010 \001(\003\022\030\n\007subpart\030\t \001(\0132\007.Entity\"7" +
+      "\n\nPreference\022\014\n\010REQUIRED\020\000\022\r\n\tPREFERRED\020" +
+      "\001\022\014\n\010SELECTED\020\002\"\245\001\n\007Request\022\n\n\002id\030\001 \001(\003\022",
+      "\020\n\010priority\030\002 \002(\005\022\032\n\013alternative\030\003 \001(\010:\005" +
+      "false\022\030\n\tfree_time\030\004 \003(\0132\005.Time\022\027\n\006cours" +
+      "e\030\005 \003(\0132\007.Entity\022\031\n\007section\030\006 \003(\0132\010.Sect" +
+      "ion\022\022\n\ntime_stamp\030\010 \001(\003\"\251\001\n\nEnrollment\022(" +
+      "\n\004type\030\001 \002(\0162\032.Enrollment.EnrollmentType" +
+      "\022\031\n\007section\030\002 \003(\0132\010.Section\022\r\n\005value\030\003 \001" +
+      "(\001\"G\n\016EnrollmentType\022\r\n\tREQUESTED\020\000\022\014\n\010C" +
+      "OMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n\006STORED\020\003\"\341\002\n\006" +
+      "Action\022\021\n\toperation\030\001 \002(\t\022\030\n\007session\030\002 \002" +
+      "(\0132\007.Entity\022\030\n\007student\030\003 \001(\0132\007.Entity\022\022\n",
+      "\nstart_time\030\004 \001(\003\022\020\n\010end_time\030\005 \001(\003\022\020\n\010c" +
+      "pu_time\030\006 \001(\003\022\031\n\007request\030\007 \003(\0132\010.Request" +
+      "\022\037\n\nenrollment\030\010 \003(\0132\013.Enrollment\022\026\n\005oth" +
+      "er\030\t \003(\0132\007.Entity\022\031\n\007message\030\n \003(\0132\010.Mes" +
+      "sage\022\"\n\006result\030\013 \001(\0162\022.Action.ResultType" +
+      "\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022\013\n\007FAILURE\020\001" +
+      "\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NULL\020\004\"\233\001\n\007Mess" +
+      "age\022\035\n\005level\030\001 \002(\0162\016.Message.Level\022\014\n\004te" +
+      "xt\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022\022\n\ntime_stam" +
+      "p\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022\010\n\004INFO\020\001\022\010\n",
+      "\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020\004\"9\n\003Log\022\027\n\006" +
+      "action\030\001 \003(\0132\007.Action\022\031\n\007message\030\002 \003(\0132\010" +
+      ".Message\"\206\001\n\023CourseRequestOption\022-\n\004type" +
+      "\030\001 \002(\0162\037.CourseRequestOption.OptionType\022" +
+      "\031\n\007section\030\002 \003(\0132\010.Section\"%\n\nOptionType" +
+      "\022\027\n\023ORIGINAL_ENROLLMENT\020\000B(\n&org.unitime" +
+      ".timetable.onlinesectioning"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9558,7 +9701,7 @@ public final class OnlineSectioningLog {
           internal_static_Section_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Section_descriptor,
-              new java.lang.String[] { "Clazz", "Time", "Instructor", "Location", "Preference", "Course", "Reservation", "TimeStamp", },
+              new java.lang.String[] { "Clazz", "Time", "Instructor", "Location", "Preference", "Course", "Reservation", "TimeStamp", "Subpart", },
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.class,
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder.class);
           internal_static_Request_descriptor =

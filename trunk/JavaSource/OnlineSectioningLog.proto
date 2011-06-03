@@ -63,6 +63,7 @@ message Section {
 	optional Entity course = 6;
 	optional Entity reservation = 7;
 	optional int64 time_stamp = 8;
+	optional Entity subpart = 9;
 }
 
 message Request {
