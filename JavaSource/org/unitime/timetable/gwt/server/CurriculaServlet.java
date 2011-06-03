@@ -1771,6 +1771,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					a.setClassId(clazz.getUniqueId());
 					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
 					a.setSection(clazz.getClassSuffix(courseOffering));
+					a.setClassNumber(clazz.getSectionNumberString(hibSession));
 					
 					Assignment ass = clazz.getCommittedAssignment();
 					Placement p = (ass == null ? null : ass.getPlacement());
