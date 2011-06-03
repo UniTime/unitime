@@ -58,6 +58,7 @@
 	</tt:hasProperty>
 	<tt:offering-locks/>
 
+	<tt:propertyNotEquals name="unitime.warn.chromeframe" value="false">
 	<!--[if IE]>
     <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
     
@@ -83,6 +84,7 @@
      });
     </script>
   	<![endif]-->
+  	</tt:propertyNotEquals>
   	
     <table align="center">
     <tr>
