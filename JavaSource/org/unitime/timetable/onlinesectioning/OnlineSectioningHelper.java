@@ -301,7 +301,14 @@ public class OnlineSectioningHelper {
 			section.setClazz(
 					OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(assignment.getClassId())
-					.setName(assignment.getSubject() + " " + assignment.getCourseNbr() + " " + assignment.getSubpart() + " " + assignment.getSection()));
+					.setExternalId(assignment.getSection())
+					.setName(assignment.getClassNumber()));
+		}
+		if (assignment.getSubpartId() != null) {
+			section.setSubpart(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(assignment.getSubpartId())
+					.setName(assignment.getSubpart()));
 		}
 		if (assignment.getCourseId() != null) {
 			section.setCourse(
@@ -319,17 +326,19 @@ public class OnlineSectioningHelper {
 			section.setTime(time);
 		}
 		if (assignment.hasInstructors()) {
-			for (String instructor: assignment.getInstructors())
-				section.addInstructor(OnlineSectioningLog.Entity.newBuilder()
-						.setName(instructor)
-						.setType(OnlineSectioningLog.Entity.EntityType.INSTRUCTOR)
-						);
+			for (int i = 0; i < assignment.getInstructors().size(); i++) {
+				OnlineSectioningLog.Entity.Builder instructor = OnlineSectioningLog.Entity.newBuilder();
+				instructor.setName(assignment.getInstructors().get(i));
+				String email = assignment.getInstructorEmails().get(i);
+				if (!email.isEmpty())
+					instructor.setExternalId(email);
+				section.addInstructor(instructor);
+			}
 		}
 		if (assignment.hasRoom()) {
 			for (String room: assignment.getRooms())
 				section.addLocation(OnlineSectioningLog.Entity.newBuilder()
 						.setName(room)
-						.setType(OnlineSectioningLog.Entity.EntityType.LOCATION)
 						);
 		}
 		return section.build();
@@ -358,9 +367,15 @@ public class OnlineSectioningHelper {
 					OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(s.getId())
 					.setExternalId(c == null ? s.getName() : s.getName(c.getId()))
-					.setName(c == null ? s.getSubpart().getConfig().getOffering().getName() + " " + s.getSubpart().getName() + " " + s.getName() :
-						c.getName() + " " + s.getSubpart().getName() + " " + s.getName(c.getId()))
+					.setName(s.getName(-1l))
 					);
+			section.setSubpart(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(s.getSubpart().getId())
+					.setName(s.getSubpart().getName())
+					.setExternalId(s.getSubpart().getInstructionalType())
+					);
+			
 			if (s.getChoice().getInstructorNames() != null && !s.getChoice().getInstructorNames().isEmpty()) {
 				String[] instructors = s.getChoice().getInstructorNames().split(":");
 				String[] instructorIds = s.getChoice().getInstructorIds().split(":");
