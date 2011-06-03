@@ -313,6 +313,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							a.setAlternative(r.isAlternative());
 							a.setClassId(section.getId());
 							a.setSubpart(section.getSubpart().getName());
+							a.setClassNumber(section.getName(-1l));
 							a.setSection(section.getName(course.getId()));
 							a.setLimit(new int[] {section.getEnrollments().size(), section.getLimit()});
 							if (section.getTime() != null) {

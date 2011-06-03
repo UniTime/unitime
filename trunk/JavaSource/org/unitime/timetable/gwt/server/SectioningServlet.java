@@ -261,6 +261,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				a.setClassId(clazz.getUniqueId());
 				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
 				a.setSection(clazz.getClassSuffix(courseOffering));
+				a.setClassNumber(clazz.getSectionNumberString(hibSession));
+
 				
 				Assignment ass = clazz.getCommittedAssignment();
 				Placement p = (ass == null ? null : ass.getPlacement());
@@ -367,6 +369,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					a.setClassId(section.getId());
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(section.getName(c.getUniqueId()));
+					a.setClassNumber(section.getName(-1l));
 					a.setLimit(limit);
 					if (studentId != null) {
 						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
