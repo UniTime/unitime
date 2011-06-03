@@ -278,6 +278,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							section.getName(course.getId()), clonedSubpart, section.getPlacement(),
 							section.getChoice().getInstructorIds(), section.getChoice().getInstructorNames(),
 							(section.getParent() == null ? null : sections.get(section.getParent())));
+					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
 			        if (limit > 0) {
@@ -560,6 +561,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setClassId(section.getId());
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(section.getName(course.getId()));
+					a.setClassNumber(section.getName(-1l));
 					a.setLimit(getLimit(server, section, r.getStudent().getId()));
 					if (section.getTime() != null) {
 						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
