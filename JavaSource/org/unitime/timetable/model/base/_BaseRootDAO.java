@@ -229,6 +229,9 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Begin the transaction related to the session
 	 */
 	public Transaction beginTransaction(Session s) {
+		// already in a transaction, do not create a new one
+		if (s.getTransaction() != null) return null;
+		
 		return s.beginTransaction();
 	}
 
@@ -236,7 +239,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Commit the given transaction
 	 */
 	public void commitTransaction(Transaction t) {
-		t.commit();
+		if (t != null) t.commit();
 	}
 
 	/**
