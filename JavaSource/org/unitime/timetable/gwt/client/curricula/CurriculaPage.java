@@ -152,7 +152,21 @@ public class CurriculaPage extends Composite {
 		
 		iPanel.add(iCurriculaPanel);
 		
-		iCurriculumPanel = new CurriculumEdit();
+		iCurriculumPanel = new CurriculumEdit(new CurriculumEdit.NavigationProvider() {
+			@Override
+			public CurriculumInterface previous(CurriculumInterface curriculum) {
+				return iCurriculaTable.previous(curriculum == null ? null : curriculum.getId());
+			}
+			@Override
+			public CurriculumInterface next(CurriculumInterface curriculum) {
+				return iCurriculaTable.next(curriculum == null ? null : curriculum.getId());
+			}
+			@Override
+			public void onChange(CurriculumInterface curriculum) {
+				if (curriculum.getId() != null)
+					History.newItem("detail=" + curriculum.getId(), false);
+			}
+		});
 		iCurriculumPanel.setVisible(false);
 		iPanel.add(iCurriculumPanel);
 		

@@ -375,7 +375,7 @@ public class CourseCurriculaTable extends Composite {
 	private void openDialog(final CurriculumInterface curriculum, final ConditionalCommand next) {
 		if (iDialog == null) {
 			iDialog = new UniTimeDialogBox(true, true);
-			iCurriculumEdit = new CurriculumEdit();
+			iCurriculumEdit = new CurriculumEdit(null);
 			ScrollPanel panel = new ScrollPanel(iCurriculumEdit);
 			// panel.setSize(Math.round(0.9 * Window.getClientWidth()) + "px", Math.round(0.9 * Window.getClientHeight()) + "px");
 			panel.setStyleName("unitime-ScrollPanel");

@@ -108,6 +108,7 @@
 			<name>Curriculum Timetabling</name>
 			<description>
 				<line>Instructional Offering Cross Lists: do not delete the course that was added to a cross-list (or removed off a cross-list) from its curricula.</line>
+				<line>Curriculum Detail/Edit: added Previous and Next buttons.</line>
 			</description>
 		</item>
 		<item>
