@@ -302,7 +302,7 @@ public class Department extends BaseDepartment implements Comparable {
 	public Collection getClasses() {
 		return (new DepartmentDAO()).
 			getSession().
-			createQuery("select distinct c from Class_ as c where c.managingDept=:departmentId").
+			createQuery("select distinct c from Class_ as c where c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)").
 			setLong("departmentId", getUniqueId().longValue()).
 			list();
 	}
@@ -317,7 +317,7 @@ public class Department extends BaseDepartment implements Comparable {
 				"left join fetch ss.instrOfferingConfig as ioc "+
 				"left join fetch ioc.instructionalOffering as io "+
 				"left join fetch io.courseOfferings as cox "+
-				"where c.managingDept=:departmentId").
+				"where c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)").
 				setLong("departmentId", getUniqueId().longValue()).
 				list();
 
@@ -327,7 +327,7 @@ public class Department extends BaseDepartment implements Comparable {
 		return (new DepartmentDAO()).
 		getSession().
 		createQuery(
-				"select distinct c from Class_ as c where c.managingDept=:departmentId and "+
+				"select distinct c from Class_ as c where (c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)) and "+
 				"not exists (from c.assignments as a where a.solution=:solutionId)"
 				).
 		setLong("departmentId", getUniqueId().longValue()).
