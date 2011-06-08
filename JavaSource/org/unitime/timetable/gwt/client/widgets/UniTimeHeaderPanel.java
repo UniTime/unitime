@@ -110,6 +110,20 @@ public class UniTimeHeaderPanel extends Composite {
 			clone.clearMessage();
 	}
 	
+	public void setErrorMessage(String message, boolean wrap) {
+		if (message == null || message.isEmpty()) {
+			clearMessage();
+		} else {
+			iLoadingImage.setVisible(false);
+			iMessage.setHTML(message);
+			iMessage.setStyleName("unitime-ErrorMessage");
+			iMessage.setVisible(true);
+			iMessage.setWordWrap(wrap);
+			for (UniTimeHeaderPanel clone: iClones)
+				clone.setErrorMessage(message, wrap);
+		}
+	}
+	
 	public void setErrorMessage(String message) {
 		if (message == null || message.isEmpty()) {
 			clearMessage();
@@ -198,6 +212,8 @@ public class UniTimeHeaderPanel extends Composite {
 					button.click();
 				}
 			});
+			if (!button.isVisible())
+				clone.setEnabled(op, false);
 			
 		}
 		return clone;
