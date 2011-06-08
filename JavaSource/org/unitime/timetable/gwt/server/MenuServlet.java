@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
@@ -312,6 +313,14 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 					return manager.canTimetableExams(session, user);
 				} else if ("canAudit".equals(right)) {
 					return manager.canAudit(session, user);
+				} else if ("hasCourseReports".equals(right)) {
+					return SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_COURSES, user.isAdmin());
+				} else if ("hasExamReports".equals(right)) {
+					return SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_EXAMS, user.isAdmin());
+				} else if ("hasEventReports".equals(right)) {
+					return SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_EVENTS, user.isAdmin());
+				} else if ("hasStudentReports".equals(right)) {
+					return SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_SECTIONING, user.isAdmin());
 				}
 			}
 			sLog.warn("Unknown right " + right + ".");
