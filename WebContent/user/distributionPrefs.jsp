@@ -310,7 +310,7 @@
 					<B>Course Number: </B>
 					<layout:suggest 
 						suggestAction="/getCourseNumbers" property="filterCourseNbr" styleId="courseNbr" 
-						suggestCount="15" size="5" maxlength="5" layout="false" all="true"
+						suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 						minWordLength="2"
 						onblur="hideSuggestionList('filterCourseNbr');" />
 					&nbsp;&nbsp;&nbsp;
