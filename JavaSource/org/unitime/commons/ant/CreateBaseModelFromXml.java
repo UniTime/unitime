@@ -185,6 +185,7 @@ public class CreateBaseModelFromXml extends Task {
 	private String fixType(String type, String pkg) {
 		if (type == null) return null;
 		if (type.startsWith("java.lang.")) return type.substring("java.lang.".length());
+		if ("byte[]".equals(type)) return type;
 		if (type.indexOf('.')<0) type = type.substring(0,1).toUpperCase() + type.substring(1);
 		if ("Boolean".equals(type)) return type;
 		if ("Long".equals(type)) return type;
