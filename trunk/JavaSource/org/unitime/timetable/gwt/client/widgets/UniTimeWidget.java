@@ -65,7 +65,7 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 
 	public void setPrintText(String html) {
 		if (iPrint == null) {
-			iPrint = new HTML(html, false);
+			iPrint = new HTML(html, true);
 			iPrint.setStyleName("unitime-LabelInsteadEdit");
 			iPrint.addStyleName("unitime-Print");
 			getWidget().addStyleName("unitime-NoPrint");

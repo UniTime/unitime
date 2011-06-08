@@ -125,11 +125,30 @@
 		</item>
 	</category>
 	<category>
+		<title>Course / Examination / Student Sectioning / Event / Administration Reports</title>
+		<item>
+			<name>Added simple HQL reports page</name>
+			<description>
+				<line>Reports are based on parameterized HQL queries (very much like Test HQL) that are stored in the database.</line>
+				<line>Reports can be available under Courses, Students, Examinations, Events, and Administration.
+					<line>Visible in the menu only when there is at least one report available.</line>
+				</line>
+				<line>Reports can be parameterized by academic session, one or more subject areas or departments.
+					<line>Only subject areas and departments available to the current user are available in such a case.</line>
+				</line>
+				<line>Each line in a report can be made clickable.
+					<line>When the appropriate class / offering / examination / room / instructor / event unique id is returned in the first column named __Class, __Offering, etc.</line>
+				</line>
+				<line>A few example course reports created (including one listing unassigned classes that have a time preference).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Internationalization</title>
 		<item>
 			<name>Added support for localization</name>
 			<description>
-				<line>Using a GWT-like approach (to ease transitionfrom Apache Struts to GWT)
+				<line>Using a GWT-like approach (to ease transition from Apache Struts to GWT)
 					<line>That is using the same annotation, but it is server side.</line>
 					<line>Multiple resource (message) bundles.</line>
 					<line>Added support for JSP tags and Struts.</line>
