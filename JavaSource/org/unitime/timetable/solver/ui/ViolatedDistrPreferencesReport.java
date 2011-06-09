@@ -61,7 +61,7 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 		
 		public ViolatedDistrPreference(Solver solver, GroupConstraint gc) {
 			iPreference = gc.getPreference();
-			iType = gc.getType();
+			iType = gc.getType().reference();
 			iName = gc.getName();
 			for (Lecture lecture: gc.variables()) {
 				if (lecture.getAssignment()==null) continue;

@@ -1320,7 +1320,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
     	} else {
-    		gc = new GroupConstraint(pref.getUniqueId(),pref.getDistributionType().getReference(),pref.getPrefLevel().getPrefProlog());
+    		GroupConstraint.ConstraintType type = GroupConstraint.ConstraintType.get(pref.getDistributionType().getReference());
+    		if (type == null) {
+    			iProgress.error("Distribution constraint " + pref.getDistributionType().getReference() + " is not implemented.");
+    			return null;
+    		}
+    		gc = new GroupConstraint(pref.getUniqueId(), type, pref.getPrefLevel().getPrefProlog());
     	}
     	return gc;
     }
@@ -1730,7 +1735,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	if (variables.size()==1) return false;
     	
-    	GroupConstraint gc = new GroupConstraint(null,type,PreferenceLevel.sRequired);
+    	GroupConstraint gc = new GroupConstraint(null, GroupConstraint.ConstraintType.get(type), PreferenceLevel.sRequired);
 		for (Lecture var: variables)
 			gc.addVariable(var);
     	
