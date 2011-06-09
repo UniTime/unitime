@@ -230,7 +230,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 */
 	public Transaction beginTransaction(Session s) {
 		// already in a transaction, do not create a new one
-		if (s.getTransaction() != null) return null;
+		if (s.getTransaction() != null && s.getTransaction().isActive()) return null;
 		
 		return s.beginTransaction();
 	}
