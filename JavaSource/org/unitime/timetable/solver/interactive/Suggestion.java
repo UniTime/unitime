@@ -271,17 +271,17 @@ public class Suggestion implements Serializable, Comparable {
         	iGroupConstraintInfos = new Vector();
         	for (Iterator i=lecture.groupConstraints().iterator();i.hasNext();) {
         		GroupConstraint gc = (GroupConstraint)i.next();
-        		if (gc.getType()==GroupConstraint.TYPE_SAME_ROOM) continue;
+        		if (gc.getType() == GroupConstraint.ConstraintType.SAME_ROOM) continue;
         		int curPref = gc.getCurrentPreference(dummyPlacement);
-        		if (gc.getType()==GroupConstraint.TYPE_BTB) {
-        			gc.setType(GroupConstraint.TYPE_BTB_TIME);
+        		if (gc.getType() == GroupConstraint.ConstraintType.BTB) {
+        			gc.setType(GroupConstraint.ConstraintType.BTB_TIME);
         			curPref = gc.getCurrentPreference(dummyPlacement);
-        			gc.setType(GroupConstraint.TYPE_BTB);
+        			gc.setType(GroupConstraint.ConstraintType.BTB);
         		}
-        		if (gc.getType()==GroupConstraint.TYPE_SAME_STUDENTS) {
-        			gc.setType(GroupConstraint.TYPE_DIFF_TIME);
+        		if (gc.getType() == GroupConstraint.ConstraintType.SAME_STUDENTS) {
+        			gc.setType(GroupConstraint.ConstraintType.DIFF_TIME);
         			curPref = gc.getCurrentPreference(dummyPlacement);
-        			gc.setType(GroupConstraint.TYPE_SAME_STUDENTS);
+        			gc.setType(GroupConstraint.ConstraintType.SAME_STUDENTS);
         		}
         		boolean sat = (gc.getPreference()<0 && curPref<0) || gc.getPreference()==0 || (gc.getPreference()>0 && curPref==0);
         		if (sat) continue;

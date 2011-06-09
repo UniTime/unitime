@@ -3457,4 +3457,30 @@
 			'select c.uniqueId as __Class, co.subjectAreaAbbv || '' '' || co.courseNbr as Course, s.itype.abbv || '' '' || c.sectionNumberCache as Section, p.room.building.abbreviation || '' '' || p.room.roomNumber as Room, p.room.capacity as Size, case c.roomRatio when 1.0 then (c.expectedCapacity || '''') else (floor(c.expectedCapacity * c.roomRatio) || '' ('' || c.roomRatio || '' x '' || c.expectedCapacity || '')'') end as Needed, p.prefLevel.prefName as Preference from Class_ c inner join c.schedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co, RoomPref p where co.subjectArea.uniqueId in %SUBJECTS% and (p.owner = c or p.owner = s) and floor(c.expectedCapacity * c.roomRatio) > p.room.capacity and p.prefLevel.prefProlog in (''R'', ''-1'', ''-2'') and c.nbrRooms > 0 order by co.subjectAreaAbbv, co.courseNbr, s.itype.abbv, c.sectionNumberCache', 1)
 		]]></plsql>		
 	</update>
+	<update version="72" date="9-Jun-2011" comment="Instructor limit distribution pref">
+		<plsql onFail="next">
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'MAX_HRS_DAY(6)', 'At Most 6 Hours A Day', 0, 39, '210R', 'Classes are to be placed in a way that there is no more than six hours in any day.', 'At Most 6 Hrs', 1, 0)
+		</plsql> 
+		<plsql onFail="next">
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'MAX_HRS_DAY(7)', 'At Most 7 Hours A Day', 0, 40, '210R', 'Classes are to be placed in a way that there is no more than seven hours in any day.', 'At Most 7 Hrs', 1, 0) 
+		</plsql> 
+		<plsql onFail="next">
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'MAX_HRS_DAY(8)', 'At Most 8 Hours A Day', 0, 41, '210R', 'Classes are to be placed in a way that there is no more than eight hours in any day.', 'At Most 8 Hrs', 1, 0)
+		</plsql> 
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%ID%, 'MAX_HRS_DAY(6)', 'At Most 6 Hours A Day', 0, 39, '210R', 'Classes are to be placed in a way that there is no more than six hours in any day.', 'At Most 6 Hrs', 1, 0),
+			(%ID% + 1, 'MAX_HRS_DAY(7)', 'At Most 7 Hours A Day', 0, 40, '210R', 'Classes are to be placed in a way that there is no more than seven hours in any day.', 'At Most 7 Hrs', 1, 0), 
+			(%ID% + 2, 'MAX_HRS_DAY(8)', 'At Most 8 Hours A Day', 0, 41, '210R', 'Classes are to be placed in a way that there is no more than eight hours in any day.', 'At Most 8 Hrs', 1, 0) 
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
 </dbupdate>
