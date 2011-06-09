@@ -144,6 +144,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling Solver</title>
+		<item>
+			<name>Distribution Constraints</name>
+			<description>
+				<line>Added maximum hours a day (instructor) constraint.</line>
+				<line>When preferred / discouraged: weighting schema changed to measure how well is the constraint violated.</line>
+				<line>Code cleanup (replaced TYPE_ constants with an enum, etc.).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Internationalization</title>
 		<item>
 			<name>Added support for localization</name>
