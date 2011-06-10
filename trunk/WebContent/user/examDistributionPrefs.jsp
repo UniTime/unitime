@@ -438,8 +438,6 @@
 						for(i=0; i<count; i++) {
 							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
 							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
-							while (optVal.indexOf('_')>=0 && type=='exam')
-								optVal = optVal.replace("_",String.fromCharCode(160,160,160,160));
 							while (optVal.indexOf('@amp@')>=0) optVal = optVal.replace('@amp@','&');
 							options[(type=='exam'?i:i+1)]=new Option(optVal, optId, false);
 						}
