@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -38,36 +39,36 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface CurriculaServiceAsync {
-	public void findCurricula(String filter, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
-	public void loadClassifications(List<Long> curriculumIds, AsyncCallback<List<CurriculumInterface.CurriculumClassificationInterface>> callback) throws CurriculaException;
-	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]>> callback) throws CurriculaException;
-	public void loadAcademicAreas(AsyncCallback<TreeSet<CurriculumInterface.AcademicAreaInterface>> callback) throws CurriculaException;
-	public void loadAcademicClassifications(AsyncCallback<TreeSet<CurriculumInterface.AcademicClassificationInterface>> callback) throws CurriculaException;
-	public void loadDepartments(AsyncCallback<TreeSet<CurriculumInterface.DepartmentInterface>> callback) throws CurriculaException;
-	public void loadMajors(Long curriculumId, Long academicAreaId, AsyncCallback<TreeSet<CurriculumInterface.MajorInterface>> callback) throws CurriculaException;
-	public void lastCurriculaFilter(AsyncCallback<String> callback) throws CurriculaException;
-	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException;
-	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Long> callback) throws CurriculaException;
-	public void deleteCurriculum(Long curriculumId, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void deleteCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void mergeCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void findCurriculaForACourse(String courseName, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
-	public void findCurriculaForAnInstructionalOffering(Long offeringId, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
-	public void saveClassifications(List<CurriculumInterface> curricula, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void findCurricula(String filter, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException, PageAccessException;
+	public void loadClassifications(List<Long> curriculumIds, AsyncCallback<List<CurriculumInterface.CurriculumClassificationInterface>> callback) throws CurriculaException, PageAccessException;
+	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]>> callback) throws CurriculaException, PageAccessException;
+	public void loadAcademicAreas(AsyncCallback<TreeSet<CurriculumInterface.AcademicAreaInterface>> callback) throws CurriculaException, PageAccessException;
+	public void loadAcademicClassifications(AsyncCallback<TreeSet<CurriculumInterface.AcademicClassificationInterface>> callback) throws CurriculaException, PageAccessException;
+	public void loadDepartments(AsyncCallback<TreeSet<CurriculumInterface.DepartmentInterface>> callback) throws CurriculaException, PageAccessException;
+	public void loadMajors(Long curriculumId, Long academicAreaId, AsyncCallback<TreeSet<CurriculumInterface.MajorInterface>> callback) throws CurriculaException, PageAccessException;
+	public void lastCurriculaFilter(AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
+	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException, PageAccessException;
+	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Long> callback) throws CurriculaException, PageAccessException;
+	public void deleteCurriculum(Long curriculumId, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void deleteCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void mergeCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void findCurriculaForACourse(String courseName, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException, PageAccessException;
+	public void findCurriculaForAnInstructionalOffering(Long offeringId, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException, PageAccessException;
+	public void saveClassifications(List<CurriculumInterface> curricula, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 	
-	public void listCourseOfferings(String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException;
-	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException;
-	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException;
-	public void getApplicationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException;
-	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses,  AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void populateCourseProjectedDemands(boolean includeOtherStudents, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void listCourseOfferings(String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException, PageAccessException;
+	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
+	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException, PageAccessException;
+	public void getApplicationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException, PageAccessException;
+	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses,  AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void populateCourseProjectedDemands(boolean includeOtherStudents, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 
 	
-	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException;
-	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException;
-	public void canEditProjectionRules(AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException, PageAccessException;
+	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void canEditProjectionRules(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 }

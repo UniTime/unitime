@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -40,35 +41,35 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("curricula.gwt")
 public interface CurriculaService extends RemoteService {
-	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException;
-	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException;
-	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException;
-	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException;
-	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException;
-	public TreeSet<CurriculumInterface.DepartmentInterface> loadDepartments() throws CurriculaException;
-	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException;
-	public String lastCurriculaFilter() throws CurriculaException;
-	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException;
-	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException;
-	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException;
-	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException;
-	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException;
-	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException;
-	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException;
-	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException;
+	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException;
+	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException;
+	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface.DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException;
+	public String lastCurriculaFilter() throws CurriculaException, PageAccessException;
+	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException;
+	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException;
+	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException;
+	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException;
+	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException, PageAccessException;
+	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException;
 	
-	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException;
-	public String retrieveCourseDetails(String course) throws CurriculaException;
-	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException;
-	public String[] getApplicationProperty(String[] name) throws CurriculaException;
-	public Boolean canAddCurriculum() throws CurriculaException;
-	public Boolean isAdmin() throws CurriculaException;
-	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException;
-	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException;
-	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException;
-	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException;
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException;
+	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException;
+	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException;
+	public String[] getApplicationProperty(String[] name) throws CurriculaException, PageAccessException;
+	public Boolean canAddCurriculum() throws CurriculaException, PageAccessException;
+	public Boolean isAdmin() throws CurriculaException, PageAccessException;
+	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException, PageAccessException;
+	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException, PageAccessException;
+	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException, PageAccessException;
+	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException, PageAccessException;
 	
-	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException;
-	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException;
-	public Boolean canEditProjectionRules() throws CurriculaException;
+	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException, PageAccessException;
+	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException, PageAccessException;
+	public Boolean canEditProjectionRules() throws CurriculaException, PageAccessException;
 }

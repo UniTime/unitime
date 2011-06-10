@@ -120,6 +120,7 @@
 		<item>
 			<name>Other</name>
 			<description>
+				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
 				<line>Version number changed to 3.3.</line>
 			</description>
 		</item>

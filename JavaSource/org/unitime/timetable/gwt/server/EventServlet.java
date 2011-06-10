@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -88,7 +89,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	public void init() throws ServletException {
 	}
 	
-	public Session findSession(org.hibernate.Session hibSession, String session) throws EventException {
+	public Session findSession(org.hibernate.Session hibSession, String session) throws EventException, PageAccessException {
 		try {
 			Session ret = SessionDAO.getInstance().get(Long.parseLong(session), hibSession);
 			if (ret != null) return ret;
@@ -157,7 +158,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	}
 
 	@Override
-	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException {
+	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
@@ -165,7 +166,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
 					userInfo.getUser() == null)
-						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
+						throw new PageAccessException(type.getPageTitle().substring(0, 1).toUpperCase() +
 								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
 
 				if (session != null && !session.isEmpty()) {
@@ -355,16 +356,18 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (EventException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof EventException)
-				throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ": " + e.getMessage());
 		}
 	}
 
 	@Override
-	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException {
+	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
@@ -373,7 +376,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
 					userInfo.getUser() == null)
-						throw new EventException(resource.getType().getPageTitle().substring(0, 1).toUpperCase() +
+						throw new PageAccessException(resource.getType().getPageTitle().substring(0, 1).toUpperCase() +
 								resource.getType().getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
 
 				List<Meeting> meetings = null;
@@ -841,19 +844,26 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (EventException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof EventException)
-				throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException("Unable to find events for " + resource + ": " + e.getMessage());
 		}
 	}
 
 	@Override
-	public List<IdValueInterface> findSessions(String term) throws EventException {
+	public List<IdValueInterface> findSessions(String term) throws EventException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
+				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
+					User user = Web.getUser(getThreadLocalRequest().getSession());
+					if (user == null) throw new PageAccessException(
+							getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				}
 				Session selected = null;
 				if (term != null) {
 					try {
@@ -878,20 +888,23 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						idVal.setSelected(true);
 					ret.add(idVal);
 				}
+				if (ret.isEmpty()) throw new EventException("No academic session is available.");
 				return ret;
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (EventException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof EventException)
-				throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException("No academic session available: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException {
+	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
@@ -899,7 +912,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
 					userInfo.getUser() == null)
-						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
+						throw new PageAccessException(type.getPageTitle().substring(0, 1).toUpperCase() +
 								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
 
 				Session academicSession = findSession(hibSession, session);
@@ -1063,22 +1076,26 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (EventException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof EventException)
-				throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException("Failed to find resources: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public Boolean canLookupPeople() throws EventException {
+	public Boolean canLookupPeople() throws EventException, PageAccessException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user == null) throw new EventException("not authenticated");
-			return Roles.ADMIN_ROLE.equals(user.getRole());
+			return user != null && Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (EventException e) {
+			throw e;
 		} catch  (Exception e) {
-			if (e instanceof EventException) throw (EventException)e;
 			sLog.error(e.getMessage(), e);
 			throw new EventException(e.getMessage());
 		}

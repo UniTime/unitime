@@ -45,6 +45,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.util.Constants;
 
 
@@ -195,13 +196,31 @@ public class PageAccessFilter implements Filter {
 		}		
 
 		if (exception!=null) {
-			if (exception instanceof ServletException)
+			if (exception instanceof PageAccessException && request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+				HttpServletRequest r = (HttpServletRequest)request;
+				HttpServletResponse x = (HttpServletResponse)response;
+				String message = exception.getMessage();
+				if (message == null || message.isEmpty()) {
+					HttpSession s = r.getSession();
+					if (!Web.isLoggedIn(s)) {
+						if (s.isNew()) 
+							message = "Your timetabling session has expired. Please log in again.";
+						else
+							message = "Login is required to use this page.";
+					} else {
+						message = "Insufficient user privileges.";
+					}
+				}
+				x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.do?message=" + message));
+			} else if (exception instanceof ServletException) {
 				throw (ServletException)exception;
-			if (exception instanceof IOException)
+			} else  if (exception instanceof IOException) {
 				throw (IOException)exception;
-			if (exception instanceof RuntimeException)
+			} else if (exception instanceof RuntimeException) {
 				throw (RuntimeException)exception;
-			throw new ServletException(exception);
+			} else {
+				throw new ServletException(exception);
+			}
 		}
 	}
 

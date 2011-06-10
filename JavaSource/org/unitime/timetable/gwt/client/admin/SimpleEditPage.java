@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -217,6 +218,7 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage("Unable to load data (" + caught.getMessage() + ")");
+				ToolBox.checkAccess(caught);
 			}
 		});
 	}

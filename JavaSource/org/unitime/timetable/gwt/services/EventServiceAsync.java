@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.IdValueInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -33,9 +34,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface EventServiceAsync {
-	public void findResource(String session, ResourceType type, String name, AsyncCallback<ResourceInterface> callback) throws EventException;
-	public void findEvents(ResourceInterface resource, AsyncCallback<List<EventInterface>> callback) throws EventException;
-	public void findSessions(String session, AsyncCallback<List<IdValueInterface>> callback)  throws EventException;
-	public void findResources(String session, ResourceType type, String query, int limit, AsyncCallback<List<ResourceInterface>> callback) throws EventException;
-	public void canLookupPeople(AsyncCallback<Boolean> callback) throws EventException;
+	public void findResource(String session, ResourceType type, String name, AsyncCallback<ResourceInterface> callback) throws EventException, PageAccessException;
+	public void findEvents(ResourceInterface resource, AsyncCallback<List<EventInterface>> callback) throws EventException, PageAccessException;
+	public void findSessions(String session, AsyncCallback<List<IdValueInterface>> callback)  throws EventException, PageAccessException;
+	public void findResources(String session, ResourceType type, String query, int limit, AsyncCallback<List<ResourceInterface>> callback) throws EventException, PageAccessException;
+	public void canLookupPeople(AsyncCallback<Boolean> callback) throws EventException, PageAccessException;
 }

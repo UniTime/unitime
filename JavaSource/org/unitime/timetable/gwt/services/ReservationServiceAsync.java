@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 
@@ -30,17 +31,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface ReservationServiceAsync {
-	public void getOffering(Long offeringId, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException;
-	public void getOfferingByCourseName(String course, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException;
-	public void getAreas(AsyncCallback<List<ReservationInterface.Area>> callback) throws ReservationException;
-	public void getStudentGroups(AsyncCallback<List<ReservationInterface.IdName>> callback) throws ReservationException;
-	public void getCurricula(Long offeringId, AsyncCallback<List<ReservationInterface.Curriculum>> callback) throws ReservationException;
+	public void getOffering(Long offeringId, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException, PageAccessException;
+	public void getOfferingByCourseName(String course, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException, PageAccessException;
+	public void getAreas(AsyncCallback<List<ReservationInterface.Area>> callback) throws ReservationException, PageAccessException;
+	public void getStudentGroups(AsyncCallback<List<ReservationInterface.IdName>> callback) throws ReservationException, PageAccessException;
+	public void getCurricula(Long offeringId, AsyncCallback<List<ReservationInterface.Curriculum>> callback) throws ReservationException, PageAccessException;
 
-	public void getReservation(Long reservationId, AsyncCallback<ReservationInterface> callback) throws ReservationException;
-	public void getReservations(Long offeringId, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException;
-	public void save(ReservationInterface reservation, AsyncCallback<Long> callback) throws ReservationException;
-	public void delete(Long reservationId, AsyncCallback<Boolean> callback) throws ReservationException;
-	public void canAddReservation(AsyncCallback<Boolean> callback) throws ReservationException;
-	public void lastReservationFilter(AsyncCallback<String> callback) throws ReservationException;
-	public void findReservations(String query, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException;
+	public void getReservation(Long reservationId, AsyncCallback<ReservationInterface> callback) throws ReservationException, PageAccessException;
+	public void getReservations(Long offeringId, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
+	public void save(ReservationInterface reservation, AsyncCallback<Long> callback) throws ReservationException, PageAccessException;
+	public void delete(Long reservationId, AsyncCallback<Boolean> callback) throws ReservationException, PageAccessException;
+	public void canAddReservation(AsyncCallback<Boolean> callback) throws ReservationException, PageAccessException;
+	public void lastReservationFilter(AsyncCallback<String> callback) throws ReservationException, PageAccessException;
+	public void findReservations(String query, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
 }

@@ -294,6 +294,7 @@ public class UniTimeSideBar extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
+		if ("hide".equals(Window.Location.getParameter("menu"))) return;
 		panel.add(this);
 		panel.setVisible(true);
 	}

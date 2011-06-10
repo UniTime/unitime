@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -71,6 +72,7 @@ public class OnlineSectioningTest extends Composite {
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().fail(caught.getMessage());
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override

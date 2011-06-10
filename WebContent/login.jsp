@@ -61,18 +61,16 @@
 		
 		<FORM method="post" action="login.do">
 			<INPUT type="hidden" name="cs" value="login">
+			<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 
-			<TABLE border="0" cellspacing="0" cellpadding="0" align="center">
+			<TABLE border="0" cellspacing="0" cellpadding="0" align="center" style="margin-top: 30px; margin-bottom: 50px;">
 				<TR>
-					<TD>&nbsp;</TD>
 					<TD class="H3" align="center" colspan="3">
-						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In" style="margin-bottom: 5px;">
-						<BR>
-						&nbsp;
+						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In" style="margin-bottom: 20px;">
 						<% if (errorMsg!=null)  { %>
-							<span class="errorMessage">
+							<div style="color: red; margin-bottom: 10px;">
 							<%= errorMsg %>
-							</span>
+							</div>
 						<% } %>
 					</TD>
 				</TR>
@@ -81,8 +79,8 @@
 					<TD align="left" rowspan="2" valign="middle">
 						<IMG src="images/unitime.png" border="0" align="bottom" alt="UniTime" title="UniTime" hspace="20">
 					</TD>
-					<TD colspan="3">
-						<DIV align="left" id="login">
+					<TD>
+						<DIV align="center" id="login">
 							<DIV class="BrownBG">
 								<DIV class="H40px"></DIV>
 								<DIV>
@@ -105,16 +103,18 @@
 							</DIV>
 						</DIV>
 					</TD>
+					<TD rowspan="2" width="150px">
+					</TD>
 				</TR>
 				<TR>
-					<TD><DIV align="left" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in"><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
+					<TD><DIV align="center" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in"><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
 				</TR>
 			</TABLE>
 		</FORM>
 		
 		<%@ include file="/initializationError.jspf"%>
 		
-    	<table class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
+    	<table class="unitime-Footer">
     		<tr>
     			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
     			<td align="center" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span><tt:copy br="false"/></td>

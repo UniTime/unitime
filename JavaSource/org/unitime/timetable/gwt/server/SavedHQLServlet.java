@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -22,6 +23,7 @@ import org.hibernate.type.Type;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.gwt.services.SavedHQLService;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
@@ -35,9 +37,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLService {
 	private static final long serialVersionUID = -5724832564531363833L;
+	private static Logger sLog = Logger.getLogger(SavedHQLServlet.class);
 
 	@Override
-	public List<SavedHQLInterface.Flag> getFlags() throws SavedHQLException {
+	public List<SavedHQLInterface.Flag> getFlags() throws SavedHQLException, PageAccessException {
+		User user = Web.getUser(getThreadLocalRequest().getSession());
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		List<SavedHQLInterface.Flag> ret = new ArrayList<SavedHQLInterface.Flag>();
 		for (SavedHQL.Flag f: SavedHQL.Flag.values()) {
 			SavedHQLInterface.Flag flag = new SavedHQLInterface.Flag();
@@ -49,9 +56,11 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public List<SavedHQLInterface.Option> getOptions() throws SavedHQLException {
+	public List<SavedHQLInterface.Option> getOptions() throws SavedHQLException, PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new SavedHQLException("Not authenticated.");
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		List<SavedHQLInterface.Option> ret  = new ArrayList<SavedHQLInterface.Option>();
 		for (SavedHQL.Option o: SavedHQL.Option.values()) {
 			if (!o.allowSingleSelection() && !o.allowMultiSelection()) continue;
@@ -74,15 +83,17 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public Boolean editable() throws SavedHQLException {
+	public Boolean editable() throws SavedHQLException, PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
 		return (user != null && user.isAdmin());
 	}
 
 	@Override
-	public List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException {
+	public List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException, PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new SavedHQLException("Not authenticated.");
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		SavedHQL.Flag ap = SavedHQL.Flag.valueOf("APPEARANCE_" + (appearance == null ? "ADMINISTRATION" : appearance.toUpperCase()));
 		List<SavedHQLInterface.Query> ret = new ArrayList<SavedHQLInterface.Query>(); 
 		for (SavedHQL hql: SavedHQL.listAll(null, ap, user.isAdmin())) {
@@ -98,10 +109,12 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public List<String[]> execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException {
+	public List<String[]> execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user == null || user.getRole() == null) throw new SavedHQLException("Not authenticated.");
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 			String hql = query.getQuery();
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (hql.indexOf("%" + o.name() + "%") >= 0) {
@@ -142,9 +155,12 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 				ret.add(line);
 			}
 			return ret;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SavedHQLException e) {
+			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
-			if (e instanceof SavedHQLException) throw (SavedHQLException)e;
+			sLog.error(e.getMessage(), e);
 			throw new SavedHQLException("Execution failed: " + e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")"));
 		}
 	}
@@ -306,10 +322,12 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public Long store(Query query) throws SavedHQLException {
+	public Long store(Query query) throws SavedHQLException, PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new SavedHQLException("Not authenticated.");
-		if (!user.isAdmin()) throw new SavedHQLException("Only administrator can save a query.");
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		if (!user.isAdmin()) throw new PageAccessException("Only administrator can save a query.");
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 		SavedHQL hql = null;
 		if (query.getId() != null) {
@@ -329,11 +347,13 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public Boolean delete(Long id) throws SavedHQLException {
+	public Boolean delete(Long id) throws SavedHQLException, PageAccessException {
 		if (id == null) throw new SavedHQLException("No report provided.");
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new SavedHQLException("Not authenticated.");
-		if (!user.isAdmin()) throw new SavedHQLException("Only administrator can delete a query.");
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		if (!user.isAdmin()) throw new PageAccessException("Only administrator can delete a query.");
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 		SavedHQL hql = SavedHQLDAO.getInstance().get(id, hibSession);
 		if (hql != null) {
@@ -399,7 +419,7 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 
 	@Override
-	public Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException {
+	public Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException, PageAccessException {
 		String title = "Reports";
 		switch (SavedHQL.Flag.valueOf("APPEARANCE_" + (appearance == null ? "ADMINISTRATION" : appearance.toUpperCase()))) {
 		case APPEARANCE_COURSES:

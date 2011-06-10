@@ -73,6 +73,7 @@ public class LoginAction extends Action {
 		String cs = request.getParameter("cs");
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
+		String menu = request.getParameter("menu");
 
 		// Check form is submitted
 		if (cs == null || !cs.equals("login")) {
@@ -84,7 +85,7 @@ public class LoginAction extends Action {
 		if (username == null || username.length() == 0 
 				|| password == null || password.length() == 0) {
 
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1" + "&menu=" + menu);
 			return null;
 		}
 		
@@ -94,7 +95,7 @@ public class LoginAction extends Action {
 			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
 			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 			//TODO figure out what the appropriate message is
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=4");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=4" + "&menu=" + menu);
 			return null;
 		}
 
@@ -106,7 +107,7 @@ public class LoginAction extends Action {
 			Set creds = lc.getSubject().getPublicCredentials();
 			if (creds==null || creds.size()==0) {
 				LoginManager.addFailedLoginAttempt(username, attemptDateTime);
-				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=2");
+				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=2" + "&menu=" + menu);
 				return null;
 			}
 			
@@ -140,7 +141,7 @@ public class LoginAction extends Action {
 		catch (LoginException le) {
 			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 			Debug.error(le.getMessage());
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3" + "&menu=" + menu);
 		}
 
 		return null;
