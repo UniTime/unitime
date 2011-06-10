@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -35,23 +36,23 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
-	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException;
-	Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException;
-	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException;
+	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException;
+	Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
+	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws IllegalArgumentException;
-	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException;
-	Collection<String> checkCourses(CourseRequestInterface request) throws SectioningException;
-	ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException;
-	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment) throws SectioningException;
-	String logIn(String userName, String password) throws SectioningException;
-	Boolean logOut() throws SectioningException;
-	String whoAmI() throws SectioningException;
-	String[] lastAcademicSession(boolean sectioning) throws SectioningException;
-	CourseRequestInterface lastRequest(Long sessionId) throws SectioningException;
-	ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException;
-    Boolean saveRequest(CourseRequestInterface request) throws SectioningException;
-    ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException;
-	Boolean isAdmin() throws SectioningException;
-	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException;
-	ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException;
+	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
+	Collection<String> checkCourses(CourseRequestInterface request) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment) throws SectioningException, PageAccessException;
+	String logIn(String userName, String password) throws SectioningException, PageAccessException;
+	Boolean logOut() throws SectioningException, PageAccessException;
+	String whoAmI() throws SectioningException, PageAccessException;
+	String[] lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
+	CourseRequestInterface lastRequest(Long sessionId) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException, PageAccessException;
+    Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;
+    ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
+	Boolean isAdmin() throws SectioningException, PageAccessException;
+	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException, PageAccessException;
 }

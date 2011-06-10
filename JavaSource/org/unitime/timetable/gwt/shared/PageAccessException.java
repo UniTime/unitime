@@ -24,14 +24,19 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class ReservationException extends RuntimeException implements IsSerializable {
-	private static final long serialVersionUID = -4954066614042163548L;
+public class PageAccessException extends RuntimeException implements IsSerializable {
+	private static final long serialVersionUID = 3443131654463685075L;
 
-	public ReservationException() {
+	public PageAccessException() {
 		super();
 	}
 	
-	public ReservationException(String message) {
+	public PageAccessException(String message) {
 		super(message);
 	}
+	
+	public PageAccessException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 }

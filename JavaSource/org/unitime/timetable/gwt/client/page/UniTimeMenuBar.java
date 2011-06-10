@@ -243,6 +243,7 @@ public class UniTimeMenuBar extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
+		if ("hide".equals(Window.Location.getParameter("menu"))) return;
 		panel.add(this);
 		panel.setVisible(true);
 		if (iSimple != null) {

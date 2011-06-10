@@ -181,6 +181,7 @@ public class SavedHQLPage extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
+				ToolBox.checkAccess(caught);
 			}
 		});
 
@@ -207,6 +208,7 @@ public class SavedHQLPage extends Composite {
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override

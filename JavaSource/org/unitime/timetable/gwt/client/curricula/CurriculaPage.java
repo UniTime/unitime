@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -223,6 +224,7 @@ public class CurriculaPage extends Composite {
 				public void onFailure(Throwable caught) {
 					iCurriculaTable.setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
 					hideLoading();
+					ToolBox.checkAccess(caught);
 				}
 				
 			});
@@ -231,7 +233,7 @@ public class CurriculaPage extends Composite {
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				if (event.getValue() == null) return;
+				if (event.getValue() == null || "0:0".equals(event.getValue())) return;
 				String command = event.getValue();
 				if (command.startsWith("detail=")) {
 					showLoading("Loading curriculum ...");

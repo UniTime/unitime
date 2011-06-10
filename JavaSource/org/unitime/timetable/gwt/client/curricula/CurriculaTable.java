@@ -1182,6 +1182,7 @@ public class CurriculaTable extends Composite {
 			public void onFailure(Throwable caught) {
 				iLoadingImage.setVisible(false);
 				setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
+				ToolBox.checkAccess(caught);
 				if (next != null)
 					next.execute();
 			}

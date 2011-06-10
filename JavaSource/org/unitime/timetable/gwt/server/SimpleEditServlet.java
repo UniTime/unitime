@@ -33,7 +33,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.gwt.services.SimpleEditService;
-import org.unitime.timetable.gwt.shared.CurriculaException;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -71,7 +71,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 	}
 
 	@Override
-	public SimpleEditInterface load(Type type) throws SimpleEditException {
+	public SimpleEditInterface load(Type type) throws SimpleEditException, PageAccessException {
 		org.hibernate.Session hibSession = null;
 		try {
 			hibSession = CurriculumDAO.getInstance().getSession();
@@ -150,10 +150,12 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 			}
 			data.setEditable(isAdmin());
 			return data;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SimpleEditException e) {
+			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			if (e instanceof SimpleEditException)
-				throw (SimpleEditException)e;
 			throw new SimpleEditException(e.getMessage());
 		} finally {
 			if (hibSession != null && hibSession.isOpen())
@@ -162,11 +164,10 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 	}
 	
 	@Override
-	public SimpleEditInterface save(SimpleEditInterface data) {
+	public SimpleEditInterface save(SimpleEditInterface data) throws SimpleEditException, PageAccessException {
 		org.hibernate.Session hibSession = null;
 		try {
-			if (!isAdmin())
-				throw new SimpleEditException("not authorized to edit " + data.getType().getTitle().toLowerCase());
+			checkAdmin();
 			hibSession = CurriculumDAO.getInstance().getSession();
 			Long sessionId = getAcademicSessionId();
 			Transaction tx = null;
@@ -428,10 +429,12 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 				} catch (Exception e) {}
 			}
 			return data;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SimpleEditException e) {
+			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			if (e instanceof SimpleEditException)
-				throw (SimpleEditException)e;
 			throw new SimpleEditException(e.getMessage());
 		} finally {
 			if (hibSession != null && hibSession.isOpen())
@@ -441,22 +444,24 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 	
 	private Long getAcademicSessionId() {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new CurriculaException("not authenticated");
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		if (sessionId == null) throw new CurriculaException("academic session not selected");
+		if (sessionId == null) throw new PageAccessException("Insufficient user privileges.");
 		return sessionId;
 	}
 	
-	public Boolean isAdmin() throws CurriculaException {
-		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user == null) throw new CurriculaException("not authenticated");
-			return Roles.ADMIN_ROLE.equals(user.getRole());
-		} catch  (Exception e) {
-			if (e instanceof CurriculaException) throw (CurriculaException)e;
-			sLog.error(e.getMessage(), e);
-			throw new CurriculaException(e.getMessage());
-		}
+	public boolean isAdmin() {
+		User user = Web.getUser(getThreadLocalRequest().getSession());
+		return user != null && Roles.ADMIN_ROLE.equals(user.getRole());
+	}
+	
+	public void checkAdmin() throws PageAccessException {
+		User user = Web.getUser(getThreadLocalRequest().getSession());
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (!Roles.ADMIN_ROLE.equals(user.getRole())) throw new PageAccessException("Insufficient user privileges.");
 	}
 
 }

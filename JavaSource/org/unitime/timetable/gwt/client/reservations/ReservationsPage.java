@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.reservations;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -200,6 +201,7 @@ public class ReservationsPage extends Composite {
 				public void onFailure(Throwable caught) {
 					iReservationTable.setErrorMessage("Unable to retrieve reservations (" + caught.getMessage() + ").");
 					LoadingWidget.getInstance().hide();
+					ToolBox.checkAccess(caught);
 				}
 				
 			});

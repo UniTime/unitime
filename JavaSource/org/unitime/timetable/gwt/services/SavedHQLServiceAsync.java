@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 
@@ -30,13 +31,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface SavedHQLServiceAsync {
-	void getFlags(AsyncCallback<List<SavedHQLInterface.Flag>> callback) throws SavedHQLException;
-	void getOptions(AsyncCallback<List<SavedHQLInterface.Option>> callback) throws SavedHQLException;
-	void editable(AsyncCallback<Boolean> callback) throws SavedHQLException;
-	void queries(String appearance, AsyncCallback<List<SavedHQLInterface.Query>> callback) throws SavedHQLException;
-	void execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows, AsyncCallback<List<String[]>> callback) throws SavedHQLException;
-	void store(SavedHQLInterface.Query query, AsyncCallback<Long> callback) throws SavedHQLException;
-	void delete(Long id, AsyncCallback<Boolean> callback) throws SavedHQLException;
-	void setBack(String appearance, String history, List<Long> ids, String type, AsyncCallback<Boolean> callback) throws SavedHQLException;
+	void getFlags(AsyncCallback<List<SavedHQLInterface.Flag>> callback) throws SavedHQLException, PageAccessException;
+	void getOptions(AsyncCallback<List<SavedHQLInterface.Option>> callback) throws SavedHQLException, PageAccessException;
+	void editable(AsyncCallback<Boolean> callback) throws SavedHQLException, PageAccessException;
+	void queries(String appearance, AsyncCallback<List<SavedHQLInterface.Query>> callback) throws SavedHQLException, PageAccessException;
+	void execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows, AsyncCallback<List<String[]>> callback) throws SavedHQLException, PageAccessException;
+	void store(SavedHQLInterface.Query query, AsyncCallback<Long> callback) throws SavedHQLException, PageAccessException;
+	void delete(Long id, AsyncCallback<Boolean> callback) throws SavedHQLException, PageAccessException;
+	void setBack(String appearance, String history, List<Long> ids, String type, AsyncCallback<Boolean> callback) throws SavedHQLException, PageAccessException;
 }
 

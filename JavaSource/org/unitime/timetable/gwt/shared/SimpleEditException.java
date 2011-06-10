@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 /**
  * @author Tomas Muller
  */
-public class SimpleEditException extends RuntimeException {
+public class SimpleEditException extends RuntimeException implements IsSerializable {
 	private static final long serialVersionUID = -6933848623255654126L;
 
 	public SimpleEditException() {
