@@ -21,6 +21,9 @@ package org.unitime.timetable.gwt.client;
 
 import java.util.Date;
 
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.shared.PageAccessException;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
@@ -166,5 +169,11 @@ public class ToolBox {
 	public native static void open(String url) /*-{
 		$wnd.location = url;
 	}-*/;
+	
+	public static void checkAccess(final Throwable t) {
+		if (t != null && t instanceof PageAccessException) {
+			UniTimeFrameDialog.openDialog("UniTime Log In", "login.jsp?menu=hide&m=" + t.getMessage(), "700px", "420px");
+		}
+	}
 
 }

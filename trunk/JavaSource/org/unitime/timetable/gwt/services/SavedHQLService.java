@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 
@@ -32,12 +33,12 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("hql.gwt")
 public interface SavedHQLService extends RemoteService {
-	List<SavedHQLInterface.Flag> getFlags() throws SavedHQLException;
-	List<SavedHQLInterface.Option> getOptions() throws SavedHQLException;
-	Boolean editable() throws SavedHQLException;
-	List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException;
-	List<String[]> execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException;
-	Long store(SavedHQLInterface.Query query) throws SavedHQLException;
-	Boolean delete(Long id) throws SavedHQLException;
-	Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException;
+	List<SavedHQLInterface.Flag> getFlags() throws SavedHQLException, PageAccessException;
+	List<SavedHQLInterface.Option> getOptions() throws SavedHQLException, PageAccessException;
+	Boolean editable() throws SavedHQLException, PageAccessException;
+	List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException, PageAccessException;
+	List<String[]> execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException;
+	Long store(SavedHQLInterface.Query query) throws SavedHQLException, PageAccessException;
+	Boolean delete(Long id) throws SavedHQLException, PageAccessException;
+	Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException, PageAccessException;
 }

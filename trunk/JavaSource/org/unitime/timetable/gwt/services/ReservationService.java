@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 
@@ -33,18 +34,18 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("reservation.gwt")
 public interface ReservationService extends RemoteService {
-	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException;
-	public ReservationInterface.Offering getOfferingByCourseName(String course) throws ReservationException;
-	public List<ReservationInterface.Area> getAreas() throws ReservationException;
-	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException;
-	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException;
+	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException, PageAccessException;
+	public ReservationInterface.Offering getOfferingByCourseName(String course) throws ReservationException, PageAccessException;
+	public List<ReservationInterface.Area> getAreas() throws ReservationException, PageAccessException;
+	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException, PageAccessException;
+	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException, PageAccessException;
 
-	public ReservationInterface getReservation(Long reservationId) throws ReservationException;
-	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException;
-	public Long save(ReservationInterface reservation) throws ReservationException;
-	public Boolean delete(Long reservationId) throws ReservationException;
-	public Boolean canAddReservation() throws ReservationException;
-	public String lastReservationFilter() throws ReservationException;
-	public List<ReservationInterface> findReservations(String query) throws ReservationException;
+	public ReservationInterface getReservation(Long reservationId) throws ReservationException, PageAccessException;
+	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException, PageAccessException;
+	public Long save(ReservationInterface reservation) throws ReservationException, PageAccessException;
+	public Boolean delete(Long reservationId) throws ReservationException, PageAccessException;
+	public Boolean canAddReservation() throws ReservationException, PageAccessException;
+	public String lastReservationFilter() throws ReservationException, PageAccessException;
+	public List<ReservationInterface> findReservations(String query) throws ReservationException, PageAccessException;
 
 }

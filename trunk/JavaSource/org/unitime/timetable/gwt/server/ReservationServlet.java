@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.gwt.services.ReservationService;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.model.AcademicArea;
@@ -97,7 +98,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 	}
 
 	@Override
-	public List<ReservationInterface.Area> getAreas() throws ReservationException {
+	public List<ReservationInterface.Area> getAreas() throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface.Area> results = new ArrayList<ReservationInterface.Area>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -134,14 +135,17 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				hibSession.close();
 			}
 			return results;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 	
-	private ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession) throws ReservationException {
+	private ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession) throws ReservationException, PageAccessException {
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
 		offering.setAbbv(io.getCourseName());
 		offering.setName(io.getControllingCourseOffering().getTitle());
@@ -193,7 +197,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 	}
 
 	@Override
-	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException {
+	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
@@ -203,8 +207,11 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
@@ -222,7 +229,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 		}
 		return null;
 	}
-	public ReservationInterface.Offering getOfferingByCourseName(String courseName) throws ReservationException{
+	public ReservationInterface.Offering getOfferingByCourseName(String courseName) throws ReservationException, PageAccessException{
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
@@ -232,8 +239,11 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
@@ -476,7 +486,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 	}
 
 	@Override
-	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException {
+	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -495,15 +505,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			}
 			Collections.sort(results);
 			return results;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 
 	@Override
-	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException {
+	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface.IdName> results = new ArrayList<ReservationInterface.IdName>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -522,15 +535,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				hibSession.close();
 			}
 			return results;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 
 	@Override
-	public ReservationInterface getReservation(Long reservationId) throws ReservationException {
+	public ReservationInterface getReservation(Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -545,15 +561,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				hibSession.close();
 			}
 			return r;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 	
 	@Override
-	public Long save(ReservationInterface reservation) throws ReservationException {
+	public Long save(ReservationInterface reservation) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -638,15 +657,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 	
 	@Override
-	public Boolean delete(Long reservationId) throws ReservationException {
+	public Boolean delete(Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -665,32 +687,37 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				hibSession.close();
 			}
 			return true;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
-
-	private Long getAcademicSessionId() {
+	
+	private TimetableManager getManager() throws PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new ReservationException("not authenticated");
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		if (sessionId == null) throw new ReservationException("academic session not selected");
-		return sessionId;
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		TimetableManager manager = TimetableManager.getManager(user);
+		if (manager == null) throw new PageAccessException("Insufficient user privileges.");
+		return manager;
 	}
 	
-	private TimetableManager getManager() {
+	private Long getAcademicSessionId() throws PageAccessException {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user == null) throw new ReservationException("not authenticated");
-		if (user.getRole() == null) throw new ReservationException("no user role");
-		TimetableManager manager = TimetableManager.getManager(user);
-		if (manager == null) throw new ReservationException("access denied");
-		return manager;
+		if (user == null) throw new PageAccessException(
+				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+		if (sessionId == null) throw new PageAccessException("No academic session is selecgted.");
+		return sessionId;
 	}
 
 	@Override
-	public Boolean canAddReservation() throws ReservationException {
+	public Boolean canAddReservation() throws ReservationException, PageAccessException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) return false;
@@ -704,15 +731,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 
 	@Override
-	public List<ReservationInterface> findReservations(String filter) throws ReservationException {
+	public List<ReservationInterface> findReservations(String filter) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			Query q = new Query(filter);
@@ -736,15 +766,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			}
 			Collections.sort(results);
 			return results;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}
 	}
 
 	@Override
-	public String lastReservationFilter() throws ReservationException {
+	public String lastReservationFilter() throws ReservationException, PageAccessException {
 		String filter = (String)getThreadLocalRequest().getSession().getAttribute("Reservations.LastFilter");
 		if (filter == null) {
 			filter = "";
@@ -866,7 +899,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 	}
 
 	@Override
-	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException {
+	public List<ReservationInterface.Curriculum> getCurricula(Long offeringId) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface.Curriculum> results = new ArrayList<ReservationInterface.Curriculum>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -919,8 +952,11 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				hibSession.close();
 			}
 			return results;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (ReservationException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof ReservationException) throw (ReservationException)e;
 			sLog.error(e.getMessage(), e);
 			throw new ReservationException(e.getMessage());
 		}

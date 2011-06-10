@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 /**
  * @author Tomas Muller
  */
-public class SavedHQLException extends RuntimeException {
+public class SavedHQLException extends RuntimeException implements IsSerializable{
 	private static final long serialVersionUID = 2144948330211931475L;
 
 	public SavedHQLException() {

@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 /**
  * @author Tomas Muller
  */
-public class LookupException extends RuntimeException {
+public class LookupException extends RuntimeException implements IsSerializable {
 	private static final long serialVersionUID = -1612532554365430022L;
 
 	public LookupException() {

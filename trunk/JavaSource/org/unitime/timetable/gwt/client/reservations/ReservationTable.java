@@ -718,6 +718,7 @@ public class ReservationTable extends Composite {
 			public void onFailure(Throwable caught) {
 				iLoadingImage.setVisible(false);
 				setErrorMessage("Unable to retrieve curricula (" + caught.getMessage() + ").");
+				ToolBox.checkAccess(caught);
 				if (next != null)
 					next.execute();
 			}

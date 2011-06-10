@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -206,6 +207,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 				for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 					h.onException(caught);
 				}
+				ToolBox.checkAccess(caught);
 			}
 			@Override
 			public void onSuccess(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> result) {

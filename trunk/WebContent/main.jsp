@@ -190,4 +190,10 @@
 </div>				
 	
 </BODY>
+<script language="JavaScript" type="text/javascript">
+	if (parent && parent.hideGwtDialog && parent.refreshPage) {
+		parent.hideGwtDialog();
+		parent.refreshPage();
+	}
+</script>
 </HTML>

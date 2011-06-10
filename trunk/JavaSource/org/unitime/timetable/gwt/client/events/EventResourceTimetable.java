@@ -128,7 +128,8 @@ public class EventResourceTimetable extends Composite {
 		iEventService.findSessions(Window.Location.getParameter("term"), new AsyncCallback<List<IdValueInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage(caught.getMessage()); 
+				iFilterHeader.setErrorMessage(caught.getMessage());
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override
@@ -190,6 +191,7 @@ public class EventResourceTimetable extends Composite {
 											return "";
 										}});
 									callback.onSuggestionsReady(request, new Response(suggestions));
+									ToolBox.checkAccess(caught);
 								}
 								@Override
 								public void onSuccess(List<ResourceInterface> result) {
@@ -363,12 +365,13 @@ public class EventResourceTimetable extends Composite {
 			((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getLabel().substring(0,1).toUpperCase() + type.getLabel().substring(1) + ":");
 			iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
 			if (getSessionName() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
+				iFilterHeader.clearMessage();
 				LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
 				iEventService.findResource(getSessionName(), type, getResourceName(), new AsyncCallback<ResourceInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iHeader.setErrorMessage(caught.getMessage());
+						iFilterHeader.setErrorMessage(caught.getMessage());
 						for (int i = 1; i < iPanel.getRowCount(); i++)
 							iPanel.getRowFormatter().setVisible(i, i == iLastRow);
 						iHeader.setEnabled("print", false);
@@ -387,6 +390,7 @@ public class EventResourceTimetable extends Composite {
 	private void resourceChanged(ResourceInterface resource) {
 		LoadingWidget.getInstance().show("Loading " + resource.getName() + " timetable for " + resource.getSessionName() + " ...");
 		iResource = resource;
+		iFilterHeader.clearMessage();
 		iEventService.findEvents(iResource, new AsyncCallback<List<EventInterface>>() {
 			
 			@Override
@@ -396,7 +400,7 @@ public class EventResourceTimetable extends Composite {
 					changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
 				LoadingWidget.getInstance().hide();
 				if (iData.isEmpty()) {
-					iHeader.setErrorMessage((iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel().substring(0, 1).toUpperCase() + iResource.getType().getLabel().substring(1) + " ") + iResource.getName() + " has no events in " + iResource.getSessionName() + "."); 
+					iFilterHeader.setErrorMessage((iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel().substring(0, 1).toUpperCase() + iResource.getType().getLabel().substring(1) + " ") + iResource.getName() + " has no events in " + iResource.getSessionName() + "."); 
 					for (int i = 1; i < iPanel.getRowCount(); i++)
 						iPanel.getRowFormatter().setVisible(i, i == iLastRow);
 					iHeader.setEnabled("print", false);
@@ -503,7 +507,7 @@ public class EventResourceTimetable extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				iHeader.setErrorMessage(caught.getMessage());
+				iFilterHeader.setErrorMessage(caught.getMessage());
 				for (int i = 1; i < iPanel.getRowCount(); i++)
 					iPanel.getRowFormatter().setVisible(i, i == iLastRow);
 				iHeader.setEnabled("print", false);
