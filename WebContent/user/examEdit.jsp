@@ -291,7 +291,7 @@
 						for(i=0; i<count; i++) {
 							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
 							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
-							while (optVal.indexOf('_')>=0 && type=='itype')
+							while (optVal.indexOf('_')>=0 && next=='itype')
 								optVal = optVal.replace("_",String.fromCharCode(160,160,160,160));
 							options[i]=new Option(optVal, optId, false);
 						}
