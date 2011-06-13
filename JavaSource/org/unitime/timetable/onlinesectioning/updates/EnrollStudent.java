@@ -286,6 +286,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	}
 	
     public static void updateSpace(OnlineSectioningHelper helper, Enrollment newEnrollment, Enrollment oldEnrollment) {
+    	if (newEnrollment == null && oldEnrollment == null) return;
     	Map<Long, Section> sections = new Hashtable<Long, Section>();
     	if (oldEnrollment != null) {
             for (Section section : oldEnrollment.getSections()) {
