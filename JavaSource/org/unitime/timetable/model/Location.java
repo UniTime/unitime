@@ -871,7 +871,11 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getHtmlHint() {
-    	String hint = getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
+    	return getHtmlHint(null);
+    }
+    
+    public String getHtmlHint(String preference) {
+    	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 

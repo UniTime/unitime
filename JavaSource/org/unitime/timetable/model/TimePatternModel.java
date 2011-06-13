@@ -34,6 +34,7 @@ import org.unitime.commons.User;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
@@ -50,9 +51,9 @@ public class TimePatternModel implements RequiredTimeTableModel {
     protected boolean iAllowHard = true;
     protected int iBreakTime = 0;
     
-    protected Assignment iAssignment = null;
-	
-    protected TimePatternModel(TimePattern pattern, Assignment assignment, boolean allowHard) {
+    protected TimeLocation iAssignment = null;
+    
+    protected TimePatternModel(TimePattern pattern, TimeLocation assignment, boolean allowHard) {
 		iTimePattern = pattern;
 		iAssignment = assignment;
 		iAllowHard = allowHard;
@@ -827,15 +828,15 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	fileName.append("_");
     	fileName.append(getPreferencesHex());
     	if (getAssignment()!=null) {
-    		fileName.append("_"+Integer.toHexString(getAssignment().getTimeLocation().getStartSlot()*256+getAssignment().getTimeLocation().getDayCode()));
+    		fileName.append("_"+Integer.toHexString(getAssignment().getStartSlot()*256+getAssignment().getDayCode()));
     	}
     	return fileName.toString();
     }
     
-    public Assignment getAssignment() { return iAssignment; }
+    public TimeLocation getAssignment() { return iAssignment; }
     
 	public Color getBorder(int day, int time) {
-    	if (iAssignment!=null && iAssignment.getTimeLocation().getStartSlot()==getStartSlot(time) && iAssignment.getTimeLocation().getDayCode()==getDayCode(day))
+    	if (iAssignment!=null && iAssignment.getStartSlot()==getStartSlot(time) && iAssignment.getDayCode()==getDayCode(day))
     		return new Color(0,0,242);
     	return null;
 	}

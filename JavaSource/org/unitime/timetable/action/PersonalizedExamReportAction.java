@@ -627,7 +627,7 @@ public class PersonalizedExamReportAction extends Action {
                                 getMeetingTime(section),
                                 exam.getDate(false),
                                 exam.getTime(false),
-                                (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "))
+                                (exam.getNrRooms()==0 ? noRoom : html ? exam.getRoomsNameWithHint(false, ", ") : exam.getRoomsName(false, ", "))
                         },
                         new Comparable[] {
                             new MultiComparable(-exam.getExamType(), sectionName, exam),
@@ -679,7 +679,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
+                        room += (exam.getNrRooms()==0 ? noRoom : html ? exam.getRoomsNameWithHint(false, ", ") : exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -1357,7 +1357,7 @@ public class PersonalizedExamReportAction extends Action {
         return meetingTime;
     }
     
-    protected String getMeetingRooms(Class_ clazz) {
+    protected String getMeetingRooms(boolean html, Class_ clazz) {
         String meetingRooms = "";
         Assignment assignment = clazz.getCommittedAssignment();
         TreeSet<Meeting> meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
@@ -1372,7 +1372,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         for (Location location: locations) {
             if (meetingRooms.length()>0) meetingRooms+=", ";
-            meetingRooms+=location.getLabel();
+            meetingRooms+=(html ? location.getLabelWithHint() : location.getLabel());
         }
         return meetingRooms;
     }
@@ -1425,7 +1425,7 @@ public class PersonalizedExamReportAction extends Action {
             String section = (suffix && sce.getClazz().getClassSuffix()!=null?sce.getClazz().getClassSuffix():sce.getClazz().getSectionNumberString());
             String time = getMeetingTime(sce.getClazz());
             long timeCmp = getMeetingComparable(sce.getClazz());
-            String room = getMeetingRooms(sce.getClazz());
+            String room = getMeetingRooms(html, sce.getClazz());
             String instr = getMeetingInstructor(sce.getClazz());
             table.addLine(
                     new String[] {
@@ -1479,7 +1479,7 @@ public class PersonalizedExamReportAction extends Action {
             String section = (suffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
             String time = getMeetingTime(ci.getClassInstructing());
             long timeCmp = getMeetingComparable(ci.getClassInstructing());
-            String room = getMeetingRooms(ci.getClassInstructing());
+            String room = getMeetingRooms(html, ci.getClassInstructing());
             String share = ci.getPercentShare()+"%";
             if (html && ci.isLead()) share = "<b>"+share+"</b>";
             table.addLine(
