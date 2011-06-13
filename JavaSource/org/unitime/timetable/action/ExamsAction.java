@@ -197,7 +197,7 @@ public class ExamsAction extends Action {
                                 section.getSection(),
                                 exam.getDate(false),
                                 exam.getTime(false),
-                                (exam.getNrRooms()==0?noRoom:exam.getRoomsName(", "))
+                                (exam.getNrRooms()==0 ? noRoom : html ? exam.getRoomsNameWithHint(false, ", ") : exam.getRoomsName(", "))
                             },
                             new Comparable[] {
                                 new MultiComparable(section.getSubject(), section.getCourseNbr(), section.getItype(), section.getSection(), exam.getPeriodOrd()),

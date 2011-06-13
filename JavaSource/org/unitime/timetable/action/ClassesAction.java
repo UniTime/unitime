@@ -252,7 +252,7 @@ public class ClassesAction extends Action {
         return meetingTime;
     }
     
-    protected String getMeetingRooms(Class_ clazz) {
+    protected String getMeetingRooms(boolean html, Class_ clazz) {
         String meetingRooms = "";
         Assignment assignment = clazz.getCommittedAssignment();
         TreeSet<Meeting> meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
@@ -267,7 +267,7 @@ public class ClassesAction extends Action {
         }
         for (Location location: locations) {
             if (meetingRooms.length()>0) meetingRooms+=", ";
-            meetingRooms+=location.getLabel();
+            meetingRooms+=(html ? location.getLabelWithHint() : location.getLabel());
         }
         return meetingRooms;
     }
@@ -329,7 +329,7 @@ public class ClassesAction extends Action {
                 String section = (suffix && clazz.getClassSuffix(co)!=null?clazz.getClassSuffix(co):clazz.getSectionNumberString());
                 String time = getMeetingTime(clazz);
                 long timeCmp = getMeetingComparable(clazz);
-                String room = getMeetingRooms(clazz);
+                String room = getMeetingRooms(html, clazz);
                 String instr = getMeetingInstructor(clazz);
                 table.addLine(
                         new String[] {
