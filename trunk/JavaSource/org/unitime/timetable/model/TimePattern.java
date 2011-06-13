@@ -27,6 +27,8 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
+
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -232,7 +234,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     public TimePatternModel getTimePatternModel(boolean allowHardPreferences) {
     	return getTimePatternModel(null, allowHardPreferences);
     }
-    public TimePatternModel getTimePatternModel(Assignment assignment, boolean allowHardPreferences) {
+    public TimePatternModel getTimePatternModel(TimeLocation assignment, boolean allowHardPreferences) {
     	return new TimePatternModel(this, assignment, allowHardPreferences);
     }
     
@@ -271,7 +273,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     public RequiredTimeTable getRequiredTimeTable(boolean allowHardPreferences) {
     	return getRequiredTimeTable(null, allowHardPreferences);
     }
-    public RequiredTimeTable getRequiredTimeTable(Assignment assignment, boolean allowHardPreferences) {
+    public RequiredTimeTable getRequiredTimeTable(TimeLocation assignment, boolean allowHardPreferences) {
     	return new RequiredTimeTable(getTimePatternModel(assignment, allowHardPreferences));
     }
     
