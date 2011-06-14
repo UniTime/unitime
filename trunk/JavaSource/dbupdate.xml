@@ -3483,4 +3483,93 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+	<update version="73" date="14-Jun-2011" comment="Student Distance Weights">
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.DistStudentConflictWeight' as name,
+				'0.2' as default_vale,
+				'Weight of distance student conflict' as description,
+				'double' as type,
+				12 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Comparator')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Lecture.DistStudentConflictWeight' as name,
+				'%Comparator.DistStudentConflictWeight%' as default_vale,
+				'Distance student conflict weight' as description,
+				'double' as type,
+				20 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Variable')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.NrDistStudConfsWeight1' as name,
+				'0.05' as default_vale,
+				'Distance student conflict weight (level 1)' as description,
+				'double' as type,
+				58 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.NrDistStudConfsWeight2' as name,
+				'%Comparator.DistStudentConflictWeight%' as default_vale,
+				'Distance student conflict weight (level 2)' as description,
+				'double' as type,
+				59 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.NrDistStudConfsWeight3' as name,
+				'0.0' as default_vale,
+				'Distance student conflict weight (level 3)' as description,
+				'double' as type,
+				60 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter (select %SCHEMA%.solver_parameter_seq.nextval as uniqueid,
+				'0.0' as value,
+				d.uniqueid as solver_param_def_id,
+				null as solution_id,
+				s.uniqueid as solver_predef_setting_id 
+				from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_predef_setting s
+				where d.name = 'Comparator.DistStudentConflictWeight' and s.name='Default.Check')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter (select %SCHEMA%.solver_parameter_seq.nextval as uniqueid,
+				'0.0' as value,
+				d.uniqueid as solver_param_def_id,
+				null as solution_id,
+				s.uniqueid as solver_predef_setting_id 
+				from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_predef_setting s
+				where d.name = 'Placement.NrDistStudConfsWeight1' and s.name='Default.Check')
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="GCMP">select uniqueid from %SCHEMA%.solver_parameter_group where name='Comparator'</mysql>
+		<mysql into="GVAR">select uniqueid from %SCHEMA%.solver_parameter_group where name='Variable'</mysql>
+		<mysql into="GVAL">select uniqueid from %SCHEMA%.solver_parameter_group where name='Value'</mysql>
+		<mysql into="OCMP">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Comparator'</mysql>
+		<mysql into="OVAR">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Variable'</mysql>
+		<mysql into="OVAL">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Value'</mysql>
+		<mysql into="SID">select uniqueid from %SCHEMA%.solver_predef_setting where name='Default.Check'</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+0, 'Comparator.DistStudentConflictWeight', '0.2', 'Weight of distance student conflict', 'double', %OCMP%, 1, %GCMP%),
+			(%ID%+1, 'Lecture.DistStudentConflictWeight', '%Comparator.DistStudentConflictWeight%', 'Distance student conflict weight', 'double', %OVAR%, 0, %GVAR%),
+			(%ID%+2, 'Placement.NrDistStudConfsWeight1', '0.05', 'Distance student conflict weight (level 1)', 'double', %OVAL%, 1, %GVAL%), 
+			(%ID%+3, 'Placement.NrDistStudConfsWeight2', '%Comparator.DistStudentConflictWeight%', 'Distance student conflict weight (level 2)', 'double', %OVAL%+1, 0, %GVAL%), 
+			(%ID%+4, 'Placement.NrDistStudConfsWeight3', '0.0', 'Distance student conflict weight (level 3)', 'double', %OVAL%+2, 0, %GVAL%)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter
+			(uniqueid, value, solver_param_def_id, solution_id, solver_predef_setting_id) values
+			(%ID%+5, '0.0', %ID%+0, null, %SID%),
+			(%ID%+6, '0.0', %ID%+2, null, %SID%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+	</update>
 </dbupdate>
