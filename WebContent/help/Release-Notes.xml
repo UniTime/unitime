@@ -154,6 +154,14 @@
 				<line>Code cleanup (replaced TYPE_ constants with an enum, etc.).</line>
 			</description>
 		</item>
+		<item>
+			<name>Search Heuristics</name>
+			<description>
+				<line>Added distance student conflict weight.
+					<line>This means that distance student conflicts can now be weighted differently than "ordinary" student conflicts.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Internationalization</title>
