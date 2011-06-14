@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -230,7 +231,7 @@ public class DistributionPref extends BaseDistributionPref {
     public Object clone() {
     	DistributionPref pref = new DistributionPref();
     	pref.setPrefLevel(getPrefLevel());
-    	pref.setDistributionObjects(getDistributionObjects());
+    	pref.setDistributionObjects(new HashSet<DistributionObject>(getDistributionObjects()));
     	pref.setDistributionType(getDistributionType());
     	return pref;
     }
