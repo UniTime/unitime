@@ -100,7 +100,36 @@ public class SavedHQL extends BaseSavedHQL {
 				return ret;
 			}
 		}),
-		SUBJECTS("Subject Areas", true, true, SUBJECT.iImplementation)
+		SUBJECTS("Subject Areas", true, true, SUBJECT.iImplementation),
+		BUILDING("Buildings", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(User user) {
+				Session session = Session.getCurrentAcadSession(user);
+				if (session == null) return null;
+				TimetableManager manager = TimetableManager.getManager(user);
+				if (manager == null) return null;
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (Building b: (List<Building>)Building.findAll(session.getUniqueId()))
+					ret.put(b.getUniqueId(), b.getAbbrName());
+				return ret;
+			}
+		}),
+		BUILDINGS("Buildings", true, true, BUILDING.iImplementation),
+		ROOM("Room", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(User user) {
+				Session session = Session.getCurrentAcadSession(user);
+				if (session == null) return null;
+				TimetableManager manager = TimetableManager.getManager(user);
+				if (manager == null) return null;
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (Room r: (List<Room>)Room.findAllRooms(session.getUniqueId())){
+					ret.put(r.getUniqueId(), r.getLabel());
+				}
+				return ret;
+			}
+		}),
+		ROOMS("Rooms", true, true, ROOM.iImplementation)
 		;
 		
 		String iName;
