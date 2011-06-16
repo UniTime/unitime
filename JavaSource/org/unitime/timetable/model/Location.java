@@ -32,6 +32,7 @@ import java.util.Vector;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.hibernate.HibernateException;
+import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
@@ -875,6 +876,15 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getHtmlHint(String preference) {
+		try {
+			return getHtmlHintImpl(preference);
+		} catch (LazyInitializationException e) {
+			LocationDAO.getInstance().getSession().merge(this);
+			return getHtmlHintImpl(preference);
+		}
+    }
+
+	private String getHtmlHintImpl(String preference) {
     	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
