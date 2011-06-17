@@ -31,6 +31,7 @@ import java.util.Vector;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
@@ -877,10 +878,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     
     public String getHtmlHint(String preference) {
 		try {
-			return getHtmlHintImpl(preference);
+			if (!Hibernate.isPropertyInitialized(this, "roomType") || !Hibernate.isInitialized(getRoomType())) {
+				return LocationDAO.getInstance().get(getUniqueId()).getHtmlHintImpl(preference);
+			} else {
+				return getHtmlHintImpl(preference);
+			}
 		} catch (LazyInitializationException e) {
-			LocationDAO.getInstance().getSession().merge(this);
-			return getHtmlHintImpl(preference);
+			return LocationDAO.getInstance().get(getUniqueId()).getHtmlHintImpl(preference);
 		}
     }
 
