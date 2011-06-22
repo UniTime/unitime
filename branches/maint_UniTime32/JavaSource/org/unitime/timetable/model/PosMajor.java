@@ -93,13 +93,14 @@ public class PosMajor extends BasePosMajor {
          uniqueResult(); 
     }
 
-    public static PosMajor findByExternalId(Long sessionId, String externalId) {
+    public static PosMajor findByExternalIdAcadAreaExternalId(Long sessionId, String externalId, String academicArea) {
         return (PosMajor)new PosMajorDAO().
         getSession().
         createQuery(
-                "select a from PosMajor a where "+
+                "select a from PosMajor a inner join a.academicAreas as areas where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.externalUniqueId=:externalUniqueId").
+                "a.externalUniqueId=:externalUniqueId" +
+                "areas.externalUniqueId = :academicArea").
          setLong("sessionId", sessionId.longValue()).
          setString("externalUniqueId", externalId).
          setCacheable(true).
