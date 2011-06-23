@@ -144,6 +144,18 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
     			<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
 	    	</tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Stack On Side">
+    			<span id='UniTimeGWT:StaticSideStackMenu' style="display: none;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Tree On Side">
+    			<span id='UniTimeGWT:StaticSideTreeMenu' style="display: none;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Stack On Side">
+    			<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
+    			<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+		    </tt:propertyEquals>
 	    </logic:equal>
     </td>
     <td valign="top">
