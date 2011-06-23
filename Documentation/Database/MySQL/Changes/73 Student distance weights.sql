@@ -22,9 +22,9 @@ select 32767 * next_hi into @id from hibernate_unique_key;
 select uniqueid into @gcmp from solver_parameter_group where name='Comparator';
 select uniqueid into @gvar from solver_parameter_group where name='Variable';
 select uniqueid into @gval from solver_parameter_group where name='Value';
-select max(ord)+1 into @ocmp from solver_parameter_def where name='Comparator';
-select max(ord)+1 into @ovar from solver_parameter_def where name='Variable';
-select max(ord)+1 into @oval from solver_parameter_def where name='Value';
+select max(ord)+1 into @ocmp from solver_parameter_group where name='Comparator';
+select max(ord)+1 into @ovar from solver_parameter_group where name='Variable';
+select max(ord)+1 into @oval from solver_parameter_group where name='Value';
 select uniqueid into @sid from solver_predef_setting where name='Default.Check';
 
 insert into solver_parameter_def
