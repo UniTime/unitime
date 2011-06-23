@@ -112,6 +112,13 @@
 			</description>
 		</item>
 		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Curriculum resource: display course curriculum groups, number of students displayed next to the room assignment.</line>
+				<line>Allow display of instructor name and preferences (the three numbers indicating how time, room preferences and student conflicts are met) whenever applicable (not only in room timetables).</line>
+			</description>
+		</item>
+		<item>
 			<name>UniTime Menu</name>
 			<description>
 				<line>Bundle menu.dtd in the timetable.jar and avoid accessing http://www.unitime.org/interface/menu.dtd during menu.xml validation.</line>

@@ -43,7 +43,7 @@ try {
 		<TR>
 			<TD>Resource:</TD>
 			<TD>
-				<html:select property="resource" onchange="document.getElementById('show_instructors').style.display=(this.value=='Room'?'':'none'); document.getElementById('show_events').style.display=(this.value=='Room'?'':'none');">
+				<html:select property="resource" onchange="document.getElementById('show_instructors').style.display=(this.value=='Instructor'?'none':''); document.getElementById('show_events').style.display=(this.value=='Room'?'':'none');">
 					<html:options name="timetableForm" property="resources"/>
 				</html:select>
 			</TD>
@@ -92,6 +92,12 @@ try {
 				<html:checkbox property="showUselessTimes"/>
 			</TD>
 		</TR>
+		<TR>
+			<TD>Show preferences:</TD>
+			<TD>
+				<html:checkbox property="showComments"/>
+			</TD>
+		</TR>
 		<TR id="show_instructors">
 			<TD>Show instructors:</TD>
 			<TD>
@@ -121,9 +127,11 @@ try {
 		</TR>
 	</TABLE>
 	<logic:notEqual name="timetableForm" property="resource" value="Room">
-		<script language="JavaScript">document.getElementById('show_instructors').style.display='none';</script>
 		<script language="JavaScript">document.getElementById('show_events').style.display='none';</script>
 	</logic:notEqual>
+	<logic:equal name="timetableForm" property="resource" value="Instructor">
+		<script language="JavaScript">document.getElementById('show_instructors').style.display='none';</script>
+	</logic:equal>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
