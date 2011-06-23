@@ -84,6 +84,7 @@ public class MidtermPeriodPreferenceModel {
     public void load(PreferenceGroup pg) {
         for (Iterator i=pg.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
         	ExamPeriodPref pref = (ExamPeriodPref)i.next();
+        	if (pref.getExamPeriod().getExamType() != Exam.sExamTypeMidterm) continue;
         	iPreferences.get(pref.getExamPeriod().getDateOffset()).put(pref.getExamPeriod().getStartSlot(), pref.getPrefLevel().getPrefProlog());
         }
         invertIfNeeded();
