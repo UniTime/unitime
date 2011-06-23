@@ -39,8 +39,10 @@ import com.google.gwt.user.client.ui.RootPanel;
 public enum Components {
 	courseCurricula("UniTimeGWT:CourseCurricula", new ComponentFactory() { public void insert(RootPanel panel) { new CourseCurriculaTable(true, true).insert(panel); } }),
 	title("UniTimeGWT:Title", new ComponentFactory() { public void insert(RootPanel panel) { UniTimePageLabel.getInstance().insert(panel); } }),
-	sidebar_stack("UniTimeGWT:SideStackMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(true).insert(panel); } }),
-	sidebar_tree("UniTimeGWT:SideTreeMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(false).insert(panel); } }),
+	sidebar_stack("UniTimeGWT:SideStackMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(true, true).insert(panel); } }),
+	sidebar_tree("UniTimeGWT:SideTreeMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(false, true).insert(panel); } }),
+	sidebar_stack_static("UniTimeGWT:StaticSideStackMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(true, false).insert(panel); } }),
+	sidebar_tree_static("UniTimeGWT:StaticSideTreeMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(false, false).insert(panel); } }),
 	menubar_static("UniTimeGWT:TopMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(false).insert(panel); } }),
 	menubar_dynamic("UniTimeGWT:DynamicTopMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(true).insert(panel); } }),
 	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimePageHeader().insert(panel); } }),
