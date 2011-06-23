@@ -99,10 +99,11 @@ public class PosMajor extends BasePosMajor {
         createQuery(
                 "select a from PosMajor a inner join a.academicAreas as areas where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.externalUniqueId=:externalUniqueId" +
+                "a.externalUniqueId=:externalUniqueId and " +
                 "areas.externalUniqueId = :academicArea").
          setLong("sessionId", sessionId.longValue()).
          setString("externalUniqueId", externalId).
+         setString("academicArea", academicArea).
          setCacheable(true).
          uniqueResult(); 
     }
