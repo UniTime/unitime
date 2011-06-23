@@ -39,6 +39,7 @@ import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.solver.curricula.students.CurCourse;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
 
@@ -126,12 +127,14 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 				
 		// Create model
 		List<CurStudent> students = new ArrayList<CurStudent>();
-		for (int i = 0; i < clasf.getNrStudents(); i++)
-			students.add(new CurStudent(- lastStudentId.newId(), 1f));
+		for (long i = 0; i < clasf.getNrStudents(); i++)
+			students.add(new CurStudent(- (1 + i), 1f));
 		CurModel m = new CurModel(students);
+		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
 			int nrStudents = Math.round(clasf.getNrStudents() * course.getPercShare());
 			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), nrStudents);
+			courses.put(course.getUniqueId(), course.getCourse());
 			
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
 			if (curricula == null) {
@@ -185,23 +188,21 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			if (!majors.isEmpty()) majors += "|";
 			majors += major.getCode();
 		}
-		for (CurriculumCourse course: clasf.getCourses()) {
-			Set<WeightedStudentId> courseStudents = iDemands.get(course.getCourse().getUniqueId());
-			if (courseStudents == null) {
-				courseStudents = new HashSet<WeightedStudentId>();
-				iDemands.put(course.getCourse().getUniqueId(), courseStudents);
-			}
-			for (CurStudent s: m.getCourse(course.getUniqueId()).getStudents()) {
-				WeightedStudentId student = new WeightedStudentId(s.getStudentId());
-				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
-				student.setCurriculum(clasf.getCurriculum().getAbbv());
-				courseStudents.add(student);
-				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getStudentId());
-				if (courses == null) {
-					courses = new HashSet<WeightedCourseOffering>();
-					iStudentRequests.put(student.getStudentId(), courses);
+		for (CurStudent s: m.getStudents()) {
+			WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId());
+			student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
+			student.setCurriculum(clasf.getCurriculum().getAbbv());
+			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
+			iStudentRequests.put(student.getStudentId(), studentCourses);
+			for (CurCourse course: s.getCourses()) {
+				CourseOffering co = courses.get(course.getCourseId());
+				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
+				if (courseStudents == null) {
+					courseStudents = new HashSet<WeightedStudentId>();
+					iDemands.put(co.getUniqueId(), courseStudents);
 				}
-				courses.add(new WeightedCourseOffering(course.getCourse(), student.getWeight()));
+				courseStudents.add(student);
+				studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
 			}
 		}
 	}
