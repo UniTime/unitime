@@ -178,6 +178,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			totalWeight += student.getWeight();
 		
 		sLog.debug("  last-like students: " + totalWeight + ", target: " + clasf.getNrStudents());
+		List<WeightedStudentId> madeUpStudents = new ArrayList<StudentCourseDemands.WeightedStudentId>();
 		if (2 * totalWeight < clasf.getNrStudents()) { // students are less than 1/2 of the requested size -> make up some students
 			int studentsToMakeUp = Math.round(clasf.getNrStudents() - totalWeight);
 			sLog.debug("    making up " + studentsToMakeUp + " students");
@@ -190,6 +191,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 				WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId());
 				student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
 				students.put(student, new HashSet<CourseOffering>());
+				madeUpStudents.add(student);
 			}
 		} else { // change weights to fit the requested size
 			float factor = clasf.getNrStudents() / totalWeight;
@@ -201,13 +203,16 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		// Setup model
 		List<CurStudent> curStudents = new ArrayList<CurStudent>();
 		Hashtable<Long, WeightedStudentId> studentIds = new Hashtable<Long, WeightedStudentId>();
+		int idx = 0;
 		for (WeightedStudentId student: students.keySet()) {
-			curStudents.add(new CurStudent(student.getStudentId(), student.getWeight()));
-			studentIds.put(student.getStudentId(), student);
+			curStudents.add(new CurStudent(student.getStudentId() < 0 ? - (++idx) : student.getStudentId(), student.getWeight()));
+			studentIds.put(student.getStudentId() < 0 ? - idx : student.getStudentId(), student);
 		}
 		CurModel m = new CurModel(curStudents);
+		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
 			m.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), clasf.getNrStudents() * course.getPercShare());
+			courses.put(course.getCourse().getUniqueId(), course.getCourse());
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
 			if (curricula == null) {
 				curricula = new Hashtable<String, Set<String>>();
@@ -279,25 +284,27 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		}
 		
 		// Save results
-		for (CurriculumCourse course: clasf.getCourses()) {
-			Set<WeightedStudentId> courseStudents = iDemands.get(course.getCourse().getUniqueId());
-			if (courseStudents == null) {
-				courseStudents = new HashSet<WeightedStudentId>();
-				iDemands.put(course.getCourse().getUniqueId(), courseStudents);
+		idx = 0;
+		for (CurStudent s: m.getStudents()) {
+			WeightedStudentId student = null;
+			if (s.getStudentId() < 0) {
+				student = madeUpStudents.get(idx++);
+			} else {
+				student = studentIds.get(s.getStudentId());
 			}
-			for (CurStudent s: m.getCourse(course.getCourse().getUniqueId()).getStudents()) {
-				WeightedStudentId student = studentIds.get(s.getStudentId());
-				student.setCurriculum(clasf.getCurriculum().getAbbv());
-				courseStudents.add(student);
-				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getStudentId());
-				if (courses == null) {
-					courses = new HashSet<WeightedCourseOffering>();
-					iStudentRequests.put(student.getStudentId(), courses);
+			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
+			iStudentRequests.put(student.getStudentId(), studentCourses);
+			for (CurCourse course: s.getCourses()) {
+				CourseOffering co = courses.get(course.getCourseId());
+				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
+				if (courseStudents == null) {
+					courseStudents = new HashSet<WeightedStudentId>();
+					iDemands.put(co.getUniqueId(), courseStudents);
 				}
-				courses.add(new WeightedCourseOffering(course.getCourse(), student.getWeight()));
+				courseStudents.add(student);
+				studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
 			}
 		}
-		
 	}
 	
 	protected String getCacheName() {
