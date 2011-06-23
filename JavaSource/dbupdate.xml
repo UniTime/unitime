@@ -3551,9 +3551,9 @@
 		<mysql into="GCMP">select uniqueid from %SCHEMA%.solver_parameter_group where name='Comparator'</mysql>
 		<mysql into="GVAR">select uniqueid from %SCHEMA%.solver_parameter_group where name='Variable'</mysql>
 		<mysql into="GVAL">select uniqueid from %SCHEMA%.solver_parameter_group where name='Value'</mysql>
-		<mysql into="OCMP">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Comparator'</mysql>
-		<mysql into="OVAR">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Variable'</mysql>
-		<mysql into="OVAL">select max(ord)+1 from %SCHEMA%.solver_parameter_def where name='Value'</mysql>
+		<mysql into="OCMP">select max(ord)+1 from %SCHEMA%.solver_parameter_group where name='Comparator'</mysql>
+		<mysql into="OVAR">select max(ord)+1 from %SCHEMA%.solver_parameter_group where name='Variable'</mysql>
+		<mysql into="OVAL">select max(ord)+1 from %SCHEMA%.solver_parameter_group where name='Value'</mysql>
 		<mysql into="SID">select uniqueid from %SCHEMA%.solver_predef_setting where name='Default.Check'</mysql>
 		<mysql>
 			insert into %SCHEMA%.solver_parameter_def
