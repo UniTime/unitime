@@ -170,7 +170,6 @@ function checkSpecialKey(element, e) {
 		case 9:
 		case 35:
 		case 16:
-		case 35:
 		case 36:
 		case 37:
 		case 38:
@@ -182,12 +181,10 @@ function checkSpecialKey(element, e) {
 		case 18:
 		case 19:
 		case 20:
-		case 36:
 		case 45:
 		case 46:
 		case 91:
 		case 92:
-		case 145:
 	return true;
 		default:
 			return false;
