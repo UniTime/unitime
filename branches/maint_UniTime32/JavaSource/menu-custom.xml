@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE unitime-menu PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/menu.dtd">
+<!DOCTYPE unitime-menu PUBLIC "-//UniTime//UniTime Menu DTD/EN" "http://www.unitime.org/interface/menu.dtd">
 <!-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC
