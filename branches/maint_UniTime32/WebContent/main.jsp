@@ -96,6 +96,18 @@
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
     		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
 	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Stack On Side">
+    		<span id='UniTimeGWT:StaticSideStackMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Tree On Side">
+    		<span id='UniTimeGWT:StaticSideTreeMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Stack On Side">
+    		<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
+    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
+    		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+	    </tt:propertyEquals>
     </td>
     <td valign="top" >
 	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
