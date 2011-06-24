@@ -48,7 +48,7 @@
 			Course Number:
 			<layout:suggest 
 				suggestAction="/getCourseNumbers" property="courseNumber" styleId="courseNumber" 
-				suggestCount="15" size="5" maxlength="5" layout="false" all="true" 
+				suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
 			 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
 				onblur="hideSuggestionList('courseNumber');" />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
