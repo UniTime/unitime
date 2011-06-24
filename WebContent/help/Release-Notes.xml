@@ -84,6 +84,13 @@
 			<name>UniTime Menu</name>
 			<description>
 				<line>Bundle menu.dtd in the timetable.jar and avoid accessing http://www.unitime.org/interface/menu.dtd during menu.xml validation.</line>
+				<line>Menu styles Tree on Side and Stack on Side are open by default.</line>
+				<line>Added static version of Tree on Side and Stack on Side menu styles (named Static Tree On Side and Static Stack On Side).
+					<line>Manager setting unitime.menu.style can have the following allowed values:
+						<line>Dynamic On Top,Static On Top,Static Tree On Side,Dynamic Tree On Side,Static Stack On Side,Dynamic Stack On Side</line>
+					</line>
+					<line>To ensure backwards compatibility, Tree on Side and Stack on Side are also allowed and work as before (that is as dynamic versions of the stack and tree).</line>
+				</line>
 			</description>
 		</item>
 	</category>

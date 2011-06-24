@@ -84,7 +84,7 @@ public class UniTimeSideBar extends Composite {
 	
 	private int iTop = 0;
 	
-	public UniTimeSideBar(boolean useStackPanel) {
+	public UniTimeSideBar(boolean useStackPanel, boolean dynamic) {
 		
 		iPanel = new SimplePanel();
 		iPanel.addStyleName("unitime-NoPrint");
@@ -177,52 +177,54 @@ public class UniTimeSideBar extends Composite {
 			}
 		});
 		
-		iScrollTimer = new Timer() {
-			@Override
-			public void run() {
-				DOM.setStyleAttribute(iDisclosurePanel.getElement(), "top", String.valueOf(iTop));
-			}
-		};
-		
-		Window.addWindowScrollHandler(new Window.ScrollHandler() {
-			@Override
-			public void onWindowScroll(Window.ScrollEvent event) {
-				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
-				int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
-				iDisclosurePanel.getAbsoluteTop();
-				if (fromTop <= fromBottom) {
-					iTop = fromTop;
-				} else {
-					if (fromBottom <= iTop && iTop <= fromTop) {
-					} else if (iTop > fromTop) {
+		if (dynamic) {
+			iScrollTimer = new Timer() {
+				@Override
+				public void run() {
+					DOM.setStyleAttribute(iDisclosurePanel.getElement(), "top", String.valueOf(iTop));
+				}
+			};
+			
+			Window.addWindowScrollHandler(new Window.ScrollHandler() {
+				@Override
+				public void onWindowScroll(Window.ScrollEvent event) {
+					int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
+					int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
+					iDisclosurePanel.getAbsoluteTop();
+					if (fromTop <= fromBottom) {
 						iTop = fromTop;
 					} else {
-						iTop = fromBottom;
+						if (fromBottom <= iTop && iTop <= fromTop) {
+						} else if (iTop > fromTop) {
+							iTop = fromTop;
+						} else {
+							iTop = fromBottom;
+						}
 					}
+					iScrollTimer.schedule(100);
 				}
-				iScrollTimer.schedule(100);
-			}
-		});
-		
-		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
-			@Override
-			public void onChange(GwtPageChangeEvent event) {
-				int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
-				int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
-				iDisclosurePanel.getAbsoluteTop();
-				if (fromTop <= fromBottom) {
-					iTop = fromTop;
-				} else {
-					if (fromBottom <= iTop && iTop <= fromTop) {
-					} else if (iTop > fromTop) {
+			});
+			
+			Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
+				@Override
+				public void onChange(GwtPageChangeEvent event) {
+					int fromTop = Math.max(Window.getScrollTop() - iPanel.getAbsoluteTop(), 0); // 20 pixels for the top menu
+					int fromBottom = Window.getClientHeight() + Window.getScrollTop() - iDisclosurePanel.getOffsetHeight() - 60;
+					iDisclosurePanel.getAbsoluteTop();
+					if (fromTop <= fromBottom) {
 						iTop = fromTop;
 					} else {
-						iTop = fromBottom;
+						if (fromBottom <= iTop && iTop <= fromTop) {
+						} else if (iTop > fromTop) {
+							iTop = fromTop;
+						} else {
+							iTop = fromBottom;
+						}
 					}
+					iScrollTimer.schedule(100);
 				}
-				iScrollTimer.schedule(100);
-			}
-		});
+			});			
+		}
 	}
 	
 	public boolean isOpenned(String name) {
@@ -274,7 +276,7 @@ public class UniTimeSideBar extends Composite {
 		if (sideBarCookie != null)
 			for (String node: sideBarCookie.split("\\|"))
 				nodes.add(node);
-		iDisclosurePanel.setOpen(nodes.contains("Root"));
+		iDisclosurePanel.setOpen(nodes.contains("Root") || sideBarCookie == null);
 		if (iStackPanel.isAttached())
 			for (int i = 0 ; i < iStackPanel.getWidgetCount(); i++) {
 				if (nodes.contains(iStackPanel.getStackText(i))) {
