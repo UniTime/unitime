@@ -88,6 +88,8 @@ public class CurriculumEdit extends Composite {
 	
 	private boolean iSaved = false;
 	
+	private NavigationProvider iNavigation = null;
+	
 	public static enum Mode {
 		ADD("Add Curriculum", true, true),
 		EDIT("Edit Curriculum", true, true),
@@ -103,7 +105,8 @@ public class CurriculumEdit extends Composite {
 		public boolean areDetailsEditable() { return iEditableDetails; }
 	}
 	
-	public CurriculumEdit() {
+	public CurriculumEdit(NavigationProvider navigation) {
+		iNavigation = navigation;
 
 		ClickHandler backHandler = new ClickHandler() {
 			@Override
@@ -191,14 +194,93 @@ public class CurriculumEdit extends Composite {
 			}
 		};
 		
+		ClickHandler nextHandler = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final CurriculumInterface next = (iNavigation == null ? null : iNavigation.next(iCurriculum));
+				if (next == null) {
+					iTitleAndButtons.setErrorMessage("Next curriculum not provided.");
+					return;
+				}
+				if (getMode().isEditable()) {
+					if (saveCurriculum()) {
+						showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
+						iService.saveCurriculum(iCurriculum, new AsyncCallback<Long>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								hideLoading();
+								iTitleAndButtons.setErrorMessage("Validation failed (" + caught.getMessage() + ").");
+							}
+							@Override
+							public void onSuccess(Long result) {
+								iSaved = false;
+								iCurriculum = next;
+								reload(iMode);
+								iNavigation.onChange(iCurriculum);
+								hideLoading();
+							}
+						});
+					} else {
+						iTitleAndButtons.setErrorMessage("Validation failed, see errors below.");
+					}
+				} else {
+					iSaved = false;
+					iCurriculum = next;
+					reload(iMode);
+					iNavigation.onChange(iCurriculum);
+				}
+			}
+		};
+		
+		ClickHandler previousHandler = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final CurriculumInterface previous = (iNavigation == null ? null : iNavigation.previous(iCurriculum));
+				if (previous == null) {
+					iTitleAndButtons.setErrorMessage("Previous curriculum not provided.");
+					return;
+				}
+				if (getMode().isEditable()) {
+					if (saveCurriculum()) {
+						showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
+						iService.saveCurriculum(iCurriculum, new AsyncCallback<Long>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								hideLoading();
+								iTitleAndButtons.setErrorMessage("Validation failed (" + caught.getMessage() + ").");
+							}
+							@Override
+							public void onSuccess(Long result) {
+								iSaved = false;
+								iCurriculum = previous;
+								reload(iMode);
+								iNavigation.onChange(iCurriculum);
+								hideLoading();
+							}
+						});
+					} else {
+						iTitleAndButtons.setErrorMessage("Validation failed, see errors below.");
+					}
+				} else {
+					iSaved = false;
+					iCurriculum = previous;
+					reload(iMode);
+					iNavigation.onChange(iCurriculum);
+				}
+			}
+		};
+
 		iCurriculaTable = new SimpleForm();
 
 		iTitleAndButtons = new UniTimeHeaderPanel("Curriculum Details");
 		iTitleAndButtons.addButton("edit", "<u>E</u>dit", 'e', 75, editHandler);
 		iTitleAndButtons.addButton("save", "<u>S</u>ave", 's', 75, saveHandler);
+		iTitleAndButtons.addButton("previous", "<u>P</u>revious", 'p', 75, previousHandler);
+		iTitleAndButtons.addButton("next", "<u>N</u>ext", 'n', 75, nextHandler);
 		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 'd', 75, deleteHandler);
-		iTitleAndButtons.addButton("print", "<u>P</u>rint", 'p', 75, printHandler);
+		iTitleAndButtons.addButton("print", "Prin<u>t</u>", 't', 75, printHandler);
 		iTitleAndButtons.addButton("back", "<u>B</u>ack", 'b', 75, backHandler);
+		
 		
 		iCurriculaTable.addHeaderRow(iTitleAndButtons);
 		
@@ -345,6 +427,8 @@ public class CurriculumEdit extends Composite {
 		iTitleAndButtons.setEnabled("save", iCurriculum.isEditable() && iMode.isEditable());
 		iTitleAndButtons.setEnabled("edit", iCurriculum.isEditable() && !iMode.isEditable());
 		iTitleAndButtons.setEnabled("print", iMode == Mode.DETAILS);
+		iTitleAndButtons.setEnabled("previous", iNavigation != null && iNavigation.previous(iCurriculum) != null);
+		iTitleAndButtons.setEnabled("next", iNavigation != null && iNavigation.next(iCurriculum) != null);
 
 		if (iCurriculum.hasLastChange() && iMode == Mode.DETAILS) {
 			((Label)iCurriculaTable.getWidget(6, 1)).setText(iCurriculum.getLastChange());
@@ -699,5 +783,15 @@ public class CurriculumEdit extends Composite {
 				hideLoading();
 			}
 		});
+	}
+	
+	public static interface NavigationProvider {
+		public CurriculumInterface previous(CurriculumInterface curriculum);
+		public CurriculumInterface next(CurriculumInterface curriculum);
+		public void onChange(CurriculumInterface curriculum);
+	}
+	
+	public CurriculumInterface getCurriculum() {
+		return iCurriculum;
 	}
 }
