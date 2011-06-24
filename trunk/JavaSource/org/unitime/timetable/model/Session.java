@@ -750,18 +750,34 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public Collection<Long> getLockedOfferings() {
+		if (!getStatusType().canLockOfferings()) return null;
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		return (server == null ? null : server.getLockedOfferings());		
 	}
 	
 	public boolean isOfferingLocked(Long offeringId) {
+		if (!getStatusType().canLockOfferings()) return false;
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		return server != null && server.isOfferingLocked(offeringId);
 	}
 	
-	public void lockOffering(Long offeringId) {
+	public boolean isOfferingLockNeeded(Long offeringId) {
+		if (!getStatusType().canOnlineSectionStudents()) return false;
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
-		if (server != null) server.lockOffering(offeringId);
+		return server != null && !server.isOfferingLocked(offeringId);
+	}
+
+	public boolean isOfferingFullLockNeeded(Long offeringId) {
+		if (!getStatusType().canOnlineSectionStudents() && !getStatusType().canSectionAssistStudents()) return false;
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		return server != null && !server.isOfferingLocked(offeringId);
+	}
+
+	public void lockOffering(Long offeringId) {
+		if (getStatusType().canLockOfferings()) {
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+			if (server != null) server.lockOffering(offeringId);
+		}
 	}
 	
 	public void unlockOffering(Long offeringId) {

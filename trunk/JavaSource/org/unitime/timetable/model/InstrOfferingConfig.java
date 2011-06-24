@@ -184,8 +184,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	if (user == null){
     		return(false);
     	}
-    	if (getInstructionalOffering().getSession().getStatusType().canOnlineSectionStudents() &&
-        	!getInstructionalOffering().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId())) {
+    	if (getInstructionalOffering().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId())) {
     		return false;
     	}
     	if (user.isAdmin()){

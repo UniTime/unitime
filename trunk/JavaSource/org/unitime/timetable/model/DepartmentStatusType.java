@@ -216,4 +216,8 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public boolean isActive() {
 	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit() || canExamEdit() || canExamTimetable();
 	}
+	
+	public boolean canLockOfferings() {
+		return canOnlineSectionStudents() || canSectionAssistStudents();
+	}
 }

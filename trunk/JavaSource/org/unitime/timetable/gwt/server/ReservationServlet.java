@@ -582,7 +582,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 					throw new ReservationException("Offering " + reservation.getOffering().getName() + " does not exist.");
 				if (!offering.getDepartment().isLimitedEditableBy(user))
 					throw new ReservationException("You are not not authorized to create / update reservations for " + offering.getCourseName() + ".");
-		    	if (offering.getSession().getStatusType().canOnlineSectionStudents() && !offering.getSession().isOfferingLocked(offering.getUniqueId()))
+		    	if (offering.getSession().isOfferingLockNeeded(offering.getUniqueId()))
 					throw new ReservationException("Offering " + offering.getCourseName() + " is unlocked, please lock it first.");
 				Reservation r = null;
 				if (reservation.getId() != null) {

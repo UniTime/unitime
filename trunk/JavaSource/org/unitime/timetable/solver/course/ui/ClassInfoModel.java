@@ -248,26 +248,35 @@ public class ClassInfoModel implements Serializable {
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
-        List<Long> classIds = new ArrayList<Long>();
-        Set<Long> offeringIds = new HashSet<Long>();
+        Map<Long, List<Long>> touchedOfferingIds = new Hashtable<Long, List<Long>>();
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
-                classIds.add(assignment.getClassId());
                 Class_ clazz = assignment.getClazz(hibSession);
         		String m = clazz.unassignCommited(iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
-                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
+                Long offeringId = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId();
+                List<Long> classIds = touchedOfferingIds.get(offeringId);
+                if (classIds == null) {
+                	classIds = new ArrayList<Long>();
+                	touchedOfferingIds.put(offeringId, classIds);
+                }
+                classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Unassignment of "+assignment.getClassName()+" failed, reason: "+e.getMessage();
             }
         }
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
-                classIds.add(assignment.getClassId());
                 Class_ clazz = assignment.getClazz(hibSession);
                 String m = clazz.assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
-                offeringIds.add(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
+                Long offeringId = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId();
+                List<Long> classIds = touchedOfferingIds.get(offeringId);
+                if (classIds == null) {
+                	classIds = new ArrayList<Long>();
+                	touchedOfferingIds.put(offeringId, classIds);
+                }
+                classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
                 message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
             }
@@ -276,13 +285,16 @@ public class ClassInfoModel implements Serializable {
         Session session = SessionDAO.getInstance().get(sessionId, hibSession); 
         if (session.getStatusType().canOnlineSectionStudents()) {
         	List<Long> unlockedOfferings = new ArrayList<Long>();
-        	for (Long offeringId: offeringIds)
+        	for (Long offeringId: touchedOfferingIds.keySet())
         		if (!session.isOfferingLocked(offeringId))
         			unlockedOfferings.add(offeringId);
         	if (!unlockedOfferings.isEmpty())
-        		StudentSectioningQueue.offeringChanged(hibSession, sessionId, offeringIds);
+        		StudentSectioningQueue.offeringChanged(hibSession, sessionId, unlockedOfferings);
         } else if (session.getStatusType().canSectionAssistStudents()) {
-        	StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, classIds);
+        	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
+        		if (!session.isOfferingLocked(entry.getKey()))
+        			StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, entry.getValue());        		
+        	}
         }
         hibSession.flush();
         

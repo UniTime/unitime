@@ -184,9 +184,11 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			students.add(new Student[] {oldStudent, newStudent});
 		}
 		
-
+		if (!server.getAcademicSession().isSectioningEnabled())
+			return;
+		
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
-				
+						
 		for (Student[] student: students) {
 			if (student[0] == null && student[1] == null) continue;
 			Enrollment oldEnrollment = null;
