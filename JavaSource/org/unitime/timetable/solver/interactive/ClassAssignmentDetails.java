@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.interactive;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -48,9 +50,13 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePatternDays;
+import org.unitime.timetable.model.TimePatternTime;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -59,6 +65,7 @@ import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
@@ -451,6 +458,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		private int iPref;
 		private boolean iStrike = false;
 		private Long iPatternId = null;
+		private transient String iHint = null;
 		
 		public TimeInfo(int days, int startSlot, int pref, int min, String datePatternName, Long patternId) {
 			iDays = days;
@@ -489,27 +497,44 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public String getName(boolean endTime) {
 			return getDaysName()+" "+getStartTime()+(endTime?" - "+getEndTime():"");
 		}
+		public String getHint() {
+			if (iHint == null) {
+				Class_ clazz = Class_DAO.getInstance().get(getClazz().getClassId());
+				for (TimePref p: (Set<TimePref>)clazz.effectivePreferences(TimePref.class)) {
+					if (p.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+					boolean match = false;
+					for (TimePatternDays d: p.getTimePattern().getDays()) {
+						if (d.getDayCode() == iDays) { match = true; break; }
+					}
+					if (!match) continue;
+					match = false;
+					for (TimePatternTime t: p.getTimePattern().getTimes()) {
+						if (t.getStartSlot() == iStartSlot) { match = true; break; }
+					}
+					if (!match) continue;
+					try {
+						RequiredTimeTable m = p.getRequiredTimeTable(new TimeLocation(iDays, iStartSlot, iMin, 0, 0.0, iPatternId, iDatePatternName, null, 0));
+						iHint = m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");;
+						break;
+					} catch (IOException e) {}
+				}
+			}
+			return iHint;
+		}
 		public String toHtml(boolean link, boolean showSelected, boolean endTime) {
 			boolean uline = (showSelected && this.equals(iTime));
-			/*
-			StringBuffer sb = null;
-			if (link) {
-				sb = new StringBuffer("suggestions.do?id="+iClass.getClassId());
-				for (int i=0;i<iRoom.length;i++) {
-					sb.append("&room"+i+"="+iRoom[i].getId());
-				}
-				sb.append("&days="+iDays+"&slot="+iStartSlot+"&pattern="+iPatternId+"&op=Try");
-			}*/
+			String hint = getHint();
 			return 
 				(link?"<a id='time_"+getDays()+"_"+getStartSlot()+"_"+getPatternId()+"' onclick=\"selectTime(event, '"+getDays()+"', '"+getStartSlot()+"', '"+getPatternId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>":"<a class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>")+
-				"<font color='"+PreferenceLevel.int2color(iPref)+"'>"+
+				"<span style='color:"+PreferenceLevel.int2color(iPref)+";' " +
+				(hint == null ? "" : "onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\"") + ">"+
 				(uline?"<u>":"")+
 				(iStrike?"<s>":"")+
 				getDaysName()+" "+getStartTime()+
 				(endTime?" - "+getEndTime():"")+
 				(iStrike?"</s>":"")+
 				(uline?"</u>":"")+
-				"</font>"+
+				"</span>"+
 				"</a>";
 		}
 		public int compareTo(Object o) {
@@ -537,6 +562,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		private int iPref;
 		private long iSize;
 		private boolean iStrike;
+		private transient Location iLocation;
 		
 		public RoomInfo(String name, Long roomId, long size, int pref) {
 			iName = name;
@@ -556,11 +582,30 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (o==null || !(o instanceof RoomInfo)) return false;
 			return getId().equals(((RoomInfo)o).getId());
 		}
+		public Location getLocation() {
+			if (iLocation == null)
+				iLocation = LocationDAO.getInstance().get(getId());
+			return iLocation;
+		}
+		
 		public String toHtml(boolean link, boolean showSelected) {
 			boolean uline = false;
 			if (showSelected && iRoom!=null) {
 				for (int i=0;i<iRoom.length;i++)
 					if (iRoom[i].equals(this)) uline=true;
+			}
+			if (getLocation() != null) {
+				return
+					(link?"<a id='room_"+getId()+"' onclick=\"selectRoom(event, '"+getId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+iSize+" seats'>":"<a class='noFancyLinks' title='"+iSize+" seats'>")+
+					"<span style='color:"+PreferenceLevel.int2color(iPref)+";' "+
+					"onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(iPref))+ "');\" onmouseout=\"hideGwtHint();\">"+
+					(uline?"<u>":"")+
+					(iStrike?"<s>":"")+
+					iName+
+					(iStrike?"</s>":"")+
+					(uline?"</u>":"")+
+					"</span>"+
+					"</a>";
 			}
 			return 
 				(link?"<a id='room_"+getId()+"' onclick=\"selectRoom(event, '"+getId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+iSize+" seats'>":"<a class='noFancyLinks' title='"+iSize+" seats'>")+

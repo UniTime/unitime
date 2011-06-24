@@ -151,6 +151,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iSessionAbbv;
 		private List<WeekInterface> iWeeks = null;
 		private String iCalendar;
+		private String iHint = null;
 
 		public ResourceInterface() {}
 		
@@ -177,6 +178,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
+		
+		public String getHint() { return iHint; }
+		public boolean hasHint() { return iHint != null && !iHint.isEmpty(); }
+		public void setHint(String hint) { iHint = hint; }
+		public String getNameWithHint() {
+			if (iResourceName == null || iResourceName.isEmpty()) return "";
+			if (iHint == null || iHint.isEmpty()) return iResourceName;
+			return "<span onmouseover=\"showGwtHint(this, '" + iHint + "');\" onmouseout=\"hideGwtHint();\">" + iResourceName + "</span>";
+		}
 		
 		public boolean hasWeeks() { return iWeeks != null && !iWeeks.isEmpty(); }
 		public List<WeekInterface> getWeeks() { return iWeeks; }
@@ -255,6 +265,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setMeetingTime(String time) { iMeetingTime = time; }	
 		public ResourceInterface getLocation() { return iLocation; }
 		public String getLocationName() { return (iLocation == null ? "" : iLocation.getName()); }
+		public String getLocationNameWithHint() {
+			return (iLocation == null ? "" : iLocation.getNameWithHint());
+		}
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
@@ -340,7 +353,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationName() {
 	    	return iMeetings.first().getLocationName();
 	    }
-	}
+
+	    public String getLocationNameWithHint() {
+	    	return iMeetings.first().getLocationNameWithHint();
+	    }
+}
 	
     public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkApproval, boolean checkPast) {
         TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();

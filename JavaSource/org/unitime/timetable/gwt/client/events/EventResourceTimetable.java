@@ -404,7 +404,7 @@ public class EventResourceTimetable extends Composite {
 				} else {
 					Collections.sort(iData);
 
-					iHeader.setHeaderTitle(iResource.getName() + " timetable for " + iResource.getSessionName());
+					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
 					iHeader.setMessage(null);
 					int nrDays = 4;
 					int firstSlot = -1, lastSlot = -1;
@@ -436,7 +436,7 @@ public class EventResourceTimetable extends Composite {
 					}
 					iGridPanel.setWidget(iTimeGrid);
 					
-					iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iResource.getSessionName());
+					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
 					iTable = createEventTable();
 					populateEventTable(iTable);
 					iTablePanel.setWidget(iTable);
@@ -519,15 +519,15 @@ public class EventResourceTimetable extends Composite {
 		if (iWeek.getSelectedIndex() <= 0) {
 			if (iResource.getType() != ResourceType.PERSON)
 				changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(), iResource.getType().toString().toLowerCase(), iResource.getAbbreviation(), null);
-			iHeader.setHeaderTitle(iResource.getName() + " timetable for " + iResource.getSessionName());
-			iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iResource.getSessionName());
+			iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
+			iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
 			iTimeGrid.setOneWeek(false);
 			for (EventInterface event: iData) {
 				iTimeGrid.addEvent(event);
 			}
 		} else if (iWeek.getSelectedIndex() > 0) {
-			iHeader.setHeaderTitle(iResource.getName() + " timetable for " + iWeek.getItemText(iWeek.getSelectedIndex()).toLowerCase());
-			iTableHeader.setHeaderTitle(iResource.getName() + " events for " + iWeek.getItemText(iWeek.getSelectedIndex()).toLowerCase());
+			iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iWeek.getItemText(iWeek.getSelectedIndex()).toLowerCase());
+			iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iWeek.getItemText(iWeek.getSelectedIndex()).toLowerCase());
 			iTimeGrid.setOneWeek(true);
 			int dayOfYear = Integer.parseInt(iWeek.getValue(iWeek.getSelectedIndex()));
 			for (WeekInterface w: iResource.getWeeks()) {
@@ -838,8 +838,9 @@ public class EventResourceTimetable extends Composite {
 					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingDates() + (m.isPast() ? "</span>" : "");
 				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime()))
 					time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime() + (m.isPast() ? "</span>" : "");
-				if (prevPast != m.isPast() || !prevRoom.equals(m.getLocationName()))
-					room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationName() + (m.isPast() ? "</span>" : "");
+				if (prevPast != m.isPast() || !prevRoom.equals(m.getLocationName())) {
+					room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationNameWithHint() + (m.isPast() ? "</span>" : "");
+				}
 				prevPast = m.isPast();
 				prevDate = m.getMeetingDates(); prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
 			}

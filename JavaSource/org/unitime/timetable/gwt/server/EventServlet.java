@@ -196,6 +196,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(room.getUniqueId());
 						ret.setAbbreviation(room.getLabel());
 						ret.setName(room.getLabel());
+						ret.setHint(room.getHtmlHint());
 						fillInSessionInfo(ret, room.getSession());
 						fillInCalendarUrl(ret);
 						return ret;
@@ -216,6 +217,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setId(location.getUniqueId());
 						ret.setAbbreviation(location.getLabel());
 						ret.setName(location.getLabel());
+						ret.setHint(location.getHtmlHint());
 						fillInSessionInfo(ret, location.getSession());
 						fillInCalendarUrl(ret);
 						return ret;
@@ -833,6 +835,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						location.setName(m.getLocation().getLabel());
 						location.setSessionId(m.getLocation().getSession().getUniqueId());
 						location.setSessionName(m.getLocation().getSession().getLabel());
+						location.setHint(m.getLocation().getHtmlHint());
 						meeting.setLocation(location);
 					}
 					event.addMeeting(meeting);

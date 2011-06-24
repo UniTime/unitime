@@ -31,7 +31,9 @@ import java.util.Vector;
 
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
+import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
@@ -871,7 +873,23 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getHtmlHint() {
-    	String hint = getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
+    	return getHtmlHint(null);
+    }
+    
+    public String getHtmlHint(String preference) {
+		try {
+			if (!Hibernate.isPropertyInitialized(this, "roomType") || !Hibernate.isInitialized(getRoomType())) {
+				return LocationDAO.getInstance().get(getUniqueId()).getHtmlHintImpl(preference);
+			} else {
+				return getHtmlHintImpl(preference);
+			}
+		} catch (LazyInitializationException e) {
+			return LocationDAO.getInstance().get(getUniqueId()).getHtmlHintImpl(preference);
+		}
+    }
+
+	private String getHtmlHintImpl(String preference) {
+    	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 

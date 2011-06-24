@@ -919,7 +919,8 @@ public class PreferencesAction extends Action {
 				TimePattern timePattern = (tp.equals("-1")?null:timePatternDao.get(new Long(tp)));
 
 			// 	Display time grid
-				RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(assignment, pg.canUseHardTimePreferences(Web.getUser(request.getSession()))));
+				RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(
+						assignment == null ? null : assignment.getTimeLocation(), pg.canUseHardTimePreferences(Web.getUser(request.getSession()))));
 				rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(Web.getUser(request.getSession())));
 
 				rtt.setName("p"+idx);

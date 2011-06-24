@@ -905,7 +905,7 @@ public class WebInstructionalOfferingTableBuilder {
                 if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
                     Location location = (Location)j.next();
-                    sb.append(location.getLabel());
+                    sb.append(location.getLabelWithHint());
                     if (j.hasNext()) sb.append(", ");
                 }
             }
@@ -1111,10 +1111,11 @@ public class WebInstructionalOfferingTableBuilder {
 	    		while (it2.hasNext()){
 	    			Location room = (Location)it2.next();
 	    			if (info!=null)
-	    				sb.append("<font color='"+(isEditable?PreferenceLevel.int2color(info.getRoomPreference(room.getUniqueId())):disabledColor)+"'>");
+	    				sb.append("<span style='color:"+(isEditable?PreferenceLevel.int2color(info.getRoomPreference(room.getUniqueId())):disabledColor)+";' " +
+	    						"onmouseover=\"showGwtHint(this, '" + room.getHtmlHint(isEditable ? PreferenceLevel.int2string(info.getRoomPreference(room.getUniqueId())) : null) + "');\" onmouseout=\"hideGwtHint();\">");
 	    			sb.append(room.getLabel());
 	   				if (info!=null)
-	   					sb.append("</font>");
+	   					sb.append("</span>");
 	    			if (it2.hasNext()){
 	        			sb.append("<BR>");
 	        		} 
