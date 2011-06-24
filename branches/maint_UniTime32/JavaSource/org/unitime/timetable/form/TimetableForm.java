@@ -50,6 +50,7 @@ public class TimetableForm extends ActionForm {
 	private boolean iShowUselessTimes = false;
 	private boolean iShowInstructors = false;
 	private boolean iShowEvents = false;
+	private boolean iShowComments = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -72,6 +73,7 @@ public class TimetableForm extends ActionForm {
 		iWeeks = new Vector();
 		iShowInstructors = false;
 		iShowEvents = false;
+		iShowComments = false;
 	}
 	
 	public void load(HttpSession session) throws Exception {
@@ -93,6 +95,7 @@ public class TimetableForm extends ActionForm {
 		iShowUselessTimes = table.getShowUselessTimes();
 		iShowInstructors = table.getShowInstructors();
 		iShowEvents = table.getShowEvents();
+		iShowComments = table.getShowComments();
 	}
 	
 	public void save(HttpSession session) throws Exception {
@@ -110,6 +113,7 @@ public class TimetableForm extends ActionForm {
 		table.setBgMode(getBgColorInt());
 		table.setShowUselessTimes(iShowUselessTimes);
 		table.setShowInstructors(iShowInstructors);
+		table.setShowComments(iShowComments);
 		table.setShowEvents(iShowEvents);
 		if (iWeek!=null)
 			table.setWeek(iWeek.intValue());
@@ -148,6 +152,9 @@ public class TimetableForm extends ActionForm {
 	
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
+
+	public boolean getShowComments() { return iShowComments; }
+	public void setShowComments(boolean showComments) { iShowComments = showComments; }
 
 	public boolean getShowEvents() { return iShowEvents; }
 	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }

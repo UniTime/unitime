@@ -127,6 +127,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public long getAssignmentId() { return iAssignmentId; }
 	public long getRoomId() { return iRoomId; }
 	public String getRoomName() { return iRoomName; }
+	public void setRoomName(String roomName) { iRoomName = roomName; }
 	public String getInstructor() { return (iInstructor==null?"":iInstructor); }
 	
     public static String pref2color(String pref) {
