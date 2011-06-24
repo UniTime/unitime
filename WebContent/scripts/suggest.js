@@ -196,6 +196,8 @@ function getAllFormTag() {
 								currentArrayTagAndValuePosition += 2;
 								break;
 			case "input" : 		if(arrayFormTags[i].type.toLowerCase()=="text") {
+									// Avoid empty paramaters
+									if (arrayFormTags[i].name=="") break;
 									arrayTagAndValue.push(arrayFormTags[i].name);
 									if(arrayFormTags[i].value==null)
 										arrayTagAndValue.push("");
