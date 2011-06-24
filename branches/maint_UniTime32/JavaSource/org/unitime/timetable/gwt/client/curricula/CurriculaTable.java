@@ -1354,4 +1354,24 @@ public class CurriculaTable extends Composite {
 		
 		public abstract void changed();
 	}
+	
+	public CurriculumInterface next(Long id) {
+		if (id == null) return null;
+		for (int row = 0; row < iTable.getRowCount() - 1; row++) {
+			CurriculumInterface c = iTable.getData(row);
+			if (c != null && id.equals(c.getId()))
+				return iTable.getData(1 + row);
+		}
+		return null;
+	}
+	
+	public CurriculumInterface previous(Long id) {
+		if (id == null) return null;
+		for (int row = 1; row < iTable.getRowCount(); row++) {
+			CurriculumInterface c = iTable.getData(row);
+			if (c != null && id.equals(c.getId()))
+				return iTable.getData(row - 1);
+		}
+		return null;
+	}
 }
