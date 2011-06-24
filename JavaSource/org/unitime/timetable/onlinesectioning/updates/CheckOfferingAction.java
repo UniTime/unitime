@@ -72,6 +72,8 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (!server.getAcademicSession().isSectioningEnabled())
+			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
 		for (Long offeringId: getOfferingIds()) {
 			// offering is locked -> assuming that the offering will get checked when it is unlocked
 			if (server.isOfferingLocked(offeringId)) continue;
@@ -93,7 +95,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 	}
 	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
-		if (offering == null) return;
+		if (!server.getAcademicSession().isSectioningEnabled() || offering == null) return;
 		
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
 

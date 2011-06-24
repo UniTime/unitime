@@ -146,7 +146,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 	public boolean isLockableBy(User user) {
 		if (user == null) return false;
-		if (!getSession().getStatusType().canOnlineSectionStudents()) return false;
+		if (!getSession().getStatusType().canLockOfferings()) return false;
 		if (user.isAdmin()) return true;
 		if (getDepartment() == null) return false;
 		
@@ -167,7 +167,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		return(false);
     	}
 
-    	if (getSession().getStatusType().canOnlineSectionStudents() && !getSession().isOfferingLocked(getUniqueId())) {
+    	if (getSession().isOfferingFullLockNeeded(getUniqueId())) {
     		return false;
         }
     	

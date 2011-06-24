@@ -54,8 +54,7 @@ public class Reservation extends BaseReservation {
 	public boolean isEditableBy(org.unitime.commons.User user) {
 		if (user == null) return false;
 		
-    	if (getInstructionalOffering().getSession().getStatusType().canOnlineSectionStudents() &&
-    		!getInstructionalOffering().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId()))
+    	if (getInstructionalOffering().getSession().isOfferingLockNeeded(getInstructionalOffering().getUniqueId()))
     		return false;
 		
 		if (user.isAdmin()) return true;

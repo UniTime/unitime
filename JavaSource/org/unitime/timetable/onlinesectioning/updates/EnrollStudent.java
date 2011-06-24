@@ -75,6 +75,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		if (!server.getAcademicSession().isSectioningEnabled())
+			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
 		Set<Long> offeringIds = new HashSet<Long>();
 		Set<Long> lockedCourses = new HashSet<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())

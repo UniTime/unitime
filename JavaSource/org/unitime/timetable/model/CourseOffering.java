@@ -275,9 +275,8 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public boolean isFullyEditableBy(User user) {
     	if (user==null) return false;
 
-    	if (getSubjectArea().getSession().getStatusType().canOnlineSectionStudents() &&
-        		!getSubjectArea().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId()))
-        		return false;
+    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
+        	return false;
 
     	if (user.isAdmin()) return true;
 
@@ -306,8 +305,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     public boolean isEditableBy(User user){
     	if (user==null) return false;
 
-    	if (getSubjectArea().getSession().getStatusType().canOnlineSectionStudents() &&
-    		!getSubjectArea().getSession().isOfferingLocked(getInstructionalOffering().getUniqueId()))
+    	if (getSubjectArea().getSession().isOfferingLockNeeded(getInstructionalOffering().getUniqueId()))
     		return false;
 
     	if (user.isAdmin()) return true;

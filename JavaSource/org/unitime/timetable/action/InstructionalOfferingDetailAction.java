@@ -342,7 +342,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setCourseOfferings(offerings);
 	    frm.setIsEditable(new Boolean(io.isEditableBy(user)));
 	    frm.setIsFullyEditable(new Boolean(io.getControllingCourseOffering().isFullyEditableBy(user)));
-	    frm.setIsManager(new Boolean(io.getControllingCourseOffering().isEditableBy(user)));
+	    frm.setIsManager(new Boolean(io.getControllingCourseOffering().isEditableBy(user) && !io.getSession().isOfferingFullLockNeeded(io.getUniqueId())));
 	    
         // Check limits on courses if cross-listed
         if (io.getCourseOfferings().size()>1 && !frm.getUnlimited().booleanValue()) {

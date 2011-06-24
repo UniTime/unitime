@@ -201,8 +201,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	
 	@Override
 	public boolean isEditableBy(User user) {
-    	if (getInstrOfferingConfig().getInstructionalOffering().getSession().getStatusType().canOnlineSectionStudents() &&
-    		!getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLocked(getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
+    	if (getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLockNeeded(getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
     		return false;
         }
     	return super.isEditableBy(user);
