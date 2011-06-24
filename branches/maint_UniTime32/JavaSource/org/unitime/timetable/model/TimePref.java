@@ -24,6 +24,7 @@ import java.util.Date;
 import org.unitime.timetable.model.base.BaseTimePref;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class TimePref extends BaseTimePref implements Comparable {
@@ -51,7 +52,7 @@ public class TimePref extends BaseTimePref implements Comparable {
     	return getTimePatternModel(null);
     }
     
-    public TimePatternModel getTimePatternModel(Assignment assignment) {
+    public TimePatternModel getTimePatternModel(TimeLocation assignment) {
     	TimePatternModel model = new TimePatternModel(getTimePattern(), assignment, true);
     	model.setPreferences(super.getPreference());
     	return model;
@@ -113,7 +114,7 @@ public class TimePref extends BaseTimePref implements Comparable {
     public RequiredTimeTable getRequiredTimeTable() {
     	return getRequiredTimeTable(null);
     }
-    public RequiredTimeTable getRequiredTimeTable(Assignment assignment) {
+    public RequiredTimeTable getRequiredTimeTable(TimeLocation assignment) {
     	return new RequiredTimeTable(getTimePatternModel(assignment));
     }
     

@@ -548,7 +548,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		
 		for (Iterator i=prefGroup.effectivePreferences(TimePref.class).iterator(); i.hasNext();) {
 			TimePref tp = (TimePref)i.next();
-			RequiredTimeTable rtt = tp.getRequiredTimeTable(a);
+			RequiredTimeTable rtt = tp.getRequiredTimeTable(a == null ? null : a.getTimeLocation());
 			if (getGridAsText()) {
 				addText(cell, rtt.getModel().toString().replaceAll(", ", "\n"), false, false, Element.ALIGN_LEFT, color, true);
 			} else {

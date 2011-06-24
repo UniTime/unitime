@@ -201,7 +201,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	StringBuffer sb = new StringBuffer();
     	for (Iterator i=timePrefList.iterator();i.hasNext();) {
     		TimePref tp = (TimePref)i.next();
-    		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment);
+    		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
         	if (gridAsText) {
     			String hint = null;
     			try {
