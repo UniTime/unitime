@@ -42,7 +42,7 @@ public class OfferingLocks extends TagSupport {
 	private static final long serialVersionUID = 7947787141769725429L;
 
 	public String getOfferingLocksWarning(User user, Session session) {
-		if (!session.getStatusType().canOnlineSectionStudents()) return null;
+		if (!session.getStatusType().canLockOfferings()) return null;
 		List<InstructionalOffering> lockedOfferings = new ArrayList<InstructionalOffering>();
 		if (session.getLockedOfferings() == null) return null;
 		for (Long offeringId: session.getLockedOfferings()) {

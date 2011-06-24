@@ -1271,7 +1271,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+			if (getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 				execute(new StudentEmail(studentId, oldRequests, newRequests), new Callback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
@@ -1311,7 +1311,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				}
 			}
 			iLog.info(message);
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+			if (getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 				if (oldEnrollment == null) {
 					oldEnrollment = new Enrollment(request, 0, (request instanceof CourseRequest ? ((CourseRequest)request).getCourses().get(0) : null), null, null, null);
 				}
