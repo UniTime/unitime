@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
-<!DOCTYPE release-history PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "Release-Notes.dtd">
+<!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
 <!-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2011, UniTime LLC
@@ -77,6 +77,12 @@
 			<name>Curriculum Timetabling</name>
 			<description>
 				<line>Instructional Offering Cross Lists: do not delete the course that was added to a cross-list (or removed off a cross-list) from its curricula.</line>
+			</description>
+		</item>
+		<item>
+			<name>UniTime Menu</name>
+			<description>
+				<line>Bundle menu.dtd in the timetable.jar and avoid accessing http://www.unitime.org/interface/menu.dtd during menu.xml validation.</line>
 			</description>
 		</item>
 	</category>

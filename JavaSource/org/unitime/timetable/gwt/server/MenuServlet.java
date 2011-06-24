@@ -67,6 +67,8 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -83,12 +85,21 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			String menu = ApplicationProperties.getProperty("unitime.menu","menu.xml");
 			Document document = null;
 	        URL menuUrl = ApplicationProperties.class.getClassLoader().getResource(menu);
+	        SAXReader sax = new SAXReader();
+	        sax.setEntityResolver(new EntityResolver() {
+	        	public InputSource resolveEntity(String publicId, String systemId) {
+	        		if (publicId.equals("-//UniTime//UniTime Menu DTD/EN")) {
+	        			return new InputSource(ApplicationProperties.class.getClassLoader().getResourceAsStream("menu.dtd"));
+	        		}
+	        		return null;
+	        	}
+	        });
 	        if (menuUrl!=null) {
 	            Debug.info("Reading menu from " + URLDecoder.decode(menuUrl.getPath(), "UTF-8") + " ...");
-	            document = (new SAXReader()).read(menuUrl.openStream());
+	            document = sax.read(menuUrl.openStream());
 	        } else if (new File(menu).exists()) {
 	            Debug.info("Reading menu from " + menu + " ...");
-	            document = (new SAXReader()).read(new File(menu));
+	            document = sax.read(new File(menu));
 	        }
 	        if (document==null)
 	            throw new ServletException("Unable to create menu, reason: resource " + menu + " not found.");
@@ -101,10 +112,10 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	        URL customMenuUrl = ApplicationProperties.class.getClassLoader().getResource(customMenu);
 	        if (customMenuUrl!=null) {
 	            Debug.info("Reading custom menu from " + URLDecoder.decode(customMenuUrl.getPath(), "UTF-8") + " ...");
-	            customDocument = (new SAXReader()).read(customMenuUrl.openStream());
+	            customDocument = sax.read(customMenuUrl.openStream());
 	        } else if (new File(customMenu).exists()) {
 	            Debug.info("Reading custom menu from " + customMenu + " ...");
-	            customDocument = (new SAXReader()).read(new File(customMenu));
+	            customDocument = sax.read(new File(customMenu));
 	        }
 	        if (customDocument != null) {
 	        	merge(iRoot, customDocument.getRootElement());
