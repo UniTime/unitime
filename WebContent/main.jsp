@@ -58,8 +58,9 @@
 	</tt:hasProperty>
 	<tt:offering-locks/>
 	
+	<tt:propertyNotEquals name="unitime.warn.chromeframe" value="false">
 	<!--[if IE]>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+    <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
     
     <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
       <tr><td class="reqMsg" width='5'>&nbsp;</td>
@@ -83,6 +84,7 @@
      });
     </script>
   	<![endif]-->
+  	</tt:propertyNotEquals>
 
 <div id="contentMain">
 	<table align="center" width="900px">
