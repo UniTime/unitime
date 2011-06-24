@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -150,6 +151,19 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	public SolverGridModel(Solver solver, String name, List<Student> students, int firstDay, int bgMode) {
 		super(sResourceTypeCurriculum, -1l);
 		setName(name);
+		Hashtable<Long, String> groups = new Hashtable<Long, String>();
+		for (Object[] o: (List<Object[]>)CurriculumDAO.getInstance().getSession().createQuery(
+				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +
+				"c.classification.curriculum.abbv || ' ' || c.classification.academicClassification.code = :name and " + 
+				"c.classification.curriculum.department.session.uniqueId = :sessionId")
+				.setString("name", name)
+				.setLong("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null))
+				.setCacheable(true).list()) {
+			Long courseId = (Long)o[0];
+			String group = (String)o[1];
+			String old = groups.get(courseId);
+			groups.put(courseId, (old == null ? "" : old + ", ") + group);
+		}
 		double size = 0;
 		Hashtable<Placement, Double> placements = new Hashtable<Placement, Double>();
 		for (Student student: students) {
@@ -173,8 +187,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		setSize((int) Math.round(size));
 		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
 			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : bgMode), firstDay);
+			String group = groups.get(entry.getKey().variable().getConfiguration().getOfferingId());
 			while (cell != null) {
-				cell.setName(cell.getName() + " (" + Math.round(entry.getValue()) + ")");
+				cell.setRoomName(cell.getRoomName() + " (" + Math.round(entry.getValue()) + (group == null ? "" : ", " + group) + ")");
 				cell = cell.getParent();
 			}
 		}
