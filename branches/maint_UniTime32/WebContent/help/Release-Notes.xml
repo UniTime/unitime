@@ -88,6 +88,13 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Timetabling Solver: Distribution Constraints</name>
+			<description>
+				<line>When preferred / discouraged: weighting schema changed to measure how well is the constraint violated.</line>
+				<line>Code cleanup (replaced TYPE_ constants with an enum, etc.).</line>
+			</description>
+		</item>
+		<item>
 			<name>UniTime Menu</name>
 			<description>
 				<line>Bundle menu.dtd in the timetable.jar and avoid accessing http://www.unitime.org/interface/menu.dtd during menu.xml validation.</line>
