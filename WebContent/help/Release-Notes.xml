@@ -132,6 +132,14 @@
 			</description>
 		</item>
 		<item>
+			<name>Exam Verification (PDF) Report</name>
+			<description>
+				<line>Do not list suffix (sub)classes (classes with suffixes a,b,c,..) , i.e., classes that have the same instructional type as their parent class (e.g., class Lec 1a has a parent class Lec 1, both are lectures).</line>
+				<line>In a rare case when an exam is sticked on a suffix class (like Lec 1a), the exam is displayed on the parent class (Lec 1) instead.</line>
+				<line>Previous behaviour (listing all classes) can be enabled by setting of the application property tmtbl.exam.report.verification.skipSuffixSubparts to false.</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
