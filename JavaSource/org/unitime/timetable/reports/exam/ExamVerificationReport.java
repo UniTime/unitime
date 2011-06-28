@@ -70,6 +70,8 @@ import com.itextpdf.text.DocumentException;
 public class ExamVerificationReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ExamVerificationReport.class);
     private boolean iSkipHoles = true;
+    // Skip subparts of the same itype as parent subpart
+    private boolean iSkipSuffixSubparts = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.verification.skipSuffixSubparts", "true"));
     private boolean iHasAssignment = false;
     
     public ExamVerificationReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
@@ -102,6 +104,11 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     exams.add(exam);
             }
         }
+        if (iSkipSuffixSubparts && clazz.getChildClasses() != null)
+        	for (Class_ child: clazz.getChildClasses()) {
+        		if (child.getSchedulingSubpart().getItype().equals(clazz.getSchedulingSubpart().getItype()))
+        			exams.addAll(getExams(child));
+        	}
         return exams;
     }
     
@@ -635,6 +642,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             }
             boolean hasSubpartExam = false; InstrOfferingConfig cfg = null;
             for (SchedulingSubpart subpart : subparts) {
+            	if (iSkipSuffixSubparts && subpart.getParentSubpart() != null && subpart.getItype().equals(subpart.getParentSubpart().getItype())) {
+            		continue;
+            	}
                 if (cfg==null) {
                     cfg = subpart.getInstrOfferingConfig();
                 } else if (!cfg.equals(subpart.getInstrOfferingConfig())) {
