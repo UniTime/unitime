@@ -137,6 +137,7 @@ public class AssignmentHistoryAction extends Action {
         	    		hasBefore=true;
         	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
         	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
+        	    	if (before == null && after == null) continue;
         	    	if (!first) {
         	    		roomsSort.append(":");
         	    		timesSort.append(":");
