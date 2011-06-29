@@ -318,9 +318,23 @@ public class UniTimeSideBar extends Composite {
 			});
 		}
 		if (item.hasSubMenus())
-			for (MenuInterface subItem: item.getSubMenus())
-				if (!subItem.isSeparator())
+			for (final MenuInterface subItem: item.getSubMenus()) {
+				if (subItem.isSeparator()) continue;
+				if (subItem.getName().equals(item.getName()) && item.getPage() == null && subItem.getPage() != null) {
+					label.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							if (subItem.isGWT()) 
+								openUrl(subItem.getName(), "gwt.jsp?page=" + subItem.getPage(), subItem.getTarget());
+							else {
+								openUrl(subItem.getName(), subItem.getPage(), subItem.getTarget());
+							}
+						}
+					});
+				} else {
 					treeItem.addItem(generateItem(subItem));
+				}
+			}
 		return treeItem;
 	}
 	
