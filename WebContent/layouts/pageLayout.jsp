@@ -159,7 +159,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	    </logic:equal>
     </td>
     <td valign="top">
-	    <table class="unitime-Page" width="100%">
+	    <table class="unitime-Page" id="unitime-Page" width="100%">
 	    <tr><td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
 		   		<tr><td rowspan="3"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>

@@ -92,6 +92,35 @@
    			}
 	    }
 	}
+	
+	function isWideTable(element) {
+		if (element) {
+			if ("TABLE" == element.tagName) {
+				return "unitime-Page" == element.className;
+			} else {
+				return isWideTable(element.parentNode);
+			}
+		} else {
+			return false;
+		}
+	}
 
+	function resizeWideTables() {
+		var clientWidth = (document.compatMode=='CSS1Compat'? document.documentElement.clientWidth : document.body.clientWidth);
+		var scrollWidth = (document.compatMode=='CSS1Compat'? document.documentElement.scrollWidth : document.body.scrollWidth);
+		var mainTable = document.getElementById("unitime-Page");
+		if (mainTable && clientWidth < scrollWidth) {
+			var border = 10 + scrollWidth - mainTable.clientWidth;
+			var newWidth = (clientWidth - border) + "px";
+			var tables = mainTable.getElementsByTagName("table");
+			for (var i = 0; i < tables.length; i++)
+				if ("100%" == tables[i].width && isWideTable(tables[i].parentNode)) // && tables[i].clientWidth > clientWidth - border)
+					tables[i].style.width = newWidth;
+		}
+	}
+	
+	window.onresize = resizeWideTables;
+	window.onload = resizeWideTables;
+	
     // -->
     
