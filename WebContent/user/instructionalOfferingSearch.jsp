@@ -31,9 +31,9 @@
 <html:form action="/instructionalOfferingSearch">
 <loc:bundle name="CourseMessages">
 	<html:hidden property="doit" value="Search"/>
-	<TABLE border="0" cellspacing="0" cellpadding="3">
+	<TABLE border="0" cellspacing="0" cellpadding="3" width="100%">
 		<TR>
-			<TD colspan="5">
+			<TD colspan="6">
 				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 				<TABLE border="0" cellspacing="0" cellpadding="3">
 					<TR>
@@ -230,7 +230,7 @@
 				</TABLE>
 
 				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+				<TABLE class="wide-table">
 					<TR>
 						<TD colspan='2' align='right'>
 							<br>
@@ -242,8 +242,8 @@
 			</TD>
 		</TR>
 		<TR>
-			<TH valign="top"><loc:message name="filterSubject"/></TH>
-			<TD valign="top">
+			<TH valign="top" nowrap><loc:message name="filterSubject"/></TH>
+			<TD valign="top" nowrap>
 				<html:select name="instructionalOfferingListForm" property="subjectAreaId"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
@@ -252,8 +252,8 @@
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
-			<TH valign="top"><loc:message name="filterCourseNumber"/></TH>
-			<TD valign="top">
+			<TH valign="top" nowrap><loc:message name="filterCourseNumber"/></TH>
+			<TD valign="top" nowrap>
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
 				<layout:suggest 
 					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbr" 
@@ -262,7 +262,7 @@
 					tooltip="<%=MSG.tooltipCourseNumber()%>"
 					onblur="hideSuggestionList('courseNbr');" />
 			</TD>
-			<TD valign="top">
+			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
 					accesskey="<%=MSG.accessSearchInstructionalOfferings()%>" styleClass="btn" title='<%=MSG.titleSearchInstructionalOfferings(MSG.accessSearchInstructionalOfferings())%>'
@@ -291,9 +291,10 @@
 				</html:submit>
 				
 			</TD>
+			<TD width="100%"></TD>
 		</TR>
 		<TR>
-			<TD colspan="5" align="center">
+			<TD colspan="6" align="center">
 				<html:errors />
 			</TD>
 		</TR>

@@ -109,7 +109,7 @@
 	    </tt:propertyEquals>
     </td>
     <td valign="top">
-	    <table class="unitime-Page" width="100%"><tr>
+	    <table class="unitime-Page" id="unitime-Page" width="100%"><tr>
 	    <td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%" style="min-width: 800px">
 		   		<tr><td rowspan="3">

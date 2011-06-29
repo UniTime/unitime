@@ -262,6 +262,7 @@ public class UniTimeSideBar extends Composite {
 			sideBarCookie += node;
 		}
 		Cookies.setCookie("UniTime:SideBar", sideBarCookie);
+		resizeWideTables();
 	}
 	
 	private void openNodes(Set<String> nodes, TreeItem item) {
@@ -423,4 +424,9 @@ public class UniTimeSideBar extends Composite {
 			}
 		}
 	}
+	
+	public native static int resizeWideTables() /*-{
+		if ($wnd.resizeWideTables)
+			$wnd.resizeWideTables();
+	}-*/;
 }
