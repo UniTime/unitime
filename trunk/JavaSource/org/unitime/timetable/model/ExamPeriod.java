@@ -519,7 +519,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         		.setLong("sessionId", sessionId)
                 .setInteger("examType", examType)
                 .setCacheable(true).uniqueResult();
-        if (bounds==null) return null;
+        if (bounds == null || bounds[0] == null) return null;
         int minDateOffset = ((Number)bounds[0]).intValue();
         int minSlot = ((Number)bounds[1]).intValue();
         int minHour = (Constants.SLOT_LENGTH_MIN*minSlot+Constants.FIRST_SLOT_TIME_MIN) / 60;
