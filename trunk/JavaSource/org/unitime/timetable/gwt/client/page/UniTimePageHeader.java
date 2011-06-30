@@ -53,17 +53,29 @@ public class UniTimePageHeader extends Composite {
 	private VerticalPanelWithHint iSolverInfo, iSessionInfo, iUserInfo;
 	
 	public UniTimePageHeader() {
-		iSolverInfo = new VerticalPanelWithHint();
+		iSolverInfo = new VerticalPanelWithHint(new Callback() {
+			public void execute(Callback callback) {
+				reloadSolverInfo(true, callback);
+			}
+		});
 		iPanel.add(iSolverInfo);
 		iPanel.setCellHorizontalAlignment(iSolverInfo, HasHorizontalAlignment.ALIGN_LEFT);
 		iSolverInfo.getElement().getStyle().setPaddingRight(30, Unit.PX);
 		
-		iUserInfo = new VerticalPanelWithHint();
+		iUserInfo = new VerticalPanelWithHint(new Callback() {
+			public void execute(Callback callback) {
+				if (callback != null) callback.execute(null);
+			}
+		});
 		iPanel.add(iUserInfo);
 		iPanel.setCellHorizontalAlignment(iUserInfo, HasHorizontalAlignment.ALIGN_CENTER);
 		iUserInfo.getElement().getStyle().setPaddingRight(30, Unit.PX);
 		
-		iSessionInfo = new VerticalPanelWithHint();
+		iSessionInfo = new VerticalPanelWithHint(new Callback() {
+			public void execute(Callback callback) {
+				if (callback != null) callback.execute(null);
+			}
+		});
 		iPanel.add(iSessionInfo);
 		iPanel.setCellHorizontalAlignment(iSessionInfo, HasHorizontalAlignment.ALIGN_RIGHT);
 		
@@ -71,7 +83,7 @@ public class UniTimePageHeader extends Composite {
 		
 		reloadSessionInfo();
 		reloadUserInfo();
-		reloadSolverInfo();
+		reloadSolverInfo(false, null);
 	}
 	
 	public void insert(final RootPanel panel) {
@@ -142,8 +154,8 @@ public class UniTimePageHeader extends Composite {
 		});
 	}
 	
-	public void reloadSolverInfo() {
-		iService.getSolverInfo(new AsyncCallback<HashMap<String,String>>() {
+	public void reloadSolverInfo(boolean includeSolutionInfo, final Callback callback) {
+		iService.getSolverInfo(includeSolutionInfo, new AsyncCallback<HashMap<String,String>>() {
 			@Override
 			public void onSuccess(HashMap<String, String> result) {
 				iSolverInfo.clear();
@@ -177,22 +189,30 @@ public class UniTimePageHeader extends Composite {
 				Timer t = new Timer() {
 					@Override
 					public void run() {
-						reloadSolverInfo();
+						reloadSolverInfo(iSolverInfo.iHintPanel.isShowing(), null);
 					}
 				};
 				t.schedule(hasSolver ? 1000 : 60000);
+				if (callback != null) 
+					callback.execute(null);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
 				Timer t = new Timer() {
 					@Override
 					public void run() {
-						reloadSolverInfo();
+						reloadSolverInfo(iSolverInfo.iHintPanel.isShowing(), null);
 					}
 				};
 				t.schedule(5000);
+				if (callback != null) 
+					callback.execute(null);
 			}
 		});
+	}
+	
+	public static interface Callback {
+		public void execute(Callback callback);
 	}
 	
 	public static class VerticalPanelWithHint extends VerticalPanel {
@@ -200,9 +220,11 @@ public class UniTimePageHeader extends Composite {
 		private Timer iShowHint, iHideHint = null;
 		private HTML iHint = null;
 		private int iX, iY;
+		private Callback iUpdateInfo = null;
 		
-		public VerticalPanelWithHint() {
+		public VerticalPanelWithHint(Callback updateInfo) {
 			super();
+			iUpdateInfo = updateInfo;
 			iHint = new HTML("", false);
 			iHintPanel = new PopupPanel();
 			iHintPanel.setWidget(iHint);
@@ -213,11 +235,16 @@ public class UniTimePageHeader extends Composite {
 			iShowHint = new Timer() {
 				@Override
 				public void run() {
-					iHintPanel.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-						@Override
-						public void setPosition(int offsetWidth, int offsetHeight) {
-							int maxX = Window.getScrollLeft() + Window.getClientWidth() - offsetWidth - 10;
-							iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
+					iUpdateInfo.execute(new Callback() {
+						public void execute(Callback callback) {
+							iHintPanel.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+								@Override
+								public void setPosition(int offsetWidth, int offsetHeight) {
+									int maxX = Window.getScrollLeft() + Window.getClientWidth() - offsetWidth - 10;
+									iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
+								}
+							});		
+							if (callback != null) callback.execute(null);
 						}
 					});
 				}

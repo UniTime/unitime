@@ -65,6 +65,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public void saveBest() throws Exception;
 	public Map<String,String> currentSolutionInfo() throws Exception;
 	public Map<String,String> bestSolutionInfo() throws Exception;
+    public Map<String,String> statusSolutionInfo() throws Exception;
 	public boolean isWorking() throws Exception;
 
 	public DataProperties getProperties() throws Exception;
