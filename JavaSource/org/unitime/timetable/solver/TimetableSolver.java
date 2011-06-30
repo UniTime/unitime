@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -1523,6 +1524,19 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 			}
     	} catch (Exception e) {
     		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
+    }
+    
+    public Map<String,String> statusSolutionInfo() {
+    	if (isPassivated())
+    		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
+    	synchronized (super.currentSolution()) {
+    		Map<String,String> info = super.currentSolution().getBestInfo();
+    		try {
+    			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
+    				info = super.currentSolution().getModel().getInfo();
+    		} catch (ConcurrentModificationException e) {}
+    		return info;
     	}
     }
 }

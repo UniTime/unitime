@@ -47,6 +47,7 @@ public interface StudentSolverProxy {
     public void clear();
     public Map<String, String> currentSolutionInfo();
     public Map<String, String> bestSolutionInfo();
+    public Map<String,String> statusSolutionInfo() throws Exception;
     public boolean isWorking();
 
     public DataProperties getProperties();

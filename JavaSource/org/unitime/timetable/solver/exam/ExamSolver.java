@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1188,6 +1189,19 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
 			}
     	} catch (Exception e) {
     		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
+    	}
+    }
+
+    public Map<String,String> statusSolutionInfo() {
+    	if (isPassivated())
+    		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
+    	synchronized (super.currentSolution()) {
+    		Map<String,String> info = super.currentSolution().getBestInfo();
+    		try {
+    			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
+    				info = super.currentSolution().getModel().getInfo();
+    		} catch (ConcurrentModificationException e) {}
+    		return info;
     	}
     }
 }
