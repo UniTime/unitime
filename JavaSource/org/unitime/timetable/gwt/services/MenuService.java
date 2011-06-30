@@ -38,7 +38,7 @@ public interface MenuService extends RemoteService {
 	public HashMap<String, String> getUserInfo() throws MenuException;
 	public HashMap<String, String> getSessionInfo() throws MenuException;
 	public String getVersion() throws MenuException;
-	public HashMap<String, String> getSolverInfo() throws MenuException;
+	public HashMap<String, String> getSolverInfo(boolean includeSolutionInfo) throws MenuException;
 	
 	public String getHelpPage(String title) throws MenuException;
 	

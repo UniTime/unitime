@@ -452,7 +452,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		return gr.getAbbv();
 	}
 	
-	public HashMap<String, String> getSolverInfo() throws MenuException {
+	public HashMap<String, String> getSolverInfo(boolean includeSolutionInfo) throws MenuException {
 		try {
 			HashMap<String, String> ret = new HashMap<String, String>();
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -507,26 +507,24 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				ret.put("7Version", version);
 				ret.put("6Session", SessionDAO.getInstance().get(properties.getPropertyLong("General.SessionId",null)).getLabel());
 				
-				Map<String,String> info = null;
-				
-				if (solver != null) {
-					info = solver.bestSolutionInfo();
-					if (info == null) info = solver.currentSolutionInfo();
-				} else if (examSolver != null) {
-					info = examSolver.bestSolutionInfo();
-					if (info == null) info = examSolver.currentSolutionInfo();
-				} else if (studentSolver != null) {
-					info = studentSolver.bestSolutionInfo();
-					if (info == null) info = studentSolver.currentSolutionInfo();
-				}
-				
-				if (info != null) {
-					TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
-					keys.addAll(info.keySet());
-					int idx = 0;
-					for (String key: keys) {
-						ret.put((char)('A' + idx) + key, (String)info.get(key));
-						idx++;
+				if (includeSolutionInfo) {
+					Map<String,String> info = null;
+					if (solver != null) {
+						info = solver.statusSolutionInfo();
+					} else if (examSolver != null) {
+						info = examSolver.statusSolutionInfo();
+					} else if (studentSolver != null) {
+						info = studentSolver.statusSolutionInfo();
+					}
+					
+					if (info != null) {
+						TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
+						keys.addAll(info.keySet());
+						int idx = 0;
+						for (String key: keys) {
+							ret.put((char)('A' + idx) + key, (String)info.get(key));
+							idx++;
+						}
 					}
 				}
 		 		
