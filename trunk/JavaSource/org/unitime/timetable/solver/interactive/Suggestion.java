@@ -46,7 +46,20 @@ import org.unitime.timetable.solver.ui.JenrlInfo;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
 import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.heuristics.TimetableComparator;
+import net.sf.cpsolver.coursett.criteria.BackToBackInstructorPreferences;
+import net.sf.cpsolver.coursett.criteria.BrokenTimePatterns;
+import net.sf.cpsolver.coursett.criteria.DepartmentBalancingPenalty;
+import net.sf.cpsolver.coursett.criteria.DistributionPreferences;
+import net.sf.cpsolver.coursett.criteria.Perturbations;
+import net.sf.cpsolver.coursett.criteria.RoomPreferences;
+import net.sf.cpsolver.coursett.criteria.SameSubpartBalancingPenalty;
+import net.sf.cpsolver.coursett.criteria.StudentCommittedConflict;
+import net.sf.cpsolver.coursett.criteria.StudentConflict;
+import net.sf.cpsolver.coursett.criteria.StudentDistanceConflict;
+import net.sf.cpsolver.coursett.criteria.StudentHardConflict;
+import net.sf.cpsolver.coursett.criteria.TimePreferences;
+import net.sf.cpsolver.coursett.criteria.TooBigRooms;
+import net.sf.cpsolver.coursett.criteria.UselessHalfHours;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.Student;
@@ -180,22 +193,22 @@ public class Suggestion implements Serializable, Comparable {
 				iGroupConstraintInfos.addElement(dist);
             }
         }
-        iValue = ((TimetableComparator)solver.getSolutionComparator()).currentValue(solver.currentSolution());
+        iValue = solver.currentSolution().getModel().getTotalValue();
         TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
-        iTooBigRooms = m.countTooBigRooms();
-        iUselessSlots = m.getUselessSlots();
-        iGlobalTimePreference = m.getGlobalTimePreference();
-        iGlobalRoomPreference = m.getGlobalRoomPreference();
-        iGlobalGroupConstraintPreference = m.getGlobalGroupConstraintPreference();
-        iViolatedStudentConflicts = m.getViolatedStudentConflicts()+m.getCommitedStudentConflicts();
-        iHardStudentConflicts = m.getHardStudentConflicts();
-        iDistanceStudentConflicts = m.getViolatedDistanceStudentConflictsCounter().get();
-        iCommitedStudentConflicts = m.getCommitedStudentConflicts();
-        iInstructorDistancePreference = m.getInstructorDistancePreference();
-        iDepartmentSpreadPenalty = m.getDepartmentSpreadPenalty();
-        iSpreadPenalty = m.getSpreadPenalty();
+        iTooBigRooms = (int)Math.round(m.getCriterion(TooBigRooms.class).getValue());
+        iUselessSlots = Math.round(m.getCriterion(UselessHalfHours.class).getValue() + m.getCriterion(BrokenTimePatterns.class).getValue());
+        iGlobalTimePreference = m.getCriterion(TimePreferences.class).getValue();
+        iGlobalRoomPreference = Math.round(m.getCriterion(RoomPreferences.class).getValue());
+        iGlobalGroupConstraintPreference = Math.round(m.getCriterion(DistributionPreferences.class).getValue());
+        iViolatedStudentConflicts = Math.round(m.getCriterion(StudentConflict.class).getValue() + m.getCriterion(StudentCommittedConflict.class).getValue());
+        iHardStudentConflicts = Math.round(m.getCriterion(StudentHardConflict.class).getValue());
+        iDistanceStudentConflicts = Math.round(m.getCriterion(StudentDistanceConflict.class).getValue());
+        iCommitedStudentConflicts = Math.round(m.getCriterion(StudentCommittedConflict.class).getValue());
+        iInstructorDistancePreference = Math.round(m.getCriterion(BackToBackInstructorPreferences.class).getValue());
+        iDepartmentSpreadPenalty = (int)Math.round(m.getCriterion(DepartmentBalancingPenalty.class).getValue());
+        iSpreadPenalty = (int)Math.round(m.getCriterion(SameSubpartBalancingPenalty.class).getValue());
         iUnassignedVariables = m.unassignedVariables().size();
-        iPerturbationPenalty = solver.getPerturbationsCounter().getPerturbationPenalty(solver.currentSolution().getModel());
+        iPerturbationPenalty = m.getCriterion(Perturbations.class).getValue();
     }
     
     public Suggestion(Solver solver, Lecture lecture, TimeLocation time) {
@@ -325,7 +338,7 @@ public class Suggestion implements Serializable, Comparable {
         return iDifferentAssignments.toString().compareTo(((Suggestion)o).iDifferentAssignments.toString());
     }
     public boolean isBetter(Solver solver) {
-    	return (iValue<((TimetableComparator)solver.getSolutionComparator()).currentValue(solver.currentSolution()));
+    	return (iValue < solver.currentSolution().getModel().getTotalValue());
     }
     
     public double getValue() { return iValue; }
