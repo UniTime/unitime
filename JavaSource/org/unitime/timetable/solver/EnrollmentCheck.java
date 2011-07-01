@@ -27,11 +27,17 @@ import java.util.Locale;
 import java.util.Vector;
 
 import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.criteria.StudentCommittedConflict;
+import net.sf.cpsolver.coursett.criteria.StudentConflict;
+import net.sf.cpsolver.coursett.criteria.StudentDistanceConflict;
+import net.sf.cpsolver.coursett.criteria.StudentHardConflict;
 import net.sf.cpsolver.coursett.model.Configuration;
 import net.sf.cpsolver.coursett.model.FinalSectioning;
 import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.ifs.criteria.Criterion;
 import net.sf.cpsolver.ifs.util.Progress;
 
 import org.unitime.timetable.model.Class_;
@@ -203,22 +209,27 @@ public class EnrollmentCheck {
 
     public void checkStudentEnrollments(Progress p) {
         p.setStatus("Student Enrollments Check");
-        if (iModel.getViolatedStudentConflicts()!=iModel.countViolatedStudentConflicts()) {
-            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+iModel.getViolatedStudentConflicts()+", actual="+iModel.countViolatedStudentConflicts()+").");
+        
+        Criterion<Lecture, Placement> sc = iModel.getCriterion(StudentConflict.class);
+        if (sc.getValue() != sc.getValue(iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+sc.getValue()+", actual="+sc.getValue(iModel.variables())+").");
         }
-        if (iModel.getHardStudentConflicts()!=iModel.countHardStudentConflicts()) {
-            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+iModel.getHardStudentConflicts()+", actual="+iModel.countHardStudentConflicts()+").");
+        
+        Criterion<Lecture, Placement> shc = iModel.getCriterion(StudentHardConflict.class);
+        if (shc.getValue() != shc.getValue(iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+shc.getValue()+", actual="+shc.getValue(iModel.variables())+").");
         }
-        if (iModel.getStudentDistanceConflicts()!=iModel.countStudentDistanceConflicts()) {
-            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+iModel.getStudentDistanceConflicts()+", actual="+iModel.countStudentDistanceConflicts()+").");
+        
+        Criterion<Lecture, Placement> sdc = iModel.getCriterion(StudentDistanceConflict.class);
+        if (sdc.getValue() != sdc.getValue(iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+sdc.getValue()+", actual="+sdc.getValue(iModel.variables())+").");
         }
-        if (iModel.getCommittedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(false)) {
-            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts(false)+").");
+        
+        Criterion<Lecture, Placement> scc = iModel.getCriterion(StudentCommittedConflict.class);
+        if (scc.getValue() != scc.getValue(iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+scc.getValue()+", actual="+scc.getValue(iModel.variables())+").");
         }
-        if (iModel.getViolatedCommitttedStudentConflictsCounter().get() != iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false)) {
-            p.message(iMessageLevel, "Inconsistent number of committed student course conflits (counter="+iModel.getCommitedStudentConflicts()+
-            		", actual="+(iModel.countCommitedStudentConflicts(true) - iModel.countCommitedStudentConflicts(false))+").");
-        }
+        
         p.setPhase("Checking class limits...", iModel.variables().size());
         for (Lecture lecture: iModel.variables()) {
             p.incProgress();

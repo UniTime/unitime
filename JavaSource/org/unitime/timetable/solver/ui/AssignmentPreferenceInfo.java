@@ -31,6 +31,9 @@ import org.unitime.timetable.model.PreferenceLevel;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
+import net.sf.cpsolver.coursett.criteria.BrokenTimePatterns;
+import net.sf.cpsolver.coursett.criteria.TooBigRooms;
+import net.sf.cpsolver.coursett.criteria.UselessHalfHours;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -151,9 +154,11 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			setHasInitialSameTime(placement.getTimeLocation().equals(((Placement)lecture.getInitialAssignment()).getTimeLocation()));
 			setHasInitialSameRoom(placement.sameRooms((Placement)lecture.getInitialAssignment()));
 		}
-		iTooBigRoomPreference = placement.getTooBigRoomPreference();
+		iTooBigRoomPreference = TooBigRooms.getTooBigRoomPreference(placement);
 		iMinRoomSize = lecture.minRoomSize();
-		iUselessHalfHours = placement.nrUselessHalfHours();
+		iUselessHalfHours = (int)Math.round(
+				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(placement, null) + 
+				placement.variable().getModel().getCriterion(BrokenTimePatterns.class).getValue(placement, null));
 		DepartmentSpreadConstraint deptConstraint = null;
 		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint)

@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.heuristics.TimetableComparator;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
@@ -454,8 +453,7 @@ public class Suggestions implements Serializable {
     }
     
     public double getBound(Hashtable conflictsToResolve) {
-    	TimetableComparator cmp = (TimetableComparator)iSolver.getSolutionComparator();
-    	double value = cmp.currentValue(iSolver.currentSolution());
+    	double value = iSolver.currentSolution().getModel().getTotalValue();
     	for (Enumeration e=conflictsToResolve.keys();e.hasMoreElements();) {
     		Lecture lect = (Lecture)e.nextElement();
     		PlacementValue val = values(lect).first();
@@ -469,7 +467,7 @@ public class Suggestions implements Serializable {
     	private double iValue;
     	public PlacementValue(Placement placement) {
     		iPlacement = placement;
-    		iValue = ((TimetableComparator)iSolver.getSolutionComparator()).value(placement, iSolver.getPerturbationsCounter());
+    		iValue = placement.toDouble();
     	}
     	public Placement getPlacement() { return iPlacement; }
     	public double getValue() { return iValue; }
