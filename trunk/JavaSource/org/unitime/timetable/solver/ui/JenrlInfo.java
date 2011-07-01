@@ -31,6 +31,8 @@ import org.dom4j.Element;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
 import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
+import net.sf.cpsolver.coursett.criteria.StudentConflict;
+import net.sf.cpsolver.coursett.criteria.additional.ImportantStudentConflict;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.Student;
@@ -50,6 +52,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public boolean iIsDistance = false;
 	public boolean iIsFixed = false;
 	public boolean iIsCommited = false;
+	public boolean iIsImportant = false;
 	public double iDistance = 0.0;
 	public ClassAssignmentDetails iFirst = null, iSecond = null;
 	private TreeSet<CurriculumInfo> iCurriculum2nrStudents = null;
@@ -84,6 +87,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			setIsCommited(jc.areStudentConflictsCommitted());
 			if (isDistance())
 				setDistance(Placement.getDistanceInMeters(((TimetableModel)jc.getModel()).getDistanceMetric(),firstPl,secondPl));
+			StudentConflict imp = (StudentConflict)jc.getModel().getCriterion(ImportantStudentConflict.class);
+			setIsImportant(imp != null && imp.inConflict(jc.first().getAssignment(), jc.second().getAssignment()));
 		}
 		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
 		for (Student student: jc.first().sameStudents(jc.second())) {
@@ -169,6 +174,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public void setIsFixed(boolean isFixed) { iIsFixed = isFixed; }
 	public boolean isCommited() { return iIsCommited; }
 	public void setIsCommited(boolean isCommited) { iIsCommited = isCommited; }
+	public boolean isImportant() { return iIsImportant; }
+	public void setIsImportant(boolean isImportant) { iIsImportant = isImportant; }
 	public double getDistance() { return iDistance; }
 	public void setDistance(double distance) { iDistance = distance; }
 	
@@ -213,6 +220,11 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			} else {
 				iIsCommited = Boolean.valueOf(root.elementText("commited")).booleanValue();
 			}
+			if (root.elementText("important")==null) {
+				iIsImportant = false;
+			} else {
+				iIsImportant = Boolean.valueOf(root.elementText("important")).booleanValue();
+			}
 		}
 	}
 	
@@ -225,6 +237,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		root.addElement("hard").setText(String.valueOf(iIsHard));
 		root.addElement("commited").setText(String.valueOf(iIsCommited));
 		root.addElement("distance").setText(String.valueOf(iDistance));
+		root.addElement("important").setText(String.valueOf(iIsImportant));
 	}
 
 	public boolean saveToFile() {
