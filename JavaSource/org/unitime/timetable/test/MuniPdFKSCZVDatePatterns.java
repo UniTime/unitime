@@ -1,0 +1,287 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+package org.unitime.timetable.test;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
+
+import net.sf.cpsolver.coursett.TimetableXMLLoader.DatePattern;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.extension.Extension;
+import net.sf.cpsolver.ifs.solver.Solver;
+import net.sf.cpsolver.ifs.util.DataProperties;
+
+public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
+    protected static Logger sLog = Logger.getLogger(MuniPdFKSCZVDatePatterns.class);
+    private Hashtable<Integer, List<DatePattern>> iDatePatterns = new Hashtable<Integer, List<DatePattern>>();
+    
+    public MuniPdFKSCZVDatePatterns(Solver<Lecture, Placement> solver, DataProperties properties) {
+        super(solver, properties);
+        org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+        try {
+            for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
+            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type")
+            		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
+            		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended).list()) {
+            	BitSet weekCode = dp.getPatternBitSet();
+            	int nrWeeks = weekCode.cardinality() / 7;
+            	List<DatePattern> patterns = iDatePatterns.get(nrWeeks);
+            	if (patterns == null) {
+            		patterns = new ArrayList<DatePattern>();
+            		iDatePatterns.put(nrWeeks, patterns);
+            	}
+            	patterns.add(new DatePattern(dp.getUniqueId(), dp.getName(), weekCode));
+            }
+        } finally {
+        	hibSession.close();
+        }
+    }
+    
+    @Override
+    public void variableAdded(Lecture lecture) {
+        if (lecture.timeLocations().isEmpty()) return;
+        List<TimeLocation> times = new ArrayList<TimeLocation>(lecture.timeLocations());
+        if (times.get(0).getDatePatternName().matches("[1-6]x")) {
+            int n = Integer.parseInt(times.get(0).getDatePatternName().substring(0, 1));
+            lecture.timeLocations().clear();
+            for  (TimeLocation t: times) {
+                // if (!lecture.getName().startsWith("SO ") && !lecture.getName().startsWith("SP ") && t.getDayCode() == Constants.DAY_CODES[5]) continue;
+                for (DatePattern dp: iDatePatterns.get(n)) {
+                	TimeLocation time = new TimeLocation(t.getDayCode(), t.getStartSlot(), t.getLength(),
+                            t.getPreference(), t.getNormalizedPreference(),
+                            dp.getId(), dp.getName(), dp.getPattern(),
+                            t.getBreakTime());
+                    time.setTimePatternId(t.getTimePatternId());
+                    lecture.timeLocations().add(time);
+                }
+            }
+        }
+        lecture.clearValueCache();
+    }
+    
+    
+    static String[] sCombinations = new String[] {
+        // 1x
+        "1,0,0,0,0,0,0,0,0,0,0,0,0",
+        "0,1,0,0,0,0,0,0,0,0,0,0,0",
+        "0,0,1,0,0,0,0,0,0,0,0,0,0",
+        "0,0,0,1,0,0,0,0,0,0,0,0,0",
+        "0,0,0,0,1,0,0,0,0,0,0,0,0",
+        "0,0,0,0,0,1,0,0,0,0,0,0,0",
+        "0,0,0,0,0,0,1,0,0,0,0,0,0",
+        "0,0,0,0,0,0,0,1,0,0,0,0,0",
+        "0,0,0,0,0,0,0,0,1,0,0,0,0",
+        "0,0,0,0,0,0,0,0,0,1,0,0,0",
+        "0,0,0,0,0,0,0,0,0,0,1,0,0",
+        "0,0,0,0,0,0,0,0,0,0,0,1,0",
+        "0,0,0,0,0,0,0,0,0,0,0,0,1",
+        // 2x
+        "1,1,0,0,0,0,0,0,0,0,0,0,0",
+        "0,1,1,0,0,0,0,0,0,0,0,0,0",
+        "0,0,1,1,0,0,0,0,0,0,0,0,0",
+        "0,0,0,1,1,0,0,0,0,0,0,0,0",
+        "0,0,0,0,1,1,0,0,0,0,0,0,0",
+        "0,0,0,0,0,1,1,0,0,0,0,0,0",
+        "0,0,0,0,0,0,1,1,0,0,0,0,0",
+        "0,0,0,0,0,0,0,1,1,0,0,0,0",
+        "0,0,0,0,0,0,0,0,1,1,0,0,0",
+        "0,0,0,0,0,0,0,0,0,1,1,0,0",
+        "0,0,0,0,0,0,0,0,0,0,1,1,0",
+        "0,0,0,0,0,0,0,0,0,0,0,1,1",
+        "1,0,0,0,0,0,1,0,0,0,0,0,0",
+        "0,1,0,0,0,0,0,1,0,0,0,0,0",
+        "0,0,1,0,0,0,0,0,1,0,0,0,0",
+        "0,0,0,1,0,0,0,0,0,1,0,0,0",
+        "0,0,0,0,1,0,0,0,0,0,1,0,0",
+        "0,0,0,0,0,1,0,0,0,0,0,1,0",
+        "0,0,0,0,0,0,1,0,0,0,0,0,1",
+        // 3x
+        "1,1,1,0,0,0,0,0,0,0,0,0,0",
+        "0,1,1,1,0,0,0,0,0,0,0,0,0",
+        "0,0,1,1,1,0,0,0,0,0,0,0,0",
+        "0,0,0,1,1,1,0,0,0,0,0,0,0",
+        "0,0,0,0,1,1,1,0,0,0,0,0,0",
+        "0,0,0,0,0,1,1,1,0,0,0,0,0",
+        "0,0,0,0,0,0,1,1,1,0,0,0,0",
+        "0,0,0,0,0,0,0,1,1,1,0,0,0",
+        "0,0,0,0,0,0,0,0,1,1,1,0,0",
+        "0,0,0,0,0,0,0,0,0,1,1,1,0",
+        "0,0,0,0,0,0,0,0,0,0,1,1,1",
+        "1,0,0,0,1,0,0,0,1,0,0,0,0",
+        "0,1,0,0,0,1,0,0,0,1,0,0,0",
+        "0,0,1,0,0,0,1,0,0,0,1,0,0",
+        "0,0,0,1,0,0,0,1,0,0,0,1,0",
+        "0,0,0,0,1,0,0,0,1,0,0,0,1",
+        // 4x
+        "1,1,1,1,0,0,0,0,0,0,0,0,0",
+        "0,1,1,1,1,0,0,0,0,0,0,0,0",
+        "0,0,1,1,1,1,0,0,0,0,0,0,0",
+        "0,0,0,1,1,1,1,0,0,0,0,0,0",
+        "0,0,0,0,1,1,1,1,0,0,0,0,0",
+        "0,0,0,0,0,1,1,1,1,0,0,0,0",
+        "0,0,0,0,0,0,1,1,1,1,0,0,0",
+        "0,0,0,0,0,0,0,1,1,1,1,0,0",
+        "0,0,0,0,0,0,0,0,1,1,1,1,0",
+        "0,0,0,0,0,0,0,0,0,1,1,1,1",
+        "1,0,0,1,0,0,1,0,0,1,0,0,0",
+        "0,1,0,0,1,0,0,1,0,0,1,0,0",
+        "0,0,1,0,0,1,0,0,1,0,0,1,0",
+        "0,0,0,1,0,0,1,0,0,1,0,0,1",
+        // 5x
+        "1,1,1,1,1,0,0,0,0,0,0,0,0",
+        "0,1,1,1,1,1,0,0,0,0,0,0,0",
+        "0,0,1,1,1,1,1,0,0,0,0,0,0",
+        "0,0,0,1,1,1,1,1,0,0,0,0,0",
+        "0,0,0,0,1,1,1,1,1,0,0,0,0",
+        "0,0,0,0,0,1,1,1,1,1,0,0,0",
+        "0,0,0,0,0,0,1,1,1,1,1,0,0",
+        "0,0,0,0,0,0,0,1,1,1,1,1,0",
+        "0,0,0,0,0,0,0,0,1,1,1,1,1",
+        "1,0,1,0,1,0,1,0,1,0,0,0,0",
+        "0,1,0,1,0,1,0,1,0,1,0,0,0",
+        "0,0,1,0,1,0,1,0,1,0,1,0,0",
+        "0,0,0,1,0,1,0,1,0,1,0,1,0",
+        "0,0,0,0,1,0,1,0,1,0,1,0,1",
+        // 6x
+        "1,1,1,1,1,1,0,0,0,0,0,0,0",
+        "0,1,1,1,1,1,1,0,0,0,0,0,0",
+        "0,0,1,1,1,1,1,1,0,0,0,0,0",
+        "0,0,0,1,1,1,1,1,1,0,0,0,0",
+        "0,0,0,0,1,1,1,1,1,1,0,0,0",
+        "0,0,0,0,0,1,1,1,1,1,1,0,0",
+        "0,0,0,0,0,0,1,1,1,1,1,1,0",
+        "0,0,0,0,0,0,0,1,1,1,1,1,1",
+        "1,0,1,0,1,0,1,0,1,0,1,0,0",
+        "0,1,0,1,0,1,0,1,0,1,0,1,0",
+        "0,0,1,0,1,0,1,0,1,0,1,0,1",
+    };
+
+    public static void main(String[] args) {
+        try {
+            Properties props = new Properties();
+            props.setProperty("log4j.rootLogger", "DEBUG, A1");
+            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
+            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
+            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
+            props.setProperty("log4j.logger.org.hibernate","INFO");
+            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
+            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
+            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
+            props.setProperty("log4j.logger.net","INFO");
+            PropertyConfigurator.configure(props);
+            
+            HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
+
+            org.hibernate.Session hibSession = new _RootDAO().getSession();
+            
+            Session session = Session.getSessionUsingInitiativeYearTerm(
+                    ApplicationProperties.getProperty("initiative", "PdF"),
+                    ApplicationProperties.getProperty("year","2011"),
+                    ApplicationProperties.getProperty("term","Podzim")
+                    );
+            
+            if (session==null) {
+                sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
+                System.exit(0);
+            } else {
+                sLog.info("Session: "+session);
+            }
+            
+            List<BitSet> weeks = new ArrayList<BitSet>();
+            BitSet fullTerm = session.getDefaultDatePattern().getPatternBitSet();
+            int cnt = 0;
+            for (int i = 0; i < fullTerm.length(); i++) {
+                if (fullTerm.get(i)) {
+                    int w = (cnt++) / 7;
+                    if (weeks.size() == w) {weeks.add(new BitSet(fullTerm.length())); }
+                    weeks.get(w).set(i);
+                }
+            }
+            
+            for (String c: sCombinations) {
+                BitSet weekCode = new BitSet(weeks.get(0).length());
+                String dp = "";
+                long id = 0;
+                int f = -1, i = 0;;
+                for (String x: c.split(",")) {
+                    if (x.equals("1")) {
+                        if (f < 0) f = 1 + i;
+                        weekCode.or(weeks.get(i));
+                        id += (1 << i);
+                    } else {
+                        if (f > 0) {
+                            if (!dp.isEmpty()) dp += ",";
+                            if (f == i) dp += "" + f;
+                            else dp += f + "-" + i;
+                            f = -1;
+                        }
+                    }
+                    i++;
+                }
+                if (f > 0) {
+                    if (!dp.isEmpty()) dp += ",";
+                    if (f == weeks.size()) dp += "" + f;
+                    else dp += f + "-" + weeks.size();
+                }
+                org.unitime.timetable.model.DatePattern p = org.unitime.timetable.model.DatePattern.findByName(session, "Týden " + dp);
+                if (p == null) {
+                	p = new org.unitime.timetable.model.DatePattern();
+                	p.setSession(session);
+                	p.setName("Týden " + dp);
+                	p.setOffset(fullTerm.nextSetBit(0) - weekCode.nextSetBit(0));
+                	p.setType(org.unitime.timetable.model.DatePattern.sTypeExtended);
+                	p.setVisible(true);
+                	String pattern = "";
+                	for (int j = weekCode.nextSetBit(0); j < weekCode.length(); j++)
+                		pattern += (weekCode.get(j) ? "1" : "0");
+                	p.setPattern(pattern);
+                	hibSession.saveOrUpdate(p);
+                } else {
+                	String pattern = "";
+                	for (int j = weekCode.nextSetBit(0); j < weekCode.length(); j++)
+                		pattern += (weekCode.get(j) ? "1" : "0");
+                	p.setOffset(fullTerm.nextSetBit(0) - weekCode.nextSetBit(0));
+                	p.setPattern(pattern);
+                	p.setType(org.unitime.timetable.model.DatePattern.sTypeExtended);
+                	p.setVisible(true);
+                	hibSession.saveOrUpdate(p);
+                }
+            }
+
+            hibSession.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	}
+
+}
