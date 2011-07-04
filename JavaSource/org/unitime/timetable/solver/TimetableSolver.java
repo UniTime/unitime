@@ -57,6 +57,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -949,7 +950,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		assignment.setDays(new Integer(placement.getTimeLocation().getDayCode()));
     		assignment.setStartSlot(new Integer(placement.getTimeLocation().getStartSlot()));
     		if (placement.getTimeLocation().getDatePatternId()!=null) {
-    			assignment.setCachedDatePatternId(placement.getTimeLocation().getDatePatternId());
+    			assignment.setDatePattern(DatePatternDAO.getInstance().get(placement.getTimeLocation().getDatePatternId()));
     		}
     		assignment.setSlotsPerMtg(placement.getTimeLocation().getLength());
     		assignment.setBreakTime(placement.getTimeLocation().getBreakTime());

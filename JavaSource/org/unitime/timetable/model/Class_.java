@@ -1467,6 +1467,7 @@ public class Class_ extends BaseClass_ {
             a.setInstructors(new HashSet());
             a.setStartSlot(assignment.getTime().getStartSlot());
             a.setTimePattern(assignment.getTime().getTimePattern(hibSession));
+            a.setDatePattern(effectiveDatePattern());
             a.setAssignmentInfo(new HashSet());
             
             for (ClassRoomInfo room: assignment.getRooms())

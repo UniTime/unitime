@@ -73,6 +73,8 @@ public class TimetableGridTable {
 	public static final int sDaysFri = 6;
 	public static final int sDaysSat = 7;
 	public static final int sDaysSun = 8;
+	public static final int sDaysMonThu = 9;
+	public static final int sDaysFriSat = 10;
 	public static String[] sDays = new String[] {
 			"All",
 			"All except Weekend",
@@ -82,7 +84,9 @@ public class TimetableGridTable {
 			"Thursday",
 			"Friday",
 			"Saturday",
-			"Sunday"
+			"Sunday",
+			"Monday - Thursday",
+			"Friday & Saturday"
 	};
 	public static final int sDispModeInRow   = 0;
 	public static final int sDispModePerWeekHorizontal = 1;
@@ -253,6 +257,8 @@ public class TimetableGridTable {
 			case sDaysFri : return 4;
 			case sDaysSat : return 5;
 			case sDaysSun : return 6;
+			case sDaysMonThu: return 0;
+			case sDaysFriSat : return 4;
 			default : return 0;
 		}			
 	}
@@ -268,6 +274,8 @@ public class TimetableGridTable {
 			case sDaysFri : return 4;
 			case sDaysSat : return 5;
 			case sDaysSun : return 6;
+			case sDaysMonThu: return 3;
+			case sDaysFriSat : return 5;
 			default : return 4;
 		}			
 	}

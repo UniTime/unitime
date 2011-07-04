@@ -36,6 +36,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionChangesForm;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -166,7 +167,9 @@ public class SolutionChangesAction extends Action {
     	        	if (before!=null && before.getRoom()!=null && before.getRoom().length>i)
     	        		link += "&room"+i+"="+before.getRoom()[i].getId();
     	        }
-    	        String dates = (before==null?after.getDaysHtml():before.getDaysHtml());
+    	        String dates = (before == null ? "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>" : before.getDaysName()) +
+    	        	(after == null ? " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>" :
+    	        		before != null && before.getDaysName().equals(after.getDaysName()) ? "" : " &rarr; " + after.getDaysName());
     	        String timesSort = (before==null?after.getTimeName():before.getTimeName());
     	        String roomsSort = (before==null?after.getRoomName():before.getRoomName());
     	        String datesSort = (before==null?after.getDaysName():before.getDaysName());

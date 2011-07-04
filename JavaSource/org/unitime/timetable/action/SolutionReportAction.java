@@ -604,16 +604,16 @@ public class SolutionReportAction extends Action {
 		for (JenrlInfo g: (Set<JenrlInfo>)report.getGroups()) {
 			if (g.isImportant()) { hasImportant = true; break; }
 		}
-		PdfWebTable webTable = new PdfWebTable(9,
+		PdfWebTable webTable = new PdfWebTable(10,
    	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
-   				new String[] {"left", "left", "left", "left", "left", "left","left","left", "left"},
+   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
+   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left"},
    				null);
 		if (hasImportant) {
-			webTable = new PdfWebTable(10,
+			webTable = new PdfWebTable(11,
 	   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-	   				new String[] {"NrConflicts", "Class", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Important", "Curriculum"},
-	   				new String[] {"left", "left", "left", "left", "left", "left","left","left", "left", "left"},
+	   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Important", "Curriculum"},
+	   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left", "left"},
 	   				null);
 		}
         webTable.setRowStyle("white-space:nowrap");
@@ -639,6 +639,7 @@ public class SolutionReportAction extends Action {
                 				String.valueOf(Math.round(g.getJenrl())),
                 				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
                 				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
+                				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
                 				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
                 				rSB.toString(),
@@ -651,7 +652,7 @@ public class SolutionReportAction extends Action {
                 			},
                 			new Comparable[] {
                 				new Double(g.getJenrl()),
-                				new DuoComparable(g.getFirst(),g.getSecond()), null, null,
+                				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null,
                 				new Integer(g.isHard()?1:0),
                 				new Double(g.getDistance()),
                 				new Integer(g.isFixed()?1:0),
@@ -665,6 +666,7 @@ public class SolutionReportAction extends Action {
                 				String.valueOf(Math.round(g.getJenrl())),
                 				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
                 				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
+                				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
                 				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
                 				rSB.toString(),
@@ -676,7 +678,7 @@ public class SolutionReportAction extends Action {
                 			},
                 			new Comparable[] {
                 				new Double(g.getJenrl()),
-                				new DuoComparable(g.getFirst(),g.getSecond()), null, null,
+                				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null,
                 				new Integer(g.isHard()?1:0),
                 				new Double(g.getDistance()),
                 				new Integer(g.isFixed()?1:0),

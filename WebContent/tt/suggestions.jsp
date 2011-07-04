@@ -74,6 +74,7 @@
 		s += '&days='+suggestionsForm['days'].value;
 		s += '&slot='+suggestionsForm['slot'].value;
 		s += '&pattern='+suggestionsForm['pattern'].value;
+		s += '&dates='+suggestionsForm['dates'].value;
 		
 		displayLoading();
 		document.location = s;
@@ -115,6 +116,15 @@
 		go(evt);
   }
   
+  function selectDates(evt, dates) {
+		if (suggestionsForm['dates'].value!='')
+			document.getElementById('dates_'+suggestionsForm['dates'].value).style.border='none';	
+		suggestionsForm['dates'].value = dates;
+		document.getElementById('dates_'+dates).style.border='black 1px dashed';
+		
+		go(evt);
+  }
+  
   function initRooms() {
 		for (i=0;i<suggestionsForm.nrRooms.value;i++) {
 			if (suggestionsForm['room'+i].value!='') {
@@ -126,6 +136,11 @@
   function initTime() {
 		if (suggestionsForm['days'].value!='')
 			document.getElementById('time_'+suggestionsForm['days'].value+"_"+suggestionsForm['slot'].value+"_"+suggestionsForm['pattern'].value).style.border='black 1px dashed';	
+  }
+
+  function initDates() {
+		if (suggestionsForm['dates'].value!='')
+			document.getElementById('dates_'+suggestionsForm['dates'].value).style.border='black 1px dashed';	
   }
   
 </script>
