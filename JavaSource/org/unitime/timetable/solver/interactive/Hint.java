@@ -48,10 +48,11 @@ public class Hint implements Serializable {
 	private int iStartSlot;
 	private List<Long> iRoomIds;
 	private Long iPatternId;
+	private Long iDatePatternId;
 	private AssignmentPreferenceInfo iInfo = null;
 	private ClassAssignmentDetails iDetails = null;
-	public Hint(Long classId, int days, int startSlot, List<Long> roomIds, Long patternId) {
-		iClassId = classId; iDays = days; iStartSlot = startSlot; iRoomIds = roomIds; iPatternId = patternId;
+	public Hint(Long classId, int days, int startSlot, List<Long> roomIds, Long patternId, Long datePatternId) {
+		iClassId = classId; iDays = days; iStartSlot = startSlot; iRoomIds = roomIds; iPatternId = patternId; iDatePatternId = datePatternId;
 	}
 	public Hint(Solver solver, Placement placement) {
 		this(solver, placement, false);
@@ -62,6 +63,7 @@ public class Hint implements Serializable {
 		iStartSlot = placement.getTimeLocation().getStartSlot();
 		iRoomIds = placement.getRoomIds();
 		iPatternId = placement.getTimeLocation().getTimePatternId();
+		iDatePatternId = placement.getTimeLocation().getDatePatternId();
 		if (populateInfo && solver!=null)
 			iInfo = new AssignmentPreferenceInfo(solver, placement, false);
 		if (placement.variable().isCommitted() && solver!=null)
@@ -78,6 +80,7 @@ public class Hint implements Serializable {
         		if (t.getDayCode()!=iDays) continue;
         		if (t.getStartSlot()!=iStartSlot) continue;
         		if (!t.getTimePatternId().equals(iPatternId)) continue;
+        		if (!t.getDatePatternId().equals(iDatePatternId)) continue;
         		timeLocation = t; break;
         	}
         	Vector roomLocations = new Vector();
@@ -131,6 +134,7 @@ public class Hint implements Serializable {
 	public int getStartSlot() { return iStartSlot; }
 	public List<Long> getRoomIds() { return iRoomIds; }
 	public Long getPatternId() { return iPatternId; }
+	public Long getDatePatternId() { return iDatePatternId; }
 	
 	public boolean equals(Object o) {
 		if (o==null || !(o instanceof Hint)) return false;
@@ -142,7 +146,7 @@ public class Hint implements Serializable {
 		if (iDetails!=null) return iDetails;
 		if (iInfo==null) iInfo = WebSolver.getSolver(session).getInfo(this);
 		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(session, iClassId, includeConstraints);
-		if (iDetails!=null) iDetails.setAssigned(iInfo, iRoomIds,iDays,iStartSlot);
+		if (iDetails!=null) iDetails.setAssigned(iInfo, iRoomIds,iDays,iStartSlot,iPatternId,iDatePatternId);
 		return iDetails;
 	}
 	public ClassAssignmentDetails getDetailsUnassign(HttpSession session, boolean includeConstraints) throws Exception {
@@ -178,6 +182,8 @@ public class Hint implements Serializable {
     	}
     	if (iPatternId!=null)
     		element.addAttribute("pattern", iPatternId.toString());
+    	if (iDatePatternId!=null)
+    		element.addAttribute("dates", iDatePatternId.toString());
     }
     
     public static Hint fromXml(Element element) {
@@ -189,7 +195,8 @@ public class Hint implements Serializable {
     			Integer.parseInt(element.attributeValue("days")),
     			Integer.parseInt(element.attributeValue("start")),
     			roomIds,
-    			(element.attributeValue("pattern")==null?null:Long.valueOf(element.attributeValue("pattern")))
+    			(element.attributeValue("pattern")==null?null:Long.valueOf(element.attributeValue("pattern"))),
+    			(element.attributeValue("dates")==null?null:Long.valueOf(element.attributeValue("dates")))
     			);
     }
     

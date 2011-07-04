@@ -174,8 +174,8 @@ public class SuggestionsModel implements Serializable {
 	public Long getClassId() { return iClassId; }
 	
     public Vector getHints() { return iHints; }
-    public void addHint(Long classId, int days, int startSlots, List<Long> roomIds, Long patternId) {
-    	Hint hint = new Hint(classId, days, startSlots, roomIds,patternId);
+    public void addHint(Long classId, int days, int startSlots, List<Long> roomIds, Long patternId, Long datePatternId) {
+    	Hint hint = new Hint(classId, days, startSlots, roomIds, patternId, datePatternId);
         Hint prev = null;
         for (Enumeration e=iHints.elements();e.hasMoreElements();) {
             Hint h = (Hint)e.nextElement();
@@ -217,7 +217,7 @@ public class SuggestionsModel implements Serializable {
     public void selectPlacement(int ord) {
     	Hint hint = ((Suggestion)iTryAssignments.toArray()[ord]).getHint();
     	if (hint!=null)
-    		addHint(hint.getClassId(),hint.getDays(),hint.getStartSlot(),hint.getRoomIds(),hint.getPatternId());
+    		addHint(hint.getClassId(),hint.getDays(),hint.getStartSlot(),hint.getRoomIds(),hint.getPatternId(),hint.getDatePatternId());
     }
     public Suggestion getEmptySuggestion() { return iEmptySuggestion; }
     

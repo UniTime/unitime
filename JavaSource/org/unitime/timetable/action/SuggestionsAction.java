@@ -122,16 +122,19 @@ public class SuggestionsAction extends Action {
         	String days = request.getParameter("days");
         	String slot = request.getParameter("slot");
         	String pattern = request.getParameter("pattern");
+        	String dates = request.getParameter("dates");
         	if (id==null)
         		throw new Exception("No class selected.");
         	model.setClassId(new Long(id));
         	if (days==null || slot==null || pattern==null)
         		throw new Exception("No time selected.");
+        	if (dates==null)
+        		throw new Exception("No dates selected.");
         	SolverProxy solver = WebSolver.getSolver(request.getSession());
-        	if (solver==null || solver.getInfo(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern)))!=null) {
-        		model.addHint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern));
+        	if (solver==null || solver.getInfo(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates)))!=null) {
+        		model.addHint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates));
         	} else {
-        		String message = solver.getNotValidReason(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern)));
+        		String message = solver.getNotValidReason(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates)));
         		request.setAttribute("Suggestions.currentAssignmentMessage","<script language='JavaScript'>alert('"+(message==null?"Selected placement is not valid (room or instructor not avaiable).":message)+"');</script>");
         	}
         }
@@ -172,7 +175,7 @@ public class SuggestionsAction extends Action {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
         		if (myForm.getId()==null) myForm.setId(assignment.getAfter()==null?assignment.getBefore().getClassId():assignment.getAfter().getClassId());
         		if (assignment.getBefore()==null) continue;
-        		model.addHint(assignment.getBefore().getClassId(),assignment.getBefore().getDays(),assignment.getBefore().getStartSlot(),assignment.getBefore().getRoomIds(),assignment.getBefore().getPatternId());
+        		model.addHint(assignment.getBefore().getClassId(),assignment.getBefore().getDays(),assignment.getBefore().getStartSlot(),assignment.getBefore().getRoomIds(),assignment.getBefore().getPatternId(),assignment.getBefore().getDatePatternId());
         	}
         }
 
@@ -710,6 +713,7 @@ public class SuggestionsAction extends Action {
 			}
 			if (!ca.getTimes().isEmpty()) {
 				sb.append("<TR><TD>Time&nbsp;Locations:</TD><TD>"+ca.getTimes().toHtml(true,true,selection)+"</TD></TR>");
+				sb.append("<TR"+(ca.getTimes().getNrDates() <= 1 ? " style='display:none;'" : "")+"><TD>Date&nbsp;Patterns:</TD><TD>"+ca.getTimes().toDatesHtml(true,true,selection)+"</TD></TR>");
 			}
 		}
 		if (dispLinks && ca.getClazz()!=null && ca.getClazz().getRoomCapacity()>=0 && ca.getClazz().getRoomCapacity()<Integer.MAX_VALUE && ca.getClazz().nrRooms()>0) {

@@ -3572,4 +3572,48 @@
 		</mysql>
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 	</update>
+	<update version="74" date="4-Jul-2011" comment="Assignment Date Pattern">
+		<plsql>
+			alter table %SCHEMA%.assignment add date_pattern_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.assignment add date_pattern_id decimal(20,0) null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.assignment add constraint fk_assignment_date_pattern foreign key (date_pattern_id)
+			references %SCHEMA%.date_pattern(uniqueid) on delete set null
+		</sql>
+		<plsql>
+			update %SCHEMA%.assignment a set a.date_pattern_id = (
+				select c.date_pattern_id from %SCHEMA%.class_ c where c.date_pattern_id is not null and c.uniqueid = a.class_id
+			) where a.date_pattern_id is null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.assignment a set a.date_pattern_id = (
+				select s.date_pattern_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.class_ c where s.date_pattern_id is not null and
+				s.uniqueid = c.subpart_id and c.uniqueid = a.class_id
+			) where a.date_pattern_id is null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.assignment a set a.date_pattern_id = (
+				select s.def_datepatt_id from %SCHEMA%.solution x, %SCHEMA%.solver_group g, %SCHEMA%.sessions s where
+				a.solution_id = x.uniqueid and x.owner_id = g.uniqueid and g.session_id = s.uniqueid
+			) where a.date_pattern_id is null
+		</plsql>
+		<mysql>
+			update %SCHEMA%.assignment a, %SCHEMA%.class_ c
+				set a.date_pattern_id = c.date_pattern_id
+				where c.date_pattern_id is not null and c.uniqueid = a.class_id and a.date_pattern_id is null
+		</mysql>
+		<mysql> 
+			update %SCHEMA%.assignment a, %SCHEMA%.scheduling_subpart s, %SCHEMA%.class_ c
+				set a.date_pattern_id = s.date_pattern_id
+				where s.date_pattern_id is not null and s.uniqueid = c.subpart_id and c.uniqueid = a.class_id and a.date_pattern_id is null
+		</mysql>
+		<mysql> 
+			update %SCHEMA%.assignment a, %SCHEMA%.solution x, %SCHEMA%.solver_group g, %SCHEMA%.sessions s
+				set a.date_pattern_id = s.def_datepatt_id
+				where a.solution_id = x.uniqueid and x.owner_id = g.uniqueid and g.session_id = s.uniqueid and a.date_pattern_id is null 
+		</mysql>
+	</update>
 </dbupdate>

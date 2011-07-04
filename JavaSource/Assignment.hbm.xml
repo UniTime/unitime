@@ -68,6 +68,13 @@
             foreign-key="fk_assignment_time_pattern"/>
 
         <many-to-one
+            name="datePattern"
+            class="DatePattern"
+            column="date_pattern_id"
+            not-null="true"
+            foreign-key="fk_assignment_date_pattern"/>
+
+        <many-to-one
             name="solution"
             class="Solution"
             column="solution_id"

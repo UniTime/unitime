@@ -27,6 +27,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.ConstraintInfo;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Solution;
@@ -42,6 +43,7 @@ public abstract class BaseAssignment implements Serializable {
 	private String iClassName;
 
 	private TimePattern iTimePattern;
+	private DatePattern iDatePattern;
 	private Solution iSolution;
 	private Class_ iClazz;
 	private Set<DepartmentalInstructor> iInstructors;
@@ -83,6 +85,9 @@ public abstract class BaseAssignment implements Serializable {
 
 	public TimePattern getTimePattern() { return iTimePattern; }
 	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
+
+	public DatePattern getDatePattern() { return iDatePattern; }
+	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
 	public Solution getSolution() { return iSolution; }
 	public void setSolution(Solution solution) { iSolution = solution; }
@@ -138,6 +143,7 @@ public abstract class BaseAssignment implements Serializable {
 			"\n	ClassId: " + getClassId() +
 			"\n	ClassName: " + getClassName() +
 			"\n	Clazz: " + getClazz() +
+			"\n	DatePattern: " + getDatePattern() +
 			"\n	Days: " + getDays() +
 			"\n	Solution: " + getSolution() +
 			"\n	StartSlot: " + getStartSlot() +
