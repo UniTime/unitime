@@ -52,6 +52,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.StudentEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -395,6 +396,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			assignment.setDays(new Integer(placement.getTimeLocation().getDayCode()));
         			assignment.setStartSlot(new Integer(placement.getTimeLocation().getStartSlot()));
         			assignment.setTimePattern(pattern);
+        			if (placement.getTimeLocation().getDatePatternId() != null)
+        				assignment.setDatePattern(DatePatternDAO.getInstance().get(placement.getTimeLocation().getDatePatternId(), hibSession));
         			assignment.setRooms(rooms);
         			assignment.setInstructors(instructors);
         			assignment.setSolution(solution);

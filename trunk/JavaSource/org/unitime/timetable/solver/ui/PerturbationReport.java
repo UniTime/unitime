@@ -85,7 +85,7 @@ public class PerturbationReport implements Serializable {
 			Placement assignedPlacement = (Placement)lecture.getAssignment();
 			Placement initialPlacement = (Placement)lecture.getInitialAssignment();
 			iDetail = new ClassAssignmentDetails(solver, lecture, initialPlacement, false);
-			iDetail.setAssigned(new AssignmentPreferenceInfo(solver, assignedPlacement, false), assignedPlacement.getRoomIds(),assignedPlacement.getTimeLocation().getDayCode(), assignedPlacement.getTimeLocation().getStartSlot());
+			iDetail.setAssigned(new AssignmentPreferenceInfo(solver, assignedPlacement, false), assignedPlacement.getRoomIds(),assignedPlacement.getTimeLocation().getDayCode(), assignedPlacement.getTimeLocation().getStartSlot(), assignedPlacement.getTimeLocation().getTimePatternId(), assignedPlacement.getTimeLocation().getDatePatternId());
 			
 	        affectedStudents = lecture.classLimit();
 	        affectedInstructors= lecture.getInstructorConstraints().size();

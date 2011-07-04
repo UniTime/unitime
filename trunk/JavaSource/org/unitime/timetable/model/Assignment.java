@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.BitSet;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -39,7 +40,6 @@ import org.unitime.timetable.model.base.BaseAssignment;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.AssignmentInfoDAO;
 import org.unitime.timetable.model.dao.ConstraintInfoDAO;
-import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.util.Constants;
 
@@ -211,7 +211,10 @@ public class Assignment extends BaseAssignment {
 				getStartSlot().intValue(),
 				getSlotPerMtg(),
 				0,0,
-				datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),getBreakTime()
+				(datePattern == null ? null : datePattern.getUniqueId()),
+				(datePattern == null ? "?" : datePattern.getName()),
+				(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
+				getBreakTime()
 				);
 			iTimeLocation.setTimePatternId(getTimePattern().getUniqueId());
 		}
@@ -259,20 +262,11 @@ public class Assignment extends BaseAssignment {
 		return getClassName()+" "+getPlacement().getName();
 	}
 	
-	private Long iCachedDatePatternId;
-	private transient DatePattern iCachedDatePattern = null;
-	
 	public DatePattern getDatePattern() {
-		if (iCachedDatePattern!=null) return iCachedDatePattern;
-		if (iCachedDatePatternId!=null) {
-			iCachedDatePattern = (new DatePatternDAO()).get(iCachedDatePatternId);
-			return iCachedDatePattern;
-		}
-		return (getClazz()==null?null:getClazz().effectiveDatePattern());
-	}
-	
-	public void setCachedDatePatternId(Long datePatternId) {
-		iCachedDatePatternId = datePatternId;
+		DatePattern dp = super.getDatePattern();
+		if (dp == null && getClazz() != null)
+			dp = getClazz().effectiveDatePattern();
+		return dp;
 	}
 	
 	public String getClassName() {

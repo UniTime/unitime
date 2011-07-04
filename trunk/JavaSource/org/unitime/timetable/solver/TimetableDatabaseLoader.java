@@ -980,7 +980,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (conflictConstraints.isEmpty()) {
                 lecture.assign(0,placement);
             } else {
-                String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getName();
+                String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getLongName();
             	warn+="<br>&nbsp;&nbsp;Reason:";
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
@@ -1034,6 +1034,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	int dayCode = assignment.getDays().intValue();
     	int startSlot = assignment.getStartSlot().intValue();
     	Long patternId = assignment.getTimePattern().getUniqueId();
+    	DatePattern datePattern = assignment.getDatePattern();
     	Set<Location> rooms = assignment.getRooms();
 
     	if (lecture==null) return;
@@ -1042,6 +1043,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		Placement placement = (Placement)i2.next();
     		if (placement.getTimeLocation().getDayCode()!=dayCode) continue;
     		if (placement.getTimeLocation().getStartSlot()!=startSlot) continue;
+    		if (!placement.getTimeLocation().getTimePatternId().equals(patternId)) continue;
+    		if (datePattern != null && !placement.getTimeLocation().getDatePatternId().equals(datePattern.getUniqueId())) continue;
     		boolean sameRooms = true;
     		for (Iterator i=rooms.iterator();sameRooms && i.hasNext();) {
     			Location r = (Location)i.next();
@@ -1057,6 +1060,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		if (t.getDayCode()!=dayCode) continue;
         		if (t.getStartSlot()!=startSlot) continue;
         		if (!t.getTimePatternId().equals(patternId)) continue;
+        		if (datePattern != null && !t.getDatePatternId().equals(datePattern.getUniqueId())) continue;
         		timeLocation = t; break;
         	}
         	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
@@ -1123,7 +1127,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	if (conflictConstraints.isEmpty()) {
     	        lecture.assign(0,initialPlacement);
 	        } else {
-                String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getName();
+                String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName();
                 warn += "<br>&nbsp;&nbsp;Reason:";
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
@@ -1979,7 +1983,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	                if (conflictConstraints.isEmpty()) {
         	                    lecture.assign(0,committedPlacement);
         	                } else {
-        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getName();
+        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getLongName();
         	                	warn+="<br>&nbsp;&nbsp;Reason:";
         	                    for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
         	                    	Set<Placement> vals = conflictConstraints.get(c);

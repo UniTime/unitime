@@ -875,7 +875,7 @@ public class PreferencesAction extends Action {
 			if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user)) {
 				ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(request.getSession(),pg.getUniqueId(),true);
 				if (ca!=null) {
-					String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, false);
+					String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, true);
 					if (assignmentTable!=null)
 						request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 				} else {
@@ -885,7 +885,7 @@ public class PreferencesAction extends Action {
 						if (assignment!=null && assignment.getUniqueId()!=null) {
 							ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(request.getSession(), assignment.getUniqueId(), true);
 							if (ca!=null) {
-								String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, false);
+								String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, true);
 								if (assignmentTable!=null)
 									request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 							}

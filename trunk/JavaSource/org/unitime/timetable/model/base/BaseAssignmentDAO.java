@@ -44,6 +44,11 @@ public abstract class BaseAssignmentDAO extends _RootDAO<Assignment,Long> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<Assignment> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
+		return hibSession.createQuery("from Assignment x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<Assignment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
 		return hibSession.createQuery("from Assignment x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
 	}

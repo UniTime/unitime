@@ -344,7 +344,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 			if (tx!=null) tx.rollback();
 			sLog.error(e);
 		}
-		StringBuffer ext = new StringBuffer();
+		StringBuffer ext = new StringBuffer(properties.getProperty("Extensions.Classes", ""));
 		if (properties.getPropertyBoolean("General.SearchIntensification",type==SolverParameterGroup.sTypeCourse)) {
         	if (ext.length()>0) ext.append(";");
         	ext.append("net.sf.cpsolver.ifs.extension.SearchIntensification");
