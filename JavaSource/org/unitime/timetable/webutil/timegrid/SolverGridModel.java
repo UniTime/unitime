@@ -70,6 +70,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			setName(room.getRoomName());
 		setSize(room.getCapacity());
         setType(room.getType());
+		setFirstDay(firstDay);
 		iRoomId = room.getResourceId();
 		if (firstDay<0) {
 			Vector placements = new Vector();
@@ -112,6 +113,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super(sResourceTypeInstructor, instructor.getResourceId());
 		setName(instructor.getName());
         setType(instructor.getType());
+		setFirstDay(firstDay);
 		if (firstDay<0) {
 			Vector placements = new Vector();
 			for (Lecture lecture: instructor.assignedVariables()) {
@@ -141,6 +143,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super(sResourceTypeInstructor, dept.getDepartmentId().longValue());
 		setName(dept.getName());
 		setSize(dept.variables().size());
+		setFirstDay(firstDay);
 		Vector placements = new Vector();
 		for (Lecture lecture: dept.assignedVariables()) {
 			Placement placement = (Placement)lecture.getAssignment();
@@ -152,6 +155,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	public SolverGridModel(Solver solver, String name, List<Student> students, int firstDay, int bgMode) {
 		super(sResourceTypeCurriculum, -1l);
 		setName(name);
+		setFirstDay(firstDay);
 		Hashtable<Long, String> groups = new Hashtable<Long, String>();
 		for (Object[] o: (List<Object[]>)CurriculumDAO.getInstance().getSession().createQuery(
 				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +

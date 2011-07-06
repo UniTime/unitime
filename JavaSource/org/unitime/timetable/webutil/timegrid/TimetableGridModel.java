@@ -20,6 +20,11 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
@@ -37,6 +42,9 @@ public abstract class TimetableGridModel implements Serializable {
 	private int iSize = 0;
     private Long iType = null;
 	private transient boolean[][][] iRendered = null;
+	private transient HashSet<Integer>[][][] iRenderedDate = null;
+	private transient Hashtable<Integer,Hashtable<Long,Integer>> iIndex = null;
+	private int iFirstDay = -1;
 
 	public static final int sResourceTypeRoom = 0;
 	public static final int sResourceTypeInstructor = 1;
@@ -95,6 +103,8 @@ public abstract class TimetableGridModel implements Serializable {
 	
 	public int getResourceType() { return iResourceType; }
 	public long getResourceId() { return iResourceId; }
+	public int getFirstDay() { return iFirstDay; }
+	public void setFirstDay(int firstDay) { iFirstDay = firstDay; }
 	
 	public static String[] getBackgroundModes() { return sBgModes; }
 	
@@ -199,6 +209,48 @@ public abstract class TimetableGridModel implements Serializable {
 		return iData[day][slot][idx];
 	}
 	
+	private Hashtable<Long, Integer> index(int date) {
+		if (iIndex == null)
+			iIndex = new Hashtable<Integer, Hashtable<Long,Integer>>();
+		Hashtable<Long, Integer> index = iIndex.get(date);
+		if (index == null) {
+			index = new Hashtable<Long, Integer>();
+			iIndex.put(date, index);
+			for (int day = 0; day < iData.length; day++) {
+				for (int slot = 0; slot < iData[day].length; slot++) {
+					if (iData[day][slot] == null) continue;
+					Set<Integer> used = new HashSet<Integer>();
+					List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
+					for (TimetableGridCell cell: iData[day][slot])
+						if (cell != null && cell.getWeekCode().get(date)) {
+							Integer i = index.get(cell.getAssignmentId());
+							if (i == null) {
+								cells.add(cell);
+							} else {
+								used.add(i);
+							}
+						}
+					for (TimetableGridCell cell: cells) {
+						int i = 0;
+						while (used.contains(i)) i++;
+						index.put(cell.getAssignmentId(), i);
+					}
+				}
+			}
+		}
+		return index;
+	}
+	
+	public TimetableGridCell getCell(int day, int slot, int idx, int date) {
+		if (iData[day][slot]==null)
+			return null;
+		Hashtable<Long, Integer> index = index(date);
+		for (TimetableGridCell cell: iData[day][slot])
+			if (cell != null && cell.getWeekCode().get(date) && idx == index.get(cell.getAssignmentId()))
+				return cell;
+		return null;
+	}
+	
 	public int getMaxIdx(int startDay, int endDay, int firstSlot, int lastSlot) {
 		int max = 0;
 		for (int day=startDay;day<=endDay;day++)
@@ -207,6 +259,23 @@ public abstract class TimetableGridModel implements Serializable {
 					max = Math.max(max,iData[day][slot].length-1);
 		return max;
 	}
+	
+	public int getMaxIdx(int startDay, int endDay, int firstSlot, int lastSlot, int date) {
+		int max = 0;
+		for (int day=startDay;day<=endDay;day++)
+			for (int slot=firstSlot;slot<=lastSlot;slot++) {
+				int idx = 0;
+				if (iData[day][slot] != null) {
+					Hashtable<Long, Integer> index = index(date);
+					for (TimetableGridCell cell: iData[day][slot])
+						if (cell != null && cell.getWeekCode().get(date))
+							idx = Math.max(idx, index.get(cell.getAssignmentId()));
+				}
+				max = Math.max(max, idx);
+			}
+		return max;
+	}
+
 	public int getMaxIdxForDay(int day, int firstSlot, int lastSlot) {
 		int max = 0;
 		for (int slot=firstSlot;slot<=lastSlot;slot++)
@@ -214,13 +283,19 @@ public abstract class TimetableGridModel implements Serializable {
 				max = Math.max(max,iData[day][slot].length-1);
 		return max;
 	}
+	
+	public int getMaxIdxForDay(int day, int firstSlot, int lastSlot, int date) {
+		return getMaxIdx(day, day, firstSlot, lastSlot, date);
+	}
+	
 	public boolean isAvailable(int day, int slot) {
 		return iAvailable[day][slot];
 	}
 	
 	public void clearRendered() {
-		iRendered = null;
+		iRendered = null; iRenderedDate = null;
 	}
+	
 	public boolean isRendered(int day, int slot, int idx) {
 		if (iRendered==null || iRendered[day][slot]==null)
 			return false;
@@ -258,22 +333,69 @@ public abstract class TimetableGridModel implements Serializable {
 		}
 	}
 	
-	public int getDepth(int day, int slot, int idx, int maxIdx) {
-		int depth = 1;
-		for (int i=idx+1;i<=maxIdx;i++) {
-			if (getCell(day,slot,i)!=null || isRendered(day,slot,i)) break;
-			depth++;
+	public boolean isRendered(int day, int slot, int idx, int date) {
+		if (iRenderedDate==null || iRenderedDate[day][slot]==null)
+			return false;
+		if (iRenderedDate[day][slot].length<=idx)
+			return false;
+		return iRenderedDate[day][slot][idx].contains(date);
+	}
+	
+	public void setRendered(int day, int slot, int idx, int rowSpan, int colSpan, int date) {
+		if (iRenderedDate==null) {
+			iRenderedDate = new HashSet[Constants.DAY_CODES.length][Constants.SLOTS_PER_DAY][];
+			for (int i=0;i<Constants.DAY_CODES.length;i++)
+				for (int j=0;j<Constants.SLOTS_PER_DAY;j++)
+					iRenderedDate[i][j]=null;
 		}
-		return depth;
+		for (int row=0;row<rowSpan;row++) {
+			for (int col=0;col<colSpan;col++) {
+				if (iRenderedDate[day][slot+col]==null) {
+					iRenderedDate[day][slot+col] = new HashSet[idx+rowSpan];
+					for (int i=0;i<idx+rowSpan;i++)
+						iRenderedDate[day][slot+col][i]=new HashSet<Integer>();
+					iRenderedDate[day][slot+col][idx+row].add(date);
+				} else if (iRenderedDate[day][slot+col].length<=idx+row) {
+					HashSet<Integer>[] old = iRenderedDate[day][slot+col];
+					iRenderedDate[day][slot+col] = new HashSet[idx+rowSpan];
+					for (int i=0;i<idx+rowSpan;i++)
+						iRenderedDate[day][slot+col][i]=(i<old.length?old[i]:new HashSet<Integer>());
+					iRenderedDate[day][slot+col][idx+row].add(date);
+				} else {
+					if (iRenderedDate[day][slot+col][idx+row].contains(date))
+						System.out.println("WARN: ("+day+","+(slot+col)+","+(idx+row)+"," + date + ") already rendered");
+					iRenderedDate[day][slot+col][idx+row].add(date);
+				}
+			}
+		}
 	}
 	
 	public int getDepth(int day, int slot, int idx, int maxIdx, int colSpan) {
 		int depth = Integer.MAX_VALUE;
-		for (int col=0;col<colSpan;col++)
-			depth = Math.min(depth,getDepth(day,slot+col,idx,maxIdx));
+		for (int col=0;col<colSpan;col++) {
+			int d = 1;
+			for (int i=idx+1;i<=maxIdx;i++) {
+				if (getCell(day,slot+col,i)!=null || isRendered(day,slot+col,i)) break;
+				d++;
+			}
+			depth = Math.min(depth,d);
+		}
 		return depth;
 	}
 	
+	public int getDepth(int day, int slot, int idx, int maxIdx, int colSpan, int date) {
+		int depth = Integer.MAX_VALUE;
+		for (int col=0;col<colSpan;col++) {
+			int d = 1;
+			for (int i=idx+1;i<=maxIdx;i++) {
+				if (getCell(day,slot+col,i, date)!=null || isRendered(day,slot+col,i, date)) break;
+				d++;
+			}
+			depth = Math.min(depth,d);
+		}
+		return depth;
+	}
+
 	protected boolean isUselessFirst(int d, int s) {
     	if (s-1<0 || s+6>=Constants.SLOTS_PER_DAY) return false;
     	return (nrCells(d,s-1)!=0 &&
