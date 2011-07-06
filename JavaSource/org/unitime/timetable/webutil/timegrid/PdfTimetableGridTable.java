@@ -22,7 +22,10 @@ package org.unitime.timetable.webutil.timegrid;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.unitime.timetable.model.PreferenceLevel;
@@ -48,6 +51,7 @@ import com.itextpdf.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfTimetableGridTable {
+	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 	private TimetableGridTable iTable = null;
 	private PdfWriter iWriter = null;
 	private Document iDocument = null;
@@ -383,6 +387,77 @@ public class PdfTimetableGridTable {
 								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
 							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 								addText(c, cell.getDays());
+							iPdfTable.addCell(c);
+							slot+=length-1;
+						}
+					}
+				}
+			}
+		} else  if (iTable.isDispModeWeekByWeekHorizontal()) {
+			Calendar cal = Calendar.getInstance(Locale.US);
+			cal.setTime(iTable.iFirstDate);
+			for (int d = 0; d < 365; d++ ) {
+				if (d > 0)
+					cal.add(Calendar.DAY_OF_YEAR, 1);
+				int date = d + iTable.iFirstDay;
+				if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
+				int day = d % 7;
+				if (day < iTable.startDay() || day > iTable.endDay()) continue;
+				boolean hasClasses = false;
+				for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot++) {
+					if (model.getCell(day, slot, 0, date) != null) {
+						hasClasses = true; break;
+					}
+				}
+				if (!hasClasses) continue;
+				int maxIdx = model.getMaxIdxForDay(day,iTable.firstSlot(),iTable.lastSlot(),date);
+				for (int idx=0;idx<=maxIdx;idx++) {
+					PdfPCell c = createCell();
+					c.setBorderWidthTop(0);
+					if (idx==0)
+						addText(c, Constants.DAY_NAME[day]+" "+sDF.format(cal.getTime()), true);
+					c.setBorderWidthBottom(idx==maxIdx?1:0);
+					c.setColspan(12);
+					iPdfTable.addCell(c);
+					for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot++) {
+						int slotsToEnd = iTable.lastSlot()-slot+1;
+						TimetableGridCell cell = model.getCell(day,slot,idx,date);
+                        int length = (cell==null?1:cell.getLength()+cell.getSlot()-slot);
+	            		int colSpan = (cell==null?1:Math.min(length,slotsToEnd));
+						if (cell==null) {
+							String bgColor = model.getBackground(day,slot);
+							if (bgColor==null && !model.isAvailable(day,slot))
+								bgColor=TimetableGridCell.sBgColorNotAvailable;
+							c = createCell();
+							c.setBorderWidthTop(0);
+							c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(day,slot,idx+1,date)!=null?1:0);
+							c.setBorderWidthLeft(0);
+							boolean eod = (slot == iTable.lastSlot());
+							boolean in = !eod && model.getCell(day,slot+1,idx,date)==null && ((slot+1-iTable.firstSlot())%TimetableGridTable.sNrSlotsPerPeriod)!=0;
+							c.setBorderWidthRight(eod || !in?1:0);
+							iPdfTable.addCell(c);
+						} else {
+							String bgColor = cell.getBackground();
+	                		if (iTable.getBgMode()==TimetableGridModel.sBgModeNone) {
+	                    		for (int i=0;i<length;i++)
+	                    			if (!model.isAvailable(day,slot+i)) {
+	                    				bgColor = TimetableGridCell.sBgColorNotAvailableButAssigned;
+	                    				break;
+	                    			}
+	                		}
+							c = createCell();
+							c.setBorderWidthTop(0);
+							c.setBorderWidthLeft(0);
+							c.setColspan(colSpan);
+							if (bgColor!=null)
+								c.setBackgroundColor(getColor(bgColor));
+							addText(c, cell.getName());
+							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
+								addText(c, cell.getRoomName());
+							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+								addText(c, cell.getInstructor());
+							if (iTable.getShowComments())
+								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
 							iPdfTable.addCell(c);
 							slot+=length-1;
 						}

@@ -116,6 +116,7 @@
 			<description>
 				<line>Curriculum resource: display course curriculum groups, number of students displayed next to the room assignment.</line>
 				<line>Allow display of instructor name and preferences (the three numbers indicating how time, room preferences and student conflicts are met) whenever applicable (not only in room timetables).</line>
+				<line>Added 'Per Day' view: there is a line for each day of classes (very much like Per Day view on the Examination Timetable page).</line>
 			</description>
 		</item>
 		<item>

@@ -68,6 +68,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
 		setName(room.getLabel());
 		setSize(room.getCapacity().intValue());
+		setFirstDay(firstDay);
 		iRoomId = room.getUniqueId();
 		Solution firstSolution = null;
 		String ownerIds = "";
@@ -213,6 +214,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, int firstDay, int bgMode) {
 		super(sResourceTypeInstructor, instructor.getUniqueId().intValue());
 		setName(instructor.getLastName()+", "+instructor.getFirstName()+(instructor.getMiddleName()==null?"":" "+instructor.getMiddleName()));
+		setFirstDay(firstDay);
 		Solution firstSolution = null;
 		String ownerIds = "";
 		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
@@ -273,6 +275,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, int firstDay, int bgMode) {
 		super(sResourceTypeInstructor, dept.getUniqueId().longValue());
 		setName(dept.getShortLabel());
+		setFirstDay(firstDay);
 		Solution firstSolution = null;
 		String ownerIds = "";
 		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {

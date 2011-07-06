@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,7 +63,7 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller
  */
 public class TimetableGridTable {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy");
+	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
 	public static int sNrSlotsPerPeriod = 6; // Group slots into 30 minute periods.
 	public static final int sDaysAll = 0;
 	public static final int sDaysAllExceptSat = 1;
@@ -91,10 +92,12 @@ public class TimetableGridTable {
 	public static final int sDispModeInRow   = 0;
 	public static final int sDispModePerWeekHorizontal = 1;
 	public static final int sDispModePerWeekVertical = 2;
+	public static final int sDispModeWeekByWeekHorizontal = 3;
 	public static String[] sDispModes = new String[] {
 		"In Row [horizontal]",
 		"Per Week [horizontal]",
 		"Per Week [vertical]",
+		"Per Date [horizontal]"
 	};
 	public static final int sOrderByNameAsc = 0;
 	public static final int sOrderByNameDesc = 1;
@@ -169,6 +172,8 @@ public class TimetableGridTable {
 	public void setShowComments(boolean showComments) { iShowComments = showComments; }
 	public boolean getShowEvents() { return iShowEvents; }
 	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
+	protected Date iFirstDate = null;
+	protected int iFirstDay = 0;
 	public Vector getWeeks(HttpSession httpSession) throws Exception {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
@@ -178,6 +183,8 @@ public class TimetableGridTable {
 		endCal.setTime(session.getSessionEndDateTime());
 		endCal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
 		int week = startWeek;
+		iFirstDate = DateUtils.getStartDate(session.getSessionStartYear(), startWeek);
+		iFirstDay = DateUtils.getFirstDayOfWeek(session.getSessionStartYear(),startWeek) - session.getDayOfYear(1,session.getPatternStartMonth())-1;
 		while (DateUtils.getStartDate(session.getSessionStartYear(),week).compareTo(endCal.getTime()) <= 0) {
 			weeks.addElement(new IdValue(new Long(week), sDF.format(DateUtils.getStartDate(session.getSessionStartYear(), week))+" - "+sDF.format(DateUtils.getEndDate(session.getSessionStartYear(), week))));
 			week++;
@@ -239,11 +246,15 @@ public class TimetableGridTable {
 	}
 
 	public boolean isDispModePerWeek() {
-		return isDispModePerWeekHorizontal() || isDispModePerWeekVertical();
+		return isDispModePerWeekHorizontal() || isDispModePerWeekVertical() || isDispModeWeekByWeekHorizontal();
 	}
 
 	public boolean isDispModeInRow() {
 		return iDispMode == sDispModeInRow;
+	}
+	
+	public boolean isDispModeWeekByWeekHorizontal() {
+		return iDispMode == sDispModeWeekByWeekHorizontal;
 	}
 	
 	public int startDay() {
@@ -335,7 +346,7 @@ public class TimetableGridTable {
 				for (int slot=firstSlot();slot<=lastSlot();slot+=sNrSlotsPerPeriod) {
 					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 					boolean eod = (slot+sNrSlotsPerPeriod-1==lastSlot());
-					boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
+					boolean eol = (eod && (isDispModePerWeek() ||  day==endDay()));
 					out.println("<th colspan='"+sNrSlotsPerPeriod+"' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
 					if (isDispModeInRow())
 						out.println(Constants.DAY_NAME[day]+"<br>");
@@ -351,7 +362,10 @@ public class TimetableGridTable {
     	if (cell==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
-        if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
+        if (isDispModeWeekByWeekHorizontal() && cell.getAssignmentId() >= 0) {
+        	onMouseOver.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='rgb(223,231,242)';");
+        	onMouseOut.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+        } else if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
         	for (int i=0;i<cell.getNrMeetings();i++) {
         		onMouseOver.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='rgb(223,231,242)';");
         		onMouseOut.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
@@ -364,8 +378,11 @@ public class TimetableGridTable {
         	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
         	onClick.append(" onclick=\"hideGwtHint();");
             if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
-            	for (int i=0;i<cell.getNrMeetings();i++) {
-            		onClick.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            	if (isDispModeWeekByWeekHorizontal())
+            		onClick.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            	else
+            		for (int i=0;i<cell.getNrMeetings();i++) {
+            			 onClick.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
                 }
             } else {
             	onClick.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
@@ -517,6 +534,94 @@ public class TimetableGridTable {
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
 							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
 								out.print("<BR>"+cell.getDays());
+							out.println("</td>");
+							slot+=length-1;
+						}
+					}
+				}
+			}
+		} else if (isDispModeWeekByWeekHorizontal()) {
+			boolean firstDay = true;
+			Calendar c = Calendar.getInstance(Locale.US);
+			c.setTime(iFirstDate);
+			for (int d = 0; d < 365; d++ ) {
+				if (d > 0)
+					c.add(Calendar.DAY_OF_YEAR, 1);
+				int date = d + iFirstDay;
+				if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
+				int day = d % 7;
+				if (day < startDay() || day > endDay()) continue;
+				boolean hasClasses = false;
+				for (int slot=firstSlot();slot<=lastSlot();slot++) {
+					if (model.getCell(day, slot, 0, date) != null) {
+						hasClasses = true; break;
+					}
+				}
+				if (!hasClasses) continue;
+				if (firstDay) {
+					firstDay = false;
+				} else {
+					out.println("</tr><tr valign='top'>");
+				}
+				int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot(),date);
+				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+Constants.DAY_NAME[day]+ " " + sDF.format(c.getTime()) + "</th>");
+				for (int idx=0;idx<=maxIdx;idx++) {
+					if (idx>0)
+						out.println("</tr><tr valign='top'>");
+					for (int slot=firstSlot();slot<=lastSlot();slot++) {
+						int slotsToEnd = lastSlot()-slot+1;
+						TimetableGridCell cell = model.getCell(day,slot,idx,date);
+						if (cell==null && model.isRendered(day,slot,idx,date)) continue;
+                		int length = (cell==null?1:cell.getLength()+cell.getSlot()-slot);
+						int colSpan = (cell==null?1:Math.min(length,slotsToEnd));
+						int rowSpan = (getResourceType()==TimetableGridModel.sResourceTypeDepartment && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan,date));
+						model.setRendered(day,slot,idx,rowSpan,colSpan,date);
+						if (cell==null) {
+							String bgColor = model.getBackground(day,slot);
+							if (bgColor==null && !model.isAvailable(day,slot))
+								bgColor=TimetableGridCell.sBgColorNotAvailable;
+							boolean eod = (slot == lastSlot());
+							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
+							boolean first = (slot == firstSlot() || model.getCell(day,slot-1,idx,date)!=null);
+							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx,date)==null || model.getCell(day,slot-1,idx,date)==null) && (((slot - firstSlot())%sNrSlotsPerPeriod) !=0); 
+							boolean inEod = eod && model.getCell(day,slot-1,idx,date)==null;
+							boolean inEol = eol && model.getCell(day,slot-1,idx,date)==null;
+							//boolean last = !eod && !eol && model.getCell(day,slot+1,idx)!=null;
+							out.println("<td class='TimetableCell" + (first?"First":in?"In":inEol?"InEOL":inEod?"InEOD":eol?"EOL":eod?"EOD":"") + "' rowSpan='"+rowSpan+"' colSpan='"+colSpan+"' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
+						} else {
+							String bgColor = cell.getBackground();
+	                		if (getBgMode()==TimetableGridModel.sBgModeNone && !TimetableGridCell.sBgColorNotAvailable.equals(bgColor)) {
+	                    		for (int i=0;i<length;i++)
+	                    			if (!model.isAvailable(day,slot+i)) {
+	                    				bgColor = TimetableGridCell.sBgColorNotAvailableButAssigned;
+	                    				break;
+	                    			}
+	                		}
+							boolean eod = (slot+length > lastSlot());
+							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
+							StringBuffer onMouseOver = new StringBuffer();
+							StringBuffer onMouseOut = new StringBuffer();
+							StringBuffer onClick = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
+							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
+									"align='center' "+
+									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
+									(cell.getAssignmentId()>=0?"name='c"+cell.getAssignmentId()+"' ":"")+
+									onClick +
+									onMouseOver + 
+									onMouseOut +
+									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+	                    			">");
+							out.print(cell.getName());
+							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
+								out.print("<BR>"+cell.getRoomName());
+							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+								out.print("<BR>"+cell.getInstructor());
+							if (iShowComments)
+								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
+							// if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
+							//	out.print("<BR>"+cell.getDays());
 							out.println("</td>");
 							slot+=length-1;
 						}
