@@ -28,6 +28,8 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
 <%
 	// Get Form 
 	String frmName = "ClassEditForm";
@@ -40,6 +42,7 @@
 %>		
 <tiles:importAttribute />
 <html:form action="/classDetail">
+	<loc:bundle name="CourseMessages"> 
 	<html:hidden property="classId"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
@@ -50,7 +53,8 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l8"
+						<A title="<%=MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail()) %>" 
+							accesskey="<%=MSG.accessInstructionalOfferingDetail() %>" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=<bean:write name="<%=frmName%>" property="instrOfferingId"/>">
 							<bean:write name="<%=frmName%>" property="courseName"/>
 							- <bean:write name="<%=frmName%>" property="courseTitle"/></A>: 
@@ -58,7 +62,8 @@
 							<bean:write name="<%=frmName%>" property="itypeDesc"/>
 						</logic:empty>
 						<logic:notEmpty name="<%=frmName%>" property="subpart">
-							<A title="Scheduling Subpart Detail (Alt+S)" accesskey="S" class="l8"
+							<A title="<%=MSG.titleSchedulingSubpartDetail(MSG.accessSchedulingSubpartDetail()) %>" 
+								accesskey="<%=MSG.accessSchedulingSubpartDetail() %>" class="l8"
 								href="schedulingSubpartDetail.do?ssuid=<bean:write name="<%=frmName%>" property="subpart"/>">
 								<bean:write name="<%=frmName%>" property="itypeDesc"/>
 							</A>
@@ -67,40 +72,55 @@
 					</tt:section-title>
 					
 					<logic:equal name="<%=frmName%>" property="editable" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="E" titleKey="title.editPrefsClass" >
-							<bean:message key="button.editPrefsClass" />
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditClass()%>" 
+							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
+							<loc:message name="actionEditClass" />
 						</html:submit> 
 				
 						&nbsp;
-						<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-							<bean:message key="button.addDistPref" />
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
+							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
+							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
 					</logic:equal>
 					
 					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 						&nbsp;
-						<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
-								onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
+						<input type="button" value="<%=MSG.actionOpenClassAssignmentDialog() %>" 
+								title="<%=MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog()) %>" 
+								class="btn" 
+								accesskey="<%=MSG.accessOpenClassAssignmentDialog() %>"
+								onClick="showGwtDialog('<%=MSG.dialogClassAssignment() %>', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 						/>
 					</logic:equal>
 									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
-								styleClass="btn" accesskey="P" titleKey="title.previousClass">
-							<bean:message key="button.previousClass" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessPreviousClass()%>"
+								title="<%=MSG.titlePreviousClass(MSG.accessPreviousClass()) %>">
+							<loc:message name="actionPreviousClass" />
 						</html:submit> 
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						&nbsp;
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextClass">
-							<bean:message key="button.nextClass" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextClass()%>" 
+							title="<%=MSG.titleNextClass(MSG.accessNextClass())%>">
+							<loc:message name="actionNextClass" />
 						</html:submit> 
 					</logic:notEmpty>
 
 					&nbsp;
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackClassDetail()%>" 
+							title="<%=MSG.titleBackClassDetail(MSG.accessBackClassDetail())%>" 
+							accesskey="<%=MSG.accessBackClassDetail() %>" 
+							type="PreferenceGroup">
 						<bean:write name="<%=frmName%>" property="classId"/>
 					</tt:back>
 				</tt:section-header>
@@ -110,7 +130,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsClassDetail"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -125,7 +145,7 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD>Manager:</TD>
+			<TD><loc:message name="filterManager"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="managingDeptLabel" />
 			</TD>
@@ -133,7 +153,7 @@
 
 		<logic:notEqual name="<%=frmName%>" property="parentClassName" value="-">
 			<TR>
-				<TD>Parent Class:</TD>
+				<TD><loc:message name="propertyParentClass"/> </TD>
 				<TD>
 					<logic:empty name="<%=frmName%>" property="parentClassId">
 						<bean:write name="<%=frmName%>" property="parentClassName"/>
@@ -149,14 +169,14 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
 			<TR>
-				<TD>External Id:</TD>
+				<TD><loc:message name="propertyExternalId"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
 				</TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
-			<TD>Enrollment:</TD>
+			<TD><loc:message name="propertyEnrollment"></loc:message> </TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="enrollment" />
 			</TD>
@@ -165,20 +185,20 @@
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
 			<% if (frm.getExpectedCapacity().intValue()==frm.getMaxExpectedCapacity().intValue()) { %>
 				<TR>
-					<TD>Class Limit:</TD>
+					<TD><loc:message name="propertyClassLimit"/></TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
 					</TD>
 				</TR>
 			<% } else { %>
 				<TR>
-					<TD>Minimum Class Limit:</TD>
+					<TD><loc:message name="propertyMinimumClassLimit"/></TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="expectedCapacity" />
 					</TD>
 				</TR>
 				<TR>
-					<TD>Maximum Class Limit:</TD>
+					<TD><loc:message name="propertyMaximumClassLimit"/></TD>
 					<TD>
 						<bean:write name="<%=frmName%>" property="maxExpectedCapacity" />
 					</TD>
@@ -187,7 +207,7 @@
 		</logic:notEqual>
 
 		<TR>
-			<TD>Number of Rooms:</TD>
+			<TD><loc:message name="propertyNumberOfRooms"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="nbrRooms" />
 			</TD>
@@ -195,16 +215,17 @@
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
 			<TR>
-				<TD>Room Ratio:</TD>
+				<TD><loc:message name="propertyRoomRatio"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="roomRatio" />
-					&nbsp;&nbsp;&nbsp;&nbsp; ( Minimum Room Capacity: <bean:write name="<%=frmName%>" property="minRoomLimit" /> )
+					&nbsp;&nbsp;&nbsp;&nbsp; ( <loc:message name="propertyMinimumRoomCapacity"/>
+					<bean:write name="<%=frmName%>" property="minRoomLimit" /> )
 				</TD>
 			</TR>
 		</logic:notEqual>
 
 		<TR>
-			<TD>Date Pattern:</TD>
+			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
 				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
@@ -216,31 +237,31 @@
 		</TR>
 		
 		<TR>
-			<TD>Display Instructors:</TD>
+			<TD><loc:message name="propertyDisplayInstructors"/></TD>
 			<TD>
 				<logic:equal name="<%=frmName%>" property="displayInstructor" value="true">
-					<IMG src="images/tick.gif" border="0" alt="Instructor Displayed" title="Instructor Displayed">
+					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleInstructorDisplayed() %>" title="<%=MSG.titleInstructorDisplayed() %>">
 				</logic:equal>
 				<logic:notEqual name="<%=frmName%>" property="displayInstructor" value="true">
-					<IMG src="images/delete.gif" border="0" alt="Instructor Displayed" title="Instructor Displayed">
+					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleInstructorNotDisplayed() %>" title="<%=MSG.titleInstructorNotDisplayed() %>">
 				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Display In Schedule Book:</TD>
+			<TD><loc:message name="propertyDisplayInScheduleBook"/> </TD>
 			<TD>
 				<logic:equal name="<%=frmName%>" property="displayInScheduleBook" value="true">
-					<IMG src="images/tick.gif" border="0" alt="Displayed in Schedule Book" title="Displayed in Schedule Book">
+					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleDisplayedInScheduleBook() %>" title="<%=MSG.titleDisplayedInScheduleBook() %>">
 				</logic:equal>
 				<logic:notEqual name="<%=frmName%>" property="displayInScheduleBook" value="true">
-					<IMG src="images/delete.gif" border="0" alt="Displayed in Schedule Book" title="Displayed in Schedule Book">
+					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleNotDisplayedInScheduleBook() %>" title="<%=MSG.titleNotDisplayedInScheduleBook() %>">
 				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Student Schedule Note:</TD>
+			<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
 			</TD>
@@ -248,7 +269,7 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="notes">
 			<TR>
-				<TD valign="top">Requests / Notes:</TD>
+				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="notes" filter="false"/>
 				</TD>
@@ -257,7 +278,7 @@
 		
 		<logic:notEmpty name="<%=frmName%>" property="instructors">
 			<TR>
-				<TD valign="top">Instructors:</TD>
+				<TD valign="top"><loc:message name="propertyInstructors"/></TD>
 				<TD>
 					<table cellspacing="0" cellpadding="3">
 						<tr><td width='250'><i>Name</i></td><td width='80'><i>Share</i></td><td width='80'><i>Check Conflicts</i></td></tr>
@@ -305,7 +326,7 @@
 		<TR>
 			<TD colspan="2" align="left">
 				&nbsp;<BR>
-				<DIV class="WelcomeRowHead">Timetable</DIV>
+				<tt:section-title><loc:message name="sectionTitleTimetable"/></tt:section-title>
 			</TD>
 		</TR>
 		<%=request.getAttribute("Suggestions.assignmentInfo")%>
@@ -317,7 +338,7 @@
 		<TR>
 			<TD colspan="2" valign="middle">
 				&nbsp;<BR>
-				<tt:section-title>Preferences</tt:section-title>
+				<tt:section-title><loc:message name="sectionTitlePreferences"/></tt:section-title>
 			</TD>
 		</TR>
 		<logic:equal value="0" name="<%=frmName%>" property="nbrRooms">
@@ -370,45 +391,62 @@
 			<TD colspan="2" align="right">
 				<INPUT type="hidden" name="doit" value="Cancel">
 
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="E" titleKey="title.editPrefsClass" >
-						<bean:message key="button.editPrefsClass" />
-					</html:submit> 
+					<logic:equal name="<%=frmName%>" property="editable" value="true">
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditClass()%>" 
+							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
+							<loc:message name="actionEditClass" />
+						</html:submit> 
 				
-					&nbsp;
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-						<bean:message key="button.addDistPref" />
-					</html:submit>
-				</logic:equal>
+						&nbsp;
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
+							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
+							<loc:message name="actionAddDistributionPreference" />
+						</html:submit>
+					</logic:equal>
+					
+					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
+						&nbsp;
+						<input type="button" value="<%=MSG.actionOpenClassAssignmentDialog() %>" 
+								title="<%=MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog()) %>" 
+								class="btn" 
+								accesskey="<%=MSG.accessOpenClassAssignmentDialog() %>"
+								onClick="showGwtDialog('<%=MSG.dialogClassAssignment() %>', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
+						/>
+					</logic:equal>
+									
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						&nbsp;
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessPreviousClass()%>"
+								title="<%=MSG.titlePreviousClass(MSG.accessPreviousClass()) %>">
+							<loc:message name="actionPreviousClass" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextClass()%>" 
+							title="<%=MSG.titleNextClass(MSG.accessNextClass())%>">
+							<loc:message name="actionNextClass" />
+						</html:submit> 
+					</logic:notEmpty>
 
-				<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
 					&nbsp;
-					<input type="button" value="Assign" title="Open Class Assignment Dialog (Alt+X)" class="btn" accesskey="X"
-							onClick="showGwtDialog('Class Assignment', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
-					/>
-				</logic:equal>
-			
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
-					&nbsp;
-					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousClass">
-						<bean:message key="button.previousClass" />
-					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextClass">
-						<bean:message key="button.nextClass" />
-					</html:submit> 
-				</logic:notEmpty>
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackClassDetail()%>" 
+							title="<%=MSG.titleBackClassDetail(MSG.accessBackClassDetail())%>" 
+							accesskey="<%=MSG.accessBackClassDetail() %>" 
+							type="PreferenceGroup">
+						<bean:write name="<%=frmName%>" property="classId"/>
+					</tt:back>
 
-				&nbsp;
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
-					<bean:write name="<%=frmName%>" property="classId"/>
-				</tt:back>
 			</TD>
 		</TR>
 
 	</TABLE>
+	</loc:bundle>	
 </html:form>

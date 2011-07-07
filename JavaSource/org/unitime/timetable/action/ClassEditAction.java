@@ -40,6 +40,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
@@ -69,6 +71,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @struts:action path="/classEdit" name="classEditForm" input="/user/classEdit.jsp" scope="request" validate="true"
  */
 public class ClassEditAction extends PreferencesAction {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Class Constants
 
@@ -114,21 +118,27 @@ public class ClassEditAction extends PreferencesAction {
 
         // Read class id from form
         if(//op.equals(rsc.getMessage("button.reload"))||
-                op.equals(rsc.getMessage("button.addTimePattern"))
-                || op.equals(rsc.getMessage("button.addRoomPref"))
-                || op.equals(rsc.getMessage("button.addBldgPref"))
-                || op.equals(rsc.getMessage("button.addRoomFeaturePref"))
-                || op.equals(rsc.getMessage("button.addDistPref"))
-                || op.equals(rsc.getMessage("button.addInstructor"))
-                || op.equals(rsc.getMessage("button.update"))
+                op.equals(MSG.actionAddTimePreference())
+                || op.equals(MSG.actionAddRoomPreference())
+                || op.equals(MSG.actionAddBuildingPreference())
+                || op.equals(MSG.actionAddRoomFeaturePreference())
+                || op.equals(MSG.actionAddDistributionPreference())
+                || op.equals(MSG.actionAddInstructor())
+                || op.equals(MSG.actionUpdatePreferences())
                 || op.equals(rsc.getMessage("button.cancel"))
-                || op.equals(rsc.getMessage("button.clearClassPrefs"))
-                || op.equals(rsc.getMessage("button.delete"))
+                || op.equals(MSG.actionClearClassPreferences())
+                || op.equals(MSG.actionRemoveBuildingPreference())
+        		|| op.equals(MSG.actionRemoveDistributionPreference())
+        		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
+        		|| op.equals(MSG.actionRemoveRoomGroupPreference())
+        		|| op.equals(MSG.actionRemoveRoomPreference())
+        		|| op.equals(MSG.actionRemoveTimePattern())
+        		|| op.equals(MSG.actionRemoveInstructor())
                 || op.equals(rsc.getMessage("button.changeOwner"))
-                || op.equals(rsc.getMessage("button.addRoomGroupPref"))
-                || op.equals(rsc.getMessage("button.returnToDetail"))
-                || op.equals(rsc.getMessage("button.nextClass"))
-                || op.equals(rsc.getMessage("button.previousClass"))
+                || op.equals(MSG.actionAddRoomGroupPreference())
+                || op.equals(MSG.actionBackToDetail())
+                || op.equals(MSG.actionNextClass())
+                || op.equals(MSG.actionPreviousClass())
                 || op.equals("updatePref")) {
             classId = frm.getClassId().toString();
         }
@@ -143,7 +153,7 @@ public class ClassEditAction extends PreferencesAction {
 
         // Check op exists
         if(op==null || op.trim()=="")
-            throw new Exception ("Null Operation not supported.");
+            throw new Exception (MSG.errorNullOperationNotSupported());
 
         Debug.debug("op: " + op);
         Debug.debug("class: " + classId);
@@ -151,7 +161,7 @@ public class ClassEditAction extends PreferencesAction {
 
         // Check class exists
         if(classId==null || classId.trim().length()==0)
-            throw new Exception ("Class Info not supplied.");
+            throw new Exception (MSG.errorClassInfoNotSupplied());
 
         // Change Owner - Go back to Change Owner Screen
         if(op.equals(rsc.getMessage("button.changeOwner"))
@@ -162,7 +172,7 @@ public class ClassEditAction extends PreferencesAction {
         }
 
         // Cancel - Go back to Class Detail Screen
-        if(op.equals(rsc.getMessage("button.returnToDetail"))
+        if(op.equals(MSG.actionBackToDetail())
                 && classId!=null && classId.trim().length()!=0 ) {
             request.setAttribute("cid", classId);
             return mapping.findForward("displayClassDetail");
@@ -173,7 +183,7 @@ public class ClassEditAction extends PreferencesAction {
         Class_ c = cdao.get(new Long(classId));
 
 		// Add Distribution Preference - Redirect to dist prefs screen
-	    if(op.equals(rsc.getMessage("button.addDistPref"))) {
+	    if(op.equals(MSG.actionAddDistributionPreference())) {
 	        SchedulingSubpart ss = c.getSchedulingSubpart();
 	        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 	        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
@@ -184,17 +194,17 @@ public class ClassEditAction extends PreferencesAction {
 	    }
 
 	    // Add Instructor
-	    if(op.equals(rsc.getMessage("button.addInstructor")))
+	    if(op.equals(MSG.actionAddInstructor()))
             addInstructor(request, frm, errors);
 
 	    // Delete Instructor
-        if(op.equals(rsc.getMessage("button.delete"))
+        if(op.equals(MSG.actionRemoveInstructor())
                 && request.getParameter("deleteType")!=null
                 && request.getParameter("deleteType").equals("instructor"))
             deleteInstructor(request, frm);
 
         // Restore all inherited preferences
-        if(op.equals(rsc.getMessage("button.clearClassPrefs"))) {
+        if(op.equals(MSG.actionClearClassPreferences())) {
 
             Set s = c.getPreferences();
             s.clear();
@@ -224,7 +234,7 @@ public class ClassEditAction extends PreferencesAction {
         doLoad(request, frm, c, op);
 
         // Update Preferences for Class
-        if(op.equals(rsc.getMessage("button.update")) || op.equals(rsc.getMessage("button.nextClass")) || op.equals(rsc.getMessage("button.previousClass"))) {
+        if(op.equals(MSG.actionUpdatePreferences()) || op.equals(MSG.actionNextClass()) || op.equals(MSG.actionPreviousClass())) {
             // Validate input prefs
             errors = frm.validate(mapping, request);
 
@@ -257,10 +267,10 @@ public class ClassEditAction extends PreferencesAction {
 
     	            request.setAttribute("cid", classId);
 
-    	            if (op.equals(rsc.getMessage("button.nextClass")))
+    	            if (op.equals(MSG.actionNextClass()))
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getNextId()));
 
-    	            if (op.equals(rsc.getMessage("button.previousClass")))
+    	            if (op.equals(MSG.actionPreviousClass()))
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getPreviousId()));
 
     	            return mapping.findForward("displayClassDetail");
@@ -546,7 +556,7 @@ public class ClassEditAction extends PreferencesAction {
             errors.add("instrPrefs",
                        new ActionMessage(
                                "errors.generic",
-                               "Invalid instructor preference: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidInstructorPreference()) );
             saveErrors(request, errors);
         }
     }
