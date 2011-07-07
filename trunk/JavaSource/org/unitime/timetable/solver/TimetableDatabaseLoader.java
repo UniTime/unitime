@@ -2936,7 +2936,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         }
 
-		purgeInvalidValues();
+		if (getModel().getProperties().getPropertyBoolean("General.PurgeInvalidPlacements", true))
+			purgeInvalidValues();
 		
 		for (Constraint c: getModel().constraints()) {
 			if (c instanceof SpreadConstraint)
