@@ -320,10 +320,12 @@ public class Suggestions implements Serializable {
         }
         for (Enumeration e1=(initialLectures!=null && !initialLectures.isEmpty()?initialLectures.elements():conflictsToResolve.keys());e1.hasMoreElements();) {
             Lecture lecture = (Lecture)e1.nextElement();
+            if (iTimeoutReached) break;
             if (resolvedLectures.contains(lecture.getClassId())) continue;
             resolvedLectures.add(lecture.getClassId());
             for (Iterator e2=values(lecture).iterator();e2.hasNext();) {
                 PlacementValue placementValue = (PlacementValue)e2.next();
+                if (iTimeoutReached) break;
                 Placement placement = placementValue.getPlacement();
                 if (placement.equals(lecture.getAssignment())) continue;
                 if (!iAllowBreakHard && placement.isHard()) continue;
