@@ -20,6 +20,8 @@
 package org.unitime.timetable.webutil;
 
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.util.Constants;
 
@@ -30,6 +32,8 @@ import org.unitime.timetable.util.Constants;
  * @author Heston Fernandes
  */
 public class JavascriptFunctions {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     public static boolean isJsConfirm(User user) {
         String jsConfirm = Settings.getSettingValue(user, Constants.SETTINGS_JS_DIALOGS);
@@ -54,9 +58,9 @@ public class JavascriptFunctions {
     	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_NO.equals(inheritInstrPref)) {
     		return "false";
     	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM.equals(inheritInstrPref)) {
-    		return "confirm('Do you want to apply instructor preferences to this class?')";
+    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
     	} else {
-    		return "confirm('Do you want to apply instructor preferences to this class?')";
+    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
     	}
     }
     
@@ -67,9 +71,9 @@ public class JavascriptFunctions {
     	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_NO.equals(inheritInstrPref)) {
     		return "false";
     	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM.equals(inheritInstrPref)) {
-    		return "confirm('Do you want to remove any instructor preferences \\nthat may have been applied to this class?')";
+    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
     	} else {
-    		return "confirm('Do you want to remove any instructor preferences \\nthat may have been applied to this class?')";
+    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
     	}
     }
     

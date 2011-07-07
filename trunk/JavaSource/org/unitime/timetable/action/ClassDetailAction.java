@@ -40,6 +40,8 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -72,6 +74,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public class ClassDetailAction extends PreferencesAction {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
     // --------------------------------------------------------- Class Constants
 
     /** Anchor names **/
@@ -111,11 +115,11 @@ public class ClassDetailAction extends PreferencesAction {
 	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
 	        // Read class id from form
-	        if(op.equals(rsc.getMessage("button.editPrefsClass"))
-	        		|| op.equals(rsc.getMessage("button.addDistPref"))
+	        if(op.equals(MSG.actionEditClass())
+	        		|| op.equals(MSG.actionAddDistributionPreference())
 	                || op.equals(rsc.getMessage("button.backToInstrOffrDet"))
-	                || op.equals(rsc.getMessage("button.nextClass"))
-	                || op.equals(rsc.getMessage("button.previousClass"))
+	                || op.equals(MSG.actionNextClass())
+	                || op.equals(MSG.actionPreviousClass())
 	                ) {
 	            classId = frm.getClassId().toString();
 	        } else {
@@ -144,23 +148,23 @@ public class ClassDetailAction extends PreferencesAction {
 	        Class_ c = cdao.get(new Long(classId));
 
 	        // Edit Preference - Redirect to prefs edit screen
-	        if(op.equals(rsc.getMessage("button.editPrefsClass"))
+	        if(op.equals(MSG.actionEditClass())
 	                && classId!=null && classId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("classEdit.do?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
 	        }
 
-            if (op.equals(rsc.getMessage("button.nextClass"))) {
+            if (op.equals(MSG.actionNextClass())) {
             	response.sendRedirect(response.encodeURL("classDetail.do?cid="+frm.getNextId()));
             	return null;
             }
 
-            if (op.equals(rsc.getMessage("button.previousClass"))) {
+            if (op.equals(MSG.actionPreviousClass())) {
             	response.sendRedirect(response.encodeURL("classDetail.do?cid="+frm.getPreviousId()));
             	return null;
             }
 
 			// Add Distribution Preference - Redirect to dist prefs screen
-		    if(op.equals(rsc.getMessage("button.addDistPref"))) {
+		    if(op.equals(MSG.actionAddDistributionPreference())) {
 		        SchedulingSubpart ss = c.getSchedulingSubpart();
 		        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 		        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
@@ -217,9 +221,9 @@ public class ClassDetailAction extends PreferencesAction {
 	        BackTracker.markForBack(
 	        		request,
 	        		"classDetail.do?cid="+frm.getClassId(),
-	        		"Class ("+frm.getClassName()+")",
+	        		MSG.backClass(frm.getClassName()),
 	        		true, false);
-
+	        
 	        return mapping.findForward("displayClass");
 
 	    	} catch (Exception e) {

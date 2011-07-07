@@ -31,14 +31,16 @@
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <% try { %>
 	<bean:parameter id="frmName" name="frmName"/>
+	<loc:bundle name="CourseMessages">
 
 <!-- Time Preferences -->
 	<logic:notEmpty name="<%=frmName%>" property="timePatterns">
 		<TR>
-		<TD valign="top">Time:</TD>
+		<TD valign="top"><loc:message name="propertyTime"/> </TD>
 		<TD>
 		<% int idx = 0; %>
 			<logic:iterate name="<%=frmName%>" property="timePatterns" id="timePattern" indexId="ctr">
@@ -59,7 +61,7 @@
 <!--  Period Preferences -->
 	<logic:notEmpty scope="request" name="ExamPeriodGrid">
 		<TR>
-			<TD valign="top">Examination Periods:</TD>
+			<TD valign="top"><loc:message name="propertyExaminationPeriods"/> </TD>
 			<TD>
 				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
 			</TD>
@@ -70,7 +72,7 @@
 	<logic:notEqual value="false" parameter="roomGroupPref">
 		<logic:notEmpty name="<%=frmName%>" property="roomGroups">
 		<TR>
-			<TD valign="top">Room Groups:</TD>
+			<TD valign="top"><loc:message name="propertyRoomGroups"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="roomGroups" id="roomGroup" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -95,7 +97,7 @@
 	<logic:notEqual value="false" parameter="roomPref">
 		<logic:notEmpty name="<%=frmName%>" property="roomPrefs">
 		<TR>
-			<TD valign="top">Rooms:</TD>
+			<TD valign="top"><loc:message name="propertyRooms"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="roomPrefs" id="roomPref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -119,7 +121,7 @@
 	<logic:notEqual value="false" parameter="bldgPref">
 		<logic:notEmpty name="<%=frmName%>" property="bldgPrefs">
 		<TR>
-			<TD valign="top">Buildings:</TD>
+			<TD valign="top"><loc:message name="propertyBuildings"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="bldgPrefs" id="bldgPref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -143,7 +145,7 @@
 	<logic:notEqual value="false" parameter="roomFeaturePref">
 		<logic:notEmpty name="<%=frmName%>" property="roomFeaturePrefs">
 		<TR>
-			<TD valign="top">Room Features:</TD>
+			<TD valign="top"><loc:message name="propertyRoomFeatures"/></TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="roomFeaturePrefs" id="roomFeaturePref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -167,7 +169,7 @@
 		<logic:empty name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
 		<logic:notEmpty name="<%=frmName%>" property="distPrefs">
 		<TR>
-			<TD valign="top">Distribution:</TD>
+			<TD valign="top"><loc:message name="propertyDistribution"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="distPrefs" id="distPref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -190,7 +192,7 @@
 	
 	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">
 		<TR>
-			<TD valign="top">Available Rooms:</TD>
+			<TD valign="top"><loc:message name="propertyAvailableRooms"/></TD>
 			<TD>
 				<bean:write name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request" filter="false"/>
 			</TD>
@@ -223,7 +225,8 @@
 		</logic:notMatch>
 		</logic:notEmpty>
 	</logic:notEqual>
-		
+
+	</loc:bundle>		
 <% } catch (Exception e) { 
 	 Debug.error(e);
 	 throw e;

@@ -149,7 +149,7 @@
 						</TD>
 						<TD>
 							<html:select property="filterManager">	
-								<html:option value=""><loc:message name="dropDeptAll"/></html:option>				
+								<html:option value=""><loc:message name="dropManagerAll"/></html:option>				
 								<html:option value="-2"><loc:message name="dropDeptDepartment"/></html:option>
 								<html:options collection="<%=Department.EXTERNAL_DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="managingDeptLabel" />
 							</html:select>
