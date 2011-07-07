@@ -40,6 +40,8 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.PreferencesForm;
@@ -92,6 +94,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Heston Fernandes
  */
 public class PreferencesAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
     
     // --------------------------------------------------------- Class Constants
     
@@ -128,7 +132,7 @@ public class PreferencesAction extends Action {
     	
         HttpSession httpSession = request.getSession();
 		if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
 
 		// Load Combo Box Lists 
@@ -157,30 +161,37 @@ public class PreferencesAction extends Action {
         MessageResources rsc = getResources(request);
         
         // Add Room Group row
-        if(op.equals(rsc.getMessage("button.addRoomGroupPref"))) 
+        if(op.equals(MSG.actionAddRoomGroupPreference())) 
             addRoomGroup(request, frm, errors);
         
         // Add Room Preference row
-        if(op.equals(rsc.getMessage("button.addRoomPref"))) 
+        if(op.equals(MSG.actionAddRoomPreference())) 
             addRoomPref(request, frm, errors);
         
         // Add Building Preference row
-        if(op.equals(rsc.getMessage("button.addBldgPref"))) 
+        if(op.equals(MSG.actionAddBuildingPreference())) 
             addBldgPref(request, frm, errors);
         
         // Add Distribution Preference row
-        if(op.equals(rsc.getMessage("button.addDistPref"))) 
+        if(op.equals(MSG.actionAddDistributionPreference())) 
             addDistPref(request, frm, errors);
 
         // Add Room Feature Preference row
-        if(op.equals(rsc.getMessage("button.addRoomFeaturePref"))) 
+        if(op.equals(MSG.actionAddRoomFeaturePreference())) 
             addRoomFeatPref(request, frm, errors);
         
-        if(op.equals(rsc.getMessage("button.addTimePattern"))) 
+        if(op.equals(MSG.actionAddTimePreference())) 
             addTimePattern(request, frm, errors);
         
         // Delete single preference
-        if(op.equals(rsc.getMessage("button.delete")))
+        if(op.equals(MSG.actionRemoveBuildingPreference())
+        		|| op.equals(MSG.actionRemoveDistributionPreference())
+        		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
+        		|| op.equals(MSG.actionRemoveRoomGroupPreference())
+        		|| op.equals(MSG.actionRemoveRoomPreference())
+        		|| op.equals(MSG.actionRemoveTimePattern())
+        		|| op.equals(MSG.actionRemoveInstructor())
+        		)
             doDelete(request, frm);
         
     }
@@ -200,7 +211,7 @@ public class PreferencesAction extends Action {
             errors.add("roomGroup", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid room room group: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidRoomGroup()));
             saveErrors(request, errors);
         }
 		
@@ -230,7 +241,7 @@ public class PreferencesAction extends Action {
             errors.add("bldgPrefs", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid building preference: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidBuildingPreference()) );
             saveErrors(request, errors);
         }
     }
@@ -253,7 +264,7 @@ public class PreferencesAction extends Action {
             errors.add("distPrefs", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid distribution preference: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidDistributionPreference()) );
             saveErrors(request, errors);
         }
     }
@@ -282,7 +293,7 @@ public class PreferencesAction extends Action {
             errors.add("roomFeaturePrefs", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid room feature preference: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidRoomFeaturePreference()) );
             saveErrors(request, errors);
         }
     }
@@ -296,7 +307,7 @@ public class PreferencesAction extends Action {
             errors.add("timePrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                            "Time pattern not selected. ") );
+                            MSG.errorTimePatternNotSelected()) );
          saveErrors(request, errors);
         } else {
         	if (frm.getTimePatterns()==null)
@@ -344,7 +355,7 @@ public class PreferencesAction extends Action {
             errors.add("roomPrefs", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid room preference: Check for duplicate / blank selection. ") );
+                               MSG.errorInvalidRoomPreference()) );
             saveErrors(request, errors);
         }
     }
@@ -898,7 +909,7 @@ public class PreferencesAction extends Action {
 		
 		// Time Pattern not selected
 		if(tps==null || tps.isEmpty()) {
-			request.setAttribute(TIME_PATTERN_GRID_ATTR, "Time pattern not selected.");
+			request.setAttribute(TIME_PATTERN_GRID_ATTR, MSG.errorTimePatternNotSelected());
 		}
 			
 		// Time Pattern value set	
