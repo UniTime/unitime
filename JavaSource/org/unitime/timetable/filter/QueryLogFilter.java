@@ -195,28 +195,34 @@ public class QueryLogFilter implements Filter {
 			sLog.debug("Query Log Saver is up.");
 			while (true) {
 				try {
-					sleep(60000);
-				} catch (InterruptedException e) {
-				}
-				List<QueryLog> queriesToSave = null;
-				synchronized (iQueries) {
-					if (!iQueries.isEmpty()) {
-						queriesToSave = new ArrayList<QueryLog>(iQueries);
-						iQueries.clear();
-					}
-				}
-				if (queriesToSave != null) {
-					sLog.debug("Persisting " + queriesToSave.size() + " log entries...");
-					Session hibSession = QueryLogDAO.getInstance().createNewSession();
 					try {
-						for (QueryLog q: queriesToSave)
-							hibSession.save(q);
-						hibSession.flush();
-					} finally {
-						hibSession.close();
+						sleep(60000);
+					} catch (InterruptedException e) {
 					}
+					List<QueryLog> queriesToSave = null;
+					synchronized (iQueries) {
+						if (!iQueries.isEmpty()) {
+							queriesToSave = new ArrayList<QueryLog>(iQueries);
+							iQueries.clear();
+						}
+					}
+					if (queriesToSave != null) {
+						sLog.debug("Persisting " + queriesToSave.size() + " log entries...");
+						Session hibSession = QueryLogDAO.getInstance().createNewSession();
+						try {
+							for (QueryLog q: queriesToSave)
+								hibSession.save(q);
+							hibSession.flush();
+						} catch (Exception e) {
+							sLog.error("Failed to persist " + queriesToSave.size() + " log entries:" + e.getMessage(), e);
+						} finally {
+							hibSession.close();
+						}
+					}
+					if (!iActive) break;
+				} catch (Exception e) {
+					sLog.error("Failed to persist log entries:" + e.getMessage(), e);
 				}
-				if (!iActive) break;
 			}
 			sLog.debug("Query Log Saver is down.");
 		}
