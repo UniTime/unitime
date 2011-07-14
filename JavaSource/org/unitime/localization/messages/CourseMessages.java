@@ -288,7 +288,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Not Offered Courses")
 	String labelNotOfferedCourses();
 	
-	@DefaultMessage("Offered Coursses")
+	@DefaultMessage("Offered Courses")
 	String labelOfferedCourses();
 	
 	@DefaultMessage("There are no courses currently offered for this subject.")
