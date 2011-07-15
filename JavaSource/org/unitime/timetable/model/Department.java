@@ -98,8 +98,19 @@ public class Department extends BaseDepartment implements Comparable {
      * @throws Exception
      */
 	public static Department findByDeptCode(String deptCode, Long sessionId) {
-		return (Department)(new DepartmentDAO()).
-			getSession().
+		return(findByDeptCode(deptCode, sessionId, (new DepartmentDAO()). getSession()));
+	}
+
+    /**
+     * 
+     * @param deptCode
+     * @param sessionId
+     * @param hibSession
+     * @return
+     * @throws Exception
+     */
+	public static Department findByDeptCode(String deptCode, Long sessionId, org.hibernate.Session hibSession) {
+		return (Department)hibSession.
 			createQuery("select distinct d from Department as d where d.deptCode=:deptCode and d.session.uniqueId=:sessionId").
 			setLong("sessionId", sessionId.longValue()).
 			setString("deptCode", deptCode).
@@ -410,19 +421,23 @@ public class Department extends BaseDepartment implements Comparable {
 	}
 	
 	public Department findSameDepartmentInSession(Long newSessionId){
+		return(findSameDepartmentInSession(newSessionId, (new DepartmentDAO()).getSession()));
+	}
+
+	public Department findSameDepartmentInSession(Long newSessionId, org.hibernate.Session hibSession){
 		if (newSessionId == null){
 			return(null);
 		}
-		Department newDept = Department.findByDeptCode(this.getDeptCode(), newSessionId);
+		Department newDept = Department.findByDeptCode(this.getDeptCode(), newSessionId, hibSession);
 		if (newDept == null && this.getExternalUniqueId() != null){
 			// if a department wasn't found and an external uniqueid exists for this 
 			//   department check to see if the new term has a department that matches 
 			//   the external unique id
-			List l = (new DepartmentDAO()).
-			getSession().
+			List l = hibSession.
 			createCriteria(Department.class).
 			add(Restrictions.eq("externalUniqueId",this.getExternalUniqueId())).
 			add(Restrictions.eq("session.uniqueId", newSessionId)).
+			setFlushMode(FlushMode.MANUAL).
 			setCacheable(true).list();
 
 			if (l.size() == 1){
@@ -431,7 +446,6 @@ public class Department extends BaseDepartment implements Comparable {
 		}
 		return(newDept);
 	}
-
 	public Department findSameDepartmentInSession(Session newSession){
 		if (newSession != null) return(findSameDepartmentInSession(newSession.getUniqueId()));
 		else return(null);
