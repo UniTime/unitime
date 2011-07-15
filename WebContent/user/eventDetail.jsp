@@ -327,7 +327,7 @@
 			</TR>
 			<TR>
 				<TD>
-					Attachement:
+					Attachment:
 				</TD>
 				<TD>
 					<html:file name="eventDetailForm" property="attachement" size="80"/>
