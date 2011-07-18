@@ -822,7 +822,9 @@ public class WebEventTableBuilder {
         }
         
         if (form.getLocation()!=null && form.getLocation().trim().length() > 0){
-        	query += " and ((select count(r) from Room as r where r.permanentId = m.locationPermanentId and upper(r.building.abbreviation) like :bldgSubstr and upper(r.roomNumber) like :roomSubstr) > 0 or (select count(nul) from NonUniversityLocation as nul where nul.permanentId = m.locationPermanentId and upper(nul.name) like :nameStr) > 0)) ";	       	
+        	query += " and (" +
+        			"(select count(r) from Room as r where r.permanentId = m.locationPermanentId and upper(r.building.abbreviation) like :bldgSubstr and upper(r.roomNumber) like :roomSubstr) > 0 or " +
+        			"(select count(nul) from NonUniversityLocation as nul where nul.permanentId = m.locationPermanentId and upper(nul.name) like :nameStr) > 0) ";	       	
         }
 
         switch (form.getMode()) {
