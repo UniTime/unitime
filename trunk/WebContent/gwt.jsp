@@ -17,6 +17,7 @@
  * 
  -->
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
+<%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -31,7 +32,7 @@
     	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
-    <title>UniTime 3.2| University Timetabling Application</title>
+    <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>

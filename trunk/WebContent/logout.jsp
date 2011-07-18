@@ -18,6 +18,7 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="java.util.Enumeration" %>
+<%@ page import="org.unitime.timetable.util.Constants"%>
 <%
 	Cookie cookie = new Cookie("loggedOn", "false" );    	
 	response.addCookie( cookie );
@@ -32,7 +33,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
-		<TITLE>Timetabling - Logout</TITLE>
+		<TITLE>UniTime <%=Constants.VERSION%>| Logging out ...</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
 				window.close();				
@@ -43,7 +44,7 @@
 	</HEAD>
 	<BODY onload="closeWin();">
 		<BLOCKQUOTE>
-			<DIV class="normal">Logging off ...</DIV>
+			<DIV class="normal">Logging out ...</DIV>
 		</BLOCKQUOTE>
 	</BODY>
 </HTML>
