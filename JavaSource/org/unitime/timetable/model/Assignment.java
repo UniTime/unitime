@@ -33,6 +33,7 @@ import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -264,6 +265,8 @@ public class Assignment extends BaseAssignment {
 	
 	public DatePattern getDatePattern() {
 		DatePattern dp = super.getDatePattern();
+		if (dp != null && !Hibernate.isInitialized(dp.getSession()))
+			return (DatePattern)AssignmentDAO.getInstance().getSession().merge(dp);
 		if (dp == null && getClazz() != null)
 			dp = getClazz().effectiveDatePattern();
 		return dp;
