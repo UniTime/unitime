@@ -1024,7 +1024,7 @@ public class CalendarServlet extends HttpServlet {
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
 		byte salt[] = new byte[] { (byte)0x33, (byte)0x7b, (byte)0x09, (byte)0x0e, (byte)0xcf, (byte)0x5a, (byte)0x58, (byte)0xd9 };
 		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-		KeySpec spec = new PBEKeySpec(ApplicationProperties.getProperty("unitime.encode.secret", "ThisIs8Secret").toCharArray(), salt, 1024, 256);
+		KeySpec spec = new PBEKeySpec(ApplicationProperties.getProperty("unitime.encode.secret", "ThisIs8Secret").toCharArray(), salt, 1024, 128);
 		SecretKey key = factory.generateSecret(spec);
 		return new SecretKeySpec(key.getEncoded(), "AES");
 	}
