@@ -24,7 +24,7 @@
 
 <HTML>
 <head>
-	<title>UniTime 3.2| University Timetabling Application</title>
+	<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
 	<link rel="shortcut icon" href="images/timetabling.ico" />
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">

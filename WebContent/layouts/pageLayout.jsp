@@ -64,7 +64,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     	<link rel="stylesheet" type="text/css" href="<%=basePath%>%tmtbl.custom.css%" />
     </tt:hasProperty>
     <link rel="shortcut icon" href="<%=basePath%>images/timetabling.ico" />
-	<title>UniTime 3.2| <tiles:getAsString name="title" /></title>
+	<title>UniTime <%=Constants.VERSION%>| <tiles:getAsString name="title" /></title>
     <script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/loading.js"></script>
     <script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/validator.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar.js"></script>

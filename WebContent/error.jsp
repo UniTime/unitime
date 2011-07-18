@@ -25,7 +25,8 @@
 <%@ page import="org.unitime.commons.Email" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
-<%@page import="org.unitime.timetable.util.AccessDeniedException"%>
+<%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
+<%@ page import="org.unitime.timetable.util.Constants"%>
 
 <%
 	try {
@@ -44,7 +45,7 @@
  %>
 <HTML>
 <HEAD>
-	<TITLE>UniTime 3.2| Error</TITLE>
+	<TITLE>UniTime <%=Constants.VERSION%>| Error</TITLE>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
