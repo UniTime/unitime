@@ -83,21 +83,21 @@ public class Email {
 	}
 	
 	public void setSubject(String subject) throws MessagingException {
-		iMail.setSubject(subject);
+		iMail.setSubject(subject, "UTF-8");
 	}
 	
 	private void setFrom(String email, String name) throws MessagingException, UnsupportedEncodingException {
 		if (email != null)
-			iMail.setFrom(new InternetAddress(email, name));
+			iMail.setFrom(new InternetAddress(email, name, "UTF-8"));
 	}
 	
 	private void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
 		if (email != null)
-			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name)});
+			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name, "UTF-8")});
 	}
 	
 	private void addRecipient(RecipientType type, String email, String name) throws UnsupportedEncodingException, MessagingException {
-		iMail.addRecipient(type, new InternetAddress(email, name));
+		iMail.addRecipient(type, new InternetAddress(email, name, "UTF-8"));
 	}
 	
 	public void addRecipient(String email, String name) throws UnsupportedEncodingException, MessagingException {
@@ -113,19 +113,20 @@ public class Email {
 	}
 	
 	public void setText(String message) throws MessagingException {
-        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/plain");
+        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/plain; charset=UTF-8");
        iBody.addBodyPart(text);
 	}
 	
 	public void setHTML(String message) throws MessagingException {
-        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
+        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html; charset=UTF-8");
        iBody.addBodyPart(text);
 	}
 
 	public void addNotify(RecipientType type) throws MessagingException, UnsupportedEncodingException {
 		iMail.addRecipient(RecipientType.TO, new InternetAddress(
 				ApplicationProperties.getProperty("unitime.email.notif", ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email"))),
-				ApplicationProperties.getProperty("unitime.email.notif.name", ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator"))));
+				ApplicationProperties.getProperty("unitime.email.notif.name", ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator")),
+				"UTF-8"));
 	}
 
 	public void addNotify() throws MessagingException, UnsupportedEncodingException {

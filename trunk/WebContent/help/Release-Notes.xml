@@ -159,6 +159,7 @@
 					<line>This is particularly useful on pages that can contain huge tables (like Timetable, Solution Reports, Examination Timetable, or Event Room Availability).</line>
 				</line>
 				<line>Contact Us: CC field was ignored.</line>
+				<line>Email: all emails are now encoded in UTF-8.</line>
 				<line>Version number changed to 3.3.</line>
 			</description>
 		</item>
