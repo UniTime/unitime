@@ -114,12 +114,12 @@
 	</TABLE>
 <script language="javascript">
 	function lookup() {
-		peopleLookup((fname.value + ' ' + lname.value).trim(), function(person) {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
 			if (person) {
-				uid.value = person[0];
-				fname.value = person[1];
-				mname.value = person[2];
-				lname.value = person[3];
+				document.getElementById('uid').value = (person[0] == null ? '' : person[0]);
+				document.getElementById('fname').value = (person[1] == null ? '' : person[1]);
+				document.getElementById('mname').value = (person[2] == null ? '' : person[2]);
+				document.getElementById('lname').value = (person[3] == null ? '' : person[3]);
 				document.forms[0].submit();
 			}
 		}, "mustHaveExternalId");
