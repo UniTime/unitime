@@ -130,6 +130,9 @@
 					</line>
 					<line>To ensure backwards compatibility, Tree on Side and Stack on Side are also allowed and work as before (that is as dynamic versions of the stack and tree).</line>
 				</line>
+				<line>The number of page jumps (sudden changes of the main table size and/or position) during the page load is decreased.
+					<line>This is achieved by setting initial size of the (menu and header) components that are to be filled in by GWT code once the page is loaded to the expected size of these components.</line>
+				</line>
 			</description>
 		</item>
 		<item>
