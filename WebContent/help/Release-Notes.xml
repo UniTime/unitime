@@ -158,6 +158,7 @@
 					<line>This means that tables like Filter will not get widen to fill up the whole space.</line>
 					<line>This is particularly useful on pages that can contain huge tables (like Timetable, Solution Reports, Examination Timetable, or Event Room Availability).</line>
 				</line>
+				<line>Contact Us: CC field was ignored.</line>
 				<line>Version number changed to 3.3.</line>
 			</description>
 		</item>

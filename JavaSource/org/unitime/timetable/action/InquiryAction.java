@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -160,20 +159,17 @@ public class InquiryAction extends Action {
 	            	mail += "TimeStamp: "+(new Date());
 	            	
 	            	
-                    String inqEmail = ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu");
-	            	String cc = inqEmail;
-	            	List ccList = myForm.getCarbonCopy();
-	            	if (ccList.size()>0) {
-	            		for (Iterator i=ccList.iterator(); i.hasNext(); ) {
-	            			cc += ";" + (String) i.next();
-	            		}
-	            	}
-                    
                     EventContact c = EventContact.findByExternalUniqueId(user.getId());
 	            	
                     Email email = new Email();
                     email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
                     email.setText(mail);
+                    
+	            	if (!myForm.getCarbonCopy().isEmpty()) {
+	            		for (Iterator i=myForm.getCarbonCopy().iterator(); i.hasNext(); ) {
+	            			email.addRecipientCC((String)i.next(), null);
+	            		}
+	            	}
                     
                     if (ApplicationProperties.getProperty("unitime.email.inquiry") != null)
                     	email.addRecipient(ApplicationProperties.getProperty("unitime.email.inquiry"), ApplicationProperties.getProperty("unitime.email.inquiry.name"));
