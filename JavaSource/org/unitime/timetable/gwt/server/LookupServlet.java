@@ -268,7 +268,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
             env.put(Context.SECURITY_AUTHENTICATION, "simple");
             ctx = new InitialDirContext(env);
             SearchControls ctls = new SearchControls();
-            ctls.setCountLimit(100);
+            ctls.setCountLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.ldap.countLimit", "100")));
             String filter = "";
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
                 String t = stk.nextToken().replace('_', '*').replace('%', '*');
