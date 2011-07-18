@@ -72,9 +72,16 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar-setup.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/select.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/rtt.js"></script>
-	<script type="text/javascript" language="javascript" src="<%=basePath%>unitime/unitime.nocache.js">--</script>
+	<script type="text/javascript" language="javascript" src="<%=basePath%>unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
+	<script language="JavaScript" type="text/javascript">
+		if (!String.prototype.trim) {
+			String.prototype.trim = function() {
+				return this.replace(/^\s+|\s+$/g,"");
+			};
+		}
+	</script>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     

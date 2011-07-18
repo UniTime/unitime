@@ -141,6 +141,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Add / Edit Instructor, Personal Schedule, Add / Edit Event Info, Add / Edit Timetabling Manager</name>
+			<description>
+				<line>Fixed People Lookup dialog (Lookup button) in Internet Explorer (People Lookup dialog did not show).
+					<line>Internet Explorer does not know String.trim function.</line>
+					<line>Null value was put back as 'null' not as an empty string.</line>
+					<line>Personal Schedule: variables fname, lname, uid, etc. were not recognized.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
