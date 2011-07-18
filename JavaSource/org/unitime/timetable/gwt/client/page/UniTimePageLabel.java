@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.page;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
@@ -42,6 +43,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class UniTimePageLabel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 
 	private final MenuServiceAsync iService = GWT.create(MenuService.class);
 
@@ -95,7 +97,7 @@ public class UniTimePageLabel extends Composite {
 	}
 	
 	public void setPageName(String title) {
-		Window.setTitle("UniTime 3.2| " + title);
+		Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
 		iName.setText(title);
 		iHelp.setTitle(title + " Help");
 		iHelp.setVisible(false);

@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client;
 import java.util.Date;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
@@ -35,7 +36,8 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class ToolBox {
-
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	
 	public native static void disableTextSelectInternal(Element e)/*-{
 		e.ondrag = function () { return false; };
 		e.onselectstart = function () { return false; };
@@ -145,7 +147,7 @@ public class ToolBox {
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime/gwt/standard/standard.css\">" +
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime.css\">" +
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
-    	    "<title>UniTime 3.3 | University Timetabling Application</title>" +
+    	    "<title>UniTime " + CONSTANTS.version() + "| University Timetabling Application</title>" +
     		"</header><body>" + 
     		"<table align=\"center\"><tr><td>" +
     		"<table class=\"unitime-Page\"><tr><td>" +
@@ -158,8 +160,8 @@ public class ToolBox {
     		"</td></tr></table>" +
     		"</td></tr><tr><td>" +
     		"<table class=\"unitime-Footer\"><tr>" +
-    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.3 | University Timetabling Application</td>" +
-    		"<td width=\"34%\" align=\"center\">&copy; 2008 - 2011 UniTime LLC</td>" +
+    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</td>" +
+    		"<td width=\"34%\" align=\"center\">" + CONSTANTS.copyright() + "</td>" +
     		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
     		"</tr></table></td></tr></table>" +
     		"</body></html>";
@@ -172,7 +174,7 @@ public class ToolBox {
 	
 	public static void checkAccess(final Throwable t) {
 		if (t != null && t instanceof PageAccessException) {
-			UniTimeFrameDialog.openDialog("UniTime Log In", "login.jsp?menu=hide&m=" + t.getMessage(), "700px", "420px");
+			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + t.getMessage(), "700px", "420px");
 		}
 	}
 

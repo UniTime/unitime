@@ -18,6 +18,7 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.commons.web.Web"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
@@ -29,7 +30,7 @@
 		<% } %>
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
-		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
+		<TITLE>UniTime <%=Constants.VERSION%>| University Timetabling Application</TITLE>
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	</HEAD>
 	<BODY>

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -38,6 +39,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class Client implements EntryPoint {
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
 	
 	public void onModuleLoad() {
@@ -103,7 +105,7 @@ public class Client implements EntryPoint {
 				if (p.name().equals(page)) {
 					LoadingWidget.getInstance().setMessage("Loading " + p.title() + " ...");
 					UniTimePageLabel.getInstance().setPageName(p.title());
-					Window.setTitle("UniTime 3.2| " + p.title());
+					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + p.title());
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}
