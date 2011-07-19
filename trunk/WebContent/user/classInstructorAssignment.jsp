@@ -180,11 +180,18 @@
 						<TD align="center" valign="top" nowrap>
 							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 								<logic:equal name="<%=frmName%>" property='<%= "allowDeletes[" + ctr + "]" %>' value="true" >
-								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Delete';document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';document.forms[0].submit();">
-								<IMG border="0" src="images/Delete16.gif" title="Remove Instructor from Instructional Offering"></A>
+								<IMG border="0" src="images/Delete16.gif" title="Remove Instructor from Instructional Offering"
+									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+									onclick="document.forms[0].elements['hdnOp'].value='Delete';document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';document.forms[0].submit();">
 								</logic:equal>
 							</logic:equal></TD>
-						<TD align="center" valign="top" nowrap> &nbsp;<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"></A></logic:equal></TD>
+						<TD align="center" valign="top" nowrap> &nbsp;
+							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+								<IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"
+									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+									onclick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();">
+							</logic:equal>
+						</TD>
 						<TD>&nbsp;<html:hidden property='<%= "externalIds[" + ctr + "]" %>'/></TD>
 						<TD align="left" valign="top" nowrap>
 						<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
