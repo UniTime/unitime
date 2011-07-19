@@ -193,7 +193,9 @@
 				
 				<!-- Arrows -->
 				<logic:greaterThan name="ctr" value="0">
-					<A href="#null" onClick="javascript: doReload('moveUp', '<%=ctr%>');"><IMG border="0" src="images/arrow_u.gif" alt="Move Up" title="Move Up" align="top"></A>
+					<IMG border="0" src="images/arrow_u.gif" alt="Move Up" title="Move Up" align="top"
+						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
+						onClick="javascript: doReload('moveUp', '<%=ctr%>');">
 				</logic:greaterThan>
 
 				<logic:equal name="ctr" value="0">
@@ -201,7 +203,9 @@
 				</logic:equal>
 
 				<logic:lessThan name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<A href="#null" onClick="javascript: doReload('moveDown', '<%=ctr%>');"><IMG border="0" src="images/arrow_d.gif" alt="Move Down" title="Move Down" align="top"></A>
+					<IMG border="0" src="images/arrow_d.gif" alt="Move Down" title="Move Down" align="top"
+						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
+						onClick="javascript: doReload('moveDown', '<%=ctr%>');">
 				</logic:lessThan>
 
 				<logic:equal name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
