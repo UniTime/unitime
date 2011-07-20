@@ -81,10 +81,12 @@ public class UniTimeSideBar extends Composite {
 	private DisclosurePanel iDisclosurePanel;
 	private MyStackPanel iStackPanel;
 	private Tree iTree;
+	private boolean iUseStackPanel;
 	
 	private int iTop = 0;
 	
 	public UniTimeSideBar(boolean useStackPanel, boolean dynamic) {
+		iUseStackPanel = useStackPanel;
 		
 		iPanel = new SimplePanel();
 		iPanel.addStyleName("unitime-NoPrint");
@@ -167,16 +169,6 @@ public class UniTimeSideBar extends Composite {
 			
 		initWidget(iPanel);
 
-		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
-			@Override
-			public void onSuccess(List<MenuInterface> result) {
-				initMenu(result);
-			}
-			@Override
-			public void onFailure(Throwable caught) {
-			}
-		});
-		
 		if (dynamic) {
 			iScrollTimer = new Timer() {
 				@Override
@@ -227,32 +219,43 @@ public class UniTimeSideBar extends Composite {
 		}
 	}
 	
-	public boolean isOpenned(String name) {
-		String sideBarCookie = Cookies.getCookie("UniTime:SideBar");
-		return sideBarCookie != null && sideBarCookie.indexOf("|"+name+"|") >= 0;
+	private void attach(final RootPanel rootPanel) {
+		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
+			@Override
+			public void onSuccess(List<MenuInterface> result) {
+				initMenu(result);
+				rootPanel.add(UniTimeSideBar.this);
+				DOM.setStyleAttribute(rootPanel.getElement(), "width", "");
+				saveState();
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed to load menu: " + caught.getMessage());
+			}
+		});
 	}
 	
-	private void openedNodes(List<String> ret, TreeItem item) {
-		if (item.getState()) ret.add(item.getText());
+	private void openedNodes(List<String> ret, TreeItem item, String prefix) {
+		if (item.getState()) ret.add((prefix == null ? "" : prefix + " ") + item.getText());
 		for (int i = 0; i < item.getChildCount(); i++)
-			openedNodes(ret, item.getChild(i));
+			openedNodes(ret, item.getChild(i), (prefix == null ? "" : prefix + " ") + item.getText());
 	}
 	
 	public void saveState() {
 		List<String> nodes = new ArrayList<String>();
-		if (iStackPanel.isAttached()) {
+		if (iUseStackPanel) {
 			nodes.add(iStackPanel.getStackText(iStackPanel.getSelectedIndex()));
 			for (int i = 0; i < iStackPanel.getWidgetCount(); i++) {
 				if (iStackPanel.getWidget(i) instanceof Tree) {
 					Tree t = (Tree)iStackPanel.getWidget(i);
 					for (int j = 0; j < t.getItemCount(); j++) {
-						openedNodes(nodes, t.getItem(j));
+						openedNodes(nodes, t.getItem(j), iStackPanel.getStackText(i));
 					}
 				}
 			}
 		} else {
 			for (int i = 0; i < iTree.getItemCount(); i++) {
-				openedNodes(nodes, iTree.getItem(i));
+				openedNodes(nodes, iTree.getItem(i), null);
 			}
 		}
 		String sideBarCookie = "";
@@ -261,13 +264,14 @@ public class UniTimeSideBar extends Composite {
 			if (!sideBarCookie.isEmpty()) sideBarCookie += "|";
 			sideBarCookie += node;
 		}
+		sideBarCookie += "|W:" + iPanel.getElement().getClientWidth();
 		Cookies.setCookie("UniTime:SideBar", sideBarCookie);
 	}
 	
-	private void openNodes(Set<String> nodes, TreeItem item) {
-		if (nodes.contains(item.getText())) item.setState(true);
+	private void openNodes(Set<String> nodes, TreeItem item, String prefix) {
+		if (nodes.contains((prefix == null ? "" : prefix + " ") + item.getText())) item.setState(true);
 		for (int i = 0; i < item.getChildCount(); i++)
-			openNodes(nodes, item.getChild(i));
+			openNodes(nodes, item.getChild(i), (prefix == null ? "" : prefix + " ") + item.getText());
 	}
 
 	public void restoreState() {
@@ -277,7 +281,7 @@ public class UniTimeSideBar extends Composite {
 			for (String node: sideBarCookie.split("\\|"))
 				nodes.add(node);
 		iDisclosurePanel.setOpen(nodes.contains("Root") || sideBarCookie == null);
-		if (iStackPanel.isAttached())
+		if (iUseStackPanel)
 			for (int i = 0 ; i < iStackPanel.getWidgetCount(); i++) {
 				if (nodes.contains(iStackPanel.getStackText(i))) {
 					iStackPanel.showStack(i);
@@ -285,19 +289,18 @@ public class UniTimeSideBar extends Composite {
 				if (iStackPanel.getWidget(i) instanceof Tree) {
 					Tree t = (Tree)iStackPanel.getWidget(i);
 					for (int j = 0; j < t.getItemCount(); j++) {
-						openNodes(nodes, t.getItem(j));
+						openNodes(nodes, t.getItem(j), iStackPanel.getStackText(i));
 					}
 				}
 			}
 		else
 			for (int i = 0; i < iTree.getItemCount(); i++) {
-				openNodes(nodes, iTree.getItem(i));
+				openNodes(nodes, iTree.getItem(i), null);
 			}
 	}
 	
 	public void insert(final RootPanel panel) {
-		panel.add(this);
-		panel.setVisible(true);
+		attach(panel);
 	}
 	
 	private TreeItem generateItem(final MenuInterface item) {

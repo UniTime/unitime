@@ -42,13 +42,13 @@
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
     <tt:notHasProperty name="unitime.menu.style" user="true">
-	   	<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+	   	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;" ></span>
     </tt:notHasProperty>
     <tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic On Top">
-    	<span id='UniTimeGWT:DynamicTopMenu' style="display: none;" ></span>
+    	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;" ></span>
     </tt:propertyEquals>
     <tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
-    	<span id='UniTimeGWT:TopMenu' style="display: none;" ></span>
+    	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;" ></span>
     </tt:propertyEquals>
 
 	<tt:hasProperty name="tmtbl.global.warn">
@@ -89,36 +89,53 @@
 <div id="contentMain">
 	<table align="center" width="900px">
     <tr>
-    <td valign="top" rowspan="2">
+    <td valign="top" rowspan="2" id="unitime-SideMenu">
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
-    		<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
-    		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Stack On Side">
-    		<span id='UniTimeGWT:StaticSideStackMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:StaticSideStackMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Tree On Side">
-    		<span id='UniTimeGWT:StaticSideTreeMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:StaticSideTreeMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Stack On Side">
-    		<span id='UniTimeGWT:SideStackMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
-    		<span id='UniTimeGWT:SideTreeMenu' style="display: none;" ></span>
+    		<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 	    </tt:propertyEquals>
     </td>
+    <script language="JavaScript" type="text/javascript">
+    	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
+    	if (sideMenu.length > 0) {
+    		var c = unescape(document.cookie);
+    		var c_start = c.indexOf("UniTime:SideBar=");
+    		if (c_start >= 0) {
+    			c_start = c.indexOf("|W:", c_start) + 3;
+    			var c_end = c.indexOf(";", c_start);
+    			if (c_end < 0) c_end=c.length;
+    			var width = c.substring(c_start, c_end);
+    			sideMenu[0].style.width = width + "px";
+    			// alert(c.substring(c.indexOf("UniTime:SideBar=") + 16, c_end));
+    		} else {
+    			sideMenu[0].style.width = (sideMenu[0].id.indexOf("StackMenu") >= 0 ? "172px" : "152px");
+    		}
+    	}
+    </script>
     <td valign="top" >
 	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
 	    <tr><td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
 		   		<tr><td rowspan="2"><a href='http://www.unitime.org'><img src="images/unitime.png" border="0"/></a></td>
-		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px">
+		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px; height: 55px;">
 		   				<span class='unitime-Title'>University Timetabling Application</span>
 		   			</td>
 	    		</tr>
-	    		<tr><td width="100%" align="right" valign="middle" nowrap="nowrap">
+	    		<tr><td width="100%" align="right" valign="middle" nowrap="nowrap" style="height: 34px;">
 	    			<span id='UniTimeGWT:Header'></span>
 	    		</td></tr>
 	    	</table>
