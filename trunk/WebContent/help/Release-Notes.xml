@@ -163,6 +163,7 @@
 				</line>
 				<line>Contact Us: CC field was ignored.</line>
 				<line>Email: all emails are now encoded in UTF-8.</line>
+				<line>Export PDF: added ability to provide custom fonts (e.g., with better support of unicode characters).</line>
 				<line>Version number changed to 3.3.</line>
 			</description>
 		</item>

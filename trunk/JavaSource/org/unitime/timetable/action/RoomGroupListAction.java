@@ -59,10 +59,10 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -579,7 +579,7 @@ public class RoomGroupListAction extends Action {
     				iWriter.setPageEvent(new PdfEventHandler());
     				doc.open();
     			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
     			doc.add(pdfTable);
     		}
     		
@@ -595,7 +595,7 @@ public class RoomGroupListAction extends Action {
     				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
     				doc.newPage();
     			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
     			doc.add(pdfTable);
     		}
     		

@@ -26,6 +26,7 @@ import java.util.Date;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
@@ -34,7 +35,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 public class PdfEventHandler extends PdfPageEventHelper {
 
 	private BaseFont baseFont;
-	private int fontSize;
+	private float fontSize;
 	
 	private Date dateTime = null;
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy hh:mmaa");
@@ -47,9 +48,9 @@ public class PdfEventHandler extends PdfPageEventHelper {
 
     	super();
 	    
-		setBaseFont(
-			BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED));
-		setFontSize(12);
+    	Font font = PdfFont.getFont();
+		setBaseFont(font.getBaseFont());
+		setFontSize(font.getSize());
 		
         return;
      }
@@ -99,11 +100,11 @@ public class PdfEventHandler extends PdfPageEventHelper {
 		this.baseFont = baseFont;
 	}
 
-	private int getFontSize() {
+	private float getFontSize() {
 		return fontSize;
 	}
 
-	private void setFontSize(int fontSize) {
+	private void setFontSize(float fontSize) {
 		this.fontSize = fontSize;
 	}
 
