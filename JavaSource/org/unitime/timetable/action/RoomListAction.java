@@ -168,7 +168,7 @@ public class RoomListAction extends Action {
         roomListForm.setCanAddNonUniv(false);
         roomListForm.setCanAddSpecial(false);
         boolean hasExternalRooms = !ExternalRoom.findAll(sessionId).isEmpty();
-		if (Constants.ALL_OPTION_LABEL.equals(roomListForm.getDeptCodeX())) {
+		if (Constants.ALL_OPTION_VALUE.equals(roomListForm.getDeptCodeX())) {
 	        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
 	        	Department d = (Department)i.next();
 	        	if (d.isEditableBy(user)) {
