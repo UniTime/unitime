@@ -78,6 +78,12 @@
 				<line>LDAP lookup -- the count limit can now be changed using tmtbl.lookup.ldap.countLimit property.</line>
 			</description>
 		</item>
+		<item>
+			<name>Emails</name>
+			<description>
+				<line>All emails are now encoded in UTF-8.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
