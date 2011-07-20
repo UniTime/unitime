@@ -75,6 +75,14 @@
 				<line>Fixed a bug in Location filter (there was a bug in the generated query, ignoring some other filter properties).</line>
 			</description>
 		</item>
+		<item>
+			<name>Assign Instructors, Class Setup, Instructional Offering Configuration, Instructional Offering Cross Lists, Add/Edit Distribution Preference, Add/Edit Examination Distribution Preference</name>
+			<description>
+				<line>Construct &lt;A onClick='…'&gt;&lt;IMG …&gt;&lt;/A&gt; replaced by &lt;IMG onClick='…' …&gt;.
+					<line>This should fix the "To display the webpage again, Internet Explorer needs to resend the information you've previously submitted." warning in Internet Explorer 7.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>

@@ -456,32 +456,37 @@ public class SchedulingSubpartTableBuilder {
         // Right Arrow
         if ( (level==1 && rowNum>0)
              || (level>1 && spRowNum>0) ) 
-        	html += "<A onClick=\"doClick('shiftRight', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Move to Child Level\" title=\"Move to Child Level\" align=\"top\" src=\"images/arrow_r.gif\"></A>";
+        	html += "<IMG border=\"0\" alt=\"Move to Child Level\" title=\"Move to Child Level\" align=\"top\" src=\"images/arrow_r.gif\" " +
+        			"onClick=\"doClick('shiftRight', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"top\" src=\"images/blank.gif\">";
         
         // Left Arrow
         if (level>1)
-        	html += "<A onClick=\"doClick('shiftLeft', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Move to Parent Level\" title=\"Move to Parent Level\" align=\"top\" src=\"images/arrow_l.gif\"></A>";
+        	html += "<IMG border=\"0\" alt=\"Move to Parent Level\" title=\"Move to Parent Level\" align=\"top\" src=\"images/arrow_l.gif\" " +
+        			"onClick=\"doClick('shiftLeft', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"top\" src=\"images/blank.gif\">"; 
         
         // Up Arrow
         if( (level==1 && rowNum>0 )
              || (level>1 && spRowNum>0) ) 
-        	html += "<A onClick=\"doClick('shiftUp', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Move Up\" align=\"absmiddle\" src=\"images/arrow_u.gif\"></A>";
+        	html += "<IMG border=\"0\" alt=\"Move Up\" align=\"absmiddle\" src=\"images/arrow_u.gif\" " +
+        			"onClick=\"doClick('shiftUp', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
 
         // Down Arrow
         if ( (level==1 && (rowNum+1)<maxRows)
              || (level>1 && (spRowNum+1)<maxSp) )
-        	html += "<A onClick=\"doClick('shiftDown', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Move Down\" align=\"absmiddle\" src=\"images/arrow_d.gif\"></A>";
+        	html += "<IMG border=\"0\" alt=\"Move Down\" align=\"absmiddle\" src=\"images/arrow_d.gif\" " +
+        			"onClick=\"doClick('shiftDown', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
 
         // Delete
-        html += "<A onClick=\"doClick('delete', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Delete\" title=\"Delete Instructional Type\" align=\"top\" src=\"images/Delete16.gif\"></A>&nbsp; ";
+        html += "<IMG border=\"0\" alt=\"Delete\" title=\"Delete Instructional Type\" align=\"top\" src=\"images/Delete16.gif\" " +
+        		"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
 
         html += "&nbsp; &nbsp;";
         
