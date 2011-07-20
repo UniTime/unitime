@@ -41,6 +41,12 @@
 				<line>Fixed spelling of Attachment on event approval page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Examinations</name>
+			<description>
+				<line>Wrap string displayed for rooms that shows the final exam period preferences for the room.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
