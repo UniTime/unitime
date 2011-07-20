@@ -230,7 +230,6 @@ public class UniTimeSideBar extends Composite {
 			}
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed to load menu: " + caught.getMessage());
 			}
 		});
 	}
