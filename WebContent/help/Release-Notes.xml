@@ -84,6 +84,14 @@
 				<line>All emails are now encoded in UTF-8.</line>
 			</description>
 		</item>
+		<item>
+			<name>iCalendar (Calendar Servlet)</name>
+			<description>
+				<line>URL encryption changed to AES-128.
+					<line>Was AES-256, however that requires Java(TM) Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files that may not always be installed.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
