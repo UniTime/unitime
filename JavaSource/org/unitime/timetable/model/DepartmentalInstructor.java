@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpSession;
 
+import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -411,35 +412,43 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 	
 	public static DepartmentalInstructor findByPuidDepartmentId(String puid, Long deptId) {
+		return(findByPuidDepartmentId(puid, deptId, (new DepartmentalInstructorDAO()).getSession()));
+	}
+	
+	public static DepartmentalInstructor findByPuidDepartmentId(String puid, Long deptId, org.hibernate.Session hibSession) {
 		try {
-		return (DepartmentalInstructor)(new DepartmentalInstructorDAO()).
-			getSession().
+		return (DepartmentalInstructor)hibSession.
 			createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId").
 			setString("puid", puid).
 			setLong("deptId",deptId.longValue()).
 			setCacheable(true).
+			setFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 		} catch (NonUniqueResultException e) {
 			Debug.warning("There are two or more instructors with puid "+puid+" for department "+deptId+" -- returning the first one.");
-			return (DepartmentalInstructor)(new DepartmentalInstructorDAO()).
-				getSession().
+			return (DepartmentalInstructor)hibSession.
 				createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId").
 				setString("puid", puid).
 				setLong("deptId",deptId.longValue()).
 				setCacheable(true).
+				setFlushMode(FlushMode.MANUAL).
 				list().get(0);
 		}
 	}
-	
+
 	public DepartmentalInstructor findThisInstructorInSession(Long sessionId){
-		Department newDept = this.getDepartment().findSameDepartmentInSession(sessionId);
+		return findThisInstructorInSession(sessionId, (new DepartmentalInstructorDAO()).getSession());
+	}
+	
+	public DepartmentalInstructor findThisInstructorInSession(Long sessionId, org.hibernate.Session hibSession){
+		Department newDept = this.getDepartment().findSameDepartmentInSession(sessionId, hibSession);
 		if (newDept != null){
-			return(findByPuidDepartmentId(this.getExternalUniqueId(), newDept.getUniqueId()));
+			return(findByPuidDepartmentId(this.getExternalUniqueId(), newDept.getUniqueId(), hibSession));
 		}
 		return(null);
 	}
-	
-    public DepartmentalInstructor getNextDepartmentalInstructor(HttpSession session, User user, boolean canEdit, boolean canView) throws Exception {
+
+	public DepartmentalInstructor getNextDepartmentalInstructor(HttpSession session, User user, boolean canEdit, boolean canView) throws Exception {
     	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
     	DepartmentalInstructor next = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {

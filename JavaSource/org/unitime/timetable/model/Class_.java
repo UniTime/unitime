@@ -35,6 +35,7 @@ import javax.servlet.http.HttpSession;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
+import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -889,12 +890,16 @@ public class Class_ extends BaseClass_ {
     }
 
     public static List findAllForControllingSubjectArea(String subjectAreaAbbv, Long sessionId) {
-    	return (new Class_DAO()).
-    		getSession().
+    	return(findAllForControllingSubjectArea(subjectAreaAbbv, sessionId, (new Class_DAO()).getSession()));
+    }
+
+    public static List findAllForControllingSubjectArea(String subjectAreaAbbv, Long sessionId, org.hibernate.Session hibSession) {
+    	return hibSession.
     		createQuery("select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where " +
     				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=1").
     		setString("subjectAreaAbbv",subjectAreaAbbv).
     		setLong("sessionId",sessionId.longValue()).
+			setFlushMode(FlushMode.MANUAL).
     		list();
     }
 

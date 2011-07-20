@@ -28,6 +28,17 @@
 	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Fixed a hibernate issue in Class Instructor roll forward.</name>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.156</version>
+	<release-date>Sat, 25 Jun 2011</release-date>
+	<category>
 		<title>Online Student Sectioning</title>
 		<item>
 			<name>Student Scheduling Assistant</name>
