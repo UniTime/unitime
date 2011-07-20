@@ -30,7 +30,16 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
-			<name>Fixed a hibernate issue in Class Instructor roll forward.</name>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Fixed a hibernate issue in Class Instructor roll forward.</line>
+			</description>
+		</item>
+		<item>
+			<name>Events</name>
+			<description>
+				<line>Fixed spelling of Attachment on event approval page.</line>
+			</description>
 		</item>
 	</category>
 </release>
