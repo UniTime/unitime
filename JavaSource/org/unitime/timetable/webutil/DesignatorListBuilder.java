@@ -43,9 +43,9 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 
@@ -216,7 +216,7 @@ public class DesignatorListBuilder {
 			PdfEventHandler.initFooter(doc, out);
 			doc.open();
 			
-			doc.add(new Paragraph(webTable.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+			doc.add(new Paragraph(webTable.getName(), PdfFont.getBigFont(true)));
 			doc.add(webTable.printPdfTable(order));
 			
 			doc.close();

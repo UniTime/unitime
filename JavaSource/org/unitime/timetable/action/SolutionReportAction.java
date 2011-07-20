@@ -61,10 +61,10 @@ import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -157,7 +157,7 @@ public class SolutionReportAction extends Action {
                         doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
                         doc.newPage();
                     }
-                    doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+                    doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
                     doc.add(pdfTable);
                     atLeastOneRoomReport = true;
                 }
@@ -170,7 +170,7 @@ public class SolutionReportAction extends Action {
                             doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
                             doc.newPage();
                         }
-                        doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+                        doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
                         doc.add(pdfTable);
                         atLeastOneRoomReport = true;
                     }
@@ -211,7 +211,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.violInstBtb.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         		}
 
@@ -221,7 +221,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.violDistPrefReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         		}
         		
@@ -231,7 +231,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.studConf.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         		}
         		
@@ -241,7 +241,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.sectBalancingReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         		}
         		
@@ -251,7 +251,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.deptBalancingReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         		}
 
@@ -261,7 +261,7 @@ public class SolutionReportAction extends Action {
         			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.pert.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
         			doc.add(pdfTable);
         			pdfTable = new PdfPTable(new float[] {5f,100f});
         			pdfTable.setWidthPercentage(100);

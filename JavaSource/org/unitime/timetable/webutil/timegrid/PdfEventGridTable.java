@@ -36,13 +36,13 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -379,11 +379,11 @@ public class PdfEventGridTable extends EventGridTable {
         private void addText(PdfPCell cell, String text, boolean bold) {
             if (text==null) return;
             if (cell.getPhrase()==null) {
-                cell.setPhrase(new Paragraph(text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 10)));
+                cell.setPhrase(new Paragraph(text, PdfFont.getSmallFont(bold)));
                 cell.setVerticalAlignment(Element.ALIGN_TOP);
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             } else {
-                cell.getPhrase().add(new Chunk("\n"+text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 10)));
+                cell.getPhrase().add(new Chunk("\n"+text, PdfFont.getSmallFont(bold)));
             }
         }
         

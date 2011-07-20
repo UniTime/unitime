@@ -47,9 +47,9 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -295,7 +295,7 @@ public class ExamDistributionPrefsTableBuilder {
     		doc.open();
     		
     		if (tbl.getName()!=null)
-    			doc.add(new Paragraph(tbl.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+    			doc.add(new Paragraph(tbl.getName(), PdfFont.getBigFont(true)));
     		
     		doc.add(table);
     		
