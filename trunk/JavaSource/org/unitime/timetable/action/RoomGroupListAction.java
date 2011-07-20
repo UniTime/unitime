@@ -144,7 +144,7 @@ public class RoomGroupListAction extends Action {
 		if (user.getRole().equals(Roles.ADMIN_ROLE) || (user.getRole().equals(Roles.EXAM_MGR_ROLE)
 		        && session.getStatusType().canExamTimetable()))
 			roomGroupListForm.setCanAdd(true);
-		else if (Constants.ALL_OPTION_LABEL.equals(roomGroupListForm.getDeptCodeX())) {
+		else if (Constants.ALL_OPTION_VALUE.equals(roomGroupListForm.getDeptCodeX())) {
 			roomGroupListForm.setCanAdd(false);
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			TimetableManager owner = (new TimetableManagerDAO()).get(new Long(mgrId));
