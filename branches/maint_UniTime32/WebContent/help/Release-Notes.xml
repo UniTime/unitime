@@ -63,6 +63,12 @@
 				<line>Fixed a JavaScript error when the last cross-listed course is deleted (resvTotal element is not present).</line>
 			</description>
 		</item>
+		<item>
+			<name>Contact Us</name>
+			<description>
+				<line>CC field was ignored.</line>
+			</description>
+		</item>			
 	</category>
 	<category>
 		<title>Other Changes</title>
