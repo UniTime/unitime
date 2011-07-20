@@ -76,7 +76,8 @@
 		if (total>origTotal && origTotal>=0 && colorCodeTotal) {
 			str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
 		}
-		document.getElementById('resvTotal').innerHTML = str;
+		if (document.getElementById('resvTotal'))
+			document.getElementById('resvTotal').innerHTML = str;
 		
 		if (total<ioLimit && origTotal>=0) 
 			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
