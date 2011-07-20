@@ -57,6 +57,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed a JavaScript error when the last cross-listed course is deleted (resvTotal element is not present).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
