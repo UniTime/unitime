@@ -30,6 +30,7 @@ import java.util.Vector;
 
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RollForwardSessionForm;
@@ -1943,15 +1944,19 @@ public class SessionRollForward {
 
 	private void rollForwardClassInstructorsForASubjectArea(
 			String subjectAreaAbbreviation, Session toSession) {
-		List classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, toSession.getUniqueId());
+		Debug.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
+		Class_DAO clsDao = new Class_DAO();
+		org.hibernate.Session hibSession = clsDao.getSession();
+		hibSession.clear();
+		List classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, toSession.getUniqueId(), hibSession);
 		if (classes != null && !classes.isEmpty()){
 			Class_ toClass = null;
 			Class_ fromClass = null;
-			Class_DAO cDao = new Class_DAO();
 			for (Iterator cIt = classes.iterator(); cIt.hasNext();){
 				toClass = (Class_) cIt.next();
 				if (toClass.getUniqueIdRolledForwardFrom() != null){
-					fromClass = cDao.get(toClass.getUniqueIdRolledForwardFrom());
+					
+					fromClass = clsDao.get(toClass.getUniqueIdRolledForwardFrom(), hibSession);
 					if (fromClass != null){
 						if (fromClass.getClassInstructors() != null && !fromClass.getClassInstructors().isEmpty()) {
 							ClassInstructor fromClassInstr = null;
@@ -1959,25 +1964,31 @@ public class SessionRollForward {
 							DepartmentalInstructor toDeptInstr = null;
 							for (Iterator ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
 								fromClassInstr = (ClassInstructor) ciIt.next();
-								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId());
+								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId(), hibSession);
 								if (toDeptInstr != null){
 									toClassInstr = new ClassInstructor();
 									toClassInstr.setClassInstructing(toClass);
 									toClassInstr.setInstructor(toDeptInstr);
 									toClassInstr.setLead(fromClassInstr.isLead());
 									toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
+									
+									toClassInstr.setUniqueId(null);
 									toClass.addToclassInstructors(toClassInstr);
 									toDeptInstr.addToclasses(toClassInstr);
-									cDao.getSession().update(toDeptInstr);
+									hibSession.evict(fromClassInstr);
 								}
 							}
-							cDao.update(toClass);
+							hibSession.evict(fromClass);
+							Transaction t = hibSession.beginTransaction();
+							hibSession.update(toClass);
+							t.commit();
+						} else {
+							hibSession.evict(fromClass);
 						}
-						cDao.getSession().evict(fromClass);
 					}
 				}
-				cDao.getSession().evict(toClass);
-			}		
+				hibSession.evict(toClass);
+			}	
 		}
 	}
 
