@@ -58,6 +58,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>People Lookup</name>
+			<description>
+				<line>LDAP lookup -- the count limit can now be changed using tmtbl.lookup.ldap.countLimit property.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
