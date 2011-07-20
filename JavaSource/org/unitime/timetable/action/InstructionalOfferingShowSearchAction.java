@@ -77,6 +77,9 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	    String subjectAreaId = "";
 	    String courseNbr = "";
 	    
+	    if (Constants.ALL_OPTION_VALUE.equals(sa))
+	    	sa = null;
+	    
 	    if ( (sa==null || sa.toString().trim().length()==0) 
 	            && (cn==null || cn.toString().trim().length()==0) ) {
 		    // use session variables from class search  
