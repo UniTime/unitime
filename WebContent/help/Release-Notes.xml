@@ -69,6 +69,12 @@
 				<line>CC field was ignored.</line>
 			</description>
 		</item>			
+		<item>
+			<name>Meetings</name>
+			<description>
+				<line>Fixed a bug in Location filter (there was a bug in the generated query, ignoring some other filter properties).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
