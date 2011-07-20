@@ -92,6 +92,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>UniTime Menu &amp; Header</name>
+			<description>
+				<line>The number of page jumps (sudden changes of the main table size and/or position) during the page load is decreased.
+					<line>This is achieved by setting initial size of the (menu and header) components that are to be filled in by GWT code once the page is loaded to the expected size of these components.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

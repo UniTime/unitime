@@ -64,7 +64,6 @@ public class UniTimeMenuBar extends Composite {
 	
 	public UniTimeMenuBar(boolean absolute) {
 		iMenu = new MenuBar();
-		iMenu.setVisible(false);
 		iMenu.addStyleName("unitime-NoPrint");
 		iMenu.addStyleName("unitime-Menu");
 		initWidget(iMenu);
@@ -97,6 +96,7 @@ public class UniTimeMenuBar extends Composite {
 				}
 			});
 			iSimple = new SimplePanel();
+			iSimple.setHeight("23px");
 			new Timer() {
 				@Override
 				public void run() {
@@ -105,16 +105,22 @@ public class UniTimeMenuBar extends Composite {
 			}.scheduleRepeating(5000);
 		}
 		
+	}
+	
+	private void attach(final RootPanel rootPanel) {
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
 			@Override
 			public void onSuccess(List<MenuInterface> result) {
-				initMenu(iMenu, result, 0); 
-				iMenu.setVisible(true);
+				initMenu(iMenu, result, 0);
+				if (iSimple != null)
+					rootPanel.add(iSimple);
+				rootPanel.add(UniTimeMenuBar.this);
 				if (iSimple != null)
 					iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
 			}
 			@Override
 			public void onFailure(Throwable caught) {
+				Window.alert("Failed to load menu: " + caught.getMessage());
 			}
 		});
 	}
@@ -243,12 +249,7 @@ public class UniTimeMenuBar extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
-		panel.add(this);
-		panel.setVisible(true);
-		if (iSimple != null) {
-			iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
-			panel.add(iSimple);
-		}
+		attach(panel);
 	}
 
 }
