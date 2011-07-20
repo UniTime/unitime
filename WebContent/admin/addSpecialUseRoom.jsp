@@ -87,7 +87,7 @@
 						<logic:empty name="<%=frmName%>" property="deptCode">
 							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						</logic:empty>
-						<logic:equal name="<%=frmName%>" property="deptCode" value="<%=Constants.ALL_OPTION_LABEL%>">
+						<logic:equal name="<%=frmName%>" property="deptCode" value="<%=Constants.ALL_OPTION_VALUE%>">
 							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						</logic:equal>
 						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>

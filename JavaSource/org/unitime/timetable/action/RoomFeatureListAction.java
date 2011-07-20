@@ -197,7 +197,7 @@ public class RoomFeatureListAction extends Action {
 		if (user.getRole().equals(Roles.ADMIN_ROLE) || (user.getRole().equals(Roles.EXAM_MGR_ROLE) 
 		        && session.getStatusType().canExamTimetable()))
 			roomFeatureListForm.setCanAdd(true);
-		else if (Constants.ALL_OPTION_LABEL.equals(roomFeatureListForm.getDeptCodeX())) {
+		else if (Constants.ALL_OPTION_VALUE.equals(roomFeatureListForm.getDeptCodeX())) {
 			roomFeatureListForm.setCanAdd(false);
 	        for (Iterator i=mgr.departmentsForSession(sessionId).iterator();i.hasNext();) {
 	        	Department d = (Department)i.next();
