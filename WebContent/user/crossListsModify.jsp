@@ -265,7 +265,9 @@
 						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
-								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Delete16.gif" title="Remove course from instructional offering & mark it as not offered."></A>
+								<IMG border="0" src="images/Delete16.gif" title="Remove course from instructional offering & mark it as not offered."
+									onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
+									onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();">
 							</logic:notEqual>
 							 &nbsp;
 						</TD>

@@ -299,10 +299,36 @@
 						</logic:equal>
 						
 						<TD>&nbsp;</TD>
-						<TD align="center" valign="top" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><logic:equal name="<%=frmName%>" property='<%= "classCanMoveUp[" + ctr + "]" %>' value="true" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/arrow_u.gif" title="Move Class Up"></A></logic:equal></logic:equal></TD>
-						<TD align="center" valign="top" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><logic:equal name="<%=frmName%>" property='<%= "classCanMoveDown[" + ctr + "]" %>' value="true" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/arrow_d.gif" title="Move Class Down"></A></logic:equal></logic:equal></TD>
-						<TD align="center" valign="top" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Delete16.gif" title="Remove Class from Instructional Offering"></A></logic:equal></TD>
-						<TD align="center" valign="top" nowrap><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Class to Instructional Offering"></A></TD>
+						<TD align="center" valign="top" nowrap>
+							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+								<logic:equal name="<%=frmName%>" property='<%= "classCanMoveUp[" + ctr + "]" %>' value="true" >
+									<IMG border="0" src="images/arrow_u.gif" title="Move Class Up"
+										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+										onclick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+								</logic:equal>
+							</logic:equal>
+						</TD>
+						<TD align="center" valign="top" nowrap>
+							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+								<logic:equal name="<%=frmName%>" property='<%= "classCanMoveDown[" + ctr + "]" %>' value="true" >
+									<IMG border="0" src="images/arrow_d.gif" title="Move Class Down"
+										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+										onclick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+								</logic:equal>
+							</logic:equal>
+						</TD>
+						<TD align="center" valign="top" nowrap>
+							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+								<IMG border="0" src="images/Delete16.gif" title="Remove Class from Instructional Offering"
+									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+									onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+							</logic:equal>
+						</TD>
+						<TD align="center" valign="top" nowrap>
+							<IMG border="0" src="images/Add16.gif" title="Add Class to Instructional Offering"
+								onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+								onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+						</TD>
 						<TD>&nbsp;</TD>
 						<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" ><TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD><TD>&nbsp;</TD></logic:equal>
 						<TD align="left" nowrap valign="top"><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:hidden property='<%= "origMinLimit[" + ctr + "]" %>' value="<%= (String)frm.getMinClassLimits().get(ctr) %>"/><html:text name="<%=frmName%>" property='<%= "minClassLimits[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(2000 + ctr.intValue())%>" maxlength="5" size="4" onchange="<%= \"updateSubpartTotal(\" + ctr + \");document.getElementsByName('maxClassLimits[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/><bean:write name="<%=frmName%>" property='<%= "minClassLimits[" + ctr + "]" %>'/></logic:equal></TD>
