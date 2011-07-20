@@ -442,12 +442,12 @@
 	function lookup() {
 		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
 			if (person) {
-				document.getElementById('uid').value = person[0];
-				document.getElementById('fname').value = person[1];
-				document.getElementById('mname').value = person[2];
-				document.getElementById('lname').value = person[3];
-				document.getElementById('email').value = person[4];
-				document.getElementById('phone').value = person[5];
+				document.getElementById('uid').value = (person[0] == null ? '' : person[0]);
+				document.getElementById('fname').value = (person[1] == null ? '' : person[1]);
+				document.getElementById('mname').value = (person[2] == null ? '' : person[2]);
+				document.getElementById('lname').value = (person[3] == null ? '' : person[3]);
+				document.getElementById('email').value = (person[4] == null ? '' : person[4]);
+				document.getElementById('phone').value = (person[5] == null ? '' : person[5]);
 			}
 		}, "allowNoExternalId");
 	}
