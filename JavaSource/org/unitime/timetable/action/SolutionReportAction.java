@@ -515,9 +515,9 @@ public class SolutionReportAction extends Action {
         					rSB.append((j>0?", ":"")+ca.getRoom()[j].getName());
         			} else {
         				cSB.append(ca.getClazz().toHtml(true,true));
-        				tSB.append(ca.getTime().toHtml(false,false,true));
+        				tSB.append(ca.getTime().toHtml(false,false,true,true));
         				for (int j=0;j<ca.getRoom().length;j++)
-        					rSB.append((j>0?", ":"")+ca.getRoom()[j].toHtml(false,false));
+        					rSB.append((j>0?", ":"")+ca.getRoom()[j].toHtml(false,false,true));
         			}
         			ord.add(ca);
         			if (e.hasMoreElements()) {
@@ -566,10 +566,10 @@ public class SolutionReportAction extends Action {
         		
         		StringBuffer rSB = new StringBuffer();
         		for (int j=0;j<g.getFirst().getRoom().length;j++)
-        				rSB.append((j>0?", ":"")+(noHtml?g.getFirst().getRoom()[j].getName():g.getFirst().getRoom()[j].toHtml(false,false)));
+        				rSB.append((j>0?", ":"")+(noHtml?g.getFirst().getRoom()[j].getName():g.getFirst().getRoom()[j].toHtml(false,false,true)));
         		rSB.append(noHtml?"\n":"<BR>");
         		for (int j=0;j<g.getSecond().getRoom().length;j++)
-    				rSB.append((j>0?", ":"")+(noHtml?g.getSecond().getRoom()[j].getName():g.getSecond().getRoom()[j].toHtml(false,false)));
+    				rSB.append((j>0?", ":"")+(noHtml?g.getSecond().getRoom()[j].getName():g.getSecond().getRoom()[j].toHtml(false,false,true)));
         		
         		webTable.addLine(null,
     	    		new String[] {
@@ -581,7 +581,7 @@ public class SolutionReportAction extends Action {
         				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
         				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
         				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
-        				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
+        				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
         				rSB.toString()
         			},
         			new Comparable[] {
@@ -628,10 +628,10 @@ public class SolutionReportAction extends Action {
         		
         		StringBuffer rSB = new StringBuffer();
         		for (int j=0;j<g.getFirst().getRoom().length;j++)
-        				rSB.append((j>0?", ":"")+(noHtml?g.getFirst().getRoom()[j].getName():g.getFirst().getRoom()[j].toHtml(false,false)));
+        				rSB.append((j>0?", ":"")+(noHtml?g.getFirst().getRoom()[j].getName():g.getFirst().getRoom()[j].toHtml(false,false,true)));
         		rSB.append(noHtml?"\n":"<BR>");
         		for (int j=0;j<g.getSecond().getRoom().length;j++)
-    				rSB.append((j>0?", ":"")+(noHtml?g.getSecond().getRoom()[j].getName():g.getSecond().getRoom()[j].toHtml(false,false)));
+    				rSB.append((j>0?", ":"")+(noHtml?g.getSecond().getRoom()[j].getName():g.getSecond().getRoom()[j].toHtml(false,false,true)));
         		
         		if (hasImportant) {
             		webTable.addLine(null,
@@ -641,7 +641,7 @@ public class SolutionReportAction extends Action {
                 				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
                 				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
-                				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
+                				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
                 				rSB.toString(),
                 				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
                 				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
@@ -668,7 +668,7 @@ public class SolutionReportAction extends Action {
                 				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
                 				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
-                				g.getFirst().getTime().toHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true)),
+                				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
                 				rSB.toString(),
                 				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
                 				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
