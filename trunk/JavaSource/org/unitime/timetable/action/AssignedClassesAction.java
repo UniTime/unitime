@@ -281,7 +281,7 @@ public class AssignedClassesAction extends Action {
         	    if (ca.getRoom()!=null)
         	    	for (int i=0;i<ca.getRoom().length;i++) {
         	    		if (i>0) rooms += ", ";
-        	    		rooms += ca.getRoom()[i].toHtml(false,false);
+        	    		rooms += ca.getRoom()[i].toHtml(false,false,true);
         	    	}
         	    
         	    if (simple)
@@ -289,7 +289,7 @@ public class AssignedClassesAction extends Action {
             	    		new String[] {
             	    			ca.getClazz().toHtml(true,true),
             	    			ca.getDaysHtml(),
-            	    			ca.getTime().toHtml(false,false,true),
+            	    			ca.getTime().toHtml(false,false,true,true),
             	    			rooms,
             	    			ca.getInstructorHtml(),
             	    			ClassAssignmentDetails.dispNumber(ci.getNrStudentConflicts())+sb
@@ -307,7 +307,7 @@ public class AssignedClassesAction extends Action {
             	    		new String[] {
     	    					ca.getClazz().toHtml(true,true),
     	    					ca.getDaysHtml(),
-    	    					ca.getTime().toHtml(false,false,true),
+    	    					ca.getTime().toHtml(false,false,true,true),
     	    					rooms,
     	    					ca.getInstructorHtml(),
     	    					ClassAssignmentDetails.dispNumber(ci.getNrStudentConflicts())+sb,
