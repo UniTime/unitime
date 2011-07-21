@@ -617,9 +617,9 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     	return info; 
     }    
     
-    public SolverUnassignedClassesModel getUnassignedClassesModel() {
+    public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) {
     	synchronized (currentSolution()) {
-    		return new SolverUnassignedClassesModel(this);
+    		return new SolverUnassignedClassesModel(this, prefix);
     	}
     }
 
@@ -1074,6 +1074,17 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		return ret;
 	}
 	
+	public Vector getAssignedClasses(String prefix) {
+		Vector ret = new Vector();
+		synchronized (currentSolution()) {
+			for (Lecture lecture: currentSolution().getModel().assignedVariables()) {
+				if (prefix == null || lecture.getName().startsWith(prefix))
+					ret.addElement(new ClassAssignmentDetails(this,lecture,false));
+			}
+		}
+		return ret;
+	}
+
 	public Vector getChangesToBest() {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {

@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,15 +34,16 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.AssignedClassesForm;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -82,39 +84,71 @@ public class AssignedClassesAction extends Action {
         }
         
         myForm.load(model);
+        try {
+        	myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId())));
+        } catch (Exception e) {}
         
-        SolverProxy solver = WebSolver.getSolver(request.getSession());
-        Vector assignedClasses = null;
-        if (solver!=null) {
-        	assignedClasses = solver.getAssignedClasses();
+        if ("Apply".equals(op) || "Export PDF".equals(op)) {
+        	if (myForm.getSubjectArea() == null)
+        		request.getSession().removeAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        	else if (myForm.getSubjectArea() < 0)
+        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, Constants.ALL_OPTION_VALUE);
+        	else
+        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, myForm.getSubjectArea().toString());
         } else {
-        	String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
-        	String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
-        	assignedClasses = new Vector();
-			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {
-				SolutionDAO dao = new SolutionDAO();
-				Session hibSession = dao.getSession();
-				for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-					Long solutionId = Long.valueOf(s.nextToken());
-					Solution solution = dao.get(solutionId, hibSession);
-					try {
-						for (Iterator i=solution.getAssignments().iterator();i.hasNext();) {
-							Assignment a = (Assignment)i.next();
-							assignedClasses.add(new ClassAssignmentDetails(solution, a, false, hibSession, instructorNameFormat));
-						}
-					} catch (ObjectNotFoundException e) {
-						hibSession.refresh(solution);
-						for (Iterator i=solution.getAssignments().iterator();i.hasNext();) {
-							Assignment a = (Assignment)i.next();
-							assignedClasses.add(new ClassAssignmentDetails(solution, a, false, hibSession, instructorNameFormat));
-						}
-					}
-				}
-			} else {
-    			request.setAttribute("AssignedClasses.message","Neither a solver is started nor solution is selected.");
-    			return mapping.findForward("showAssignedClasses");
-			}
+        	try {
+        		Object sa = request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		if (Constants.ALL_OPTION_VALUE.equals(sa))
+        			myForm.setSubjectArea(-1l);
+        		else if (sa != null)
+        			myForm.setSubjectArea(Long.valueOf(sa.toString()));
+        	} catch (Exception e) {}
         }
+        if (myForm.getSubjectArea() == null && myForm.getSubjectAreas().size() == 1) {
+        	myForm.setSubjectArea(((SubjectArea)myForm.getSubjectAreas().iterator().next()).getUniqueId());
+        }
+        
+        Vector assignedClasses = null;
+        if (myForm.getSubjectArea() != null && myForm.getSubjectArea() != 0) {
+        	String prefix = myForm.getSubjectArea() > 0 ? myForm.getSubjectAreaAbbv() + " " : null;
+            SolverProxy solver = WebSolver.getSolver(request.getSession());
+            if (solver!=null) {
+            	assignedClasses = solver.getAssignedClasses(prefix);
+            } else {
+            	String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+            	String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
+            	assignedClasses = new Vector();
+    			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {
+    				SolutionDAO dao = new SolutionDAO();
+    				org.hibernate.Session hibSession = dao.getSession();
+    				for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
+    					Long solutionId = Long.valueOf(s.nextToken());
+    					Solution solution = dao.get(solutionId, hibSession);
+    					try {
+    						for (Iterator i=solution.getAssignments().iterator();i.hasNext();) {
+    							Assignment a = (Assignment)i.next();
+    							if (prefix != null && !a.getClassName().startsWith(prefix)) continue;
+    							assignedClasses.add(new ClassAssignmentDetails(solution, a, false, hibSession, instructorNameFormat));
+    						}
+    					} catch (ObjectNotFoundException e) {
+    						hibSession.refresh(solution);
+    						for (Iterator i=solution.getAssignments().iterator();i.hasNext();) {
+    							Assignment a = (Assignment)i.next();
+    							assignedClasses.add(new ClassAssignmentDetails(solution, a, false, hibSession, instructorNameFormat));
+    						}
+    					}
+    				}
+    			} else {
+        			request.setAttribute("AssignedClasses.message","Neither a solver is started nor solution is selected.");
+        			return mapping.findForward("showAssignedClasses");
+    			}
+            }
+        } else {
+			request.setAttribute("AssignedClasses.message","No subject area is selected.");
+			return mapping.findForward("showAssignedClasses");
+        }
+        	
+
         
         String assignedTable = getAssignmentTable(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
         if (assignedTable!=null) {

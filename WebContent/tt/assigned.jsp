@@ -39,24 +39,31 @@ try {
 			<html:checkbox property="simpleMode"/>
 		</TD>
 	</TR>
-	<TR>
-		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" property="op" value="Apply"/>
-			<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-		</TD>
-	</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-			<TR>
-				<TD colspan='2' align='right'>
-					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-				</TD>
-			</TR>
-		</TABLE>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD width="10%" nowrap>Subject Area:</TD>
+			<TD>
+				<html:select name="assignedClassesForm" property="subjectArea"
+					onfocus="setUp();" 
+					onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);" >
+					<html:option value="">Select...</html:option>
+					<html:option value="-1">All</html:option>
+					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2' align='right'>
+				<html:submit onclick="displayLoading();" property="op" value="Apply"/>
+				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+			</TD>
+		</TR>
+	</TABLE>
 
 	<BR><BR>
 <%
