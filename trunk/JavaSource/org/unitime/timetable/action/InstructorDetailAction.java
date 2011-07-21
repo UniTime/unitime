@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -45,8 +44,6 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
@@ -57,7 +54,7 @@ import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -223,10 +220,10 @@ public class InstructorDetailAction extends PreferencesAction {
 				
 			    WebTable classTable =
 			    	(hasTimetable? 
-			    			new WebTable( 7,
+			    			new WebTable( 8,
 			    					null,
-			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager", "Time", "Room"},
-			    					new String[] {"left", "left","left", "left", "left", "left", "left"},
+			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager", "Time", "Date", "Room"},
+			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left"},
 			    					null )
 			    	:
 		    			new WebTable( 5,
@@ -272,41 +269,28 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	}
 			    	
 			    	String assignedTime = "";
+			    	String assignedDate = "";
 			    	String assignedRoom = "";
-			    	Assignment a = null;
-		    		AssignmentPreferenceInfo info = null;
-		    		try {
-		    			a = proxy.getAssignment(c);
-		    			info = proxy.getAssignmentInfo(c);
-		    		} catch (Exception e) {
-		    			Debug.error(e);
-		    		}
-		    		if (a!=null) {
-		    			if (info!=null)
-		    				assignedTime += "<font color='"+PreferenceLevel.int2color(info.getTimePreference())+"'>";
-		    			Enumeration<Integer> e = a.getTimeLocation().getDays();
-		   				while (e.hasMoreElements()){
-		   					assignedTime += Constants.DAY_NAMES_SHORT[e.nextElement()];
-		   				}
-		   				assignedTime += " ";
-		   				assignedTime += a.getTimeLocation().getStartTimeHeader();
-		   				assignedTime += "-";
-		   				assignedTime += a.getTimeLocation().getEndTimeHeader();
-		   				if (info!=null)
-		   					assignedTime += "</font>";
-		   				
-			    		Iterator it2 = a.getRooms().iterator();
-			    		while (it2.hasNext()){
-			    			Location room = (Location)it2.next();
-			    			if (info!=null)
-			    				assignedRoom += "<font color='"+PreferenceLevel.int2color(info.getRoomPreference(room.getUniqueId()))+"'>";
-			    			assignedRoom += room.getLabel();
-			    			if (info!=null)
-			    				assignedRoom += "</font>";
-			    			if (it2.hasNext())
-			    				assignedRoom += ", ";
-			    		}	
-		    		}
+			    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(request.getSession(),c.getUniqueId(),false);
+			    	if (ca == null) {
+			    		try {
+			    			Assignment a = proxy.getAssignment(c);
+			    			if (a.getUniqueId() != null)
+			    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(request.getSession(), a.getUniqueId(), false);
+			    		} catch (Exception e) {}
+			    	}
+			    	if (ca != null) {
+			    		if (ca.getAssignedTime() != null) {
+				    		assignedTime = ca.getAssignedTime().toHtml(false, false, true, true);
+				    		assignedDate = ca.getAssignedTime().getDatePatternName();
+			    		}
+						if (ca.getAssignedRoom() != null) {
+							for (int i=0;i<ca.getAssignedRoom().length;i++) {
+								if (i>0) assignedRoom += ", ";
+								assignedRoom += ca.getAssignedRoom()[i].toHtml(false,false,true);
+							}
+						}
+			    	}
 		    		
 		    		String onClick = null;
 		    		if (c.isViewableBy(user)) {
@@ -326,6 +310,7 @@ public class InstructorDetailAction extends PreferencesAction {
 									limitString,
 									managingDept,
 									assignedTime,
+									assignedDate,
 									assignedRoom
 								},
 								null,null);
