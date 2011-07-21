@@ -29,6 +29,35 @@
 
 <html:form action="/unassigned">
 	<% 	SolverProxy solver = WebSolver.getSolver(session); %>
+	
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title>Filter</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD width="10%" nowrap>Subject Area:</TD>
+			<TD>
+				<html:select name="unassignedForm" property="subjectArea"
+					onfocus="setUp();" 
+					onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);" >
+					<html:option value="">Select...</html:option>
+					<html:option value="-1">All</html:option>
+					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2' align='right'>
+				<html:submit onclick="displayLoading();" property="op" value="Apply"/>
+				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+			</TD>
+		</TR>
+	</TABLE>
+	<br><br>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<td colspan='4'>
@@ -38,25 +67,9 @@
 					(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
 					(e.g., Arrange Hours classes) are excluded.<br/>
 					For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
-					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br>
+					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br><br>
 				</i>
 			</TD>
-		</TR>
-		<TR>
-			<td colspan='4'>
-				&nbsp;
-			</TD>
-		</TR>
-		<TR>
-			<td colspan='4'>
-				<tt:section-header>
-					<tt:section-title>
-						Not-assigned Classes
-					</tt:section-title>
-					<html:submit onclick="displayLoading();" property="op" value="Export PDF" /> 
-					<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh" /> 
-				</tt:section-header>
-			</td>
 		</TR>
 		<%= request.getAttribute("Unassigned.table") %> 
 		<TR>
