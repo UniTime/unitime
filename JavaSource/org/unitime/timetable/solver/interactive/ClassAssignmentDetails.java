@@ -524,9 +524,9 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 			return iHint;
 		}
-		public String toHtml(boolean link, boolean showSelected, boolean endTime) {
+		public String toHtml(boolean link, boolean showSelected, boolean endTime, boolean showHint) {
 			boolean uline = (showSelected && this.equals(iTime));
-			String hint = getHint();
+			String hint = (showHint ? getHint() : null);
 			return 
 				(link?"<a id='time_"+getDays()+"_"+getStartSlot()+"_"+getPatternId()+"' onclick=\"selectTime(event, '"+getDays()+"', '"+getStartSlot()+"', '"+getPatternId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>":"<a class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>")+
 				"<span style='color:"+PreferenceLevel.int2color(iPref)+";' " +
@@ -602,17 +602,17 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			return iLocation;
 		}
 		
-		public String toHtml(boolean link, boolean showSelected) {
+		public String toHtml(boolean link, boolean showSelected, boolean showHint) {
 			boolean uline = false;
 			if (showSelected && iRoom!=null) {
 				for (int i=0;i<iRoom.length;i++)
 					if (iRoom[i].equals(this)) uline=true;
 			}
-			if (getLocation() != null) {
+			if (showHint && getLocation() != null) {
 				return
 					(link?"<a id='room_"+getId()+"' onclick=\"selectRoom(event, '"+getId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+iSize+" seats'>":"<a class='noFancyLinks' title='"+iSize+" seats'>")+
 					"<span style='color:"+PreferenceLevel.int2color(iPref)+";' "+
-					"onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(iPref))+ "');\" onmouseout=\"hideGwtHint();\">"+
+					"onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(iPref))+ "');\" onmouseout=\"hideGwtHint();\">" +
 					(uline?"<u>":"")+
 					(iStrike?"<s>":"")+
 					iName+
@@ -705,11 +705,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        sb.append(sJenrDF.format(iInfo.getJenrl()));
 		        sb.append("&times; ");
 		        sb.append(getOther().getClazz().toHtml(link && !iInfo.isCommited())+" ");
-		        sb.append(getOther().getTime().toHtml(false,false,true)+" ");
+		        sb.append(getOther().getTime().toHtml(false,false,true,false)+" ");
 		        if (getOther().getRoom()!=null)
 		        	for (int i=0;i<getOther().getRoom().length;i++) {
 		        		if (i>0) sb.append(", ");
-		        		sb.append(getOther().getRoom()[i].toHtml(false,false));
+		        		sb.append(getOther().getRoom()[i].toHtml(false,false,false));
 		        	}
 		        sb.append(props.isEmpty()?"":" <i>"+props+"</i>");
 		        sb.append(" <i>" + iInfo.getCurriculumText() + "</i>");
@@ -759,10 +759,10 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				sb.append(PreferenceLevel.int2string(getPreference()));
 				sb.append("</font>&nbsp;&nbsp;&nbsp;");
 				sb.append(other.getClazz().toHtml(true)+" ");
-				sb.append(other.getTime().toHtml(false,false,true)+" ");
+				sb.append(other.getTime().toHtml(false,false,true,false)+" ");
 		        for (int i=0;i<other.getRoom().length;i++) {
 		        	if (i>0) sb.append(", ");
-		        	sb.append(other.getRoom()[i].toHtml(false,false));
+		        	sb.append(other.getRoom()[i].toHtml(false,false,false));
 		        }
 		        return sb.toString();
 			} catch (Exception e) {
@@ -797,7 +797,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (idx>0) sb.append(", ");
 				if (idx==4)
 					sb.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">...</a></span><span id='room_rest' style='display:none'>");
-				sb.append(room.toHtml(link,showSelected));
+				sb.append(room.toHtml(link,showSelected,true));
 				idx++;
 			}
 			int sidx = 0;
@@ -807,7 +807,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (idx+sidx>0) sb.append(", ");
 				if (sidx==0)
 					sb.append("<span id='sroom_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('sroom_dots').style.display='none';document.getElementById('sroom_rest').style.display='inline';\">...</a></span><span id='sroom_rest' style='display:none'>");
-				sb.append(room.toHtml(link,showSelected));
+				sb.append(room.toHtml(link,showSelected,true));
 				sidx++;
 			}
 			if (sidx>0) sb.append("</span>");
@@ -844,7 +844,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (idx>0) sb.append(", ");
 				if (idx==4)
 					sb.append("<span id='time_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('time_dots').style.display='none';document.getElementById('time_rest').style.display='inline';\">...</a></span><span id='time_rest' style='display:none'>");
-				sb.append(time.toHtml(link,showSelected,false));
+				sb.append(time.toHtml(link,showSelected,false,true));
 				idx++;
 			}
 			int sidx = 0;
@@ -855,7 +855,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (idx+sidx>0) sb.append(", ");
 				if (sidx==0)
 					sb.append("<span id='stime_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('stime_dots').style.display='none';document.getElementById('stime_rest').style.display='inline';\">...</a></span><span id='stime_rest' style='display:none'>");
-				sb.append(time.toHtml(link,showSelected,false));
+				sb.append(time.toHtml(link,showSelected,false,true));
 				sidx++;
 			}
 			if (sidx>0) sb.append("</span>");
@@ -921,11 +921,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 					sb.append("<br>&nbsp;&nbsp;&nbsp;");
 					sb.append(other.getClazz().toHtml(link)+" ");
 					if (other.getTime()!=null)
-						sb.append(other.getTime().toHtml(false,false,true)+" ");
+						sb.append(other.getTime().toHtml(false,false,true,false)+" ");
 					if (other.getRoom()!=null)
 						for (int i=0;i<other.getRoom().length;i++) {
 							if (i>0) sb.append(", ");
-							sb.append(other.getRoom()[i].toHtml(false,false));
+							sb.append(other.getRoom()[i].toHtml(false,false,false));
 						}
 				}
 			} catch (Exception e) {
@@ -996,23 +996,23 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	public static String dispTime(TimeInfo oldTime, TimeInfo newTime) {
 		if (oldTime==null) {
 			if (newTime==null) return "";
-			else return newTime.toHtml(false,false,false);
+			else return newTime.toHtml(false,false,false,false);
 		} else if (newTime==null)
-			return oldTime.toHtml(false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
+			return oldTime.toHtml(false,false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
 		if (oldTime.equals(newTime))
-			return newTime.toHtml(false,false,false);
-		return oldTime.toHtml(false,false,false)+" &rarr; "+newTime.toHtml(false,false,false);
+			return newTime.toHtml(false,false,false,false);
+		return oldTime.toHtml(false,false,false,false)+" &rarr; "+newTime.toHtml(false,false,false,false);
 	}
 	
 	public static String dispTime2(TimeInfo oldTime, TimeInfo newTime) {
 		if (oldTime==null) {
 			if (newTime==null) return "";
-			else return "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; "+newTime.toHtml(false,false,false);
+			else return "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; "+newTime.toHtml(false,false,false,false);
 		} else if (newTime==null)
-			return oldTime.toHtml(false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
+			return oldTime.toHtml(false,false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
 		if (oldTime.equals(newTime))
-			return newTime.toHtml(false,false,false);
-		return oldTime.toHtml(false,false,false)+" &rarr; "+newTime.toHtml(false,false,false);
+			return newTime.toHtml(false,false,false,false);
+		return oldTime.toHtml(false,false,false,false)+" &rarr; "+newTime.toHtml(false,false,false,false);
 	}	
 
 	public static String dispTimeNoHtml(TimeInfo oldTime, TimeInfo newTime) {
@@ -1028,22 +1028,22 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 
 	public static String dispRoom(RoomInfo oldRoom, RoomInfo newRoom) {
 		if (oldRoom==null)
-			return newRoom.toHtml(false,false);
+			return newRoom.toHtml(false,false,false);
 		if (newRoom==null)
-			return oldRoom.toHtml(false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
+			return oldRoom.toHtml(false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
 		if (oldRoom.equals(newRoom))
-			return newRoom.toHtml(false,false);
-		return oldRoom.toHtml(false,false)+" &rarr; "+newRoom.toHtml(false,false);
+			return newRoom.toHtml(false,false,false);
+		return oldRoom.toHtml(false,false,false)+" &rarr; "+newRoom.toHtml(false,false,false);
 	}
 	
 	public static String dispRoom2(RoomInfo oldRoom, RoomInfo newRoom) {
 		if (oldRoom==null)
-			return "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; "+newRoom.toHtml(false,false);
+			return "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; "+newRoom.toHtml(false,false,false);
 		if (newRoom==null)
-			return oldRoom.toHtml(false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
+			return oldRoom.toHtml(false,false,false)+" &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
 		if (oldRoom.equals(newRoom))
-			return newRoom.toHtml(false,false);
-		return oldRoom.toHtml(false,false)+" &rarr; "+newRoom.toHtml(false,false);
+			return newRoom.toHtml(false,false,false);
+		return oldRoom.toHtml(false,false,false)+" &rarr; "+newRoom.toHtml(false,false,false);
 	}
 
 	public static String dispRoomNoHtml(RoomInfo oldRoom, RoomInfo newRoom) {

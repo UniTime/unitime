@@ -649,12 +649,12 @@ public class SuggestionsAction extends Action {
 		} else {
 			if (dispDate)
 				sb.append("<TR><TD>Date:</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
-			sb.append("<TR><TD>Time:</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true)+"</TD></TR>");
+			sb.append("<TR><TD>Time:</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
 			if (ca.getAssignedRoom()!=null) {
 				sb.append("<TR><TD>Room:</TD><TD>");
 				for (int i=0;i<ca.getAssignedRoom().length;i++) {
 					if (i>0) sb.append(", ");
-					sb.append(ca.getAssignedRoom()[i].toHtml(false,false));
+					sb.append(ca.getAssignedRoom()[i].toHtml(false,false,true));
 				}
 				sb.append("</TD></TR>");
 			}
@@ -675,10 +675,10 @@ public class SuggestionsAction extends Action {
 			if (ca.isInitial()) {
 				sb.append("<I>this one</I>");
 			} else {
-				sb.append(ca.getInitialTime().toHtml(false,false,true)+" ");
+				sb.append(ca.getInitialTime().toHtml(false,false,true,true)+" ");
 				for (int i=0;i<ca.getInitialRoom().length;i++) {
 					if (i>0) sb.append(", ");
-					sb.append(ca.getInitialRoom()[i].toHtml(false,false));
+					sb.append(ca.getInitialRoom()[i].toHtml(false,false,true));
 				}
 				sb.append("</TD></TR>");
 			}
@@ -775,7 +775,7 @@ public class SuggestionsAction extends Action {
         		if (hasViolDistConst) {
         			webTable.addLine(null,//"onClick=\"selectTime(event, '"+ca.getAssignedTime().getDays()+"', '"+ca.getAssignedTime().getStartSlot()+"', '"+ca.getAssignedTime().getPatternId()+"');\"",
         					new String[] {
-        						ca.getAssignedTime().toHtml(true,true,true),
+        						ca.getAssignedTime().toHtml(true,true,true,false),
         						(s.getViolatedStudentConflicts()>0?"<font color='red'>":"")+
         						s.getViolatedStudentConflicts() + sb.toString()+
         						(s.getViolatedStudentConflicts()>0?"</font>":""),
@@ -793,7 +793,7 @@ public class SuggestionsAction extends Action {
         		} else {
         			webTable.addLine(null,//"onClick=\"selectTime(event, '"+ca.getAssignedTime().getDays()+"', '"+ca.getAssignedTime().getStartSlot()+"', '"+ca.getAssignedTime().getPatternId()+"');\"",
         					new String[] {
-        						ca.getAssignedTime().toHtml(true,true,true),
+        						ca.getAssignedTime().toHtml(true,true,true,false),
         						(s.getViolatedStudentConflicts()>0?"<font color='red'>":"")+
         						s.getViolatedStudentConflicts() + sb.toString()+
         						(s.getViolatedStudentConflicts()>0?"</font>":""),
