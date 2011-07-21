@@ -80,7 +80,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getLog() throws Exception;
 	public String getLog(int level, boolean includeDate) throws Exception;
 	public String getLog(int level, boolean includeDate, String fromStage) throws Exception;
-	public SolverUnassignedClassesModel getUnassignedClassesModel() throws Exception;
+	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) throws Exception;
 	public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) throws Exception;
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) throws Exception;
 	public Suggestions getSuggestions(SuggestionsModel model) throws Exception;
@@ -97,6 +97,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public Vector getChangesToBest() throws Exception;
 	public Vector getChangesToSolution(Long solutionId) throws Exception;
 	public Vector getAssignedClasses() throws Exception;
+	public Vector getAssignedClasses(String prefix) throws Exception;
 	
 	
 	public String getHost();

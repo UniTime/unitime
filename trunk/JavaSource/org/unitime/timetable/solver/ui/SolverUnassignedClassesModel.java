@@ -31,10 +31,11 @@ public class SolverUnassignedClassesModel extends UnassignedClassesModel {
 	
 	private static final long serialVersionUID = -6094708695678612559L;
 
-	public SolverUnassignedClassesModel(TimetableSolver solver) {
+	public SolverUnassignedClassesModel(TimetableSolver solver, String prefix) {
 		super();
 		for (Lecture lecture: solver.currentSolution().getModel().unassignedVariables()) {
 			String name = lecture.getName();
+			if (prefix != null && !name.startsWith(prefix)) continue;
 			String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+lecture.getClassId()+"&op=Reset','900','90%');";
 			String instructorName = lecture.getInstructorName();
 			int nrStudents = lecture.students().size();

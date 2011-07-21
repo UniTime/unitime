@@ -35,13 +35,14 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 	
 	private static final long serialVersionUID = 8222974077941239586L;
 
-	public SolutionUnassignedClassesModel(Collection solutions, org.hibernate.Session hibSession, String instructorFormat) {
+	public SolutionUnassignedClassesModel(Collection solutions, org.hibernate.Session hibSession, String instructorFormat, String prefix) {
 		super();
 		for (Iterator i=solutions.iterator();i.hasNext();) {
 			Solution solution = (Solution)i.next();
 			for (Iterator j=solution.getOwner().getNotAssignedClasses(solution).iterator();j.hasNext();) {
 				Class_ clazz = (Class_)j.next();
 				String name = clazz.getClassLabel();
+				if (prefix != null && !name.startsWith(prefix)) continue;
 				String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+clazz.getUniqueId()+"&op=Reset','900','90%');";
 				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
