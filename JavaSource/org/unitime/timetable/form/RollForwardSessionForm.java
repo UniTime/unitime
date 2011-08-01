@@ -205,11 +205,11 @@ public class RollForwardSessionForm extends ActionForm {
 			validateRollForward(errors, s, getSessionToRollExamConfigurationForwardFrom(), "Exam Configuration", epDao.getQuery("from ExamPeriod ep where ep.session.uniqueId = " + s.getUniqueId().toString()).list());			
 		}
 
-		if (getRollForwardExamConfiguration().booleanValue()){
+		if (getRollForwardMidtermExams().booleanValue()){
 			ExamDAO eDao = new ExamDAO();
 			validateRollForwardSessionHasNoDataOfType(errors, s, "Midterm Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeMidterm).list());			
 		}
-		if (getRollForwardExamConfiguration().booleanValue()){
+		if (getRollForwardFinalExams().booleanValue()){
 			ExamDAO epDao = new ExamDAO();
 			validateRollForwardSessionHasNoDataOfType(errors, s, "Final Exams", epDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeFinal).list());			
 		}
