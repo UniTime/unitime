@@ -26,36 +26,16 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SectioningException extends RuntimeException implements IsSerializable {
 	private static final long serialVersionUID = 1L;
-
-	private SectioningExceptionType iType = SectioningExceptionType.UNKNOWN;
-	private String iProblem = "N/A";
 	
 	public SectioningException() {
 		super();
 	}
 	
-	public SectioningException(SectioningExceptionType type, String problem, Throwable cause) {
-		super(cause);
-		if (type != null) iType = type;
-		if (problem != null) iProblem = problem;
-	}
-	
-	public SectioningException(SectioningExceptionType type, String problem) {
-		this(type, problem, null);
+	public SectioningException(String message) {
+		super(message);
 	}
 
-	public SectioningException(SectioningExceptionType type, Throwable cause) {
-		this(type, cause.getMessage(), cause);
-	}
-	
-	public SectioningException(SectioningExceptionType type) {
-		this(type, null, null);
-	}
-
-	public String getProblem() { return iProblem; }
-	public SectioningExceptionType getType() { return iType; }
-	
-	public String getMessage() {
-		return iType.message(iProblem);
+	public SectioningException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

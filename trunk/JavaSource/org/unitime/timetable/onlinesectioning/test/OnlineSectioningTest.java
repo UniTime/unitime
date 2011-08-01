@@ -25,7 +25,6 @@ import java.util.List;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
@@ -65,7 +64,7 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 								}
 								break;
 							} catch (SectioningException e) {
-								if (e.getType() == SectioningExceptionType.ENROLL_NOT_AVAILABLE) {
+								if (e.getMessage().contains("the class is no longer available")) {
 									sLog.warn("Enrollment failed: " +e.getMessage() + " become unavailable (" + i + ". attempt)");
 									continue;
 								}

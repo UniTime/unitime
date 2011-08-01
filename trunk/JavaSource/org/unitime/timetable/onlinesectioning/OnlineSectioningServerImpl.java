@@ -62,12 +62,13 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
@@ -79,6 +80,7 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
  * @author Tomas Muller
  */
 public class OnlineSectioningServerImpl implements OnlineSectioningServer {
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
     private Log iLog = LogFactory.getLog(OnlineSectioningServerImpl.class);
 	private AcademicSessionInfo iAcademicSession = null;
 	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
@@ -103,7 +105,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		try {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			if (session == null)
-				throw new SectioningException(SectioningExceptionType.SESSION_NOT_EXIST, (sessionId == null ? "null" : sessionId.toString()));
+				throw new SectioningException(EXCEPTIONS.sessionDoesNotExist(sessionId == null ? "null" : sessionId.toString()));
 			iAcademicSession = new AcademicSessionInfo(session);
 			iLog = LogFactory.getLog(OnlineSectioningServerImpl.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
 			iMultiLock = new MultiLock(iAcademicSession);
@@ -129,7 +131,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			});
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
-			throw new SectioningException(SectioningExceptionType.UNKNOWN, t);
+			throw new SectioningException(EXCEPTIONS.unknown(t.getMessage()), t);
 		} finally {
 			hibSession.close();
 		}
@@ -1084,7 +1086,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			}
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
 		} finally {
 			if (h.getAction() != null)
 				h.getAction().setEndTime(System.currentTimeMillis()).setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
