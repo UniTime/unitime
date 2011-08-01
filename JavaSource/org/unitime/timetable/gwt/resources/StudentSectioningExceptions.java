@@ -111,4 +111,10 @@ public interface StudentSectioningExceptions extends Messages {
 
 	@DefaultMessage("{0}")
 	String unknown(String reason);
+	
+	@DefaultMessage("Academic session is not available for student scheduling.")
+	String noServerForSession();
+
+	@DefaultMessage("Wrong class or instructional offering.")
+	String badClassOrOffering();
 }

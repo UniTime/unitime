@@ -39,11 +39,12 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -53,6 +54,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  * @author Tomas Muller
  */
 public class ComputeSuggestionsAction extends FindAssignmentAction {
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
 	private ClassAssignmentInterface.ClassAssignment iSelection;
 	private double iValue = 0.0;
 	
@@ -100,7 +102,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, true);
-			if (student.getRequests().isEmpty()) throw new SectioningException(SectioningExceptionType.EMPTY_COURSE_REQUEST);
+			if (student.getRequests().isEmpty()) throw new SectioningException(EXCEPTIONS.noCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, true);
 			model.addStudent(student);

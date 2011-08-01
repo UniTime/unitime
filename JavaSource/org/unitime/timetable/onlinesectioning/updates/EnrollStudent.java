@@ -34,10 +34,11 @@ import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseRequestOption;
@@ -58,6 +59,7 @@ import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
  * @author Tomas Muller
  */
 public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInterface> {
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
 	private static DecimalFormat sDF = new DecimalFormat("+0.000;-0.000");
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
@@ -76,14 +78,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (!server.getAcademicSession().isSectioningEnabled())
-			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
+			throw new SectioningException(EXCEPTIONS.notSupportedFeature());
 		Set<Long> offeringIds = new HashSet<Long>();
 		Set<Long> lockedCourses = new HashSet<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime()) {
 				Course course = server.getCourse(ca.getCourseId());
 				if (course == null)
-					throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
+					throw new SectioningException(EXCEPTIONS.enrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
 				if (server.isOfferingLocked(course.getOffering().getId())) {
 					lockedCourses.add(course.getId());
 					// throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
@@ -146,7 +148,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				new CheckAssignmentAction(getStudentId(), getAssignment()).check(server, helper);
 				
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-				if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
+				if (student == null) throw new SectioningException(EXCEPTIONS.badStudentId());
 				action.getStudentBuilder().setUniqueId(student.getUniqueId())
 					.setExternalId(student.getExternalUniqueId())
 					.setName(student.getName(DepartmentalInstructor.sNameFormatFirstMiddleLast));
@@ -156,7 +158,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 					Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), helper.getHibSession());
 					if (clazz == null)
-						throw new SectioningException(SectioningExceptionType.ENROLL_NOT_AVAILABLE, ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection());
+						throw new SectioningException(EXCEPTIONS.enrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
 					classes.put(clazz.getUniqueId(), clazz);
 				}
 				
@@ -222,7 +224,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					server.update(oldStudent);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
-					throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+					throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
 				}
 				
 				if (oldStudent != null) {
@@ -278,7 +280,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
-				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+				throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
 			}
 		} finally {
 			lock.release();
