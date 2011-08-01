@@ -37,8 +37,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
+
+import com.google.gwt.i18n.client.Messages;
 
 /**
  * @author Tomas Muller
@@ -109,7 +110,7 @@ public class Localization {
 			Map<String, String> ret = new HashMap<String, String>();
 			for (Method m: iMessages.getDeclaredMethods()) {
 				if (m.getParameterTypes().length > 0) continue;
-				Messages.StrutsAction action = m.getAnnotation(Messages.StrutsAction.class);
+				org.unitime.localization.messages.Messages.StrutsAction action = m.getAnnotation(org.unitime.localization.messages.Messages.StrutsAction.class);
 				if (action != null) {
 					Messages.DefaultMessage dm = m.getAnnotation(Messages.DefaultMessage.class);
 					if (action.apply() == null || action.apply().length == 0) {
