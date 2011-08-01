@@ -38,8 +38,9 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -56,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
 	private Collection<Long> iOfferingIds;
 	
 	public CheckOfferingAction(Long... offeringIds) {
@@ -73,7 +75,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!server.getAcademicSession().isSectioningEnabled())
-			throw new SectioningException(SectioningExceptionType.FEATURE_NOT_SUPPORTED);
+			throw new SectioningException(EXCEPTIONS.notSupportedFeature());
 		for (Long offeringId: getOfferingIds()) {
 			// offering is locked -> assuming that the offering will get checked when it is unlocked
 			if (server.isOfferingLocked(offeringId)) continue;
@@ -300,7 +302,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
 		}
 	}
 

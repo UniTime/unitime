@@ -30,8 +30,9 @@ import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -46,6 +47,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  * @author Tomas Muller
  */
 public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
 	private Collection<Long> iClassIds = null;
 	
 	public ClassAssignmentChanged(Long... classIds) {
@@ -155,7 +157,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
-				throw new SectioningException(SectioningExceptionType.UNKNOWN, e);
+				throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
 			}
 		} finally {
 			readLock.release();

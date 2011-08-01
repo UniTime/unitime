@@ -35,8 +35,9 @@ import java.util.regex.Pattern;
 import net.sf.cpsolver.studentsct.model.Section;
 
 import org.apache.log4j.Logger;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.gwt.shared.SectioningExceptionType;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
@@ -45,7 +46,8 @@ import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
  * @author Tomas Muller
  */
 public class PurdueSectionLimitProvider implements SectionLimitProvider, SectionUrlProvider {
-    private static Logger sLog = Logger.getLogger(PurdueSectionLimitProvider.class);
+	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static Logger sLog = Logger.getLogger(PurdueSectionLimitProvider.class);
 
 	public static String sUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_schedule_detail?term=:year:term&crn=:crn";
 	public static String sDummyUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_schedule_detail?term=201010&crn=10001";
@@ -61,7 +63,7 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 		if (session.getTerm().toLowerCase().startsWith("spr")) return "20";
 		if (session.getTerm().toLowerCase().startsWith("sum")) return "30";
 		if (session.getTerm().toLowerCase().startsWith("fal")) return "10";
-		throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "academic term "+session.getTerm()+" not known");
+		throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("academic term "+session.getTerm()+" not known"));
 	}
 	
 	private String getYear(AcademicSessionInfo session) throws SectioningException {
@@ -77,7 +79,7 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 	
 	protected URL getSectionUrl(AcademicSessionInfo session, Long courseId, Long classId, String className) {
 		try {
-			if (className == null || className.isEmpty()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "class CRN not provided");
+			if (className == null || className.isEmpty()) throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("class CRN not provided"));
 			String crn = className;
 			if (className.indexOf('-') >= 0)
 				crn = className.substring(0, className.indexOf('-'));
@@ -88,7 +90,7 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 				.replace(":crn", crn));
 			return url;
 		} catch (MalformedURLException e) {
-			throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "course detail url is wrong");
+			throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("course detail url is wrong"));
 		}
 	}
 	
@@ -113,20 +115,20 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 			in.close();
 			
 			Matcher match = iContentRE.matcher(content);
-			if (!match.find()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "unable to parse <a href='"+secionUrl+"'>class detial page</a>");
+			if (!match.find()) throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
 			String table = match.group(1);
 
 			match = iTableRE.matcher(table);
-			if (!match.find()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "unable to parse <a href='"+secionUrl+"'>class detial page</a>");
+			if (!match.find()) throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
 			int capacity = Integer.parseInt(match.group(1));
-			if (!match.find()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "unable to parse <a href='"+secionUrl+"'>class detial page</a>");
+			if (!match.find()) throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
 			int actual = Integer.parseInt(match.group(1));
-			if (!match.find()) throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "unable to parse <a href='"+secionUrl+"'>class detial page</a>");
+			if (!match.find()) throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
 //			int remaning = Integer.parseInt(match.group(1));
 			
 			return new int[] {actual, capacity};
 		} catch (IOException e) {
-			throw new SectioningException(SectioningExceptionType.CUSTOM_SECTION_LIMITS_FAILURE, "unable to read <a href='"+secionUrl+"'>class detial page</a>");
+			throw new SectioningException(EXCEPTIONS.customSectionLimitsFailed("unable to read <a href='"+secionUrl+"'>class detial page</a>"));
 		}
 	}
 	
