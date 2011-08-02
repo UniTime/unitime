@@ -37,7 +37,7 @@
 %>
 <% if (frm.isAdmin()) {  %>
 		<html:form action="/rollForwardSession">
-		<TABLE border="0" cellspacing="5" cellpadding="5">
+		<table width="100%" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD align="left" class="errorCell">
@@ -56,6 +56,12 @@
 		</logic:messagesPresent>
 	<logic:notEmpty name="table" scope="request">
 		<TR><TD>
+			<tt:section-header>
+				<tt:section-title>Roll Forward(s) In Progress</tt:section-title>
+				<html:submit property="op" accesskey="R" styleClass="btn" onclick="displayElement('loading', true);">Refresh</html:submit>
+			</tt:section-header>
+		</TD></TR>
+		<TR><TD>
 			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 				<bean:write name="table" scope="request" filter="false"/>
 			</TABLE>
@@ -63,8 +69,18 @@
 		<TR><TD>&nbsp;</TD></TR>
 	</logic:notEmpty>
 			
+	<TR><TD>
+		<tt:section-header>
+			<tt:section-title>Roll Forward Actions</tt:section-title>
+			<logic:equal name="<%=frmName%>" property="admin" value="true">
+					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
+					<bean:message key="button.rollForward" />
+				</html:submit>
+			</logic:equal>
+		</tt:section-header>
+	</TD></TR>
 		<tr>
-			<td valign="top" nowrap ><b>Session To Roll Foward To: </b>
+			<td valign="middle" nowrap ><b>Session To Roll Forward To: </b>
 			<html:select style="width:200;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
 			<html:optionsCollection property="toSessions" value="uniqueId" label="label"  /></html:select>
 			</td>			
@@ -74,76 +90,73 @@
 		</td>
 		</tr>
 		<tr>
-			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollDatePatternsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollTimePatternsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollDeptsFowardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollManagersForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollRoomDataForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollSubjectAreasForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardInstructorData"/> Roll Instructor Data Forward From Session: 
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardInstructorData"/> Roll Instructor Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollInstructorDataForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollCourseOfferingsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
-		<TR>
-			<TD valign="top">
-			<table><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<tr>
+			<td valign="middle">
+			<table style="margin-left: 50px;"><tr>
 			    <td valign="top">For Subject Areas:</td>
 			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			    </td></tr>
-			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td align="right">Scheduling Subpart Level Time Preference Options:</td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
-			<tr><td></td><td align="right"></td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
-			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td align="right">Scheduling Subpart Level Location Preference Options:</td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
-			<tr><td></td><td align="right"></td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
-			<tr><td>&nbsp;</td><td></td><td></td></tr>
-			<tr><td></td><td align="right">Class Level Preference Options:</td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
-			<tr><td></td><td align="right"></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Time Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Location Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Class Level Preference Options:</td><td style="padding-top: 20px;"><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
+			<tr><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
 			</table>
 			</td>
 		</tr>
 		<tr>
-			<td valign="top">
-			<table><tr>	<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassInstructors"/> Roll Forward Class Instructors For Subject Areas: 
+			<td valign="middle">
+			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassInstructors"/> Roll Forward Class Instructors For Subject Areas: 
 				</td><td>
 				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassInstrSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
@@ -152,8 +165,11 @@
 			</td>
 		</tr>
 		<tr>
-			<td valign="top">
-			<table><tr>	<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="addNewCourseOfferings"/> Add New Course Offerings For Subject Areas:<br><i>Note: Only use this after all existing course<br> offerings have been rolled forward to avoid<br> errors with cross lists.</i>
+			<td valign="middle">
+			<table>
+				<tr>
+					<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="addNewCourseOfferings"/>Add New Course Offerings For Subject Areas:
+					<div style="margin-left: 20px;"><i>Note: Only use this after all existing course<br> offerings have been rolled forward to avoid<br> errors with cross lists.</i></div>
 				</td><td>
 				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="addNewCourseOfferingsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
@@ -162,21 +178,21 @@
 			</td>
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardExamConfiguration"/> Roll Exam Configuration Data Forward From Session: 
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardExamConfiguration"/> Roll Exam Configuration Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollExamConfigurationForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward
 			</td>	
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward
 			</td>		
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardStudents"/> Import Last-Like Course Demands
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardStudents"/> Import Last-Like Course Demands
 				<html:select property="rollForwardStudentsMode">
 					<html:option value="0">Copy Last-like Course Demands From Previous Session</html:option>
 					<html:option value="1">Import Last-like Course Demands From Student Class Enrollments Of Previous Session</html:option>
@@ -185,18 +201,20 @@
 			</td>		
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollCurriculaForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).</i>
 			</td>
 		</tr>
-		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>
 		<tr>
-			<td>
-				&nbsp;&nbsp;&nbsp;
+			<td class="WelcomeRowHead">
+			&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td align="right">
 				<logic:equal name="<%=frmName%>" property="admin" value="true">
-					&nbsp;&nbsp;&nbsp;
 					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
 						<bean:message key="button.rollForward" />
 					</html:submit>
@@ -206,7 +224,7 @@
 		</TABLE>
 		</html:form>
 		<% } else { %>
-		<b>User must be an administrator to roll foward to a session.</b>
+		<b>User must be an administrator to roll forward a session.</b>
 		<% } %>
 	<script language="javascript">displayElement('loading', false);</script>
 	</body>
