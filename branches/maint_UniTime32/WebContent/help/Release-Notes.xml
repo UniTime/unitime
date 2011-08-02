@@ -35,6 +35,12 @@
 				<line>The exam roll forward process was not validating that final exams or midterm exams already existed. It was doing this check for the Exam Configuration Data roll forward instead. This has been corrected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Login Page</name>
+			<description>
+				<line>Display top menu (accidentally made hidden by revision 2531).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
