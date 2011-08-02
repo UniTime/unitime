@@ -178,6 +178,22 @@ try {
 			} else {
 %>
 			</TABLE>
+	<script language="JavaScript">
+		function mOvr(assignmentId) {
+			var x = document.getElementsByName('c'+assignmentId);
+			for (var i = 0; i < x.length; i++)
+				x[i].style.backgroundColor='rgb(223,231,242)';
+		}
+		function mOut(assignmentId, bgColor) {
+			var x = document.getElementsByName('c'+assignmentId);
+			for (var i = 0; i < x.length; i++)
+				x[i].style.backgroundColor=bgColor;
+		}
+		function mHnd(source) {
+			source.style.cursor='hand';
+			source.style.cursor='pointer';
+		}
+	</script>
 <%
 
 				table.printToHtml(out);
