@@ -41,6 +41,20 @@
 				<line>Display top menu (accidentally made hidden by revision 2531).</line>
 			</description>
 		</item>
+		<item>
+			<name>Events, Meetings</name>
+			<description>
+				<line>iCalendar export: Avoid NullPointerException when the first event has no room.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>iCalendar export: Do not check for authentication (security is done by calendar query encoding).
+					<line>This fixes the problem with the exported calendar being empty.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

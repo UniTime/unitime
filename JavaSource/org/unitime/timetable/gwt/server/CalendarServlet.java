@@ -290,7 +290,7 @@ public class CalendarServlet extends HttpServlet {
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
             	if (r.getType() == ResourceType.ROOM)
             		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
-        		for (EventInterface e: new EventServlet().findEvents(r))
+        		for (EventInterface e: new EventServlet().findEvents(r, false))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
