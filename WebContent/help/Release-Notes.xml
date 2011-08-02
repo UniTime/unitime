@@ -56,6 +56,18 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Added additional checks into the session roll forward process to ensure if the same roll forward is submitted to the process queue multiple times, the subsequent roll forwards do not attempt to roll forward data that has already been rolled forward.</line>
+				<line>Added Refresh button (when the progress table is present).</line>
+				<line>Fixed a few typos (like forward instead of foward).</line>
+				<line>Page cleanup (line alignments, wrapped the roll forward actions into a section called "Roll Forward Actions" with right justified "Roll Forward" button on the top and bottom of the table).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
