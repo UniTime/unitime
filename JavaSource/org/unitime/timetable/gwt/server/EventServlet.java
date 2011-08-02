@@ -367,19 +367,23 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ": " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException, PageAccessException {
+		return findEvents(resource, true);
+	}	
+
+	public List<EventInterface> findEvents(ResourceInterface resource, boolean checkAuthentication) throws EventException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
 			try {
-				
-				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
-				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
-					userInfo.getUser() == null)
+				if (checkAuthentication) {
+					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) && userInfo.getUser() == null)
 						throw new PageAccessException(resource.getType().getPageTitle().substring(0, 1).toUpperCase() +
 								resource.getType().getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
+				}
 
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(resource.getSessionId(), hibSession);
