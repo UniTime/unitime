@@ -127,7 +127,7 @@ public class RollForwardSessionAction extends Action {
 		DateFormat df = new SimpleDateFormat("h:mma");
 		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Roll Forward");
 		if (queue.isEmpty()) return null;
-		WebTable table = new WebTable(9, "Roll forward in progress", "rollForwardSession.do?ord=%%",
+		WebTable table = new WebTable(9, null, "rollForwardSession.do?ord=%%",
 				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
 				new String[] { "left", "left", "right", "left", "left", "left", "left", "left", "center"},
 				new boolean[] { true, true, true, true, true, true, true, true, true});
@@ -139,7 +139,7 @@ public class RollForwardSessionAction extends Action {
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
 			if (managerId.equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
-				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this data exchange?')) document.location='rollForwardSession.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
+				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this roll forward?')) document.location='rollForwardSession.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
 			WebTableLine line = table.addLine("onClick=\"document.location='rollForwardSession.do?log=" + item.getId() + "';\"",
 					new String[] {
