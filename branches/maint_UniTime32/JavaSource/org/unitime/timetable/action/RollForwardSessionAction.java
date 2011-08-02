@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -186,7 +187,7 @@ public class RollForwardSessionAction extends Action {
 	private class RollForwardQueueItem extends QueueItem {
 		private RollForwardSessionForm iForm;
 		private int iProgress = 0;
-		private ActionMessages iErrors = new ActionMessages();
+		private ActionErrors iErrors = new ActionErrors();
 		
 		public RollForwardQueueItem(Session session, TimetableManager owner, RollForwardSessionForm form) {
 			super(session, owner);
@@ -204,42 +205,70 @@ public class RollForwardSessionAction extends Action {
 		@Override
 		protected void execute() throws Exception {
 	        SessionRollForward sessionRollForward = new SessionRollForward();
+	        Session toAcadSession = Session.getSessionById(iForm.getSessionToRollForwardTo());
+			if (toAcadSession == null){
+	   			iErrors.add("mustSelectSession", new ActionMessage("errors.rollForward.missingToSession"));
+			}
+			if (iErrors.isEmpty()){
+				iForm.validateDatePatternRollForward(toAcadSession, iErrors);
+			}
 	        if (iErrors.isEmpty() && iForm.getRollForwardDatePatterns()) {
 				setStatus("Date patterns ...");
 	        	sessionRollForward.rollDatePatternsForward(iErrors, iForm);
 	        }
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateTimePatternRollForward(toAcadSession, iErrors);
+			}
             if (iErrors.isEmpty() && iForm.getRollForwardTimePatterns()) {
 				setStatus("Time patterns ...");
 	        	sessionRollForward.rollTimePatternsForward(iErrors, iForm);
 	        }
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateDepartmentRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardDepartments()) {
 				setStatus("Departments ...");
 	        	sessionRollForward.rollDepartmentsForward(iErrors, iForm);	
 	        }
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateManagerRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardManagers()) {
 				setStatus("Managers ...");
         		sessionRollForward.rollManagersForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateBuildingAndRoomRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardRoomData()) {
 				setStatus("Rooms ...");
         		sessionRollForward.rollBuildingAndRoomDataForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateSubjectAreaRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardSubjectAreas()) {
 				setStatus("Subjects ...");
         		sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateInstructorDataRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardInstructorData()) {
 				setStatus("Instructors ...");
         		sessionRollForward.rollInstructorDataForward(iErrors, iForm);
         	}
 	        iProgress++;
-        	if (iErrors.isEmpty() && iForm.getRollForwardCourseOfferings()) {
+			if (iErrors.isEmpty()){
+				iForm.validateCourseOfferingRollForward(toAcadSession, iErrors);
+			}
+			if (iErrors.isEmpty() && iForm.getRollForwardCourseOfferings()) {
 				setStatus("Courses ...");
         		sessionRollForward.rollCourseOfferingsForward(iErrors, iForm);
         	}
@@ -249,31 +278,49 @@ public class RollForwardSessionAction extends Action {
         		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateClassInstructorRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getAddNewCourseOfferings()) {
 				setStatus("New courses ...");
         		sessionRollForward.addNewCourseOfferings(iErrors, iForm);
         	}
 	        iProgress++;
-        	if (iErrors.isEmpty() && iForm.getRollForwardExamConfiguration()) {
+			if (iErrors.isEmpty()){
+				iForm.validateExamConfigurationRollForward(toAcadSession, iErrors);
+			}
+			if (iErrors.isEmpty() && iForm.getRollForwardExamConfiguration()) {
 				setStatus("Exam config ...");
         		sessionRollForward.rollExamConfigurationDataForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateMidtermExamRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardMidtermExams()) {
 				setStatus("Midterm exams ...");
         		sessionRollForward.rollMidtermExamsForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateFinalExamRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardFinalExams()) {
 				setStatus("Final exams ...");
         		sessionRollForward.rollFinalExamsForward(iErrors, iForm);
         	}
 	        iProgress++;
-        	if (iErrors.isEmpty() && iForm.getRollForwardStudents()) {
+			if (iErrors.isEmpty()){
+				iForm.validateLastLikeDemandRollForward(toAcadSession, iErrors);
+			}
+			if (iErrors.isEmpty() && iForm.getRollForwardStudents()) {
 				setStatus("Students ...");
         	    sessionRollForward.rollStudentsForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateCurriculaRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardCurricula()) {
 				setStatus("Curricula ...");
         	    sessionRollForward.rollCurriculaForward(iErrors, iForm);
