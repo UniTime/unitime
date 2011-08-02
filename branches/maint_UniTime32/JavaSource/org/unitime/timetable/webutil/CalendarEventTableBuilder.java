@@ -113,7 +113,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             }
             if (!eventIds.isEmpty()) eventIds += ",";
             eventIds += event.getUniqueId();
-            if (sid == null) sid = event.getSession().getUniqueId();
+            if (sid == null && event.getSession() != null) sid = event.getSession().getUniqueId();
         }
         
         return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&eid=" + eventIds);
@@ -174,9 +174,8 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             Meeting meeting = (Meeting) it.next();
             if (!meetingIds.isEmpty()) meetingIds += ",";
             meetingIds += meeting.getUniqueId();
-            if (sid == null) sid = meeting.getEvent().getSession().getUniqueId();
+            if (sid == null && meeting.getEvent().getSession() != null) sid = meeting.getEvent().getSession().getUniqueId();
         }
-        
         return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&mid=" + meetingIds);
     }
 
