@@ -32,6 +32,20 @@
 		<item>
 			<name>Session Roll Forward</name>
 			<description>
+				<line>The exam roll forward process was not validating that final exams or midterm exams already existed. It was doing this check for the Exam Configuration Data roll forward instead. This has been corrected.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.157</version>
+	<release-date>Thu, 21 Jul 2011</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
 				<line>Fixed a hibernate issue in Class Instructor roll forward.</line>
 			</description>
 		</item>
