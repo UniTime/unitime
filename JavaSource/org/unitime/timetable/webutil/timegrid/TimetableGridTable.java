@@ -361,32 +361,18 @@ public class TimetableGridTable {
     private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, StringBuffer onClick, TimetableGridCell cell, String bgColor) {
     	if (cell==null) return;
     	onMouseOver.append(" onmouseover=\"");
-        onMouseOut.append(" onmouseout=\"");
-        if (isDispModeWeekByWeekHorizontal() && cell.getAssignmentId() >= 0) {
-        	onMouseOver.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='rgb(223,231,242)';");
-        	onMouseOut.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-        } else if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
-        	for (int i=0;i<cell.getNrMeetings();i++) {
-        		onMouseOver.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='rgb(223,231,242)';");
-        		onMouseOut.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-            }
-        } else {
-        	onMouseOver.append("this.style.backgroundColor='rgb(223,231,242)';");
-        	onMouseOut.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-        }
+    	onMouseOut.append(" onmouseout=\"");
+    	if (cell.getAssignmentId() >= 0) {
+    		onMouseOver.append("mOvr(" + cell.getAssignmentId() + ");");
+    		onMouseOut.append("mOut(" + cell.getAssignmentId() + ",'" + (bgColor == null ? "transparent" : bgColor) + "');");
+    	}
         if (cell.getOnClick() != null && !cell.getOnClick().isEmpty()) {
-        	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
-        	onClick.append(" onclick=\"hideGwtHint();");
-            if (isDispModePerWeek() && cell.getAssignmentId() >= 0) {
-            	if (isDispModeWeekByWeekHorizontal())
-            		onClick.append("var x = document.getElementsByName('c"+cell.getAssignmentId()+"'); for (var i = 0; i < x.length; i++) x[i].style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-            	else
-            		for (int i=0;i<cell.getNrMeetings();i++) {
-            			 onClick.append("if (document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"')!=null) document.getElementById('"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+i+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-                }
-            } else {
-            	onClick.append("this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
-            }
+        	onMouseOver.append("mHnd(this);");
+        	onClick.append(" onclick=\"");
+        	if (cell.getTitle() != null && !cell.getTitle().isEmpty())
+        		onClick.append("hideGwtHint();");
+        	if (cell.getAssignmentId() >= 0)
+        		onClick.append("mOut(" + cell.getAssignmentId() + ",'" + (bgColor == null ? "transparent" : bgColor) + "');");
             onClick.append(cell.getOnClick() + "\"");
         }
         if (cell.getTitle() != null && !cell.getTitle().isEmpty()) {
@@ -450,7 +436,7 @@ public class TimetableGridTable {
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									(cell.getAssignmentId()>=0?"name='c"+cell.getAssignmentId()+"' ":"")+
 									onClick + 
 									onMouseOver + 
 									onMouseOut +
@@ -519,7 +505,7 @@ public class TimetableGridTable {
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
-									(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+									(cell.getAssignmentId()>=0?"name='c"+cell.getAssignmentId()+"' ":"")+
 									onClick +
 									onMouseOver + 
 									onMouseOut +
@@ -673,7 +659,7 @@ public class TimetableGridTable {
                     				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
                     				"class='TimetableCell"+(slot==firstSlot()?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
                     				"colspan='"+colSpan+"' rowSpan='"+rowSpanDivStep+"' "+
-                    				(cell.getAssignmentId()>=0?"id='"+cell.getAssignmentId()+"."+cell.getRoomId()+"."+cell.getMeetingNumber()+"' ":"")+
+                    				(cell.getAssignmentId()>=0?"name='c"+cell.getAssignmentId()+"' ":"")+
                     				onClick + onMouseOver + onMouseOut +
                     				//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                             		">");
