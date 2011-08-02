@@ -39,7 +39,7 @@
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 	<% } %>
 	
-    <span id='UniTimeGWT:TopMenu' style="display: none;" ></span>
+    <span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
 	
 <%
 	String errorMsg = null;
