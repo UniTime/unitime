@@ -32,6 +32,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.TimetableXMLLoader.DatePattern;
 import net.sf.cpsolver.coursett.model.Lecture;
@@ -43,22 +44,40 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 
 public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
     protected static Logger sLog = Logger.getLogger(MuniPdFKSCZVDatePatterns.class);
-    private Hashtable<Integer, List<DatePattern>> iDatePatterns = new Hashtable<Integer, List<DatePattern>>();
+    private Hashtable<Integer, List<DatePattern>> iDatePatternsExt = new Hashtable<Integer, List<DatePattern>>();
+    private Hashtable<Integer, List<DatePattern>> iDatePatternsAll = new Hashtable<Integer, List<DatePattern>>();
+
     
     public MuniPdFKSCZVDatePatterns(Solver<Lecture, Placement> solver, DataProperties properties) {
         super(solver, properties);
         org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
         try {
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
-            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type")
+            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
-            		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended).list()) {
+            		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended)
+            		.setString("name", "Týden %")
+            		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
             	int nrWeeks = weekCode.cardinality() / 7;
-            	List<DatePattern> patterns = iDatePatterns.get(nrWeeks);
+            	List<DatePattern> patterns = iDatePatternsExt.get(nrWeeks);
             	if (patterns == null) {
             		patterns = new ArrayList<DatePattern>();
-            		iDatePatterns.put(nrWeeks, patterns);
+            		iDatePatternsExt.put(nrWeeks, patterns);
+            	}
+            	patterns.add(new DatePattern(dp.getUniqueId(), dp.getName(), weekCode));
+            }
+            for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
+            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.name like :name")
+            		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
+            		.setString("name", "Týden %")
+            		.list()) {
+            	BitSet weekCode = dp.getPatternBitSet();
+            	int nrWeeks = weekCode.cardinality() / 7;
+            	List<DatePattern> patterns = iDatePatternsAll.get(nrWeeks);
+            	if (patterns == null) {
+            		patterns = new ArrayList<DatePattern>();
+            		iDatePatternsAll.put(nrWeeks, patterns);
             	}
             	patterns.add(new DatePattern(dp.getUniqueId(), dp.getName(), weekCode));
             }
@@ -71,12 +90,28 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
     public void variableAdded(Lecture lecture) {
         if (lecture.timeLocations().isEmpty()) return;
         List<TimeLocation> times = new ArrayList<TimeLocation>(lecture.timeLocations());
+        
+    	// SP courses take all Týden % date patterns (other take just the extended ones)
+    	// boolean sp = lecture.getName().startsWith("SP ");
+    	// SP courses have Thursday
+        boolean sp = false;
+        for  (TimeLocation t: times)
+        	if ((t.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0) {
+        		sp = true; break;
+        	}
+        
         if (times.get(0).getDatePatternName().matches("[1-6]x")) {
             int n = Integer.parseInt(times.get(0).getDatePatternName().substring(0, 1));
             lecture.timeLocations().clear();
             for  (TimeLocation t: times) {
-                // if (!lecture.getName().startsWith("SO ") && !lecture.getName().startsWith("SP ") && t.getDayCode() == Constants.DAY_CODES[5]) continue;
-                for (DatePattern dp: iDatePatterns.get(n)) {
+            	List<DatePattern> datePatterns = (sp ? iDatePatternsAll : iDatePatternsExt).get(n);
+                for (DatePattern dp: datePatterns) {
+                	
+                	// Only Týden 0 allows for Thursday
+                	if (!dp.getName().equals("Týden 0") && (t.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0)
+                		continue;
+
+                	// Clone time location with the new date pattern
                 	TimeLocation time = new TimeLocation(t.getDayCode(), t.getStartSlot(), t.getLength(),
                             t.getPreference(), t.getNormalizedPreference(),
                             dp.getId(), dp.getName(), dp.getPattern(),
