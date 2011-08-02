@@ -108,6 +108,7 @@ public class CalendarServlet extends HttpServlet {
 		String q = request.getParameter("q");
 		HashMap<String, String> params = new HashMap<String, String>();
 		if (q != null) {
+			sLog.info(decode(q));
 			for (String p: decode(q).split("&")) {
 				params.put(p.substring(0, p.indexOf('=')), p.substring(p.indexOf('=') + 1));
 			}
@@ -294,7 +295,7 @@ public class CalendarServlet extends HttpServlet {
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
             	if (r.getType() == ResourceType.ROOM)
             		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
-        		for (EventInterface e: new EventServlet().findEvents(r))
+        		for (EventInterface e: new EventServlet().findEvents(r, false))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
