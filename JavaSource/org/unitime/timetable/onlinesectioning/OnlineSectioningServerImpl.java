@@ -118,11 +118,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					iLog.error("Failed to load server: " + exception.getMessage(), exception);
 					throw exception;
 				}
-				try {
-					execute(new CheckAllOfferingsAction());
-				} catch (Throwable exception) {
-					iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
-					throw exception;
+				if (iAcademicSession.isSectioningEnabled()) {
+					try {
+						execute(new CheckAllOfferingsAction());
+					} catch (Throwable exception) {
+						iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
+						throw exception;
+					}
 				}
 			} else {
 				execute(new ReloadAllData(), new Callback<Boolean>() {
