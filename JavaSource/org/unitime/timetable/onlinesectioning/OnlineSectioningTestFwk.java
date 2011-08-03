@@ -65,7 +65,7 @@ public abstract class OnlineSectioningTestFwk {
 	protected void startServer() {
         Session session = Session.getSessionUsingInitiativeYearTerm(
                 ApplicationProperties.getProperty("initiative", "PWL"),
-                ApplicationProperties.getProperty("year","2010"),
+                ApplicationProperties.getProperty("year","2011"),
                 ApplicationProperties.getProperty("term","Spring")
                 );
 
@@ -76,7 +76,7 @@ public abstract class OnlineSectioningTestFwk {
             sLog.info("Session: "+session);
         }
         
-        iServer = new OnlineSectioningServerImpl(session.getUniqueId());
+        iServer = new OnlineSectioningServerImpl(session.getUniqueId(), true);
 	}
 	
 	protected void stopServer() {
