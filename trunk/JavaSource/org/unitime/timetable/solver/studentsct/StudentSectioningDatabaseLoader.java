@@ -121,6 +121,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iTweakLimits = false;
 	private boolean iLoadSectioningInfos = false;
 	private boolean iProjections = false;
+	private boolean iFixWeights = true;
     
     private Progress iProgress = null;
     
@@ -139,6 +140,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iTweakLimits = model.getProperties().getPropertyBoolean("Load.TweakLimits", iTweakLimits);
         iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
         iProgress = Progress.getInstance(getModel());
+        iFixWeights = model.getProperties().getPropertyBoolean("Load.FixWeights", iFixWeights);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -1121,7 +1123,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 assignStudent(student, null);
             }
             
-            fixWeights(hibSession, courseTable.values());
+            if (iFixWeights)
+            	fixWeights(hibSession, courseTable.values());
         }
         
         /*
