@@ -100,7 +100,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private AsyncExecutor iExecutor;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	
-	OnlineSectioningServerImpl(Long sessionId) throws SectioningException {
+	OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
@@ -111,24 +111,39 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iMultiLock = new MultiLock(iAcademicSession);
 			iExecutor = new AsyncExecutor();
 			iExecutor.start();
-			execute(new ReloadAllData(), new Callback<Boolean>() {
-				@Override
-				public void onSuccess(Boolean result) {
-					if (iAcademicSession.isSectioningEnabled())
-						execute(new CheckAllOfferingsAction(), new Callback<Boolean>() {
-							@Override
-							public void onSuccess(Boolean result) {}
-							@Override
-							public void onFailure(Throwable exception) {
-								iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
-							}
-						});
-				}
-				@Override
-				public void onFailure(Throwable exception) {
+			if (waitTillStarted) {
+				try {
+					execute(new ReloadAllData());
+				} catch (Throwable exception) {
 					iLog.error("Failed to load server: " + exception.getMessage(), exception);
+					throw exception;
 				}
-			});
+				try {
+					execute(new CheckAllOfferingsAction());
+				} catch (Throwable exception) {
+					iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
+					throw exception;
+				}
+			} else {
+				execute(new ReloadAllData(), new Callback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {
+						if (iAcademicSession.isSectioningEnabled())
+							execute(new CheckAllOfferingsAction(), new Callback<Boolean>() {
+								@Override
+								public void onSuccess(Boolean result) {}
+								@Override
+								public void onFailure(Throwable exception) {
+									iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
+								}
+							});
+					}
+					@Override
+					public void onFailure(Throwable exception) {
+						iLog.error("Failed to load server: " + exception.getMessage(), exception);
+					}
+				});
+			}
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(EXCEPTIONS.unknown(t.getMessage()), t);

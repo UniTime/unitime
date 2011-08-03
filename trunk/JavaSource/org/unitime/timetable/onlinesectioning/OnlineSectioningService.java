@@ -99,7 +99,7 @@ public class OnlineSectioningService {
 	public static void createInstance(Long academicSessionId) {
 		sGlobalLock.writeLock().lock();
 		try {
-			OnlineSectioningServer s = new OnlineSectioningServerImpl(academicSessionId);
+			OnlineSectioningServer s = new OnlineSectioningServerImpl(academicSessionId, false);
 			sInstances.put(academicSessionId, s);
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
