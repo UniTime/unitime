@@ -385,7 +385,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                                 		enrollmentTS = enrl.getTimestamp();
                                 	if (section.getTime() != null && !assignedSections.isEmpty()) {
                                 		for (Section other: assignedSections) {
-                            				if (other.getTime() != null && other.getTime().hasIntersection(section.getTime())) {
+                                			if (other.isOverlapping(section)) {
                             					helper.warn("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
                             							section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
                             							" overlaps with " + other.getSubpart().getConfig().getOffering().getName() + " " + other.getSubpart().getName() + " " +
@@ -510,7 +510,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     if (section!=null) {
                     	if (section.getTime() != null && !assignedSections.isEmpty()) {
                     		for (Section other: assignedSections) {
-                				if (other.getTime() != null && other.getTime().hasIntersection(section.getTime())) {
+                				if (other.isOverlapping(section)) {
                 					helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): "+
                 							section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
                 							" overlaps with " + other.getSubpart().getConfig().getOffering().getName() + " " + other.getSubpart().getName() + " " +
