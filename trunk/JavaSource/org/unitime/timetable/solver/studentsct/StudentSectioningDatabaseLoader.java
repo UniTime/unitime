@@ -657,7 +657,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                    			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
                    				Section sectionx = j.next();
                    				if (sectionx.getTime() == null) continue;
-                   				if (sectionx.getTime().hasIntersection(section.getTime())) {
+                   				if (sectionx.isOverlapping(section)) {
                    					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
                    							" overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
                    							sectionx.getName() + " " + sectionx.getTime().getLongName());
