@@ -63,6 +63,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -711,6 +712,15 @@ public class WebInstructionalOfferingTableBuilder {
     }
     
     private TableCell buildPrefGroupProjectedDemand(PreferenceGroup prefGroup, boolean isEditable){
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_)prefGroup;
+    		SectioningInfo i = c.getSectioningInfo();
+    		if (i != null && i.getNbrExpectedStudents() != null) {
+    			TableCell cell = initNormalCell(String.valueOf(Math.round(c.getEnrollment() + i.getNbrExpectedStudents())), isEditable);
+    			cell.setAlign("right");	
+    			return cell;
+    		}
+    	}
     	return(this.initNormalCell("&nbsp;", isEditable));
     }
     
