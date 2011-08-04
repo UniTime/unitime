@@ -34,6 +34,8 @@ import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 
 	public List<Operation> operations() {
+		
+		getServer().getAcademicSession().setSectioningEnabled(true);
 
 		org.hibernate.Session hibSession = new _RootDAO().getSession();
 		
