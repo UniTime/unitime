@@ -76,6 +76,8 @@ public abstract class OnlineSectioningTestFwk {
             sLog.info("Session: "+session);
         }
         
+        OnlineSectioningLogger.getInstance().setEnabled(false);
+        
         iServer = new OnlineSectioningServerImpl(session.getUniqueId(), true);
 	}
 	
