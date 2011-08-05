@@ -86,6 +86,6 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 	}
 	
 	public static void main(String args[]) {
-		new OnlineSectioningTest().test(-1, 100);
+		new OnlineSectioningTest().test(-1, Integer.valueOf(System.getProperty("nrConcurrent", "10")));
 	}
 }
