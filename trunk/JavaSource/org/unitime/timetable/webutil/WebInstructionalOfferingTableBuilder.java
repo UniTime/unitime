@@ -716,7 +716,7 @@ public class WebInstructionalOfferingTableBuilder {
     		Class_ c = (Class_)prefGroup;
     		SectioningInfo i = c.getSectioningInfo();
     		if (i != null && i.getNbrExpectedStudents() != null) {
-    			TableCell cell = initNormalCell(String.valueOf(Math.round(c.getEnrollment() + i.getNbrExpectedStudents())), isEditable);
+    			TableCell cell = initNormalCell(String.valueOf(Math.round(c.getEnrollment() + Math.max(0.0, i.getNbrExpectedStudents()))), isEditable);
     			cell.setAlign("right");	
     			return cell;
     		}
