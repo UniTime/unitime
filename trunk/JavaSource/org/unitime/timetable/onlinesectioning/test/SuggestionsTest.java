@@ -33,15 +33,6 @@ import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 
 public class SuggestionsTest extends OnlineSectioningTestFwk {
 
-	static {
-		System.setProperty("jprof","cpu");
-		System.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		System.setProperty("StudentWeights.NoTimeFactor", "0.0");
-		System.setProperty("StudentWeights.SelectionFactor", "0.0");
-		System.setProperty("StudentWeights.PenaltyFactor", "0.0");
-		System.setProperty("StudentWeights.AvgPenaltyFactor", "0.0");
-	}
-	
 	public List<Operation> operations() {
 		org.hibernate.Session hibSession = new _RootDAO().getSession();
 		

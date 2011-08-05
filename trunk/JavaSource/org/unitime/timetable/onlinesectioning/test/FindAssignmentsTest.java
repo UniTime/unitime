@@ -30,19 +30,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 
 public class FindAssignmentsTest extends OnlineSectioningTestFwk {
-	
-	static {
-		System.setProperty("jprof","cpu"); // wall or cpu
-	}
-	
+		
 	public List<Operation> operations() {
 
-		// getServer().getConfig().setProperty("Neighbour.BranchAndBoundTimeout", "-1");
-		// getServer().getConfig().setProperty("StudentWeights.NoTimeFactor", "0.0");
-		// getServer().getConfig().setProperty("StudentWeights.SelectionFactor", "0.0");
-		// getServer().getConfig().setProperty("StudentWeights.PenaltyFactor", "0.0");
-		// getServer().getConfig().setProperty("StudentWeights.AvgPenaltyFactor", "0.0");
-		
 		org.hibernate.Session hibSession = new _RootDAO().getSession();
 		
 		List<Operation> operations = new ArrayList<Operation>();
