@@ -279,7 +279,7 @@
 			<TD valign="top">
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
 				<layout:suggest 
-					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbr" 
+					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
 				 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
 					onblur="hideSuggestionList('courseNbr');" />
