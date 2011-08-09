@@ -267,7 +267,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("% Share")
 	String columnInstructorShare();
 	
-	@DefaultMessage("Chceck Conflicts")
+	@DefaultMessage("Check Conflicts")
 	String columnInstructorCheckConflicts();
 
 	@DefaultMessage("{0} - Do Not Display In Schedule Book.")
