@@ -202,6 +202,30 @@ public class DataExchangeHelper {
         return true;
     }
     
+ 
+    public boolean flushDoNotClearSession(boolean commit) {
+        try {
+            getHibSession().flush(); 
+            if (commit && iTx!=null) {
+                iTx.commit();
+                iTx = getHibSession().beginTransaction();
+            }
+            return true;
+        } catch (Exception e) {
+            fatal("Unable to flush current session, reason: "+e.getMessage(),e);
+            return false;
+        }
+    }
+    
+    public boolean flushIfNeededDoNotClearSession(boolean commit) {
+        iFlushIfNeededCounter++;
+        if (iFlushIfNeededCounter>=sBatchSize) {
+            iFlushIfNeededCounter = 0;
+            return flushDoNotClearSession(commit);
+        }
+        return true;
+    }
+    
     public static BaseImport createImportBase(String type) throws Exception {
         if (type==null) throw new Exception("Import type not provided.");
         if (!sImportRegister.containsKey(type)) throw new Exception("Unknown import type "+type+".");
