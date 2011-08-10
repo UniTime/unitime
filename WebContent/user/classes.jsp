@@ -42,7 +42,9 @@
 			Subject:
 			<html:select property="subjectArea">
 				<html:option value="">Select...</html:option>
-				<html:option value="--ALL--">All</html:option>
+				<logic:equal name="classesForm" property="canRetrieveAllClassesForAllSubjects" value="true" >
+					<html:option value="--ALL--">All</html:option>
+				</logic:equal>
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Course Number:

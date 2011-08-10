@@ -81,7 +81,9 @@ public class ClassesAction extends Action {
             if (request.getParameter("subject")!=null) {
                 myForm.setSubjectArea(request.getParameter("subject"));
             } else {
-                myForm.setSubjectArea("--ALL--");
+                if (myForm.canDisplayAllSubjectsAtOnce()){
+            		myForm.setSubjectArea("--ALL--");
+            	}
             }
             if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
                 Session session = Session.getSessionUsingInitiativeYearTerm(
