@@ -68,6 +68,7 @@ public class DepartmentImport extends BaseImport {
                     department.setSession(session);
                     department.setAllowReqTime(new Boolean(false));
                     department.setAllowReqRoom(new Boolean(false));
+                    department.setAllowReqDistribution(new Boolean(false));
                     department.setExternalManager(new Boolean(false));
                     department.setDistributionPrefPriority(new Integer(0));
                }
