@@ -28,9 +28,13 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.ClassInstructorDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -146,7 +150,7 @@ public class RollForwardSessionForm extends ActionForm {
 
 	public void validateDepartmentRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardDepartments().booleanValue()){
-			validateRollForward(errors, toAcadSession, getSessionToRollDeptsFowardFrom(), "Departments", toAcadSession.getDepartments());			
+			validateRollForward(errors, toAcadSession, getSessionToRollDeptsFowardFrom(), "Departments", Department.findAll(toAcadSession.getUniqueId()));			
 		}
 	}
 
@@ -160,8 +164,8 @@ public class RollForwardSessionForm extends ActionForm {
 	public void validateBuildingAndRoomRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardRoomData().booleanValue()){
 			validateRollForward(errors, toAcadSession, getSessionToRollRoomDataForwardFrom(), "Buildings", new ArrayList());
-			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Buildings", toAcadSession.getBuildings());
-			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Rooms", toAcadSession.getRooms());
+			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Buildings", Building.findAll(toAcadSession.getUniqueId()));
+			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Rooms", Location.findAll(toAcadSession.getUniqueId()));
 			RoomFeatureDAO rfDao = new RoomFeatureDAO();
 			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Room Features", rfDao.getQuery("from RoomFeature rf where rf.department.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
 			RoomGroupDAO rgDao = new RoomGroupDAO();
@@ -171,7 +175,7 @@ public class RollForwardSessionForm extends ActionForm {
 
 	public void validateSubjectAreaRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardSubjectAreas().booleanValue()){
-			validateRollForward(errors, toAcadSession, getSessionToRollSubjectAreasForwardFrom(), "Subject Areas", toAcadSession.getSubjectAreas());			
+			validateRollForward(errors, toAcadSession, getSessionToRollSubjectAreasForwardFrom(), "Subject Areas", SubjectArea.getSubjectAreaList(toAcadSession.getUniqueId()));			
 		}		
 	}
 		
