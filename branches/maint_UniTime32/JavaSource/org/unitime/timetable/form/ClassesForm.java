@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 
@@ -52,7 +53,17 @@ public class ClassesForm extends ActionForm {
 	private int iNrColumns;
 	private int iNrRows;
 	private String iMessage;
+	private Boolean canRetrieveAllClassesForAllSubjects;
 	
+	public Boolean getCanRetrieveAllClassesForAllSubjects() {
+		return canRetrieveAllClassesForAllSubjects;
+	}
+
+	public void setCanRetrieveAllClassesForAllSubjects(
+			Boolean canRetrieveAllClassesForAllSubjects) {
+		this.canRetrieveAllClassesForAllSubjects = canRetrieveAllClassesForAllSubjects;
+	}
+
 	private String iUser, iPassword;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -85,6 +96,19 @@ public class ClassesForm extends ActionForm {
 	public void setSession(Long session) { iSession = session; }
 	public Collection getSessions() { return iSessions; }
 	
+	public Boolean canDisplayAllSubjectsAtOnce(){
+		Boolean displayAll = new Boolean(false); 
+		if (iSession != null){
+			String queryStr = "select count(io) from InstructionalOffering io where io.session.uniqueId = :sessionId";
+			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setLong("sessionId", iSession).setCacheable(true).uniqueResult()).intValue();
+			if (count <= 300){
+				displayAll = new Boolean(true);
+			}
+		}
+		return(displayAll);
+	}
+
+	
 	public void load(HttpSession session) {
 	    setSubjectArea(session.getAttribute("Classes.subjectArea")==null?null:(String)session.getAttribute("Classes.subjectArea"));
         setCourseNumber(session.getAttribute("Classes.courseNumber")==null?null:(String)session.getAttribute("Classes.courseNumber"));
@@ -101,6 +125,7 @@ public class ClassesForm extends ActionForm {
 	    if (!hasSession) { setSession(null); setSubjectArea(null); }
 	    if (getSession()==null && !iSessions.isEmpty()) setSession(Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()));
 	    iSubjectAreas = new TreeSet(new SubjectAreaDAO().getSession().createQuery("select distinct sa.subjectAreaAbbreviation from SubjectArea sa").setCacheable(true).list());
+	    setCanRetrieveAllClassesForAllSubjects(canDisplayAllSubjectsAtOnce());
 	}
 	    
     public void save(HttpSession session) {
