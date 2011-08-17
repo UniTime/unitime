@@ -273,14 +273,14 @@ public class RollForwardSessionAction extends Action {
         		sessionRollForward.rollCourseOfferingsForward(iErrors, iForm);
         	}
 	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateClassInstructorRollForward(toAcadSession, iErrors);
+			}
         	if (iErrors.isEmpty() && iForm.getRollForwardClassInstructors()) {
 				setStatus("Class instructors ...");
         		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
         	}
 	        iProgress++;
-			if (iErrors.isEmpty()){
-				iForm.validateClassInstructorRollForward(toAcadSession, iErrors);
-			}
         	if (iErrors.isEmpty() && iForm.getAddNewCourseOfferings()) {
 				setStatus("New courses ...");
         		sessionRollForward.addNewCourseOfferings(iErrors, iForm);
