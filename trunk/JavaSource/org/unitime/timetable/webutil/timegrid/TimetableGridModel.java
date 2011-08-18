@@ -230,10 +230,10 @@ public abstract class TimetableGridModel implements Serializable {
 								used.add(i);
 							}
 						}
+					int i = 0;
 					for (TimetableGridCell cell: cells) {
-						int i = 0;
 						while (used.contains(i)) i++;
-						index.put(cell.getAssignmentId(), i);
+						index.put(cell.getAssignmentId(), i++);
 					}
 				}
 			}
