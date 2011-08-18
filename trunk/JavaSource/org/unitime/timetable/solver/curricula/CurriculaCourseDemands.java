@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -210,20 +212,23 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
 		for (CurriculumCourse c1: clasf.getCourses()) {
 			int x1 = Math.round(clasf.getNrStudents() * c1.getPercShare());
+			Set<CurriculumCourse>[] group = new HashSet[] { new HashSet<CurriculumCourse>(), new HashSet<CurriculumCourse>()};
+			Queue<CurriculumCourse> queue = new LinkedList<CurriculumCourse>();
+			queue.add(c1);
+			while (!queue.isEmpty()) {
+				CurriculumCourse c = queue.poll();
+				for (CurriculumCourseGroup g: c.getGroups())
+					for (CurriculumCourse x: clasf.getCourses())
+						if (!x.equals(c) && !x.equals(c1) && !x.getGroups().contains(g) && group[group[0].contains(c) ? 0 : g.getType()].add(x))
+							queue.add(x);
+			}
 			for (CurriculumCourse c2: clasf.getCourses()) {
 				int x2 = Math.round(clasf.getNrStudents() * c2.getPercShare());
 				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
 				int share = Math.round(c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents());
-				CurriculumCourseGroup group = null;
-				groups: for (CurriculumCourseGroup g1: c1.getGroups()) {
-					for (CurriculumCourseGroup g2: c2.getGroups()) {
-						if (g1.equals(g2)) { group = g1; break groups; }
-					}
-				}
-				if (group != null) {
-					share = (group.getType() == 0 ? 0 : Math.min(x1, x2));
-				}
-				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), share);
+				boolean opt = group[0].contains(c2);
+				boolean req = !opt && group[1].contains(c2);
+				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), opt ? 0.0 : req ? Math.min(x1, x2) : share);
 			}
 		}
 	}
