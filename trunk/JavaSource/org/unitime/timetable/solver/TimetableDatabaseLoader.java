@@ -1075,7 +1075,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	}
     	}
     	if (initialPlacement==null) {
-    		StringBuffer sb = new StringBuffer(assignment.getTimeLocation().getName()+" ");
+    		StringBuffer sb = new StringBuffer(assignment.getTimeLocation().getLongName()+" ");
     		for (Iterator<Location> i=rooms.iterator();i.hasNext();) {
     			sb.append(i.next().getLabel());
     			if (i.hasNext()) sb.append(", ");
