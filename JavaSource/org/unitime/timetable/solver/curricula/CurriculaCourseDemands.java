@@ -215,12 +215,14 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			Set<CurriculumCourse>[] group = new HashSet[] { new HashSet<CurriculumCourse>(), new HashSet<CurriculumCourse>()};
 			Queue<CurriculumCourse> queue = new LinkedList<CurriculumCourse>();
 			queue.add(c1);
+			Set<CurriculumCourseGroup> done = new HashSet<CurriculumCourseGroup>();
 			while (!queue.isEmpty()) {
 				CurriculumCourse c = queue.poll();
 				for (CurriculumCourseGroup g: c.getGroups())
-					for (CurriculumCourse x: clasf.getCourses())
-						if (!x.equals(c) && !x.equals(c1) && !x.getGroups().contains(g) && group[group[0].contains(c) ? 0 : g.getType()].add(x))
-							queue.add(x);
+					if (done.add(g))
+						for (CurriculumCourse x: clasf.getCourses())
+							if (!x.equals(c) && !x.equals(c1) && x.getGroups().contains(g) && group[group[0].contains(c) ? 0 : g.getType()].add(x))
+								queue.add(x);
 			}
 			for (CurriculumCourse c2: clasf.getCourses()) {
 				int x2 = Math.round(clasf.getNrStudents() * c2.getPercShare());
