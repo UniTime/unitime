@@ -703,6 +703,7 @@ public class SolutionReportAction extends Action {
             				"<i>Total</i>",
             				"",
             				"",
+            				"",
             				String.valueOf(total[1]),
             				String.valueOf(total[2]),
             				String.valueOf(total[3]),
@@ -712,7 +713,7 @@ public class SolutionReportAction extends Action {
             			},
             			new Comparable[] {
             				new Double(total[0]),
-            				new DuoComparable("",""), null, null,
+            				new DuoComparable("",""), null, null, null,
             				new Integer(total[1]),
             				new Double(1000.0 * total[2]),
             				new Integer(total[3]),
@@ -727,6 +728,7 @@ public class SolutionReportAction extends Action {
             				"<i>Total</i>",
             				"",
             				"",
+            				"",
             				String.valueOf(total[1]),
             				String.valueOf(total[2]),
             				String.valueOf(total[3]),
@@ -735,7 +737,7 @@ public class SolutionReportAction extends Action {
             			},
             			new Comparable[] {
             				new Double(total[0]),
-            				new DuoComparable("",""), null, null,
+            				new DuoComparable("",""), null, null, null,
             				new Integer(total[1]),
             				new Double(1000.0 * total[2]),
             				new Integer(total[3]),
