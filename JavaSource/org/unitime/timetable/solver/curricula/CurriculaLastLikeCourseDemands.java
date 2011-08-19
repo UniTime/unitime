@@ -66,10 +66,12 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
+	private boolean iSetStudentCourseLimits = false;
 
 	public CurriculaLastLikeCourseDemands(DataProperties config) {
 		iProjectedDemands = new ProjectedStudentCourseDemands(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
+		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
 	}
 
 	@Override
@@ -233,12 +235,16 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			}
 		}
 		computeTargetShare(clasf, m);
+		if (iSetStudentCourseLimits)
+			m.setStudentLimits();
 		
 		// Load model from cache (if exists)
 		CurModel cachedModel = null;
 		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
 		if (cache != null && cache.getName().equals(getCacheName())) {
 			cachedModel = CurModel.loadFromXml(cache);
+			if (iSetStudentCourseLimits)
+				cachedModel.setStudentLimits();
 		}
 
 		// Check the cached model
