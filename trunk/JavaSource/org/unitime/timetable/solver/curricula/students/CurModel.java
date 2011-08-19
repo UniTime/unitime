@@ -160,7 +160,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 					pairs ++;
 					totalShare += share;
 				}
-		ret.put("Errors", totalError + " (" + sDF.format(100.0 * totalError / totalShare) + "% of total share, avg: " + sDF.format(((double)totalError) / pairs) + ", rms: " + sDF.format(Math.sqrt(rmsError / pairs)) + ")");
+		ret.put("Errors", sDF.format(totalError) + " (" + sDF.format(100.0 * totalError / totalShare) + "% of total share, avg: " + sDF.format(((double)totalError) / pairs) + ", rms: " + sDF.format(Math.sqrt(rmsError / pairs)) + ")");
 		ret.put("Assigned Student Weight", sDF.format(getAssignedWeight()) + "/" + sDF.format(getMaxWeight()));
 		double totalStudentWeight = 0;
 		for (CurStudent student: getStudents()) {
