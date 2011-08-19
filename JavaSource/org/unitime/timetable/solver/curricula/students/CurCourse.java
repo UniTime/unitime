@@ -125,7 +125,8 @@ public class CurCourse extends Constraint<CurVariable, CurValue> {
 	}
 	
 	public double penalty(CurCourse course) {
-		return Math.abs(share(course) - getTargetShare(course.getCourseId()));
+		double target = getTargetShare(course.getCourseId());
+		return Math.abs(share(course) - target) * (target == 0.0 ? 10.0 : 1.0);
 	}
 	
 	public double penalty(CurStudent student) {
@@ -164,7 +165,7 @@ public class CurCourse extends Constraint<CurVariable, CurValue> {
 			if (oldStudent != null && course.getStudents().contains(oldStudent))
 				share -= oldStudent.getWeight();
 			double newPenalty = Math.abs(share - target);
-			penalty += newPenalty - oldPenalty;
+			penalty += (newPenalty - oldPenalty) * (target == 0.0 ? 10.0 : 1.0);
 		}
 		return penalty;
 	}
