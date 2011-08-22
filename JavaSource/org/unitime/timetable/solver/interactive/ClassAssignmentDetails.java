@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -431,7 +432,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (newWindow) {
 					return "<a class='noFancyLinks' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+iClassId+"&op=Reset','900','90%');\"><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				} else {
-					return "<a class='noFancyLinks' href='suggestions.do?id="+iClassId+"&op=Select'><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
+					return "<a class='noFancyLinks' href='suggestions.do?id="+iClassId+"&op=Select&noCacheTS=" + new Date().getTime()+"'><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				}
 			} else
 				return "<font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font>";
