@@ -273,6 +273,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		if (sendNotificationPuid!=null) sendNotification(this, null, sendNotificationPuid, true, null);
 
+		// Manually fix the Clazz_.committedAssignment cache.
+		for (Assignment a: getAssignments())
+			a.getClazz().setCommittedAssignment(null);
 	}
 	
 	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession) throws Exception {
@@ -491,6 +494,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);
+
+		// Manually fix the Clazz_.committedAssignment cache.
+		for (Assignment a: getAssignments())
+			a.getClazz().setCommittedAssignment(a);
 
 		return true;
 	}
