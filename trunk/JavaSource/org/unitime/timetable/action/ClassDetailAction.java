@@ -187,6 +187,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        		WebSolver.getSolver(httpSession)==null && // NOT LOADED INTO THE SOLVER
 	        		c.effectiveDatePattern()!=null && //HAS DATE PATTERN
 	        		!c.effectivePreferences(TimePref.class).isEmpty() && //HAS TIME PATTERN
+	        		(request.getSession().getAttribute("Solver.selectedSolutionId") == null || ((String)request.getSession().getAttribute("Solver.selectedSolutionId")).isEmpty()) && // NO SOLUTION IS SELECTED 
 	        		user.isAdmin() //TODO: remove this once the info box allows to touch only classes editable by the user
 	        		);
 
