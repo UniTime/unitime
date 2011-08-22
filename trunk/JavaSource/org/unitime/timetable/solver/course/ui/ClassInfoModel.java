@@ -437,7 +437,7 @@ public class ClassInfoModel implements Serializable {
             ret += "}";
             ret += "function timeClick(source, id) { ";
             ret += "    displayLoading();";
-            ret += "    document.location='classInfo.do?op=Select&time='+id;";
+            ret += "    document.location='classInfo.do?op=Select&time='+id+'&noCacheTS=" + new Date().getTime()+"';";
             ret += "}";
             ret += "</script>";
             ret += "<table border='0' cellspacing='0' cellpadding='3'>";
@@ -1115,7 +1115,7 @@ public class ClassInfoModel implements Serializable {
             ret += "        };";
             ret += "    }";
             ret += "    roomOut(id);";
-            ret += "    if (sNrRooms=="+getClazz().getNumberOfRooms()+") {displayLoading(); document.location='classInfo.do?op=Select&room='+sRooms;}";
+            ret += "    if (sNrRooms=="+getClazz().getNumberOfRooms()+") {displayLoading(); document.location='classInfo.do?op=Select&room='+sRooms+'&noCacheTS=" + new Date().getTime()+"';}";
             ret += "    var c = document.getElementById('roomCapacityCounter');";
             ret += "    if (c!=null) c.innerHTML = (sCap<"+getClazz().getClassLimit()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
             ret += "}";
