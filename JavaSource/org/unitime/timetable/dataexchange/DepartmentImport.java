@@ -59,6 +59,13 @@ public class DepartmentImport extends BaseImport {
                 Department department = null;
                 if(externalId != null && externalId.length() > 0) {
                     department = findByExternalId(externalId, session.getSessionId());
+                    if (department == null){
+                    	department = Department.findByDeptCode(element.attributeValue("deptCode"), session.getSessionId());
+                    	if (department != null){
+                    		warn("Department:  " + element.attributeValue("deptCode") + " not loaded because a manually created department with the same department code already exists.");
+                    		continue;
+                    	}
+                    }
                 }
                 else {
                     department = Department.findByDeptCode(element.attributeValue("deptCode"), session.getSessionId());
