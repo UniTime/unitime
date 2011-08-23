@@ -1097,7 +1097,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	public String getDaysHtml() { 
 		return (getTime()==null?getAssignedTime()==null?"":getAssignedTime().getDatePatternName():
 			getAssignedTime().getDatePatternName().equals(getTime().getDatePatternName()) ? getTime().getDatePatternName() :
-			getAssignedTime().getDatePatternName() + " &rarr; " + getTime().getDatePatternName());
+			getTime().getDatePatternName() + " &rarr; " + getAssignedTime().getDatePatternName());
 	}
 	public String getRoomName() {
 		RoomInfo[] r = (getRoom()==null?getAssignedRoom():getRoom());
