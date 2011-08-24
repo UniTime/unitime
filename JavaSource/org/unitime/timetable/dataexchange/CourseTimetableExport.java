@@ -81,6 +81,16 @@ public class CourseTimetableExport extends CourseOfferingExport {
         classElement.addAttribute("courseNbr", course.getCourseNbr());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
         classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+        if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
+            classElement.addAttribute("limit", "inf");
+        else
+            classElement.addAttribute("limit", String.valueOf(clazz.getClassLimit()));
+        if (clazz.getSchedulePrintNote()!=null)
+            classElement.addAttribute("scheduleNote", clazz.getSchedulePrintNote());
+        classElement.addAttribute("displayInScheduleBook", clazz.isDisplayInScheduleBook()?"true":"false");
+        classElement.addAttribute("controlling", course.isIsControl()?"true":"false");
+        if (clazz.getManagingDept().getSolverGroup() != null)
+        	classElement.addAttribute("solver", clazz.getManagingDept().getSolverGroup().getAbbv());
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, course, session);
