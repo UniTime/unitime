@@ -684,40 +684,6 @@ public class SessionRollForward {
 						}
 					}
 
-					if (fromDepartment.getDatePatterns() != null && !fromDepartment.getDatePatterns().isEmpty()){
-						DatePattern fromDp = null;
-						DatePattern toDp = null;
-						for (Iterator dpIt = fromDepartment.getDatePatterns().iterator(); dpIt.hasNext();){
-							fromDp = (DatePattern) dpIt.next();
-							toDp = DatePattern.findByName(toSession, fromDp.getName());
-							if (toDp == null){
-								toDp = fromDp.findCloseMatchDatePatternInSession(toSession);
-							}
-							if (toDp != null){
-								if (null == toDepartment.getDatePatterns()){
-									toDepartment.setDatePatterns(new java.util.HashSet());
-								}
-								toDepartment.getDatePatterns().add(toDp);
-							}
-						}
-					}
-					if (fromDepartment.getTimePatterns() != null && !fromDepartment.getTimePatterns().isEmpty()){
-						TimePattern fromTp = null;
-						TimePattern toTp = null;
-						for (Iterator dpIt = fromDepartment.getTimePatterns().iterator(); dpIt.hasNext();){
-							fromTp = (TimePattern) dpIt.next();
-							toTp = TimePattern.findByName(toSession, fromTp.getName());
-							if (toTp == null){
-								toTp = TimePattern.getMatchingTimePattern(toSession.getUniqueId(), fromTp);
-							}
-							if (toTp != null){
-								if (null == toDepartment.getTimePatterns()){
-									toDepartment.setTimePatterns(new java.util.HashSet());
-								}
-								toDepartment.getTimePatterns().add(toTp);
-							}
-						}
-					}
 					dDao.saveOrUpdate(toDepartment);
 					DistributionTypeDAO dtDao = new DistributionTypeDAO();
 					List l = dtDao.getQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
@@ -743,6 +709,24 @@ public class SessionRollForward {
 		}
 
 	}
+	
+	private void rollDatePatternOntoDepartments(DatePattern fromDatePattern, DatePattern toDatePattern){
+		if (fromDatePattern.getDepartments() != null && !fromDatePattern.getDepartments().isEmpty()){
+			for(Department fromDept : fromDatePattern.getDepartments()){
+				Department toDepartment = Department.findByDeptCode(fromDept.getDeptCode(), toDatePattern.getSession().getSessionId());
+				if (toDepartment != null){
+					if (null == toDepartment.getDatePatterns()){
+						toDepartment.setDatePatterns(new java.util.HashSet());
+					}
+					toDepartment.getDatePatterns().add(toDatePattern);
+					if (null == toDatePattern.getDepartments()){
+						toDatePattern.setDepartments(new java.util.HashSet());
+					}
+					toDatePattern.addTodepartments(toDepartment);
+				}
+			}
+		}		
+	}
 
 	public void rollDatePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
@@ -757,6 +741,7 @@ public class SessionRollForward {
 				if (fromDatePattern != null){
 					toDatePattern = (DatePattern) fromDatePattern.clone();
 					toDatePattern.setSession(toSession);
+					rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
 					dpDao.saveOrUpdate(toDatePattern);
 					dpDao.getSession().flush();
 				}
@@ -1898,6 +1883,25 @@ public class SessionRollForward {
 		}
 		return(sessionHasExternalRoomFeatureList);
 	}
+	
+	private void rollTimePatternOntoDepartments(TimePattern fromTimePattern, TimePattern toTimePattern){
+		if (fromTimePattern.getDepartments() != null && !fromTimePattern.getDepartments().isEmpty()){
+			for(Department fromDept : fromTimePattern.getDepartments()){
+				Department toDepartment = Department.findByDeptCode(fromDept.getDeptCode(), toTimePattern.getSession().getSessionId());
+				if (toDepartment != null){
+					if (null == toDepartment.getTimePatterns()){
+						toDepartment.setTimePatterns(new java.util.HashSet());
+					}
+					toDepartment.getTimePatterns().add(toTimePattern);
+					if (null == toTimePattern.getDepartments()){
+						toTimePattern.setDepartments(new java.util.HashSet());
+					}
+					toTimePattern.addTodepartments(toDepartment);
+				}
+			}
+		}		
+	}
+
 
 	public void rollTimePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
@@ -1912,6 +1916,7 @@ public class SessionRollForward {
 				if (fromTimePattern != null){
 					toTimePattern = (TimePattern) fromTimePattern.clone();
 					toTimePattern.setSession(toSession);
+					rollTimePatternOntoDepartments(fromTimePattern, toTimePattern);
 					tpDao.saveOrUpdate(toTimePattern);
 					tpDao.getSession().flush();
 				}
