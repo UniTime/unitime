@@ -210,22 +210,6 @@ public class RollForwardSessionAction extends Action {
 	   			iErrors.add("mustSelectSession", new ActionMessage("errors.rollForward.missingToSession"));
 			}
 			if (iErrors.isEmpty()){
-				iForm.validateDatePatternRollForward(toAcadSession, iErrors);
-			}
-	        if (iErrors.isEmpty() && iForm.getRollForwardDatePatterns()) {
-				setStatus("Date patterns ...");
-	        	sessionRollForward.rollDatePatternsForward(iErrors, iForm);
-	        }
-	        iProgress++;
-			if (iErrors.isEmpty()){
-				iForm.validateTimePatternRollForward(toAcadSession, iErrors);
-			}
-            if (iErrors.isEmpty() && iForm.getRollForwardTimePatterns()) {
-				setStatus("Time patterns ...");
-	        	sessionRollForward.rollTimePatternsForward(iErrors, iForm);
-	        }
-	        iProgress++;
-			if (iErrors.isEmpty()){
 				iForm.validateDepartmentRollForward(toAcadSession, iErrors);
 			}
         	if (iErrors.isEmpty() && iForm.getRollForwardDepartments()) {
@@ -248,6 +232,22 @@ public class RollForwardSessionAction extends Action {
 				setStatus("Rooms ...");
         		sessionRollForward.rollBuildingAndRoomDataForward(iErrors, iForm);
         	}
+	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateDatePatternRollForward(toAcadSession, iErrors);
+			}
+	        if (iErrors.isEmpty() && iForm.getRollForwardDatePatterns()) {
+				setStatus("Date patterns ...");
+	        	sessionRollForward.rollDatePatternsForward(iErrors, iForm);
+	        }
+	        iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateTimePatternRollForward(toAcadSession, iErrors);
+			}
+            if (iErrors.isEmpty() && iForm.getRollForwardTimePatterns()) {
+				setStatus("Time patterns ...");
+	        	sessionRollForward.rollTimePatternsForward(iErrors, iForm);
+	        }
 	        iProgress++;
 			if (iErrors.isEmpty()){
 				iForm.validateSubjectAreaRollForward(toAcadSession, iErrors);
@@ -334,11 +334,11 @@ public class RollForwardSessionAction extends Action {
 		@Override
 		public String name() {
 			List<String> names = new ArrayList<String>();
-			if (iForm.getRollForwardDatePatterns()) names.add("date patterns");
-            if (iForm.getRollForwardTimePatterns()) names.add("time patterns");
         	if (iForm.getRollForwardDepartments()) names.add("departments");
         	if (iForm.getRollForwardManagers()) names.add("managers");
         	if (iForm.getRollForwardRoomData()) names.add("rooms");
+			if (iForm.getRollForwardDatePatterns()) names.add("date patterns");
+            if (iForm.getRollForwardTimePatterns()) names.add("time patterns");
         	if (iForm.getRollForwardSubjectAreas()) names.add("subjects");
         	if (iForm.getRollForwardInstructorData()) names.add("instructors");
         	if (iForm.getRollForwardCourseOfferings()) names.add("courses");

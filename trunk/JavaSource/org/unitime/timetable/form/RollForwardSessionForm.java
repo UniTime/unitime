@@ -282,11 +282,11 @@ public class RollForwardSessionForm extends ActionForm {
    			return;
 		}
 		
-		validateDatePatternRollForward(toAcadSession, errors);
-		validateTimePatternRollForward(toAcadSession, errors);
 		validateDepartmentRollForward(toAcadSession, errors);
 		validateManagerRollForward(toAcadSession, errors);
 		validateBuildingAndRoomRollForward(toAcadSession, errors);
+		validateDatePatternRollForward(toAcadSession, errors);
+		validateTimePatternRollForward(toAcadSession, errors);
 		validateSubjectAreaRollForward(toAcadSession, errors);
 		validateInstructorDataRollForward(toAcadSession, errors);
 		validateCourseOfferingRollForward(toAcadSession, errors);

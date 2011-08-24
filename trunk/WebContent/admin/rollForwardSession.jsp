@@ -90,18 +90,6 @@
 		</td>
 		</tr>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollDatePatternsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
-			</td>			
-		</tr>
-		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollTimePatternsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
-			</td>			
-		</tr>
-		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollDeptsFowardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
@@ -116,6 +104,18 @@
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollRoomDataForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>			
+		</tr>
+		<tr>
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
+			<html:select style="width:200;" property="sessionToRollDatePatternsForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>			
+		</tr>
+		<tr>
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
+			<html:select style="width:200;" property="sessionToRollTimePatternsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
