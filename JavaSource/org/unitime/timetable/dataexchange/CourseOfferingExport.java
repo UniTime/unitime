@@ -323,7 +323,7 @@ public class CourseOfferingExport extends BaseExport {
     }
 
     protected void exportAssignment(Element classElement, Assignment assignment, Session session) {
-        exportDatePattern(classElement, assignment.getClazz(), session);
+        exportDatePattern(classElement, assignment.getDatePattern(), session);
         exportTimeLocation(classElement, assignment, session);
         exportRooms(classElement, assignment, session);
         //if (assignment.getEvent()!=null) exportEvent(classElement, assignment.getEvent(), session);
@@ -360,12 +360,11 @@ public class CourseOfferingExport extends BaseExport {
     }
 
     protected void exportArrHours(Element classElement, Class_ clazz, Session session) {
-        exportDatePattern(classElement, clazz, session);
+        exportDatePattern(classElement, clazz.effectiveDatePattern(), session);
         exportRequiredRooms(classElement, clazz, session);
     }
     
-    protected void exportDatePattern(Element classElement, Class_ clazz, Session session) {
-        DatePattern dp = clazz.effectiveDatePattern();
+    protected void exportDatePattern(Element classElement, DatePattern dp, Session session) {
         if (dp!=null && !dp.equals(session.getDefaultDatePattern())) {
             Calendar startDate = Calendar.getInstance(Locale.US);
             startDate.setTime(dp.getStartDate());

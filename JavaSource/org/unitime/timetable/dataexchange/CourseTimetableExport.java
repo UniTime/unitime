@@ -109,7 +109,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
     }
 
     protected void exportArrHours(Element classElement, Class_ clazz, Session session) {
-        exportDatePattern(classElement, clazz, session);
+        exportDatePattern(classElement, clazz.effectiveDatePattern(), session);
         Element arrangeTimeEl = classElement.addElement("arrangeTime");
         if (clazz.getSchedulingSubpart().getMinutesPerWk()!=null && clazz.getSchedulingSubpart().getMinutesPerWk()>0)
             arrangeTimeEl.addAttribute("minPerWeek", clazz.getSchedulingSubpart().getMinutesPerWk().toString());
