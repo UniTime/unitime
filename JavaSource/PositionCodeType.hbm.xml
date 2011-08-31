@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="PositionCodeType" table="position_code_to_type">
-        <cache include="non-lazy" usage="read-only"/>
+        <cache include="non-lazy" usage="read-write"/>
         <id
             name="positionCode"
             column="position_code"
@@ -38,7 +38,7 @@
             name="staff"
             lazy="true"
             table="staff">
-            <cache include="non-lazy" usage="read-only"/>
+            <cache include="non-lazy" usage="read-write"/>
             <key column="pos_code"/>
             <one-to-many class="Staff"/>
         </set>
