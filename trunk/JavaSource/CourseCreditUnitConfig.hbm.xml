@@ -23,8 +23,7 @@
     <class
         name="CourseCreditUnitConfig"
         table="course_credit_unit_config"
-        lazy="true"
-        mutable="false">
+        lazy="true">
 
         <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
