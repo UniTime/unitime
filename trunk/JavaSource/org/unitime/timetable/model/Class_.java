@@ -106,8 +106,10 @@ public class Class_ extends BaseClass_ {
         if (oldDept!=null && !oldDept.equals(dept) && getAssignments()!=null && !getAssignments().isEmpty()) {
             for (Iterator i=getAssignments().iterator();i.hasNext();) {
                 Assignment a = (Assignment)i.next();
-                Class_DAO.getInstance().getSession().delete(a);
-                i.remove();
+                if (!a.getSolution().getOwner().getDepartments().contains(dept)) {
+                	Class_DAO.getInstance().getSession().delete(a);
+                	i.remove();
+                }
             }
             ClassEvent event = getEvent();
             if (event!=null) Class_DAO.getInstance().getSession().delete(event);
