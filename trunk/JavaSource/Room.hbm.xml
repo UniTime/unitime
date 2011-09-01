@@ -129,6 +129,7 @@
             name="session"
             class="Session"
             column="session_id"
+            not-null="true"
             foreign-key="fk_room_session"/>
 
         <set
@@ -206,6 +207,7 @@
                 name="building"
                 class="Building"
                 column="building_id"
+                not-null="true"
                 foreign-key="fk_room_building"/>
 
         </union-subclass>
