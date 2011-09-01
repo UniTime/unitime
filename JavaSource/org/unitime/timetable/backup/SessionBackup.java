@@ -22,11 +22,12 @@ package org.unitime.timetable.backup;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -57,14 +58,28 @@ import org.hibernate.type.CustomType;
 import org.hibernate.type.DateType;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.EntityType;
-import org.hibernate.type.ManyToOneType;
 import org.hibernate.type.PrimitiveType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.TimestampType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.AssignmentInfo;
+import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ConstraintInfo;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolutionInfo;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 
 import com.google.protobuf.ByteString;
@@ -75,9 +90,8 @@ public class SessionBackup {
     private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
 	
-	private Set<Entity> iObjects = new HashSet<Entity>();
-	
 	private CodedOutputStream iOut = null;
+	private PrintWriter iDebug = null;
 	private Long iSessionId = null;
 	private Progress iProgress = null;
 	
@@ -93,72 +107,24 @@ public class SessionBackup {
 	}
 	
 	private void add(TableData.Table table) throws IOException {
+		sLog.info("Writing " + table.getName().substring(table.getName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + " records, " + table.getSerializedSize() + " bytes]");
 		iOut.writeInt32NoTag(table.getSerializedSize());
 		table.writeTo(iOut);
 		iOut.flush();
+		if (iDebug != null) {
+			iDebug.println("## " + table.getName() + " ##");
+			iDebug.print(table.toString());
+			iDebug.flush();
+		}
 	}
 	
-	private <T> void export(ClassMetadata metadata, List<Entity> objects) throws IOException {
-		iProgress.setPhase(metadata.getEntityName().substring(metadata.getEntityName().lastIndexOf('.') + 1) + " [" + objects.size() + "]", objects.size());
-		TableData.Table.Builder table = TableData.Table.newBuilder();
-		table.setName(metadata.getEntityName());
-		for (Entity entity: objects) {
-			iProgress.incProgress();
-			TableData.Record.Builder record = TableData.Record.newBuilder();
-			record.setId(metadata.getIdentifier(entity.getObject(), (SessionImplementor)iHibSession).toString());
-			properties: for (String property: metadata.getPropertyNames()) {
-				Type type = metadata.getPropertyType(property);
-				Object value = metadata.getPropertyValue(entity.getObject(), property, EntityMode.POJO);
-				if (value == null) continue;
-				TableData.Element.Builder element = TableData.Element.newBuilder();
-				element.setName(property);
-				if (type instanceof PrimitiveType) {
-					element.addValue(((PrimitiveType)type).toString(value));
-				} else if (type instanceof StringType) {	
-					element.addValue(((StringType)type).toString(value));
-				} else if (type instanceof BinaryType) {	
-					element.addValue(ByteString.copyFrom((byte[])value));
-				} else if (type instanceof TimestampType) {
-					element.addValue(((TimestampType)type).toString(value));
-				} else if (type instanceof DateType) {
-					element.addValue(((DateType)type).toString(value));
-				} else if (type instanceof EntityType) {
-					ClassMetadata m = iHibSessionFactory.getClassMetadata(((EntityType)type).getReturnedClass());
-					element.addValue(m.getIdentifier(value, (SessionImplementor)iHibSession).toString());
-					iObjects.add(new Entity(m, value, entity));
-				} else if (type instanceof CustomType && value instanceof Document) {
-					StringWriter w = new StringWriter();
-					XMLWriter x = new XMLWriter(w, OutputFormat.createCompactFormat());
-					x.write((Document)value);
-					x.flush(); x.close();
-					element.addValue(w.toString());
-				} else if (type instanceof CollectionType) {
-					Collection<?> values = (Collection<?>)value;
-					if (values.isEmpty()) continue properties;
-					ClassMetadata m = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-					for (Object v: values) {
-						element.addValue(m.getIdentifier(v, (SessionImplementor)iHibSession).toString());
-						iObjects.add(new Entity(m, v, entity));
-					}
-				} else if (type instanceof EmbeddedComponentType && property.equalsIgnoreCase("uniqueCourseNbr")) {
-					continue;
-				} else {
-					sLog.warn("Unknown data type: " + type + " (property " + metadata.getEntityName() + "." + property + ", class " + value.getClass() + ")");
-					continue;
-				}
-				record.addElement(element.build());
-			}
-			table.addRecord(record.build());
-			entity.setExported(true);
-		}
-		add(table.build());
+	public void debug(PrintWriter pw) {
+		iDebug = pw;
 	}
 	
 	public void backup(Session session) throws IOException {
-		iProgress.setStatus("Exporting " + session.getLabel());
-		Entity sessionEntity = new Entity(iHibSessionFactory.getClassMetadata(Session.class), session, null);
 		iSessionId = session.getUniqueId();
-		iObjects.add(sessionEntity);
+		
 		TreeSet<ClassMetadata> allMeta = new TreeSet<ClassMetadata>(new Comparator<ClassMetadata>() {
 			@Override
 			public int compare(ClassMetadata m1, ClassMetadata m2) {
@@ -166,151 +132,424 @@ public class SessionBackup {
 			}
 		});
 		allMeta.addAll(iHibSessionFactory.getAllClassMetadata().values());
-		iProgress.setPhase("Loading data", allMeta.size());
+		
+		iProgress.setStatus("Exporting " + session.getLabel());
 		Queue<QueueItem> queue = new LinkedList<QueueItem>();
-        for (ClassMetadata meta: allMeta) {
-        	iProgress.incProgress();
-            if (meta.hasSubclasses()) continue;
-            for (String property: meta.getPropertyNames()) {
-            	Type type = meta.getPropertyType(property);
-            	if (type instanceof ManyToOneType && type.getReturnedClass().equals(Session.class)) {
-            		List<Object> list = iHibSession.createQuery(
-            				"from " + meta.getEntityName() + " where " + property + ".uniqueId = :sessionId")
-            				.setLong("sessionId", session.getUniqueId()).list();
-            		if (!list.isEmpty())
-            			sLog.info("Found " + list.size() + " x " + meta.getEntityName());
-            		boolean added = false;
-            		for (Object obj: list) {
-            			Entity entity = new Entity(meta, obj, sessionEntity);
-            			if (iObjects.add(entity) && !entity.isExported())
-            				added = true;
-            		}
-            		if (added) queue.add(new QueueItem(meta.getMappedClass(EntityMode.POJO), property));
-            	}
-            }
-        }
-        QueueItem item = null;
-        iProgress.setPhase("Loading data", queue.size()); int qSize = queue.size();
+		
+		queue.add(new QueueItem(iHibSessionFactory.getClassMetadata(Session.class), null, "uniqueId", Relation.None));
+
+		Set<String> avoid = new HashSet<String>();
+		// avoid following relations
+		avoid.add(TimetableManager.class.getName() + ".departments");
+		avoid.add(TimetableManager.class.getName() + ".solverGroups");
+		avoid.add(RoomFeature.class.getName() + ".rooms");
+		avoid.add(RoomGroup.class.getName() + ".rooms");
+		avoid.add(DistributionType.class.getName() + ".departments");
+		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
+		
+		Set<String> allowedNullRelations = new HashSet<String>();
+		allowedNullRelations.add(Room.class.getName() + ".building");
+		allowedNullRelations.add(NonUniversityLocation.class.getName() + ".session");
+		allowedNullRelations.add(Department.class.getName() + ".session");
+		allowedNullRelations.add(SolutionInfo.class.getName() + ".solution");
+		allowedNullRelations.add(AssignmentInfo.class.getName() + ".assignment");
+		Set<String> disallowedNotNullRelations = new HashSet<String>();
+		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
+		disallowedNotNullRelations.add(Assignment.class.getName() + ".timePattern");
+		disallowedNotNullRelations.add(LastLikeCourseDemand.class.getName() + ".student");
+		
+		Map<String, List<QueueItem>> data = new HashMap<String, List<QueueItem>>();
+		List<QueueItem> sessions = new ArrayList<QueueItem>();
+		sessions.add(queue.peek());
+		data.put(queue.peek().name(), sessions);
+		
+		QueueItem item = null;
         while ((item = queue.poll()) != null) {
-        	iProgress.incProgress();
-        	if (iProgress.getProgress() >= qSize) {
-        		iProgress.setPhase("Loading data", queue.size());
-        		qSize = queue.size();
-        	}
-            for (ClassMetadata meta: allMeta) {
-                if (meta.hasSubclasses()) continue;
-                for (String property: meta.getPropertyNames()) {
-                	Type type = meta.getPropertyType(property);
-                	if (type instanceof ManyToOneType && type.getReturnedClass().equals(item.getType())) {
-                		List<Object> list = iHibSession.createQuery(
-                				"from " + meta.getEntityName() + " where " + property + "." + item.getProperty() + ".uniqueId = :sessionId")
-                				.setLong("sessionId", session.getUniqueId()).list();
-                		boolean added = false;
-                		if (!list.isEmpty())
-                			sLog.info("Found " + list.size() + " x " + meta.getEntityName());
-                		for (Object obj: list) {
-                			Entity entity = new Entity(meta, obj, sessionEntity);
-                			if (iObjects.add(entity) && !entity.isExported())
-                				added = true;
+        	if (item.size() == 0) continue;
+        	for (ClassMetadata meta: allMeta) {
+            	if (meta.hasSubclasses()) continue;
+                for (int i = 0; i < meta.getPropertyNames().length; i++) {
+                	String property = meta.getPropertyNames()[i];
+                	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || (
+                			meta.getPropertyNullability()[i] && !allowedNullRelations.contains(meta.getEntityName() + "." + property))) continue;
+                	Type type = meta.getPropertyTypes()[i];
+                	if (type instanceof EntityType && type.getReturnedClass().equals(item.clazz())) {
+                		QueueItem qi = new QueueItem(meta, item, property, Relation.Parent);
+                		if (!data.containsKey(qi.name())) {
+                			List<QueueItem> items = new ArrayList<QueueItem>();
+                			data.put(qi.name(), items);
+                			queue.add(qi);
+                			items.add(qi);
+                    		if (qi.size() > 0)
+                    			sLog.info("Parent: " + qi);
                 		}
-                		if (added) queue.add(new QueueItem(meta.getMappedClass(EntityMode.POJO), property + "." + item.getProperty()));
                 	}
                 }
             }
         }
+		
+        for (List<QueueItem> list: data.values())
+        	queue.addAll(list);
+        while ((item = queue.poll()) != null) {
+        	if (item.size() == 0) continue;
+        	for (int i = 0; i < item.meta().getPropertyNames().length; i++) {
+            	String property = item.meta().getPropertyNames()[i];
+            	Type type = item.meta().getPropertyTypes()[i];
+            	if (type instanceof EntityType) {
+            		if (avoid.contains(item.name() + "." + property)) continue;
+
+            		ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+            		if (item.contains(meta.getEntityName())) continue;
+            		
+            		QueueItem qi = new QueueItem(meta, item, property, Relation.One);
+            		List<QueueItem> items = data.get(qi.name());
+            		if (items == null) {
+            			items = new ArrayList<QueueItem>();
+            			data.put(qi.name(), items);
+            		}
+            		queue.add(qi);
+            		items.add(qi);
+            		
+            		if (qi.size() > 0)
+            			sLog.info("One: " + qi);
+            	}
+            	if (type instanceof CollectionType) {
+            		if (avoid.contains(item.name() + "." + property)) continue;
+            		
+            		ClassMetadata meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+            		if (item.contains(meta.getEntityName())) continue;
+
+            		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
+            		List<QueueItem> items = data.get(qi.name());
+            		if (items == null) {
+            			items = new ArrayList<QueueItem>();
+            			data.put(qi.name(), items);
+            		}
+            		queue.add(qi);
+            		items.add(qi);
+            		
+            		if (qi.size() > 0)
+            			sLog.info("Many: " + qi);
+            	}
+            }
+        }
         
+        Map<String, Set<Serializable>> allExportedIds = new HashMap<String, Set<Serializable>>();
+        for (String name: new TreeSet<String>(data.keySet())) {
+        	List<QueueItem> list = data.get(name);
+        	Map<String, TableData.Table.Builder> tables = new HashMap<String, TableData.Table.Builder>();
+        	for (QueueItem current: list) {
+        		if (current.size() == 0) continue;
+        		sLog.info("Loading " + current);
+        		List<Object> objects = current.list();
+        		if (objects == null || objects.isEmpty()) continue;
+        		iProgress.setPhase(current.abbv() + " [" + objects.size() + "]", objects.size());
+        		objects: for (Object object: objects) {
+        			iProgress.incProgress();
+        			
+        			// Get meta data (check for sub-classes)
+        			ClassMetadata meta = iHibSessionFactory.getClassMetadata(object.getClass());
+        			if (meta == null) meta = current.meta();
+        			if (meta.hasSubclasses()) {
+        	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
+        	                Map.Entry entry = (Map.Entry)i.next();
+        	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
+        	                if (classMetadata.getMappedClass(EntityMode.POJO).isInstance(object) && !classMetadata.hasSubclasses()) {
+        	                	meta = classMetadata; break;
+        	                }
+        	            }
+        			}
+        			
+        			// Get unique identifier
+        			Serializable id = meta.getIdentifier(object, (SessionImplementor)iHibSession);
+        			
+        			// Check if already exported
+        			Set<Serializable> exportedIds = allExportedIds.get(meta.getEntityName());
+        			if (exportedIds == null) {
+        				exportedIds = new HashSet<Serializable>();
+        				allExportedIds.put(meta.getEntityName(), exportedIds);
+        			}
+        			if (!exportedIds.add(id)) continue;
+        			
+        			// Check relation to an academic session (if exists)
+        			boolean doSessionCheck = true;
+        			if (object instanceof RoomGroup) {
+        				// Global room group may point to a wrong academic session
+        				if (((RoomGroup)object).isGlobal()) doSessionCheck = false;
+        			}
+        			
+        			if (doSessionCheck) {
+            			for (String property: meta.getPropertyNames()) {
+            				Type type = meta.getPropertyType(property);
+                        	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
+                        		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
+                        		if (s != null && !s.getUniqueId().equals(iSessionId)) {
+                        			sLog.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
+                        			continue objects; // wrong session
+                        		}
+                        	}
+            			}
+        			}
+
+        			// Get appropriate table
+        			TableData.Table.Builder table = tables.get(meta.getEntityName());
+        			if (table == null) {
+        				table = TableData.Table.newBuilder();
+        				tables.put(meta.getEntityName(), table);
+        				table.setName(meta.getEntityName());
+        			}
+
+        			// Export object
+        			TableData.Record.Builder record = TableData.Record.newBuilder();
+        			record.setId(id.toString());
+        			for (String property: meta.getPropertyNames()) {
+        				Type type = meta.getPropertyType(property);
+        				Object value = meta.getPropertyValue(object, property, EntityMode.POJO);
+        				if (value == null) continue;
+        				TableData.Element.Builder element = TableData.Element.newBuilder();
+        				element.setName(property);
+        				if (type instanceof PrimitiveType) {
+        					element.addValue(((PrimitiveType)type).toString(value));
+        				} else if (type instanceof StringType) {	
+        					element.addValue(((StringType)type).toString(value));
+        				} else if (type instanceof BinaryType) {	
+        					element.addValue(ByteString.copyFrom((byte[])value));
+        				} else if (type instanceof TimestampType) {
+        					element.addValue(((TimestampType)type).toString(value));
+        				} else if (type instanceof DateType) {
+        					element.addValue(((DateType)type).toString(value));
+        				} else if (type instanceof EntityType) {
+							List<Object> ids = current.relation(property, id, false);
+							if (ids != null)
+								for (Object i: ids)
+									element.addValue(i.toString());
+							iHibSession.evict(value);
+        				} else if (type instanceof CustomType && value instanceof Document) {
+        					if (object instanceof CurriculumClassification && property.equals("students")) continue;
+        					StringWriter w = new StringWriter();
+        					XMLWriter x = new XMLWriter(w, OutputFormat.createCompactFormat());
+        					x.write((Document)value);
+        					x.flush(); x.close();
+        					element.addValue(w.toString());
+        				} else if (type instanceof CollectionType) {
+							List<Object> ids = current.relation(property, id, false);
+							if (ids != null)
+								for (Object i: ids)
+									element.addValue(i.toString());
+        				} else if (type instanceof EmbeddedComponentType && property.equalsIgnoreCase("uniqueCourseNbr")) {
+        					continue;
+        				} else {
+        					sLog.warn("Unknown data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
+        					continue;
+        				}
+        				record.addElement(element.build());
+        				
+        			}
+        			table.addRecord(record.build());
+        			iHibSession.evict(object);
+        		}
+        		current.clearCache();
+        	}
+        	
+        	for (TableData.Table.Builder table: tables.values()) {
+        		add(table.build());
+        	}
+        }
+        
+        /*
+        // Skip ConstraintInfo
+        if (!iData.containsKey(ConstraintInfo.class.getName()))
+        	iData.put(ConstraintInfo.class.getName(), new QueueItem(iHibSessionFactory.getClassMetadata(ConstraintInfo.class), null, null, Relation.Empty));
+
+        for (String name: items)
+        	export(iData.get(name));
+                
 		while (true) {
-			List<Entity> objects = new ArrayList<Entity>();
+			List<Object> objects = new ArrayList<Object>();
+			ClassMetadata meta = null;
 			for (Entity e: iObjects) {
-				if (e.isExported()) continue;
-				if (objects.isEmpty() || objects.get(0).getName().equals(e.getName())) {
-					objects.add(e);
-				} else if (objects.get(0).compareTo(e) >= 0) {
-					objects.clear();
-					objects.add(e);
+				if (e.exported()) continue;
+				if (objects.isEmpty() || meta.getEntityName().equals(e.name())) {
+					meta = e.meta();
+					objects.add(e.object());
+					e.notifyExported();
 				}
 			}
 			if (objects.isEmpty()) break;
-			export(objects.get(0).getMetaData(), objects);
+			export(meta, objects, null);
 		}
+		*/
 		iProgress.setStatus("All done.");
 	}
 	
-	private long iSerialId = 0;
-	class Entity implements Comparable<Entity> {
-		private ClassMetadata iMetaData;
-		private Serializable iId;
-		private Object iObject;
-		private Entity iParent;
-		private boolean iExported = false;
-		private long iSID = iSerialId++;
-		
-		Entity(ClassMetadata metadata, Object object, Entity parent) {
-			iMetaData = iHibSessionFactory.getClassMetadata(object.getClass());
-			if (iMetaData == null)
-				iMetaData = metadata;
-			if (iMetaData.hasSubclasses()) {
-	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
-	                Map.Entry entry = (Map.Entry)i.next();
-	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
-	                if (classMetadata.getMappedClass(EntityMode.POJO).isInstance(object) && !classMetadata.hasSubclasses()) {
-	                	iMetaData = classMetadata; break;
-	                }
-	            }
-			}
-			iObject = object;
-			iParent = parent;
-			iId = iMetaData.getIdentifier(iObject, (SessionImplementor)iHibSession);
-			for (String property: iMetaData.getPropertyNames()) {
-            	Type type = iMetaData.getPropertyType(property);
-            	if (type instanceof ManyToOneType && type.getReturnedClass().equals(Session.class)) {
-            		Session session = (Session)iMetaData.getPropertyValue(iObject, property, EntityMode.POJO);
-            		if (session != null && !session.getUniqueId().equals(iSessionId)) {
-            			// sLog.info("Skipping " + iObject + " (" + property + " refers to a wrong academic session)");
-            			iExported = true; break;
-            		}
-            	}
-			}
-		}
-		
-		public ClassMetadata getMetaData() { return iMetaData; }
-		public String getName() { return getMetaData().getEntityName(); }
-		public Object getObject() { return iObject; }
-		public Serializable getId() { return iId; }
-		public boolean isExported() { return iExported; }
-		public void setExported(boolean exported) { iExported = exported; }
-		public Entity getParent() { return iParent; }
-		
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Entity)) return false;
-			Entity e = (Entity)o;
-			return getName().equals(e.getName()) && getId().equals(e.getId());
-		}
-		
-		public int hashCode() {
-			return getId().hashCode();
-		}
-		
-		public String toString() {
-			return getId().toString();
-		}
-		
-		public int compareTo(Entity e) {
-			return iSID < e.iSID ? -1 : 1;
-		}
+	enum Relation {
+		None, Parent, One, Many, Empty
 	}
 	
+	private int iQueueItemCoutner = 0;
+	private Map<String, Set<Serializable>> iExclude = new HashMap<String, Set<Serializable>>();
+
 	class QueueItem {
-		private Class iType;
-		private String iProperty;
+		QueueItem iParent;
+		ClassMetadata iMeta;
+		String iProperty;
+		int iQueueItemId = iQueueItemCoutner++;
+		Relation iRelation;
+		int size = -1;
 		
-		public QueueItem(Class type, String property) {
-			iType = type;
+		QueueItem(ClassMetadata meta, QueueItem parent, String property, Relation relation) {
+			iMeta = meta;
+			iParent = parent;
 			iProperty = property;
+			iRelation = relation;
 		}
 		
-		public Class getType() { return iType; }
-		public String getProperty() { return iProperty; }
+		String property() { return iProperty; }
+		QueueItem parent() { return iParent; }
+		ClassMetadata meta() { return iMeta; }
+		String name() { return meta().getEntityName(); }
+		String abbv() { return meta().getEntityName().substring(meta().getEntityName().lastIndexOf('.') + 1); }
+		Class clazz() { return meta().getMappedClass(EntityMode.POJO); }
+		int qid() { return iQueueItemId; }
+		Relation relation() { return iRelation; }
+		boolean contains(String name) {
+			if (name.equals(name())) return true;
+			if (parent() == null) return false;
+			return parent().contains(name);
+		}
+		int depth() { return parent() == null ? 0 : 1 + parent().depth(); }
+		
+		public String toString() {  return abbv() + ": " + chain() + " [" + size() + "]"; }
+		
+		public String chain() {
+			switch (relation()) {
+			case None:
+				return property();
+			case Parent:
+				return property() + "." + parent().chain();
+			default:
+				switch (parent().relation()) {
+				case Parent:
+					return "(" + parent().abbv() + "." + parent().chain() + ")." + property();
+				case None:
+					return parent().abbv() + "." + property();
+				default:
+					return parent().chain() + "." + property();
+				}
+			}
+		}
+		
+		String hqlName() { return "q" + qid(); }
+		
+		String hqlFrom() {
+			switch (relation()) {
+			case One:
+			case Many:
+				return parent().hqlFrom() + " inner join " + parent().hqlName() + "." + property() + " " + hqlName();
+			default:
+				return (parent() == null ? "" : parent().hqlFrom() + ", ") + name() + " " + hqlName();
+			}
+		}
+		
+		String hqlWhere() {
+			String where = null;
+			switch (relation()) {
+			case None:
+				where = hqlName() + "." + property() + " = :sessionId";
+				break;
+			case Parent:
+				where = hqlName() + "." + property() + " = " + parent().hqlName() + " and " + parent().hqlWhere();
+				break;
+			default:
+				where = parent().hqlWhere();
+				break;
+			}
+			if (Solution.class.getName().equals(name()))
+				where += " and " + hqlName() + ".commited = true";
+			if (Assignment.class.getName().equals(name()))
+				where += " and " + hqlName() + ".solution.commited = true";
+			if (SolutionInfo.class.getName().equals(name()))
+				where += " and " + hqlName() + ".definition.name = 'GlobalInfo'";
+			return where;
+		}
+		
+		int size() {
+			if (relation() == Relation.Empty) return 0;
+			if (AssignmentInfo.class.getName().equals(name())) return 0;
+			if (ConstraintInfo.class.getName().equals(name())) return 0;
+			if (ChangeLog.class.getName().equals(name())) return 0;
+			if (size < 0) {
+				Set<Serializable> ids = iExclude.get(name());
+				if (ids == null) {
+					ids = new HashSet<Serializable>();
+					iExclude.put(name(), ids);
+				}
+				size = 0;
+				for (Serializable id: (List<Serializable>)iHibSession.createQuery(
+						"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + " from " + hqlFrom() + " where " + hqlWhere()
+						).setLong("sessionId", iSessionId).list()) {
+					if (ids.add(id)) size++;
+				}				
+			}
+			return size;
+		}
+		
+		boolean distinct() {
+			switch (relation()) {
+			case Many:
+				return false;
+			case One:
+				return parent().distinct();
+			default:
+				return true;
+			}
+		}
+		
+		List<Object> list() {
+			if (relation() == Relation.Empty) return null;
+			if (AssignmentInfo.class.getName().equals(name())) return null;
+			if (ConstraintInfo.class.getName().equals(name())) return null;
+			if (ChangeLog.class.getName().equals(name())) return null;
+			return iHibSession.createQuery(
+					"select " + (distinct() ? "" : "distinct ") + hqlName() + " from " + hqlFrom() + " where " + hqlWhere()
+					).setLong("sessionId", iSessionId).list();
+		}
+		
+		Map<String, Map<Serializable, List<Object>>> iRelationCache = new HashMap<String, Map<Serializable,List<Object>>>();
+		
+		List<Object> relation(String property, Serializable id, boolean data) {
+			Map<Serializable, List<Object>> relation = iRelationCache.get(property);
+			if (relation == null) {
+				Type type = meta().getPropertyType(property);
+				ClassMetadata meta = null;
+				if (type instanceof CollectionType)
+					meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+				else
+					meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+				relation = new HashMap<Serializable, List<Object>>();
+				int cnt = 0;
+				String idProperty = meta.getIdentifierPropertyName();
+				if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
+					idProperty = "externalUniqueId";
+				for (Object[] o: (List<Object[]>)iHibSession.createQuery(
+						"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
+						" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
+						).setLong("sessionId", iSessionId).list()) {
+					List<Object> list = relation.get((Serializable)o[0]);
+					if (list == null) {
+						list = new ArrayList<Object>();
+						relation.put((Serializable)o[0], list);
+					}
+					list.add(o[1]);
+					cnt++;
+				}
+				iRelationCache.put(property, relation);
+				// sLog.info("Fetched " + property + " (" + cnt + (data ? " items" : " ids") + ")");
+			}
+			return relation.get(id);
+		}
+		
+		private void clearCache() { iRelationCache.clear(); }
 	}
 	
 	public static void main(String[] args) {
@@ -319,7 +558,7 @@ public class SessionBackup {
             props.setProperty("log4j.rootLogger", "DEBUG, A1");
             props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
             props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
+            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %m%n");
             props.setProperty("log4j.logger.org.hibernate","INFO");
             props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
             props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
@@ -349,16 +588,22 @@ public class SessionBackup {
             
             SessionBackup backup = new SessionBackup(out);
             
+            PrintWriter debug = null;
+            if (args.length >= 2) {
+            	debug = new PrintWriter(args[1]);
+            	backup.debug(debug);
+            }
+            
             backup.getProgress().addProgressListener(new ProgressWriter(System.out));
             
             backup.backup(session);
             
             out.close();
-            
+            if (debug != null) debug.close();
             
 		} catch (Exception e) {
 			sLog.fatal("Backup failed: " + e.getMessage(), e);
 		}
 	}
-	
+
 }

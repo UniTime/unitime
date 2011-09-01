@@ -21,8 +21,10 @@ package org.unitime.timetable.backup;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressWriter;
@@ -42,6 +45,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
+import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.engine.SessionFactoryImplementor;
@@ -84,10 +88,13 @@ import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SolverInfoDef;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -99,9 +106,11 @@ public class SessionRestore {
     private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
 	private Progress iProgress = null;
+	private boolean iIsClone = false;
 
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
+	private Map<String, Student> iStudents = new Hashtable<String, Student>();
 
 	public SessionRestore() {
         iHibSession = new _RootDAO().getSession(); 
@@ -114,15 +123,30 @@ public class SessionRestore {
 	}
 	
 	private boolean lookup(Entity entity, String property, Object value) {
-		Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).uniqueResult();
-		if (object != null)
-			entity.setObject(object);
-		return object != null;
+		try {
+			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).uniqueResult();
+			if (object != null)
+				entity.setObject(object);
+			return object != null;
+		} catch (NonUniqueResultException e) {
+			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
+			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).list();
+			if (!list.isEmpty()) {
+				Object object = list.get(0);
+				entity.setObject(object);
+				return true;
+			}
+			return false;
+		}
 	}
 	
 	private void add(Entity entity) {
 		boolean save = true;
 		boolean lookup = true;
+		if (entity.getObject() instanceof Session) {
+			Session oldSession = (Session)iHibSession.get(Session.class, Long.valueOf(entity.getId()));
+			if (oldSession != null) iIsClone = true;
+		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
 		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
 		if (entity.getObject() instanceof GlobalRoomFeature && lookup(entity, "abbv", ((GlobalRoomFeature)entity.getObject()).getAbbv())) save = false;
@@ -137,6 +161,7 @@ public class SessionRestore {
 		if (entity.getObject() instanceof ChangeLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof PositionCodeType && lookup(entity, "positionCode", ((PositionCodeType)entity.getObject()).getPositionCode())) save = false;
+		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
 		if (save)
 			iAllEntitites.add(entity);
 		if (lookup) {
@@ -146,6 +171,10 @@ public class SessionRestore {
 				iEntities.put(entity.getName(), entityOfThisType);
 			}
 			entityOfThisType.put(entity.getId(), entity);
+		}
+		if (entity.getObject() instanceof Student) {
+			Student student = (Student)entity.getObject();
+			iStudents.put(student.getExternalUniqueId(), student);
 		}
 	}
 	
@@ -195,7 +224,7 @@ public class SessionRestore {
 				} else if (type instanceof EntityType) {
 				} else if (type instanceof CollectionType) {
 				} else {
-					sLog.warn("Unknown data type: " + type + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")");
+					message("Unknown type " + type.getClass().getName() + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", "");
 				}
 				if (value != null)
 					metadata.setPropertyValue(object, property, value, EntityMode.POJO);
@@ -203,6 +232,42 @@ public class SessionRestore {
 			if (object instanceof PositionCodeType)
 				((PositionCodeType)object).setPositionCode(record.getId());
 			add(new Entity(metadata, record, object, record.getId()));
+		}
+	}
+	
+	Map<String, Set<String>> iMessages = new HashMap<String, Set<String>>();
+	private void message(String message, String id) {
+		Set<String> ids = iMessages.get(message);
+		if (ids == null) {
+			ids = new HashSet<String>();
+			iMessages.put(message, ids);
+		}
+		if (ids.add(id) && ids.size() <= 5)
+			sLog.info(message + (id.isEmpty() ? "" : ": " + id));
+	}
+	
+	
+	private Object checkUnknown(Class clazz, String id, Object object) {
+		if (object == null)
+			message("Unknown " + clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1), id);
+		return object;
+	}
+	
+	private void printMessages() {
+		for (String message: new TreeSet<String>(iMessages.keySet())) {
+			Set<String> ids = new TreeSet<String>(iMessages.get(message));
+			if (ids.isEmpty() || (ids.size() == 1 && ids.contains("")))
+				sLog.info(message);
+			else {
+				String list = "";
+				int size = 0;
+				for (String id: ids) {
+					if (!list.isEmpty()) list += ", ";
+					if (size > 20) { list += "... " + (ids.size() - size) + " more"; break; }
+					list += id; size ++;
+				}
+				sLog.info(message + ": " + list);
+			}
 		}
 	}
 	
@@ -216,12 +281,14 @@ public class SessionRestore {
         	Entity o = entry.getValue().get(id);
         	if (o != null && clazz.isInstance(o.getObject())) return o.getObject();
 		}
-        // sLog.info(clazz.getName() + " " + id + " not imported.");
-        // Object value = iHibSession.get(clazz, clazz.equals(ItypeDesc.class) ? (Serializable) Integer.valueOf(id) : (Serializable) Long.valueOf(id));
-        // if (value == null)
-        // sLog.warn(clazz.getName() + " " + id + " not known.");
-        // return value;
-        return null;
+        if (clazz.equals(Session.class))
+        	return ((Entity)iEntities.get(Session.class.getName()).values().iterator().next()).getObject();
+        if (clazz.equals(Student.class))
+        	return checkUnknown(clazz, id, iStudents.get(id));
+        if (iIsClone)
+        	return checkUnknown(clazz, id,
+        			iHibSession.get(clazz, clazz.equals(ItypeDesc.class) ? (Serializable) Integer.valueOf(id) : (Serializable) Long.valueOf(id)));
+        return checkUnknown(clazz, id, null);
 	}
 	
 	private boolean fix(Entity entity) {
@@ -234,8 +301,8 @@ public class SessionRestore {
 					.add(Restrictions.eq("name", def.getName()))
 					.add(Restrictions.eq("group", group)).list();
 				if (!list.isEmpty()) {
-					// if (list.size() > 1) 
-					//	sLog.warn("Multiple results for SolverParameterDef (name=" + def.getName() + ", group=" + group.getName() + ")");
+					if (list.size() > 1) 
+						message("Multiple results for SolverParameterDef (name=" + def.getName() + ", group=" + group.getName() + ")", "");
 					entity.setObject(list.get(0));
 					return false;
 				}
@@ -272,7 +339,7 @@ public class SessionRestore {
 			saved = false;
 			for (Iterator<Entity> i = save.iterator(); i.hasNext(); ) {
 				Entity e = i.next();
-				if (e.canSave()) {
+				if (e.canSave() == null) {
 					iProgress.incProgress();
 					e.fixRelationsNullOnly();
 					iHibSession.save(e.getObject());
@@ -286,15 +353,23 @@ public class SessionRestore {
 		iProgress.setPhase("Saving (all)", iAllEntitites.size());
 		for (Entity e: iAllEntitites) {
 			iProgress.incProgress();
-			if (e.canSave()) {
+			String property = e.canSave();
+			if (property == null) {
 				e.fixRelations();
 				iHibSession.update(e.getObject());
 			} else {
-				// sLog.info("Skipping " + e.getName() + " " + e.getId() + ": missing not-null relation");
+				message("Skipping " + e.getAbbv() + " (missing not-null relation " + property + ")", e.getId());
 				continue;
 			}
 		}
+		
+		iProgress.setPhase("Flush", 1);
 		iHibSession.flush();
+		iProgress.incProgress();
+		
+		printMessages();
+		
+		iProgress.setStatus("All done.");
 	}
 	
 	class Entity {
@@ -312,6 +387,7 @@ public class SessionRestore {
 		
 		public ClassMetadata getMetaData() { return iMetaData; }
 		public String getName() { return getMetaData().getEntityName(); }
+		public String getAbbv() { return getName().substring(getName().lastIndexOf('.') + 1); }
 		public Object getObject() { return iObject; }
 		public void setObject(Object object) { iObject = object; }
 		public String getId() { return iId; }
@@ -334,10 +410,10 @@ public class SessionRestore {
 		}
 		
 		public String toString() {
-			return getId().toString();
+			return getAbbv() + "@" + getId();
 		}
 		
-		public boolean canSave() {
+		public String canSave() {
 			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
 				if (getMetaData().getPropertyNullability()[i]) continue;
 				Type type = getMetaData().getPropertyTypes()[i];
@@ -345,53 +421,72 @@ public class SessionRestore {
 					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
 					if (element == null) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
-					if (value == null || !iHibSession.contains(value)) return false;
+					if (value == null || !iHibSession.contains(value)) return getMetaData().getPropertyNames()[i];
 				}
 			}
-			return true;
+			return null;
 		}
 		
 		public void fixRelationsNullOnly() {
 			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
+				String property = getMetaData().getPropertyNames()[i];
 				if (getMetaData().getPropertyNullability()[i]) continue;
 				Type type = getMetaData().getPropertyTypes()[i];
 				if (type instanceof EntityType) {
 					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
 					if (element == null) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
-					if (value != null)
+					if (value != null) {
 						getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value, EntityMode.POJO);
+						if (!iHibSession.contains(value))
+							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+					}
 				}
 			}
 		}
 		
 		public void fixRelations() {
-			for (String property: getMetaData().getPropertyNames()) {
-				TableData.Element element = getElement(property);
-				if (element == null) continue;
+			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
+				String property = getMetaData().getPropertyNames()[i];
+				if (!getMetaData().getPropertyNullability()[i]) continue;
 				Type type = getMetaData().getPropertyType(property);
 				if (type instanceof EntityType) {
+					TableData.Element element = getElement(property);
+					if (element == null) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
-					if (value != null)
+					if (value != null) {
 						getMetaData().setPropertyValue(getObject(), property, value, EntityMode.POJO);
+						if (!iHibSession.contains(value))
+							message("Optional " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+					}
 				} else if (type instanceof CollectionType) {
+					TableData.Element element = getElement(property);
+					if (element == null) continue;
 					Class clazz = ((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass();
 					if (type instanceof SetType) {
 						Set<Object> set = new HashSet<Object>();
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
-							if (v != null) set.add(v);
+							if (v != null) {
+								set.add(v);
+								if (!iHibSession.contains(v))
+									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+							}
 						}
 						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
 					} else if (type instanceof ListType) {
 						List<Object> set = new ArrayList<Object>();
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
-							if (v != null) set.add(v);
+							if (v != null) {
+								set.add(v);
+								if (!iHibSession.contains(v))
+									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+							}
 						}
 						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
 					} else {
-						sLog.warn("Unimplemented collection type: " + type + " (property " + getMetaData().getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")");
+						message("Unimplemented collection type: " + type.getClass().getName() + " (" + getAbbv() + "." + property + ")", "");
 					}
 				}
 			}
@@ -448,7 +543,7 @@ public class SessionRestore {
             props.setProperty("log4j.rootLogger", "DEBUG, A1");
             props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
             props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
+            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %m%n");
             props.setProperty("log4j.logger.org.hibernate","INFO");
             props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
             props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
