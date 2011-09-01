@@ -391,7 +391,8 @@
             <many-to-one
                 name="session"
                 class="Session"
-                column="session_id"/>
+                column="session_id"
+                not-null="true"/>
 
             <property
                 name="externalUniqueId"
@@ -522,7 +523,7 @@
                 not-null="false"
                 foreign-key="fk_department_status_type"/>
 
-            <set name="timetableManagers" table="dept_to_tt_mgr">
+            <set name="timetableManagers" table="dept_to_tt_mgr" inverse="true">
                 <cache include="non-lazy" usage="read-write"/>
                 <key column="department_id"/>
                 <many-to-many
