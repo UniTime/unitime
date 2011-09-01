@@ -111,7 +111,7 @@
             name="academicClassification"
             class="AcademicClassification"
             column="acad_clasf_id"
-            not-null="false"
+            not-null="true"
             foreign-key="fk_curriculum_clasf_acad_clasf"/>
 
         <property
