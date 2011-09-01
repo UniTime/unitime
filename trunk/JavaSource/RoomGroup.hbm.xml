@@ -84,6 +84,7 @@
             name="session"
             class="Session"
             column="session_id"
+            not-null="true"
             foreign-key="fk_room_session"/>
 
     </class>
