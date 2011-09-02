@@ -56,7 +56,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
             		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended)
-            		.setString("name", "Týden %")
+            		.setString("name", "T%den %")
             		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
             	int nrWeeks = weekCode.cardinality() / 7;
@@ -70,7 +70,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
             		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.name like :name")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
-            		.setString("name", "Týden %")
+            		.setString("name", "T%den %")
             		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
             	int nrWeeks = weekCode.cardinality() / 7;
@@ -108,7 +108,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
                 for (DatePattern dp: datePatterns) {
                 	
                 	// Only Týden 0 allows for Thursday
-                	if (!dp.getName().equals("Týden 0") && (t.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0)
+                	if (!dp.getName().endsWith("den 0") && (t.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0)
                 		continue;
 
                 	// Clone time location with the new date pattern
