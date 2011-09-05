@@ -947,6 +947,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         ExamPeriod period = getAssignedPeriod();
         if (period==null) return null;
         if (event==null) {
+        	if (getSession().getStatusType().isTestSession()) return null;
             event = (getExamType()==sExamTypeFinal?new FinalExamEvent():new MidtermExamEvent());
             event.setExam(this);
             setEvent(event);

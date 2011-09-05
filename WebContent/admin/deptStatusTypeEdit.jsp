@@ -124,6 +124,10 @@
 			<TD><i>Final examination schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
 		<TR><TD nowrap>Midterm Examination Schedule:</TD><TD><html:checkbox property="canNoRoleReportExamMid"/></TD>
 			<TD><i>Midterm examination schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
+
+		<TR><TD colspan='3'><tt:section-title><br>Other</tt:section-title></TD></TR>
+		<TR><TD nowrap>Test Session:</TD><TD><html:checkbox property="testSession"/></TD>
+			<TD><i>Academic session is marked as a test session. Such a session is not available to no-role users. Also, classes and examinations do not generate any events.</i></TD></TR>
 		
 		<TR>
 			<TD colspan='3'>

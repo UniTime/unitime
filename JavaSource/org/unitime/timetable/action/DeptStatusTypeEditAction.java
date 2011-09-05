@@ -224,8 +224,14 @@ public class DeptStatusTypeEditAction extends Action {
 		    webTable.addLine(null, new String[] {"No status defined."}, null, null );			    
 		}
 		
+		int ord = 0;
         for (Iterator i=statuses.iterator();i.hasNext();) {
         	DepartmentStatusType s = (DepartmentStatusType)i.next();
+        	if (ord != s.getOrd()) {
+        		s.setOrd(ord);
+        		DepartmentStatusTypeDAO.getInstance().saveOrUpdate(s);
+        	}
+        	ord ++;
         	String onClick = "onClick=\"document.location='deptStatusTypeEdit.do?op=Edit&id=" + s.getUniqueId() + "';\"";
         	String rights = "";
             String apply = "";
@@ -322,6 +328,10 @@ public class DeptStatusTypeEditAction extends Action {
                         if (s.canNoRoleReportExamMidterm()) rights += " midterm exams";
                     }
                 }
+            }
+            if (s.isTestSession()) {
+            	if (rights.length()>0) rights+="; ";
+                rights += "test session";
             }
             String ops = "";
             if (s.getOrd().intValue()>0) {

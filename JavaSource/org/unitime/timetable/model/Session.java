@@ -72,8 +72,13 @@ public class Session extends BaseSession implements Comparable {
 	/*
 	 * @return all sessions
 	 */
-	public static TreeSet getAllSessions() throws HibernateException {
-		return new TreeSet((new SessionDAO()).findAll());
+	public static TreeSet<Session> getAllSessions() throws HibernateException {
+		TreeSet<Session> ret = new TreeSet<Session>();
+		for (Session session: SessionDAO.getInstance().findAll()) {
+			if (session.getStatusType() != null && !session.getStatusType().isTestSession())
+				ret.add(session);
+		}
+		return ret;
 	}
 
 	/**
@@ -166,7 +171,7 @@ public class Session extends BaseSession implements Comparable {
 		if (role == null || role.getRole() == null)
 			return getAllSessions();
 	    if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
-	    	return getAllSessions();
+	    	return new TreeSet(SessionDAO.getInstance().findAll());
 	    Set sessions = role.getTimetableManager().sessionsCanManage();
 	    if (Roles.VIEW_ALL_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
 	        return getAllSessions();
@@ -191,7 +196,7 @@ public class Session extends BaseSession implements Comparable {
         long now = (new Date()).getTime();
         for (Iterator it = sessions.iterator();it.hasNext();) {
             Session session = (Session)it.next();
-            if (session.getStatusType()==null || !session.getStatusType().isActive()) continue;
+            if (session.getStatusType()==null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
             if (initiative==null) 
                 initiative = session.getAcademicInitiative();
             else if (!initiative.equals(session.getAcademicInitiative()))
@@ -274,8 +279,7 @@ public class Session extends BaseSession implements Comparable {
 	 * @return Returns the label.
 	 */
 	public String getLabel() {
-		return getAcademicTerm() + " " + getSessionStartYear() + 
-		    " ("+(getAcademicInitiative().length()>9?getAcademicInitiative().substring(0,9):getAcademicInitiative())+")";
+		return getAcademicTerm() + " " + getSessionStartYear() + " (" + getAcademicInitiative() + ")";
 	}
 
 	public String toString() {
@@ -762,12 +766,14 @@ public class Session extends BaseSession implements Comparable {
 	}
 	
 	public boolean isOfferingLockNeeded(Long offeringId) {
+		if (getStatusType().isTestSession()) return false;
 		if (!getStatusType().canOnlineSectionStudents()) return false;
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		return server != null && !server.isOfferingLocked(offeringId);
 	}
 
 	public boolean isOfferingFullLockNeeded(Long offeringId) {
+		if (getStatusType().isTestSession()) return false;
 		if (!getStatusType().canOnlineSectionStudents() && !getStatusType().canSectionAssistStudents()) return false;
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		return server != null && !server.isOfferingLocked(offeringId);

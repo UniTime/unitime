@@ -282,19 +282,21 @@ public class ClassInfoModel implements Serializable {
             }
         }
         
-        Session session = SessionDAO.getInstance().get(sessionId, hibSession); 
-        if (session.getStatusType().canOnlineSectionStudents()) {
-        	List<Long> unlockedOfferings = new ArrayList<Long>();
-        	for (Long offeringId: touchedOfferingIds.keySet())
-        		if (!session.isOfferingLocked(offeringId))
-        			unlockedOfferings.add(offeringId);
-        	if (!unlockedOfferings.isEmpty())
-        		StudentSectioningQueue.offeringChanged(hibSession, sessionId, unlockedOfferings);
-        } else if (session.getStatusType().canSectionAssistStudents()) {
-        	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
-        		if (!session.isOfferingLocked(entry.getKey()))
-        			StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, entry.getValue());        		
-        	}
+        Session session = SessionDAO.getInstance().get(sessionId, hibSession);
+        if (!session.getStatusType().isTestSession()) {
+            if (session.getStatusType().canOnlineSectionStudents()) {
+            	List<Long> unlockedOfferings = new ArrayList<Long>();
+            	for (Long offeringId: touchedOfferingIds.keySet())
+            		if (!session.isOfferingLocked(offeringId))
+            			unlockedOfferings.add(offeringId);
+            	if (!unlockedOfferings.isEmpty())
+            		StudentSectioningQueue.offeringChanged(hibSession, sessionId, unlockedOfferings);
+            } else if (session.getStatusType().canSectionAssistStudents()) {
+            	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
+            		if (!session.isOfferingLocked(entry.getKey()))
+            			StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, entry.getValue());        		
+            	}
+            }
         }
         hibSession.flush();
         

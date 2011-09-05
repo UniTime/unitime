@@ -890,6 +890,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						"select distinct s from Session s, RoomTypeOption o where o.session = s and o.status = 1"
 						).list());
 				for (Session session: sessions) {
+					if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 					IdValueInterface idVal = new IdValueInterface(session.getUniqueId().toString(), session.getLabel()); 
 					if (session.equals(selected))
 						idVal.setSelected(true);

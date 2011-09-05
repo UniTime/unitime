@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,13 +39,19 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -278,6 +285,51 @@ public class SessionEditAction extends LookupDispatchAction {
             
             if (sessionEditForm.getSessionId() != null)
             	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionEditForm.getSessionId(), false);
+            
+            TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
+            EventContact contact = EventContact.findByExternalUniqueId(manager.getExternalUniqueId());
+            if (contact==null) {
+                contact = new EventContact();
+                contact.setFirstName(manager.getFirstName());
+                contact.setMiddleName(manager.getMiddleName());
+                contact.setLastName(manager.getLastName());
+                contact.setExternalUniqueId(manager.getExternalUniqueId());
+                contact.setEmailAddress(manager.getEmailAddress());
+                hibSession.save(contact);
+            }
+
+            if (sessn.getStatusType().isTestSession()) {
+            	hibSession.createQuery(
+            			"delete ExamEvent where exam in (from Exam x where x.session.uniqueId = :sessionId)")
+            			.setLong("sessionId", sessn.getUniqueId()).executeUpdate();
+            	hibSession.createQuery(
+            			"delete ClassEvent where clazz in (from Class_ c where c.committedAssignment.solution.owner.session.uniqueId = :sessionId)")
+            			.setLong("sessionId", sessn.getUniqueId()).executeUpdate();
+            } else {
+            	for (Assignment assignment: (List<Assignment>)hibSession.createQuery(
+            			"select a from Class_ c inner join c.committedAssignment a where c.committedAssignment.solution.owner.session.uniqueId = :sessionId" +
+            			" and (select count(e) from ClassEvent e where e.clazz = c) = 0")
+            			.setLong("sessionId", sessn.getUniqueId()).list()) {
+            		ClassEvent event = assignment.generateCommittedEvent(null,true);
+                    if (event!=null) {
+                    	event.setMainContact(contact);
+                        hibSession.saveOrUpdate(event);
+                    }
+            	}
+            	for (Exam exam: (List<Exam>)hibSession.createQuery(
+            			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null and" +
+            			" (select count(e) from ExamEvent e where e.exam = x) = 0")
+            			.setLong("sessionId", sessn.getUniqueId()).list()) {
+            		ExamEvent event = exam.generateEvent(null, true);
+                    if (event!=null) {
+                        event.setEventName(exam.getLabel());
+                        event.setMinCapacity(exam.getSize());
+                        event.setMaxCapacity(exam.getSize());
+                        event.setMainContact(contact);
+                        hibSession.saveOrUpdate(event);
+                    }
+            	}
+            }
             
             tx.commit() ;
         } catch (Exception e) {

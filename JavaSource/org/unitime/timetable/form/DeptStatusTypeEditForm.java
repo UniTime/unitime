@@ -64,6 +64,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanSectioningStudents  = false;
     private boolean iCanPreRegisterStudents = false;
     private boolean iCanOnlineSectionStudents = false;
+    private boolean iTestSession = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -112,6 +113,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanSectioningStudents  = false;
         iCanPreRegisterStudents = false;
         iCanOnlineSectionStudents = false;
+        iTestSession            = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -129,9 +131,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public void setApply(Long apply) { iApply = (apply==null?-1:(int)apply.longValue()); }
     public Vector getApplyOptions() {
         Vector options = new Vector();
-        options.add(new IdValue(new Long(DepartmentStatusType.sApplySession), "Session"));
-        options.add(new IdValue(new Long(DepartmentStatusType.sApplyDepartment), "Department"));
-        options.add(new IdValue(new Long(DepartmentStatusType.sApplySession | DepartmentStatusType.sApplyDepartment), "Both"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt()), "Session"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Department.toInt()), "Department"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Both"));
         return options;
     }
     public void setCanManagerView(boolean canManagerView) { iCanManagerView = canManagerView; }
@@ -170,48 +172,53 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanPreRegisterStudents() { return iCanPreRegisterStudents; }
     public void setCanOnlineSectionStudents(boolean canOnlineSectionStudents) { iCanOnlineSectionStudents = canOnlineSectionStudents; }
     public boolean getCanOnlineSectionStudents() { return iCanOnlineSectionStudents; }
+    public void setTestSession(boolean testSession) { iTestSession = testSession; }
+    public boolean getTestSession() { return iTestSession; }
+
 
     public int getRights() {
         int rights = 0;
-        if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
-        if (getCanManagerEdit()) rights += DepartmentStatusType.sCanManagerEdit;
-        if (getCanManagerLimitedEdit()) rights += DepartmentStatusType.sCanManagerLimitedEdit;
-        if (getCanOwnerView()) rights += DepartmentStatusType.sCanOwnerView;
-        if (getCanOwnerEdit()) rights += DepartmentStatusType.sCanOwnerEdit;
-        if (getCanOwnerLimitedEdit()) rights += DepartmentStatusType.sCanOwnerLimitedEdit;
-        if (getCanAudit()) rights += DepartmentStatusType.sCanAudit;
-        if (getCanTimetable()) rights += DepartmentStatusType.sCanTimetable;
-        if (getCanCommit()) rights += DepartmentStatusType.sCanCommit;
-        if (getCanExamView()) rights += DepartmentStatusType.sCanExamView;
-        if (getCanExamEdit()) rights += DepartmentStatusType.sCanExamEdit;
-        if (getCanExamTimetable()) rights += DepartmentStatusType.sCanExamTimetable;
-        if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.sCanNoRoleReportExamFin;
-        if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.sCanNoRoleReportExamMid;
-        if (getCanNoRoleReportClass()) rights += DepartmentStatusType.sCanNoRoleReportClass;
-        if (getCanSectioningStudents()) rights += DepartmentStatusType.sCanSectAssistStudents;
-        if (getCanPreRegisterStudents()) rights += DepartmentStatusType.sCanPreRegisterStudents;
-        if (getCanOnlineSectionStudents()) rights += DepartmentStatusType.sCanOnlineSectionStudents;
+        if (getCanManagerView()) rights += DepartmentStatusType.Status.ManagerView.toInt();
+        if (getCanManagerEdit()) rights += DepartmentStatusType.Status.ManagerEdit.toInt();
+        if (getCanManagerLimitedEdit()) rights += DepartmentStatusType.Status.ManagerLimitedEdit.toInt();
+        if (getCanOwnerView()) rights += DepartmentStatusType.Status.OwnerView.toInt();
+        if (getCanOwnerEdit()) rights += DepartmentStatusType.Status.OwnerEdit.toInt();
+        if (getCanOwnerLimitedEdit()) rights += DepartmentStatusType.Status.OwnerLimitedEdit.toInt();
+        if (getCanAudit()) rights += DepartmentStatusType.Status.Audit.toInt();
+        if (getCanTimetable()) rights += DepartmentStatusType.Status.Timetable.toInt();
+        if (getCanCommit()) rights += DepartmentStatusType.Status.Commit.toInt();
+        if (getCanExamView()) rights += DepartmentStatusType.Status.ExamView.toInt();
+        if (getCanExamEdit()) rights += DepartmentStatusType.Status.ExamEdit.toInt();
+        if (getCanExamTimetable()) rights += DepartmentStatusType.Status.ExamTimetable.toInt();
+        if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.Status.ReportExamsFinal.toInt();
+        if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.Status.ReportExamsMidterm.toInt();
+        if (getCanNoRoleReportClass()) rights += DepartmentStatusType.Status.ReportClasses.toInt();
+        if (getCanSectioningStudents()) rights += DepartmentStatusType.Status.StudentsAssistant.toInt();
+        if (getCanPreRegisterStudents()) rights += DepartmentStatusType.Status.StudentsPreRegister.toInt();
+        if (getCanOnlineSectionStudents()) rights += DepartmentStatusType.Status.StudentsOnline.toInt();
+        if (getTestSession()) rights += DepartmentStatusType.Status.TestSession.toInt();
         return rights;
     }
     public void setRights(int rights) {
-        setCanManagerView((rights&DepartmentStatusType.sCanManagerView)==DepartmentStatusType.sCanManagerView);
-        setCanManagerEdit((rights&DepartmentStatusType.sCanManagerEdit)==DepartmentStatusType.sCanManagerEdit);
-        setCanManagerLimitedEdit((rights&DepartmentStatusType.sCanManagerLimitedEdit)==DepartmentStatusType.sCanManagerLimitedEdit);
-        setCanOwnerView((rights&DepartmentStatusType.sCanOwnerView)==DepartmentStatusType.sCanOwnerView);
-        setCanOwnerEdit((rights&DepartmentStatusType.sCanOwnerEdit)==DepartmentStatusType.sCanOwnerEdit);
-        setCanOwnerLimitedEdit((rights&DepartmentStatusType.sCanOwnerLimitedEdit)==DepartmentStatusType.sCanOwnerLimitedEdit);
-        setCanAudit((rights&DepartmentStatusType.sCanAudit)==DepartmentStatusType.sCanAudit);
-        setCanTimetable((rights&DepartmentStatusType.sCanTimetable)==DepartmentStatusType.sCanTimetable);
-        setCanCommit((rights&DepartmentStatusType.sCanCommit)==DepartmentStatusType.sCanCommit);
-        setCanExamView((rights&DepartmentStatusType.sCanExamView)==DepartmentStatusType.sCanExamView);
-        setCanExamEdit((rights&DepartmentStatusType.sCanExamEdit)==DepartmentStatusType.sCanExamEdit);
-        setCanExamTimetable((rights&DepartmentStatusType.sCanExamTimetable)==DepartmentStatusType.sCanExamTimetable);
-        setCanNoRoleReportExamFin((rights&DepartmentStatusType.sCanNoRoleReportExamFin)==DepartmentStatusType.sCanNoRoleReportExamFin);
-        setCanNoRoleReportExamMid((rights&DepartmentStatusType.sCanNoRoleReportExamMid)==DepartmentStatusType.sCanNoRoleReportExamMid);
-        setCanNoRoleReportClass((rights&DepartmentStatusType.sCanNoRoleReportClass)==DepartmentStatusType.sCanNoRoleReportClass);
-        setCanSectioningStudents((rights&DepartmentStatusType.sCanSectAssistStudents)==DepartmentStatusType.sCanSectAssistStudents);
-        setCanPreRegisterStudents((rights&DepartmentStatusType.sCanPreRegisterStudents)==DepartmentStatusType.sCanPreRegisterStudents);
-        setCanOnlineSectionStudents((rights&DepartmentStatusType.sCanOnlineSectionStudents)==DepartmentStatusType.sCanOnlineSectionStudents);
+        setCanManagerView(DepartmentStatusType.Status.ManagerView.has(rights));
+        setCanManagerEdit(DepartmentStatusType.Status.ManagerEdit.has(rights));
+        setCanManagerLimitedEdit(DepartmentStatusType.Status.ManagerLimitedEdit.has(rights));
+        setCanOwnerView(DepartmentStatusType.Status.OwnerView.has(rights));
+        setCanOwnerEdit(DepartmentStatusType.Status.OwnerEdit.has(rights));
+        setCanOwnerLimitedEdit(DepartmentStatusType.Status.OwnerLimitedEdit.has(rights));
+        setCanAudit(DepartmentStatusType.Status.Audit.has(rights));
+        setCanTimetable(DepartmentStatusType.Status.Timetable.has(rights));
+        setCanCommit(DepartmentStatusType.Status.Commit.has(rights));
+        setCanExamView(DepartmentStatusType.Status.ExamView.has(rights));
+        setCanExamEdit(DepartmentStatusType.Status.ExamEdit.has(rights));
+        setCanExamTimetable(DepartmentStatusType.Status.ExamTimetable.has(rights));
+        setCanNoRoleReportExamFin(DepartmentStatusType.Status.ReportExamsFinal.has(rights));
+        setCanNoRoleReportExamMid(DepartmentStatusType.Status.ReportExamsMidterm.has(rights));
+        setCanNoRoleReportClass(DepartmentStatusType.Status.ReportClasses.has(rights));
+        setCanSectioningStudents(DepartmentStatusType.Status.StudentsAssistant.has(rights));
+        setCanPreRegisterStudents(DepartmentStatusType.Status.StudentsPreRegister.has(rights));
+        setCanOnlineSectionStudents(DepartmentStatusType.Status.StudentsOnline.has(rights));
+        setTestSession(DepartmentStatusType.Status.TestSession.has(rights));
     }
 	
 	public void load(DepartmentStatusType s) {
