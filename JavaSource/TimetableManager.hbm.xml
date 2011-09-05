@@ -81,7 +81,7 @@
             not-null="false"
             length="200"/>
 
-        <set name="departments" table="dept_to_tt_mgr">
+        <set name="departments" table="dept_to_tt_mgr" inverse="true">
             <cache include="non-lazy" usage="read-write"/>
             <key column="timetable_mgr_id"/>
             <many-to-many
@@ -101,7 +101,7 @@
             <one-to-many class="ManagerRole"/>
         </set>
 
-        <set name="solverGroups" table="solver_gr_to_tt_mgr">
+        <set name="solverGroups" table="solver_gr_to_tt_mgr" inverse="true">
             <cache include="non-lazy" usage="read-write"/>
             <key column="timetable_mgr_id"/>
             <many-to-many

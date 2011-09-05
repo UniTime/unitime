@@ -626,6 +626,7 @@ public class SessionRollForward {
 						for (Iterator tmIt = fromDepartment.getTimetableManagers().iterator(); tmIt.hasNext();){
 							tm = (TimetableManager) tmIt.next();
 							if (tm != null){
+								toDepartment.getTimetableManagers().add(tm);
 								tm.getDepartments().add(toDepartment);
 								tmDao.saveOrUpdate(tm);
 								tmDao.getSession().flush();
@@ -634,6 +635,7 @@ public class SessionRollForward {
 										SolverGroup fromSg = (SolverGroup) sgIt.next();
 										SolverGroup toSg = SolverGroup.findBySessionIdAbbv(toSession.getUniqueId(), fromSg.getAbbv());
 										if (toSg != null && !tm.getSolverGroups().contains(toSg)){
+											toSg.getTimetableManagers().add(tm);
 											tm.getSolverGroups().add(toSg);
 										}
 									}

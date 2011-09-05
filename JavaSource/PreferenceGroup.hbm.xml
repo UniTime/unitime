@@ -523,7 +523,7 @@
                 not-null="false"
                 foreign-key="fk_department_status_type"/>
 
-            <set name="timetableManagers" table="dept_to_tt_mgr" inverse="true">
+            <set name="timetableManagers" table="dept_to_tt_mgr">
                 <cache include="non-lazy" usage="read-write"/>
                 <key column="department_id"/>
                 <many-to-many
