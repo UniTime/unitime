@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -107,13 +106,21 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		    return location;
 		}
 		long distance = -1;
-		List locations = LocationDAO.getInstance().getSession().createQuery(
+		List<Location> locations = (List<Location>)LocationDAO.getInstance().getSession().createQuery(
 				"from Location where permanentId = :permId").
 				setLong("permId", getLocationPermanentId()).
 				setCacheable(true).list();
 		if (!locations.isEmpty()) {
-			for (Iterator it = locations.iterator(); it.hasNext(); ) {
-				Location loc = (Location)it.next();
+			for (Location loc: locations) {
+				if (loc.getSession().getStatusType().isTestSession()) continue;
+				long dist = loc.getSession().getDistance(getMeetingDate());
+				if (location==null || distance>dist) {
+					location = loc;
+					distance = dist;
+				}
+			}
+			for (Location loc: locations) {
+				if (!loc.getSession().getStatusType().isTestSession()) continue;
 				long dist = loc.getSession().getDistance(getMeetingDate());
 				if (location==null || distance>dist) {
 					location = loc;

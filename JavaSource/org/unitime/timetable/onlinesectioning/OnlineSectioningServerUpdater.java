@@ -210,6 +210,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			boolean load = true;
 			if (year != null && !year.equals(session.getAcademicYear())) load = false;
 			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
+			if (session.getStatusType().isTestSession()) load = false;
 			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) load = false;
 
 			if ((!load || reload) && server != null) {
