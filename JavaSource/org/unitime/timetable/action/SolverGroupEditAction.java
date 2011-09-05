@@ -217,12 +217,14 @@ public class SolverGroupEditAction extends Action {
 		            			sg.setAbbv(d.getExternalMgrAbbv());
 		            			sg.setName(d.getDeptCode()+" - "+d.getExternalMgrLabel().replaceAll(" Manager", ""));
 		            			sg.setSession(session);
+		            			sg.setTimetableManagers(new HashSet<TimetableManager>());
 		            			hibSession.saveOrUpdate(sg);
 		            			d.setSolverGroup(sg);
 		            			hibSession.saveOrUpdate(d);
 	            				for (Iterator j=d.getTimetableManagers().iterator();j.hasNext();) {
 	            					TimetableManager mgr = (TimetableManager)j.next();
 	            					mgr.getSolverGroups().add(sg);
+	            					sg.getTimetableManagers().add(mgr);
 	            					hibSession.saveOrUpdate(mgr);
 	            				}
 		            		} else if (!d.getSubjectAreas().isEmpty() && !d.getTimetableManagers().isEmpty()) {
@@ -254,6 +256,7 @@ public class SolverGroupEditAction extends Action {
 		            				SolverGroup sg = new SolverGroup();
 		            				sg.setAbbv(abbv.length()<=10?abbv.toString():abbv.toString().substring(0,10));
 		            				sg.setName(name.length()<=50?name.toString():name.toString().substring(0,47)+"...");
+		            				sg.setTimetableManagers(new HashSet<TimetableManager>());
 		            				sg.setSession(session);
 		            				hibSession.saveOrUpdate(sg);
 		            				for (Iterator j=depts.iterator();j.hasNext();) {
@@ -264,6 +267,7 @@ public class SolverGroupEditAction extends Action {
 		            				for (Iterator j=mgrs.iterator();j.hasNext();) {
 		            					TimetableManager mgr = (TimetableManager)j.next();
 		            					mgr.getSolverGroups().add(sg);
+		            					sg.getTimetableManagers().add(mgr);
 		            					hibSession.saveOrUpdate(mgr);
 		            				}
 		            			}
