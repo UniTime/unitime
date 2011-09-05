@@ -52,7 +52,7 @@
             not-null="true"
             foreign-key="fk_solver_group_session"/>
 
-        <set name="timetableManagers" table="solver_gr_to_tt_mgr" inverse="true">
+        <set name="timetableManagers" table="solver_gr_to_tt_mgr">
             <cache include="non-lazy" usage="read-write"/>
             <key column="solver_group_id"/>
             <many-to-many

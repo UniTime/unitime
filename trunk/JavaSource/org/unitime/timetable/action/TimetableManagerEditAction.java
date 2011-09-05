@@ -453,26 +453,25 @@ public class TimetableManagerEditAction extends Action {
        	    
        	    mgr.addTomanagerRoles(mgrRole);
        	}        
+		hibSession.saveOrUpdate(mgr);
 
        	// Add departments
-       	List depts = frm.getDepts();
-       	HashSet deptsSet = new HashSet();       	
-       	for (Iterator i=depts.iterator(); i.hasNext(); ) {
+		mgr.setDepartments(new HashSet<Department>());
+       	for (Iterator i=frm.getDepts().iterator(); i.hasNext(); ) {
        	    Department dept = dDao.get(new Long(i.next().toString()));
-       	    deptsSet.add(dept);
+       	    mgr.getDepartments().add(dept);
+       	    dept.getTimetableManagers().add(mgr);
+    		hibSession.saveOrUpdate(dept);
        	}
-       	mgr.setDepartments(deptsSet);
        	
-       	List solverGrs = frm.getSolverGrs();
-       	HashSet solverGrSet = new HashSet();       	
-       	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
+       	mgr.setSolverGroups(new HashSet<SolverGroup>());
+       	for (Iterator i=frm.getSolverGrs().iterator(); i.hasNext(); ) {
        	    SolverGroup sg = sgDao.get(new Long(i.next().toString()));
-       	    solverGrSet.add(sg);
+       	    mgr.getSolverGroups().add(sg);
+       	    sg.getTimetableManagers().add(mgr);
+    		hibSession.saveOrUpdate(sg);
        	}
-       	mgr.setSolverGroups(solverGrSet);
 
-		hibSession.saveOrUpdate(mgr);
-        
         ChangeLog.addChange(
                 hibSession, 
                 request, 
@@ -483,15 +482,10 @@ public class TimetableManagerEditAction extends Action {
                 null);
         
        	tx.commit();
-        hibSession.flush();
-        hibSession.clear();        
-       	hibSession.refresh(mgr);       	
-       	
+
        	if (mgr.getUniqueId()!=null)
        		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, mgr.getUniqueId().toString());
        	
-       	for (Iterator i=mgr.getSolverGroups().iterator();i.hasNext();)
-       		hibSession.refresh(i.next());
     }
 
     /**
@@ -617,6 +611,8 @@ public class TimetableManagerEditAction extends Action {
            	
            	if (!found){
            	    mgrDepts.add(dept);
+           	    dept.getTimetableManagers().add(mgr);
+           	    hibSession.saveOrUpdate(dept);
            	}
        	}
 
@@ -635,6 +631,8 @@ public class TimetableManagerEditAction extends Action {
            	
            	if (!found) {
            	    j.remove();
+           	    eDept.getTimetableManagers().remove(mgr);
+           	    hibSession.saveOrUpdate(eDept);
            	}
        	}
        	
@@ -645,7 +643,6 @@ public class TimetableManagerEditAction extends Action {
        		mgrSolverGrs = new HashSet();
        		mgr.setSolverGroups(mgrSolverGrs);
        	}
-       	Set solverGrToRefresh = new HashSet();
        	
         // Check if solver group added or updated
        	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
@@ -661,7 +658,8 @@ public class TimetableManagerEditAction extends Action {
            	
            	if (!found){
            		mgrSolverGrs.add(sg);
-           		solverGrToRefresh.add(sg);
+           	    sg.getTimetableManagers().add(mgr);
+           	    hibSession.saveOrUpdate(sg);
            	}
        	}
 
@@ -680,7 +678,8 @@ public class TimetableManagerEditAction extends Action {
            	
            	if (!found) {
            	    j.remove();
-           	    solverGrToRefresh.add(eSg);
+           	    eSg.getTimetableManagers().remove(mgr);
+           	    hibSession.saveOrUpdate(eSg);
            	}
        	}
 
@@ -696,15 +695,9 @@ public class TimetableManagerEditAction extends Action {
                 null);
 
         tx.commit();
-        hibSession.flush();
-        hibSession.clear();        
-       	hibSession.refresh(mgr);    
        	
        	if (mgr.getUniqueId()!=null)
        		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, mgr.getUniqueId().toString());
-       	
-       	for (Iterator i=solverGrToRefresh.iterator();i.hasNext();)
-       		hibSession.refresh(i.next());
     }
 
     /**
@@ -735,11 +728,17 @@ public class TimetableManagerEditAction extends Action {
        	    ManagerRole mgrRole = (ManagerRole) i.next();
        	    hibSession.delete(mgrRole);
        	}
+       	for (Department d: mgr.getDepartments()) {
+       		d.getTimetableManagers().remove(mgr);
+       		hibSession.saveOrUpdate(d);
+       	}
+       	for (SolverGroup sg: mgr.getSolverGroups()) {
+       		sg.getTimetableManagers().remove(mgr);
+       		hibSession.saveOrUpdate(sg);
+       	}
 
         hibSession.delete(mgr);
 
        	tx.commit();
-        hibSession.flush();
-        hibSession.clear();        
     }
 }

@@ -39,6 +39,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -240,6 +241,8 @@ public class SolverGroupEditForm extends ActionForm {
 			String add = (String)iAssignedManagers.get(i);
 			if ("on".equals(add) || "true".equals(add) || "1".equals(add)) newManagers.add(mgr);
 		}
+		group.setTimetableManagers(newManagers);
+		group.setSolutions(new HashSet<Solution>());
 		hibSession.save(group);
 		for (Iterator i=newDepartments.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
