@@ -322,10 +322,11 @@ public class Assignment extends BaseAssignment {
    }
 	
     public ClassEvent generateCommittedEvent(ClassEvent event, boolean createNoRoomMeetings) {
-        Class_ clazz = getClazz();
+    	Class_ clazz = getClazz();
         if (event==null) {
             event = new ClassEvent();
             event.setClazz(clazz); clazz.setEvent(event);
+            if (getClazz().getSession().getStatusType().isTestSession()) return null;
         }
         event.setEventName(getClassName());
         event.setMinCapacity(clazz.getClassLimit());

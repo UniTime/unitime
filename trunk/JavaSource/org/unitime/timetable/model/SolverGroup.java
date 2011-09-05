@@ -125,6 +125,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
     }
     
     public Solution getCommittedSolution() {
+    	if (getSolutions() == null) return null;
     	for (Iterator i=getSolutions().iterator();i.hasNext();) {
     		Solution s = (Solution)i.next();
     		if (s.isCommited().booleanValue()) return s;

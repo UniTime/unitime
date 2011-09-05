@@ -119,6 +119,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
+				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 
 				int nrSolutions = ((Number)hibSession.createQuery(
@@ -449,6 +450,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
+				if (session.getStatusType().isTestSession()) continue;
 				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents())
 					ret.add(new String[] {
 							String.valueOf(session.getUniqueId()),
@@ -755,7 +757,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			};
 		} else {
 			Session session = SessionDAO.getInstance().get(sessionId);
-			if (session == null)
+			if (session == null || session.getStatusType().isTestSession())
 				throw new SectioningException(EXCEPTIONS.noSuitableAcademicSessions());
 			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectionAssistStudents() || session.getStatusType().canOnlineSectionStudents())
 				throw new SectioningException(EXCEPTIONS.noServerForSession());

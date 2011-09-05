@@ -1501,7 +1501,8 @@ public class Class_ extends BaseClass_ {
             
             ClassEvent event = getEvent();
             event = a.generateCommittedEvent(event, true);
-            hibSession.saveOrUpdate(event);
+            if (event != null)
+            	hibSession.saveOrUpdate(event);
 
             setCommittedAssignment(a);
             hibSession.update(this);

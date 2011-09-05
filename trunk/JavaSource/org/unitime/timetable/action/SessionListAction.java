@@ -26,7 +26,7 @@ import org.hibernate.HibernateException;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionListForm;
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -69,7 +69,7 @@ public class SessionListAction extends Action {
 		}
 
 		SessionListForm sessionListForm = (SessionListForm) form;
-		sessionListForm.setSessions(Session.getAllSessions());
+		sessionListForm.setSessions(SessionDAO.getInstance().findAll());
 		return mapping.findForward("showSessionList");
 		
 	}

@@ -30,27 +30,37 @@ import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
 public class DepartmentStatusType extends BaseDepartmentStatusType implements Comparable{
 	private static final long serialVersionUID = 1L;
 	
-	public static final int sCanManagerView				= 1;
-	public static final int sCanManagerEdit				= 2;
-	public static final int sCanManagerLimitedEdit		= 4; //e.g., assign instructors
-	public static final int sCanOwnerView				= 8;
-	public static final int sCanOwnerEdit				= 16;
-	public static final int sCanOwnerLimitedEdit		= 32;
-	public static final int sCanAudit					= 64;
-	public static final int sCanTimetable				= 128;
-	public static final int sCanCommit					= 256;
-	public static final int sCanExamView				= 512;
-	public static final int sCanExamEdit				= 1024;
-	public static final int sCanExamTimetable			= 2048;
-	public static final int sCanNoRoleReportExamFin		= 4096;
-	public static final int sCanNoRoleReportExamMid		= 8192;
-	public static final int sCanNoRoleReportClass		= 16384;
-	public static final int sCanSectAssistStudents		= 32768;
-	public static final int sCanPreRegisterStudents		= 65536; 
-	public static final int sCanOnlineSectionStudents	= 131072;
+	public static enum Status {
+		ManagerView,
+		ManagerEdit,
+		ManagerLimitedEdit,
+		OwnerView,
+		OwnerEdit,
+		OwnerLimitedEdit,
+		Audit,
+		Timetable,
+		Commit,
+		ExamView,
+		ExamEdit,
+		ExamTimetable,
+		ReportExamsFinal,
+		ReportExamsMidterm,
+		ReportClasses,
+		StudentsAssistant,
+		StudentsPreRegister,
+		StudentsOnline,
+		TestSession;
+		
+		public int toInt() { return 1 << ordinal(); }
+		public boolean has(int rights) { return (rights & toInt()) == toInt(); }
+	}
 	
-	public static final int sApplySession    = 1;
-	public static final int sApplyDepartment = 2;
+	public static enum Apply {
+		Session,
+		Department;
+		
+		public int toInt() { return 1 << ordinal(); }
+	}
 	
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public DepartmentStatusType () {
@@ -93,11 +103,11 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	}
 	
 	public static TreeSet findAllForSession() {
-		return findAll(sApplySession);
+		return findAll(Apply.Session.toInt());
 	}
 
 	public static TreeSet findAllForDepartment() {
-		return findAll(sApplyDepartment);
+		return findAll(Apply.Department.toInt());
 	}
 
 	public static DepartmentStatusType findByRef(String ref) {
@@ -113,83 +123,93 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public int compareTo(Object o) {
         if (o==null || !(o instanceof DepartmentStatusType)) return -1;
         DepartmentStatusType t = (DepartmentStatusType) o;
-        return getOrd().compareTo(t.getOrd());
+        int cmp = getOrd().compareTo(t.getOrd());
+        if (cmp != 0) return cmp;
+        return getUniqueId().compareTo(t.getUniqueId());
 	}
 	
 	public boolean can(int operation) {
 		return (getStatus().intValue() & operation) == operation;
 	}
 	
+	public boolean can(Status status) {
+		return can(status.toInt());
+	}
+
 	public boolean canManagerEdit() {
-		return can(sCanManagerEdit);
+		return can(Status.ManagerEdit);
 	}
 	
 	public boolean canManagerLimitedEdit() {
-		return can(sCanManagerLimitedEdit);
+		return can(Status.ManagerLimitedEdit);
 	}
 
 	public boolean canManagerView() {
-		return can(sCanManagerView);
+		return can(Status.ManagerView);
 	}
 
 	public boolean canOwnerEdit() {
-		return can(sCanOwnerEdit);
+		return can(Status.OwnerEdit);
 	}
 
 	public boolean canOwnerLimitedEdit() {
-		return can(sCanOwnerLimitedEdit);
+		return can(Status.OwnerLimitedEdit);
 	}
 
 	public boolean canOwnerView() {
-		return can(sCanOwnerView);
+		return can(Status.OwnerView);
 	}
 
 	public boolean canAudit() {
-		return can(sCanAudit);
+		return can(Status.Audit);
 	}
 
 	public boolean canTimetable() {
-		return can(sCanTimetable);
+		return can(Status.Timetable);
 	}
 
 	public boolean canCommit() {
-		return can(sCanCommit);
+		return can(Status.Commit);
 	}
 	
 	public boolean canExamView() {
-	    return can(sCanExamView);
+	    return can(Status.ExamView);
 	}
 	
     public boolean canExamEdit() {
-        return can(sCanExamEdit);
+        return can(Status.ExamEdit);
     }
 
     public boolean canExamTimetable() {
-        return can(sCanExamTimetable);
+        return can(Status.ExamTimetable);
     }
     
     public boolean canNoRoleReportExamFinal() {
-        return can(sCanNoRoleReportExamFin);
+        return can(Status.ReportExamsFinal);
     }
 
     public boolean canNoRoleReportExamMidterm() {
-        return can(sCanNoRoleReportExamMid);
+        return can(Status.ReportExamsMidterm);
     }
 
     public boolean canNoRoleReportClass() {
-        return can(sCanNoRoleReportClass);
+        return can(Status.ReportClasses);
     }
     
     public boolean canSectionAssistStudents() {
-        return can(sCanSectAssistStudents);
+        return can(Status.StudentsAssistant);
     }
     
     public boolean canPreRegisterStudents() {
-    	return can(sCanPreRegisterStudents);
+    	return can(Status.StudentsPreRegister);
     }
 
     public boolean canOnlineSectionStudents() {
-    	return can(sCanOnlineSectionStudents);
+    	return can(Status.StudentsOnline);
+    }
+    
+    public boolean isTestSession() {
+    	return can(Status.TestSession);
     }
 
     public boolean canNoRoleReportExam() {
@@ -205,11 +225,11 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	}
 	
 	public boolean applySession() {
-		return apply(sApplySession);
+		return apply(Apply.Session.toInt());
 	}
 
 	public boolean applyDepartment() {
-		return apply(sApplyDepartment);
+		return apply(Apply.Department.toInt());
 	}
 	
 	/** Status is active when someone can edit, timetable or commit*/
@@ -218,6 +238,6 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	}
 	
 	public boolean canLockOfferings() {
-		return canOnlineSectionStudents() || canSectionAssistStudents();
+		return !isTestSession() && (canOnlineSectionStudents() || canSectionAssistStudents());
 	}
 }
