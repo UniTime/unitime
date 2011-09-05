@@ -21,6 +21,7 @@ package org.unitime.timetable.backup;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -111,11 +112,12 @@ public class SessionRestore {
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
 	private Map<String, Student> iStudents = new Hashtable<String, Student>();
+	
+	private InputStream iIn;
 
-	public SessionRestore() {
-        iHibSession = new _RootDAO().getSession(); 
-        iHibSessionFactory = iHibSession.getSessionFactory();
-        iProgress = Progress.getInstance();
+	public SessionRestore(InputStream input, Progress progress) {
+		iIn = input;
+        iProgress = progress;
 	}
 	
 	public Progress getProgress() {
@@ -146,6 +148,16 @@ public class SessionRestore {
 		if (entity.getObject() instanceof Session) {
 			Session oldSession = (Session)iHibSession.get(Session.class, Long.valueOf(entity.getId()));
 			if (oldSession != null) iIsClone = true;
+			Session session = (Session)entity.getObject();
+			int attempt = 0;
+			while (!iHibSession.createCriteria(Session.class)
+					.add(Restrictions.eq("academicInitiative", session.getAcademicInitiative() + (attempt == 0 ? "" : " (" + attempt + ")")))
+					.add(Restrictions.eq("academicYear", session.getAcademicYear()))
+					.add(Restrictions.eq("academicTerm", session.getAcademicTerm())).list().isEmpty()) {
+				attempt ++;
+			}
+			if (attempt > 0)
+				session.setAcademicInitiative(session.getAcademicInitiative() + " (" + attempt + ")");
 		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
 		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
@@ -243,7 +255,7 @@ public class SessionRestore {
 			iMessages.put(message, ids);
 		}
 		if (ids.add(id) && ids.size() <= 5)
-			sLog.info(message + (id.isEmpty() ? "" : ": " + id));
+			iProgress.warn(message + (id.isEmpty() ? "" : ": " + id));
 	}
 	
 	
@@ -257,7 +269,7 @@ public class SessionRestore {
 		for (String message: new TreeSet<String>(iMessages.keySet())) {
 			Set<String> ids = new TreeSet<String>(iMessages.get(message));
 			if (ids.isEmpty() || (ids.size() == 1 && ids.contains("")))
-				sLog.info(message);
+				iProgress.info(message);
 			else {
 				String list = "";
 				int size = 0;
@@ -266,7 +278,7 @@ public class SessionRestore {
 					if (size > 20) { list += "... " + (ids.size() - size) + " more"; break; }
 					list += id; size ++;
 				}
-				sLog.info(message + ": " + list);
+				iProgress.info(message + ": " + list);
 			}
 		}
 	}
@@ -324,52 +336,68 @@ public class SessionRestore {
 		return true;
 	}
 	
-	public void persist() {
-		iHibSession.setFlushMode(FlushMode.MANUAL);
-		iProgress.setPhase("Fixing", iAllEntitites.size());
-		for (Iterator<Entity> i = iAllEntitites.iterator(); i.hasNext(); ) {
-			iProgress.incProgress();
-			if (!fix(i.next())) i.remove();
-		}
-		
-		iProgress.setPhase("Saving (not-null)", iAllEntitites.size());
-		List<Entity> save = new ArrayList<Entity>(iAllEntitites);
-		boolean saved = true;
-		while (!save.isEmpty() && saved) {
-			saved = false;
-			for (Iterator<Entity> i = save.iterator(); i.hasNext(); ) {
-				Entity e = i.next();
-				if (e.canSave() == null) {
-					iProgress.incProgress();
-					e.fixRelationsNullOnly();
-					iHibSession.save(e.getObject());
-					i.remove();
-					saved = true;
-				}
-			}
-			iHibSession.flush();
-		}
+	
+	public void restore() throws IOException, InstantiationException, IllegalAccessException, DocumentException {
+        iHibSession = new _RootDAO().createNewSession(); 
+        iHibSessionFactory = iHibSession.getSessionFactory();
+        try {
+            CodedInputStream cin = CodedInputStream.newInstance(iIn);
+            cin.setSizeLimit(1024*1024*1024); // 1 GB
+            
+            iProgress.setPhase("Loading data", 1);
+            TableData.Table t = null;
+            while ((t = readTable(cin)) != null)
+            	create(t);
+            iProgress.incProgress();
+            
+    		iHibSession.setFlushMode(FlushMode.MANUAL);
+    		iProgress.setPhase("Fixing", iAllEntitites.size());
+    		for (Iterator<Entity> i = iAllEntitites.iterator(); i.hasNext(); ) {
+    			iProgress.incProgress();
+    			if (!fix(i.next())) i.remove();
+    		}
+    		
+    		iProgress.setPhase("Saving (not-null)", iAllEntitites.size());
+    		List<Entity> save = new ArrayList<Entity>(iAllEntitites);
+    		boolean saved = true;
+    		while (!save.isEmpty() && saved) {
+    			saved = false;
+    			for (Iterator<Entity> i = save.iterator(); i.hasNext(); ) {
+    				Entity e = i.next();
+    				if (e.canSave() == null) {
+    					iProgress.incProgress();
+    					e.fixRelationsNullOnly();
+    					iHibSession.save(e.getObject());
+    					i.remove();
+    					saved = true;
+    				}
+    			}
+    			iHibSession.flush();
+    		}
 
-		iProgress.setPhase("Saving (all)", iAllEntitites.size());
-		for (Entity e: iAllEntitites) {
-			iProgress.incProgress();
-			String property = e.canSave();
-			if (property == null) {
-				e.fixRelations();
-				iHibSession.update(e.getObject());
-			} else {
-				message("Skipping " + e.getAbbv() + " (missing not-null relation " + property + ")", e.getId());
-				continue;
-			}
-		}
-		
-		iProgress.setPhase("Flush", 1);
-		iHibSession.flush();
-		iProgress.incProgress();
-		
-		printMessages();
-		
-		iProgress.setStatus("All done.");
+    		iProgress.setPhase("Saving (all)", iAllEntitites.size());
+    		for (Entity e: iAllEntitites) {
+    			iProgress.incProgress();
+    			String property = e.canSave();
+    			if (property == null) {
+    				e.fixRelations();
+    				iHibSession.update(e.getObject());
+    			} else {
+    				message("Skipping " + e.getAbbv() + " (missing not-null relation " + property + ")", e.getId());
+    				continue;
+    			}
+    		}
+    		
+    		iProgress.setPhase("Flush", 1);
+    		iHibSession.flush();
+    		iProgress.incProgress();
+    		
+    		printMessages();
+    		
+    		iProgress.setStatus("All done.");
+        } finally {
+        	iHibSession.close();
+        }
 	}
 	
 	class Entity {
@@ -555,20 +583,13 @@ public class SessionRestore {
 
             FileInputStream in = new FileInputStream(args[0]);
             
-            SessionRestore restore = new SessionRestore();
+            SessionRestore restore = new SessionRestore(in, Progress.getInstance());
             
             restore.getProgress().addProgressListener(new ProgressWriter(System.out));
 
-            CodedInputStream cin = CodedInputStream.newInstance(in);
-            cin.setSizeLimit(1024*1024*1024); // 1 GB
-            
-            TableData.Table t = null;
-            while ((t = readTable(cin)) != null)
-            	restore.create(t);
+            restore.restore();
             
             in.close();
-            
-            restore.persist();
             
 		} catch (Exception e) {
 			sLog.fatal("Backup failed: " + e.getMessage(), e);

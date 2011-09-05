@@ -95,11 +95,9 @@ public class SessionBackup {
 	private Long iSessionId = null;
 	private Progress iProgress = null;
 	
-	public SessionBackup(OutputStream out) {
-        iHibSession = new _RootDAO().getSession(); 
-        iHibSessionFactory = iHibSession.getSessionFactory();
+	public SessionBackup(OutputStream out, Progress progress) {
         iOut = CodedOutputStream.newInstance(out);
-        iProgress = Progress.getInstance();
+        iProgress = progress;
 	}
 	
 	public Progress getProgress() {
@@ -107,7 +105,7 @@ public class SessionBackup {
 	}
 	
 	private void add(TableData.Table table) throws IOException {
-		sLog.info("Writing " + table.getName().substring(table.getName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + " records, " + table.getSerializedSize() + " bytes]");
+		iProgress.info("Writing " + table.getName().substring(table.getName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + " records, " + table.getSerializedSize() + " bytes]");
 		iOut.writeInt32NoTag(table.getSerializedSize());
 		table.writeTo(iOut);
 		iOut.flush();
@@ -122,264 +120,273 @@ public class SessionBackup {
 		iDebug = pw;
 	}
 	
-	public void backup(Session session) throws IOException {
-		iSessionId = session.getUniqueId();
-		
-		TreeSet<ClassMetadata> allMeta = new TreeSet<ClassMetadata>(new Comparator<ClassMetadata>() {
-			@Override
-			public int compare(ClassMetadata m1, ClassMetadata m2) {
-				return m1.getEntityName().compareTo(m2.getEntityName());
-			}
-		});
-		allMeta.addAll(iHibSessionFactory.getAllClassMetadata().values());
-		
-		iProgress.setStatus("Exporting " + session.getLabel());
-		Queue<QueueItem> queue = new LinkedList<QueueItem>();
-		
-		queue.add(new QueueItem(iHibSessionFactory.getClassMetadata(Session.class), null, "uniqueId", Relation.None));
+	public void backup(Long sessionId) throws IOException {
+		iSessionId = sessionId;
+        iHibSession = new _RootDAO().createNewSession(); 
+        iHibSessionFactory = iHibSession.getSessionFactory();
+        try {
+    		iProgress.setStatus("Exporting Session");
+    		iProgress.setPhase("Loding Model", 3);
+    		TreeSet<ClassMetadata> allMeta = new TreeSet<ClassMetadata>(new Comparator<ClassMetadata>() {
+    			@Override
+    			public int compare(ClassMetadata m1, ClassMetadata m2) {
+    				return m1.getEntityName().compareTo(m2.getEntityName());
+    			}
+    		});
+    		allMeta.addAll(iHibSessionFactory.getAllClassMetadata().values());
+    		iProgress.incProgress();
+    		
+    		Queue<QueueItem> queue = new LinkedList<QueueItem>();
+    		
+    		queue.add(new QueueItem(iHibSessionFactory.getClassMetadata(Session.class), null, "uniqueId", Relation.None));
 
-		Set<String> avoid = new HashSet<String>();
-		// avoid following relations
-		avoid.add(TimetableManager.class.getName() + ".departments");
-		avoid.add(TimetableManager.class.getName() + ".solverGroups");
-		avoid.add(RoomFeature.class.getName() + ".rooms");
-		avoid.add(RoomGroup.class.getName() + ".rooms");
-		avoid.add(DistributionType.class.getName() + ".departments");
-		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
-		
-		Set<String> allowedNullRelations = new HashSet<String>();
-		allowedNullRelations.add(Room.class.getName() + ".building");
-		allowedNullRelations.add(NonUniversityLocation.class.getName() + ".session");
-		allowedNullRelations.add(Department.class.getName() + ".session");
-		allowedNullRelations.add(SolutionInfo.class.getName() + ".solution");
-		allowedNullRelations.add(AssignmentInfo.class.getName() + ".assignment");
-		Set<String> disallowedNotNullRelations = new HashSet<String>();
-		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
-		disallowedNotNullRelations.add(Assignment.class.getName() + ".timePattern");
-		disallowedNotNullRelations.add(LastLikeCourseDemand.class.getName() + ".student");
-		
-		Map<String, List<QueueItem>> data = new HashMap<String, List<QueueItem>>();
-		List<QueueItem> sessions = new ArrayList<QueueItem>();
-		sessions.add(queue.peek());
-		data.put(queue.peek().name(), sessions);
-		
-		QueueItem item = null;
-        while ((item = queue.poll()) != null) {
-        	if (item.size() == 0) continue;
-        	for (ClassMetadata meta: allMeta) {
-            	if (meta.hasSubclasses()) continue;
-                for (int i = 0; i < meta.getPropertyNames().length; i++) {
-                	String property = meta.getPropertyNames()[i];
-                	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || (
-                			meta.getPropertyNullability()[i] && !allowedNullRelations.contains(meta.getEntityName() + "." + property))) continue;
-                	Type type = meta.getPropertyTypes()[i];
-                	if (type instanceof EntityType && type.getReturnedClass().equals(item.clazz())) {
-                		QueueItem qi = new QueueItem(meta, item, property, Relation.Parent);
-                		if (!data.containsKey(qi.name())) {
-                			List<QueueItem> items = new ArrayList<QueueItem>();
+    		Set<String> avoid = new HashSet<String>();
+    		// avoid following relations
+    		avoid.add(TimetableManager.class.getName() + ".departments");
+    		avoid.add(TimetableManager.class.getName() + ".solverGroups");
+    		avoid.add(RoomFeature.class.getName() + ".rooms");
+    		avoid.add(RoomGroup.class.getName() + ".rooms");
+    		avoid.add(DistributionType.class.getName() + ".departments");
+    		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
+    		
+    		Set<String> allowedNullRelations = new HashSet<String>();
+    		allowedNullRelations.add(Room.class.getName() + ".building");
+    		allowedNullRelations.add(NonUniversityLocation.class.getName() + ".session");
+    		allowedNullRelations.add(Department.class.getName() + ".session");
+    		allowedNullRelations.add(SolutionInfo.class.getName() + ".solution");
+    		allowedNullRelations.add(AssignmentInfo.class.getName() + ".assignment");
+    		Set<String> disallowedNotNullRelations = new HashSet<String>();
+    		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
+    		disallowedNotNullRelations.add(Assignment.class.getName() + ".timePattern");
+    		disallowedNotNullRelations.add(LastLikeCourseDemand.class.getName() + ".student");
+    		
+    		Map<String, List<QueueItem>> data = new HashMap<String, List<QueueItem>>();
+    		List<QueueItem> sessions = new ArrayList<QueueItem>();
+    		sessions.add(queue.peek());
+    		data.put(queue.peek().name(), sessions);
+    		
+    		QueueItem item = null;
+            while ((item = queue.poll()) != null) {
+            	if (item.size() == 0) continue;
+            	for (ClassMetadata meta: allMeta) {
+                	if (meta.hasSubclasses()) continue;
+                    for (int i = 0; i < meta.getPropertyNames().length; i++) {
+                    	String property = meta.getPropertyNames()[i];
+                    	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || (
+                    			meta.getPropertyNullability()[i] && !allowedNullRelations.contains(meta.getEntityName() + "." + property))) continue;
+                    	Type type = meta.getPropertyTypes()[i];
+                    	if (type instanceof EntityType && type.getReturnedClass().equals(item.clazz())) {
+                    		QueueItem qi = new QueueItem(meta, item, property, Relation.Parent);
+                    		if (!data.containsKey(qi.name())) {
+                    			List<QueueItem> items = new ArrayList<QueueItem>();
+                    			data.put(qi.name(), items);
+                    			queue.add(qi);
+                    			items.add(qi);
+                        		if (qi.size() > 0)
+                        			iProgress.info("Parent: " + qi);
+                    		}
+                    	}
+                    }
+                }
+            }
+            iProgress.incProgress();
+    		
+            for (List<QueueItem> list: data.values())
+            	queue.addAll(list);
+            while ((item = queue.poll()) != null) {
+            	if (item.size() == 0) continue;
+            	for (int i = 0; i < item.meta().getPropertyNames().length; i++) {
+                	String property = item.meta().getPropertyNames()[i];
+                	Type type = item.meta().getPropertyTypes()[i];
+                	if (type instanceof EntityType) {
+                		if (avoid.contains(item.name() + "." + property)) continue;
+
+                		ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+                		if (item.contains(meta.getEntityName())) continue;
+                		
+                		QueueItem qi = new QueueItem(meta, item, property, Relation.One);
+                		List<QueueItem> items = data.get(qi.name());
+                		if (items == null) {
+                			items = new ArrayList<QueueItem>();
                 			data.put(qi.name(), items);
-                			queue.add(qi);
-                			items.add(qi);
-                    		if (qi.size() > 0)
-                    			sLog.info("Parent: " + qi);
                 		}
+                		queue.add(qi);
+                		items.add(qi);
+                		
+                		if (qi.size() > 0)
+                			iProgress.info("One: " + qi);
+                	}
+                	if (type instanceof CollectionType) {
+                		if (avoid.contains(item.name() + "." + property)) continue;
+                		
+                		ClassMetadata meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+                		if (item.contains(meta.getEntityName())) continue;
+
+                		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
+                		List<QueueItem> items = data.get(qi.name());
+                		if (items == null) {
+                			items = new ArrayList<QueueItem>();
+                			data.put(qi.name(), items);
+                		}
+                		queue.add(qi);
+                		items.add(qi);
+                		
+                		if (qi.size() > 0)
+                			iProgress.info("Many: " + qi);
                 	}
                 }
             }
-        }
-		
-        for (List<QueueItem> list: data.values())
-        	queue.addAll(list);
-        while ((item = queue.poll()) != null) {
-        	if (item.size() == 0) continue;
-        	for (int i = 0; i < item.meta().getPropertyNames().length; i++) {
-            	String property = item.meta().getPropertyNames()[i];
-            	Type type = item.meta().getPropertyTypes()[i];
-            	if (type instanceof EntityType) {
-            		if (avoid.contains(item.name() + "." + property)) continue;
+            iProgress.incProgress();
+            
+            Map<String, Set<Serializable>> allExportedIds = new HashMap<String, Set<Serializable>>();
+            for (String name: new TreeSet<String>(data.keySet())) {
+            	List<QueueItem> list = data.get(name);
+            	Map<String, TableData.Table.Builder> tables = new HashMap<String, TableData.Table.Builder>();
+            	for (QueueItem current: list) {
+            		if (current.size() == 0) continue;
+            		iProgress.info("Loading " + current);
+            		List<Object> objects = current.list();
+            		if (objects == null || objects.isEmpty()) continue;
+            		iProgress.setPhase(current.abbv() + " [" + objects.size() + "]", objects.size());
+            		objects: for (Object object: objects) {
+            			iProgress.incProgress();
+            			
+            			// Get meta data (check for sub-classes)
+            			ClassMetadata meta = iHibSessionFactory.getClassMetadata(object.getClass());
+            			if (meta == null) meta = current.meta();
+            			if (meta.hasSubclasses()) {
+            	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
+            	                Map.Entry entry = (Map.Entry)i.next();
+            	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
+            	                if (classMetadata.getMappedClass(EntityMode.POJO).isInstance(object) && !classMetadata.hasSubclasses()) {
+            	                	meta = classMetadata; break;
+            	                }
+            	            }
+            			}
+            			
+            			// Get unique identifier
+            			Serializable id = meta.getIdentifier(object, (SessionImplementor)iHibSession);
+            			
+            			// Check if already exported
+            			Set<Serializable> exportedIds = allExportedIds.get(meta.getEntityName());
+            			if (exportedIds == null) {
+            				exportedIds = new HashSet<Serializable>();
+            				allExportedIds.put(meta.getEntityName(), exportedIds);
+            			}
+            			if (!exportedIds.add(id)) continue;
+            			
+            			// Check relation to an academic session (if exists)
+            			boolean doSessionCheck = true;
+            			if (object instanceof RoomGroup) {
+            				// Global room group may point to a wrong academic session
+            				if (((RoomGroup)object).isGlobal()) doSessionCheck = false;
+            			}
+            			
+            			if (doSessionCheck) {
+                			for (String property: meta.getPropertyNames()) {
+                				Type type = meta.getPropertyType(property);
+                            	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
+                            		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
+                            		if (s != null && !s.getUniqueId().equals(iSessionId)) {
+                            			iProgress.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
+                            			continue objects; // wrong session
+                            		}
+                            	}
+                			}
+            			}
 
-            		ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
-            		if (item.contains(meta.getEntityName())) continue;
-            		
-            		QueueItem qi = new QueueItem(meta, item, property, Relation.One);
-            		List<QueueItem> items = data.get(qi.name());
-            		if (items == null) {
-            			items = new ArrayList<QueueItem>();
-            			data.put(qi.name(), items);
-            		}
-            		queue.add(qi);
-            		items.add(qi);
-            		
-            		if (qi.size() > 0)
-            			sLog.info("One: " + qi);
-            	}
-            	if (type instanceof CollectionType) {
-            		if (avoid.contains(item.name() + "." + property)) continue;
-            		
-            		ClassMetadata meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-            		if (item.contains(meta.getEntityName())) continue;
+            			// Get appropriate table
+            			TableData.Table.Builder table = tables.get(meta.getEntityName());
+            			if (table == null) {
+            				table = TableData.Table.newBuilder();
+            				tables.put(meta.getEntityName(), table);
+            				table.setName(meta.getEntityName());
+            			}
 
-            		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
-            		List<QueueItem> items = data.get(qi.name());
-            		if (items == null) {
-            			items = new ArrayList<QueueItem>();
-            			data.put(qi.name(), items);
-            		}
-            		queue.add(qi);
-            		items.add(qi);
-            		
-            		if (qi.size() > 0)
-            			sLog.info("Many: " + qi);
-            	}
-            }
-        }
-        
-        Map<String, Set<Serializable>> allExportedIds = new HashMap<String, Set<Serializable>>();
-        for (String name: new TreeSet<String>(data.keySet())) {
-        	List<QueueItem> list = data.get(name);
-        	Map<String, TableData.Table.Builder> tables = new HashMap<String, TableData.Table.Builder>();
-        	for (QueueItem current: list) {
-        		if (current.size() == 0) continue;
-        		sLog.info("Loading " + current);
-        		List<Object> objects = current.list();
-        		if (objects == null || objects.isEmpty()) continue;
-        		iProgress.setPhase(current.abbv() + " [" + objects.size() + "]", objects.size());
-        		objects: for (Object object: objects) {
-        			iProgress.incProgress();
-        			
-        			// Get meta data (check for sub-classes)
-        			ClassMetadata meta = iHibSessionFactory.getClassMetadata(object.getClass());
-        			if (meta == null) meta = current.meta();
-        			if (meta.hasSubclasses()) {
-        	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
-        	                Map.Entry entry = (Map.Entry)i.next();
-        	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
-        	                if (classMetadata.getMappedClass(EntityMode.POJO).isInstance(object) && !classMetadata.hasSubclasses()) {
-        	                	meta = classMetadata; break;
-        	                }
-        	            }
-        			}
-        			
-        			// Get unique identifier
-        			Serializable id = meta.getIdentifier(object, (SessionImplementor)iHibSession);
-        			
-        			// Check if already exported
-        			Set<Serializable> exportedIds = allExportedIds.get(meta.getEntityName());
-        			if (exportedIds == null) {
-        				exportedIds = new HashSet<Serializable>();
-        				allExportedIds.put(meta.getEntityName(), exportedIds);
-        			}
-        			if (!exportedIds.add(id)) continue;
-        			
-        			// Check relation to an academic session (if exists)
-        			boolean doSessionCheck = true;
-        			if (object instanceof RoomGroup) {
-        				// Global room group may point to a wrong academic session
-        				if (((RoomGroup)object).isGlobal()) doSessionCheck = false;
-        			}
-        			
-        			if (doSessionCheck) {
+            			// Export object
+            			TableData.Record.Builder record = TableData.Record.newBuilder();
+            			record.setId(id.toString());
             			for (String property: meta.getPropertyNames()) {
             				Type type = meta.getPropertyType(property);
-                        	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
-                        		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
-                        		if (s != null && !s.getUniqueId().equals(iSessionId)) {
-                        			sLog.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
-                        			continue objects; // wrong session
-                        		}
-                        	}
+            				Object value = meta.getPropertyValue(object, property, EntityMode.POJO);
+            				if (value == null) continue;
+            				TableData.Element.Builder element = TableData.Element.newBuilder();
+            				element.setName(property);
+            				if (type instanceof PrimitiveType) {
+            					element.addValue(((PrimitiveType)type).toString(value));
+            				} else if (type instanceof StringType) {	
+            					element.addValue(((StringType)type).toString(value));
+            				} else if (type instanceof BinaryType) {	
+            					element.addValue(ByteString.copyFrom((byte[])value));
+            				} else if (type instanceof TimestampType) {
+            					element.addValue(((TimestampType)type).toString(value));
+            				} else if (type instanceof DateType) {
+            					element.addValue(((DateType)type).toString(value));
+            				} else if (type instanceof EntityType) {
+    							List<Object> ids = current.relation(property, id, false);
+    							if (ids != null)
+    								for (Object i: ids)
+    									element.addValue(i.toString());
+    							iHibSession.evict(value);
+            				} else if (type instanceof CustomType && value instanceof Document) {
+            					if (object instanceof CurriculumClassification && property.equals("students")) continue;
+            					StringWriter w = new StringWriter();
+            					XMLWriter x = new XMLWriter(w, OutputFormat.createCompactFormat());
+            					x.write((Document)value);
+            					x.flush(); x.close();
+            					element.addValue(w.toString());
+            				} else if (type instanceof CollectionType) {
+    							List<Object> ids = current.relation(property, id, false);
+    							if (ids != null)
+    								for (Object i: ids)
+    									element.addValue(i.toString());
+            				} else if (type instanceof EmbeddedComponentType && property.equalsIgnoreCase("uniqueCourseNbr")) {
+            					continue;
+            				} else {
+            					iProgress.warn("Unknown data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
+            					continue;
+            				}
+            				record.addElement(element.build());
+            				
             			}
-        			}
+            			table.addRecord(record.build());
+            			iHibSession.evict(object);
+            		}
+            		current.clearCache();
+            	}
+            	
+            	for (TableData.Table.Builder table: tables.values()) {
+            		add(table.build());
+            	}
+            }
+            
+            /*
+            // Skip ConstraintInfo
+            if (!iData.containsKey(ConstraintInfo.class.getName()))
+            	iData.put(ConstraintInfo.class.getName(), new QueueItem(iHibSessionFactory.getClassMetadata(ConstraintInfo.class), null, null, Relation.Empty));
 
-        			// Get appropriate table
-        			TableData.Table.Builder table = tables.get(meta.getEntityName());
-        			if (table == null) {
-        				table = TableData.Table.newBuilder();
-        				tables.put(meta.getEntityName(), table);
-        				table.setName(meta.getEntityName());
-        			}
-
-        			// Export object
-        			TableData.Record.Builder record = TableData.Record.newBuilder();
-        			record.setId(id.toString());
-        			for (String property: meta.getPropertyNames()) {
-        				Type type = meta.getPropertyType(property);
-        				Object value = meta.getPropertyValue(object, property, EntityMode.POJO);
-        				if (value == null) continue;
-        				TableData.Element.Builder element = TableData.Element.newBuilder();
-        				element.setName(property);
-        				if (type instanceof PrimitiveType) {
-        					element.addValue(((PrimitiveType)type).toString(value));
-        				} else if (type instanceof StringType) {	
-        					element.addValue(((StringType)type).toString(value));
-        				} else if (type instanceof BinaryType) {	
-        					element.addValue(ByteString.copyFrom((byte[])value));
-        				} else if (type instanceof TimestampType) {
-        					element.addValue(((TimestampType)type).toString(value));
-        				} else if (type instanceof DateType) {
-        					element.addValue(((DateType)type).toString(value));
-        				} else if (type instanceof EntityType) {
-							List<Object> ids = current.relation(property, id, false);
-							if (ids != null)
-								for (Object i: ids)
-									element.addValue(i.toString());
-							iHibSession.evict(value);
-        				} else if (type instanceof CustomType && value instanceof Document) {
-        					if (object instanceof CurriculumClassification && property.equals("students")) continue;
-        					StringWriter w = new StringWriter();
-        					XMLWriter x = new XMLWriter(w, OutputFormat.createCompactFormat());
-        					x.write((Document)value);
-        					x.flush(); x.close();
-        					element.addValue(w.toString());
-        				} else if (type instanceof CollectionType) {
-							List<Object> ids = current.relation(property, id, false);
-							if (ids != null)
-								for (Object i: ids)
-									element.addValue(i.toString());
-        				} else if (type instanceof EmbeddedComponentType && property.equalsIgnoreCase("uniqueCourseNbr")) {
-        					continue;
-        				} else {
-        					sLog.warn("Unknown data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
-        					continue;
-        				}
-        				record.addElement(element.build());
-        				
-        			}
-        			table.addRecord(record.build());
-        			iHibSession.evict(object);
-        		}
-        		current.clearCache();
-        	}
-        	
-        	for (TableData.Table.Builder table: tables.values()) {
-        		add(table.build());
-        	}
+            for (String name: items)
+            	export(iData.get(name));
+                    
+    		while (true) {
+    			List<Object> objects = new ArrayList<Object>();
+    			ClassMetadata meta = null;
+    			for (Entity e: iObjects) {
+    				if (e.exported()) continue;
+    				if (objects.isEmpty() || meta.getEntityName().equals(e.name())) {
+    					meta = e.meta();
+    					objects.add(e.object());
+    					e.notifyExported();
+    				}
+    			}
+    			if (objects.isEmpty()) break;
+    			export(meta, objects, null);
+    		}
+    		*/
+    		iProgress.setStatus("All done.");
+        } finally {
+        	iHibSession.close();
         }
-        
-        /*
-        // Skip ConstraintInfo
-        if (!iData.containsKey(ConstraintInfo.class.getName()))
-        	iData.put(ConstraintInfo.class.getName(), new QueueItem(iHibSessionFactory.getClassMetadata(ConstraintInfo.class), null, null, Relation.Empty));
-
-        for (String name: items)
-        	export(iData.get(name));
-                
-		while (true) {
-			List<Object> objects = new ArrayList<Object>();
-			ClassMetadata meta = null;
-			for (Entity e: iObjects) {
-				if (e.exported()) continue;
-				if (objects.isEmpty() || meta.getEntityName().equals(e.name())) {
-					meta = e.meta();
-					objects.add(e.object());
-					e.notifyExported();
-				}
-			}
-			if (objects.isEmpty()) break;
-			export(meta, objects, null);
-		}
-		*/
-		iProgress.setStatus("All done.");
 	}
 	
 	enum Relation {
@@ -544,7 +551,7 @@ public class SessionBackup {
 					cnt++;
 				}
 				iRelationCache.put(property, relation);
-				// sLog.info("Fetched " + property + " (" + cnt + (data ? " items" : " ids") + ")");
+				// iProgress.info("Fetched " + property + " (" + cnt + (data ? " items" : " ids") + ")");
 			}
 			return relation.get(id);
 		}
@@ -586,7 +593,7 @@ public class SessionBackup {
             		? session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() + ".dat"
             		: args[0]);
             
-            SessionBackup backup = new SessionBackup(out);
+            SessionBackup backup = new SessionBackup(out, Progress.getInstance());
             
             PrintWriter debug = null;
             if (args.length >= 2) {
@@ -596,7 +603,7 @@ public class SessionBackup {
             
             backup.getProgress().addProgressListener(new ProgressWriter(System.out));
             
-            backup.backup(session);
+            backup.backup(session.getUniqueId());
             
             out.close();
             if (debug != null) debug.close();

@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +30,10 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.sf.cpsolver.ifs.util.Progress;
+import net.sf.cpsolver.ifs.util.ProgressListener;
+import net.sf.cpsolver.ifs.util.Progress.Message;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -49,6 +51,8 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.backup.SessionBackup;
+import org.unitime.timetable.backup.SessionRestore;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
 import org.unitime.timetable.form.DataImportForm;
@@ -187,33 +191,94 @@ public class DataImportAction extends Action {
 		return table;
 	}
 	
-	public class ImportQueItem extends QueueItem implements LogWriter {
+	public abstract class DataExchangeQueueItem extends QueueItem implements LogWriter {
 		DataImportForm iForm;
 		String iUrl;
+		boolean iImport;
+		String iSessionName;
+		Progress iProgress;
 		
-		public ImportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
+		public DataExchangeQueueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request, boolean isImport) {
 			super(session, owner);
 			iForm = (DataImportForm)form.clone();
 			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+			iImport = isImport;
+			iSessionName = session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative();
+			iProgress = Progress.getInstance(this);
+			iProgress.addProgressListener(new ProgressListener() {
+				@Override
+				public void statusChanged(String status) {
+					log(status);
+				}
+				
+				@Override
+				public void progressSaved() {}
+				
+				@Override
+				public void progressRestored() {}
+				
+				@Override
+				public void progressMessagePrinted(Message message) {
+					log(message.toHtmlString());
+				}
+				
+				@Override
+				public void progressChanged(long currentProgress, long maxProgress) {}
+				
+				@Override
+				public void phaseChanged(String phase) {}
+			});
+		}
+				
+		@Override
+		public double progress() {
+			double p = iProgress.getProgress();
+			long m = iProgress.getProgressMax();
+			return (m <= 0 ? 0.0 : p >= m ? 1.0 : p / m);
 		}
 
 		@Override
+		public String status() {
+			String phase = iProgress.getPhase();
+			return (phase == null || phase.isEmpty() ? super.status() : phase);
+		}
+
+		@Override
+		public String type() {
+			return "Data Exchange";
+		}
+		
+		@Override
+		public String name() {
+			return (iImport ? "Import of " + iForm.getFile().getFileName() : "Export of " + iForm.getExportType().getLabel());
+		}
+		
+		public void println(String message) {
+			log(message);
+		}
+		
+		abstract void executeDataExchange() throws Exception;
+		
+	
+		@Override
 		protected void execute() throws Exception {
             try {
-                log("Importing "+iForm.getFile().getFileName()+" ("+iForm.getFile().getFileSize()+" bytes)...");
-                Long start = System.currentTimeMillis() ;
-                DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwner(), this);
+                log(iImport ? "Importing "+iForm.getFile().getFileName()+" ("+iForm.getFile().getFileSize()+" bytes)..." : "Exporting " + iForm.getExportType().getType() + "...");
+            	Long start = System.currentTimeMillis() ;
+            	executeDataExchange();
                 Long stop = System.currentTimeMillis() ;
-                log("Import finished in "+new DecimalFormat("0.00").format((stop-start)/1000.0)+" seconds.");
+                log((iImport ? "Import" : "Export") + " finished in "+new DecimalFormat("0.00").format((stop-start)/1000.0)+" seconds.");
             } catch (Exception e) {
-                error("Unable to import "+iForm.getFile().getFileName()+": "+e.getMessage());
+                error("Unable to " + (iImport ? "import " + iForm.getFile().getFileName() : "export") + ": " + e.getMessage());
                 Debug.error(e);
                 setError(e);
+            } finally {
+            	Progress.removeInstance(this);
             }
             if (iForm.getEmail() && iForm.getAddress()!=null && iForm.getAddress().length()>0) {
                 try {
                 	Email mail = new Email();
-                	mail.setSubject("Data import finished.");
+                	mail.setSubject("Data " + (iImport ? "import" : "export") + " finished.");
                 	mail.setHTML(log()+"<br><br>"+
                             "This email was automatically generated at "+
                             iUrl+
@@ -224,6 +289,8 @@ public class DataImportAction extends Action {
                         mail.addRecipient(s.nextToken(), null);
                 	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
                 		mail.addNotifyCC();
+                    if (!iImport && hasOutput() && output().exists()) 
+                    	mail.addAttachement(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));
                     mail.send();
                 } catch (Exception e) {
                 	error("Unable to send email: " + e.getMessage());
@@ -232,119 +299,58 @@ public class DataImportAction extends Action {
                 }
             }
 		}
-
-		@Override
-		public String name() {
-			return "Import of " + iForm.getFile().getFileName();
-		}
-
-		@Override
-		public double progress() {
-			return 0;
-		}
-
-		@Override
-		public String type() {
-			return "Data Exchange";
-		}
-		
-		public void println(String message) {
-			log(message);
-		}
 	}
 	
-	public class ExportQueItem extends QueueItem implements LogWriter {
-		DataImportForm iForm;
-	String iUrl = null;
+	public class ImportQueItem extends DataExchangeQueueItem {
 		
-		public ExportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
-			super(session, owner);
-			iForm = (DataImportForm)form.clone();
-			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+		public ImportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
+			super(session, owner, form, request, true);
 		}
 
 		@Override
-		protected void execute() throws Exception {
-			String xmlName = null;
-			File xmlFile = null;
-            try {
-            	ExportType type = iForm.getExportType();
+		protected void executeDataExchange() throws Exception {
+			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
+				new SessionRestore(iForm.getFile().getInputStream(), iProgress).restore();
+			} else {
+				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwner(), this);
+			}
+		}
+
+	}
+	
+	public class ExportQueItem extends DataExchangeQueueItem {
+		
+		public ExportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
+			super(session, owner, form, request, false);
+		}
+
+		@Override
+		protected void executeDataExchange() throws Exception {
+        	ExportType type = iForm.getExportType();
+        	if (type == ExportType.SESSION) {
+    			FileOutputStream out = new FileOutputStream(createOutput("session", "dat"));
+    			try {
+    				SessionBackup backup = new SessionBackup(out, iProgress);
+    				backup.backup(getSessionId());
+    			} finally {
+    				out.close();
+    			}
+        	} else {
                 Properties params = new Properties();
                 type.setOptions(params);
-                xmlName = getSession().getAcademicTerm() + getSession().getSessionStartYear()+"_"+type.getType();
-                log("Exporting "+type.getType()+"...");
-                xmlName += ".xml";
-                xmlFile = createOutput(type.getType(), "xml");
-                Long start = System.currentTimeMillis() ;
                 Document document = DataExchangeHelper.exportDocument(type.getType(), getSession(), params, this);
                 if (document==null) {
                     error("XML document not created: unknown reason.");
                 } else {
-                    FileOutputStream fos = null;
+                    FileOutputStream fos = new FileOutputStream(createOutput(type.getType(), "xml"));
                     try {
-                        fos = new FileOutputStream(xmlFile);
                         (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(document);
-                        fos.flush();fos.close();fos=null;
+                        fos.flush();
                     } finally {
-                        try {
-                            if (fos!=null) fos.close();
-                        } catch (IOException e) {
-                            error("Unable to create export file: "+e.getMessage());
-                            setError(e);
-                        }
+                    	fos.close();
                     }
                 }
-                Long stop = System.currentTimeMillis() ;
-                log("Export finished in "+new DecimalFormat("0.00").format((stop-start)/1000.0)+" seconds.");
-            } catch (Exception e) {
-                error("Export failed: "+e.getMessage());
-                Debug.error(e);
-                setError(e);
-            }
-            if (iForm.getEmail() && iForm.getAddress()!=null && iForm.getAddress().length()>0) {
-                try {
-                	Email mail = new Email();
-                	mail.setSubject("Data export finished.");
-                	mail.setHTML(log()+"<br><br>"+
-                            "This email was automatically generated at "+
-                            iUrl+
-                            ", by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                	for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(s.nextToken(), null);
-                	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
-                		mail.addNotifyCC();
-                    if (xmlFile != null && xmlFile.exists())
-                    	mail.addAttachement(xmlFile, xmlName);
-                    mail.send();
-                } catch (Exception e) {
-                	error("Unable to send email: " + e.getMessage());
-                    Debug.error(e);
-                    setError(e);
-                }
-            }
-		}
-
-		@Override
-		public String name() {
-            return "Export of " + iForm.getExportType().getLabel();
-		}
-
-		@Override
-		public double progress() {
-			return 0;
-		}
-
-		@Override
-		public String type() {
-			return "Data Exchange";
-		}
-		
-		public void println(String message) {
-			log(message);
+        	}
 		}
 	}
-
 }
-
