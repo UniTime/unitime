@@ -75,6 +75,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -151,13 +152,13 @@ public class SessionRestore {
 			Session session = (Session)entity.getObject();
 			int attempt = 0;
 			while (!iHibSession.createCriteria(Session.class)
-					.add(Restrictions.eq("academicInitiative", session.getAcademicInitiative() + (attempt == 0 ? "" : " (" + attempt + ")")))
+					.add(Restrictions.eq("academicInitiative", session.getAcademicInitiative() + (attempt == 0 ? "" : " [" + attempt + "]")))
 					.add(Restrictions.eq("academicYear", session.getAcademicYear()))
 					.add(Restrictions.eq("academicTerm", session.getAcademicTerm())).list().isEmpty()) {
 				attempt ++;
 			}
 			if (attempt > 0)
-				session.setAcademicInitiative(session.getAcademicInitiative() + " (" + attempt + ")");
+				session.setAcademicInitiative(session.getAcademicInitiative() + " [" + attempt + "]");
 		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
 		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
@@ -174,6 +175,7 @@ public class SessionRestore {
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof PositionCodeType && lookup(entity, "positionCode", ((PositionCodeType)entity.getObject()).getPositionCode())) save = false;
 		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
+		if (entity.getObject() instanceof EventContact && lookup(entity, "externalUniqueId", ((EventContact)entity.getObject()).getExternalUniqueId())) save = false;
 		if (save)
 			iAllEntitites.add(entity);
 		if (lookup) {
