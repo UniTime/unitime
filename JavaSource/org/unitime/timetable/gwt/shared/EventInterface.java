@@ -43,7 +43,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private Integer iInstructionType = null;
 	private List<String> iExternalIds = null;
 	
-	public static enum ResourceType {
+	public static enum ResourceType implements IsSerializable {
 		ROOM("room", "Room Timetable"),
 		SUBJECT("subject", "Subject Timetable"),
 		CURRICULUM("curriculum", "Curriculum Timetable"),
