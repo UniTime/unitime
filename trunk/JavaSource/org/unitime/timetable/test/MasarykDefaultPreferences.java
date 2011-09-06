@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.test;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -141,7 +140,7 @@ public class MasarykDefaultPreferences {
             */
             
             RoomGroup poc = null, mult = null, bez = null;
-            for (RoomGroup rg: (Collection<RoomGroup>)RoomGroup.getAllGlobalRoomGroups()) {
+            for (RoomGroup rg: RoomGroup.getAllGlobalRoomGroups(session)) {
             	if (rg.getAbbv().equals("POČ"))
             		poc = rg;
             	else if (rg.getAbbv().equals("MULT"))

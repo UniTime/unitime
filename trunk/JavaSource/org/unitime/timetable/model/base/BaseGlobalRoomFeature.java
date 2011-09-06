@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.Session;
 
 public abstract class BaseGlobalRoomFeature extends RoomFeature implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -30,6 +31,7 @@ public abstract class BaseGlobalRoomFeature extends RoomFeature implements Seria
 	private String iSisReference;
 	private String iSisValue;
 
+	private Session iSession;
 
 	public static String PROP_SIS_REFERENCE = "sisReference";
 	public static String PROP_SIS_VALUE = "sisValue";
@@ -51,6 +53,9 @@ public abstract class BaseGlobalRoomFeature extends RoomFeature implements Seria
 	public String getSisValue() { return iSisValue; }
 	public void setSisValue(String sisValue) { iSisValue = sisValue; }
 
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof GlobalRoomFeature)) return false;
 		if (getUniqueId() == null || ((GlobalRoomFeature)o).getUniqueId() == null) return false;
@@ -70,6 +75,7 @@ public abstract class BaseGlobalRoomFeature extends RoomFeature implements Seria
 		return "GlobalRoomFeature[" +
 			"\n	Abbv: " + getAbbv() +
 			"\n	Label: " + getLabel() +
+			"\n	Session: " + getSession() +
 			"\n	SisReference: " + getSisReference() +
 			"\n	SisValue: " + getSisValue() +
 			"\n	UniqueId: " + getUniqueId() +

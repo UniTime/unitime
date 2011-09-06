@@ -3616,4 +3616,177 @@
 				where a.solution_id = x.uniqueid and x.owner_id = g.uniqueid and g.session_id = s.uniqueid and a.date_pattern_id is null 
 		</mysql>
 	</update>
+	<update version="75" date="6-Sep-2011" comment="Global Room Groups Features">
+		<sql>update room_group set session_id = (select min(uniqueid) from sessions) where global = 1 and session_id is null</sql>
+		<plsql>
+			insert into %SCHEMA%.room_group select 
+				%SCHEMA%.room_group_seq.nextval, s.uniqueid as session_id,
+				g.name, g.description, g.global, g.default_group, g.department_id, g.abbv
+			from %SCHEMA%.room_group g, %SCHEMA%.sessions s where g.global = 1 and not exists
+				(select * from %SCHEMA%.room_group x where x.session_id = s.uniqueid and x.name = g.name)
+		</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.room_group select 
+				@rownum:=@rownum+1 as uniqueid, s.uniqueid as session_id,
+				g.name, g.description, g.global, g.default_group, g.department_id, g.abbv
+			from %SCHEMA%.room_group g, %SCHEMA%.sessions s, (select @rownum:=%ID%) r where g.global = 1 and not exists
+				(select * from %SCHEMA%.room_group x where x.session_id = s.uniqueid and x.name = g.name)
+		</mysql>
+		<sql>
+			update %SCHEMA%.room_group_room x set x.room_group_id =
+				(select n.uniqueid from %SCHEMA%.room_group n, %SCHEMA%.room_group g, %SCHEMA%.room r where
+				x.room_group_id = g.uniqueid and x.room_id = r.uniqueid and n.name = g.name and n.session_id = r.session_id)
+			where x.room_group_id in
+				(select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room r where
+				x.room_group_id = g.uniqueid and x.room_id = r.uniqueid and g.global = 1 and g.session_id != r.session_id)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_group_room x set x.room_group_id =
+				(select n.uniqueid from %SCHEMA%.room_group n, %SCHEMA%.room_group g, %SCHEMA%.non_university_location r where
+				x.room_group_id = g.uniqueid and x.room_id = r.uniqueid and n.name = g.name and n.session_id = r.session_id)
+			where x.room_group_id in
+				(select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.non_university_location r where
+				x.room_group_id = g.uniqueid and x.room_id = r.uniqueid and g.global = 1 and g.session_id != r.session_id)
+		</sql>
+		<!-- 
+		<sql>
+			delete from %SCHEMA%.room_group where not exists (select * from %SCHEMA%.room_group_room x where x.room_group_id = uniqueid) and global = 1
+		</sql>
+		-->
+		<sql>
+			update %SCHEMA%.room_group_pref p set p.room_group_id = 
+				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_group_id and n.session_id = o.session_id and n.name = g.name and p.owner_id = c.uniqueid and c.subpart_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+			where p.room_group_id in (
+				select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_group_id and g.session_id != o.session_id and g.global = 1 and p.owner_id = c.uniqueid and c.subpart_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_group_pref p set p.room_group_id = 
+				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_group_id and n.session_id = o.session_id and n.name = g.name and p.owner_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+			where p.room_group_id in (
+				select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_group_id and g.session_id != o.session_id and g.global = 1 and p.owner_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_group_pref p set p.room_group_id = 
+				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.sessions s
+				where g.uniqueid = p.room_group_id and n.session_id = s.uniqueid and n.name = g.name and p.owner_id = s.uniqueid)
+			where p.room_group_id in (
+				select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.sessions s
+				where g.uniqueid = p.room_group_id and g.session_id != s.uniqueid and g.global = 1 and p.owner_id = s.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_group_pref p set p.room_group_id = 
+				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.exam x
+				where g.uniqueid = p.room_group_id and n.session_id = x.session_id and n.name = g.name and p.owner_id = x.uniqueid)
+			where p.room_group_id in (
+				select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.exam x
+				where g.uniqueid = p.room_group_id and g.session_id != x.session_id and g.global = 1 and p.owner_id = x.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_group_pref p set p.room_group_id = 
+				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.departmental_instructor i, %SCHEMA%.department d
+				where g.uniqueid = p.room_group_id and n.session_id = d.session_id and n.name = g.name and p.owner_id = i.uniqueid and i.department_uniqueid = d.uniqueid)
+			where p.room_group_id in (
+				select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.departmental_instructor i, %SCHEMA%.department d
+				where g.uniqueid = p.room_group_id and g.session_id != d.session_id and g.global = 1 and p.owner_id = i.uniqueid and i.department_uniqueid = d.uniqueid)
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.room_feature add session_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room_feature add session_id decimal(20,0)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.room_feature add constraint fk_room_feature_session foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			update %SCHEMA%.room_feature set session_id = (select min(uniqueid) from %SCHEMA%.sessions) where discriminator = 'global'
+		</sql>
+		<plsql>
+			insert into %SCHEMA%.room_feature select 
+				%SCHEMA%.room_feature_seq.nextval as uniqueid,
+				f.discriminator, f.label, f.sis_reference, f.sis_value, f.department_id, f.abbv, s.uniqueid as session_id
+			from %SCHEMA%.room_feature f, %SCHEMA%.sessions s
+			where f.discriminator = 'global' and not exists
+				(select * from %SCHEMA%.room_feature x where x.session_id = s.uniqueid and x.label = f.label)
+		</plsql>
+		<mysql>
+			insert into %SCHEMA%.room_feature select 
+				@rownum:=@rownum+1 as uniqueid,
+				f.discriminator, f.label, f.sis_reference, f.sis_value, f.department_id, f.abbv, s.uniqueid as session_id
+			from %SCHEMA%.room_feature f, %SCHEMA%.sessions s, (select @rownum:=%ID%) r
+			where f.discriminator = 'global' and not exists
+				(select * from %SCHEMA%.room_feature x where x.session_id = s.uniqueid and x.label = f.label)
+		</mysql>
+		<sql>
+			update %SCHEMA%.room_join_room_feature x set x.feature_id =
+				(select n.uniqueid from %SCHEMA%.room_feature n, %SCHEMA%.room_feature f, %SCHEMA%.room r where
+				x.feature_id = f.uniqueid and x.room_id = r.uniqueid and n.label = f.label and n.session_id = r.session_id)
+			where x.feature_id in
+				(select f.uniqueid from %SCHEMA%.room_feature f, %SCHEMA%.room r where
+				x.feature_id = f.uniqueid and x.room_id = r.uniqueid and f.discriminator = 'global' and f.session_id != r.session_id)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_join_room_feature x set x.feature_id =
+				(select n.uniqueid from %SCHEMA%.room_feature n, %SCHEMA%.room_feature f, %SCHEMA%.non_university_location r where
+				x.feature_id = f.uniqueid and x.room_id = r.uniqueid and n.label = f.label and n.session_id = r.session_id)
+			where x.feature_id in
+				(select f.uniqueid from %SCHEMA%.room_feature f, %SCHEMA%.non_university_location r where
+				x.feature_id = f.uniqueid and x.room_id = r.uniqueid and f.discriminator = 'global' and f.session_id != r.session_id)
+		</sql>
+		<!-- 
+		<sql>
+			delete from %SCHEMA%.room_feature where not exists (select * from %SCHEMA%.room_join_room_feature x where x.feature_id = uniqueid) and discriminator = 'global'
+		</sql>
+		-->
+		<sql>
+			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
+				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_feature_id and n.session_id = o.session_id and n.label = g.label and p.owner_id = c.uniqueid and c.subpart_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+			where p.room_feature_id in (
+				select g.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where  g.uniqueid = p.room_feature_id and g.session_id != o.session_id and g.discriminator = 'global' and p.owner_id = c.uniqueid and c.subpart_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
+				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where g.uniqueid = p.room_feature_id and n.session_id = o.session_id and n.label = g.label and p.owner_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+			where p.room_feature_id in (
+				select g.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
+				where  g.uniqueid = p.room_feature_id and g.session_id != o.session_id and g.discriminator = 'global'  and p.owner_id = t.uniqueid and t.config_id = e.uniqueid and e.instr_offr_id = o.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
+				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.sessions s
+				where g.uniqueid = p.room_feature_id and n.session_id = s.uniqueid and n.label = g.label and p.owner_id = s.uniqueid)
+			where p.room_feature_id in (
+				select g.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.sessions s
+				where  g.uniqueid = p.room_feature_id and g.session_id != s.uniqueid and g.discriminator = 'global' and p.owner_id = s.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
+				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.exam x
+				where g.uniqueid = p.room_feature_id and n.session_id = x.session_id and n.label = g.label and p.owner_id = x.uniqueid)
+			where p.room_feature_id in (
+				select g.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.exam x
+				where  g.uniqueid = p.room_feature_id and g.session_id != x.session_id and g.discriminator = 'global' and p.owner_id = x.uniqueid)
+		</sql>
+		<sql>
+			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
+				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.departmental_instructor i, %SCHEMA%.department d
+				where g.uniqueid = p.room_feature_id and n.session_id = d.session_id and n.label = g.label and p.owner_id = i.uniqueid and i.department_uniqueid = d.uniqueid)
+			where p.room_feature_id in (
+				select g.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.departmental_instructor i, %SCHEMA%.department d
+				where  g.uniqueid = p.room_feature_id and g.session_id != d.session_id and g.discriminator = 'global' and p.owner_id = i.uniqueid and i.department_uniqueid = d.uniqueid)
+		</sql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
 </dbupdate>

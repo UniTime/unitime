@@ -41,6 +41,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -154,6 +155,7 @@ public class RoomFeatureListAction extends Action {
 			
 			List list = hibSession
 						.createCriteria(GlobalRoomFeature.class)
+						.add(Restrictions.eq("session.uniqueId", sessionId))
 						.addOrder(Order.asc("label"))
 						.list();
 			

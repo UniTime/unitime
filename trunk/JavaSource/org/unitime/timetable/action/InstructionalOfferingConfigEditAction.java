@@ -65,6 +65,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -857,7 +858,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         TimetableManager mgr = mgrDao.get(new Long(mgrId));
         Debug.debug("Loaded manager: " + mgrId);
 
-		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup();
+		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(Session.getCurrentAcadSession(user));
 		if (rg!=null)
 		    Debug.debug("Loaded default global room group: " + rg.getName());
 		else

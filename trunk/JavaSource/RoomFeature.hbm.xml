@@ -81,6 +81,12 @@
                 not-null="false"
                 length="20"/>
 
+	        <many-to-one
+    	        name="session"
+        	    class="Session"
+            	column="session_id"
+            	not-null="true"
+            	foreign-key="fk_room_feature_session"/>
         </subclass>
 
         <subclass

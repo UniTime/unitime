@@ -74,8 +74,6 @@ import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolutionInfo;
@@ -144,8 +142,6 @@ public class SessionBackup {
     		// avoid following relations
     		avoid.add(TimetableManager.class.getName() + ".departments");
     		avoid.add(TimetableManager.class.getName() + ".solverGroups");
-    		avoid.add(RoomFeature.class.getName() + ".rooms");
-    		avoid.add(RoomGroup.class.getName() + ".rooms");
     		avoid.add(DistributionType.class.getName() + ".departments");
     		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
     		
@@ -276,23 +272,15 @@ public class SessionBackup {
             			if (!exportedIds.add(id)) continue;
             			
             			// Check relation to an academic session (if exists)
-            			boolean doSessionCheck = true;
-            			if (object instanceof RoomGroup) {
-            				// Global room group may point to a wrong academic session
-            				if (((RoomGroup)object).isGlobal()) doSessionCheck = false;
-            			}
-            			
-            			if (doSessionCheck) {
-                			for (String property: meta.getPropertyNames()) {
-                				Type type = meta.getPropertyType(property);
-                            	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
-                            		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
-                            		if (s != null && !s.getUniqueId().equals(iSessionId)) {
-                            			iProgress.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
-                            			continue objects; // wrong session
-                            		}
-                            	}
-                			}
+            			for (String property: meta.getPropertyNames()) {
+            				Type type = meta.getPropertyType(property);
+                        	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
+                        		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
+                        		if (s != null && !s.getUniqueId().equals(iSessionId)) {
+                        			iProgress.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
+                        			continue objects; // wrong session
+                        		}
+                        	}
             			}
 
             			// Get appropriate table

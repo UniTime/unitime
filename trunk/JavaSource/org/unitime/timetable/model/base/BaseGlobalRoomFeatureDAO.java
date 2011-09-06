@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
@@ -34,5 +36,10 @@ public abstract class BaseGlobalRoomFeatureDAO extends _RootDAO<GlobalRoomFeatur
 
 	public Class<GlobalRoomFeature> getReferenceClass() {
 		return GlobalRoomFeature.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<GlobalRoomFeature> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from GlobalRoomFeature x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
 }

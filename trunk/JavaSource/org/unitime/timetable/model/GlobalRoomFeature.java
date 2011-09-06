@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -57,13 +56,10 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 	 * @param sisReference
 	 * @return
 	 */
-	public static GlobalRoomFeature featureWithSisReference(String sisReference) {
-		for (Iterator it = RoomFeature.getAllRoomFeatures(GlobalRoomFeature.class).iterator(); it.hasNext();){
-			GlobalRoomFeature grf = (GlobalRoomFeature)it.next();
-			if (sisReference.equals(grf.getSisReference())) {
+	public static GlobalRoomFeature featureWithSisReference(Session session, String sisReference) {
+		for (GlobalRoomFeature grf: RoomFeature.getAllGlobalRoomFeatures(session))
+			if (sisReference.equals(grf.getSisReference()))
 				return grf;
-			}
-		}
 		return null;
 	}
     
@@ -71,10 +67,11 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
         return getLabel();
     }
     
-	public static GlobalRoomFeature findGlobalRoomFeatureForLabel(String label){
+	public static GlobalRoomFeature findGlobalRoomFeatureForLabel(Session session, String label){
 		GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
 		List features = grfDao.getSession().createCriteria(GlobalRoomFeature.class)
 			.add(Restrictions.eq("label", label))
+			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
 			.setCacheable(true).list();
 
 		if (features.size() == 1){
@@ -101,5 +98,15 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
             getLabel() +
             "</span>";
     }
+
+	public Object clone(){
+		GlobalRoomFeature newFeature = new GlobalRoomFeature();
+		newFeature.setLabel(getLabel());
+		newFeature.setAbbv(getAbbv());
+		newFeature.setSession(getSession());
+		newFeature.setSisReference(getSisReference());
+		newFeature.setSisValue(getSisValue());
+		return(newFeature);
+	}
 
 }

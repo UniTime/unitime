@@ -204,14 +204,14 @@ public class RoomFeatureEditForm extends ActionForm {
         }
 
         try {
-			
-			for (Iterator i=RoomFeature.getAllGlobalRoomFeatures().iterator();i.hasNext();) {
+			Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+			for (Iterator i=RoomFeature.getAllGlobalRoomFeatures(session).iterator();i.hasNext();) {
 				RoomFeature rf = (RoomFeature)i.next();
 				if (rf.getLabel().equalsIgnoreCase(name) && !rf.getUniqueId().toString().equals(id))
 					errors.add("name", new ActionMessage("errors.exists", name));
 			}
 			
-			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getSessionId()));
+			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, session.getSessionId()));
 			if (dept!=null) {
 				for (Iterator i=RoomFeature.getAllDepartmentRoomFeatures(dept).iterator();i.hasNext();) {
 					RoomFeature rf = (RoomFeature)i.next();

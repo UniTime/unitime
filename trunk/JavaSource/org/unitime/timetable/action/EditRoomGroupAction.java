@@ -127,7 +127,8 @@ public class EditRoomGroupAction extends Action {
 			
 		//get user information
 		User user = Web.getUser(webSession);
-		Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getSessionId();
+		org.unitime.timetable.model.Session session = org.unitime.timetable.model.Session.getCurrentAcadSession(user);
+		Long sessionId = session.getSessionId();
 		
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
@@ -150,7 +151,8 @@ public class EditRoomGroupAction extends Action {
 			for (Iterator iter = list.iterator();iter.hasNext();) {
 				RoomGroup rg = (RoomGroup) iter.next();
 				if (rg.isGlobal().booleanValue()) {
-					globalRoomGroups.add(rg);
+					if (session.equals(rg.getSession()))
+						globalRoomGroups.add(rg);
 				} else {
 					if (rg.getDepartment()==null) continue;
 					if (!rg.getDepartment().getSessionId().equals(sessionId)) continue;
