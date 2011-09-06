@@ -200,7 +200,7 @@ public class Room extends BaseRoom {
 				r.setSession(session);
 				r.setFeatures(new HashSet<RoomFeature>());
 				for (ExternalRoomFeature erf: er.getRoomFeatures()) {
-					GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+					GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(session, erf.getValue());
 					if (grf == null)
 						grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(erf.getName());
 					if (grf != null)
@@ -227,7 +227,7 @@ public class Room extends BaseRoom {
 						if (rf instanceof GlobalRoomFeature) i.remove();
 					}
 					for (ExternalRoomFeature erf: er.getRoomFeatures()) {
-						GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+						GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(session, erf.getValue());
 						if (grf == null)
 							grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(erf.getName());
 						if (grf != null)

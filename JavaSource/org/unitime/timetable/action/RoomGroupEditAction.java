@@ -468,10 +468,8 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 	 */
 	public void checkDefault(org.hibernate.Session hibSession, RoomGroup rg) {
 		if (!rg.isDefaultGroup().booleanValue()) return;
-		for (Iterator i=(new RoomGroupDAO()).findAll(hibSession).iterator();i.hasNext();) {
-			RoomGroup x = (RoomGroup)i.next();
-			if (x.getUniqueId().equals(rg.getUniqueId())) continue;
-			if (x.isDefaultGroup().booleanValue()) {
+		for (RoomGroup x: RoomGroup.getAllRoomGroupsForSession(rg.getSession())) {
+			if (!x.getUniqueId().equals(rg.getUniqueId()) && x.isDefaultGroup().booleanValue()) {
 				x.setDefaultGroup(Boolean.FALSE);
 				hibSession.saveOrUpdate(x);
 			}

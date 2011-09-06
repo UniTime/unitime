@@ -336,7 +336,7 @@ public class InstructionalOfferingModifyAction extends Action {
         InstrOfferingConfig ioc = iocdao.get(frm.getInstrOffrConfigId());
         Session hibSession = iocdao.getSession();
     	// Get default room group
-		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup();
+		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(ioc.getSession());
 
 		Transaction tx = null;
 

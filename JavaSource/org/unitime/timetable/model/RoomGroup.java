@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseRoomGroup;
@@ -57,14 +56,46 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		return (new RoomGroupDAO()).findAll(Order.asc("name"));
 	}
 	
-	public static Collection getAllGlobalRoomGroups() throws HibernateException {
-		return (new RoomGroupDAO()).
-		getSession().
-		createCriteria(RoomGroup.class).
-		add(Restrictions.eq("global",Boolean.TRUE)).
-		addOrder(Order.asc("name")).
-		setCacheable(true).
-		list();
+	public static List<RoomGroup> getAllGlobalRoomGroups(Long sessionId) throws HibernateException {
+		return (List<RoomGroup>)RoomGroupDAO.getInstance().getSession().createQuery(
+				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId order by name"
+				).setLong("sessionId", sessionId).setCacheable(true).list();
+	}
+	
+	public static List<RoomGroup> getAllGlobalRoomGroups(Session session) throws HibernateException {
+		return getAllGlobalRoomGroups(session.getUniqueId());
+	}
+	
+	public static RoomGroup findGlobalRoomGroupForName(Session session, String name){
+		List groups = RoomGroupDAO.getInstance().getSession().createCriteria(RoomGroup.class)
+			.add(Restrictions.eq("global",Boolean.TRUE))
+			.add(Restrictions.eq("name", name))
+			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
+			.setCacheable(true).list();
+		return (groups.size() == 1 ? (RoomGroup)groups.get(0) : null);
+	}
+	
+	/**
+	 * Gets the default global room group. Only one exists hence only one
+	 * record is returned. If more than one exists then it returns the first 
+	 * one in the list
+\	 * @return Room Group if found, null otherwise
+	 */
+	public static RoomGroup getGlobalDefaultRoomGroup(Long sessionId) {
+		List<RoomGroup> groups = (List<RoomGroup>)RoomGroupDAO.getInstance().getSession().createQuery(
+				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId and g.defaultGroup = true order by name"
+				).setLong("sessionId", sessionId).setCacheable(true).list();
+		return (groups.isEmpty() ? null : groups.get(0));
+	}
+	
+	public static RoomGroup getGlobalDefaultRoomGroup(Session session) {
+		return getGlobalDefaultRoomGroup(session.getUniqueId());
+	}
+	
+	public static List<RoomGroup> getAllDepartmentRoomGroups(Department dept) {
+		return (List<RoomGroup>)RoomGroupDAO.getInstance().getSession().createQuery(
+				"from RoomGroup g where g.global = false and g.department.uniqueId = :deptId order by name"
+				).setLong("deptId", dept.getUniqueId()).setCacheable(true).list();
 	}
 	
 	/**
@@ -72,40 +103,10 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	 * @return Collection of RoomGroups for a session
 	 * @throws HibernateException
 	 */
-	public static Collection getAllRoomGroupsForSession(Session session) throws HibernateException {
-		RoomGroupDAO rgDao = new RoomGroupDAO();
-		String query = "from RoomGroup rg where rg.session.uniqueId = " + session.getUniqueId().toString();
-		query += " or rg.global = 1";
-		return (rgDao.getQuery(query).list());
-	}
-	/**
-	 * Gets the default global room group. Only one exists hence only one
-	 * record is returned. If more than one exists then it returns the first 
-	 * one in the list
-\	 * @return Room Group if found, null otherwise
-	 */
-	public static RoomGroup getGlobalDefaultRoomGroup() {
-	    String sql = "select rg " +
-	    			   "from RoomGroup as rg " +
-	    			   "where rg.global = true and rg.defaultGroup = true";
-	    org.hibernate.Session hibSession = new RoomGroupDAO().getSession();
-	    Query query = hibSession.createQuery(sql);
-	    List l = query.list();
-	    if (l!=null && l.size()>0)
-	        return (RoomGroup) l.get(0);
-	    else 
-	        return null;	     
-	}
-	
-	public static Collection getAllDepartmentRoomGroups(Department dept) throws HibernateException {
-		if (dept==null) return null;
-		return (new RoomGroupDAO()).
-			getSession().
-			createCriteria(RoomGroup.class).
-			add(Restrictions.eq("global",Boolean.FALSE)).
-			add(Restrictions.eq("department.uniqueId",dept.getUniqueId())).
-			addOrder(Order.asc("name")).
-			setCacheable(true).list();
+	public static List<RoomGroup> getAllRoomGroupsForSession(Session session) throws HibernateException {
+		return (List<RoomGroup>)RoomGroupDAO.getInstance().getSession().createQuery(
+				"from RoomGroup g where g.session.uniqueId = :sessionId order by name"
+				).setLong("sessionId", session.getUniqueId()).setCacheable(true).list();
 	}
     
     public int compareTo(Object o) {
@@ -155,21 +156,27 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		if(session == null){
 			return(null);
 		}
-		Department d = getDepartment().findSameDepartmentInSession(session);
-		if (d != null){
-			List l = (new RoomGroupDAO()).
-				getSession().
-				createCriteria(RoomGroup.class).
-				add(Restrictions.eq("global",Boolean.FALSE)).
-				add(Restrictions.eq("department.uniqueId", d.getUniqueId())).
+		List matchinRoomGroups = null;
+		if (isGlobal()) {
+			matchinRoomGroups = RoomGroupDAO.getInstance().getSession().
+			createCriteria(RoomGroup.class).
+				add(Restrictions.eq("global",Boolean.TRUE)).
+				add(Restrictions.eq("session.uniqueId", session.getUniqueId())).
 				add(Restrictions.eq("name", getName())).
 				addOrder(Order.asc("name")).
 				setCacheable(true).list();
-			if (l.size() == 1){
-				return((RoomGroup) l.get(0));
-			}
+		} else {
+			Department d = (getDepartment() == null ? null : getDepartment().findSameDepartmentInSession(session));
+			if (d != null)
+				matchinRoomGroups = RoomGroupDAO.getInstance().getSession().
+					createCriteria(RoomGroup.class).
+					add(Restrictions.eq("global",Boolean.FALSE)).
+					add(Restrictions.eq("department.uniqueId", d.getUniqueId())).
+					add(Restrictions.eq("name", getName())).
+					addOrder(Order.asc("name")).
+					setCacheable(true).list();
 		}
-		return null;
+		return (matchinRoomGroups != null && matchinRoomGroups.size() == 1 ? (RoomGroup)matchinRoomGroups.get(0) : null);
 	}
     
     public String getAbbv() {

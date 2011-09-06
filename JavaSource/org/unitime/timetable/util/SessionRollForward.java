@@ -191,12 +191,11 @@ public class SessionRollForward {
 				for (Iterator it = fromRoomGroups.iterator(); it.hasNext();){
 					fromRoomGroup = (RoomGroup) it.next();
 					if (fromRoomGroup != null){
-						if(!fromRoomGroup.isGlobal().booleanValue()){
-							toRoomGroup = (RoomGroup) fromRoomGroup.clone();
-							toRoomGroup.setSession(toSession);
+						toRoomGroup = (RoomGroup) fromRoomGroup.clone();
+						toRoomGroup.setSession(toSession);
+						if (fromRoomGroup.getDepartment() != null)
 							toRoomGroup.setDepartment(fromRoomGroup.getDepartment().findSameDepartmentInSession(toSession));
-							rgDao.saveOrUpdate(toRoomGroup);
-						}
+						rgDao.saveOrUpdate(toRoomGroup);
 					}
 				}
 			}
@@ -222,32 +221,36 @@ public class SessionRollForward {
 					}
 				}
 			}
+			Set<String> globalFeatures = new HashSet<String>();
+			for (GlobalRoomFeature fromRoomFeatureGlobal: GlobalRoomFeature.getAllGlobalRoomFeatures(fromSession)) {
+				GlobalRoomFeature toRoomFeatureGlobal = (GlobalRoomFeature)fromRoomFeatureGlobal.clone();
+				toRoomFeatureGlobal.setSession(toSession);
+				rfDao.saveOrUpdate(toRoomFeatureGlobal);
+				globalFeatures.add(fromRoomFeatureGlobal.getLabel());
+			}
 			if (sessionHasExternalRoomFeatureList(toSession)){
 				GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
 				GlobalRoomFeature grf = null;
 				List newGlobalFeatures = grfDao.getQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
-					" where erf.room.building.session.uniqueId=:sessionId" +
-					"  and erf.value not in (select grf.label from GlobalRoomFeature grf)")
+					" where erf.room.building.session.uniqueId=:sessionId")
 					.setLong("sessionId", toSession.getUniqueId())
 					.list();
 				if (newGlobalFeatures != null){
 					String newLabel = null;
 					String newSisReference = null;
 					for (Iterator nrfIt = newGlobalFeatures.iterator(); nrfIt.hasNext();){
-						List l = (List) nrfIt.next();
-						if (l != null && l.size() == 2){
-							newLabel = (String) l.get(0);
-							newSisReference = (String) l.get(1);
-							grf = new GlobalRoomFeature();
-							grf.setLabel(newLabel);
-							grf.setSisReference(newSisReference);
-							grf.setSisValue(null);
-							grfDao.saveOrUpdate(grf);
-						}
-						
+						Object[] o = (Object[]) nrfIt.next();
+						newLabel = (String)o[0];
+						if (globalFeatures.contains(newLabel)) continue;
+						newSisReference = (String)o[1];
+						grf = new GlobalRoomFeature();
+						grf.setLabel(newLabel);
+						grf.setSisReference(newSisReference);
+						grf.setSisValue(null);
+						grf.setSession(toSession);
+						grfDao.saveOrUpdate(grf);
 					}
 				}
-				
 			}
 		} catch (Exception e) {
 			Debug.error(e);
@@ -259,7 +262,7 @@ public class SessionRollForward {
 		if(fromLocation.getFeatures() != null && !fromLocation.getFeatures().isEmpty()){
 			RoomFeature fromFeature = null;
 			GlobalRoomFeature toGlobalFeature = null;
-			DepartmentRoomFeature toDepartmentFeature = null;
+			RoomFeature toFeature = null;
 			boolean rollGlobalFeaturesFromFromLocation = true;
 			if (toLocation instanceof Room) {
 				Room toRoom = (Room) toLocation;
@@ -271,7 +274,7 @@ public class SessionRollForward {
 							ExternalRoomFeature erf = null;
 							for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
 								erf = (ExternalRoomFeature) erfIt.next();
-								toGlobalFeature = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+								toGlobalFeature = GlobalRoomFeature.findGlobalRoomFeatureForLabel(toSession, erf.getValue());
 								toLocation.addTofeatures(toGlobalFeature);
 							}
 						}
@@ -280,23 +283,17 @@ public class SessionRollForward {
 			}
 			for(Iterator rfIt = fromLocation.getFeatures().iterator(); rfIt.hasNext();){
 				fromFeature = (RoomFeature) rfIt.next();
-				if (fromFeature instanceof GlobalRoomFeature && rollGlobalFeaturesFromFromLocation) {
-					GlobalRoomFeature fromGlobalFeature = (GlobalRoomFeature) fromFeature;
-					toLocation.addTofeatures(fromGlobalFeature);
-					fromGlobalFeature.getRooms().add(toLocation);
-				} else if (fromFeature instanceof DepartmentRoomFeature) {
-					DepartmentRoomFeature fromDepartmentFeature = (DepartmentRoomFeature) fromFeature;
-					toDepartmentFeature = (DepartmentRoomFeature) roomFeatureCache.get(fromDepartmentFeature);
-					if (toDepartmentFeature == null){
-						toDepartmentFeature = fromDepartmentFeature.findSameFeatureInSession(toSession);
-						if (toDepartmentFeature != null){
-							roomFeatureCache.put(fromDepartmentFeature, toDepartmentFeature);
-							toLocation.addTofeatures(toDepartmentFeature);
-							if (toDepartmentFeature.getRooms() == null){
-								toDepartmentFeature.setRooms(new java.util.HashSet());
-							}
-							toDepartmentFeature.getRooms().add(toLocation);
+				if (fromFeature instanceof GlobalRoomFeature && !rollGlobalFeaturesFromFromLocation) continue;
+				toFeature = (RoomFeature) roomFeatureCache.get(fromFeature);
+				if (toFeature == null){
+					toFeature = fromFeature.findSameFeatureInSession(toSession);
+					if (toFeature != null){
+						roomFeatureCache.put(fromFeature, toFeature);
+						toLocation.addTofeatures(toFeature);
+						if (toFeature.getRooms() == null){
+							toFeature.setRooms(new java.util.HashSet());
 						}
+						toFeature.getRooms().add(toLocation);
 					}
 				}
 			}
@@ -459,34 +456,22 @@ public class SessionRollForward {
 	private void rollRoomGroupsForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomGroupCache) {
 		if(fromLocation.getRoomGroups() != null && !fromLocation.getRoomGroups().isEmpty()){
 			RoomGroup fromRoomGroup = null;
-			RoomGroup toDepartmentRoomGroup = null;
+			RoomGroup toRoomGroup = null;
 			for(Iterator rfIt = fromLocation.getRoomGroups().iterator(); rfIt.hasNext();){
 				fromRoomGroup = (RoomGroup) rfIt.next();
-				if (fromRoomGroup.isGlobal().booleanValue()) {					
-					if (toLocation.getRoomGroups() == null){
+				toRoomGroup = (RoomGroup) roomGroupCache.get(fromRoomGroup);
+				if (toRoomGroup == null)
+					toRoomGroup = fromRoomGroup.findSameRoomGroupInSession(toSession);
+				if (toRoomGroup != null) {
+					roomGroupCache.put(fromRoomGroup, toRoomGroup);
+					if (toLocation.getRoomGroups() == null)
 						toLocation.setRoomGroups(new java.util.HashSet());
-					}
-					toLocation.getRoomGroups().add(fromRoomGroup);
-					fromRoomGroup.getRooms().add(toLocation);
-				} else {
-					toDepartmentRoomGroup = (RoomGroup) roomGroupCache.get(fromRoomGroup);
-					if (toDepartmentRoomGroup == null){
-						toDepartmentRoomGroup = fromRoomGroup.findSameRoomGroupInSession(toSession);
-						if (toDepartmentRoomGroup != null){
-							roomGroupCache.put(fromRoomGroup, toDepartmentRoomGroup);
-							if (toLocation.getRoomGroups() == null){
-								toLocation.setRoomGroups(new java.util.HashSet());
-							}
-							toLocation.getRoomGroups().add(toDepartmentRoomGroup);
-							if (toDepartmentRoomGroup.getRooms() == null){
-								toDepartmentRoomGroup.setRooms(new java.util.HashSet());
-							}
-							toDepartmentRoomGroup.getRooms().add(toLocation);
-						}
-						
-					}
+					toLocation.getRoomGroups().add(toRoomGroup);
+					if (toRoomGroup.getRooms() == null)
+						toRoomGroup.setRooms(new java.util.HashSet());
+					toRoomGroup.getRooms().add(toLocation);
 				}
-			}		
+			}
 		}
 		
 	}
@@ -1134,11 +1119,13 @@ public class SessionRollForward {
 		if (fromPrefGroup instanceof Class_) return;
 		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
 		if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
-			GlobalRoomFeature grf = (GlobalRoomFeature) fromRoomFeaturePref.getRoomFeature();
-			toRoomFeaturePref.setRoomFeature(grf);
-			toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
-			toRoomFeaturePref.setOwner(toPrefGroup);
-			toPrefGroup.addTopreferences(toRoomFeaturePref);
+			GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(toSession, fromRoomFeaturePref.getRoomFeature().getLabel());
+			if (grf != null) {
+				toRoomFeaturePref.setRoomFeature(grf);
+				toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
+				toRoomFeaturePref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toRoomFeaturePref);
+			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
 			if (toDepartment == null){
@@ -1209,11 +1196,20 @@ public class SessionRollForward {
 	private void createToRoomGroupPref(RoomGroupPref fromRoomGroupPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup instanceof Class_) return;
 		RoomGroupPref toRoomGroupPref = new RoomGroupPref();
-		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup().booleanValue()){
-			toRoomGroupPref.setRoomGroup(fromRoomGroupPref.getRoomGroup());
+		RoomGroup toDefaultRoomGroup = RoomGroup.getGlobalDefaultRoomGroup(toSession);
+		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup() && toDefaultRoomGroup != null){
+			toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
 			toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 			toRoomGroupPref.setOwner(toPrefGroup);
 			toPrefGroup.addTopreferences(toRoomGroupPref);
+		} else if (fromRoomGroupPref.getRoomGroup().isGlobal()) {
+			RoomGroup toRoomGroup = RoomGroup.findGlobalRoomGroupForName(toSession, fromRoomGroupPref.getRoomGroup().getName());
+			if (toRoomGroup != null) {
+				toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
+				toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
+				toRoomGroupPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toRoomGroupPref);
+			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
 			if (toDepartment == null){

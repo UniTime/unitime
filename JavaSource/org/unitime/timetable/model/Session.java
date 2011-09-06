@@ -793,4 +793,7 @@ public class Session extends BaseSession implements Comparable {
 			server.unlockOffering(offeringId);
 		}
 	}
+	
+	@Override
+	public Session getSession() { return this; }
 }

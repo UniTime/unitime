@@ -545,4 +545,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 .setCacheable(true).list();
     }
 
+    @Override
+    public Session getSession() {
+    	return getDepartment().getSession();
+    }
 }

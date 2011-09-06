@@ -224,7 +224,8 @@ public class RoomGroupListAction extends Action {
 			for (Iterator iter = list.iterator();iter.hasNext();) {
 				RoomGroup rg = (RoomGroup) iter.next();
 				if (rg.isGlobal()!=null && rg.isGlobal().booleanValue()) {
-					globalRoomGroups.add(rg);
+					if (session.equals(rg.getSession()))
+						globalRoomGroups.add(rg);
 				} else {
 					if (rg.getDepartment()==null) continue;
 					if (!rg.getDepartment().getSessionId().equals(sessionId)) continue;

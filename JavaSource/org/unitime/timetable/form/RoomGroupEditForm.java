@@ -101,13 +101,15 @@ public class RoomGroupEditForm extends ActionForm {
 
         try {
 			
-			for (Iterator i=RoomGroup.getAllGlobalRoomGroups().iterator();i.hasNext();) {
+        	Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        	
+			for (Iterator i=RoomGroup.getAllGlobalRoomGroups(session).iterator();i.hasNext();) {
 				RoomGroup rg = (RoomGroup)i.next();
 				if (rg.getName().equalsIgnoreCase(name) && !rg.getUniqueId().toString().equals(id))
 					errors.add("name", new ActionMessage("errors.exists", name));
 			}
 			
-			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getSessionId()));
+			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, session.getSessionId()));
 			if (dept!=null) {
 				for (Iterator i=RoomGroup.getAllDepartmentRoomGroups(dept).iterator();i.hasNext();) {
 					RoomGroup rg = (RoomGroup)i.next();

@@ -141,7 +141,7 @@ public class RoomFeatureAddAction extends Action {
 			HttpServletResponse response) throws Exception{
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+		Session session = Session.getCurrentAcadSession(user);
 				
 		//if roomFeature is global
 		if (roomFeatureEditForm.isGlobal()) {
@@ -152,6 +152,7 @@ public class RoomFeatureAddAction extends Action {
 			GlobalRoomFeature rf = new GlobalRoomFeature();
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
+            rf.setSession(session);
 
 			try {
 				tx = hibSession.beginTransaction();				
@@ -184,7 +185,7 @@ public class RoomFeatureAddAction extends Action {
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
-	        rf.setDepartment(Department.findByDeptCode(roomFeatureEditForm.getDeptCode(),sessionId));	
+	        rf.setDepartment(Department.findByDeptCode(roomFeatureEditForm.getDeptCode(),session.getUniqueId()));	
 
 			try {
 				tx = hibSession.beginTransaction();				

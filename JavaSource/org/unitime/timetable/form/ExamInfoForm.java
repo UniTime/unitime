@@ -27,9 +27,12 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 
 /**
@@ -60,6 +63,7 @@ public class ExamInfoForm extends ActionForm {
 	private Long[] iRoomFeatures = null;
 	private Long[] iRoomTypes = null;
 	private Long[] iRoomGroups = null;
+	private Long iSessionId = null;
 
 
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -84,6 +88,7 @@ public class ExamInfoForm extends ActionForm {
         iRoomTypes = null;
         iRoomFeatures = null;
         iRoomGroups = null;
+        iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
     }
     
     public void load(HttpSession session) {
@@ -184,12 +189,12 @@ public class ExamInfoForm extends ActionForm {
     public Long[] getRoomFeatures() { return iRoomFeatures; }
     public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
     
-    public Collection<RoomFeature> getAllRoomFeatures() {
-    	return RoomFeature.getAllGlobalRoomFeatures();
+    public Collection<GlobalRoomFeature> getAllRoomFeatures() {
+    	return RoomFeature.getAllGlobalRoomFeatures(iSessionId);
     }
     
     public Collection<RoomGroup> getAllRoomGroups() {
-        return RoomGroup.getAllGlobalRoomGroups();
+        return RoomGroup.getAllGlobalRoomGroups(iSessionId);
     }
 
     public Collection<RoomType> getAllRoomTypes() {

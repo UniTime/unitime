@@ -19,16 +19,11 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.hibernate.HibernateException;
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseRoomFeature;
-import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
-import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 
 
@@ -53,44 +48,23 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		return "";		
 	}
 	
-	/*
-	 * @return all roomFeatures
-	 */
-	public static ArrayList getAllRoomFeatures() throws HibernateException {
-		return (ArrayList) (new RoomFeatureDAO()).findAll(Order.asc("label"));
-	}
-	
-	public static Collection getAllGlobalRoomFeatures() throws HibernateException {
-		//return (new GlobalRoomFeatureDAO()).findAll(Order.asc("label"));
-		return (new GlobalRoomFeatureDAO()).
-			getSession().
-			createCriteria(GlobalRoomFeature.class).
-			addOrder(Order.asc("label")).setCacheable(true).list();
-	}
-		
-	public static Collection getAllDepartmentRoomFeatures(Department dept) throws HibernateException {
-		if (dept==null) return null;
-		return (new DepartmentRoomFeatureDAO()).
-			getSession().
-			createQuery("select distinct d from DepartmentRoomFeature d where d.department.uniqueId=:deptId order by label").
-			setLong("deptId", dept.getUniqueId().longValue()).
-			setCacheable(true).
-			list();
+	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId) throws HibernateException {
+		return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label"
+				).setLong("sessionId", sessionId).setCacheable(true).list();
 	}
 
-	/*
-	 * @return all RoomFeatures of a given class
-	 */
-	public static ArrayList getAllRoomFeatures(Class cls) throws HibernateException {
-		ArrayList coll = new ArrayList();
-		for (Iterator it = getAllRoomFeatures().iterator(); it.hasNext();) {
-			RoomFeature rf = (RoomFeature) it.next();
-			if (rf.getClass() == cls) {
-				coll.add(rf);
-			}
-		}
-		return coll;
+	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Session session) throws HibernateException {
+		return getAllGlobalRoomFeatures(session.getUniqueId());
 	}
+		
+	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeatures(Department dept) throws HibernateException {
+		if (dept==null) return null;
+		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label"
+				).setLong("deptId", dept.getUniqueId()).setCacheable(true).list();
+	}
+
 
 	/**
 	 * @param id
@@ -165,6 +139,26 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
                 sb.append(word);
         }
         return sb.toString();
+    }
+    
+    public RoomFeature findSameFeatureInSession(Session session) {
+		if (session == null) return null;
+		List matchingFeatures = null;
+		if (this instanceof DepartmentRoomFeature) {
+			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
+				"select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode")
+				.setLong("sessionId", session.getUniqueId().longValue())
+				.setString("deptCode", ((DepartmentRoomFeature)this).getDeptCode())
+				.setString("label", getLabel())
+				.setCacheable(true).list();
+		} else {
+			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
+			"select g from GlobalRoomFeature g where g.session.uniqueId=:sessionId and g.label=:label")
+			.setLong("sessionId", session.getUniqueId().longValue())
+			.setString("label", getLabel())
+			.setCacheable(true).list();
+		}
+		return (matchingFeatures.size() == 1 ? (RoomFeature)matchingFeatures.get(0) : null);
     }
 	
 }
