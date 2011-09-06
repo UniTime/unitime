@@ -22,6 +22,9 @@ package org.unitime.commons.hibernate.util;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,8 +35,10 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.hibernate.Query;
+import org.hibernate.QueryException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.jdbc.Work;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ApplicationConfig;
@@ -137,7 +142,24 @@ public abstract class DatabaseUpdate {
                 try {
                     if (type.equals("hql") || type.equals("sql") || type.equals(iDialectSQL)) {
                         sLog.debug("  -- HQL: "+query+" (con:"+condition+", act:"+action+", val:"+value+")");
-                        Query q = (type.equals("hql")?hibSession.createQuery(query):hibSession.createSQLQuery(query));
+                        Query q = null;
+                        try {
+                        	q = (type.equals("hql")?hibSession.createQuery(query):hibSession.createSQLQuery(query));
+                        } catch (QueryException e) {
+                        	// Work-around Hibernate issue HHH-2697 (https://hibernate.onjira.com/browse/HHH-2697)
+                        	if (!"hql".equals(type)) {
+                        		final String sql = query;
+                        		hibSession.doWork(new Work() {
+									@Override
+									public void execute(Connection connection) throws SQLException {
+		                                Statement statement = connection.createStatement();
+		                                int lines = statement.executeUpdate(sql);
+		                                sLog.debug("  -- "+lines+" lines affected.");
+		                                statement.close();
+									}
+								});
+                        	} else throw e;
+                        }
                         boolean ok = true;
                         if (into!=null) {
                             variables.put(into, q.uniqueResult().toString());
@@ -145,11 +167,11 @@ public abstract class DatabaseUpdate {
                             ok = value.equals(q.uniqueResult().toString());
                         } else if("notEqual".equals(condition) && value!=null) {
                             ok = !value.equals(q.uniqueResult().toString());
-                        } else {
-                            int x = q.executeUpdate();
-                            sLog.debug("  -- "+x+" lines affected.");
-                            if ("noChange".equals(condition)) ok = (x==0);
-                            else if ("change".equals(condition)) ok = (x>0);
+                        } else if (q != null) {
+                            int lines = q.executeUpdate();
+                            sLog.debug("  -- "+lines+" lines affected.");
+                            if ("noChange".equals(condition)) ok = (lines==0);
+                            else if ("change".equals(condition)) ok = (lines>0);
                         }
                         if (ok) {
                             if ("next".equals(action)) continue;
@@ -164,7 +186,7 @@ public abstract class DatabaseUpdate {
                         sLog.debug("  -- skip: "+query+" (con:"+condition+", act:"+action+", val:"+value+")");
                     }
                 } catch (Exception e) {
-                    sLog.warn("Query '"+query+"' failed, "+e.getMessage());
+                    sLog.warn("Query '"+query+"' failed, "+e.getMessage(), e);
                     if (e.getCause()!=null && e.getCause().getMessage()!=null)
                         sLog.warn("Cause: "+e.getCause().getMessage());
                     if ("fail".equals(condition)) {
