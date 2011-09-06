@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -567,12 +568,12 @@ public class EventAddForm extends ActionForm {
     public Boolean getLookAtNearLocations() {return iLookAtNearLocations;}
     public void setLookAtNearLocations (Boolean look) {iLookAtNearLocations = look;}
     
-    public Collection<RoomFeature> getAllRoomFeatures() {
-    	return RoomFeature.getAllGlobalRoomFeatures();
+    public Collection<GlobalRoomFeature> getAllRoomFeatures() {
+    	return RoomFeature.getAllGlobalRoomFeatures(getSessionId());
     }
     
     public Collection<RoomGroup> getAllRoomGroups() {
-        return RoomGroup.getAllGlobalRoomGroups();
+        return RoomGroup.getAllGlobalRoomGroups(getSessionId());
     }
 
     public Collection<RoomType> getAllRoomTypes() {

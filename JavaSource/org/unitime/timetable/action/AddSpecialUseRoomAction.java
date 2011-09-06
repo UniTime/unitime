@@ -369,7 +369,7 @@ public class AddSpecialUseRoomAction extends Action {
 
 		Set roomFeatures = room.getFeatures();
 		Iterator f = extRoomFeatures.iterator();
-		Collection globalRoomFeatures = RoomFeature.getAllGlobalRoomFeatures();
+		Collection globalRoomFeatures = RoomFeature.getAllGlobalRoomFeatures(room.getSession());
 		while(f.hasNext()) {
 			ExternalRoomFeature extRoomFeature = (ExternalRoomFeature)f.next();
 			String featureValue = extRoomFeature.getValue();

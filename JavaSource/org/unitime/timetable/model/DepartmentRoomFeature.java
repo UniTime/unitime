@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.unitime.timetable.model.base.BaseDepartmentRoomFeature;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
@@ -91,25 +90,6 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		newFeature.setAbbv(getAbbv());
 		newFeature.setDepartment(getDepartment());
 		return(newFeature);
-	}
-
-	public DepartmentRoomFeature findSameFeatureInSession(Session session) {
-		if (session == null){
-			return(null);
-		}
-		List l =(new DepartmentRoomFeatureDAO()).
-				getSession().
-				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode").
-				setLong("sessionId", session.getUniqueId().longValue()).
-				setString("deptCode", getDepartment().getDeptCode()).
-				setString("label", getLabel()).
-				setCacheable(true).
-				list();
-		if (l.size() == 1){
-			return((DepartmentRoomFeature)l.get(0));
-		} else {
-			return(null);
-		}
 	}
 	
 }

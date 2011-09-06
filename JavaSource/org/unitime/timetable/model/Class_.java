@@ -744,7 +744,7 @@ public class Class_ extends BaseClass_ {
     }
 
     public Set getAvailableRoomFeatures() {
-    	Set features = super.getAvailableRoomFeatures();
+    	Set features = new TreeSet(GlobalRoomFeature.getAllGlobalRoomFeatures(getSession()));
     	Department dept = getManagingDept();
     	if (dept!=null)
     		features.addAll(DepartmentRoomFeature.getAllDepartmentRoomFeatures(dept));

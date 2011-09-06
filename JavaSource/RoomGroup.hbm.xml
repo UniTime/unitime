@@ -85,7 +85,7 @@
             class="Session"
             column="session_id"
             not-null="true"
-            foreign-key="fk_room_session"/>
+            foreign-key="fk_room_group_session"/>
 
     </class>
 </hibernate-mapping>

@@ -359,11 +359,13 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	}
     	return bldgs;
     }
+    public abstract Session getSession();
+    
     public Set getAvailableRoomFeatures() {
-    	return new TreeSet(RoomFeature.getAllGlobalRoomFeatures());
+    	return new TreeSet(RoomFeature.getAllGlobalRoomFeatures(getSession()));
     }
     public Set getAvailableRoomGroups() {
-    	return new TreeSet(RoomGroup.getAllGlobalRoomGroups());
+    	return new TreeSet(RoomGroup.getAllGlobalRoomGroups(getSession()));
     }
     
     public Set getExamPeriodPreferences(){

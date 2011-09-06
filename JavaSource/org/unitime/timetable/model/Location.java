@@ -265,7 +265,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @throws SmasException
 	 */
 	public boolean hasGlobalFeature(String sisReference) {
-		GlobalRoomFeature grf =	GlobalRoomFeature.featureWithSisReference(sisReference);
+		GlobalRoomFeature grf =	GlobalRoomFeature.featureWithSisReference(getSession(), sisReference);
 		if (grf == null) return false;
 		return hasFeature(grf);
 	}
