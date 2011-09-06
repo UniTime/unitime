@@ -30,7 +30,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SimpleEditInterface implements IsSerializable {
 	
-	public static enum Type {
+	public static enum Type implements IsSerializable {
 		area("Academic Areas"),
 		classification("Academic Classifications"),
 		major("Majors"),
@@ -45,7 +45,7 @@ public class SimpleEditInterface implements IsSerializable {
 		public String getTitle() { return iPageName; }
 	}
 	
-	public static enum FieldType {
+	public static enum FieldType implements IsSerializable {
 		text, toggle, list, multi;
 	}
 	
