@@ -182,46 +182,85 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				
 				switch (type) {
 				case ROOM:
-					List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
-							"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
-							"where r.session.uniqueId = :sessionId and rd.control=true and mr.role.reference=:eventMgr and (" +
-							"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
-							.setString("name", name)
-							.setLong("sessionId", academicSession.getUniqueId())
-							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
-							.list();
-					if (!rooms.isEmpty()) {
-						Room room = rooms.get(0);
-						ResourceInterface ret = new ResourceInterface();
-						ret.setType(ResourceType.ROOM);
-						ret.setId(room.getUniqueId());
-						ret.setAbbreviation(room.getLabel());
-						ret.setName(room.getLabel());
-						ret.setHint(room.getHtmlHint());
-						fillInSessionInfo(ret, room.getSession());
-						fillInCalendarUrl(ret);
-						return ret;
-					}
-					List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
-							"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
-							"where l.session.uniqueId = :sessionId and l.name = :name and " + 
-							"rd.control=true and mr.role.reference=:eventMgr"
-							)
-							.setString("name", name)
-							.setLong("sessionId", academicSession.getUniqueId())
-							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
-							.list();
-					if (!locations.isEmpty()) {
-						NonUniversityLocation location = locations.get(0);
-						ResourceInterface ret = new ResourceInterface();
-						ret.setType(ResourceType.ROOM);
-						ret.setId(location.getUniqueId());
-						ret.setAbbreviation(location.getLabel());
-						ret.setName(location.getLabel());
-						ret.setHint(location.getHtmlHint());
-						fillInSessionInfo(ret, location.getSession());
-						fillInCalendarUrl(ret);
-						return ret;
+					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.event_rooms_only", "true"))) {
+						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+								"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+								"where r.session.uniqueId = :sessionId and rd.control=true and mr.role.reference=:eventMgr and (" +
+								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
+								.setString("name", name)
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+								.list();
+						if (!rooms.isEmpty()) {
+							Room room = rooms.get(0);
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(room.getUniqueId());
+							ret.setAbbreviation(room.getLabel());
+							ret.setName(room.getLabel());
+							ret.setHint(room.getHtmlHint());
+							fillInSessionInfo(ret, room.getSession());
+							fillInCalendarUrl(ret);
+							return ret;
+						}
+						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
+								"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+								"where l.session.uniqueId = :sessionId and l.name = :name and " + 
+								"rd.control=true and mr.role.reference=:eventMgr"
+								)
+								.setString("name", name)
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+								.list();
+						if (!locations.isEmpty()) {
+							NonUniversityLocation location = locations.get(0);
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(location.getUniqueId());
+							ret.setAbbreviation(location.getLabel());
+							ret.setName(location.getLabel());
+							ret.setHint(location.getHtmlHint());
+							fillInSessionInfo(ret, location.getSession());
+							fillInCalendarUrl(ret);
+							return ret;
+						}
+					} else {
+						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+								"where r.session.uniqueId = :sessionId and (" +
+								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
+								.setString("name", name)
+								.setLong("sessionId", academicSession.getUniqueId())
+								.list();
+						if (!rooms.isEmpty()) {
+							Room room = rooms.get(0);
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(room.getUniqueId());
+							ret.setAbbreviation(room.getLabel());
+							ret.setName(room.getLabel());
+							ret.setHint(room.getHtmlHint());
+							fillInSessionInfo(ret, room.getSession());
+							fillInCalendarUrl(ret);
+							return ret;
+						}
+						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
+								"where l.session.uniqueId = :sessionId and l.name = :name"
+								)
+								.setString("name", name)
+								.setLong("sessionId", academicSession.getUniqueId())
+								.list();
+						if (!locations.isEmpty()) {
+							NonUniversityLocation location = locations.get(0);
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(location.getUniqueId());
+							ret.setAbbreviation(location.getLabel());
+							ret.setName(location.getLabel());
+							ret.setHint(location.getHtmlHint());
+							fillInSessionInfo(ret, location.getSession());
+							fillInCalendarUrl(ret);
+							return ret;
+						}
 					}
 					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case SUBJECT:
@@ -236,6 +275,21 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
 						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
 						fillInSessionInfo(ret, subject.getSession());
+						fillInCalendarUrl(ret);
+						return ret;
+					}
+				case COURSE:
+					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and " +
+							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name and c.instructionalOffering.notOffered = false")
+							.setString("name", name.toLowerCase()).setLong("sessionId", academicSession.getUniqueId()).list();
+					if (!courses.isEmpty()) {
+						CourseOffering course = courses.get(0);
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.COURSE);
+						ret.setId(course.getUniqueId());
+						ret.setAbbreviation(course.getCourseName());
+						ret.setName(course.getTitle() == null ? course.getCourseName() : course.getTitle());
+						fillInSessionInfo(ret, course.getSubjectArea().getSession());
 						fillInCalendarUrl(ret);
 						return ret;
 					}
@@ -450,6 +504,58 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
 							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
 					break;
+				case COURSE:
+					meetings = (List<Meeting>)hibSession.createQuery("select m from ClassEvent e inner join e.meetings m inner join " +
+							"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.uniqueId = :resourceId " +
+							"and m.meetingDate >= co.subjectArea.session.eventBeginDate and " +
+							"m.meetingDate <= co.subjectArea.session.eventEndDate and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).list();
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, CourseOffering co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
+							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:courseType and o.ownerId = co.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("courseType", ExamOwner.sOwnerTypeCourse).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, CourseOffering co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:offeringType and o.ownerId = co.instructionalOffering.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("offeringType", ExamOwner.sOwnerTypeOffering).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
+							"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:classType and o.ownerId = c.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("classType", ExamOwner.sOwnerTypeClass).list());
+					meetings.addAll(
+							(List<Meeting>)hibSession.createQuery("select m from ExamEvent e inner join e.meetings m inner join e.exam.owners o, " +
+							"CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg where " +
+							"co.uniqueId = :resourceId and m.meetingDate >= co.subjectArea.session.eventBeginDate and m.meetingDate <= co.subjectArea.session.eventEndDate and " +
+							"o.ownerType=:configType and o.ownerId = cfg.uniqueId and m.approvedDate is not null")
+							.setLong("resourceId", resource.getId()).setInteger("configType", ExamOwner.sOwnerTypeConfig).list());
+					break;			
 				case CURRICULUM:
 					curriculumCourses = (List<Long>)hibSession.createQuery("select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
 							.setLong("resourceId", resource.getId()).list();
@@ -725,6 +831,17 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			    					}
 			    				}
 				    			break;
+				    		case COURSE:
+			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+			    					CourseOffering co = i.next();
+			    					if (co.getUniqueId().equals(resource.getId())) {
+			    						if (!correctedOffering.getUniqueId().equals(resource.getId()))
+			    							correctedOffering = co;
+			    					} else {
+			    						i.remove();
+			    					}
+			    				}
+				    			break;
 				    		case DEPARTMENT:
 				    			if (department.isExternalManager()) break;
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
@@ -780,6 +897,9 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						    		switch (resource.getType()) {
 						    		case SUBJECT:
 						    			if (!course.getSubjectArea().getUniqueId().equals(resource.getId())) continue courses;
+						    			break;
+						    		case COURSE:
+						    			if (!course.getUniqueId().equals(resource.getId())) continue courses;
 						    			break;
 						    		case DEPARTMENT:
 						    			if (department.isExternalManager()) break courses;
@@ -914,6 +1034,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	@Override
 	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException, PageAccessException {
 		try {
+			if (query == null) query = "";
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				
@@ -927,60 +1048,110 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 				List<ResourceInterface> resources = new ArrayList<ResourceInterface>();
 				switch (type) {
 				case ROOM:
-					List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
-							"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
-							"RoomTypeOption o where r.session.uniqueId = :sessionId and " +
-							"rd.control=true and mr.role.reference=:eventMgr and " + 
-							"o.status = 1 and o.roomType = r.roomType and o.session = r.session and (" +
-							"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
-							"order by r.buildingAbbv, r.roomNumber")
-							.setString("name", query.toLowerCase() + "%")
-							.setLong("sessionId", academicSession.getUniqueId())
-							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
-							.setMaxResults(limit).list();
-					for (Room room: rooms) {
-						ResourceInterface ret = new ResourceInterface();
-						ret.setType(ResourceType.ROOM);
-						ret.setId(room.getUniqueId());
-						ret.setAbbreviation(room.getLabel());
-						ret.setName(room.getLabel());
-						if (room.getDisplayName() != null && !room.getDisplayName().isEmpty()) {
-							ret.setTitle(room.getLabel() + " - " + room.getDisplayName());
-						} else {
-							ret.setTitle(room.getLabel() + " - " + room.getRoomTypeLabel() + (room.getCapacity() > 1 ? " (" + room.getCapacity() + " seats)" : ""));
+					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.event_rooms_only", "true"))) {
+						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+								"inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
+								"RoomTypeOption o where r.session.uniqueId = :sessionId and " +
+								"rd.control=true and mr.role.reference=:eventMgr and " + 
+								"o.status = 1 and o.roomType = r.roomType and o.session = r.session and (" +
+								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
+								"order by r.buildingAbbv, r.roomNumber")
+								.setString("name", query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+								.setMaxResults(limit).list();
+						for (Room room: rooms) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(room.getUniqueId());
+							ret.setAbbreviation(room.getLabel());
+							ret.setName(room.getLabel());
+							if (room.getDisplayName() != null && !room.getDisplayName().isEmpty()) {
+								ret.setTitle(room.getLabel() + " - " + room.getDisplayName());
+							} else {
+								ret.setTitle(room.getLabel() + " - " + room.getRoomTypeLabel() + (room.getCapacity() > 1 ? " (" + room.getCapacity() + " seats)" : ""));
+							}
+							fillInSessionInfo(ret, room.getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
 						}
-						fillInSessionInfo(ret, room.getSession());
-						fillInCalendarUrl(ret);
-						resources.add(ret);
-					}
-					List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
-							"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
-							"RoomTypeOption o where " +
-							"rd.control=true and mr.role.reference=:eventMgr and " + 
-							"l.session.uniqueId = :sessionId and o.status = 1 and o.roomType = l.roomType and o.session = l.session and lower(l.name) like :name " +
-							"order by l.name")
-							.setString("name", query.toLowerCase() + "%")
-							.setLong("sessionId", academicSession.getUniqueId())
-							.setString("eventMgr", Roles.EVENT_MGR_ROLE)
-							.setMaxResults(limit).list();
-					for (NonUniversityLocation location: locations) {
-						ResourceInterface ret = new ResourceInterface();
-						ret.setType(ResourceType.ROOM);
-						ret.setId(location.getUniqueId());
-						ret.setAbbreviation(location.getLabel());
-						ret.setName(location.getLabel());
-						if (location.getDisplayName() != null && !location.getDisplayName().isEmpty()) {
-							ret.setTitle(location.getLabel() + " - " + location.getDisplayName());
-						} else {
-							ret.setTitle(location.getLabel() + " - " + location.getRoomTypeLabel() + (location.getCapacity() > 1 ? " (" + location.getCapacity() + " seats)" : ""));
+						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
+								"inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, " +
+								"RoomTypeOption o where " +
+								"rd.control=true and mr.role.reference=:eventMgr and " + 
+								"l.session.uniqueId = :sessionId and o.status = 1 and o.roomType = l.roomType and o.session = l.session and lower(l.name) like :name " +
+								"order by l.name")
+								.setString("name", query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+								.setMaxResults(limit).list();
+						for (NonUniversityLocation location: locations) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(location.getUniqueId());
+							ret.setAbbreviation(location.getLabel());
+							ret.setName(location.getLabel());
+							if (location.getDisplayName() != null && !location.getDisplayName().isEmpty()) {
+								ret.setTitle(location.getLabel() + " - " + location.getDisplayName());
+							} else {
+								ret.setTitle(location.getLabel() + " - " + location.getRoomTypeLabel() + (location.getCapacity() > 1 ? " (" + location.getCapacity() + " seats)" : ""));
+							}
+							fillInSessionInfo(ret, location.getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
 						}
-						fillInSessionInfo(ret, location.getSession());
-						fillInCalendarUrl(ret);
-						resources.add(ret);
-					}
-					Collections.sort(resources);
-					if (limit > 0 && resources.size() > limit) {
-						resources = new ArrayList<ResourceInterface>(resources.subList(0, limit));
+						Collections.sort(resources);
+						if (limit > 0 && resources.size() > limit) {
+							resources = new ArrayList<ResourceInterface>(resources.subList(0, limit));
+						}
+					} else {
+						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
+								"where r.session.uniqueId = :sessionId and (" +
+								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
+								"order by r.buildingAbbv, r.roomNumber")
+								.setString("name", query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setMaxResults(limit).list();
+						for (Room room: rooms) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(room.getUniqueId());
+							ret.setAbbreviation(room.getLabel());
+							ret.setName(room.getLabel());
+							if (room.getDisplayName() != null && !room.getDisplayName().isEmpty()) {
+								ret.setTitle(room.getLabel() + " - " + room.getDisplayName());
+							} else {
+								ret.setTitle(room.getLabel() + " - " + room.getRoomTypeLabel() + (room.getCapacity() > 1 ? " (" + room.getCapacity() + " seats)" : ""));
+							}
+							fillInSessionInfo(ret, room.getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l where " +
+								"l.session.uniqueId = :sessionId and lower(l.name) like :name " +
+								"order by l.name")
+								.setString("name", query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId())
+								.setMaxResults(limit).list();
+						for (NonUniversityLocation location: locations) {
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.ROOM);
+							ret.setId(location.getUniqueId());
+							ret.setAbbreviation(location.getLabel());
+							ret.setName(location.getLabel());
+							if (location.getDisplayName() != null && !location.getDisplayName().isEmpty()) {
+								ret.setTitle(location.getLabel() + " - " + location.getDisplayName());
+							} else {
+								ret.setTitle(location.getLabel() + " - " + location.getRoomTypeLabel() + (location.getCapacity() > 1 ? " (" + location.getCapacity() + " seats)" : ""));
+							}
+							fillInSessionInfo(ret, location.getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+						Collections.sort(resources);
+						if (limit > 0 && resources.size() > limit) {
+							resources = new ArrayList<ResourceInterface>(resources.subList(0, limit));
+						}
 					}
 					break;
 				case SUBJECT:
@@ -996,6 +1167,55 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
 						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
 						fillInSessionInfo(ret, subject.getSession());
+						fillInCalendarUrl(ret);
+						resources.add(ret);
+					}
+					if (subjects.size() == 1) {
+						for (CourseOffering course: new TreeSet<CourseOffering>(subjects.get(0).getCourseOfferings())) {
+							if (course.getInstructionalOffering().isNotOffered()) continue;
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.COURSE);
+							ret.setId(course.getUniqueId());
+							ret.setAbbreviation(course.getCourseName());
+							ret.setName(course.getTitle() == null ? course.getCourseName() : course.getTitle());
+							ret.setTitle("&nbsp;&nbsp;&nbsp;&nbsp;" + course.getCourseName() + (course.getTitle() == null ? "" : " - " + course.getTitle()));
+							fillInSessionInfo(ret, course.getSubjectArea().getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+					} else if (subjects.isEmpty()) {
+						List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
+								"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
+								"order by s.subjectAreaAbbreviation, c.courseNbr")
+								.setString("name", query.toLowerCase() + "%").setString("title", "% " + query.toLowerCase() + "%")
+								.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+						for (CourseOffering course: courses) {
+							if (course.getInstructionalOffering().isNotOffered()) continue;
+							ResourceInterface ret = new ResourceInterface();
+							ret.setType(ResourceType.COURSE);
+							ret.setId(course.getUniqueId());
+							ret.setAbbreviation(course.getCourseName());
+							ret.setName(course.getTitle() == null ? course.getCourseName() : course.getTitle());
+							fillInSessionInfo(ret, course.getSubjectArea().getSession());
+							fillInCalendarUrl(ret);
+							resources.add(ret);
+						}
+					}
+					break;
+				case COURSE:
+					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
+							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
+							"order by s.subjectAreaAbbreviation, c.courseNbr")
+							.setString("name", query.toLowerCase() + "%").setString("title", "% " + query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (CourseOffering course: courses) {
+						if (course.getInstructionalOffering().isNotOffered()) continue;
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.COURSE);
+						ret.setId(course.getUniqueId());
+						ret.setAbbreviation(course.getCourseName());
+						ret.setName(course.getTitle() == null ? course.getCourseName() : course.getTitle());
+						fillInSessionInfo(ret, course.getSubjectArea().getSession());
 						fillInCalendarUrl(ret);
 						resources.add(ret);
 					}
