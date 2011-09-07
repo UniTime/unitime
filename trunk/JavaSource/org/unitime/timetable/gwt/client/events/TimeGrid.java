@@ -228,9 +228,11 @@ public class TimeGrid extends Composite {
 		}
 	}
 	
-	public void labelDays(WeekInterface week) {
+	public void labelDays(WeekInterface first, WeekInterface last) {
 		for (int i = 0; i < iDayLabels.size(); i++) {
-			iDayLabels.get(i).setText(CONSTANTS.longDays()[i] + (week == null ? "" : " " + week.getDayNames().get(i)));
+			iDayLabels.get(i).setText(CONSTANTS.longDays()[i] +
+					(first == null ? "" : " " + first.getDayNames().get(i)) +
+					(last == null ? "" : " - " + last.getDayNames().get(i)));
 		}
 	}
 	

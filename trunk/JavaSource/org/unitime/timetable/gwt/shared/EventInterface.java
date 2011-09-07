@@ -44,19 +44,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private List<String> iExternalIds = null;
 	
 	public static enum ResourceType implements IsSerializable {
-		ROOM("room", "Room Timetable"),
-		SUBJECT("subject", "Subject Timetable"),
-		CURRICULUM("curriculum", "Curriculum Timetable"),
-		DEPARTMENT("department", "Departmental Timetable"),
-		PERSON("person", "Personal Timetable");
+		ROOM("room", "Room Timetable", true),
+		SUBJECT("subject", "Subject Timetable", true),
+		CURRICULUM("curriculum", "Curriculum Timetable", true),
+		DEPARTMENT("department", "Departmental Timetable", true),
+		PERSON("person", "Personal Timetable", true),
+		COURSE("course", "Course Timetable", false);
 		
 		private String iLabel;
 		private String iPageTitle;
+		private boolean iVisible;
 		
-		ResourceType(String label, String title) { iLabel = label; iPageTitle = title; }
+		ResourceType(String label, String title, boolean visible) { iLabel = label; iPageTitle = title; iVisible = visible; }
 		
 		public String getLabel() { return iLabel; }
 		public String getPageTitle() { return iPageTitle; }
+		public boolean isVisible() { return iVisible; }
 	}
 
 	public EventInterface() {}
