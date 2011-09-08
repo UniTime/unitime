@@ -45,6 +45,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -83,6 +85,7 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
  * @struts:action path="/distributionPrefs" name="distributionPrefsForm" input="/user/distributionPrefs.jsp" scope="request"
  */
 public class DistributionPrefsAction extends Action {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -190,7 +193,7 @@ public class DistributionPrefsAction extends Action {
         }
         
         // Add new class - redirect from SchedulingSubpartEdit / ClassEdit
-        if(op.equals(rsc.getMessage("button.addDistPref"))) {
+        if(op.equals(rsc.getMessage("button.addDistPref")) || MSG.actionAddDistributionPreference().equals(op)) {
             Debug.debug("Adding new Class via redirect ...");
 	        frm.setDistType(Preference.BLANK_PREF_VALUE);
 	        frm.setGrouping(Preference.BLANK_PREF_VALUE);

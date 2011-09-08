@@ -34,6 +34,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
@@ -42,6 +43,8 @@
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
 %>
+
+<loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -65,32 +68,42 @@
 						<B><bean:write name="<%=frmName%>" property="instructionalTypeLabel" /></B>
 					</tt:section-title>
 					<html:submit property="op" 
-						styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
-						<bean:message key="button.updatePrefs" />
+						styleClass="btn" 
+						accesskey='<%=MSG.accessUpdatePreferences()%>' 
+						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
+						<loc:message name="actionUpdatePreferences"/>
 					</html:submit> 
 					&nbsp;
 					<html:submit property="op" 
-						styleClass="btn" accesskey="C" titleKey="title.clearSubpartPrefs">
-						<bean:message key="button.clearSubpartPrefs" />
+						styleClass="btn" 
+						accesskey='<%=MSG.accessClearSubpartPreferences() %>' 
+						title='<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>'>
+						<loc:message name="actionClearSubpartPreferences" />
 					</html:submit> 
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousSchedulingSubpartWithUpdate">
-							<bean:message key="button.previousSchedulingSubpart" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessPreviousSubpart() %>" 
+							title="<%=MSG.titlePreviousSubpartWithUpdate(MSG.accessPreviousSubpart()) %>">
+							<loc:message name="actionPreviousSubpart" />
 						</html:submit> 
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						&nbsp;
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextSchedulingSubpartWithUpdate">
-							<bean:message key="button.nextSchedulingSubpart" />
-						</html:submit> 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextSubpart() %>" 
+							title="<%=MSG.titleNextSubpartWithUpdate(MSG.accessNextSubpart()) %>">
+							<loc:message name="actionNextSubpart" />
+						</html:submit>
 					</logic:notEmpty>
 					&nbsp;
 					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-						<bean:message key="button.returnToDetail" />
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToDetail()%>" 
+						title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
+						<loc:message name="actionBackToDetail"/>
 					</html:submit>
 				</tt:section-header>
 			</TD>
@@ -100,7 +113,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsSubpartEdit"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -116,7 +129,7 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="managingDeptName">
 			<TR>
-				<TD>Manager:</TD>
+				<TD><loc:message name="filterManager"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="managingDeptName" />
 				</TD>
@@ -124,28 +137,30 @@
 		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="parentSubpartId">
 			<TR>
-				<TD>Parent Scheduling Subpart:</TD>
+				<TD><loc:message name="propertyParentSchedulingSubpart"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="parentSubpartLabel" />
 				</TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
-			<TD>Instructional Type:</TD>
+			<TD><loc:message name="filterInstructionalType"/></TD>
 			<TD>				 
 				<html:select style="width:200;" property="instructionalType" onchange="javascript: itypeChanged(this);">
 					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
 					<logic:equal name="<%=frmName%>" property="itypeBasic" value="true">
-						<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
+						<html:option value="more" style="background-color:rgb(223,231,242);">
+							<loc:message name="selectMoreOptions"/></html:option>
 					</logic:equal>
 					<logic:equal name="<%=frmName%>" property="itypeBasic" value="false">
-						<html:option value="less" style="background-color:rgb(223,231,242);">&lt;&lt;&lt; Less Options</html:option>
+						<html:option value="less" style="background-color:rgb(223,231,242);">
+							<loc:message name="selectLessOptions"/></html:option>
 					</logic:equal>
 				</html:select>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Date Pattern:</TD>
+			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
 				<html:select style="width:200;" property="datePattern">
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
@@ -154,21 +169,21 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD>Automatic Spread In Time:</TD>
+			<TD><loc:message name="propertyAutomaticSpreadInTime"/></TD>
 			<TD>
-				<html:checkbox property="autoSpreadInTime"/> <i>If checked, spread in time constraint will be automatically posted between classes of this subpart.</i>
+				<html:checkbox property="autoSpreadInTime"/> <i><loc:message name="descriptionAutomaticSpreadInTime"/></i>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Student Overlaps:</TD>
+			<TD><loc:message name="propertyStudentOverlaps"/></TD>
 			<TD>
-				<html:checkbox property="studentAllowOverlap"/> <i>If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.</i>
+				<html:checkbox property="studentAllowOverlap"/> <i><loc:message name="descriptionStudentOverlaps"/></i>
 			</TD>
 		</TR>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
 		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="true">
 		<TR>
-			<TD>Subpart Credit:</TD>
+			<TD><loc:message name="propertySubpartCredit"/></TD>
 			<TD>
 				<html:select style="width:200;" property="creditFormat" onchange="<%= \"if (this.value == '\" + FixedCreditUnitConfig.CREDIT_FORMAT + \"') { document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true } else if (this.value == '\" + ArrangeCreditUnitConfig.CREDIT_FORMAT + \"'){document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableFixedCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableRangeCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = false} else {document.forms[0].creditType.disabled = true; document.forms[0].creditUnitType.disabled = true; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true}\"%>">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -181,7 +196,7 @@
 			<TD>
 				<table>
 				<tr>
-				<td nowrap>Credit Type: </td>
+				<td nowrap><loc:message name="propertyCreditType"/></td>
 				<td>
 				<html:select style="width:200;" property="creditType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
 					<html:options collection="<%=CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
@@ -189,7 +204,7 @@
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Credit Unit Type: </td>
+				<td nowrap><loc:message name="propertyCreditUnitType"/></td>
 				<td>
 				<html:select style="width:200;" property="creditUnitType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
 					<html:options collection="<%=CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
@@ -197,19 +212,19 @@
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Units: </td>
+				<td nowrap><loc:message name="propertyUnits"/></td>
 				<td>
 				<html:text property="units" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0 && !frm.getCreditFormat().equals(ArrangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Max Units: </td>
+				<td nowrap><loc:message name="propertyMaxUnits"/></td>
 				<td>
 				<html:text property="maxUnits" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && (frm.getCreditFormat().equals(VariableFixedCreditUnitConfig.CREDIT_FORMAT) || frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT)))?false:true%>"/>
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Fractional Increments Allowed: </td>
+				<td nowrap><loc:message name="propertyFractionalIncrementsAllowed"/></td>
 				<td>
 				<html:checkbox property="fractionalIncrementsAllowed" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
 				</td>
@@ -221,7 +236,7 @@
 		<logic:equal name="<%=frmName%>" property="subpartCreditEditAllowed" value="false">
 		<TR>
 		
-			<TD>Credit:</TD>
+			<TD><loc:message name="propertyCredit"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="creditText" />
 					<html:hidden property="creditFormat"/>
@@ -296,9 +311,9 @@
 							options[i+1] = new Option(optVal, optId, (currentId==optId));
 						}
 						if (basic)
-							options[count+1] = new Option("More Options >>>","more",false);
+							options[count+1] = new Option("<%=MSG.selectMoreOptions()%>","more",false);
 						else
-							options[count+1] = new Option("<<< Less Options","less",false);
+							options[count+1] = new Option("<%=MSG.selectLessOptions()%>","less",false);
 						options[count+1].style.backgroundColor='rgb(223,231,242)';
 					}
 				}
@@ -314,3 +329,4 @@
 		req.send(vars);
 	}
 </SCRIPT>
+</loc:bundle>
