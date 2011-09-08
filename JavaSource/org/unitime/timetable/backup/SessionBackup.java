@@ -77,6 +77,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolutionInfo;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -144,6 +145,7 @@ public class SessionBackup {
     		avoid.add(TimetableManager.class.getName() + ".solverGroups");
     		avoid.add(DistributionType.class.getName() + ".departments");
     		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
+    		avoid.add(Student.class.getName() + ".lastLikeCourseDemands");
     		
     		Set<String> allowedNullRelations = new HashSet<String>();
     		allowedNullRelations.add(Room.class.getName() + ".building");
