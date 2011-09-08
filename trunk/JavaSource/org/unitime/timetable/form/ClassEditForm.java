@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
@@ -48,6 +50,7 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * @struts:form name="classEditForm"
  */
 public class ClassEditForm extends PreferencesForm {
+	
 
     // --------------------------------------------------------- Class Constants
 
@@ -56,6 +59,9 @@ public class ClassEditForm extends PreferencesForm {
 	 */
 	private static final long serialVersionUID = 3257849883023915058L;
 
+	// Messages
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	/** Class Start/End Date Format **/
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");    
     
@@ -122,32 +128,38 @@ public class ClassEditForm extends PreferencesForm {
         
         if(nbrRooms!=null && nbrRooms.intValue()<0)
             errors.add("nbrRooms", 
-                    new ActionMessage("errors.integerGtEq", "No. of Rooms", "0") );
+                    new ActionMessage("errors.generic", MSG.errorNumberOfRoomsNegative()) );
         
         if (roomRatio==null || roomRatio.floatValue()<0.0f)
             errors.add("nbrRooms", 
-                    new ActionMessage("errors.integerGtEq", "Room Ratio", "0.0") );
+                    new ActionMessage("errors.generic", MSG.errorRoomRatioNegative()) );
         
         if(expectedCapacity==null || expectedCapacity.intValue()<0) 
             errors.add("expectedCapacity", 
-                    new ActionMessage("errors.integerGtEq", "Minimum Expected Capacity", "0") );
+                    new ActionMessage("errors.generic", MSG.errorMinimumExpectedCapacityNegative()) );
         
         if(maxExpectedCapacity==null || maxExpectedCapacity.intValue()<0) 
             errors.add("maxExpectedCapacity", 
-                    new ActionMessage("errors.integerGtEq", "Maximum Expected Capacity", "0") );
+                    new ActionMessage("errors.generic", MSG.errorMaximumExpectedCapacityNegative()) );
         else 
             if(maxExpectedCapacity.intValue()<expectedCapacity.intValue()) 
                 errors.add("maxExpectedCapacity", 
-                        new ActionMessage("errors.integerGtEq", "Maximum Expected Capacity", "Minimum Expected Capacity") );
+                        new ActionMessage("errors.generic", MSG.errorMaximumExpectedCapacityLessThanMinimum()) );
             
         if( managingDept==null || managingDept.longValue()<=0) 
             errors.add("managingDept", 
-                    new ActionMessage("errors.required", "Class Owner") );
+                    new ActionMessage("errors.generic", MSG.errorRequiredClassOwner()) );
+        
+        // Schedule print note has 2000 character limit
+        if(schedulePrintNote!=null && schedulePrintNote.length()>1999) 
+            errors.add("notes", 
+                    new ActionMessage("errors.generic", MSG.errorSchedulePrintNoteLongerThan1999()) );
+        
         
         // Notes has 1000 character limit
         if(notes!=null && notes.length()>999) 
             errors.add("notes", 
-                    new ActionMessage("errors.maxlength", "Notes", "999") );
+                    new ActionMessage("errors.generic", MSG.errorNotesLongerThan999()) );
         
         // At least one instructor is selected
         if (instructors.size()>0) {
@@ -157,7 +169,7 @@ public class ClassEditForm extends PreferencesForm {
                 errors.add("instrPrefs", 
                         new ActionMessage(
                                 "errors.generic", 
-                                "Invalid instructor preference: Check for duplicate / blank selection. ") );
+                                MSG.errorInvalidInstructorPreference()) );
 
             /* -- 1 lead instructor not required
             // Check Lead Instructor is set
@@ -212,8 +224,7 @@ public class ClassEditForm extends PreferencesForm {
         	            errors.add("roomPref", 
     	                    new ActionMessage(
     	                            "errors.generic",
-    	                            "Required room " + room.getLabel() + " (capacity: " + rCap + 
-    	                            ") cannot accomodate this class (capacity: " + iRoomCapacity + ").") );
+    	                            MSG.errorRequiredRoomTooSmall(room.getLabel(), rCap, iRoomCapacity)) );
                     }
                 }
             }

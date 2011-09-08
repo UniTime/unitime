@@ -40,6 +40,8 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
 import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
@@ -59,6 +61,9 @@ import org.unitime.timetable.webutil.PdfWebTable;
  * @author Tomas Muller
  */
 public class ExamsAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    ExamsForm myForm = (ExamsForm)form;
 
@@ -70,7 +75,7 @@ public class ExamsAction extends Action {
                 myForm.setSubjectArea(request.getParameter("subject"));
             } else {
             	if (myForm.canDisplayAllSubjectsAtOnce()){
-            		myForm.setSubjectArea("--ALL--");
+            		myForm.setSubjectArea(Constants.ALL_OPTION_VALUE);
             	}
             }
             if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
@@ -95,7 +100,7 @@ public class ExamsAction extends Action {
         		if (LoginManager.isUserLockedOut(myForm.getUsername(), attemptDateTime)){
         			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
         			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-         			myForm.setMessage("User temporarily locked out - Exceeded maximum failed login attempts.");
+         			myForm.setMessage(MSG.errorUserTemporarilyLockedOut());
         		} else {
 	               try {
 	                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
@@ -105,7 +110,7 @@ public class ExamsAction extends Action {
 	                    Set creds = lc.getSubject().getPublicCredentials();
 	                    if (creds==null || creds.size()==0) {
 	            			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-	                        myForm.setMessage("Authentication failed");
+	                        myForm.setMessage(MSG.errorAuthenticationFailed());
 	                    } else {
 	                        for (Iterator i=creds.iterator(); i.hasNext(); ) {
 	                            Object o = i.next();
@@ -129,7 +134,7 @@ public class ExamsAction extends Action {
 	                    }
 	                } catch (LoginException le) {
             			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-	                    myForm.setMessage("Authentication failed");
+	                    myForm.setMessage(MSG.errorAuthenticationFailed());
 	                }
         		}
             }
@@ -143,7 +148,7 @@ public class ExamsAction extends Action {
             if ((myForm.getExamType()==Exam.sExamTypeFinal && session.getStatusType().canNoRoleReportExamFinal()) ||
                 (myForm.getExamType()==Exam.sExamTypeMidterm && session.getStatusType().canNoRoleReportExamMidterm())) {
                 List exams = null;
-                if ("--ALL--".equals(myForm.getSubjectArea())) 
+                if (Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectArea())) 
                     exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
                 else {
                     SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
@@ -173,22 +178,24 @@ public class ExamsAction extends Action {
 		
 	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
 	    PdfWebTable table = new PdfWebTable( 7,
-                form.getSessionLabel()+" "+form.getExamTypeLabel()+" examinations"+("--ALL--".equals(form.getSubjectArea())?"":" ("+form.getSubjectArea()+")"), "exams.do?ord=%%",
+                form.getSessionLabel()+" "+form.getExamTypeLabel()+" "+ MSG.examinations() + 
+                	(Constants.ALL_OPTION_VALUE.equals(form.getSubjectArea())?"":" ("+
+                	form.getSubjectArea()+")"), "exams.do?ord=%%",
                 new String[] {
-                    "Subject",
-                    "Course",
-                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name","External Id"):"Instruction Type"),
-                    "Section",
-                    "Date",
-                    "Time",
-                    "Room"},
+                    MSG.columnExamSubject(),
+                    MSG.columnExamCourse(),
+                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name", MSG.columnExamExternalId()):MSG.columnExamInstructionalType()),
+                    MSG.columnExamSection(),
+                    MSG.columnExamDate(),
+                    MSG.columnExamTime(),
+                    MSG.columnExamRoom()},
                 new String[] {"left", "left", "left", "left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignment exam : exams) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (!"--ALL--".equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;
+                if (!Constants.ALL_OPTION_VALUE.equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;
                 table.addLine(
                         new String[] {
                                 section.getSubject(),

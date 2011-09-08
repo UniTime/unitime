@@ -1,5 +1,5 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
+* UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -33,6 +33,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -64,6 +66,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public class Exams extends BodyTagSupport {
 	private static final long serialVersionUID = -666904499562226756L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private String iType = null;
     private boolean iAdd = true;
     private String iId = null;
@@ -117,17 +120,22 @@ public class Exams extends BodyTagSupport {
                 if (!edit || !iAdd) return EVAL_PAGE;
             }
             
-            String title = (exams.size()==1?"Examination":"Examinations");
+            String title = (exams.size()==1?MSG.sectionTitleExamination():MSG.sectionTitleExaminations());
             if (edit && iAdd) 
                 title = "<table width='100%'><tr><td width='100%'>" + 
-                    "<DIV class=\"WelcomeRowHeadNoLine\">Examinations</DIV>"+
+                    "<DIV class=\"WelcomeRowHeadNoLine\">"+MSG.sectionTitleExaminations()+"</DIV>"+
                     "</td><td style='padding-bottom: 2px'>"+
-                    "<input type=\"button\" onclick=\"document.location='examEdit.do?firstType="+getType()+"&firstId="+objectId+"';\" class=\"btn\" accesskey='X' title='Add Examination (Alt+X)' value=\"Add Examination\">"+
+                    "<input type=\"button\" onclick=\"document.location='examEdit.do?firstType="+getType()+"&firstId="+objectId+"';\" " +
+                    		"class=\"btn\" accesskey='"+ MSG.accessAddExamination() +"' title='" + 
+                    			MSG.titleAddExamination(MSG.accessAddExamination())+"' value='" + MSG.actionAddExamination()+"'>"+
                     "</td></tr></table>";
             
             WebTable table = new WebTable(10, title,
-                    new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
-                        "Instructor", "Period<br>Preferences", "Room<br>Preferences", "Distribution<br>Preferences"},
+                    new String[] { MSG.columnExamClassesCourses(), MSG.columnExamType(), 
+            			MSG.columnExamLength(), MSG.columnExamSeatingType(), MSG.columnExamSize(), 
+            			MSG.columnExamMaxRooms(), MSG.columnExamInstructor(), 
+            			MSG.columnExamPeriodPreferences(), MSG.columnExamRoomPreferences(),
+            			MSG.columnExamDistributionPreferences()},
                     new String[] {"left", "left", "right", "center", "right", "right", "left", 
                         "left", "left", "left"},
                         new boolean[] {true, true, true, true, true, true, true, true, true}
@@ -163,8 +171,11 @@ public class Exams extends BodyTagSupport {
                 if (view) {
                     if (hasSolution)
                         table = new WebTable(10, title,
-                                new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
-                                "Instructor", "Assigned<br>Period", "Assigned<br>Room", "Student<br>Conflicts"},
+                                new String[] { MSG.columnExamClassesCourses(), MSG.columnExamType(), 
+                        		MSG.columnExamLength(), MSG.columnExamSeatingType(), MSG.columnExamSize(),
+                        		MSG.columnExamMaxRooms(), MSG.columnExamInstructor(), 
+                                MSG.columnExamAssignedPeriod(), MSG.columnExamAssignedRoom(), 
+                                MSG.columnExamStudentConflicts()},
                             new String[] {"left", "left", "right", "center", "right", "right", "left", 
                                 "left", "left", "left"},
                                 new boolean[] {true, true, true, true, true, true, true, true, true}
@@ -265,7 +276,7 @@ public class Exams extends BodyTagSupport {
                                     objects,
                                     Exam.sExamTypes[exam.getExamType()],
                                     exam.getLength().toString(),
-                                    (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                    (Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.examSeatingTypeNormal():MSG.examSeatingTypeExam()),
                                     String.valueOf(nrStudents),
                                     exam.getMaxNbrRooms().toString(),
                                     instructors,
@@ -279,7 +290,8 @@ public class Exams extends BodyTagSupport {
                 } else {
                     if (!hasSolution) return EVAL_PAGE;
                     table = new WebTable(5, title,
-                            new String[] { "Classes / Courses", "Type", "Instructor", "Period", "Room"},
+                            new String[] { MSG.columnExamClassesCourses(), MSG.columnExamType(), 
+                    			MSG.columnExamInstructor(), MSG.columnExamPeriod(), MSG.columnExamRoom()},
                             new String[] {"left", "left", "left", "left", "left"},
                             new boolean[] {true, true, true, true, true}
                         );

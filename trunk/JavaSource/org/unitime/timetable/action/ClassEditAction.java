@@ -331,7 +331,7 @@ public class ClassEditAction extends PreferencesAction {
         BackTracker.markForBack(
         		request,
         		"classDetail.do?cid="+frm.getClassId(),
-        		"Class ("+frm.getClassName()+")",
+        		MSG.backClass(frm.getClassName()),
         		true, false);
 
         return mapping.findForward("editClass");

@@ -29,6 +29,8 @@ import javax.servlet.jsp.JspWriter;
 import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -60,7 +62,8 @@ import org.unitime.timetable.util.Constants;
  */
 public class WebClassListTableBuilder extends
 		WebInstructionalOfferingTableBuilder {
-    public static String STUDENT_SCHEDULE_NOTE = "Student Schedule Note";
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+    public static String STUDENT_SCHEDULE_NOTE = MSG.columnStudentScheduleNote();
     protected String getSchedulePrintNoteLabel(){
     	return STUDENT_SCHEDULE_NOTE;
     }

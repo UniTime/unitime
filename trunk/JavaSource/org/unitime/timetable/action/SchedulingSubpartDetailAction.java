@@ -104,17 +104,17 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        
 	        // Check op exists
 	        if(op==null)
-	            throw new Exception ("Null Operation not supported.");
+	            throw new Exception (MSG.errorNullOperationNotSupported());
 
 	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
 	        // Read subpart id from form
-	        if(op.equals(rsc.getMessage("button.editPrefsSubpart"))
-	        		|| op.equals(rsc.getMessage("button.addDistPref"))
-	                || op.equals(rsc.getMessage("button.backToInstrOffrDet"))
-	                || op.equals(rsc.getMessage("button.nextSchedulingSubpart"))
-	                || op.equals(rsc.getMessage("button.previousSchedulingSubpart"))
-	                || op.equals(rsc.getMessage("button.clearAllClassPrefs"))) {
+	        if(op.equals(MSG.actionEditSubpart())
+	        		|| op.equals(MSG.actionAddDistributionPreference())
+	                // || op.equals(rsc.getMessage("button.backToInstrOffrDet")) for deletion
+	                || op.equals(MSG.actionNextSubpart())
+	                || op.equals(MSG.actionPreviousSubpart())
+	                || op.equals(MSG.actionClearClassPreferencesOnSubpart())) {
 	            subpartId = frm.getSchedulingSubpartId();
 	        } else {
 	        	frm.reset(mapping, request);
@@ -125,31 +125,33 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 	        // Check subpart exists
 	        if(subpartId==null || subpartId.trim()=="")
-	            throw new Exception ("Subpart Info not supplied.");
+	            throw new Exception (MSG.errorSubpartInfoNotSupplied());
 
 	        // If subpart id is not null - load subpart info
 	        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
 	        SchedulingSubpart ss = sdao.get(new Long(subpartId));
 
+	       /* for deletion 
 	        // Cancel - Go back to Instructional Offering Screen
 	        if(op.equals(rsc.getMessage("button.backToInstrOffrDet"))
 	                && subpartId!=null && subpartId.trim()!="") {
 
-	            /*doCancel(request, subpartId);
-	            return mapping.findForward("instructionalOfferingSearch");
-	            */
+	            // doCancel(request, subpartId);
+	            // return mapping.findForward("instructionalOfferingSearch");
+	            
 
 	        	response.sendRedirect( response.encodeURL("instructionalOfferingDetail.do?op=view&io="+ss.getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
 	        }
+	        */
 
 	        // Edit Preference - Redirect to prefs edit screen
-	        if(op.equals(rsc.getMessage("button.editPrefsSubpart"))
+	        if(op.equals(MSG.actionEditSubpart())
 	                && subpartId!=null && subpartId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("schedulingSubpartEdit.do?ssuid="+ss.getUniqueId().toString()) );
 	        }
 
 			// Add Distribution Preference - Redirect to dist prefs screen
-		    if(op.equals(rsc.getMessage("button.addDistPref"))) {
+		    if(op.equals(MSG.actionAddDistributionPreference())) {
 		        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 		        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
 		        request.setAttribute("schedSubpartId", subpartId);
@@ -158,12 +160,12 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	            return mapping.findForward("addDistributionPrefs");
 		    }
 
-            if (op.equals(rsc.getMessage("button.nextSchedulingSubpart"))) {
+            if (op.equals(MSG.actionNextSubpart())) {
             	response.sendRedirect(response.encodeURL("schedulingSubpartDetail.do?ssuid="+frm.getNextId()));
             	return null;
             }
 
-            if (op.equals(rsc.getMessage("button.clearAllClassPrefs")) && "y".equals(request.getParameter("confirm"))) {
+            if (op.equals(MSG.actionClearClassPreferencesOnSubpart()) && "y".equals(request.getParameter("confirm"))) {
             	Class_DAO cdao = new Class_DAO();
             	for (Iterator i=ss.getClasses().iterator();i.hasNext();) {
             		Class_ c = (Class_)i.next();
@@ -181,7 +183,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
                         ss.getManagingDept());
             }
 
-            if (op.equals(rsc.getMessage("button.previousSchedulingSubpart"))) {
+            if (op.equals(MSG.actionPreviousSubpart())) {
             	response.sendRedirect(response.encodeURL("schedulingSubpartDetail.do?ssuid="+frm.getPreviousId()));
             	return null;
             }
@@ -218,7 +220,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 	        BackTracker.markForBack(request,
 	        		"schedulingSubpartDetail.do?ssuid="+frm.getSchedulingSubpartId(),
-	        		"Scheduling Subpart ("+ss.getSchedulingSubpartLabel()+")",
+	        		MSG.backSubpart(ss.getSchedulingSubpartLabel()),
 	        		true, false);
 
 	        return mapping.findForward("displaySchedulingSubpart");

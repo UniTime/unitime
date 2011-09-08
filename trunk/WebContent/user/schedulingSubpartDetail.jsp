@@ -32,6 +32,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
@@ -41,6 +42,8 @@
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
 %>		
+
+<loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -48,7 +51,7 @@
 		function confirmClearAllClassPreference() {
 			if (jsConfirm!=null && !jsConfirm) return;
 
-			if (!confirm('Do you really want to clear all class preferences?')) {
+			if (!confirm('<%=MSG.confirmClearAllClassPreferences()%>')) {
 				SchedulingSubpartEditForm.confirm.value='n';
 			}
 		}
@@ -67,7 +70,8 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="Instructional Offering Detail (Alt+I)" accesskey="I" class="l8"
+						<A title="<%=MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail()) %>" 
+							accesskey="<%=MSG.accessInstructionalOfferingDetail() %>" class="l8"
 							href="instructionalOfferingDetail.do?op=view&io=<bean:write name="<%=frmName%>" property="instrOfferingId"/>">
 							<bean:write name="<%=frmName%>" property="subjectArea"/>
 							<bean:write name="<%=frmName%>" property="courseNbr"/> - <bean:write name="<%=frmName%>" property="courseTitle"/></A>:
@@ -76,17 +80,21 @@
 					</tt:section-title>
 					
 					<logic:equal name="<%=frmName%>" property="editable" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="E" titleKey="title.editPrefsSubpart" >
-							<bean:message key="button.editPrefsSubpart" />
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditSubpart() %>" 
+							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
+							<loc:message name="actionEditSubpart" />
 						</html:submit> 
 				
 						&nbsp;
-						<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-							<bean:message key="button.addDistPref" />
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
+							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
+							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
 					</logic:equal>
 					
-					<!-- 
+					<!-- for deletion
 					&nbsp;
 					<html:submit property="op" styleClass="btn" accesskey="C" title="Instructional Offering Detail">
 						<bean:message key="button.backToInstrOffrDet" />
@@ -96,20 +104,28 @@
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
-								styleClass="btn" accesskey="P" titleKey="title.previousSchedulingSubpart">
-							<bean:message key="button.previousSchedulingSubpart" />
-						</html:submit> 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessPreviousSubpart()%>"
+								title="<%=MSG.titlePreviousSubpart(MSG.accessPreviousSubpart()) %>">
+							<loc:message name="actionPreviousSubpart" />
+						</html:submit>
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						&nbsp;
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextSchedulingSubpart">
-							<bean:message key="button.nextSchedulingSubpart" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextSubpart()%>" 
+							title="<%=MSG.titleNextSubpart(MSG.accessNextSubpart())%>">
+							<loc:message name="actionNextSubpart" />
 						</html:submit> 
 					</logic:notEmpty>
 
 					&nbsp;
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackSubpartDetail()%>" 
+							title="<%=MSG.titleBackSubpartDetail(MSG.accessBackSubpartDetail())%>" 
+							accesskey="<%=MSG.accessBackSubpartDetail() %>"  
+						type="PreferenceGroup">
 						<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
 					</tt:back>
 				</tt:section-header>
@@ -119,7 +135,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsSubpartDetail"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -135,7 +151,7 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="managingDeptName">
 			<TR>
-				<TD>Manager:</TD>
+				<TD><loc:message name="filterManager"/></TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="managingDeptName" />
 				</TD>
@@ -143,7 +159,7 @@
 		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="parentSubpartLabel">
 			<TR>
-				<TD>Parent Scheduling Subpart:</TD>
+				<TD><loc:message name="propertyParentSchedulingSubpart"/></TD>
 				<TD>
 					<logic:empty name="<%=frmName%>" property="parentSubpartId">
 						<bean:write name="<%=frmName%>" property="parentSubpartLabel" />
@@ -157,7 +173,7 @@
 			</TR>
 		</logic:notEmpty>
 		<TR>
-			<TD>Instructional Type:</TD>
+			<TD> <loc:message name="filterInstructionalType"/> </TD>
 			<TD>
 				<logic:iterate scope="request" name="<%=ItypeDesc.ITYPE_ATTR_NAME%>" id="itp">
 					<logic:equal name="<%=frmName%>" property="instructionalType" value="<%=((ItypeDesc)itp).getItype().toString()%>">
@@ -167,7 +183,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD>Date Pattern:</TD>
+			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
 				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
@@ -179,7 +195,7 @@
 		</TR>
 		<logic:equal name="<%=frmName%>" property="autoSpreadInTime" value="false">
 			<TR>
-				<TD>Automatic Spread In Time:</TD>
+				<TD><loc:message name="propertyAutomaticSpreadInTime"/></TD>
 				<TD>
 					<font color='red'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>
 				</TD>
@@ -187,7 +203,7 @@
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="studentAllowOverlap" value="true">
 		<TR>
-			<TD>Student Overlaps:</TD>
+			<TD><loc:message name="propertyStudentOverlaps"/></TD>
 			<TD>
 				<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>
 			</TD>
@@ -195,7 +211,7 @@
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
 		<TR>
-			<TD>Subpart Credit:</TD>
+			<TD><loc:message name="propertySubpartCredit"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="creditText" />
 			</TD>
@@ -210,7 +226,7 @@
 		<TR>
 			<TD colspan="2" valign="middle">
 				&nbsp;<BR>
-				<tt:section-title>Preferences</tt:section-title>
+				<tt:section-title><loc:message name="sectionTitlePreferences"/></tt:section-title>
 			</TD>
 		</TR>
 		<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
@@ -232,11 +248,12 @@
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Classes</tt:section-title>
+					<tt:section-title><loc:message name="sectionTitleClasses"/></tt:section-title>
 						<logic:equal name="<%=frmName%>" property="editable" value="true">
-							<html:submit property="op" styleClass="btn" titleKey="title.clearAllClassPrefs"
+							<html:submit property="op" styleClass="btn" 
+								title="<%=MSG.titleClearClassPreferencesOnSubpart() %>"
 								onclick="confirmClearAllClassPreference();displayLoading();">
-								<bean:message key="button.clearAllClassPrefs" />
+								<loc:message name="actionClearClassPreferencesOnSubpart" />
 							</html:submit> 
 						</logic:equal>
 				</tt:section-header>
@@ -283,17 +300,21 @@
 				<INPUT type="hidden" name="doit" value="Cancel">
 
 				<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="E" titleKey="title.editPrefsSubpart" >
-						<bean:message key="button.editPrefsSubpart" />
-					</html:submit> 
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditSubpart() %>" 
+							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
+							<loc:message name="actionEditSubpart" />
+						</html:submit> 
 				
 					&nbsp;
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-						<bean:message key="button.addDistPref" />
-					</html:submit>
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
+							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
+							<loc:message name="actionAddDistributionPreference" />
+						</html:submit>
 				</logic:equal>
 				
-				<!-- 
+				<!-- for deletion
 				&nbsp;
 				<html:submit property="op" styleClass="btn" accesskey="C" title="Instructional Offering Detail">
 					<bean:message key="button.backToInstrOffrDet" />
@@ -302,29 +323,36 @@
 
 				<logic:notEmpty name="<%=frmName%>" property="previousId">
 					&nbsp;
-					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousSchedulingSubpart">
-						<bean:message key="button.previousSchedulingSubpart" />
-					</html:submit> 
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessPreviousSubpart()%>"
+								title="<%=MSG.titlePreviousSubpart(MSG.accessPreviousSubpart()) %>">
+							<loc:message name="actionPreviousSubpart" />
+						</html:submit>
 				</logic:notEmpty>
 				<logic:notEmpty name="<%=frmName%>" property="nextId">
 					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextSchedulingSubpart">
-						<bean:message key="button.nextSchedulingSubpart" />
-					</html:submit> 
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextSubpart()%>" 
+							title="<%=MSG.titleNextSubpart(MSG.accessNextSubpart())%>">
+							<loc:message name="actionNextSubpart" />
+						</html:submit> 
 				</logic:notEmpty>
 
 				&nbsp;
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
-					<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
-				</tt:back>
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackSubpartDetail()%>" 
+							title="<%=MSG.titleBackSubpartDetail(MSG.accessBackSubpartDetail())%>" 
+							accesskey="<%=MSG.accessBackSubpartDetail() %>"  
+						type="PreferenceGroup">
+						<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
+					</tt:back>
 			</TD>
 		</TR>
 
 	
 	</TABLE>
-	
 	
 </html:form>
 
@@ -335,3 +363,5 @@
 	<% } %>
   	}
 </SCRIPT>
+
+</loc:bundle>

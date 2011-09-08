@@ -22,6 +22,7 @@ package org.unitime.localization.messages;
 import org.unitime.timetable.action.ClassSearchAction;
 import org.unitime.timetable.action.InstructionalOfferingSearchAction;
 
+
 /**
  * @author Tomas Muller
  */
@@ -60,6 +61,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Parent Class:")
 	String propertyParentClass();
 	
+	@DefaultMessage("Parent Scheduling Subpart:")
+	String propertyParentSchedulingSubpart();
+	
 	@DefaultMessage("External Id:")
 	String propertyExternalId();
 	
@@ -87,6 +91,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Date Pattern:")
 	String propertyDatePattern();
 	
+	@DefaultMessage("Date:")
+	String propertyDate();
+	
 	@DefaultMessage("Display Instructors:")
 	String propertyDisplayInstructors();
 	
@@ -102,6 +109,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructors:")
 	String propertyInstructors();
 	
+	@DefaultMessage("Instructor:")
+	String propertyInstructor();
+	
 	@DefaultMessage("Time:")
 	String propertyTime();
 	
@@ -113,6 +123,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Rooms:")
 	String propertyRooms();
+	
+	@DefaultMessage("Room:")
+	String propertyRoom();
 	
 	@DefaultMessage("Buildings:")
 	String propertyBuildings();
@@ -126,9 +139,72 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Distribution:")
 	String propertyDistribution();
 	
+	@DefaultMessage("Initial Assignment:")
+	String propertyInitialAssignment();
+	
+	@DefaultMessage("Student Conflicts:")
+	String propertyStudentConflicts();
+	
+	@DefaultMessage("Violated Constraints:")
+	String propertyViolatedConstraints();
+	
+	@DefaultMessage("Room Locations:")
+	String propertyRoomLocations();
+	
+	@DefaultMessage("Time Locations:")
+	String propertyTimeLocations();
+	
+	@DefaultMessage("Date Patterns:")
+	String propertyDatePatterns();
+	
+	@DefaultMessage("Minimum Room Size:")
+	String propertyMinimumRoomSize();
+	
+	@DefaultMessage("Note:")
+	String propertyNote();
+	
+	@DefaultMessage("Automatic Spread In Time:")
+	String propertyAutomaticSpreadInTime();
+	
+	@DefaultMessage("Student Overlaps:")
+	String propertyStudentOverlaps();
+	
+	@DefaultMessage("Credit:")
+	String propertyCredit();
+	
+	@DefaultMessage("Subpart Credit:")
+	String propertySubpartCredit();
+	
+	@DefaultMessage("Credit Type:")
+	String propertyCreditType();
+	
+	@DefaultMessage("Credit Unit Type:")
+	String propertyCreditUnitType();
+	
+	@DefaultMessage("Units:")
+	String propertyUnits();
+	
+	@DefaultMessage("Max Units:")
+	String propertyMaxUnits();
+	
+	@DefaultMessage("Fractional Increments Allowed:")
+	String propertyFractionalIncrementsAllowed();
+	
+	@DefaultMessage("this one")
+	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
+	
 //	@DefaultMessage("Parent Class:")
 //	String propertyParentClass();
 	
+	@DefaultMessage("Normal")
+	String examSeatingTypeNormal();
+	
+	@DefaultMessage("Exam")
+	String examSeatingTypeExam();
+	
+	@DefaultMessage("examinations")
+	String examinations(); //used in ExamsAction.java, in PdfWebTable getTable
+		
 	@DefaultMessage("Sort classes only within scheduling subparts")
 	String checkSortWithinSubparts();
 	
@@ -209,6 +285,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Schedule of Classes Note")
 	String columnSchedulePrintNote();
+	
+	@DefaultMessage("Student Schedule Note")
+	String columnStudentScheduleNote();
 
 	@DefaultMessage("Note to Schedule Manager")
 	String columnNote();
@@ -269,6 +348,81 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Check Conflicts")
 	String columnInstructorCheckConflicts();
+	
+	@DefaultMessage("Classes / Courses")
+	String columnExamClassesCourses();
+	
+	@DefaultMessage("Type")
+	String columnExamType();
+	
+	@DefaultMessage("Length")
+	String columnExamLength();
+	
+	@DefaultMessage("Seating<br>Type")
+	String columnExamSeatingType();
+	
+	@DefaultMessage("Size")
+	String columnExamSize();
+	
+	@DefaultMessage("Max<br>Rooms")
+	String columnExamMaxRooms();
+	
+	@DefaultMessage("Instructor")
+	String columnExamInstructor();
+	
+	@DefaultMessage("Period<br>Preferences")
+	String columnExamPeriodPreferences();
+
+	@DefaultMessage("Room<br>Preferences")
+	String columnExamRoomPreferences();
+	
+	@DefaultMessage("Distribution<br>Preferences")
+	String columnExamDistributionPreferences();
+	
+	@DefaultMessage("Assigned<br>Period")
+	String columnExamAssignedPeriod();
+	
+	@DefaultMessage("Assigned<br>Room")
+	String columnExamAssignedRoom();
+	
+	@DefaultMessage("Student<br>Conflicts")
+	String columnExamStudentConflicts();
+	
+	@DefaultMessage("Subject")
+	String columnExamSubject();
+	
+	@DefaultMessage("Course")
+	String columnExamCourse();
+	
+	@DefaultMessage("External Id")
+	String columnExamExternalId();
+	
+	@DefaultMessage("Instructional Type")
+	String columnExamInstructionalType();
+
+	@DefaultMessage("Section")
+	String columnExamSection();
+	
+	@DefaultMessage("Date")
+	String columnExamDate();
+
+	@DefaultMessage("Time")
+	String columnExamTime();
+	
+	@DefaultMessage(" Type ")
+	String columnDistrPrefType();
+	
+	@DefaultMessage(" Structure ")
+	String columnDistrPrefStructure();
+
+	@DefaultMessage(" Owner ")
+	String columnDistrPrefOwner();
+	
+	@DefaultMessage(" Class ")
+	String columnDistrPrefClass();
+	
+	@DefaultMessage("Not assigned.")
+	String messageNotAssigned();
 
 	@DefaultMessage("{0} - Do Not Display In Schedule Book.")
 	String tooltipDoNotDisplayInScheduleBook(String classLabelWithTitle);
@@ -369,6 +523,9 @@ public interface CourseMessages extends Messages {
 	String actionBackClassDetail();
 	
 	@DefaultMessage("Back")
+	String actionBackSubpartDetail();
+	
+	@DefaultMessage("Back")
 	String actionBackToDetail();
 	
 	@DefaultMessage("Update")
@@ -379,7 +536,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
-
+	
 	@DefaultMessage("Clear Subpart Preferences")
 	String actionClearSubpartPreferences();
 
@@ -427,6 +584,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete")
 	String actionRemoveInstructor();
+	
+	@DefaultMessage("Add Examination")
+	String actionAddExamination();
+	
+	@DefaultMessage("Edit Subpart")
+	String actionEditSubpart();
+	
+	@DefaultMessage("Clear Class Preferences")
+	String actionClearClassPreferencesOnSubpart();
 	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
@@ -480,6 +646,9 @@ public interface CourseMessages extends Messages {
 	String accessBackClassDetail();
 	
 	@DefaultMessage("B")
+	String accessBackSubpartDetail();
+	
+	@DefaultMessage("B")
 	String accessBackToDetail();
 	
 	@DefaultMessage("I")
@@ -524,6 +693,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("I")
 	String accessAddInstructor();
 	
+	@DefaultMessage("X")
+	String accessAddExamination();
+	
+	@DefaultMessage("E")
+	String accessEditSubpart();
+	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
@@ -548,11 +723,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Open Class Assignment Dialog (Alt+{0})")
 	String titleOpenClassAssignmentDialog(String accessKey);
 		
-	@DefaultMessage("Previous Class (ALT+{0})")
+	@DefaultMessage("Previous Class (Alt+{0})")
 	String titlePreviousClass(String accessKey);
 	
 	@DefaultMessage("Update and go to previous Class (Alt+{0})")
 	String titlePreviousClassWithUpdate(String accessKey);
+	
+	@DefaultMessage("Previous Scheduling Subpart (Alt+{0}")
+	String titlePreviousSubpart(String accessKey);
 	
 	@DefaultMessage("Update and go to previous Scheduling Subpart (Alt+{0})")
 	String titlePreviousSubpartWithUpdate(String accessKey);
@@ -563,11 +741,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update and go to previous Examination (Alt+{0})")
 	String titlePreviousExaminationWithUpdate(String accessKey);
 
-	@DefaultMessage("Next Class (ALT+{0})")
+	@DefaultMessage("Next Class (Alt+{0})")
 	String titleNextClass(String accessKey);
 	
 	@DefaultMessage("Update and go to next Class (Alt+{0})")
 	String titleNextClassWithUpdate(String accessKey);
+	
+	@DefaultMessage("Next Scheduling Subpart (Alt+{0})")
+	String titleNextSubpart(String accessKey);
 	
 	@DefaultMessage("Update and go to next Scheduling Subpart (Alt+{0})")
 	String titleNextSubpartWithUpdate(String accessKey);
@@ -583,6 +764,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
+	
+	@DefaultMessage("Return to %% (Alt+{0})")
+	String titleBackSubpartDetail(String accessKey);
 	
 	@DefaultMessage("Do not commit any change. Return to Detail Screen (Alt+{0})")
 	String titleBackToDetail(String accessKey);
@@ -646,6 +830,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Remove Instructor")
 	String titleRemoveInstructor();
+	
+	@DefaultMessage("Add Examination (Alt+{0})")
+	String titleAddExamination(String accessKey);
+	
+	@DefaultMessage("Edit Scheduling Supbart (Alt+{0})")
+	String titleEditSubpart(String accessKey);
+	
+	@DefaultMessage("Delete all Class Preferences. Preferences will be inherited from the subpart.")
+	String titleClearClassPreferencesOnSubpart();
 		
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -678,19 +871,37 @@ public interface CourseMessages extends Messages {
 	String errorsClassDetail();
 	
 	@DefaultMessage("ERRORS")
+	String errorsSubpartDetail();
+	
+	@DefaultMessage("ERRORS")
 	String errorsClassEdit();
+	
+	@DefaultMessage("ERRORS")
+	String errorsSubpartEdit();
 	
 	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
 	String errorInvalidRoomGroup();
 	
+	@DefaultMessage("Invalid room group level. ")
+	String errorInvalidRoomGroupLevel();
+	
 	@DefaultMessage("Invalid building preference: Check for duplicate / blank selection. ")
 	String errorInvalidBuildingPreference();
 	
+	@DefaultMessage("Invalid building preference level. ")
+	String errorInvalidBuildingPreferenceLevel();
+	
 	@DefaultMessage("Invalid distribution preference: Check for duplicate / blank selection. ")
 	String errorInvalidDistributionPreference();
+
+	@DefaultMessage("Invalid distribution preference level.")
+	String errorInvalidDistributionPreferenceLevel();
 	
 	@DefaultMessage("Invalid room feature preference: Check for duplicate / blank selection. ")
 	String errorInvalidRoomFeaturePreference();
+	
+	@DefaultMessage("Invalid room feature preference level. ")
+	String errorInvalidRoomFeaturePreferenceLevel();
 
 	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection. ")
 	String errorInvalidInstructorPreference();
@@ -701,11 +912,50 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Invalid room preference: Check for duplicate / blank selection. ")
 	String errorInvalidRoomPreference();
 	
+	@DefaultMessage("Invalid room preference level. ")
+	String errorInvalidRoomPreferenceLevel();
+	
 	@DefaultMessage("Null Operation not supported.")
 	String errorNullOperationNotSupported();
 	
 	@DefaultMessage("Class Info not supplied.")
 	String errorClassInfoNotSupplied();
+	
+	@DefaultMessage("Subpart Info not supplied.")
+	String errorSubpartInfoNotSupplied();
+	
+	@DefaultMessage("Number of Rooms cannot be less than 0.")
+	String errorNumberOfRoomsNegative();
+	
+	@DefaultMessage("Room Ratio cannot be less than 0.")
+	String errorRoomRatioNegative();
+	
+	@DefaultMessage("Minimum Expected Capacity cannot be less than 0.")
+	String errorMinimumExpectedCapacityNegative();
+
+	@DefaultMessage("Maximum Expected Capacity cannot be less than 0.")
+	String errorMaximumExpectedCapacityNegative();
+
+	@DefaultMessage("Maximum Expected Capacity cannot be less than Minimum Expected Capacity.")
+	String errorMaximumExpectedCapacityLessThanMinimum();
+
+	@DefaultMessage("Class Owner is required.")
+	String errorRequiredClassOwner();
+
+	@DefaultMessage("Notes to schedule manager cannot exceed 999 characters.")
+	String errorNotesLongerThan999();
+	
+	@DefaultMessage("Schedule print note cannot exceed 1999 characters.")
+	String errorSchedulePrintNoteLongerThan1999();
+	
+	@DefaultMessage("Required room {0} (capacity: {1}) cannot accommodate this class (capacity: {2})")
+	String errorRequiredRoomTooSmall(String room, int roomCapacity, int requiredCapacity);
+	
+	@DefaultMessage("User temporarily locked out - Exceeded maximum failed login attempts.")
+	String errorUserTemporarilyLockedOut();
+	
+	@DefaultMessage("Authentication failed")
+	String errorAuthenticationFailed();
 	
 	@DefaultMessage("Name")
 	String sortByName();
@@ -743,9 +993,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Classes ({0})")
 	String backClasses(String classes);
 	
-	@DefaultMessage("Class {0}")
+	@DefaultMessage("Class ({0})")
 	String backClass(String className);
 
+	@DefaultMessage("Scheduling Subpart ({0})")
+	String backSubpart(String subpartName);
+	
+	@DefaultMessage("Instructional Offering ({0})")
+	String backInstructionalOffering(String ioName);
+	
 	@DefaultMessage("am")
 	String timeAm();
 	
@@ -788,6 +1044,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Requests / Notes to Schedule Manager")
 	String sectionTitleNotesToScheduleManager();
 	
+	@DefaultMessage("Classes")
+	String sectionTitleClasses();
+	
+	@DefaultMessage("Examinations")
+	String sectionTitleExaminations();
+
+	@DefaultMessage("Examination")
+	String sectionTitleExamination();
+	
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -809,7 +1074,22 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Do you want to remove any instructor preferences \\nthat may have been applied to this class?")
 	String confirmRemoveInstructorPreferencesFromClass();
 	
+	@DefaultMessage("Do you really want to clear all class preferences?")
+	String confirmClearAllClassPreferences();
+	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();
+
+	@DefaultMessage("More Options &gt;&gt;&gt;")
+	String selectMoreOptions();
+	
+	@DefaultMessage("&lt;&lt;&lt; Less Options")
+	String selectLessOptions();
+	
+	@DefaultMessage("If checked, spread in time constraint will be automatically posted between classes of this subpart.")
+	String descriptionAutomaticSpreadInTime();
+	
+	@DefaultMessage("If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.")
+	String descriptionStudentOverlaps();
 	
 }
