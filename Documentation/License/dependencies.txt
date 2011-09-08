@@ -80,11 +80,12 @@ hibernate3.jar
 	Copyright: (c) 2008, Adam Warski, JBoss Inc.
 	License: GNU Lesser General Public License, Version 2.1
 
-iText-5.0.6.jar
+iText-2.1.7.jar
 	iText is a library that allows you to create and manipulate PDF documents
-	URL: http://itextpdf.com/
-	Copyright: (C) 2010 1T3XT BVBA
-	License: GNU Affero General Public License, Versin 3
+	URL: http://www.lowagie.com/iText
+	Copyright: (C) 2009 Bruno Lowagie, 1T3XT BVBA
+	License: Mozila Public License, Version 1.1
+	License: GNU Lesser General Public License, Versin 2
 
 javassist-3.9.0.GA.jar
 	Java Programming Assistant for bytecode manipulation
