@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.webutil.timegrid;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,15 +35,14 @@ import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 
 public class PdfExamGridTable extends ExamGridTable {
     private Document iDocument = null;
@@ -94,7 +94,7 @@ public class PdfExamGridTable extends ExamGridTable {
         return 0;
     }
     
-    private static BaseColor sBorderColor = new BaseColor(100,100,100);
+    private static Color sBorderColor = new Color(100,100,100);
     
     public PdfPCell createCell() {
         PdfPCell cell = new PdfPCell();
@@ -198,9 +198,9 @@ public class PdfExamGridTable extends ExamGridTable {
         iPdfTable.setHeaderRows(1);
     }
     
-    private BaseColor getColor(String rgbColor) {
+    private Color getColor(String rgbColor) {
         StringTokenizer x = new StringTokenizer(rgbColor.substring("rgb(".length(),rgbColor.length()-")".length()),",");
-        return new BaseColor(
+        return new Color(
                 Integer.parseInt(x.nextToken()),
                 Integer.parseInt(x.nextToken()),
                 Integer.parseInt(x.nextToken()));
