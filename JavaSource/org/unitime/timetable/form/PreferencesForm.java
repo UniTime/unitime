@@ -32,6 +32,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
@@ -48,7 +50,10 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 public class PreferencesForm extends ActionForm {
 
 	private static final long serialVersionUID = -3578647598790726006L;
-
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	
 	// --------------------------------------------------------- Instance Variables
     
 	protected String op;
@@ -116,8 +121,8 @@ public class PreferencesForm extends ActionForm {
         if(!checkPrefs(lst)) {
             errors.add("roomGroups", 
                     new ActionMessage(
-                            "errors.generic", 
-                            "Invalid room group: Check for duplicate / blank selection. ") );
+                            "errors.generic",
+                            MSG.errorInvalidRoomGroup()) );
         }
 
         if(!checkPrefLevels(getRoomGroupLevels(), lst))
@@ -125,7 +130,7 @@ public class PreferencesForm extends ActionForm {
             errors.add("roomGroups", 
                     new ActionMessage(
                             "errors.generic", 
-                    		"Invalid room group level.") );
+                            MSG.errorInvalidRoomGroupLevel()) );
         } 
         
         lst = getBldgPrefs();
@@ -133,7 +138,7 @@ public class PreferencesForm extends ActionForm {
             errors.add("bldgPrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                            "Invalid building preference: Check for duplicate / blank selection. ") );
+                            MSG.errorInvalidBuildingPreference()) );
         }
 
         if(!checkPrefLevels(getBldgPrefLevels(), lst))
@@ -141,7 +146,7 @@ public class PreferencesForm extends ActionForm {
             errors.add("bldgPrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                    		"Invalid building preference level.") );
+                            MSG.errorInvalidBuildingPreferenceLevel()) );
         }            
             
         lst = getRoomPrefs();
@@ -149,7 +154,7 @@ public class PreferencesForm extends ActionForm {
             errors.add("roomPrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                            "Invalid room preference: Check for duplicate / blank selection. ") );
+                            MSG.errorInvalidRoomPreference()) );
         }
 
         if(!checkPrefLevels(getRoomPrefLevels(), lst))
@@ -157,7 +162,7 @@ public class PreferencesForm extends ActionForm {
             errors.add("roomPrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                    		"Invalid room preference level.") );
+                            MSG.errorInvalidRoomPreferenceLevel()) );
         }            
             
         lst = getRoomFeaturePrefs();
@@ -165,15 +170,15 @@ public class PreferencesForm extends ActionForm {
             errors.add("roomFeaturePrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                            "Invalid room feature preference: Check for duplicate / blank selection. ") );
+                            MSG.errorInvalidRoomFeaturePreference()) );
         }
 
         if(!checkPrefLevels(getRoomFeaturePrefLevels(), lst))
         {
             errors.add("roomFeaturePrefs", 
                     new ActionMessage(
-                            "errors.generic", 
-                    		"Invalid room feature preference level.") );
+                            "errors.generic",
+                            MSG.errorInvalidRoomFeaturePreferenceLevel()) );
         }
         
         lst = getDistPrefs();
@@ -181,15 +186,15 @@ public class PreferencesForm extends ActionForm {
             errors.add("distPrefs", 
                     new ActionMessage(
                             "errors.generic", 
-                            "Invalid distribution preference: Check for duplicate / blank selection. ") );
+                            MSG.errorInvalidDistributionPreference()) );
         }
 
         if(!checkPrefLevels(getDistPrefLevels(), lst))
         {
             errors.add("distPrefs", 
                     new ActionMessage(
-                            "errors.generic", 
-                    		"Invalid distribution preference level.") );
+                            "errors.generic",
+                            MSG.errorInvalidDistributionPreferenceLevel()) );
         }            
 
 

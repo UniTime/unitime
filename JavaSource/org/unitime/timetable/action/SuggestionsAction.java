@@ -38,6 +38,8 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SuggestionsForm;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -53,6 +55,8 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
  * @author Tomas Muller
  */
 public class SuggestionsAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SuggestionsForm myForm = (SuggestionsForm) form;
@@ -60,7 +64,7 @@ public class SuggestionsAction extends Action {
 		
         // Check Access
         if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
         
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
@@ -646,13 +650,15 @@ public class SuggestionsAction extends Action {
     public static String getAssignmentTable(HttpServletRequest request, ClassAssignmentDetails ca, boolean dispLinks, Hint selection, boolean dispDate) {
     	StringBuffer sb = new StringBuffer();
 		if (ca.getTime()==null) {
-			sb.append("<TR><TD colspan='2'><I>Not assigned.</I></TD></TR>");
+			sb.append("<TR><TD colspan='2'><I>"+MSG.messageNotAssigned()+"</I></TD></TR>");
 		} else {
 			if (dispDate)
+				sb.append("<TR><TD>"+MSG.propertyDate()+"</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
+			sb.append("<TR><TD>"+MSG.propertyTime()+"</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
 				sb.append("<TR><TD>Date:</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
 			sb.append("<TR><TD>Time:</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
 			if (ca.getAssignedRoom()!=null) {
-				sb.append("<TR><TD>Room:</TD><TD>");
+				sb.append("<TR><TD>"+MSG.propertyRoom()+"</TD><TD>");
 				for (int i=0;i<ca.getAssignedRoom().length;i++) {
 					if (i>0) sb.append(", ");
 					sb.append(ca.getAssignedRoom()[i].toHtml(false,false,true));
@@ -661,7 +667,7 @@ public class SuggestionsAction extends Action {
 			}
 		}
 		if (ca.getInstructor()!=null) {
-			sb.append("<TR><TD>Instructor:</TD><TD>"+ca.getInstructorHtml()+"</TD></TR>");
+			sb.append("<TR><TD>"+MSG.propertyInstructor()+"</TD><TD>"+ca.getInstructorHtml()+"</TD></TR>");
 			if (!ca.getBtbInstructors().isEmpty()) {
 				sb.append("<TR><TD></TD><TD>");
 				for (Enumeration e=ca.getBtbInstructors().elements();e.hasMoreElements();) {
@@ -672,9 +678,9 @@ public class SuggestionsAction extends Action {
 			}
 		}
 		if (ca.getInitialTime()!=null) {
-			sb.append("<TR><TD>Initial&nbsp;Assignment:</TD><TD>");
+			sb.append("<TR><TD nowrap>"+MSG.propertyInitialAssignment()+"</TD><TD>");
 			if (ca.isInitial()) {
-				sb.append("<I>this one</I>");
+				sb.append("<I>"+MSG.messageThisOne()+"</I>");
 			} else {
 				sb.append(ca.getInitialTime().toHtml(false,false,true,true)+" ");
 				for (int i=0;i<ca.getInitialRoom().length;i++) {
@@ -686,7 +692,7 @@ public class SuggestionsAction extends Action {
 			sb.append("</TD></TR>");
 		}
 		if (!ca.getStudentConflicts().isEmpty()) {
-			sb.append("<TR><TD>Student&nbsp;Conflicts:</TD><TD>");
+			sb.append("<TR><TD nowrap>"+MSG.propertyStudentConflicts()+"</TD><TD>");
 			Collections.sort(ca.getStudentConflicts(), new ClassAssignmentDetails.StudentConflictInfoComparator(request.getSession()));
 			for (Enumeration e=ca.getStudentConflicts().elements();e.hasMoreElements();) {
 				ClassAssignmentDetails.StudentConflictInfo std = (ClassAssignmentDetails.StudentConflictInfo)e.nextElement();
@@ -696,7 +702,7 @@ public class SuggestionsAction extends Action {
 			sb.append("</TD></TR>");
 		}
 		if (ca.hasViolatedGroupConstraint()) {
-			sb.append("<TR><TD>Violated&nbsp;Constraints:</TD><TD>");
+			sb.append("<TR><TD>"+MSG.propertyViolatedConstraints()+"</TD><TD>");
 			for (Enumeration e=ca.getGroupConstraints().elements();e.hasMoreElements();) {
 				ClassAssignmentDetails.DistributionInfo gc = (ClassAssignmentDetails.DistributionInfo)e.nextElement();
 				if (gc.getInfo().isSatisfied()) continue;
@@ -707,21 +713,21 @@ public class SuggestionsAction extends Action {
 		}
 		if (dispLinks) {
 			if (!ca.getRooms().isEmpty()) {
-				sb.append("<TR><TD>Room&nbsp;Locations:</TD><TD>"+ca.getRooms().toHtml(true,true,selection)+"</TD></TR>");
+				sb.append("<TR><TD nowrap>"+MSG.propertyRoomLocations()+"</TD><TD>"+ca.getRooms().toHtml(true,true,selection)+"</TD></TR>");
 			} else {
 				sb.append("<input type='hidden' name='nrRooms' value='0'/>");
 				sb.append("<input type='hidden' name='roomState' value='0'/>");
 			}
 			if (!ca.getTimes().isEmpty()) {
-				sb.append("<TR><TD>Time&nbsp;Locations:</TD><TD>"+ca.getTimes().toHtml(true,true,selection)+"</TD></TR>");
-				sb.append("<TR"+(ca.getTimes().getNrDates() <= 1 ? " style='display:none;'" : "")+"><TD>Date&nbsp;Patterns:</TD><TD>"+ca.getTimes().toDatesHtml(true,true,selection)+"</TD></TR>");
+				sb.append("<TR><TD nowrap>"+MSG.propertyTimeLocations()+"</TD><TD>"+ca.getTimes().toHtml(true,true,selection)+"</TD></TR>");
+				sb.append("<TR"+(ca.getTimes().getNrDates() <= 1 ? " style='display:none;'" : "")+"><TD nowrap>"+MSG.propertyDatePatterns()+"</TD><TD>"+ca.getTimes().toDatesHtml(true,true,selection)+"</TD></TR>");
 			}
 		}
 		if (dispLinks && ca.getClazz()!=null && ca.getClazz().getRoomCapacity()>=0 && ca.getClazz().getRoomCapacity()<Integer.MAX_VALUE && ca.getClazz().nrRooms()>0) {
-			sb.append("<TR><TD>Minimal Room Size:</TD><TD>"+ca.getClazz().getRoomCapacity()+"</TD></TR>");
+			sb.append("<TR><TD>"+MSG.propertyMinimumRoomSize()+"</TD><TD>"+ca.getClazz().getRoomCapacity()+"</TD></TR>");
 		}
 		if (dispLinks && ca.getClazz()!=null && ca.getClazz().getNote()!=null) {
-			sb.append("<TR><TD>Note:</TD><TD>"+ca.getClazz().getNote().replaceAll("\n","<BR>")+"</TD></TR>");
+			sb.append("<TR><TD>"+MSG.propertyNote()+"</TD><TD>"+ca.getClazz().getNote().replaceAll("\n","<BR>")+"</TD></TR>");
 		}
     	return sb.toString();
     }

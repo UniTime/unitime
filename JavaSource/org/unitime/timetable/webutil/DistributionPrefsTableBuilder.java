@@ -36,6 +36,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -75,6 +77,8 @@ import com.itextpdf.text.pdf.PdfWriter;
  * @author Heston Fernandes
  */
 public class DistributionPrefsTableBuilder {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	public String getAllDistPrefsTableForCurrentUser(HttpServletRequest request, String subjectAreaId, String courseNbr) throws Exception {
         User user = Web.getUser(request.getSession());
@@ -257,8 +261,8 @@ public class DistributionPrefsTableBuilder {
      * @return
      */
     public String toHtmlTable(HttpServletRequest request, Session session, TimetableManager manager, Collection departments, Collection distPrefs, boolean editable, boolean showAddButton) {
-    	String title = "Distribution Preferences";
-    	
+    	String title = MSG.sectionTitleDistributionPreferences();
+ 
     	String backType = request.getParameter("backType");
     	String backId = request.getParameter("backId");
     	
@@ -267,7 +271,7 @@ public class DistributionPrefsTableBuilder {
         
         if (showAddButton) {
         	title = "<table width='100%'><tr><td width='100%'>" + 
-        		 	"<DIV class=\"WelcomeRowHeadNoLine\">Distribution Preferences</DIV>"+
+        		 	"<DIV class=\"WelcomeRowHeadNoLine\">" + MSG.sectionTitleDistributionPreferences() +"</DIV>"+
         		 	"</td><td style='padding-bottom: 2px'>"+
         		 	"<input type=\"submit\" name=\"op\" class=\"btn\" accesskey='A' title='Add New Distribution Preference (Alt+A)' value=\"Add Distribution Preference\">"+
         		 	"</td></tr></table>";
@@ -278,7 +282,7 @@ public class DistributionPrefsTableBuilder {
         WebTable tbl = new WebTable(4, 
         		title,  
     			"distributionPrefs.do?order=%%",
-    			new String[] {" Type ", " Structure ", " Owner ", " Class " },
+    			new String[] {MSG.columnDistrPrefType(), MSG.columnDistrPrefStructure(), MSG.columnDistrPrefOwner(), MSG.columnDistrPrefClass() },
     			new String[] { "left", "left", "left", "left"},
     			new boolean[] { true, true, true, true } );
         

@@ -101,21 +101,27 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
         // Read subpart id from form
-        if(op.equals(rsc.getMessage("button.reload"))
-        		|| op.equals(rsc.getMessage("button.addTimePattern"))
-                || op.equals(rsc.getMessage("button.addRoomPref"))
-                || op.equals(rsc.getMessage("button.addBldgPref"))
-                || op.equals(rsc.getMessage("button.addRoomFeaturePref"))
-                || op.equals(rsc.getMessage("button.addDistPref"))
-                || op.equals(rsc.getMessage("button.addRoomGroupPref"))
-                || op.equals(rsc.getMessage("button.update"))
-                || op.equals(rsc.getMessage("button.cancel"))
-                || op.equals(rsc.getMessage("button.clearSubpartPrefs"))
-                || op.equals(rsc.getMessage("button.delete"))
-                || op.equals(rsc.getMessage("button.returnToDetail"))
-                || op.equals(rsc.getMessage("button.addClass_"))
-                || op.equals(rsc.getMessage("button.nextSchedulingSubpart"))
-                || op.equals(rsc.getMessage("button.previousSchedulingSubpart"))) {
+        if(		//op.equals(rsc.getMessage("button.reload"))
+        		//	|| 
+        	op.equals(MSG.actionAddTimePreference())
+                || op.equals(MSG.actionAddRoomPreference())
+                || op.equals(MSG.actionAddBuildingPreference())
+                || op.equals(MSG.actionAddRoomFeaturePreference())
+                || op.equals(MSG.actionAddDistributionPreference())
+                || op.equals(MSG.actionAddRoomGroupPreference())
+                || op.equals(MSG.actionUpdatePreferences())
+               // || op.equals(rsc.getMessage("button.cancel"))
+                || op.equals(MSG.actionClearSubpartPreferences())
+                || op.equals(MSG.actionRemoveBuildingPreference())
+        		|| op.equals(MSG.actionRemoveDistributionPreference())
+        		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
+        		|| op.equals(MSG.actionRemoveRoomGroupPreference())
+        		|| op.equals(MSG.actionRemoveRoomPreference())
+        		|| op.equals(MSG.actionRemoveTimePattern())
+                || op.equals(MSG.actionBackToDetail())
+               // || op.equals(rsc.getMessage("button.addClass_"))
+                || op.equals(MSG.actionNextSubpart())
+                || op.equals(MSG.actionPreviousSubpart())) {
             subpartId = frm.getSchedulingSubpartId();
         }
 
@@ -128,7 +134,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         // Check op exists
         if(op==null || op.trim()=="")
-            throw new Exception ("Null Operation not supported.");
+            throw new Exception (MSG.errorNullOperationNotSupported());
 
         Debug.debug("op: " + op);
         Debug.debug("subpart: " + subpartId);
@@ -136,14 +142,14 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         // Check subpart exists
         if(subpartId==null || subpartId.trim()=="")
-            throw new Exception ("Subpart Info not supplied.");
+            throw new Exception (MSG.errorSubpartInfoNotSupplied());
 
         // If subpart id is not null - load subpart info
         SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
         SchedulingSubpart ss = sdao.get(new Long(subpartId));
 
         // Cancel - Go back to Instructional Offering Screen
-        if(op.equals(rsc.getMessage("button.returnToDetail"))
+        if(op.equals(MSG.actionBackToDetail())
                 && subpartId!=null && subpartId.trim()!="") {
 
             request.setAttribute("ssuid", subpartId);
@@ -151,7 +157,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         }
 
         // Clear all preferences
-        if(op.equals(rsc.getMessage("button.clearSubpartPrefs"))) {
+        if(op.equals(MSG.actionClearSubpartPreferences())) {
 
             Set s = ss.getPreferences();
             s.clear();
@@ -186,7 +192,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         }
 
         // Update Preferences for Subpart
-        if(op.equals(rsc.getMessage("button.update")) || op.equals(rsc.getMessage("button.nextSchedulingSubpart")) || op.equals(rsc.getMessage("button.previousSchedulingSubpart"))) {
+        if(op.equals(MSG.actionUpdatePreferences()) || op.equals(MSG.actionNextSubpart()) || op.equals(MSG.actionPreviousSubpart())) {
             // Validate input prefs
             errors = frm.validate(mapping, request);
 
@@ -195,10 +201,10 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                 this.doUpdate(request, frm, ss, sdao, timeVertical);
 	            request.setAttribute("ssuid", subpartId);
 
-	            if (op.equals(rsc.getMessage("button.nextSchedulingSubpart")))
+	            if (op.equals(MSG.actionNextSubpart()))
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getNextId()));
 
-	            if (op.equals(rsc.getMessage("button.previousSchedulingSubpart")))
+	            if (op.equals(MSG.actionPreviousSubpart()))
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getPreviousId()));
 
 	            return mapping.findForward("displaySubpartDetail");
@@ -238,7 +244,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         BackTracker.markForBack(request,
         		"schedulingSubpartDetail.do?ssuid="+frm.getSchedulingSubpartId(),
-        		"Scheduling Subpart ("+ss.getSchedulingSubpartLabel()+")",
+        		MSG.backSubpart(ss.getSchedulingSubpartLabel()),
         		true, false);
 
         return mapping.findForward("editSchedulingSubpart");

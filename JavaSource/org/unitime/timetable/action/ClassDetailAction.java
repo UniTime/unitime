@@ -117,7 +117,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        // Read class id from form
 	        if(op.equals(MSG.actionEditClass())
 	        		|| op.equals(MSG.actionAddDistributionPreference())
-	                || op.equals(rsc.getMessage("button.backToInstrOffrDet"))
+	                // || op.equals(rsc.getMessage("button.backToInstrOffrDet")) for deletion
 	                || op.equals(MSG.actionNextClass())
 	                || op.equals(MSG.actionPreviousClass())
 	                ) {
@@ -133,6 +133,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        if(classId==null || classId.trim().length()==0)
 	            throw new Exception ("Class Info not supplied.");
 
+	        /* for deletion
 	        // backToInstrOffr - Go back to Instructional Offering Screen
 	        if(op.equals(rsc.getMessage("button.backToInstrOffrDet"))
 	                && classId!=null && classId.trim().length()!=0 ) {
@@ -142,6 +143,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 	            response.sendRedirect( response.encodeURL("instructionalOfferingDetail.do?op=view&io="+ss.getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
 	        }
+	        */
 
 	        // If class id is not null - load class info
 	        Class_DAO cdao = new Class_DAO();
