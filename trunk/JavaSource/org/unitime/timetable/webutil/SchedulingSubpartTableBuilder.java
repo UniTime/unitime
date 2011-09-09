@@ -30,6 +30,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
@@ -46,7 +48,9 @@ import org.unitime.timetable.util.Constants;
  */
 public class SchedulingSubpartTableBuilder {
     
-    /**
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	/**
      * Reads the user defined config object and generates html code to display it
      * @param request
      * @param limit
@@ -104,8 +108,13 @@ public class SchedulingSubpartTableBuilder {
                     					? ""
                     					: "<<00>>", 
                     				"&nbsp;", 
-                    				!varLimits ? "<<1>>" : "Min Limit<br>per Class", 
-                    				!varLimits ? "<<11>>" : "Max Limit<br>per Class", "Number<br>of Classes", "Minutes<br>per Week", "Number<br>of Rooms", "Room<br>Ratio", "Managing<br>Department" },
+                    				!varLimits ? "<<1>>" : MSG.columnSubpartMinLimitPerClass(), 
+                    				!varLimits ? "<<11>>" : MSG.columnSubpartMaxLimitPerClass(), 
+                    										MSG.columnSubpartNumberOfClasses(),
+                    										MSG.columnSubpartMinutesPerWeek(), 
+                    										MSG.columnSubpartNumberOfRooms(),
+                    										MSG.columnSubpartRoomRatio(), 
+                    										MSG.columnSubpartManagingDepartment()},
         			new String[] { "left", "left", "center", "center", "center", "center", "center", "center", "center"},
         			null);
             tbl.setSuppressRowHighlight(true);
@@ -124,8 +133,8 @@ public class SchedulingSubpartTableBuilder {
 	        if (request.getAttribute("varLimits")!=null) {
 	            tblStr = tblStr.replaceAll("<<00>>", varLimitsCheckBox);
 	            tblStr = tblStr.replaceAll("<<0>>", "checked");
-	            tblStr = tblStr.replaceAll("<<1>>", "Min Limit<br>per Class");
-	            tblStr = tblStr.replaceAll("<<11>>", "Max Limit<br>per Class");
+	            tblStr = tblStr.replaceAll("<<1>>", MSG.columnSubpartMinLimitPerClass());
+	            tblStr = tblStr.replaceAll("<<11>>", MSG.columnSubpartMaxLimitPerClass());
 	        }
 	        else {
 	            String showVarLimits = Settings.getSettingValue(user, Constants.SETTINGS_SHOW_VAR_LIMITS);
@@ -137,7 +146,7 @@ public class SchedulingSubpartTableBuilder {
 	                tblStr = tblStr.replaceAll("<<00>>", " ");
 	            
 	            tblStr = tblStr.replaceAll("<<1>>", " ");
-	            tblStr = tblStr.replaceAll("<<11>>", "Limit<br>per Class");
+	            tblStr = tblStr.replaceAll("<<11>>", MSG.columnSubpartLimitPerClass());
 	        }
 	        
 	        return (tblStr);
@@ -456,14 +465,14 @@ public class SchedulingSubpartTableBuilder {
         // Right Arrow
         if ( (level==1 && rowNum>0)
              || (level>1 && spRowNum>0) ) 
-        	html += "<IMG border=\"0\" alt=\"Move to Child Level\" title=\"Move to Child Level\" align=\"top\" src=\"images/arrow_r.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToChildLevel() + "\" title=\"" + MSG.titleMoveToChildLevel() + "\" align=\"top\" src=\"images/arrow_r.gif\" " +
         			"onClick=\"doClick('shiftRight', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"top\" src=\"images/blank.gif\">";
         
         // Left Arrow
         if (level>1)
-        	html += "<IMG border=\"0\" alt=\"Move to Parent Level\" title=\"Move to Parent Level\" align=\"top\" src=\"images/arrow_l.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToParentLevel()+"\" title=\""+MSG.titleMoveToParentLevel() +"\" align=\"top\" src=\"images/arrow_l.gif\" " +
         			"onClick=\"doClick('shiftLeft', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"top\" src=\"images/blank.gif\">"; 
@@ -471,7 +480,7 @@ public class SchedulingSubpartTableBuilder {
         // Up Arrow
         if( (level==1 && rowNum>0 )
              || (level>1 && spRowNum>0) ) 
-        	html += "<IMG border=\"0\" alt=\"Move Up\" align=\"absmiddle\" src=\"images/arrow_u.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveUp()+"\" align=\"absmiddle\" src=\"images/arrow_u.gif\" " +
         			"onClick=\"doClick('shiftUp', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
@@ -479,13 +488,13 @@ public class SchedulingSubpartTableBuilder {
         // Down Arrow
         if ( (level==1 && (rowNum+1)<maxRows)
              || (level>1 && (spRowNum+1)<maxSp) )
-        	html += "<IMG border=\"0\" alt=\"Move Down\" align=\"absmiddle\" src=\"images/arrow_d.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveDown()+"\" align=\"absmiddle\" src=\"images/arrow_d.gif\" " +
         			"onClick=\"doClick('shiftDown', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
 
         // Delete
-        html += "<IMG border=\"0\" alt=\"Delete\" title=\"Delete Instructional Type\" align=\"top\" src=\"images/Delete16.gif\" " +
+        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"top\" src=\"images/Delete16.gif\" " +
         		"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
 
         html += "&nbsp; &nbsp;";

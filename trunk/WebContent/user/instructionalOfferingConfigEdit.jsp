@@ -26,7 +26,10 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
+
+<loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
 
@@ -41,7 +44,7 @@
 			}
 			  figure out max number of classes */
 			if(numClasses > 100) {
-				if (!confirmDelete('This will create ' + numClasses + ' classes.  Continue?')){
+				if (!confirmDelete("<%=MSG.confirmCreateTooManyClasses()%>".replace("{0}",numClasses))){
 			        return(false);
 				}
 			}
@@ -51,11 +54,11 @@
 		   /* if (!confirmNumClasses()){
 		        return(false);
 		    } */
-			return confirmDelete('This operation may result in deletion of existing subparts/classes . Continue?');
+			return confirmDelete("<%=MSG.confirmMayDeleteSubpartsClasses()%>");
 		}
 
 		function confirmDelete2() {
-			return confirmDelete('This operation will delete existing subparts and associated classes . Continue?');
+			return confirmDelete("<%=MSG.confirmDeleteExistingSubpartsClasses()%>");
 		}
 
 		function confirmDelete(msg) {
@@ -120,9 +123,11 @@
 					<logic:equal name="instructionalOfferingConfigEditForm" property="configId" value="0">
 						<logic:equal name="subpartsExist" scope="request" value="true">
 							<html:submit property="op" 
-								styleClass="btn" accesskey="S" titleKey="title.saveConfig" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessSaveConfiguration() %>" 
+								title="<%=MSG.titleSaveConfiguration(MSG.accessSaveConfiguration()) %>" 
 								onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
-								<bean:message key="button.saveConfig" />
+								<loc:message name="actionSaveConfiguration" />
 							</html:submit>						
 						</logic:equal>
 					</logic:equal>
@@ -130,16 +135,20 @@
 					<logic:notEqual name="instructionalOfferingConfigEditForm" property="configId" value="0">
 						<logic:equal name="subpartsExist" scope="request" value="true">
 							<html:submit property="op" 
-								styleClass="btn" accesskey="U" titleKey="title.updateConfig" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessUpdateConfiguration() %>" 
+								title="<%=MSG.titleUpdateConfiguration(MSG.accessUpdateConfiguration()) %>" 
 								onclick="return (confirmDelete1());" >			
-								<bean:message key="button.updateConfig" />
+								<loc:message name="actionUpdateConfiguration" />
 							</html:submit>						
 						</logic:equal>
 						<logic:greaterThan name="instructionalOfferingConfigEditForm" property="configCount" value="1">
 							<html:submit property="op" 
-								styleClass="btn" accesskey="D" titleKey="title.deleteConfig" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessDeleteConfiguration() %>" 
+								title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
 								onclick="return (confirmDelete2());" >			
-								<bean:message key="button.deleteConfig" />
+								<loc:message name="actionDeleteConfiguration" />
 							</html:submit>						
 						</logic:greaterThan>
 					</logic:notEqual>
@@ -149,9 +158,11 @@
 					</bean:define>
 					 
 					<html:button property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.backToInstrOffrDetail" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToIODetail() %>" 
+						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
 						onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-						<bean:message key="button.backToInstrOffrDetail" />
+						<loc:message name="actionBackToIODetail" />
 					</html:button>
 
 				</tt:section-header>
@@ -161,7 +172,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsConfigurationEdit"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -176,14 +187,14 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD>Configuration Name:</TD>
+			<TD><loc:message name="propertyConfigurationName"/></TD>
 			<TD>
 				<html:text property="name" size="10" maxlength="10" />
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Unlimited Enrollment:</TD>
+			<TD><loc:message name="propertyUnlimitedEnrollment"/></TD>
 			<TD>
 				<html:checkbox property="unlimited" onclick="doClick('unlimitedEnrollment', '');" />
 			</TD>
@@ -191,7 +202,7 @@
 
 		<logic:notEqual name="instructionalOfferingConfigEditForm" property="unlimited" value="true" >
 		<TR>
-			<TD>Configuration Limit: <font class="reqField">*</font></TD>
+			<TD><loc:message name="propertyConfigurationLimit"/><font class="reqField">*</font></TD>
 			<TD>
 				<html:text property="limit" size="4" maxlength="4" />
 			</TD>
@@ -199,7 +210,7 @@
 		</logic:notEqual>
 
 		<TR>
-			<TD>Instructional Type:</TD>
+			<TD><loc:message name="filterInstructionalType"/></TD>
 			<TD>
 				<html:select property="itype" onchange="javascript: itypeChanged(this);">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -208,15 +219,17 @@
 				</html:select>
 				&nbsp;
 				<html:submit property="op" 
-					styleClass="btn" accesskey="A" titleKey="title.addInstrType" 
+					styleClass="btn" 
+					accesskey="<%=MSG.accessAddInstructionalTypeToConfig() %>" 
+					title="<%=MSG.titleAddInstructionalTypeToConfig(MSG.accessAddInstructionalTypeToConfig()) %>" 
 					onclick="document.forms[0].elements['click'].value='y'" >
-					<bean:message key="button.addInstrType" />
+					<loc:message name="actionAddInstructionalTypeToConfig" />
 				</html:submit>
 		</TR>
 
 		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="catalogLinkLabel">
 		<TR>
-			<TD>Course Catalog: </TD>
+			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
 				<A href="<bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLabel" /></A>
 			</TD>
@@ -245,9 +258,10 @@
 				<logic:equal name="instructionalOfferingConfigEditForm" property="configId" value="0">
 					<logic:equal name="subpartsExist" scope="request" value="true">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="S" titleKey="title.saveConfig" 
+							accesskey="<%=MSG.accessSaveConfiguration() %>" 
+							title="<%=MSG.titleSaveConfiguration(MSG.accessSaveConfiguration()) %>" 
 							onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
-							<bean:message key="button.saveConfig" />
+							<loc:message name="actionSaveConfiguration" />
 						</html:submit>						
 					</logic:equal>
 				</logic:equal>
@@ -255,16 +269,19 @@
 				<logic:notEqual name="instructionalOfferingConfigEditForm" property="configId" value="0">
 					<logic:equal name="subpartsExist" scope="request" value="true">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="U" titleKey="title.updateConfig" 
-							onclick="return (confirmDelete1());" >			
-							<bean:message key="button.updateConfig" />
-						</html:submit>						
+							styleClass="btn" 
+								accesskey="<%=MSG.accessUpdateConfiguration() %>" 
+								title="<%=MSG.titleUpdateConfiguration(MSG.accessUpdateConfiguration()) %>" 
+								onclick="return (confirmDelete1());" >			
+								<loc:message name="actionUpdateConfiguration" />						</html:submit>						
 					</logic:equal>
 					<logic:greaterThan name="instructionalOfferingConfigEditForm" property="configCount" value="1">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="D" titleKey="title.deleteConfig" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessDeleteConfiguration() %>" 
+							title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
 							onclick="return (confirmDelete2());" >			
-							<bean:message key="button.deleteConfig" />
+							<loc:message name="actionDeleteConfiguration" />
 						</html:submit>						
 					</logic:greaterThan>
 				</logic:notEqual>
@@ -274,9 +291,11 @@
 				</bean:define>
 				 
 				<html:button property="op" 
-					styleClass="btn" accesskey="B" titleKey="title.backToInstrOffrDetail" 
-					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-					<bean:message key="button.backToInstrOffrDetail" />
+					styleClass="btn" 
+						accesskey="<%=MSG.accessBackToIODetail() %>" 
+						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
+						onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
+						<loc:message name="actionBackToIODetail" />
 				</html:button>
 					
 			</TD>
@@ -355,3 +374,5 @@
 		req.send(vars);
 	}
 </SCRIPT>
+
+</loc:bundle>

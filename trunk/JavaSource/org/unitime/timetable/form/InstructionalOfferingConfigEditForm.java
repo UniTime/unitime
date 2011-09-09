@@ -30,6 +30,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -45,7 +47,9 @@ import org.unitime.timetable.util.Constants;
  */
 public class InstructionalOfferingConfigEditForm extends ActionForm {
 
-    /**
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	/**
 	 * Comment for <code>serialVersionUID</code>
 	 */
 	private static final long serialVersionUID = 3257570611432993077L;
@@ -111,8 +115,8 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
             }
         }
         
-        if( op.equals(rsc.getMessage("button.saveConfig")) 
-                || op.equals(rsc.getMessage("button.updateConfig")) ) {
+        if( op.equals(MSG.actionSaveConfiguration()) 
+                || op.equals(MSG.actionUpdateConfiguration()) ) {
 
             HttpSession webSession = request.getSession();
             Vector sp = (Vector) webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
