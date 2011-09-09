@@ -44,6 +44,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingConfigEditForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
@@ -91,6 +93,8 @@ import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
  * @struts:action path="/instructionalOfferingConfigEdit" name="InstructionalOfferingConfigEditForm" input="/instructionalOfferingConfigEdit.jsp" scope="request"
  */
 public class InstructionalOfferingConfigEditAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -111,7 +115,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
 
         HttpSession httpSession = request.getSession();
@@ -132,7 +136,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             op = request.getParameter("hdnOp");
 
         if(op==null || op.trim().length()==0)
-            throw new Exception ("Operation could not be interpreted: " + op);
+            throw new Exception (MSG.errorOperationNotInterpreted() + op);
 
         // Set up itypes and subparts
         frm.setOp(op);
@@ -169,7 +173,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 configId = new Long(request.getParameter("configId"));
             }
             catch (Exception e) {
-                throw new Exception ("Config ID is not valid: " + request.getParameter("configId"));
+                throw new Exception (MSG.errorConfigIDNotValid() + request.getParameter("configId"));
             }
 
             loadDetailFromConfig(frm, configId, false);
@@ -248,7 +252,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         // Add Instructional Type
-        if(op.equals(rsc.getMessage("button.add"))) {
+        if(op.equals(MSG.actionAddInstructionalTypeToConfig())) {
 
             ActionMessages errors = frm.validate(mapping, request);
             if(!errors.isEmpty()) {
@@ -294,8 +298,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         // User commits changes
-        if(op.equals(rsc.getMessage("button.saveConfig"))
-                || op.equals(rsc.getMessage("button.updateConfig")) ) {
+        if(op.equals(MSG.actionSaveConfiguration())
+                || op.equals(MSG.actionUpdateConfiguration()) ) {
 
             html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             ActionMessages errors = frm.validate(mapping, request);
@@ -331,7 +335,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         // Delete configuration
-		if(op.equals(rsc.getMessage("button.deleteConfig"))) {
+		if(op.equals(MSG.actionDeleteConfiguration())) {
             deleteConfig(request, frm);
 
             // Redirect to instr offering detail on success
