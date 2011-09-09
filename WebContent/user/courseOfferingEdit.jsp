@@ -36,8 +36,10 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <tiles:importAttribute />
+<loc:bundle name="CourseMessages">
 <%
 	String crsNbr = "";
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
@@ -59,8 +61,8 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-							<A  title="Back to Instructional Offering List (Alt+I)"
-								accesskey="I"
+							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
+								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8"
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="courseOfferingEditForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="courseOfferingEditForm" property="instrOfferingId" />"
 							><bean:write name="courseOfferingEditForm" property="courseName" /></A>
@@ -72,15 +74,19 @@
 
 					<logic:equal name="courseOfferingEditForm" property="ioNotOffered" value="false">
 						<html:submit property="op"
-							styleClass="btn" accesskey="U" titleKey="title.updateCourseOffering">
-							<bean:message key="button.updateCourseOffering" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+							title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+							<loc:message name="actionUpdateCourseOffering" />
 						</html:submit>
 					</logic:equal>
 					
 					<html:button property="op"
-						styleClass="btn" accesskey="B" titleKey="title.backToInstrOffrDetail"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToIODetail() %>" 
+						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
 						onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-						<bean:message key="button.backToInstrOffrDetail" />
+						<loc:message name="actionBackToIODetail" />
 					</html:button>
 
 				</tt:section-header>
@@ -91,7 +97,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsCourseOfferingEdit"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -106,20 +112,20 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD>Course Number: </TD>
+			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
 				<html:text property="courseNbr" size="10" maxlength="10" />
 			</TD>
 		</TR>
 		<TR>
-			<TD>Title: </TD>
+			<TD><loc:message name="propertyCourseTitle"/> </TD>
 			<TD>
 				<html:text property="title" size="60" maxlength="90" />
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Schedule of Classes Note: </TD>
+			<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
 			<TD>
 				<html:textarea property="scheduleBookNote" rows="4" cols="57" />
 			</TD>
@@ -127,7 +133,7 @@
 
 		<logic:notEmpty name="courseOfferingEditForm" property="consent">
 		<TR>
-			<TD valign="top">Consent: </TD>
+			<TD valign="top"><loc:message name="propertyConsent" /></TD>
 			<TD>
 				<html:select name="courseOfferingEditForm" property="consent">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -139,7 +145,7 @@
 
 		<logic:notEmpty name="courseOfferingEditForm" property="designatorRequired">
 		<TR>
-			<TD valign="top">Designator Required: </TD>
+			<TD valign="top"><loc:message name="propertyDesignatorRequired"/> </TD>
 			<TD>
 				<html:checkbox name="courseOfferingEditForm" property="designatorRequired" />
 			</TD>
@@ -152,7 +158,7 @@
 		CourseOfferingEditForm frm = (CourseOfferingEditForm) request.getAttribute(frmName);
 		%>
 		<TR>
-			<TD>Credit:</TD>
+			<TD><loc:message name="propertyCredit"/></TD>
 			<TD>
 				<html:select style="width:200;" property="creditFormat" onchange="<%= \"if (this.value == '\" + FixedCreditUnitConfig.CREDIT_FORMAT + \"') { document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true } else if (this.value == '\" + ArrangeCreditUnitConfig.CREDIT_FORMAT + \"'){document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableFixedCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableRangeCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = false} else {document.forms[0].creditType.disabled = true; document.forms[0].creditUnitType.disabled = true; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true}\"%>">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -165,7 +171,7 @@
 			<TD>
 				<table>
 				<tr>
-				<td nowrap>Credit Type: </td>
+				<td nowrap><loc:message name="propertyCreditType"/> </td>
 				<td>
 				<html:select style="width:200;" property="creditType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
 					<html:options collection="<%=CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
@@ -173,7 +179,7 @@
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Credit Unit Type: </td>
+				<td nowrap><loc:message name="propertyCreditUnitType"/></td>
 				<td>
 				<html:select style="width:200;" property="creditUnitType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
 					<html:options collection="<%=CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
@@ -181,19 +187,19 @@
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Units: </td>
+				<td nowrap><loc:message name="propertyUnits"/> </td>
 				<td>
 				<html:text property="units" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0 && !frm.getCreditFormat().equals(ArrangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Max Units: </td>
+				<td nowrap><loc:message name="propertyMaxUnits"/></td>
 				<td>
 				<html:text property="maxUnits" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && (frm.getCreditFormat().equals(VariableFixedCreditUnitConfig.CREDIT_FORMAT) || frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT)))?false:true%>"/>
 				</td>
 				</tr>
 				<tr>
-				<td nowrap>Fractional Increments Allowed: </td>
+				<td nowrap><loc:message name="propertyFractionalIncrementsAllowed"/></td>
 				<td>
 				<html:checkbox property="fractionalIncrementsAllowed" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
 				</td>
@@ -205,7 +211,7 @@
 
 		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
 			<TR>
-				<TD>Take Course Demands from Offering: </TD>
+				<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
 				<TD>
 					<html:select
 						name="courseOfferingEditForm"
@@ -222,7 +228,7 @@
 
 		<logic:notEmpty name="courseOfferingEditForm" property="catalogLinkLabel">
 		<TR>
-			<TD>Course Catalog: </TD>
+			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
 				<A href="<bean:write name="courseOfferingEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="courseOfferingEditForm" property="catalogLinkLabel" /></A>
 			</TD>
@@ -241,18 +247,24 @@
 			<TD colspan="2" align="right">
 				<logic:equal name="courseOfferingEditForm" property="ioNotOffered" value="false">
 					<html:submit property="op"
-						styleClass="btn" accesskey="U" titleKey="title.updateCourseOffering">
-						<bean:message key="button.updateCourseOffering" />
+						styleClass="btn" 
+						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+						<loc:message name="actionUpdateCourseOffering" />
 					</html:submit>
 				</logic:equal>
 				
 				<html:button property="op"
-					styleClass="btn" accesskey="B" titleKey="title.backToInstrOffrDetail"
+					styleClass="btn" 
+					accesskey="<%=MSG.accessBackToIODetail() %>" 
+					title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
 					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-					<bean:message key="button.backToInstrOffrDetail" />
+					<loc:message name="actionBackToIODetail" />
 				</html:button>
 			</TD>
 		</TR>
 
 	</TABLE>
 </html:form>
+
+</loc:bundle>
