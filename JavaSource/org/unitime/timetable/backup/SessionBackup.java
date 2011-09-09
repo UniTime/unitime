@@ -69,11 +69,10 @@ import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ConstraintInfo;
 import org.unitime.timetable.model.CurriculumClassification;
-import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.LastLikeCourseDemand;
-import org.unitime.timetable.model.NonUniversityLocation;
-import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolutionInfo;
@@ -147,12 +146,6 @@ public class SessionBackup {
     		avoid.add(LastLikeCourseDemand.class.getName() + ".student");
     		avoid.add(Student.class.getName() + ".lastLikeCourseDemands");
     		
-    		Set<String> allowedNullRelations = new HashSet<String>();
-    		allowedNullRelations.add(Room.class.getName() + ".building");
-    		allowedNullRelations.add(NonUniversityLocation.class.getName() + ".session");
-    		allowedNullRelations.add(Department.class.getName() + ".session");
-    		allowedNullRelations.add(SolutionInfo.class.getName() + ".solution");
-    		allowedNullRelations.add(AssignmentInfo.class.getName() + ".assignment");
     		Set<String> disallowedNotNullRelations = new HashSet<String>();
     		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
     		disallowedNotNullRelations.add(Assignment.class.getName() + ".timePattern");
@@ -170,8 +163,7 @@ public class SessionBackup {
                 	if (meta.hasSubclasses()) continue;
                     for (int i = 0; i < meta.getPropertyNames().length; i++) {
                     	String property = meta.getPropertyNames()[i];
-                    	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || (
-                    			meta.getPropertyNullability()[i] && !allowedNullRelations.contains(meta.getEntityName() + "." + property))) continue;
+                    	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || meta.getPropertyNullability()[i]) continue;
                     	Type type = meta.getPropertyTypes()[i];
                     	if (type instanceof EntityType && type.getReturnedClass().equals(item.clazz())) {
                     		QueueItem qi = new QueueItem(meta, item, property, Relation.Parent);
@@ -191,6 +183,18 @@ public class SessionBackup {
     		
             for (List<QueueItem> list: data.values())
             	queue.addAll(list);
+            
+            // The following part is needed to ensure that instructor distribution preferences are saved including their distribution types 
+            List<QueueItem> distributions = new ArrayList<QueueItem>();
+            for (QueueItem instructor: data.get(DepartmentalInstructor.class.getName())) {
+            	QueueItem qi = new QueueItem(iHibSessionFactory.getClassMetadata(DistributionPref.class), instructor, "owner", Relation.Parent);
+            	distributions.add(qi);
+            	queue.add(qi);
+            	if (qi.size() > 0)
+            		iProgress.info("Extra: " + qi);
+            }
+            data.put(DistributionPref.class.getName(), distributions);
+            
             while ((item = queue.poll()) != null) {
             	if (item.size() == 0) continue;
             	for (int i = 0; i < item.meta().getPropertyNames().length; i++) {
