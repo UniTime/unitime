@@ -1,5 +1,4 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
  * Copyright (C) 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -190,6 +189,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Fractional Increments Allowed:")
 	String propertyFractionalIncrementsAllowed();
 	
+	@DefaultMessage("Configuration Name:")
+	String propertyConfigurationName();
+	
+	@DefaultMessage("Unlimited Enrollment:")
+	String propertyUnlimitedEnrollment();
+	
+	@DefaultMessage("Configuration Limit:")
+	String propertyConfigurationLimit();
+	
+	@DefaultMessage("Course Catalog:")
+	String propertyCourseCatalog();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -250,7 +261,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Date Pattern")
 	String columnDatePattern();
 	
-	@DefaultMessage("Mins Per Week")
+	@DefaultMessage("Minutes Per Week")
 	String columnMinPerWk();
 	
 	@DefaultMessage("Time Pattern")
@@ -421,6 +432,30 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage(" Class ")
 	String columnDistrPrefClass();
 	
+	@DefaultMessage("Min Limit<br>per Class")
+	String columnSubpartMinLimitPerClass();
+	
+	@DefaultMessage("Max Limit<br>per Class")
+	String columnSubpartMaxLimitPerClass();
+	
+	@DefaultMessage("Number<br>of Classes")
+	String columnSubpartNumberOfClasses();
+	
+	@DefaultMessage("Minutes<br>per Week")
+	String columnSubpartMinutesPerWeek();
+	
+	@DefaultMessage("Number<br>of Rooms")
+	String columnSubpartNumberOfRooms();
+	
+	@DefaultMessage("Room<br>Ratio")
+	String columnSubpartRoomRatio();
+	
+	@DefaultMessage("Managing<br>Department")
+	String columnSubpartManagingDepartment();
+	
+	@DefaultMessage("Limit<br>per Class")
+	String columnSubpartLimitPerClass();
+		
 	@DefaultMessage("Not assigned.")
 	String messageNotAssigned();
 
@@ -435,6 +470,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Has Note to Mgr")
 	String altHasNoteToMgr();
+	
+	@DefaultMessage("Delete")
+	String altDelete();
+	
+	@DefaultMessage("Move Up")
+	String altMoveUp();
+	
+	@DefaultMessage("Move Down")
+	String altMoveDown();
 	
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
@@ -528,11 +572,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Back")
 	String actionBackToDetail();
 	
+	@DefaultMessage("Back")
+	String actionBackToIODetail();
+	
 	@DefaultMessage("Update")
 	String actionUpdatePreferences();
 	
 	@DefaultMessage("Update")
 	String actionUpdateExamination();
+	
+	@DefaultMessage("Update")
+	String actionUpdateConfiguration();
 	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
@@ -576,8 +626,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete")
 	String actionRemoveDistributionPreference();
 	
+	@DefaultMessage("Delete")
+	String actionDeleteConfiguration();
+	
 	@DefaultMessage("Save")
 	String actionSaveExamination();
+	
+	@DefaultMessage("Save")
+	String actionSaveConfiguration();
 	
 	@DefaultMessage("Add Instructor")
 	String actionAddInstructor();
@@ -593,6 +649,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferencesOnSubpart();
+	
+	@DefaultMessage("Add")
+	String actionAddInstructionalTypeToConfig();
 	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
@@ -651,6 +710,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("B")
 	String accessBackToDetail();
 	
+	@DefaultMessage("B")
+	String accessBackToIODetail();
+	
 	@DefaultMessage("I")
 	String accessInstructionalOfferingDetail();
 	
@@ -662,6 +724,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("U")
 	String accessUpdateExamination();
+	
+	@DefaultMessage("U")
+	String accessUpdateConfiguration();
 	
 	@DefaultMessage("C")
 	String accessClearClassPreferences();
@@ -690,6 +755,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("S")
 	String accessSaveExamination();
 	
+	@DefaultMessage("S")
+	String accessSaveConfiguration();
+	
 	@DefaultMessage("I")
 	String accessAddInstructor();
 	
@@ -698,6 +766,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("E")
 	String accessEditSubpart();
+	
+	@DefaultMessage("D")
+	String accessDeleteConfiguration();
+	
+	@DefaultMessage("A")
+	String accessAddInstructionalTypeToConfig();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -762,6 +836,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update Examination (Alt+{0})")
 	String titleUpdateExamination(String accessKey);
 	
+	@DefaultMessage("Update Configuration (Alt+{0})")
+	String titleUpdateConfiguration(String accessKey);
+	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
 	
@@ -770,6 +847,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Do not commit any change. Return to Detail Screen (Alt+{0})")
 	String titleBackToDetail(String accessKey);
+	
+	@DefaultMessage("Back to Instructional Offering Detail (Alt+{0})")
+	String titleBackToIODetail (String accessKey);
 	
 	@DefaultMessage("Instructional Offering Detail (Alt+{0})")
 	String titleInstructionalOfferingDetail(String accessKey);
@@ -822,8 +902,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Remove Distribution Preference")
 	String titleRemoveDistributionPreference();
 	
+	@DefaultMessage("Delete Configuration (Alt+{0})")
+	String titleDeleteConfiguration(String accessKey);
+	
 	@DefaultMessage("Save Examination (Alt+{0})")
 	String titleSaveExamination(String accessKey);
+	
+	@DefaultMessage("Save Configuration (Alt+{0})")
+	String titleSaveConfiguration(String accessKey);
 	
 	@DefaultMessage("Add Instructor (Alt+{0})")
 	String titleAddInstructor(String accessKey);
@@ -839,7 +925,19 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete all Class Preferences. Preferences will be inherited from the subpart.")
 	String titleClearClassPreferencesOnSubpart();
-		
+
+	@DefaultMessage("Add the selected instructional type to the configuration (Alt+{0})")
+	String titleAddInstructionalTypeToConfig(String accessKey);
+	
+	@DefaultMessage("Move to Child Level")
+	String titleMoveToChildLevel();
+	
+	@DefaultMessage("Move to Parent Level")
+	String titleMoveToParentLevel();
+	
+	@DefaultMessage("Delete Instructional Type")
+	String titleDeleteInstructionalType();		
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -878,6 +976,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsSubpartEdit();
+	
+	@DefaultMessage("ERRORS")
+	String errorsConfigurationEdit();
 	
 	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
 	String errorInvalidRoomGroup();
@@ -956,6 +1057,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Authentication failed")
 	String errorAuthenticationFailed();
+	
+	@DefaultMessage("Operation could not be interpreted: ")
+	String errorOperationNotInterpreted();
+	
+	@DefaultMessage("Config ID is not valid: ")
+	String errorConfigIDNotValid();
 	
 	@DefaultMessage("Name")
 	String sortByName();
@@ -1076,6 +1183,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to clear all class preferences?")
 	String confirmClearAllClassPreferences();
+	
+	@DefaultMessage("This will create {0} classes. Continue?")
+	String confirmCreateTooManyClasses();
+	
+	@DefaultMessage("This operation may result in deletion of existing subparts/classes . Continue?")
+	String confirmMayDeleteSubpartsClasses();
+	
+	@DefaultMessage("This operation will delete existing subparts and associated classes . Continue?")
+	String confirmDeleteExistingSubpartsClasses();
 	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();
