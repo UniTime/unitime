@@ -201,6 +201,21 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Catalog:")
 	String propertyCourseCatalog();
 	
+	@DefaultMessage("Title:")
+	String propertyCourseTitle();
+	
+	@DefaultMessage("Schedule of Classes Note:")
+	String propertyScheduleOfClassesNote();
+	
+	@DefaultMessage("Consent:")
+	String propertyConsent();
+	
+	@DefaultMessage("Designator Required:")
+	String propertyDesignatorRequired();
+	
+	@DefaultMessage("Take Course Demands from Offering:")
+	String propertyTakeCourseDemandsFromOffering();	
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -584,6 +599,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update")
 	String actionUpdateConfiguration();
 	
+	@DefaultMessage("Update")
+	String actionUpdateCourseOffering();
+	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
 	
@@ -728,6 +746,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("U")
 	String accessUpdateConfiguration();
 	
+	@DefaultMessage("U")
+	String accessUpdateCourseOffering();
+	
 	@DefaultMessage("C")
 	String accessClearClassPreferences();
 
@@ -772,6 +793,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("A")
 	String accessAddInstructionalTypeToConfig();
+	
+	@DefaultMessage("I")
+	String accessBackToIOList();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -838,6 +862,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update Configuration (Alt+{0})")
 	String titleUpdateConfiguration(String accessKey);
+	
+	@DefaultMessage("Update Course Offering (Alt+{0})")
+	String titleUpdateCourseOffering(String accessKey);
 	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
@@ -938,6 +965,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete Instructional Type")
 	String titleDeleteInstructionalType();		
 	
+	@DefaultMessage("Back to Instructional Offering List (Alt+{0})")
+	String titleBackToIOList(String accessKey);
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -979,6 +1009,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsConfigurationEdit();
+	
+	@DefaultMessage("ERRORS")
+	String errorsCourseOfferingEdit();
 	
 	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
 	String errorInvalidRoomGroup();
@@ -1061,8 +1094,20 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Operation could not be interpreted: ")
 	String errorOperationNotInterpreted();
 	
+	@DefaultMessage("Course Offering data was not correct: ")
+	String errorCourseDataNotCorrect();
+	
 	@DefaultMessage("Config ID is not valid: ")
 	String errorConfigIDNotValid();
+	
+	@DefaultMessage("Course Number is required.")
+	String errorCourseNumberRequired();
+	
+	@DefaultMessage("Course Number cannot be matched to regular expression: {0} . Reason: {1}")
+	String errorCourseNumberCannotBeMatched(String regularExpression, String reason);
+	
+	@DefaultMessage("The course cannot be renamed. A course with the same course number already exists.")
+	String errorCourseCannotBeRenamed();
 	
 	@DefaultMessage("Name")
 	String sortByName();

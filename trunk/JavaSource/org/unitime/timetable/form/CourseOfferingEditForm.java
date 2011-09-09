@@ -30,6 +30,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SubjectArea;
@@ -45,6 +47,8 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
  */
 public class CourseOfferingEditForm extends ActionForm {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private static final long serialVersionUID = 5719027599139781262L;
 	// --------------------------------------------------------- Instance Variables
     private String op;
@@ -89,9 +93,9 @@ public class CourseOfferingEditForm extends ActionForm {
             (MessageResources) super.getServlet()
             	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
 
-		if(op.equals(rsc.getMessage("button.updateCourseOffering")) ) {
+		if(op.equals(MSG.actionUpdateCourseOffering()) ) {
 			if (courseNbr==null || courseNbr.trim().length()==0) {
-				errors.add("courseNbr", new ActionMessage("errors.required", "Course Number"));
+				errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseNumberRequired()));
 			}
 			else {
 				
@@ -105,7 +109,7 @@ public class CourseOfferingEditForm extends ActionForm {
 			    	}
 		    	}
 		    	catch (Exception e) {
-			        errors.add("courseNbr", new ActionMessage("errors.generic", "Course Number cannot be matched to regular expression: " + courseNbrRegex + ". Reason: " + e.getMessage()));
+			        errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseNumberCannotBeMatched(courseNbrRegex,e.getMessage())));
 		    	}
 
 				
@@ -115,7 +119,7 @@ public class CourseOfferingEditForm extends ActionForm {
 					SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
 					CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
 					if (co!=null && !co.getUniqueId().equals(courseOfferingId)) {
-			            errors.add("courseNbr", new ActionMessage("errors.generic", "The course cannot be renamed. A course with the same course number already exists."));
+			            errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeRenamed()));
 					}
 		    	}
 			}
