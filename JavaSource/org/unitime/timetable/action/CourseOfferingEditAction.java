@@ -36,6 +36,8 @@ import org.hibernate.Transaction;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseOfferingEditForm;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
@@ -64,6 +66,8 @@ import org.unitime.timetable.util.LookupTables;
  * @struts:action path="/courseOfferingEdit" name="courseOfferingEditForm" input="/user/courseOfferingEdit.jsp" scope="request"
  */
 public class CourseOfferingEditAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -84,7 +88,7 @@ public class CourseOfferingEditAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
 
         HttpSession httpSession = request.getSession();
@@ -105,7 +109,7 @@ public class CourseOfferingEditAction extends Action {
 
 		// Check operation
 		if(op==null || op.trim().length()==0)
-		    throw new Exception ("Operation could not be interpreted: " + op);
+		    throw new Exception (MSG.errorOperationNotInterpreted() + op);
 
 		Debug.debug ("Op: " + op);
 
@@ -122,7 +126,7 @@ public class CourseOfferingEditAction extends Action {
 		    }
 
 			if(courseOfferingId==null || courseOfferingId.trim().length()==0) {
-			    throw new Exception ("Course Offering data was not correct: " + courseOfferingId);
+			    throw new Exception (MSG.errorCourseDataNotCorrect() + courseOfferingId);
 			}
 			else  {
 			    doLoad(request, frm, courseOfferingId);
@@ -131,7 +135,7 @@ public class CourseOfferingEditAction extends Action {
 			return mapping.findForward("displayCourseOffering");
 		}
 
-		if(op.equals(rsc.getMessage("button.updateCourseOffering")) ) {
+		if(op.equals(MSG.actionUpdateCourseOffering()) ) {
 			errors = frm.validate(mapping, request);
 			if (errors.size() == 0) {
 			    doUpdate(request, frm);
