@@ -308,7 +308,9 @@ public class RoomDetailAction extends Action {
 			}
 		}
 		roomDetailForm.setOwner(controls || allDepts);
-		roomDetailForm.setDeleteFlag(!location.isExamEnabled(Exam.sExamTypeFinal) && !location.isExamEnabled(Exam.sExamTypeMidterm) && allDepts);
+		roomDetailForm.setDeleteFlag(!location.isExamEnabled(Exam.sExamTypeFinal) && !location.isExamEnabled(Exam.sExamTypeMidterm) && allDepts
+				&& location instanceof NonUniversityLocation);
+		roomDetailForm.setUsed(location.isUsed());
 		
 		EditRoomAction.setupDepartments(request, location);
 
