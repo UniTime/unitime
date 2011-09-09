@@ -113,7 +113,7 @@
 						</html:submit>
 					</logic:equal>
 					--%>
-					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
+					<% if (!frm.isUsed() && (admin || (frm.isDeleteFlag() && frm.isOwner()))) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
 							<bean:message key="button.delete" />
@@ -445,7 +445,7 @@
 						</html:submit>
 					</logic:equal>
 					--%>
-					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
+					<% if (!frm.isUsed() && (admin || (frm.isDeleteFlag() && frm.isOwner()))) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
 							<bean:message key="button.delete" />

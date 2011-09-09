@@ -927,4 +927,14 @@ public abstract class Location extends BaseLocation implements Comparable {
     public String getLabelWithHint() {
     	return "<span onmouseover=\"showGwtHint(this, '" + getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
     }
+    
+    public boolean isUsed() {
+    	Number nrMeetings = (Number)LocationDAO.getInstance().getSession().createQuery(
+    			"select count(m) from Meeting m, Location l where " +
+    			"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
+    			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate") // and m.approvedDate is not null
+    			.setLong("locId", getUniqueId())
+    			.setCacheable(true).uniqueResult();
+    	return nrMeetings.intValue() > 0;
+    }
 }
