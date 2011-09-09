@@ -166,8 +166,9 @@
 		</TR>
 
 		<TR>
-			<TD>Course Offerings: </TD>
+			<TD valign="top" rowspan="2">Course Offerings: </TD>
 			<TD>
+				<table border="0" cellpadding="0" cellspacing="0"><tr><td>
 				<html:select
 					name="crossListsModifyForm"									
 					property="addCourseOfferingId"			
@@ -177,16 +178,17 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 				</html:select>
-				&nbsp;
+				</td><td style="padding-left: 5px;">
 				<html:submit property="op" styleClass="btn" accesskey="A"
 					title="Add course offering to the instructional offering (ALT+A)">
 					<bean:message key="button.add" />
 				</html:submit>
+				</td></tr><tr><td class="unitime-Hint" colspan="2">
+				Only course offerings that are not offered can be added into a cross-list.
+				</td></tr></table>
 			</TD>
 		</TR>
-
 		<TR>
-			<TD>&nbsp;</TD>
 			<TD align="left">
 				<bean:define id="cos" name="crossListsModifyForm" property="courseOfferingIds" />
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="3">
