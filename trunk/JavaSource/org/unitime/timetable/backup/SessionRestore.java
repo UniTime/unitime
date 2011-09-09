@@ -22,6 +22,7 @@ package org.unitime.timetable.backup;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -111,7 +112,8 @@ public class SessionRestore {
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
 	private Map<String, Student> iStudents = new Hashtable<String, Student>();
-	
+	private PrintWriter iDebug = null;
+
 	private InputStream iIn;
 
 	public SessionRestore(InputStream input, Progress progress) {
@@ -123,11 +125,17 @@ public class SessionRestore {
 		return iProgress;
 	}
 	
+	public void debug(PrintWriter pw) {
+		iDebug = pw;
+	}
+	
 	private boolean lookup(Entity entity, String property, Object value) {
 		try {
 			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).uniqueResult();
 			if (object != null)
 				entity.setObject(object);
+			else
+				message("Lookup " + entity.getAbbv() + "." + property + " failed", (value == null ? "null" : value.toString()));
 			return object != null;
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
@@ -344,8 +352,14 @@ public class SessionRestore {
             
             iProgress.setPhase("Loading data", 1);
             TableData.Table t = null;
-            while ((t = readTable(cin)) != null)
+            while ((t = readTable(cin)) != null) {
+        		if (iDebug != null) {
+        			iDebug.println("## " + t.getName() + " ##");
+        			iDebug.print(t.toString());
+        			iDebug.flush();
+        		}
             	create(t);
+            }
             iProgress.incProgress();
             
     		iHibSession.setFlushMode(FlushMode.MANUAL);
@@ -583,11 +597,18 @@ public class SessionRestore {
             
             SessionRestore restore = new SessionRestore(in, Progress.getInstance());
             
+            PrintWriter debug = null;
+            if (args.length >= 2) {
+            	debug = new PrintWriter(args[1]);
+            	restore.debug(debug);
+            }
+
             restore.getProgress().addProgressListener(new ProgressWriter(System.out));
 
             restore.restore();
             
             in.close();
+            if (debug != null) debug.close();
             
 		} catch (Exception e) {
 			sLog.fatal("Backup failed: " + e.getMessage(), e);
