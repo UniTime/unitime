@@ -117,13 +117,13 @@ public class StudentSectioningWidget extends Composite {
 		
 		HorizontalPanel leftFooterPanel = new HorizontalPanel();
 		iRequests = new Button(MESSAGES.buttonRequests());
-		iRequests.setWidth("75");
+		// iRequests.setWidth("75");
 		iRequests.setAccessKey('r');
 		iRequests.setVisible(false);
 		leftFooterPanel.add(iRequests);
 
 		iReset = new Button(MESSAGES.buttonReset());
-		iReset.setWidth("95");
+		// iReset.setWidth("95");
 		iReset.setVisible(false);
 		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		leftFooterPanel.add(iReset);
@@ -140,35 +140,35 @@ public class StudentSectioningWidget extends Composite {
 
 
 		iSchedule = new Button(MESSAGES.buttonSchedule());
-		iSchedule.setWidth("75");
+		// iSchedule.setWidth("75");
 		iSchedule.setAccessKey('s');
 		if (mode.isSectioning())
 			rightFooterPanel.add(iSchedule);
 		iSchedule.setVisible(mode.isSectioning());
 		
 		iSave = new Button(MESSAGES.buttonSave());
-		iSave.setWidth("75");
+		// iSave.setWidth("75");
 		iSave.setAccessKey('s');
 		if (!mode.isSectioning())
 			rightFooterPanel.add(iSave);
 		iSave.setVisible(!mode.isSectioning());
 
 		iEnroll = new Button(MESSAGES.buttonEnroll());
-		iEnroll.setWidth("75");
+		// iEnroll.setWidth("75");
 		iEnroll.setAccessKey('e');
 		iEnroll.setVisible(false);
 		rightFooterPanel.add(iEnroll);
 
 
 		iPrint = new Button(MESSAGES.buttonPrint());
-		iPrint.setWidth("75");
+		// iPrint.setWidth("75");
 		iPrint.setAccessKey('p');
 		iPrint.setVisible(false);
 		iPrint.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iPrint);
 
 		iExport = new Button(MESSAGES.buttonExport());
-		iExport.setWidth("75");
+		// iExport.setWidth("75");
 		iExport.setAccessKey('x');
 		iExport.setVisible(false);
 		iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
@@ -215,7 +215,7 @@ public class StudentSectioningWidget extends Composite {
 		iCalendar = new ImageLink();
 		iCalendar.setImage(new Image(RESOURCES.calendar()));
 		iCalendar.setTarget(null);
-		iCalendar.setTitle("Export in iCalendar format.");
+		iCalendar.setTitle(MESSAGES.exportICalendar());
 
 		iAssignments = new WebTable();
 		iAssignments.setHeader(new WebTable.Row(

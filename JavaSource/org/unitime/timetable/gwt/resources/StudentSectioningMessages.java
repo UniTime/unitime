@@ -497,7 +497,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Total Not Enrolled: {0}")
 	String totalWaitListed(int count);
 	
-	@DefaultMessage("Loading class for {0}...")
+	@DefaultMessage("Loading classes for {0}...")
 	String loadingEnrollment(String student);
 
 	@DefaultMessage("Classes for {0}")
@@ -508,4 +508,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Show Class Numbers")
 	String showClassNumbers();
+	
+	@DefaultMessage("Export in iCalendar format.")
+	String exportICalendar();
 }
