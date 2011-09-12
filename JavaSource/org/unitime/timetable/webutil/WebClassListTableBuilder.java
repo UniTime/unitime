@@ -193,26 +193,26 @@ public class WebClassListTableBuilder extends
     	String[] columns;
          if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())) {
         	String[] tcolumns = {LABEL,
-        		DEMAND,
-				LIMIT,
-				ROOM_RATIO,
-				DATE_PATTERN,
-				TIME_PATTERN,
-				PREFERENCES,
-				INSTRUCTOR,
-				TIMETABLE,
-				SCHEDULE_PRINT_NOTE};
+        		MSG.columnDemand(),
+        		MSG.columnLimit(),
+        		MSG.columnRoomRatio(),
+        		MSG.columnDatePattern(),
+        		MSG.columnTimePattern(),
+        		MSG.columnPreferences(),
+				MSG.columnInstructor(),
+				MSG.columnTimetable(),
+				MSG.columnSchedulePrintNote()};
         	columns = tcolumns;
          } else  {
          	String[] tcolumns = {LABEL,
-        			LIMIT,
-        			ROOM_RATIO,
-        			DATE_PATTERN,
-        			TIME_PATTERN,
-        			PREFERENCES,
-        			INSTRUCTOR,
-        			TIMETABLE,
-        			SCHEDULE_PRINT_NOTE};
+         			MSG.columnLimit(),
+         			MSG.columnRoomRatio(),
+         			MSG.columnDatePattern(),
+         			MSG.columnTimePattern(),
+         			MSG.columnPreferences(),
+        			MSG.columnInstructor(),
+        			MSG.columnTimetable(),
+        			MSG.columnSchedulePrintNote()};
             columns = tcolumns;
          };
          setVisibleColumns(columns);

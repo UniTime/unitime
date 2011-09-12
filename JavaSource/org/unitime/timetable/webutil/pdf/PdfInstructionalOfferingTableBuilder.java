@@ -244,109 +244,109 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowDivSec()){
     		PdfPCell c = createCell();
-    		addText(c, DIV_SEC, true, Element.ALIGN_RIGHT);
+    		addText(c, MSG.columnExternalId(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}   	
     	if (isShowDemand()){
     		PdfPCell c = createCell();
     		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
-    			addText(c, DEMAND, true, Element.ALIGN_RIGHT);
+    			addText(c, MSG.columnDemand(), true, Element.ALIGN_RIGHT);
     		} else {
-        		addText(c, "Last " + DEMAND, true, Element.ALIGN_RIGHT);    			
+        		addText(c, MSG.columnLastDemand(), true, Element.ALIGN_RIGHT);    			
     		}
     		iPdfTable.addCell(c);
     	}
     	if (isShowProjectedDemand()){
     		PdfPCell c = createCell();
-    		addText(c, PROJECTED_DEMAND, true, Element.ALIGN_RIGHT);
+    		addText(c, MSG.columnProjectedDemand(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowLimit()){
     		PdfPCell c = createCell();
-    		addText(c, LIMIT, true, Element.ALIGN_RIGHT);
+    		addText(c, MSG.columnLimit(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowRoomRatio()){
     		PdfPCell c = createCell();
-    		addText(c, ROOM_RATIO, true, Element.ALIGN_RIGHT);
+    		addText(c, MSG.columnRoomRatio(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowManager()){
     		PdfPCell c = createCell();
-    		addText(c, MANAGER, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnManager(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowDatePattern()){
     		PdfPCell c = createCell();
-    		addText(c, DATE_PATTERN, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnDatePattern(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowMinPerWk()){
     		PdfPCell c = createCell();
-    		addText(c, MIN_PER_WK, true, Element.ALIGN_RIGHT);
+    		addText(c, MSG.columnMinPerWk(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowTimePattern()){
     		PdfPCell c = createCell();
-    		addText(c, TIME_PATTERN, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnTimePattern(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowPreferences()){
     		PdfPCell c = createCell();
     		c.setColspan(PREFERENCE_COLUMN_ORDER.length + (getDisplayDistributionPrefs()?0:-1));
-    		addText(c, "----" + PREFERENCES + "----", true, Element.ALIGN_CENTER);
+    		addText(c, "----" + MSG.columnPreferences() + "----", true, Element.ALIGN_CENTER);
     		iPdfTable.addCell(c);
     	}
     	if (isShowInstructor()){
     		PdfPCell c = createCell();
-    		addText(c, INSTRUCTOR, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnInstructor(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
     		PdfPCell c = createCell();
     		c.setColspan(TIMETABLE_COLUMN_ORDER.length);
-    		addText(c, "--------" + TIMETABLE + "--------", true, Element.ALIGN_CENTER);
+    		addText(c, "--------" + MSG.columnTimetable() + "--------", true, Element.ALIGN_CENTER);
     		iPdfTable.addCell(c);
     	}
     	if (isShowTitle()) {
     		PdfPCell c = createCell();
-    		addText(c, TITLE, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnTitle(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
        }
     	if (isShowCredit()){
     		PdfPCell c = createCell();
-    		addText(c, CREDIT, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnOfferingCredit(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowSubpartCredit()){
     		PdfPCell c = createCell();
-    		addText(c, SCHEDULING_SUBPART_CREDIT, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnSubpartCredit(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowConsent()) {
     		PdfPCell c = createCell();
-    		addText(c, CONSENT, true, Element.ALIGN_CENTER);
+    		addText(c, MSG.columnConsent(), true, Element.ALIGN_CENTER);
     		iPdfTable.addCell(c);
     	}
     	if (isShowDesignatorRequired()) {
     		PdfPCell c = createCell();
-    		addText(c, DESIGNATOR_REQ, true, Element.ALIGN_CENTER);
+    		addText(c, MSG.columnDesignatorRequired(), true, Element.ALIGN_CENTER);
     		iPdfTable.addCell(c);
     	}
     	if (isShowSchedulePrintNote()){
     		PdfPCell c = createCell();
-    		addText(c, SCHEDULE_PRINT_NOTE, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnSchedulePrintNote(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowNote()){
     		PdfPCell c = createCell();
-    		addText(c, NOTE, true, Element.ALIGN_LEFT);
+    		addText(c, MSG.columnNote(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowExam()) {
     	    PdfPCell c = createCell();
     	    c.setColspan((isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
-            addText(c, "--------" + EXAM + "--------", true, Element.ALIGN_CENTER);
+            addText(c, "--------" + MSG.columnExam() + "--------", true, Element.ALIGN_CENTER);
             iPdfTable.addCell(c);
     	}
     	
@@ -461,17 +461,17 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             if (isShowExamName()) {
                 PdfPCell c = createCell();
                 c.setBorderWidthBottom(1);
-                addText(c, EXAM_NAME, true, Element.ALIGN_LEFT);
+                addText(c, MSG.columnExamName(), true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
             if (isShowExamTimetable()) {
                 PdfPCell c = createCell();
                 c.setBorderWidthBottom(1);
-                addText(c, EXAM_PER, true, Element.ALIGN_LEFT);
+                addText(c, MSG.columnExamPeriod(), true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
                 c = createCell();
                 c.setBorderWidthBottom(1);
-                addText(c, EXAM_ROOM, true, Element.ALIGN_LEFT);
+                addText(c, MSG.columnExamRoom(), true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
         }
@@ -1054,19 +1054,19 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	} 
     	if (isShowPreferences()){
 	        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length; j++) {
-	        	if (PREFERENCE_COLUMN_ORDER[j].equals(TIME)) {
+	        	if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnTimePref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
-	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(ALL_ROOM)) {
+	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnAllRoomPref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(ROOM)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomPref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, RoomPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(BLDG)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnBuildingPref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, BuildingPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(FEATURES)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomFeaturePref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, RoomFeaturePref.class, isEditable));
-	        	} else if (getDisplayDistributionPrefs() && PREFERENCE_COLUMN_ORDER[j].equals(DISTRIBUTION)) {
+	        	} else if (getDisplayDistributionPrefs() && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnDistributionPref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(ROOMGR)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomGroupPref())) {
 	        		iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, RoomGroupPref.class, isEditable));
 	        	}
 	        }
@@ -1076,11 +1076,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
 	        for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++) {
-	        	if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_TIME)){
+	        	if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedTime())){
 	        		iPdfTable.addCell(pdfBuildAssignedTime(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_ROOM)){
+	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoom())){
 	        		iPdfTable.addCell(pdfBuildAssignedRoom(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_ROOM_CAPACITY)){
+	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoomCapacity())){
 	        		iPdfTable.addCell(pdfBuildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
 	        	}
 	        }

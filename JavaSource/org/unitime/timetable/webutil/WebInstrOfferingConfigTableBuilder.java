@@ -54,18 +54,18 @@ import org.unitime.timetable.util.Constants;
 public class WebInstrOfferingConfigTableBuilder extends
 		WebInstructionalOfferingTableBuilder {
 	
-    private static String[] COLUMNS = {LABEL,
-		DIV_SEC,
-		MIN_PER_WK,
-		LIMIT,
-		ROOM_RATIO,
-		MANAGER,
-		DATE_PATTERN,
-		TIME_PATTERN,
-		PREFERENCES,
-		INSTRUCTOR,
-		TIMETABLE,
-		SCHEDULING_SUBPART_CREDIT};
+    private String[] COLUMNS = {LABEL,
+		MSG.columnExternalId(),
+		MSG.columnMinPerWk(),
+		MSG.columnLimit(),
+		MSG.columnRoomRatio(),
+		MSG.columnManager(),
+		MSG.columnDatePattern(),
+		MSG.columnTimePattern(),
+		MSG.columnPreferences(),
+		MSG.columnInstructor(),
+		MSG.columnTimetable(),
+		MSG.columnSubpartCredit()};
 
 	public WebInstrOfferingConfigTableBuilder() {
 		super();
@@ -237,18 +237,18 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        }
 	        if (StudentClassEnrollment.sessionHasEnrollments(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId())){
 	            String[] cols = {LABEL,
-	            		DIV_SEC,
-	            		MIN_PER_WK,
-	            		DEMAND,
-	            		LIMIT,
-	            		ROOM_RATIO,
-	            		MANAGER,
-	            		DATE_PATTERN,
-	            		TIME_PATTERN,
-	            		PREFERENCES,
-	            		INSTRUCTOR,
-	            		TIMETABLE,
-	            		SCHEDULING_SUBPART_CREDIT};
+	            		MSG.columnExternalId(),
+	            		MSG.columnMinPerWk(),
+	            		MSG.columnDemand(),
+	            		MSG.columnLimit(),
+	            		MSG.columnRoomRatio(),
+	            		MSG.columnManager(),
+	            		MSG.columnDatePattern(),
+	            		MSG.columnTimePattern(),
+	            		MSG.columnPreferences(),
+	            		MSG.columnInstructor(),
+	            		MSG.columnTimetable(),
+	            		MSG.columnSubpartCredit()};
 	            setVisibleColumns(cols);
 	        } else {
 		        setVisibleColumns(COLUMNS);	        	
