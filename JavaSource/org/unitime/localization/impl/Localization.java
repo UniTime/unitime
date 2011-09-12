@@ -19,14 +19,12 @@
 */
 package org.unitime.localization.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 
@@ -47,62 +45,91 @@ import com.google.gwt.i18n.client.Messages;
 public class Localization {
 	private static Log sLog = LogFactory.getLog(Localization.class);
 	public static final String ROOT = "org.unitime.localization.messages.";
+	private static Map<Class, Messages> sBundles = new Hashtable<Class, Messages>();
+	
+	private static final ThreadLocal<String> sLocale = new ThreadLocal<String>() {
+		 @Override
+		 protected String initialValue() {
+             return ApplicationProperties.getProperty("unitime.locale", "en");
+		 }
+	};
+	
+	public static void setLocale(String locale) { sLocale.set(locale); }
+	public static String getLocale() { return sLocale.get(); }
+	public static String getFirstLocale() {
+		String locale = getLocale();
+		if (locale.indexOf(',') >= 0) locale = locale.substring(0, locale.indexOf(','));
+		if (locale.indexOf(';') >= 0) locale = locale.substring(0, locale.indexOf(';'));
+		return locale.trim();
+	}
 	
 	public static <T extends Messages> T create(Class<T> bundle) {
-		return create(bundle, ApplicationProperties.getProperty("unitime.locale", "en"));
-	}
-
-	public static <T extends Messages> T create(Class<T> bundle, String locale) {
-		return (T)Proxy.newProxyInstance(Localization.class.getClassLoader(), new Class[] {bundle, StrutsActionsRetriever.class}, new Bundle(bundle, locale));
+		synchronized (sBundles) {
+			T ret = (T)sBundles.get(bundle);
+			if (ret == null) {
+				ret = (T)Proxy.newProxyInstance(Localization.class.getClassLoader(), new Class[] {bundle, StrutsActionsRetriever.class}, new Bundle(bundle));
+				sBundles.put(bundle, ret);
+			}
+			return ret;
+		}
 	}
 		
 	public static class Bundle implements InvocationHandler {
-		List<Properties> iProperties = new ArrayList<Properties>();
-		Class<? extends Messages> iMessages = null;
+		private Map<String, Properties> iProperties = new Hashtable<String, Properties>();
+		private Class<? extends Messages> iMessages = null;
 
-		public Bundle(Class<? extends Messages> messages, String locale) {
+		public Bundle(Class<? extends Messages> messages) {
 			iMessages = messages;
-			for (String loc: locale.split(",")) {
-				String resource = messages.getName().replace('.', '/') + "_" + loc + ".properties"; 
+		}
+		
+		private synchronized String getProperty(String locale, String name) {
+			Properties properties = iProperties.get(locale);
+			if (properties == null) {
+				properties = new Properties();
+				String resource = iMessages.getName().replace('.', '/') + (locale.isEmpty() ? "" : "_" + locale) + ".properties"; 
 				try {
 					InputStream is = Localization.class.getClassLoader().getResourceAsStream(resource);
 					if (is != null)
-						load(is);
+						properties.load(is);
 				} catch (Exception e) {
-					sLog.warn("Failed to load bundle " + messages.getName().substring(messages.getName().lastIndexOf('.') + 1) + " for " + loc + ": "  + e.getMessage(), e);
+					sLog.warn("Failed to load message bundle " + iMessages.getName().substring(iMessages.getName().lastIndexOf('.') + 1) + " for " + locale + ": "  + e.getMessage(), e);
+				}
+				iProperties.put(locale, properties);
+			}
+			return properties.getProperty(name);
+		}
+		
+		private String getProperty(String name) {
+			for (String locale: getLocale().split(",")) {
+				if (locale.indexOf(';') >= 0) locale = locale.substring(0, locale.indexOf(';'));
+				String value = getProperty(locale.trim(), name);
+				if (value != null) return value;
+				if (locale.indexOf('_') >= 0) {
+					locale = locale.substring(0, locale.indexOf('_'));
+					value = getProperty(locale.trim(), name);
+					if (value != null) return value;
 				}
 			}
-			String resource = messages.getName().replace('.', '/') + ".properties";
-			try {
-				InputStream is = Localization.class.getClassLoader().getResourceAsStream(resource);
-				if (is != null)
-					load(is);
-			} catch (Exception e) {
-				sLog.warn("Failed to load default bundle " + messages.getName().substring(messages.getName().lastIndexOf('.') + 1) + ": "  + e.getMessage(), e);
-			}
+			return getProperty("", name); // try default message bundle
+		}
+		
+		private String fillArgumentsIn(String value, Object[] args) {
+			if (value == null || args == null) return value;
+			for (int i = 0; i < args.length; i++)
+				value = value.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
+			return value;
 		}
 		
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 1)
 				return getStrutsActions(proxy, (Class<? extends LocalizedLookupDispatchAction>) args[0]);
-			for (Properties p: iProperties) {
-				String val = p.getProperty(method.getName());
-				if (val != null) {
-					if (args != null)
-						for (int i = 0; i < args.length; i++)
-							val = val.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
-					return val;
-				}
-			}
+			String value = getProperty(method.getName());
+			if (value != null) 
+				return fillArgumentsIn(value, args);
 			Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
-			if (dm != null) {
-				String val = dm.value();
-				if (args != null)
-					for (int i = 0; i < args.length; i++)
-						val = val.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
-				return val;
-			}				
+			if (dm != null)
+				return fillArgumentsIn(dm.value(), args);
 			return method.getName();
 		}
 		
@@ -134,12 +161,6 @@ public class Localization {
 				}
 			}
 			return ret;
-		}
-		
-		void load(InputStream in) throws IOException {
-			Properties p = new Properties();
-			p.load(in);
-			iProperties.add(p);
 		}
 	}
 	

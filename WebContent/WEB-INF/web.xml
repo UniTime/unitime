@@ -266,6 +266,19 @@
 			<param-value>chromeframe</param-value>
 		</init-param>
 	</filter>
+	
+		<filter>
+		<filter-name>
+			Locale Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.LocaleFilter
+		</filter-class>
+		<init-param>
+			<param-name>use-browser-settings</param-name>
+			<param-value>false</param-value>
+		</init-param>
+	</filter>
 
 	<!-- Filter Mappings -->
 	<filter-mapping>
@@ -313,6 +326,16 @@
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
 	
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+
 	<jsp-config>
 		<jsp-property-group>
 			<url-pattern>*.jspf</url-pattern>

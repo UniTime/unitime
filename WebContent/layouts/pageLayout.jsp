@@ -20,6 +20,7 @@
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="net.sf.cpsolver.ifs.util.JProf" %>
 <%@ page import="java.util.Date" %>
+<%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
@@ -56,6 +57,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
+    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
 	<style type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime.css">
