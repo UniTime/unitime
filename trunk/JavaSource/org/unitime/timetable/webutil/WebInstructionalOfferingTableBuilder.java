@@ -99,92 +99,52 @@ public class WebInstructionalOfferingTableBuilder {
     
     //available columns for table
     protected static String LABEL = "&nbsp;";
-    public static final String DIV_SEC = MSG.columnExternalId();
-    public static final String DEMAND = MSG.columnDemand();
-    public static final String LAST_DEMAND = MSG.columnLastDemand();
-    public static final String PROJECTED_DEMAND = MSG.columnProjectedDemand();
-    public static final String LIMIT = MSG.columnLimit();
-    public static final String ROOM_RATIO = MSG.columnRoomRatio();
-    public static final String MIN_PER_WK = MSG.columnMinPerWk();
-    public static final String MANAGER = MSG.columnManager();
-    public static final String DATE_PATTERN = MSG.columnDatePattern();
-    public static final String TIME_PATTERN = MSG.columnTimePattern();
-    public static final String INSTRUCTOR = MSG.columnInstructor();
-    public static final String PREFERENCES = MSG.columnPreferences();
-    public static final String TIMETABLE = MSG.columnTimetable();
-    public static final String CREDIT = MSG.columnOfferingCredit();
-    public static final String SCHEDULING_SUBPART_CREDIT = MSG.columnSubpartCredit();
-    public static final String SCHEDULE_PRINT_NOTE_FILTER = MSG.columnSchedulePrintNote();
-    public static String SCHEDULE_PRINT_NOTE = MSG.columnSchedulePrintNote();
-    public static final String NOTE = MSG.columnNote();
-    public static final String TITLE = MSG.columnTitle();
-    public static final String CONSENT = MSG.columnConsent();
-    public static final String DESIGNATOR_REQ = MSG.columnDesignatorRequired();
-    public static final String EXAM = MSG.columnExam();
-    public static final String EXAM_NAME = MSG.columnExamName();
-    public static final String EXAM_PER = MSG.columnExamPeriod();
-    public static final String EXAM_ROOM = MSG.columnExamRoom();
     
-    // Preference Labels
-    protected static String TIME = MSG.columnTimePref();
-    protected static String ROOMGR = MSG.columnRoomGroupPref();
-    protected static String BLDG = MSG.columnBuildingPref();
-    protected static String ROOM = MSG.columnRoomPref();
-    protected static String FEATURES = MSG.columnRoomFeaturePref();
-    protected static String DISTRIBUTION = MSG.columnDistributionPref();
-    protected static String ALL_ROOM = MSG.columnAllRoomPref();
-
-    // Timetable Labels
-    protected static String ASSIGNED_TIME = MSG.columnAssignedTime();
-    protected static String ASSIGNED_ROOM = MSG.columnAssignedRoom();
-    protected static String ASSIGNED_ROOM_CAPACITY = MSG.columnAssignedRoomCapacity();
-
-    
-    protected static String[] COLUMNS = {LABEL,
-            								TITLE,
-    										DIV_SEC,
-    										DEMAND,
-    										PROJECTED_DEMAND,
-    										CONSENT,
-    										DESIGNATOR_REQ,
-    										MIN_PER_WK,
-    										LIMIT,
-    										ROOM_RATIO,
-    										MANAGER,
-    										DATE_PATTERN,
-    										TIME_PATTERN,
-    										PREFERENCES,
-    										INSTRUCTOR,
-    										TIMETABLE,
-    										CREDIT,
-    										SCHEDULING_SUBPART_CREDIT,
-    										SCHEDULE_PRINT_NOTE,
-    										NOTE,
-    										EXAM};
+    protected String[] COLUMNS = {LABEL,
+            								MSG.columnTitle(),
+    										MSG.columnExternalId(),
+    										MSG.columnDemand(),
+    										MSG.columnProjectedDemand(),
+    										MSG.columnConsent(),
+    										MSG.columnDesignatorRequired(),
+    										MSG.columnMinPerWk(),
+    										MSG.columnLimit(),
+    										MSG.columnRoomRatio(),
+    										MSG.columnManager(),
+    										MSG.columnDatePattern(),
+    										MSG.columnTimePattern(),
+    										MSG.columnPreferences(),
+    										MSG.columnInstructor(),
+    										MSG.columnTimetable(),
+    										MSG.columnOfferingCredit(),
+    										MSG.columnSubpartCredit(),
+    										MSG.columnSchedulePrintNote(),
+    										MSG.columnNote(),
+    										MSG.columnExam()};
     
     //set to false for old behaviour
     protected static boolean sAggregateRoomPrefs = true;
     
-    protected static String[] PREFERENCE_COLUMN_ORDER = ( sAggregateRoomPrefs ?
+    protected String[] PREFERENCE_COLUMN_ORDER = ( sAggregateRoomPrefs ?
     		 												new String[] {
-    															TIME,
-    															ALL_ROOM,
-    															DISTRIBUTION
+    															MSG.columnTimePref(),
+    															MSG.columnAllRoomPref(),
+    															MSG.columnDistributionPref()
     														}
     													:
     														new String[] {
-    															TIME,
-    															ROOMGR,
-    															BLDG,
-    															ROOM,
-    															FEATURES,
-    															DISTRIBUTION
+    															MSG.columnTimePref(),
+    															MSG.columnRoomGroupPref(),
+    															MSG.columnBuildingPref(),
+    															MSG.columnRoomPref(),
+    															MSG.columnRoomFeaturePref(),
+    															MSG.columnDistributionPref()
     														}
     		 											);
     
-    protected static String[] TIMETABLE_COLUMN_ORDER = {ASSIGNED_TIME,
-														ASSIGNED_ROOM,
-														ASSIGNED_ROOM_CAPACITY};
+    protected String[] TIMETABLE_COLUMN_ORDER = {MSG.columnAssignedTime(),
+														MSG.columnAssignedRoom(),
+														MSG.columnAssignedRoomCapacity()};
     
     private boolean showLabel;
     private boolean showDivSec;
@@ -405,7 +365,7 @@ public class WebInstructionalOfferingTableBuilder {
         return (cell);
         
     } 
-    //NOTE: if changing column order column order must be changed in
+    //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildTableHeader(TableStream table, Long sessionId){  
     	TableRow row = new TableRow();
@@ -416,47 +376,47 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);
     	}
     	if (isShowDivSec()){
-    		cell = this.headerCell(DIV_SEC, 2, 1);
+    		cell = this.headerCell(MSG.columnExternalId(), 2, 1);
     		row.addContent(cell);
     	}   	
     	if (isShowDemand()){
     		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
-        		cell = this.headerCell(DEMAND, 2, 1);
+        		cell = this.headerCell(MSG.columnDemand(), 2, 1);
     		} else {
-        		cell = this.headerCell((LAST_DEMAND), 2, 1);    			
+        		cell = this.headerCell((MSG.columnLastDemand()), 2, 1);    			
     		}
     		row.addContent(cell);
     	}
     	if (isShowProjectedDemand()){
-    		cell = this.headerCell(PROJECTED_DEMAND, 2, 1);
+    		cell = this.headerCell(MSG.columnProjectedDemand(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowLimit()){
-    		cell = this.headerCell(LIMIT, 2, 1);
+    		cell = this.headerCell(MSG.columnLimit(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowRoomRatio()){
-    		cell = this.headerCell(ROOM_RATIO, 2, 1);
+    		cell = this.headerCell(MSG.columnRoomRatio(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowManager()){
-    		cell = this.headerCell(MANAGER, 2, 1);
+    		cell = this.headerCell(MSG.columnManager(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowDatePattern()){
-    		cell = this.headerCell(DATE_PATTERN, 2, 1);
+    		cell = this.headerCell(MSG.columnDatePattern(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowMinPerWk()){
-    		cell = this.headerCell(MIN_PER_WK, 2, 1);
+    		cell = this.headerCell(MSG.columnMinPerWk(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowTimePattern()){
-    		cell = this.headerCell(TIME_PATTERN, 2, 1);
+    		cell = this.headerCell(MSG.columnTimePattern(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowPreferences()){
-    		cell = headerCell("----" + PREFERENCES + "----", 1, PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1));
+    		cell = headerCell("----" + MSG.columnPreferences() + "----", 1, PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1));
     		cell.setStyleClass("WebTableHeaderFirstRow");
     		cell.setAlign("center");
 	    	row.addContent(cell);
@@ -467,11 +427,11 @@ public class WebInstructionalOfferingTableBuilder {
 	    	}
     	}
     	if (isShowInstructor()){
-    		cell = this.headerCell(INSTRUCTOR, 2, 1);
+    		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-	    	cell = headerCell("--------" + TIMETABLE + "--------", 1, TIMETABLE_COLUMN_ORDER.length);
+	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, TIMETABLE_COLUMN_ORDER.length);
 	    	cell.setStyleClass("WebTableHeaderFirstRow");
     		cell.setAlign("center");
     		row.addContent(cell);
@@ -483,23 +443,23 @@ public class WebInstructionalOfferingTableBuilder {
 	    	}   		
     	}
     	if (isShowTitle()){
-    		cell = this.headerCell(TITLE, 2, 1);
+    		cell = this.headerCell(MSG.columnTitle(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowCredit()){
-    		cell = this.headerCell(CREDIT, 2, 1);
+    		cell = this.headerCell(MSG.columnOfferingCredit(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowSubpartCredit()){
-    		cell = this.headerCell(SCHEDULING_SUBPART_CREDIT, 2, 1);
+    		cell = this.headerCell(MSG.columnSubpartCredit(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowConsent()){
-    		cell = this.headerCell(CONSENT, 2, 1);
+    		cell = this.headerCell(MSG.columnConsent(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowDesignatorRequired()){
-    		cell = this.headerCell(DESIGNATOR_REQ, 2, 1);
+    		cell = this.headerCell(MSG.columnDesignatorRequired(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowSchedulePrintNote()){
@@ -507,27 +467,27 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);    		
     	}
     	if (isShowNote()){
-    		cell = this.headerCell(NOTE, 2, 1);
+    		cell = this.headerCell(MSG.columnNote(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowExam()) {
-    		cell = headerCell("-----------" + EXAM + "--------", 1, (isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
+    		cell = headerCell("-----------" + MSG.columnExam() + "--------", 1, (isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
 	    	cell.setStyleClass("WebTableHeaderFirstRow");
     		cell.setAlign("center");
     		cell.setNoWrap(true);
             row.addContent(cell);
             if (isShowExamName()) {
-                cell = headerCell(EXAM_NAME, 1, 1);
+                cell = headerCell(MSG.columnExamName(), 1, 1);
                 cell.setNoWrap(true);
 	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
             }
             if (isShowExamTimetable()) {
-                cell = headerCell(EXAM_PER, 1, 1);
+                cell = headerCell(MSG.columnExamPeriod(), 1, 1);
                 cell.setNoWrap(true);
 	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
-                cell = headerCell(EXAM_ROOM, 1, 1);
+                cell = headerCell(MSG.columnExamRoom(), 1, 1);
                 cell.setNoWrap(true);
 	    		cell.setStyleClass("WebTableHeaderSecondRow");
                 row2.addContent(cell);
@@ -539,7 +499,7 @@ public class WebInstructionalOfferingTableBuilder {
    }
     
     protected String getSchedulePrintNoteLabel(){
-    	return(SCHEDULE_PRINT_NOTE);
+    	return(MSG.columnSchedulePrintNote());
     }
 
     private String subjectOnClickAction(Long instrOfferingId){
@@ -1176,7 +1136,7 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
     
-    //NOTE: if changing column order column order must be changed in
+    //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, User user){
     	boolean classLimitDisplayed = false;
@@ -1213,19 +1173,19 @@ public class WebInstructionalOfferingTableBuilder {
     	} 
     	if (isShowPreferences()){
 	        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length; j++) {
-	        	if (PREFERENCE_COLUMN_ORDER[j].equals(TIME)) {
+	        	if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnTimePref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
-	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(ALL_ROOM)) {
+	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnAllRoomPref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(ROOM)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomPref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(BLDG)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnBuildingPref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, BuildingPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(FEATURES)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomFeaturePref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomFeaturePref.class, isEditable));
-	        	} else if (iDisplayDistributionPrefs && PREFERENCE_COLUMN_ORDER[j].equals(DISTRIBUTION)) {
+	        	} else if (iDisplayDistributionPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnDistributionPref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(ROOMGR)) {
+	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomGroupPref())) {
 	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomGroupPref.class, isEditable));
 	        	}
 	        }
@@ -1235,11 +1195,11 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
 	        for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++) {
-	        	if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_TIME)){
+	        	if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedTime())){
 	        		row.addContent(this.buildAssignedTime(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_ROOM)){
+	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoom())){
 	        		row.addContent(this.buildAssignedRoom(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(ASSIGNED_ROOM_CAPACITY)){
+	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoomCapacity())){
 	        		row.addContent(this.buildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
 	        	}
 	        }
@@ -1363,7 +1323,7 @@ public class WebInstructionalOfferingTableBuilder {
     }
 
 
-    //NOTE: if changing column order column order must be changed in
+    //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
 	protected void buildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, InstrOfferingConfig ioc, User user, boolean printConfigLine, boolean printConfigReservation) {
 	    boolean isHeaderRow = true;
@@ -1515,7 +1475,7 @@ public class WebInstructionalOfferingTableBuilder {
         }
     }
 
-    //NOTE: if changing column order column order must be changed in
+    //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     private void addInstrOffrRowsToTable(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, InstructionalOffering io, Long subjectAreaId, User user){
         CourseOffering co = io.findSortCourseOfferingForSubjectArea(subjectAreaId);
@@ -1948,26 +1908,26 @@ public class WebInstructionalOfferingTableBuilder {
 		}
 		
 		setShowLabel(a.contains(LABEL));
-		setShowDivSec(a.contains(DIV_SEC));
-		setShowDemand(a.contains(DEMAND));
-		setShowProjectedDemand(a.contains(PROJECTED_DEMAND));
-		setShowMinPerWk(a.contains(MIN_PER_WK));
-		setShowLimit(a.contains(LIMIT));
-		setShowRoomRatio(a.contains(ROOM_RATIO));
-		setShowManager(a.contains(MANAGER));
-		setShowDatePattern(a.contains(DATE_PATTERN));
-		setShowTimePattern(a.contains(TIME_PATTERN));
-		setShowPreferences(a.contains(PREFERENCES));
-		setShowInstructor(a.contains(INSTRUCTOR));
-		setShowTimetable(a.contains(TIMETABLE));
-		setShowCredit(a.contains(CREDIT));
-		setShowSubpartCredit(a.contains(SCHEDULING_SUBPART_CREDIT));
-		setShowSchedulePrintNote(a.contains(SCHEDULE_PRINT_NOTE));
-		setShowNote(a.contains(NOTE));
-		setShowConsent(a.contains(CONSENT));
-		setShowDesignatorRequired(a.contains(DESIGNATOR_REQ));
-		setShowTitle(a.contains(TITLE));
-		setShowExam(a.contains(EXAM));
+		setShowDivSec(a.contains(MSG.columnExternalId()));
+		setShowDemand(a.contains(MSG.columnDemand()));
+		setShowProjectedDemand(a.contains(MSG.columnProjectedDemand()));
+		setShowMinPerWk(a.contains(MSG.columnMinPerWk()));
+		setShowLimit(a.contains(MSG.columnLimit()));
+		setShowRoomRatio(a.contains(MSG.columnRoomRatio()));
+		setShowManager(a.contains(MSG.columnManager()));
+		setShowDatePattern(a.contains(MSG.columnDatePattern()));
+		setShowTimePattern(a.contains(MSG.columnTimePattern()));
+		setShowPreferences(a.contains(MSG.columnPreferences()));
+		setShowInstructor(a.contains(MSG.columnInstructor()));
+		setShowTimetable(a.contains(MSG.columnTimetable()));
+		setShowCredit(a.contains(MSG.columnOfferingCredit()));
+		setShowSubpartCredit(a.contains(MSG.columnSubpartCredit()));
+		setShowSchedulePrintNote(a.contains(MSG.columnSchedulePrintNote()));
+		setShowNote(a.contains(MSG.columnNote()));
+		setShowConsent(a.contains(MSG.columnConsent()));
+		setShowDesignatorRequired(a.contains(MSG.columnDesignatorRequired()));
+		setShowTitle(a.contains(MSG.columnTitle()));
+		setShowExam(a.contains(MSG.columnExam()));
 		
 	}
 	
