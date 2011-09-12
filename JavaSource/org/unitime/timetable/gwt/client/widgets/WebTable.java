@@ -506,7 +506,7 @@ public class WebTable extends Composite {
 						Anchor a = new Anchor();
 						a.setHref("mailto:" + email);
 						a.setHTML(DOM.toString(new Image(RESOURCES.email()).getElement()));
-						a.setTitle("Send " + names.get(i) + " an email.");
+						a.setTitle(MESSAGES.sendEmail(names.get(i)));
 						a.setStyleName("unitime-SimpleLink");
 						a.addClickHandler(new ClickHandler() {
 							public void onClick(ClickEvent event) {
