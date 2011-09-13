@@ -44,6 +44,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CrossListsModifyForm;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
@@ -75,6 +77,8 @@ import org.unitime.timetable.util.LookupTables;
  * @struts:action path="/courseOfferingEdit" name="instructionalOfferingListForm" input="/user/instructionalOfferingSearch.jsp" scope="request"
  */
 public class CrossListsModifyAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -95,7 +99,7 @@ public class CrossListsModifyAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
         
         MessageResources rsc = getResources(request);
@@ -115,7 +119,7 @@ public class CrossListsModifyAction extends Action {
             op = request.getParameter("hdnOp");
         
         if(op==null || op.trim().length()==0)
-            throw new Exception ("Operation could not be interpreted: " + op);
+            throw new Exception (MSG.errorOperationNotInterpreted() + op);
 
         // Course Offering Id
         String courseOfferingId = "";
@@ -137,7 +141,7 @@ public class CrossListsModifyAction extends Action {
         }
         
         // Add a course offering
-        if(op.equalsIgnoreCase(rsc.getMessage("button.add"))) {
+        if(op.equalsIgnoreCase(MSG.actionAddCourseToCrossList())) {
             // Validate data input
             ActionMessages errors = frm.validate(mapping, request);
 
@@ -163,7 +167,7 @@ public class CrossListsModifyAction extends Action {
         }
         
         // Update the course offering
-        if(op.equalsIgnoreCase(rsc.getMessage("button.update"))) {
+        if(op.equalsIgnoreCase(MSG.actionUpdateCrossLists())) {
             // Validate data input
             ActionMessages errors = frm.validate(mapping, request);
             
@@ -193,7 +197,7 @@ public class CrossListsModifyAction extends Action {
      * @param frm
      */
     private void filterCourseOfferingList(HttpServletRequest request, CrossListsModifyForm frm) {
-        Collection existingOfferings = frm.getCourseOfferingNames();
+        Collection existingOfferings = frm.getCourseOfferingIds();
         Collection offerings = (Collection) request.getAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
         
         for (Iterator i=offerings.iterator(); i.hasNext(); ) {
@@ -203,7 +207,7 @@ public class CrossListsModifyAction extends Action {
             }
             for (Iterator j=existingOfferings.iterator(); j.hasNext(); ) {
                 String course = (String) j.next();
-                if (course.equals(co.getCourseName()))
+                if (course.equals(co.getUniqueId().toString()))
                     i.remove();
             }
         }
@@ -557,7 +561,7 @@ public class CrossListsModifyAction extends Action {
         
         // Check uniqueid
         if(courseOfferingId==null || courseOfferingId.trim().length()==0)
-            throw new Exception ("Unique Id need for operation. ");
+            throw new Exception (MSG.errorUniqueIdNeeded());
 
         // Load details
         CourseOfferingDAO coDao = new CourseOfferingDAO();

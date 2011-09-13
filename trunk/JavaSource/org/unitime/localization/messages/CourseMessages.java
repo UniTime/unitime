@@ -216,6 +216,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Take Course Demands from Offering:")
 	String propertyTakeCourseDemandsFromOffering();	
 	
+	@DefaultMessage("Instructional Offering Limit:")
+	String propertyIOLimit();
+	
+	@DefaultMessage("Course Offerings:")
+	String propertyCourseOfferings();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -470,7 +476,25 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Limit<br>per Class")
 	String columnSubpartLimitPerClass();
+	
+	@DefaultMessage("Offering")
+	String columnCrossListsOffering();
+	
+	@DefaultMessage("Controlling")
+	String columnCrossListsControlling();
+	
+	@DefaultMessage("Reserved")
+	String columnCrossListsReserved();
+
+	@DefaultMessage("Projected")
+	String columnCrossListsProjected();
+	
+	@DefaultMessage("Last Term")
+	String columnCrossListsLastTerm();
 		
+	@DefaultMessage("Total")
+	String rowCrossListsTotal();
+	
 	@DefaultMessage("Not assigned.")
 	String messageNotAssigned();
 
@@ -494,6 +518,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Move Down")
 	String altMoveDown();
+	
+	@DefaultMessage("Limits do not match")
+	String altCrossListsLimitsDoNotMatch();
 	
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
@@ -602,6 +629,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update")
 	String actionUpdateCourseOffering();
 	
+	@DefaultMessage("Update")
+	String actionUpdateCrossLists();
+	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
 	
@@ -670,6 +700,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Add")
 	String actionAddInstructionalTypeToConfig();
+	
+	@DefaultMessage("Add")
+	String actionAddCourseToCrossList();
 	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
@@ -749,6 +782,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("U")
 	String accessUpdateCourseOffering();
 	
+	@DefaultMessage("U")
+	String accessUpdateCrossLists();
+	
 	@DefaultMessage("C")
 	String accessClearClassPreferences();
 
@@ -793,6 +829,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("A")
 	String accessAddInstructionalTypeToConfig();
+	
+	@DefaultMessage("A")
+	String accessAddCourseToCrossList();
 	
 	@DefaultMessage("I")
 	String accessBackToIOList();
@@ -865,6 +904,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update Course Offering (Alt+{0})")
 	String titleUpdateCourseOffering(String accessKey);
+	
+	@DefaultMessage("Update Cross Lists (Alt+{0})")
+	String titleUpdateCrossLists(String accessKey);
 	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
@@ -956,6 +998,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add the selected instructional type to the configuration (Alt+{0})")
 	String titleAddInstructionalTypeToConfig(String accessKey);
 	
+	@DefaultMessage("Add course offering to the instructional offering (Alt+{0})")
+	String titleAddCourseToCrossList(String accessKey);
+	
 	@DefaultMessage("Move to Child Level")
 	String titleMoveToChildLevel();
 	
@@ -967,6 +1012,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Back to Instructional Offering List (Alt+{0})")
 	String titleBackToIOList(String accessKey);
+	
+	@DefaultMessage("Limits do not match")
+	String titleCrossListsLimitsDoNotMatch();
+	
+	@DefaultMessage("Remove course from instructional offering & mark it as not offered.")
+	String titleRemoveCourseFromCrossList();
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -1012,6 +1063,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsCourseOfferingEdit();
+	
+	@DefaultMessage("ERRORS")
+	String errorsIOCrossLists();
 	
 	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
 	String errorInvalidRoomGroup();
@@ -1108,6 +1162,21 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("The course cannot be renamed. A course with the same course number already exists.")
 	String errorCourseCannotBeRenamed();
+	
+	@DefaultMessage("Reserved spaces should total to at least the limit")
+	String errorCrossListsLimitsDoNotMatch();
+	
+	@DefaultMessage("Course Offering is required.")
+	String errorRequiredCourseOffering();
+	
+	@DefaultMessage("Controlling Course is required")
+	String errorRequiredControllingCourse();
+	
+	@DefaultMessage("Reserved Space is required")
+	String errorRequiredReservedSpace();
+	
+	@DefaultMessage("Unique Id needed for operation. ")
+	String errorUniqueIdNeeded();
 	
 	@DefaultMessage("Name")
 	String sortByName();
@@ -1252,5 +1321,8 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("If checked, students will be allowed to take classes from this subpart even when they are overlapping with other classes.")
 	String descriptionStudentOverlaps();
+	
+	@DefaultMessage("Only course offerings that are not offered can be added into a cross-list.")
+	String hintCrossLists();
 	
 }
