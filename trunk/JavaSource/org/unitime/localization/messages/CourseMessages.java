@@ -213,6 +213,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Designator Required:")
 	String propertyDesignatorRequired();
 	
+	@DefaultMessage("Coordinators:")
+	String propertyCoordinators();
+	
 	@DefaultMessage("Take Course Demands from Offering:")
 	String propertyTakeCourseDemandsFromOffering();	
 	
@@ -221,6 +224,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Course Offerings:")
 	String propertyCourseOfferings();
+	
+	@DefaultMessage("By Reservation Only:")
+	String propertyByReservationOnly();
 	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
@@ -703,7 +709,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Add")
 	String actionAddCourseToCrossList();
+
+	@DefaultMessage("Add Coordinator")
+	String actionAddCoordinator();
 	
+	@DefaultMessage("Delete")
+	String actionRemoveCoordinator();
+
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -835,6 +847,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("I")
 	String accessBackToIOList();
+	
+	@DefaultMessage("C")
+	String accessAddCoordinator();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -1019,6 +1034,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Remove course from instructional offering & mark it as not offered.")
 	String titleRemoveCourseFromCrossList();
 	
+	@DefaultMessage("Add Coordinator (Alt+{0})")
+	String titleAddCoordinator(String accessKey);
+
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -1325,4 +1343,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Only course offerings that are not offered can be added into a cross-list.")
 	String hintCrossLists();
 	
+	@DefaultMessage("If checked, only students meeting reservations will be allowed to enroll into the offering.")
+	String descriptionByReservationOnly();
 }

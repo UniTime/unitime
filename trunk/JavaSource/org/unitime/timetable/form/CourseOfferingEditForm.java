@@ -19,23 +19,26 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.Globals;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.util.DynamicList;
+import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /**
@@ -74,6 +77,8 @@ public class CourseOfferingEditForm extends ActionForm {
     private Boolean ioNotOffered;
     private String catalogLinkLabel;
     private String catalogLinkLocation;
+    private Boolean byReservationOnly;
+    private List instructors;
 
     // --------------------------------------------------------- Methods
 
@@ -88,10 +93,6 @@ public class CourseOfferingEditForm extends ActionForm {
         HttpServletRequest request) {
 
         ActionErrors errors = new ActionErrors();
-        // Get Message Resources
-        MessageResources rsc =
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
 
 		if(op.equals(MSG.actionUpdateCourseOffering()) ) {
 			if (courseNbr==null || courseNbr.trim().length()==0) {
@@ -122,11 +123,18 @@ public class CourseOfferingEditForm extends ActionForm {
 			            errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeRenamed()));
 					}
 		    	}
+
 			}
 		}
 
         return errors;
     }
+    
+    protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
+        public Object create() {
+            return new String(Preference.BLANK_PREF_VALUE);
+        }
+    };
 
     /**
      * Method reset
@@ -154,6 +162,8 @@ public class CourseOfferingEditForm extends ActionForm {
         ioNotOffered = null;
         catalogLinkLabel = null;
         catalogLinkLocation = null;
+        instructors = DynamicList.getInstance(new ArrayList(), factory);
+        byReservationOnly = false;
     }
 
     public Long getCourseOfferingId() {
@@ -323,5 +333,13 @@ public class CourseOfferingEditForm extends ActionForm {
 	public void setCatalogLinkLocation(String catalogLinkLocation) {
 		this.catalogLinkLocation = catalogLinkLocation;
 	}
+	
+    public List getInstructors() { return instructors; }
+    public String getInstructors(int key) { return instructors.get(key).toString(); }
+    public void setInstructors(int key, Object value) { this.instructors.set(key, value); }
+    public void setInstructors(List instructors) { this.instructors = instructors; }
+
+    public boolean isByReservationOnly() { return byReservationOnly; }
+    public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }
 
 }

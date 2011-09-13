@@ -98,6 +98,7 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
+import net.sf.cpsolver.studentsct.reservation.DummyReservation;
 import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
@@ -448,6 +449,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		}
         	}
         }
+        if (io.isByReservationOnly())
+        	new DummyReservation(offering);
         return offering;
     }
     

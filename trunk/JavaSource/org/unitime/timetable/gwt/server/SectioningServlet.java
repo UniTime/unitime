@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -74,6 +75,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -91,7 +93,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
+import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 
@@ -1013,6 +1017,51 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
+	public Boolean canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			
+			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
+			if (offering == null) {
+				Class_ clazz = (classOrOfferingId < 0 ? Class_DAO.getInstance().get(-classOrOfferingId, hibSession) : null);
+				if (clazz == null)
+					throw new SectioningException(EXCEPTIONS.badClassOrOffering());
+				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
+			}
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			
+			if (server == null || !server.getAcademicSession().isSectioningEnabled()) return false;
+			
+			if (offering.getConsentType() == null) return false;
+			
+			if (user.isAdmin()) return true;
+			
+			TimetableManager tm = TimetableManager.getManager(user);
+			if (tm==null) {
+				if ("instructor".equals(offering.getConsentType().getReference())) {
+					for (DepartmentalInstructor instructor: offering.getCoordinators()) {
+						if (user.getId().equals(instructor.getExternalUniqueId())) return true;
+					}
+				}
+				return false;
+			} else {
+				return true;
+			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+		}
+	}
+	
 	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long classOrOfferingId) throws SectioningException, PageAccessException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
@@ -1032,6 +1081,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSessionId()
 						);
 				if (server == null) {
+					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
 							clazz == null ?
@@ -1084,7 +1134,30 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 									e.setAlternative(alt.getCourseOffering().getCourseName());
 								}
 								e.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
-								
+								e.setApprovedDate(enrollment.getApprovedDate());
+								if (enrollment.getApprovedBy() != null) {
+									String name = approvedBy2name.get(enrollment.getApprovedBy());
+									if (name == null) {
+										TimetableManager mgr = (TimetableManager)hibSession.createQuery(
+												"from TimetableManager where externalUniqueId = :externalId")
+												.setString("externalId", enrollment.getApprovedBy())
+												.setMaxResults(1).uniqueResult();
+										if (mgr != null) {
+											name = mgr.getName();
+										} else {
+											DepartmentalInstructor instr = (DepartmentalInstructor)hibSession.createQuery(
+													"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
+													.setString("externalId", enrollment.getApprovedBy())
+													.setLong("sessionId", enrollment.getStudent().getSession().getUniqueId())
+													.setMaxResults(1).uniqueResult();
+											if (instr != null)
+												name = instr.nameLastNameFirst();
+										}
+										if (name != null)
+											approvedBy2name.put(enrollment.getApprovedBy(), name);
+									}
+									e.setApprovedBy(name == null ? enrollment.getApprovedBy() : name);
+								}
 							} else {
 								e.setPriority(-1);
 							}
@@ -1295,6 +1368,75 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			} finally {
 				hibSession.close();
 			}
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+		}
+	}
+
+	@Override
+	public String approveEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			
+			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
+			if (offering == null) {
+				Class_ clazz = (classOrOfferingId < 0 ? Class_DAO.getInstance().get(-classOrOfferingId, hibSession) : null);
+				if (clazz == null)
+					throw new SectioningException(EXCEPTIONS.badClassOrOffering());
+				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
+			}
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			
+			if (server == null || !server.getAcademicSession().isSectioningEnabled())
+				throw new SectioningException(EXCEPTIONS.badSession());
+			
+			String approval = new Date().getTime() + ":" + user.getId() + ":" + user.getName();
+			server.execute(new ApproveEnrollmentsAction(offering.getUniqueId(), studentIds, approval));
+			return approval;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+		}
+	}
+
+	@Override
+	public Boolean rejectEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+			
+			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
+			if (offering == null) {
+				Class_ clazz = (classOrOfferingId < 0 ? Class_DAO.getInstance().get(-classOrOfferingId, hibSession) : null);
+				if (clazz == null)
+					throw new SectioningException(EXCEPTIONS.badClassOrOffering());
+				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
+			}
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			
+			if (server == null || !server.getAcademicSession().isSectioningEnabled())
+				throw new SectioningException(EXCEPTIONS.badSession());
+			
+			String approval = new Date().getTime() + ":" + user.getId() + ":" + user.getName();
+			return server.execute(new RejectEnrollmentsAction(offering.getUniqueId(), studentIds, approval));
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

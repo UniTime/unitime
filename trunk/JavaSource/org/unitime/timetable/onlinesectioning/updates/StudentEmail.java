@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -78,6 +79,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private Enrollment iOldEnrollment = null;
 	private Date iTimeStamp = null;
 	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MMMM dd, yyyy hh:mm:ss aa");
+	private static SimpleDateFormat sDateFormaShort = new SimpleDateFormat("yy/MM/dd");
 	private String iSubject = "Class schedule change for %session%";
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
 	private byte[] iTimetableImage = null;
@@ -426,7 +428,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			ToolBox.equals(a.getParent() == null ? null : a.getParent().getName(), b.getParent() == null ? null : b.getParent().getName());
 	}
 	
-	private void generateListOfClassesLine(PrintWriter out, Request request, Section section, String style) {
+	private void generateListOfClassesLine(PrintWriter out, Request request, Section section, String style, String consent) {
 		out.println("<tr>");
 		out.println("	<td style= \"" + style + "\">" + (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getSubjectArea() + "</td>");
 		out.println("	<td style= \"" + style + "\">" + (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getCourseNumber() + "</td>");
@@ -466,7 +468,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			}
 			out.println("	<td style= \"" + style + "\">" + html + "</td>");
 		}
-		out.println("	<td style= \"" + style + "\">" + (section.getParent() == null ? "&nbsp;" : section.getParent().getName()) + "</td>");
+		out.println("	<td style= \"" + style + "\">" + (section.getParent() == null ? consent == null ? "&nbsp;" : consent : section.getParent().getName()) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -480,7 +482,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return "<span style='text-decoration: line-through;'>" + a + "</span> &rarr; " + b;
 	}
 	
-	private void generateListOfClassesDiff(PrintWriter out, Request request, Section old, Section section, String style) {
+	private void generateListOfClassesDiff(PrintWriter out, Request request, Section old, Section section, String style, String consent) {
 		out.println("<tr>");
 		out.println("	<td style= \"" + style + "\">" + request.getAssignment().getCourse().getSubjectArea() + "</td>");
 		out.println("	<td style= \"" + style + "\">" + request.getAssignment().getCourse().getCourseNumber() + "</td>");
@@ -548,11 +550,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		out.println("	<td style= \"" + style + "\">" + diff(oldInstructors, instructors) + "</td>");
 
-		out.println("	<td style= \"" + style + "\">" + diff(old.getParent() == null ? null : old.getParent().getName(), section.getParent() == null ? null : section.getParent().getName()) + "</td>");
+		out.println("	<td style= \"" + style + "\">" + (old.getParent() == null && section.getParent() == null ? consent : diff(old.getParent() == null ? null : old.getParent().getName(), section.getParent() == null ? null : section.getParent().getName())) + "</td>");
 		out.println("</tr>");
 	}
 	
-	private void generateListOfClassesLine(PrintWriter out, Request request) {
+	private void generateListOfClassesLine(PrintWriter out, Request request, String consent) {
 		if (request.getAssignment() == null) {
 			if (request instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)request;
@@ -587,11 +589,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			out.println("</tr>");
 			return;
 		}
-		boolean first = true;
+		boolean first = true, firstNoParent = true;
 		for (Section section: request.getAssignment().getSections()) {
 			String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-			generateListOfClassesLine(out, request, section, style);
+			generateListOfClassesLine(out, request, section, style, firstNoParent ? consent : null);
 			first = false;
+			if (section.getParent() == null) firstNoParent = false;
 		}
 	}
 
@@ -603,9 +606,21 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		generateListOfClassesHeader(out);
 		for (Request request: getNewRequests()) {
-			generateListOfClassesLine(out, request);
+			generateListOfClassesLine(out, request, consent(server, request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()));
 		}
 		generateListOfClassesFooter(out, true);
+	}
+	
+	private String consent(OnlineSectioningServer server, Enrollment enrollment) {
+		if (enrollment == null || enrollment.getCourse() == null) return null;
+		Course course = enrollment.getCourse();
+		if (course == null) return null;
+		CourseInfo info = server.getCourseInfo(course.getId());
+		if (info == null || info.getConsent() == null) return null;
+		if (enrollment.getApproval() == null)
+			return "Waiting for " + info.getConsent().toLowerCase();
+		else 
+			return "Consent approved on " + sDateFormaShort.format(new Date(Long.parseLong(enrollment.getApproval().split(":")[0])));
 	}
 	
 	public void generateChange(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -626,7 +641,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						newEnrollment.getCourse().getSubjectArea() + " " + newEnrollment.getCourse().getCourseNumber() + " Enrollment</td></tr>");
 				out.println("		<tr><td>");
 				generateListOfClassesHeader(out);
-				generateListOfClassesLine(out, newEnrollment.getRequest());
+				generateListOfClassesLine(out, newEnrollment.getRequest(), consent(server, newEnrollment));
 				generateListOfClassesFooter(out, false);
 				out.println("		</td></tr>");
 			} else if (getOldEnrollment().getAssignments() != null && newEnrollment != null && newEnrollment.getCourse() != null) {
@@ -636,37 +651,44 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						newEnrollment.getCourse().getSubjectArea() + " " + newEnrollment.getCourse().getCourseNumber() + " Enrollment</td></tr>");
 				out.println("		<tr><td>");
 				generateListOfClassesHeader(out);
-				boolean first = true;
+				boolean first = true, firstWithNoParent = true;
 				sections: for (Section section: newEnrollment.getSections()) {
 					for (Section old: getOldEnrollment().getSections()) {
 						if (old.getSubpart().getId() == section.getSubpart().getId()) {
 							String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesDiff(out, newEnrollment.getRequest(), old, section, style);
+							generateListOfClassesDiff(out, newEnrollment.getRequest(), old, section, style, firstWithNoParent ? consent(server, newEnrollment) : null);
 							first = false;
+							if (section.getParent() == null && old.getParent() == null) firstWithNoParent = false;
 							continue sections;
 						}
 					}
 					String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, newEnrollment.getRequest(), section, style);
+					generateListOfClassesLine(out, newEnrollment.getRequest(), section, style, firstWithNoParent ? consent(server, newEnrollment) : null);
 					first = false;
+					if (section.getParent() == null) firstWithNoParent = false;
 				}
 				sections: for (Section old: getOldEnrollment().getSections()) {
 					for (Section section: newEnrollment.getSections())
 						if (old.getSubpart().getId() == section.getSubpart().getId()) continue sections;
 					String style = "text-decoration: line-through; white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, getOldEnrollment().getRequest(), old, style);
+					generateListOfClassesLine(out, getOldEnrollment().getRequest(), old, style, null);
 					first = false;
 				}
 				generateListOfClassesFooter(out, false);
 				out.println("		</td></tr>");
 			} else if (getOldEnrollment().getAssignments() != null && getOldEnrollment().getCourse() != null && newEnrollment == null) {
-				setSubject("Course " + getOldEnrollment().getCourse().getSubjectArea() + " " + getOldEnrollment().getCourse().getCourseNumber() + " dropped due to a course change.");
+				setSubject("Course " + getOldEnrollment().getCourse().getSubjectArea() + " " + getOldEnrollment().getCourse().getCourseNumber() + " dropped due to a " + (newRequest == null ? "reject" : "course change") + ".");
 				out.println("		<tr><td " +
 						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
 						getOldEnrollment().getCourse().getSubjectArea() + " " + getOldEnrollment().getCourse().getCourseNumber() + " Enrollment</td></tr>");
 				out.println("		<tr><td>");
+				CourseInfo info = server.getCourseInfo(getOldEnrollment().getCourse().getId());
+				String consent = (info == null ? null : info.getConsent());
 				if (newRequest !=  null && newRequest.getStudent().canAssign(newRequest))
 					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">Course is wait-listed" + (newRequest.isAlternative() ? " alternative" : "") + ".</td></tr></table>");
+				else if (newRequest == null && consent != null) {
+					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">You have not been granted the " + consent.toLowerCase() + ", please contact your advisor for further information.</td></tr></table>");
+				}
 				out.println("		</td></tr>");
 			}
 		} else if (getOldRequests() != null && !getOldRequests().isEmpty()) {
@@ -689,48 +711,51 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (or instanceof FreeTimeRequest) continue;
 						if (or.getId() == nr.getId()) {
 							if (or.getInitialAssignment() == null) {
-								if (nr.getAssignment() == null) continue; // bot unassigned
+								if (nr.getAssignment() == null) continue; // both unassigned
 								// was assigned
-								boolean first = true;
+								boolean first = true, firstWithNoParent = true;
 								for (Section section: nr.getAssignment().getSections()) {
 									String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, nr, section, style);
+									generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
 									nrLines++;
 									first = false;
+									if (section.getParent() == null) firstWithNoParent = false;
 								}
 							} else if (nr.getAssignment() == null) {
 								// was un-assigned
 								boolean first = true;
 								for (Section section: or.getInitialAssignment().getSections()) {
 									String style = "text-decoration: line-through; white-space: nowrap; white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, or, section, style);
+									generateListOfClassesLine(out, or, section, style, null);
 									nrLines++;
 									first = false;
 								}
 							} else {
 								// both assigned
-								boolean first = true;
+								boolean first = true, firstWithNoParent = true;
 								sections: for (Section section: nr.getAssignment().getSections()) {
 									for (Section old: or.getInitialAssignment().getSections()) {
 										if (old.getSubpart().getId() == section.getSubpart().getId()) {
 											if (equals(section, old)) continue sections;
 											String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-											generateListOfClassesDiff(out, nr, old, section, style);
+											generateListOfClassesDiff(out, nr, old, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
 											nrLines++;
 											first = false;
+											if (section.getParent() == null && old.getParent() == null) firstWithNoParent = false;
 											continue sections;
 										}
 									}
 									String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, nr, section, style);
+									generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
 									nrLines++;
 									first = false;
+									if (section.getParent() == null) firstWithNoParent = false;
 								}
 								sections: for (Section old: or.getInitialAssignment().getSections()) {
 									for (Section section: nr.getAssignment().getSections())
 										if (old.getSubpart().getId() == section.getSubpart().getId()) continue sections;
 									String style = "text-decoration: line-through; white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, or, old, style);
+									generateListOfClassesLine(out, or, old, style, null);
 									nrLines++;
 									first = false;
 								}
@@ -740,12 +765,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					}
 					// old request not found
 					if (nr.getAssignment() != null) {
-						boolean first = true;
+						boolean first = true, firstWithNoParent = true;
 						for (Section section: nr.getAssignment().getSections()) {
 							String style = "white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesLine(out, nr, section, style);
+							generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
 							nrLines++;
 							first = false;
+							if (section.getParent() == null) firstWithNoParent = false;
 						}
 					}
 				}
@@ -756,12 +782,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (or.getId() == nr.getId()) continue requests;
 					}
 					// new request not found
-					boolean first = true;
+					boolean first = true, firstWithNoParent = true;
 					for (Section section: or.getInitialAssignment().getSections()) {
 						String style = "text-decoration: line-through; white-space: nowrap; white-space: nowrap;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-						generateListOfClassesLine(out, or, section, style);
+						generateListOfClassesLine(out, or, section, style, firstWithNoParent ? consent(server, or.getAssignment()) : null);
 						nrLines++;
 						first = false;
+						if (section.getParent() == null) firstWithNoParent = false;
 					}
 				}
 				if (nrLines == 0)

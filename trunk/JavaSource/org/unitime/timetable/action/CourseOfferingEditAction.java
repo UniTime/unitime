@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,13 +48,16 @@ import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
@@ -153,7 +159,22 @@ public class CourseOfferingEditAction extends Action {
 			    doReload(request, frm);
 			}
 		}
-
+		
+		if (op.equals(MSG.actionAddCoordinator()) ) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
+                frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
+            doReload(request, frm);
+		}
+		
+        if (op.equals(MSG.actionRemoveCoordinator()) && request.getParameter("deleteType")!=null && request.getParameter("deleteType").equals("coordinator")) {
+            try {
+                int deleteId = Integer.parseInt(request.getParameter("deleteId"));
+                if (deleteId>=0)
+                    frm.getInstructors().remove(deleteId);
+            } catch (Exception e) {}
+            doReload(request, frm);
+        }
+            
         return mapping.findForward("displayCourseOffering");
     }
 
@@ -281,6 +302,23 @@ public class CourseOfferingEditAction extends Action {
 		        	hibSession.saveOrUpdate(io.getCredit());
 		        }
 
+		        io.setByReservationOnly(frm.isByReservationOnly());
+		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
+		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
+		            DepartmentalInstructor instructor = i.next();
+		            instructor.getOfferings().remove(io);
+		            i.remove();
+		        }
+		        for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
+		            String instructorId = (String)i.next();
+		            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
+		                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+		                if (instructor!=null) {
+		                    io.getCoordinators().add(instructor);
+		                    instructor.getOfferings().add(io);
+		                }
+		           }
+		        }
 
 		        hibSession.update(io);
 	        }
@@ -357,6 +395,13 @@ public class CourseOfferingEditAction extends Action {
         frm.setTitle(co.getTitle());
         frm.setIsControl(co.getIsControl());
         frm.setIoNotOffered(io.getNotOffered());
+        frm.setByReservationOnly(io.isByReservationOnly());
+        
+        for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
+            frm.getInstructors().add(instructor.getUniqueId().toString());
+        
+        for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
+            frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         
         // Consent Type, Credit and Designator Required can be edited only on the controlling course offering
         if (co.isIsControl().booleanValue()) {
@@ -406,8 +451,21 @@ public class CourseOfferingEditAction extends Action {
                 frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
             }
 
-        }
-        else
+            // Setup instructors
+            Set<Long> deptIds = new HashSet<Long>();
+            
+            for (DepartmentalInstructor instructor: co.getInstructionalOffering().getCoordinators())
+                deptIds.add(instructor.getDepartment().getUniqueId());
+
+            for (CourseOffering x: co.getInstructionalOffering().getCourseOfferings())
+            	deptIds.add(x.getSubjectArea().getDepartment().getUniqueId());
+
+            Long[] deptsIdsArray = new Long[deptIds.size()]; int idx = 0;
+            for (Long departmentId: deptIds)
+                deptsIdsArray[idx++] = departmentId;
+
+            LookupTables.setupInstructors(request, deptsIdsArray);
+        } else
             frm.setConsent(null);
 
         LookupTables.setupCourseOfferingDemands(request, co.getDemandOffering());
@@ -436,13 +494,29 @@ public class CourseOfferingEditAction extends Action {
             LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
             LookupTables.setupCourseCreditTypes(request); //Course Credit Types
             LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
-
         }
         else
             frm.setConsent(null);
 
         CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
         LookupTables.setupCourseOfferingDemands(request, co.getDemandOffering());
-    }
 
+        if (co.isIsControl()) {
+            // Setup instructors
+            Set<Long> deptIds = new HashSet<Long>();
+            
+            for (DepartmentalInstructor instructor: co.getInstructionalOffering().getCoordinators())
+                deptIds.add(instructor.getDepartment().getUniqueId());
+
+            for (CourseOffering x: co.getInstructionalOffering().getCourseOfferings())
+            	deptIds.add(x.getSubjectArea().getDepartment().getUniqueId());
+
+            Long[] deptsIdsArray = new Long[deptIds.size()]; int idx = 0;
+            for (Long departmentId: deptIds)
+                deptsIdsArray[idx++] = departmentId;
+
+            LookupTables.setupInstructors(request, deptsIdsArray);        	
+        }
+    }
+    
 }

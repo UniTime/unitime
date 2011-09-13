@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
@@ -44,6 +45,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Boolean iDesignatorRequired;
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
+	private Boolean iByReservationOnly;
 
 	private Session iSession;
 	private OfferingConsentType iConsentType;
@@ -51,6 +53,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
 	private Set<Reservation> iReservations;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
+	private Set<DepartmentalInstructor> iCoordinators;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
@@ -58,6 +61,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_DESIGNATOR_REQUIRED = "designatorRequired";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
+	public static String PROP_REQ_RESERVATION = "byReservationOnly";
 
 	public BaseInstructionalOffering() {
 		initialize();
@@ -102,6 +106,10 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	public Boolean isByReservationOnly() { return iByReservationOnly; }
+	public Boolean getByReservationOnly() { return iByReservationOnly; }
+	public void setByReservationOnly(Boolean byReservationOnly) { iByReservationOnly = byReservationOnly; }
+
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -136,6 +144,13 @@ public abstract class BaseInstructionalOffering implements Serializable {
 		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 
+	public Set<DepartmentalInstructor> getCoordinators() { return iCoordinators; }
+	public void setCoordinators(Set<DepartmentalInstructor> coordinators) { iCoordinators = coordinators; }
+	public void addTocoordinators(DepartmentalInstructor departmentalInstructor) {
+		if (iCoordinators == null) iCoordinators = new HashSet<DepartmentalInstructor>();
+		iCoordinators.add(departmentalInstructor);
+	}
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructionalOffering)) return false;
 		if (getUniqueId() == null || ((InstructionalOffering)o).getUniqueId() == null) return false;
@@ -153,6 +168,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public String toDebugString() {
 		return "InstructionalOffering[" +
+			"\n	ByReservationOnly: " + getByReservationOnly() +
 			"\n	ConsentType: " + getConsentType() +
 			"\n	DesignatorRequired: " + getDesignatorRequired() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +

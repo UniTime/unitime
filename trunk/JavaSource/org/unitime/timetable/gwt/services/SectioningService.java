@@ -55,4 +55,7 @@ public interface SectioningService extends RemoteService {
 	Boolean isAdmin() throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException, PageAccessException;
+	Boolean canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException;
+	String approveEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException;
+	Boolean rejectEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException;
 }

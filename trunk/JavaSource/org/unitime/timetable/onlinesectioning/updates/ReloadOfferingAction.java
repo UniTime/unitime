@@ -143,7 +143,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, helper.getHibSession());
 		if (io != null) {
 			newOffering = ReloadAllData.loadOffering(io, server, helper);
-			server.update(newOffering);
+			if (newOffering != null)
+				server.update(newOffering);
 			for (CourseOffering co: io.getCourseOfferings())
 				server.update(new CourseInfo(co));
 			

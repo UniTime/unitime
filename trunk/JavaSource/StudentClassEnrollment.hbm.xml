@@ -64,6 +64,19 @@
             column="timestamp"
             type="java.util.Date"
             not-null="true"/>
+            
+        <property
+            name="approvedDate"
+            column="approved_date"
+            type="java.util.Date"
+            not-null="false"/>
+
+        <property
+            name="approvedBy"
+            column="approved_by"
+            type="java.lang.String"
+            length="40"
+            not-null="false"/>
 
     </class>
 </hibernate-mapping>

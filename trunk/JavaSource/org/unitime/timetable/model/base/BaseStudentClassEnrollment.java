@@ -33,6 +33,8 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 
 	private Long iUniqueId;
 	private Date iTimestamp;
+	private Date iApprovedDate;
+	private String iApprovedBy;
 
 	private Student iStudent;
 	private CourseRequest iCourseRequest;
@@ -41,6 +43,8 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_TIMESTAMP = "timestamp";
+	public static String PROP_APPROVED_DATE = "approvedDate";
+	public static String PROP_APPROVED_BY = "approvedBy";
 
 	public BaseStudentClassEnrollment() {
 		initialize();
@@ -58,6 +62,12 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
+
+	public Date getApprovedDate() { return iApprovedDate; }
+	public void setApprovedDate(Date approvedDate) { iApprovedDate = approvedDate; }
+
+	public String getApprovedBy() { return iApprovedBy; }
+	public void setApprovedBy(String approvedBy) { iApprovedBy = approvedBy; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
@@ -88,6 +98,8 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 
 	public String toDebugString() {
 		return "StudentClassEnrollment[" +
+			"\n	ApprovedBy: " + getApprovedBy() +
+			"\n	ApprovedDate: " + getApprovedDate() +
 			"\n	Clazz: " + getClazz() +
 			"\n	CourseOffering: " + getCourseOffering() +
 			"\n	CourseRequest: " + getCourseRequest() +

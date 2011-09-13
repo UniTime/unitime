@@ -667,6 +667,7 @@ public class ImportPreferences {
 		    io.setSession(iSession);
 		    io.setInstrOfferingPermId(Integer.valueOf(element.attributeValue("instrOfferingPermId")));
 		    io.setCourseOfferings(courseOfferings);
+		    io.setByReservationOnly(false);
 		    for (Iterator i=courseOfferings.iterator();i.hasNext();) {
 		    	((CourseOffering)i.next()).setInstructionalOffering(io);
 		    }

@@ -34,6 +34,7 @@ message Entity {
 		GROUP_RESERVATION = 8;
 		CURRICULUM_RESERVATION = 9;
 		COURSE_RESERVATION = 10;
+		MANAGER = 11;
 	}
 	optional int64 unique_id = 1;
 	optional EntityType type = 2;
@@ -84,6 +85,8 @@ message Enrollment {
 		COMPUTED = 1;
 		PREVIOUS = 2;
 		STORED = 3;
+		APPROVED = 4;
+		REJECTED = 5;
 	}
 	required EnrollmentType type = 1;
 	repeated Section section = 2;

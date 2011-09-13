@@ -195,6 +195,17 @@ public class UniTimeTable<T> extends FlexTable {
 		return w;
 	}
 	
+	public Widget replaceWidget(int row, int col, Widget widget) {
+		Widget w = super.getWidget(row, col);
+		if (w == null)
+			super.setWidget(row, col, widget);
+		else if (w instanceof SmartTableCell)
+			super.setWidget(row, col, new SmartTableCell(((SmartTableCell)w).getRow(), widget));
+		else
+			super.setWidget(row, col, widget);
+		return w;
+	}
+
 	private boolean focus(int row, int col) {
 		if (!getRowFormatter().isVisible(row) || col >= getCellCount(row)) return false;
 		Widget w = super.getWidget(row, col);

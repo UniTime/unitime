@@ -306,6 +306,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
 				if (reservation instanceof CourseReservation)
 					applicable = (course.getId() == ((CourseReservation)reservation).getCourse().getId());
+				if (reservation instanceof net.sf.cpsolver.studentsct.reservation.DummyReservation) {
+					// Ignore by reservation only flag (dummy reservation) when the student is already enrolled in the course
+					for (Enrollment enrollment: course.getEnrollments())
+						if (enrollment.getStudent().getId() == studentId) { applicable = true; break; }
+				}
 				Reservation clonedReservation = new DummyReservation(reservation.getId(), clonedOffering,
 						reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 						applicable);

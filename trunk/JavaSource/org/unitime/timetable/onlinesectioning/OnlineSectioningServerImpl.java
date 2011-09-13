@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -81,6 +82,7 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
  */
 public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static SimpleDateFormat sDateFormaShort = new SimpleDateFormat("yy/MM/dd");
     private Log iLog = LogFactory.getLog(OnlineSectioningServerImpl.class);
 	private AcademicSessionInfo iAcademicSession = null;
 	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
@@ -229,6 +231,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public ClassAssignmentInterface getAssignment(Long studentId) {
 		iLock.readLock().lock();
 		try {
+			
 			Student student = iStudentTable.get(studentId);
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
@@ -384,8 +387,15 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							a.setBackToBackDistance(dist);
 							a.setBackToBackRooms(from);
 							a.setSaved(true);
-							if (a.getParentSection() == null)
-								a.setParentSection(getCourseInfo(course.getId()).getConsent());
+							if (a.getParentSection() == null) {
+								String consent = getCourseInfo(course.getId()).getConsent();
+								if (consent != null) {
+									if (r.getAssignment().getApproval() != null)
+										a.setParentSection("Consent approved on " + sDateFormaShort.format(new Date(Long.parseLong(r.getAssignment().getApproval().split(":")[0]))));
+									else
+										a.setParentSection("Waiting for " + consent.toLowerCase());
+								}
+							}
 							a.setExpected(Math.round(section.getSpaceExpected()));
 						}
 					}
@@ -586,6 +596,12 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							}
 							if (request.getAssignment().getTimeStamp() != null)
 								e.setEnrolledDate(new Date(request.getAssignment().getTimeStamp()));
+							if (request.getAssignment().getApproval() != null) {
+								String[] approval = request.getAssignment().getApproval().split(":");
+								e.setApprovedDate(new Date(Long.parseLong(approval[0])));
+								e.setApprovedBy(approval[2]);
+							}
+							
 							for (Section section: request.getAssignment().getSections()) {
 								ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 								a.setAlternative(request.isAlternative());

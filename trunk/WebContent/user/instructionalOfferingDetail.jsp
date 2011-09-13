@@ -224,7 +224,7 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader">Demands From</TD>
 						</logic:equal>
-						<TD align="center" >&nbsp;</TD>
+						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
 					<TR>
@@ -342,6 +342,25 @@
 				<bean:write name="instructionalOfferingDetailForm" property="creditText" />
 			</TD>
 		</TR>
+		
+		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
+			<TR>
+				<TD>By Reservation Only:</TD>
+				<TD>
+					<IMG src="images/tick.gif" alt="ENABLED" title="Only students meeting reservations are allowed to enroll into this offering." border="0">
+					<i>Only students meeting reservations are allowed to enroll into this offering.</i>
+				</TD>
+			</TR>
+		</logic:equal>
+		
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="coordinators">
+			<TR>
+				<TD valign="top">Coordinators:</TD>
+				<TD>
+					<bean:write name="instructionalOfferingDetailForm" property="coordinators" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 		
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
 		<TR>
