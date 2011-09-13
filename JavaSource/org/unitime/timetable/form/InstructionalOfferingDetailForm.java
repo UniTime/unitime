@@ -75,6 +75,8 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String catalogLinkLabel;
     private String catalogLinkLocation;
     private Boolean canLock, canUnlock;
+    private boolean byReservationOnly;
+    private String coordinators;
 
     // --------------------------------------------------------- Classes
 
@@ -132,6 +134,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         catalogLinkLabel = null;
         catalogLinkLocation = null;
         canLock = null; canUnlock = null;
+        byReservationOnly = false; coordinators = null;
     }
     
     public List getCourseOfferings() {
@@ -349,4 +352,10 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 	public void setCanUnlock(Boolean canUnlock) {
 		this.canUnlock = canUnlock;
 	}
+	
+	public boolean isByReservationOnly() { return byReservationOnly; }
+	public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }
+	
+	public String getCoordinators() { return coordinators; }
+	public void setCoordinators(String coordinators) { this.coordinators = coordinators; }
 }

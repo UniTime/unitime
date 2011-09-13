@@ -53,4 +53,8 @@ public interface SectioningServiceAsync {
 	void isAdmin(AsyncCallback<Boolean> isAdmin) throws SectioningException, PageAccessException;
 	void listEnrollments(Long offeringId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
 	void getEnrollment(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
+	void canApprove(Long classOrOfferingId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void approveEnrollments(Long classOrOfferingId, List<Long> studentIds, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void rejectEnrollments(Long classOrOfferingId, List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+
 }

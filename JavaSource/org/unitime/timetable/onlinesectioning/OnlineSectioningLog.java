@@ -68,6 +68,7 @@ public final class OnlineSectioningLog {
       GROUP_RESERVATION(8, 8),
       CURRICULUM_RESERVATION(9, 9),
       COURSE_RESERVATION(10, 10),
+      MANAGER(11, 11),
       ;
       
       public static final int CLAZZ_VALUE = 0;
@@ -81,6 +82,7 @@ public final class OnlineSectioningLog {
       public static final int GROUP_RESERVATION_VALUE = 8;
       public static final int CURRICULUM_RESERVATION_VALUE = 9;
       public static final int COURSE_RESERVATION_VALUE = 10;
+      public static final int MANAGER_VALUE = 11;
       
       
       public final int getNumber() { return value; }
@@ -98,6 +100,7 @@ public final class OnlineSectioningLog {
           case 8: return GROUP_RESERVATION;
           case 9: return CURRICULUM_RESERVATION;
           case 10: return COURSE_RESERVATION;
+          case 11: return MANAGER;
           default: return null;
         }
       }
@@ -128,7 +131,7 @@ public final class OnlineSectioningLog {
       }
       
       private static final EntityType[] VALUES = {
-        CLAZZ, COURSE, LOCATION, INSTRUCTOR, STUDENT, OFFERING, RESERVATION, INDIVIDUAL_RESERVATION, GROUP_RESERVATION, CURRICULUM_RESERVATION, COURSE_RESERVATION, 
+        CLAZZ, COURSE, LOCATION, INSTRUCTOR, STUDENT, OFFERING, RESERVATION, INDIVIDUAL_RESERVATION, GROUP_RESERVATION, CURRICULUM_RESERVATION, COURSE_RESERVATION, MANAGER, 
       };
       
       public static EntityType valueOf(
@@ -4496,12 +4499,16 @@ public final class OnlineSectioningLog {
       COMPUTED(1, 1),
       PREVIOUS(2, 2),
       STORED(3, 3),
+      APPROVED(4, 4),
+      REJECTED(5, 5),
       ;
       
       public static final int REQUESTED_VALUE = 0;
       public static final int COMPUTED_VALUE = 1;
       public static final int PREVIOUS_VALUE = 2;
       public static final int STORED_VALUE = 3;
+      public static final int APPROVED_VALUE = 4;
+      public static final int REJECTED_VALUE = 5;
       
       
       public final int getNumber() { return value; }
@@ -4512,6 +4519,8 @@ public final class OnlineSectioningLog {
           case 1: return COMPUTED;
           case 2: return PREVIOUS;
           case 3: return STORED;
+          case 4: return APPROVED;
+          case 5: return REJECTED;
           default: return null;
         }
       }
@@ -4542,7 +4551,7 @@ public final class OnlineSectioningLog {
       }
       
       private static final EnrollmentType[] VALUES = {
-        REQUESTED, COMPUTED, PREVIOUS, STORED, 
+        REQUESTED, COMPUTED, PREVIOUS, STORED, APPROVED, REJECTED, 
       };
       
       public static EnrollmentType valueOf(
@@ -9627,53 +9636,54 @@ public final class OnlineSectioningLog {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n$JavaSource/OnlineSectioningLog.proto\"\267" +
+      "\n$JavaSource/OnlineSectioningLog.proto\"\304" +
       "\002\n\006Entity\022\021\n\tunique_id\030\001 \001(\003\022 \n\004type\030\002 \001" +
       "(\0162\022.Entity.EntityType\022\023\n\013external_id\030\003 " +
-      "\001(\t\022\014\n\004name\030\004 \001(\t\"\324\001\n\nEntityType\022\t\n\005CLAZ" +
+      "\001(\t\022\014\n\004name\030\004 \001(\t\"\341\001\n\nEntityType\022\t\n\005CLAZ" +
       "Z\020\000\022\n\n\006COURSE\020\001\022\014\n\010LOCATION\020\002\022\016\n\nINSTRUC" +
       "TOR\020\003\022\013\n\007STUDENT\020\004\022\014\n\010OFFERING\020\005\022\017\n\013RESE" +
       "RVATION\020\006\022\032\n\026INDIVIDUAL_RESERVATION\020\007\022\025\n" +
       "\021GROUP_RESERVATION\020\010\022\032\n\026CURRICULUM_RESER" +
-      "VATION\020\t\022\026\n\022COURSE_RESERVATION\020\n\"m\n\004Time" +
-      "\022\014\n\004days\030\001 \002(\005\022\r\n\005start\030\002 \002(\005\022\016\n\006length\030",
-      "\003 \002(\005\022\017\n\007pattern\030\004 \001(\t\022\'\n\npreference\030\005 \001" +
-      "(\0162\023.Section.Preference\"\265\002\n\007Section\022\026\n\005c" +
-      "lazz\030\001 \001(\0132\007.Entity\022\023\n\004time\030\002 \001(\0132\005.Time" +
-      "\022\033\n\ninstructor\030\003 \003(\0132\007.Entity\022\031\n\010locatio" +
-      "n\030\004 \003(\0132\007.Entity\022\'\n\npreference\030\005 \001(\0162\023.S" +
-      "ection.Preference\022\027\n\006course\030\006 \001(\0132\007.Enti" +
-      "ty\022\034\n\013reservation\030\007 \001(\0132\007.Entity\022\022\n\ntime" +
-      "_stamp\030\010 \001(\003\022\030\n\007subpart\030\t \001(\0132\007.Entity\"7" +
-      "\n\nPreference\022\014\n\010REQUIRED\020\000\022\r\n\tPREFERRED\020" +
-      "\001\022\014\n\010SELECTED\020\002\"\245\001\n\007Request\022\n\n\002id\030\001 \001(\003\022",
-      "\020\n\010priority\030\002 \002(\005\022\032\n\013alternative\030\003 \001(\010:\005" +
-      "false\022\030\n\tfree_time\030\004 \003(\0132\005.Time\022\027\n\006cours" +
-      "e\030\005 \003(\0132\007.Entity\022\031\n\007section\030\006 \003(\0132\010.Sect" +
-      "ion\022\022\n\ntime_stamp\030\010 \001(\003\"\251\001\n\nEnrollment\022(" +
-      "\n\004type\030\001 \002(\0162\032.Enrollment.EnrollmentType" +
-      "\022\031\n\007section\030\002 \003(\0132\010.Section\022\r\n\005value\030\003 \001" +
-      "(\001\"G\n\016EnrollmentType\022\r\n\tREQUESTED\020\000\022\014\n\010C" +
-      "OMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n\006STORED\020\003\"\341\002\n\006" +
-      "Action\022\021\n\toperation\030\001 \002(\t\022\030\n\007session\030\002 \002" +
-      "(\0132\007.Entity\022\030\n\007student\030\003 \001(\0132\007.Entity\022\022\n",
-      "\nstart_time\030\004 \001(\003\022\020\n\010end_time\030\005 \001(\003\022\020\n\010c" +
-      "pu_time\030\006 \001(\003\022\031\n\007request\030\007 \003(\0132\010.Request" +
-      "\022\037\n\nenrollment\030\010 \003(\0132\013.Enrollment\022\026\n\005oth" +
-      "er\030\t \003(\0132\007.Entity\022\031\n\007message\030\n \003(\0132\010.Mes" +
-      "sage\022\"\n\006result\030\013 \001(\0162\022.Action.ResultType" +
-      "\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022\013\n\007FAILURE\020\001" +
-      "\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NULL\020\004\"\233\001\n\007Mess" +
-      "age\022\035\n\005level\030\001 \002(\0162\016.Message.Level\022\014\n\004te" +
-      "xt\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022\022\n\ntime_stam" +
-      "p\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022\010\n\004INFO\020\001\022\010\n",
-      "\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020\004\"9\n\003Log\022\027\n\006" +
-      "action\030\001 \003(\0132\007.Action\022\031\n\007message\030\002 \003(\0132\010" +
-      ".Message\"\206\001\n\023CourseRequestOption\022-\n\004type" +
-      "\030\001 \002(\0162\037.CourseRequestOption.OptionType\022" +
-      "\031\n\007section\030\002 \003(\0132\010.Section\"%\n\nOptionType" +
-      "\022\027\n\023ORIGINAL_ENROLLMENT\020\000B(\n&org.unitime" +
-      ".timetable.onlinesectioning"
+      "VATION\020\t\022\026\n\022COURSE_RESERVATION\020\n\022\013\n\007MANA" +
+      "GER\020\013\"m\n\004Time\022\014\n\004days\030\001 \002(\005\022\r\n\005start\030\002 \002",
+      "(\005\022\016\n\006length\030\003 \002(\005\022\017\n\007pattern\030\004 \001(\t\022\'\n\np" +
+      "reference\030\005 \001(\0162\023.Section.Preference\"\265\002\n" +
+      "\007Section\022\026\n\005clazz\030\001 \001(\0132\007.Entity\022\023\n\004time" +
+      "\030\002 \001(\0132\005.Time\022\033\n\ninstructor\030\003 \003(\0132\007.Enti" +
+      "ty\022\031\n\010location\030\004 \003(\0132\007.Entity\022\'\n\nprefere" +
+      "nce\030\005 \001(\0162\023.Section.Preference\022\027\n\006course" +
+      "\030\006 \001(\0132\007.Entity\022\034\n\013reservation\030\007 \001(\0132\007.E" +
+      "ntity\022\022\n\ntime_stamp\030\010 \001(\003\022\030\n\007subpart\030\t \001" +
+      "(\0132\007.Entity\"7\n\nPreference\022\014\n\010REQUIRED\020\000\022" +
+      "\r\n\tPREFERRED\020\001\022\014\n\010SELECTED\020\002\"\245\001\n\007Request",
+      "\022\n\n\002id\030\001 \001(\003\022\020\n\010priority\030\002 \002(\005\022\032\n\013altern" +
+      "ative\030\003 \001(\010:\005false\022\030\n\tfree_time\030\004 \003(\0132\005." +
+      "Time\022\027\n\006course\030\005 \003(\0132\007.Entity\022\031\n\007section" +
+      "\030\006 \003(\0132\010.Section\022\022\n\ntime_stamp\030\010 \001(\003\"\305\001\n" +
+      "\nEnrollment\022(\n\004type\030\001 \002(\0162\032.Enrollment.E" +
+      "nrollmentType\022\031\n\007section\030\002 \003(\0132\010.Section" +
+      "\022\r\n\005value\030\003 \001(\001\"c\n\016EnrollmentType\022\r\n\tREQ" +
+      "UESTED\020\000\022\014\n\010COMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n\006" +
+      "STORED\020\003\022\014\n\010APPROVED\020\004\022\014\n\010REJECTED\020\005\"\341\002\n" +
+      "\006Action\022\021\n\toperation\030\001 \002(\t\022\030\n\007session\030\002 ",
+      "\002(\0132\007.Entity\022\030\n\007student\030\003 \001(\0132\007.Entity\022\022" +
+      "\n\nstart_time\030\004 \001(\003\022\020\n\010end_time\030\005 \001(\003\022\020\n\010" +
+      "cpu_time\030\006 \001(\003\022\031\n\007request\030\007 \003(\0132\010.Reques" +
+      "t\022\037\n\nenrollment\030\010 \003(\0132\013.Enrollment\022\026\n\005ot" +
+      "her\030\t \003(\0132\007.Entity\022\031\n\007message\030\n \003(\0132\010.Me" +
+      "ssage\022\"\n\006result\030\013 \001(\0162\022.Action.ResultTyp" +
+      "e\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022\013\n\007FAILURE\020" +
+      "\001\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NULL\020\004\"\233\001\n\007Mes" +
+      "sage\022\035\n\005level\030\001 \002(\0162\016.Message.Level\022\014\n\004t" +
+      "ext\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022\022\n\ntime_sta",
+      "mp\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022\010\n\004INFO\020\001\022\010" +
+      "\n\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020\004\"9\n\003Log\022\027\n" +
+      "\006action\030\001 \003(\0132\007.Action\022\031\n\007message\030\002 \003(\0132" +
+      "\010.Message\"\206\001\n\023CourseRequestOption\022-\n\004typ" +
+      "e\030\001 \002(\0162\037.CourseRequestOption.OptionType" +
+      "\022\031\n\007section\030\002 \003(\0132\010.Section\"%\n\nOptionTyp" +
+      "e\022\027\n\023ORIGINAL_ENROLLMENT\020\000B(\n&org.unitim" +
+      "e.timetable.onlinesectioning"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

@@ -290,6 +290,7 @@ public class CrossListsModifyAction extends Action {
 	                io1.setNotOffered(new Boolean(true));
 	                io1.setSession(io.getSession());
 	                io1.setDesignatorRequired(new Boolean(false));
+	                io1.setByReservationOnly(io.getByReservationOnly());
 	                
 	                // Copy attributes of old crs offering - set controlling	                
                     CourseOffering co2 = (CourseOffering)co1.clone();                    

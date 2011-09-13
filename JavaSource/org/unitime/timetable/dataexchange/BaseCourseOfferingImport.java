@@ -194,6 +194,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         			io = new InstructionalOffering();
 	            	io.setSession(session);
 	            	io.setExternalUniqueId(externalId);
+	            	io.setByReservationOnly(false);
         		} else {
         			io = existingCourseOffering.getInstructionalOffering();
         			existingIo = true;

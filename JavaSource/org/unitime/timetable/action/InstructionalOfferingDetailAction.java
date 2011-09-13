@@ -46,11 +46,13 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedActi
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.util.Constants;
@@ -321,6 +323,16 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setCreditText((io.getCredit() != null)?io.getCredit().creditText():"");
 		frm.setCanLock(false);
         frm.setCanUnlock(false);
+        frm.setByReservationOnly(io.isByReservationOnly());
+        String coordinators = "";
+        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+        for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators())) {
+        	if (!coordinators.isEmpty()) coordinators += "<br>";
+        	coordinators += "<a href='instructorDetail.do?instructorId=" + instructor.getUniqueId() + "' class='noFancyLinks'>" +
+        			instructor.getName(instructorNameFormat) + 
+        			"</a>";
+        }
+        frm.setCoordinators(coordinators);
         if (io.isLockableBy(user)) {
         	if (io.getSession().isOfferingLocked(io.getUniqueId())) {
         		frm.setCanUnlock(true);
