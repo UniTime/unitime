@@ -36,7 +36,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -102,7 +101,6 @@ public class ClassDetailAction extends PreferencesAction {
 
 	        HttpSession httpSession = request.getSession();
 	        ClassEditForm frm = (ClassEditForm) form;
-	        MessageResources rsc = getResources(request);
 	        ActionMessages errors = new ActionMessages();
 
 	        // Read parameters

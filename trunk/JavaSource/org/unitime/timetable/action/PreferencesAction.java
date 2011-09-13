@@ -36,7 +36,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -157,8 +156,6 @@ public class PreferencesAction extends Action {
         
         String op = frm.getOp();
         if(op==null) return;
-        
-        MessageResources rsc = getResources(request);
         
         // Add Room Group row
         if(op.equals(MSG.actionAddRoomGroupPreference())) 
