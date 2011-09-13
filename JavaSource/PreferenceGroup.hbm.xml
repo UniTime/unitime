@@ -869,6 +869,19 @@
                 type="java.lang.Boolean"
                 not-null="true"/>
 
+            <set
+                name="offerings"
+                lazy="true"
+                table="offering_coordinator"
+                inverse="true">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="instructor_id" foreign-key="fk_offering_coord_instructor"/>
+                <many-to-many
+                    class="InstructionalOffering"
+                    column="offering_id"
+                    foreign-key="fk_offering_coord_offering"/>
+            </set>
+
         </union-subclass>
         <union-subclass name="Exam" table="exam">
             <many-to-one

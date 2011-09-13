@@ -117,4 +117,8 @@ public interface StudentSectioningExceptions extends Messages {
 
 	@DefaultMessage("Wrong class or instructional offering.")
 	String badClassOrOffering();
+	
+	@DefaultMessage("Wrong instructional offering.")
+	String badOffering();
+
 }

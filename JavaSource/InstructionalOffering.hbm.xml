@@ -148,6 +148,24 @@
             type="java.lang.String"
             not-null="false"
             length="40"/>
+            
+        <property
+            name="byReservationOnly"
+            column="req_reservation"
+            type="java.lang.Boolean"
+            not-null="true"/>
 
-    </class>
+        <set
+            name="coordinators"
+            lazy="true"
+            table="offering_coordinator">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="offering_id" foreign-key="fk_offering_coord_offering"/>
+            <many-to-many
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_offering_coord_instructor"/>
+        </set>
+</class>
 </hibernate-mapping>

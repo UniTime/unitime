@@ -22,6 +22,7 @@
 <%@ page import="org.unitime.timetable.model.OfferingConsentType" %>
 <%@ page import="org.unitime.timetable.model.CourseCreditType" %>
 <%@ page import="org.unitime.timetable.model.CourseCreditUnitType" %>
+<%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.model.FixedCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.ArrangeCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.VariableFixedCreditUnitConfig" %>
@@ -130,7 +131,7 @@
 				<html:textarea property="scheduleBookNote" rows="4" cols="57" />
 			</TD>
 		</TR>
-
+		
 		<logic:notEmpty name="courseOfferingEditForm" property="consent">
 		<TR>
 			<TD valign="top"><loc:message name="propertyConsent" /></TD>
@@ -235,6 +236,48 @@
 		</TR>
 		</logic:notEmpty>
 
+		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+			<TR>
+				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
+				<TD>
+					<html:checkbox name="courseOfferingEditForm" property="byReservationOnly" />
+					<i><loc:message name="descriptionByReservationOnly"/></i>
+				</TD>
+			</TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
+				<TD>
+				<table border='0'>
+				<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
+					<tr><td>
+					<html:select style="width:200;"
+						property='<%= "instructors[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);"
+					>
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
+					</html:select>
+					<html:submit property="op" 
+								styleClass="btn"
+								onclick="<%= \"javascript: doDel('coordinator', '\" + ctr + \"');\"%>">
+								<loc:message name="actionRemoveCoordinator" />
+					</html:submit>
+					</td></tr>
+   				</logic:iterate>
+   				<tr><td>
+					<html:submit property="op" 
+						styleId="addInstructor" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddCoordinator() %>" 
+						title="<%=MSG.titleAddCoordinator(MSG.accessAddCoordinator()) %>">
+						<loc:message name="actionAddCoordinator" />
+					</html:submit> 			
+				</td></tr>
+				</table>
+				</TD>
+			</TR>
+		</logic:equal>
 
 <!-- Buttons -->
 		<TR>
@@ -265,6 +308,15 @@
 		</TR>
 
 	</TABLE>
+	
+	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
+	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+	<SCRIPT type="text/javascript" language="javascript">
+		function doDel(type, id) {
+			document.courseOfferingEditForm.deleteType.value = type;
+			document.courseOfferingEditForm.deleteId.value = id;
+		}
+	</SCRIPT>				
 </html:form>
 
 </loc:bundle>

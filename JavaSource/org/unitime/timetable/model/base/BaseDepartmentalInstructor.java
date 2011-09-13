@@ -29,6 +29,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
 
@@ -50,6 +51,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private Set<Exam> iExams;
 	private Set<Designator> iDesignatorSubjectAreas;
 	private Set<Assignment> iAssignments;
+	private Set<InstructionalOffering> iOfferings;
 
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CAREER_ACCT = "careerAcct";
@@ -128,6 +130,13 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public void addToassignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+
+	public Set<InstructionalOffering> getOfferings() { return iOfferings; }
+	public void setOfferings(Set<InstructionalOffering> offerings) { iOfferings = offerings; }
+	public void addToofferings(InstructionalOffering instructionalOffering) {
+		if (iOfferings == null) iOfferings = new HashSet<InstructionalOffering>();
+		iOfferings.add(instructionalOffering);
 	}
 
 	public boolean equals(Object o) {

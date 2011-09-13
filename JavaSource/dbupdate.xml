@@ -3789,4 +3789,37 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+	<update version="76" date="12-Sep-2011" comment="By Reservation Only, Course Coordinators">
+		<plsql>alter table %SCHEMA%.instructional_offering add req_reservation number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.instructional_offering add req_reservation int(1) not null default 0</mysql>
+		<plsql>
+			alter table %SCHEMA%.instructional_offering add constraint nn_instr_offering_by_reserv check (req_reservation is not null)
+		</plsql>
+		<plsql>
+			create table %SCHEMA%.offering_coordinator (
+				offering_id number(20,0) constraint nn_offering_coord_offering not null,
+				instructor_id number(20,0) constraint nn_offering_coord_instructor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add constraint pk_offering_coordinator primary key (offering_id, instructor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.offering_coordinator (
+				offering_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key (offering_id, instructor_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.offering_coordinator add constraint fk_offering_coord_offering foreign key (offering_id)
+			references %SCHEMA%.instructional_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.offering_coordinator add constraint fk_offering_coord_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</sql>
+		<mysql>alter table %SCHEMA%.student_class_enrl add approved_date datetime null</mysql>
+		<plsql>alter table %SCHEMA%.student_class_enrl add approved_date date</plsql>
+		<mysql>alter table %SCHEMA%.student_class_enrl add approved_by varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.student_class_enrl add approved_by varchar2(40)</plsql>
+	</update>
 </dbupdate>

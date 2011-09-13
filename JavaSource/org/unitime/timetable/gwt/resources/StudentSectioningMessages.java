@@ -476,6 +476,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Enrolled")
 	String colEnrollmentTimeStamp();
 
+	@DefaultMessage("Approved")
+	String colApproved();
+
 	@DefaultMessage("Priority")
 	String colPriority();
 	
@@ -511,4 +514,28 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Export in iCalendar format.")
 	String exportICalendar();
+	
+	@DefaultMessage("Enrollments")
+	String enrollmentsTable();
+	
+	@DefaultMessage("{0} by {1}")
+	String approval(String approvedDate, String approvedBy);
+	
+	@DefaultMessage("Select All")
+	String selectAll();
+
+	@DefaultMessage("Clear All")
+	String clearAll();
+	
+	@DefaultMessage("Approve Selected Enrollments")
+	String approveSelectedEnrollments();
+	
+	@DefaultMessage("Failed to approve enrollments: {0}")
+	String failedToApproveEnrollments(String error);
+
+	@DefaultMessage("Reject Selected Enrollments")
+	String rejectSelectedEnrollments();
+
+	@DefaultMessage("Failed to reject enrollments: {0}")
+	String failedToRejectEnrollments(String error);
 }

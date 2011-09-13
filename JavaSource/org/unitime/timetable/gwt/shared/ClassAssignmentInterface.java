@@ -461,10 +461,11 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private List<ClassAssignment> iClasses = null;
 		private int iPriority = 0;
 		private String iAlternative = null;
-		private Date iRequestedDate = null, iEnrolledDate = null;
+		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
 		private long iCourseId = 0;
 		private String iCourseName = null;
 		private String iReservation = null;
+		private String iApprovedBy = null;
 		
 		public Enrollment() {}
 		
@@ -498,6 +499,11 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public void setCourseId(long courseId) { iCourseId = courseId; }
 		public String getCourseName() { return iCourseName; }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
+		
+		public Date getApprovedDate() { return iApprovedDate; }
+		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
+		public String getApprovedBy() { return iApprovedBy; }
+		public void setApprovedBy(String approvedBy) { iApprovedBy = approvedBy; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (!hasClasses()) return "";

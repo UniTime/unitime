@@ -3,6 +3,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -33,6 +34,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -59,8 +61,6 @@ public class EnrollmentTable extends Composite {
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
 	private Label iErrorLabel;
 	
-	private AsyncCallback<List<ClassAssignmentInterface.Enrollment>> iLoadCallback = null;
-	
 	public EnrollmentTable(boolean showHeader) {
 		iEnrollmentPanel = new VerticalPanel();
 		iEnrollmentPanel.setWidth("100%");
@@ -71,7 +71,7 @@ public class EnrollmentTable extends Composite {
 			iOpenCloseImage.getElement().getStyle().setCursor(Cursor.POINTER);
 			iOpenCloseImage.setVisible(false);
 			header.add(iOpenCloseImage);
-			Label curriculaLabel = new Label("Enrollments", false);
+			Label curriculaLabel = new Label(MESSAGES.enrollmentsTable(), false);
 			curriculaLabel.setStyleName("unitime3-HeaderTitle");
 			curriculaLabel.getElement().getStyle().setPaddingLeft(2, Unit.PX);
 			header.add(curriculaLabel);
@@ -244,38 +244,42 @@ public class EnrollmentTable extends Composite {
 		}
 	}
 	
-	private void initCallbacks() {
-		if (iLoadCallback == null) {
-			iLoadCallback = new AsyncCallback<List<ClassAssignmentInterface.Enrollment>>() {
+	private void refresh() {
+		clear(true);
+		if (iOfferingId != null) {
+			iSectioningService.canApprove(iOfferingId, new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 					iLoadingImage.setVisible(false);
 				}
 				@Override
-				public void onSuccess(List<ClassAssignmentInterface.Enrollment> result) {
-					if (result.isEmpty()) {
-						setMessage(iOfferingId >= 0 ? MESSAGES.offeringHasNoEnrollments() : MESSAGES.classHasNoEnrollments());
-						iOpenCloseImage.setVisible(false);
-					} else {
-						populate(result);
-						if (iEnrollments.getRowCount() > 2) {
-							for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
-								iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
-							}
+				public void onSuccess(final Boolean canApprove) {
+					iSectioningService.listEnrollments(iOfferingId, new AsyncCallback<List<ClassAssignmentInterface.Enrollment>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+							iLoadingImage.setVisible(false);
 						}
-						iOpenCloseImage.setVisible(true);
-					}
-					iLoadingImage.setVisible(false);
+						@Override
+						public void onSuccess(List<ClassAssignmentInterface.Enrollment> result) {
+							if (result.isEmpty()) {
+								setMessage(iOfferingId >= 0 ? MESSAGES.offeringHasNoEnrollments() : MESSAGES.classHasNoEnrollments());
+								iOpenCloseImage.setVisible(false);
+							} else {
+								populate(result, canApprove);
+								if (iEnrollments.getRowCount() > 2) {
+									for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
+										iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
+									}
+								}
+								iOpenCloseImage.setVisible(true);
+							}
+							iLoadingImage.setVisible(false);
+						}
+					});					
 				}
-			};			
-		}
-	}
-	
-	private void refresh() {
-		clear(true);
-		if (iOfferingId != null) {
-			iSectioningService.listEnrollments(iOfferingId, iLoadCallback);
+			});
 		}
 	}
 	
@@ -289,7 +293,7 @@ public class EnrollmentTable extends Composite {
 	}
 
 
-	private void populate(List<ClassAssignmentInterface.Enrollment> enrollments) {
+	private void populate(List<ClassAssignmentInterface.Enrollment> enrollments, boolean canApprove) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		Collections.sort(enrollments, new Comparator<ClassAssignmentInterface.Enrollment>() {
@@ -750,6 +754,187 @@ public class EnrollmentTable extends Composite {
 			});
 			header.add(hTimeStamp);			
 		}
+		
+		if (canApprove) {
+			UniTimeTableHeader hApproved = new UniTimeTableHeader(MESSAGES.colApproved());
+			//hTimeStamp.setWidth("100px");
+			hApproved.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox)
+							((CheckBox)w).setValue(true);
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && !((CheckBox)w).getValue())
+							return true;
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.selectAll();
+				}
+			});
+			hApproved.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox)
+							((CheckBox)w).setValue(false);
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && ((CheckBox)w).getValue())
+							return true;
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.clearAll();
+				}
+			});
+			hApproved.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>();
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && ((CheckBox)w).getValue())
+							studentIds.add(iEnrollments.getData(row).getStudent().getId());
+					}
+					iLoadingImage.setVisible(true);
+					iSectioningService.approveEnrollments(iOfferingId, studentIds, new AsyncCallback<String>() {
+						@Override
+						public void onSuccess(String result) {
+							iLoadingImage.setVisible(false);
+							String[] approval = result.split(":");
+							for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+								Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+								if (w instanceof CheckBox && ((CheckBox)w).getValue())
+									iEnrollments.replaceWidget(row, iEnrollments.getCellCount(row) - 1,
+											new HTML(MESSAGES.approval(sDF.format(new Date(Long.valueOf(approval[0]))), approval[2]), false));
+							}
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							iLoadingImage.setVisible(false);
+							setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && ((CheckBox)w).getValue())
+							return true;
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.approveSelectedEnrollments();
+				}
+			});
+			hApproved.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>();
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && ((CheckBox)w).getValue())
+							studentIds.add(iEnrollments.getData(row).getStudent().getId());
+					}
+					iLoadingImage.setVisible(true);
+					iSectioningService.rejectEnrollments(iOfferingId, studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onSuccess(Boolean result) {
+							iLoadingImage.setVisible(false);
+							for (int row = 0; row < iEnrollments.getRowCount(); ) {
+								Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+								if (w instanceof CheckBox && ((CheckBox)w).getValue())
+									iEnrollments.removeRow(row);
+								else
+									row++;
+							}
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							iLoadingImage.setVisible(false);
+							setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iEnrollments.getRowCount(); row++) {
+						Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
+						if (w instanceof CheckBox && ((CheckBox)w).getValue())
+							return true;
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.rejectSelectedEnrollments();
+				}
+			});
+			hApproved.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iEnrollments.sort(new Comparator<ClassAssignmentInterface.Enrollment>() {
+						@Override
+						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
+							int cmp = new Long(e1.getApprovedDate() == null ? 0 : e1.getApprovedDate().getTime()).compareTo(e2.getApprovedDate() == null ? 0 : e2.getApprovedDate().getTime());
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colApproved());
+				}
+			});
+			header.add(hApproved);	
+		}
 
 		
 		iEnrollments.addRow(null, header);
@@ -784,6 +969,20 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getRequestedDate() == null ? "&nbsp;" : sDF.format(enrollment.getRequestedDate()), false));
 			if (hasEnrolledDate)
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
+			if (canApprove) {
+				if (enrollment.getApprovedDate() == null) {
+					CheckBox ch = new CheckBox();
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					line.add(ch);
+				} else { 
+					line.add(new HTML(MESSAGES.approval(sDF.format(enrollment.getApprovedDate()), enrollment.getApprovedBy()), false));
+				}
+			}
 			iEnrollments.addRow(enrollment, line);
 			iEnrollments.getRowFormatter().setVerticalAlign(iEnrollments.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
 			if (enrollment.hasClasses())
@@ -845,7 +1044,6 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
-		initCallbacks();
 		iOfferingId = Long.valueOf(panel.getElement().getInnerText());
 		if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
 			refresh();
@@ -904,7 +1102,5 @@ public class EnrollmentTable extends Composite {
 				iEnrollments.getRowFormatter().removeStyleName(i, "unitime-TableRowSelected");
 		}
 	}
-
-	
 
 }

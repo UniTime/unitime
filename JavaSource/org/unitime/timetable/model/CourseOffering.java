@@ -211,6 +211,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    io.setSession(acadSession);
 		    io.generateInstrOfferingPermId();
 		    io.setLimit(new Integer(0));
+		    io.setByReservationOnly(false);
 		    idao.saveOrUpdate(io);
 		    idao.getSession().refresh(io);
 		    co.setInstructionalOffering(io);
@@ -305,7 +306,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     public boolean isEditableBy(User user){
     	if (user==null) return false;
 
-    	if (getSubjectArea().getSession().isOfferingLockNeeded(getInstructionalOffering().getUniqueId()))
+    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
     		return false;
 
     	if (user.isAdmin()) return true;

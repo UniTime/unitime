@@ -50,6 +50,7 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
+import net.sf.cpsolver.studentsct.reservation.DummyReservation;
 import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
@@ -75,6 +76,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -311,6 +313,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         		}
         	}
         }
+        if (io.isByReservationOnly())
+        	new DummyReservation(offering);
         return offering;
     }
     
@@ -345,6 +349,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     			}
     		});
     		Date enrollmentTS = null;
+    		String approval = null;
     		demands.addAll(s.getCourseDemands());
             for (CourseDemand cd: demands) {
                 if (cd.getFreeTime()!=null) {
@@ -383,6 +388,23 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                                 if (section!=null) {
                                 	if (enrollmentTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().after(enrollmentTS)))
                                 		enrollmentTS = enrl.getTimestamp();
+                                	if (approval == null && enrl.getApprovedBy() != null && enrl.getApprovedDate() != null) {
+										TimetableManager mgr = (TimetableManager)helper.getHibSession().createQuery(
+												"from TimetableManager where externalUniqueId = :externalId")
+												.setString("externalId", enrl.getApprovedBy())
+												.setCacheable(true).setMaxResults(1).uniqueResult();
+										if (mgr != null) {
+											approval = enrl.getApprovedDate().getTime() + ":" + enrl.getApprovedBy() + ":" + mgr.getName();
+										} else {
+											DepartmentalInstructor instr = (DepartmentalInstructor)helper.getHibSession().createQuery(
+													"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
+        											.setString("externalId", enrl.getApprovedBy())
+        											.setLong("sessionId", server.getAcademicSession().getUniqueId())
+        											.setCacheable(true).setMaxResults(1).uniqueResult();
+											approval = enrl.getApprovedDate().getTime() + ":" + enrl.getApprovedBy() + ":" +
+												(instr == null ? enrl.getApprovedBy() : instr.nameLastNameFirst());
+										}
+                                	}
                                 	if (section.getTime() != null && !assignedSections.isEmpty()) {
                                 		for (Section other: assignedSections) {
                                 			if (other.isOverlapping(section)) {
@@ -434,6 +456,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                         Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
                         if (enrollmentTS != null)
                         	enrollment.setTimeStamp(enrollmentTS.getTime());
+                        if (approval != null)
+                        	enrollment.setApproval(approval);
                         request.setInitialAssignment(enrollment);
                         if (assignedSections.size() != assignedConfig.getSubparts().size()) {
                         	helper.warn("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
