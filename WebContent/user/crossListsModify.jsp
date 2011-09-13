@@ -23,12 +23,16 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
 <tiles:importAttribute />
 <%
 	String crsNbr = "";
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
 %>
+
+<loc:bundle name="CourseMessages">
 
 <SCRIPT language="javascript">
 	<!--
@@ -37,8 +41,8 @@
 	var colorCodeTotal = true;
 	var mismatchHtml = 
 		" &nbsp;&nbsp; " +
-		"<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;" +
-		"<font color='#FF0000'>Reserved spaces should total to at least the limit</font>";
+		"<img src='images/Error16.jpg' alt='<%=MSG.altCrossListsLimitsDoNotMatch()%>' title='<%=MSG.titleCrossListsLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;" +
+		"<font color='#FF0000'><%= MSG.errorCrossListsLimitsDoNotMatch()%></font>";
 	
 	String.prototype.trim = function() {
 		return this.replace(/^\s+|\s+$/g,"");
@@ -110,7 +114,7 @@
 		<TR>
 			<TD colspan="2" valign="middle">
 				<DIV class="WelcomeRowHead">
-					<A  title="Back to Instructional Offering List (Alt+I)"
+					<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
 						accesskey="I"
 						class="l8"
 						href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="crossListsModifyForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="crossListsModifyForm" property="instrOfferingId" />"
@@ -122,7 +126,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsIOCrossLists"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -137,7 +141,7 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD>Instructional Offering Limit: </TD>
+			<TD><loc:message name="propertyIOLimit"/></TD>
 			<TD align="left">
 				<logic:equal name="crossListsModifyForm" property="unlimited" value="true">
 					<span title="Unlimited Enrollment"><font size="+1">&infin;</font></span>
@@ -166,7 +170,7 @@
 		</TR>
 
 		<TR>
-			<TD valign="top" rowspan="2">Course Offerings: </TD>
+			<TD valign="top" rowspan="2"><loc:message name="propertyCourseOfferings"/> </TD>
 			<TD>
 				<table border="0" cellpadding="0" cellspacing="0"><tr><td>
 				<html:select
@@ -179,12 +183,13 @@
 					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 				</html:select>
 				</td><td style="padding-left: 5px;">
-				<html:submit property="op" styleClass="btn" accesskey="A"
-					title="Add course offering to the instructional offering (ALT+A)">
-					<bean:message key="button.add" />
+				<html:submit property="op" styleClass="btn" 
+					accesskey="<%=MSG.accessAddCourseToCrossList() %>"
+					title="<%=MSG.titleAddCourseToCrossList(MSG.accessAddCourseToCrossList()) %>">
+					<loc:message name="actionAddCourseToCrossList" />
 				</html:submit>
 				</td></tr><tr><td class="unitime-Hint" colspan="2">
-				Only course offerings that are not offered can be added into a cross-list.
+				<loc:message name="hintCrossLists"/>
 				</td></tr></table>
 			</TD>
 		</TR>
@@ -193,12 +198,12 @@
 				<bean:define id="cos" name="crossListsModifyForm" property="courseOfferingIds" />
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="3">
 					<TR>
-						<TD align="left" class="WebTableHeader"> Offering </TD>
-						<TD align="center" class="WebTableHeader"> Controlling </TD>
-						<TD align="center" class="WebTableHeader"> Reserved </TD>
+						<TD align="left" class="WebTableHeader"><loc:message name="columnCrossListsOffering"/> </TD>
+						<TD align="center" class="WebTableHeader"> <loc:message name="columnCrossListsControlling"/> </TD>
+						<TD align="center" class="WebTableHeader"> <loc:message name="columnCrossListsReserved"/> </TD>
 						<TD align="right" class="WebTableHeader"><!-- I> Requested </I --></TD>
-						<TD align="right" class="WebTableHeader"> Projected </TD>
-						<TD align="right" class="WebTableHeader"> Last Term </TD>
+						<TD align="right" class="WebTableHeader"> <loc:message name="columnCrossListsProjected"/></TD>
+						<TD align="right" class="WebTableHeader"> <loc:message name="columnCrossListsLastTerm"/></TD>
 						<TD>&nbsp;</TD>
 					</TR>
 
@@ -267,7 +272,7 @@
 						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
-								<IMG border="0" src="images/Delete16.gif" title="Remove course from instructional offering & mark it as not offered."
+								<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
 									onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 									onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();">
 							</logic:notEqual>
@@ -278,7 +283,7 @@
 					
 					<% if ( ((java.util.List)cos).size()>1 ) { %>
 					<TR>
-						<TD align="left" class='rowTotal'><I> Total </I></TD>
+						<TD align="left" class='rowTotal'><I> <loc:message name="rowCrossListsTotal"/> </I></TD>
 						<TD align="center" class='rowTotal'><I> &nbsp; </I></TD>
 						<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= resvTotal %>&nbsp; &nbsp;</DIV></TD>
 						<TD align="right" class='rowTotal'>&nbsp;<!-- I> Requested </I --></TD>
@@ -302,19 +307,22 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<html:submit property="op"
-					styleClass="btn" accesskey="U" titleKey="title.updateCrossLists" onclick="displayLoading();">
-					<bean:message key="button.updateCrossLists" />
+				<html:submit property="op" styleClass="btn" 
+					accesskey="<%=MSG.accessUpdateCrossLists() %>" 
+					title="<%=MSG.titleUpdateCrossLists(MSG.accessUpdateCrossLists()) %>" 
+					onclick="displayLoading();">
+					<loc:message name="actionUpdateCrossLists" />
 				</html:submit>
 
 				<bean:define id="instrOfferingId">
 					<bean:write name="crossListsModifyForm" property="instrOfferingId" />
 				</bean:define>
 
-				<html:button property="op"
-					styleClass="btn" accesskey="B" titleKey="title.backToInstrOffrDetail"
+				<html:button property="op" styleClass="btn" 
+					accesskey="<%=MSG.accessBackToIODetail() %>" 
+					title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
 					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-					<bean:message key="button.backToInstrOffrDetail" />
+					<loc:message name="actionBackToIODetail" />
 				</html:button>
 
 			</TD>
@@ -339,3 +347,5 @@
 	ioLimit = <%=ioLimit%>;
 	// -->
 </SCRIPT>
+
+</loc:bundle>

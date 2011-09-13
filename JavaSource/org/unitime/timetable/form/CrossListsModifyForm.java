@@ -31,6 +31,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -45,6 +47,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class CrossListsModifyForm extends ActionForm {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
     // --------------------------------------------------------- Instance Variables
 
 	private static final long serialVersionUID = 3638385556572422628L;
@@ -100,17 +104,17 @@ public class CrossListsModifyForm extends ActionForm {
             (MessageResources) super.getServlet()
             	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
 
-        if (op.equals(rsc.getMessage("button.add"))) {
+        if (op.equals(MSG.actionAddCourseToCrossList())) {
             // Check Added Course
 	        if (this.addCourseOfferingId==null || this.addCourseOfferingId.intValue()<=0) {
-	            errors.add("addCourseOfferingId", new ActionMessage("errors.required", "Course Offering"));            
+	            errors.add("addCourseOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredCourseOffering()));            
 	        }
         }
         
         if (op.equals(rsc.getMessage("button.update"))) {
 	        // Check controlling course
 	        if (this.ctrlCrsOfferingId==null || this.ctrlCrsOfferingId.intValue()<=0) {
-	            errors.add("ctrlCrsOfferingId", new ActionMessage("errors.required", "Controlling Course"));            
+	            errors.add("ctrlCrsOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredControllingCourse()));            
 	        }
 	        
 	        // Check limits if cross-listed
@@ -121,7 +125,7 @@ public class CrossListsModifyForm extends ActionForm {
 	                    Integer.parseInt(limit); 
 	                }
 	                catch (Exception e) {
-	    	            errors.add("limit", new ActionMessage("errors.required", "Reserved Space"));
+	    	            errors.add("limit", new ActionMessage("errors.generic", MSG.errorRequiredReservedSpace()));
 	    	            break;
 	                }	                    
 	            }
@@ -351,7 +355,7 @@ public class CrossListsModifyForm extends ActionForm {
      */
     public void addToCourseOfferings(CourseOffering co, Boolean isOwner) {
         this.courseOfferingIds.add(co.getUniqueId().toString());
-        this.courseOfferingNames.add((co.getCourseName() + " - " + co.getTitle()));
+        this.courseOfferingNames.add((co.getCourseNameWithTitle()));
         this.ownedCourse.add(isOwner);
         this.resvId.add("");
         if (co.getReservation() != null)
