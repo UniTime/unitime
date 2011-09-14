@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,6 +40,7 @@ import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -155,31 +155,20 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 
 		org.hibernate.Session hibSession = null;
 		try {
-			RoomFeatureDAO d = new RoomFeatureDAO();
-			hibSession = d.getSession();
+			hibSession = RoomFeatureDAO.getInstance().getSession();
 			
-			List list = hibSession
+			roomFeatures.addAll(hibSession
 						.createCriteria(GlobalRoomFeature.class)
+						.add(Restrictions.eq("session.uniqueId", rg.getSession().getUniqueId()))
 						.addOrder(Order.asc("label"))
-						.list();
+						.list());
 			
-			for (Iterator iter = list.iterator();iter.hasNext();) {
-				GlobalRoomFeature rf = (GlobalRoomFeature) iter.next();
-				roomFeatures.add(rf);
-			}
-
-			list = hibSession
+			if (!rg.isGlobal()) {
+				roomFeatures.addAll(hibSession
 					.createCriteria(DepartmentRoomFeature.class)
 					.addOrder(Order.asc("label"))
-					.list();
-			
-			for (Iterator i1 = list.iterator();i1.hasNext();) {
-				DepartmentRoomFeature rf = (DepartmentRoomFeature) i1.next();
-				if (rg.isGlobal().booleanValue()) {
-					//roomFeatures.add(rf);
-				} else if (rf.getDepartment()!=null && rf.getDepartment().equals(rg.getDepartment())) {
-					roomFeatures.add(rf);
-				}
+					.add(Restrictions.eq("department.uniqueId", rg.getDepartment().getUniqueId()))
+					.list());
 			}
 			
 		} catch (Exception e) {
