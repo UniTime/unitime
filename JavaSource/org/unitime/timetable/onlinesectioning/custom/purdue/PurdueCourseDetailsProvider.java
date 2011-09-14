@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -38,7 +38,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
  * @author Tomas Muller
  */
 public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(PurdueCourseDetailsProvider.class);
 
 	public static String sUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_catalog_detail?term=:year:term&subject=:subject&cnbr=:courseNbr";
@@ -57,7 +57,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 		if (session.getTerm().toLowerCase().startsWith("spr")) return "20";
 		if (session.getTerm().toLowerCase().startsWith("sum")) return "30";
 		if (session.getTerm().toLowerCase().startsWith("fal")) return "10";
-		throw new SectioningException(EXCEPTIONS.customCourseDetailsFailed("academic term "+session.getTerm()+" not known"));
+		throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("academic term "+session.getTerm()+" not known"));
 	}
 	
 	private String getYear(AcademicSessionInfo session) throws SectioningException {
@@ -79,7 +79,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 			return getDetails(url);
 		} catch (MalformedURLException e) {
 			sLog.error(e.getMessage(), e);
-			throw new SectioningException(EXCEPTIONS.customCourseDetailsFailed("course detail url is wrong"), e);
+			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("course detail url is wrong"), e);
 		}
 	}
 	
@@ -94,7 +94,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 			
 			Pattern pattern = Pattern.compile(sContentRE, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 			Matcher match = pattern.matcher(content);
-			if (!match.find()) throw new SectioningException(EXCEPTIONS.customCourseDetailsFailed("unable to parse <a href='"+courseUrl+"'>course detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("unable to parse <a href='"+courseUrl+"'>course detial page</a>"));
 			String table = match.group(1);
 			
 			for (int i=0; i<sRemoveRE.length; i++)
@@ -103,7 +103,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 			return table;
 		} catch (IOException e) {
 			sLog.error(e.getMessage(), e);
-			throw new SectioningException(EXCEPTIONS.customCourseDetailsFailed("unable to read <a href='"+courseUrl+"'>course detail page</a>"));
+			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("unable to read <a href='"+courseUrl+"'>course detail page</a>"));
 		}
 	}
 	

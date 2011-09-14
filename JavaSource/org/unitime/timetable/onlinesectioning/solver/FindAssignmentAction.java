@@ -52,7 +52,7 @@ import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -71,7 +71,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.Enrollm
  * @author Tomas Muller
  */
 public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface>>{
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
@@ -127,7 +127,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, student, original, c, false, false);
-			if (student.getRequests().isEmpty()) throw new SectioningException(EXCEPTIONS.noCourse());
+			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, false);
 			model.addStudent(student);
@@ -199,7 +199,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         
 
         BranchBoundNeighbour neighbour = onlineSelection.getSelection(student).select();
-		if (neighbour == null) throw new SectioningException(EXCEPTIONS.noSolution());
+		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
 
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
@@ -649,7 +649,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes, Set<Long> savedClasses) throws SectioningException {
         Enrollment [] enrollments = neighbour.getAssignment();
         if (enrollments == null || enrollments.length == 0)
-        	throw new SectioningException(EXCEPTIONS.noSolution());
+        	throw new SectioningException(MSG.exceptionNoSolution());
         int idx=0;
         for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); idx++) {
         	Request r = e.next();
