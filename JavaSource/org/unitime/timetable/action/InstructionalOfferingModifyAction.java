@@ -41,6 +41,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingModifyForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
@@ -77,7 +79,10 @@ import org.unitime.timetable.util.LookupTables;
 
 
 public class InstructionalOfferingModifyAction extends Action {
-    /**
+
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	/**
      * Method execute
      * @param mapping
      * @param form
@@ -92,7 +97,7 @@ public class InstructionalOfferingModifyAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.errorAccessDenied());
         }
 
         MessageResources rsc = getResources(request);
@@ -130,7 +135,7 @@ public class InstructionalOfferingModifyAction extends Action {
             op = request.getParameter("hdnOp");
 
         if(op==null || op.trim().length()==0)
-            throw new Exception ("Operation could not be interpreted: " + op);
+            throw new Exception (MSG.errorOperationNotInterpreted() + op);
 
         // Instructional Offering Config Id
         String instrOffrConfigId = "";
@@ -209,13 +214,14 @@ public class InstructionalOfferingModifyAction extends Action {
         }
 
         // Update the classes
-        if(op.equalsIgnoreCase(rsc.getMessage("button.update"))) {
+        if(op.equalsIgnoreCase(MSG.actionUpdateMultipleClassSetup())) {
             // Validate data input
             ActionMessages errors = frm.validate(mapping, request);
 
             if(errors.size()==0) {
                 doUpdate(request, frm, user);
                 request.setAttribute("io", frm.getInstrOfferingId());
+                request.setAttribute("op", "view");
                 return mapping.findForward("instructionalOfferingDetail");
             }
             else {
@@ -251,7 +257,7 @@ public class InstructionalOfferingModifyAction extends Action {
 
         // Check uniqueid
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
-            throw new Exception ("Missing Instructional Offering Config.");
+            throw new Exception (MSG.errorMissingIOConfig());
 
         // Load details
         InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
@@ -279,7 +285,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setInstrOfferingName(name);
 
         if (ioc.getSchedulingSubparts() == null || ioc.getSchedulingSubparts().size() == 0)
-        	throw new Exception("Instructional Offering Config has not been defined.");
+        	throw new Exception(MSG.errorIOConfigNotDefined());
 
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
         Collections.sort(subpartList, new SchedulingSubpartComparator());
@@ -287,7 +293,7 @@ public class InstructionalOfferingModifyAction extends Action {
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
-    			throw new Exception("Initial setup of Instructional Offering Config has not been completed.");
+    			throw new Exception(MSG.errorInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
         		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String(), proxy);
         	}

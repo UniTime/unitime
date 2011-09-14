@@ -38,6 +38,8 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingDetailForm;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteAction;
@@ -68,6 +70,8 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
  * @struts:action path="/instructionalOfferingConfigDetail" name="instructionalOfferingConfigDetailForm" input="/user/instructionalOfferingConfigDetail.jsp" scope="request"
  */
 public class InstructionalOfferingDetailAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -96,15 +100,21 @@ public class InstructionalOfferingDetailAction extends Action {
         InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) form;
         
         // Read Parameters
-        String op = (request.getParameter("op")==null) 
+        String op = (request.getAttribute("op") != null ? request.getAttribute("op").toString() :
+        	request.getParameter("op") != null ? request.getParameter("op") :
+        	frm.getOp() != null && !frm.getOp().isEmpty() ? frm.getOp() :
+        	request.getParameter("hdnOp"));
+        /*
+        		request.getParameter("op")==null) 
 						? (frm.getOp()==null || frm.getOp().length()==0)
 						        ? (request.getAttribute("op")==null)
 						                ? null
 						                : request.getAttribute("op").toString()
 						        : frm.getOp()
-						: request.getParameter("op");		        
+						: request.getParameter("op");
 		if (op==null)
 		    op = request.getParameter("hdnOp");
+		*/		        
 		
 		// Check operation
 		if(op==null || op.trim().length()==0)
@@ -149,7 +159,7 @@ public class InstructionalOfferingDetailAction extends Action {
 			BackTracker.markForBack(
 					request,
 					"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
-					"Instructional Offering ("+frm.getInstrOfferingNameNoTitle()+")",
+					MSG.backInstructionalOffering(frm.getInstrOfferingNameNoTitle()),
 					true, false);
 			
 			return mapping.findForward("showConfigDetail");

@@ -171,6 +171,7 @@ public class ClassInstructorAssignmentAction extends Action {
     	            	return null;
     	            }
 
+    	            request.setAttribute("op", "view");
     	            return mapping.findForward("instructionalOfferingDetail");
             	} catch (Exception e) {
             		throw e;
