@@ -225,6 +225,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Offerings:")
 	String propertyCourseOfferings();
 	
+	@DefaultMessage("Scheduling Subpart Limits:")
+	String propertySchedulingSubpartLimits();
+	
+	@DefaultMessage("Display Classes in Schedule:")
+	String propertyDisplayClassesInSchedule();
+	
+	@DefaultMessage("All:") //used in Multiple Class Setup
+	String propertyAll();
+
 	@DefaultMessage("By Reservation Only:")
 	String propertyByReservationOnly();
 	
@@ -258,6 +267,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("All")
 	String dropITypeAll();
 	
+	@DefaultMessage("Default")
+	String dropDefaultDatePattern();
+	
 	@DefaultMessage("External Id")
 	String columnExternalId();
 
@@ -278,6 +290,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Room Ratio")
 	String columnRoomRatio();
+	
+	@DefaultMessage("Room<br>Ratio")
+	String columnRoomRatioBr();
 
 	@DefaultMessage("Manager")
 	String columnManager();
@@ -497,6 +512,33 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Last Term")
 	String columnCrossListsLastTerm();
+	
+	@DefaultMessage("Allow<br>variable limits")
+	String columnAllowVariableLimits();
+	
+	@DefaultMessage("Enroll")
+	String columnEnroll();
+	
+	@DefaultMessage("Nbr<br>Rms")
+	String columnNbrRms();
+	
+	@DefaultMessage("Managing Department")
+	String columnManagingDepartment();
+	
+	@DefaultMessage("Display&nbsp;<br>Instr")
+	String columnDisplayInstr();
+	
+	@DefaultMessage("Display&nbsp;<br>Class")
+	String columnDisplayClass();
+	
+	@DefaultMessage("Instructors")
+	String columnInstructors();
+	
+	@DefaultMessage("Min")
+	String columnMin();
+	
+	@DefaultMessage("Max")
+	String columnMax();
 		
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
@@ -637,6 +679,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update")
 	String actionUpdateCrossLists();
+	
+	@DefaultMessage("Update")
+	String actionUpdateMultipleClassSetup();
 	
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
@@ -797,6 +842,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("U")
 	String accessUpdateCrossLists();
 	
+	@DefaultMessage("U")
+	String accessUpdateMultipleClassSetup();
+	
 	@DefaultMessage("C")
 	String accessClearClassPreferences();
 
@@ -923,6 +971,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update Cross Lists (Alt+{0})")
 	String titleUpdateCrossLists(String accessKey);
 	
+	@DefaultMessage("Update Class Setup (Alt+{0})")
+	String titleUpdateMultipleClassSetup(String accessKey);
+	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
 	
@@ -1034,6 +1085,27 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Remove course from instructional offering & mark it as not offered.")
 	String titleRemoveCourseFromCrossList();
 	
+	@DefaultMessage("Display all instructors for this subpart in the schedule book.")
+	String titleDisplayAllInstrForSubpartInSchedBook();
+	
+	@DefaultMessage("Display all classes for this subpart in the schedule book.")
+	String titleDisplayAllClassesForSubpartInSchedBook();
+	
+	@DefaultMessage("Display these classes in the schedule book.")
+	String titleDisplayTheseClassesInSchedBook();
+	
+	@DefaultMessage("Move Class Up")
+	String titleMoveClassUp();
+	
+	@DefaultMessage("Move Class Down")
+	String titleMoveClassDown();
+	
+	@DefaultMessage("Remove Class from Instructional Offering")
+	String titleRemoveClassFromIO();
+	
+	@DefaultMessage("Add a class of this type to Instructional Offering")
+	String titleAddClassToIO();
+	
 	@DefaultMessage("Add Coordinator (Alt+{0})")
 	String titleAddCoordinator(String accessKey);
 
@@ -1084,6 +1156,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsIOCrossLists();
+	
+	@DefaultMessage("ERRORS")
+	String errorsMultipleClassSetup();
 	
 	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
 	String errorInvalidRoomGroup();
@@ -1184,7 +1259,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Reserved spaces should total to at least the limit")
 	String errorCrossListsLimitsDoNotMatch();
 	
-	@DefaultMessage("Course Offering is required.")
+	@DefaultMessage("Course Offering is required")
 	String errorRequiredCourseOffering();
 	
 	@DefaultMessage("Controlling Course is required")
@@ -1195,6 +1270,45 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Unique Id needed for operation. ")
 	String errorUniqueIdNeeded();
+	
+	@DefaultMessage("Class is required")
+	String errorRequiredClass();
+	
+	@DefaultMessage("Instructional Offering Configuration is required")
+	String errorRequiredIOConfiguration();
+	
+	@DefaultMessage("The configuration requires that <b>{0}</b> have at least one child class.")
+	String errorClassMustHaveChildClasses(String parentClass);
+	
+	@DefaultMessage("The configuration requires that each scheduling subpart have at least one associated class.")
+	String errorEachSubpartMustHaveClass();
+	
+	@DefaultMessage("Maximum limit for class {0} cannot be less than the minimum limit for the class.")
+	String errorMaxLessThanMinLimit(String classWithWrongLimits);
+	
+	@DefaultMessage("Maximum limits for each top level class type must total to greater than or equal to the offering limit.")
+	String errorMaxLimitsTotalTooLow();
+	
+	@DefaultMessage("Limits for each top level class type must total to greater than or equal to the offering limit.")
+	String errorLimitsForTopLevelClassesTooLow();
+	
+	@DefaultMessage("Maximum limits for child classes of the same type at a level must total to at least the parent class maximum limit.")
+	String errorTotalMaxChildrenAtLeastMaxParent();
+	
+	@DefaultMessage("Minimum limits for child classes of the same type at a level must total to greater than or equal to the parent class minimum limit.")
+	String errorTotalMinChildrenAtLeastMinParent();
+	
+	@DefaultMessage("Limits for child classes of the same type at a level must total to greater than or equal to the parent class limit.")
+	String errorLimitsChildClasses();
+	
+	@DefaultMessage("Missing Instructional Offering Configuration.")
+	String errorMissingIOConfig();
+	
+	@DefaultMessage("Instructional Offering Config has not been defined.")
+	String errorIOConfigNotDefined();
+	
+	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
+	String errorInitialIOSetupIncomplete();
 	
 	@DefaultMessage("Name")
 	String sortByName();

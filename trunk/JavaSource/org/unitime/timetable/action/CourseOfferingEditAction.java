@@ -152,6 +152,7 @@ public class CourseOfferingEditAction extends Action {
 
 			    // Redirect to instr offering detail on success
 	            request.setAttribute("io", frm.getInstrOfferingId());
+	            request.setAttribute("op", "view");
 	            return mapping.findForward("instructionalOfferingDetail");
 			}
 			else {

@@ -174,6 +174,7 @@ public class CrossListsModifyAction extends Action {
             if(errors.size()==0) {
                 doUpdate(request, frm);
                 request.setAttribute("io", frm.getInstrOfferingId());
+                request.setAttribute("op", "view");
                 return mapping.findForward("instructionalOfferingDetail");
             }
             else {
