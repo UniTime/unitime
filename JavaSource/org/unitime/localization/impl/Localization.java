@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.ApplicationProperties;
 
+import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.i18n.client.Messages;
 
 /**
@@ -45,7 +46,8 @@ import com.google.gwt.i18n.client.Messages;
 public class Localization {
 	private static Log sLog = LogFactory.getLog(Localization.class);
 	public static final String ROOT = "org.unitime.localization.messages.";
-	private static Map<Class, Messages> sBundles = new Hashtable<Class, Messages>();
+	public static final String GWTROOT = "org.unitime.timetable.gwt.resources.";
+	private static Map<Class, Object> sBundles = new Hashtable<Class, Object>();
 	
 	private static final ThreadLocal<String> sLocale = new ThreadLocal<String>() {
 		 @Override
@@ -63,7 +65,7 @@ public class Localization {
 		return locale.trim();
 	}
 	
-	public static <T extends Messages> T create(Class<T> bundle) {
+	public static <T> T create(Class<T> bundle) {
 		synchronized (sBundles) {
 			T ret = (T)sBundles.get(bundle);
 			if (ret == null) {
@@ -73,12 +75,12 @@ public class Localization {
 			return ret;
 		}
 	}
-		
+	
 	public static class Bundle implements InvocationHandler {
 		private Map<String, Properties> iProperties = new Hashtable<String, Properties>();
-		private Class<? extends Messages> iMessages = null;
+		private Class<?> iMessages = null;
 
-		public Bundle(Class<? extends Messages> messages) {
+		public Bundle(Class<?> messages) {
 			iMessages = messages;
 		}
 		
@@ -120,16 +122,80 @@ public class Localization {
 			return value;
 		}
 		
+		private String[] string2array(String value) {
+			return value.split("(?<=^.*[^\\\\]),(?=.*$)");
+		}
+		
+		private Map<String, String> array2map(String[] value) {
+			Map<String, String> map = new HashMap<String, String>();
+			for (int i = 0; i < value.length - 1; i += 2)
+				map.put(value[i], value[i + 1]);
+			return map;
+		}
+		
+		private Object type(String value, Class returnType) {
+			if (value == null) return value;
+			if (String.class.equals(returnType))
+				return value;
+			
+			if (Boolean.class.equals(returnType) || boolean.class.equals(returnType))
+				return "true".equalsIgnoreCase(value);
+			if (Double.class.equals(returnType) || double.class.equals(returnType))
+				return Double.valueOf(value);
+			if (Float.class.equals(returnType) || float.class.equals(returnType))
+				return Float.valueOf(value);
+			if (Integer.class.equals(returnType) || int.class.equals(returnType))
+				return Integer.valueOf(value);
+
+			if (String[].class.equals(returnType))
+				return string2array(value);
+			
+			if (Map.class.equals(returnType)) {
+				Map<String, String> map = new HashMap<String, String>();
+				for (String key: string2array(value)) {
+					String val = getProperty(key.trim());
+					if (val != null) map.put(key.trim(), val);
+				}
+				if (map.isEmpty())
+					return array2map(string2array(value));
+				return map;
+			}
+
+			return value;
+		}
+		
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 1)
 				return getStrutsActions(proxy, (Class<? extends LocalizedLookupDispatchAction>) args[0]);
 			String value = getProperty(method.getName());
 			if (value != null) 
-				return fillArgumentsIn(value, args);
+				return type(fillArgumentsIn(value, args), method.getReturnType());
 			Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
 			if (dm != null)
 				return fillArgumentsIn(dm.value(), args);
+			Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
+			if (db != null)
+				return db.value();
+			Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
+			if (dd != null)
+				return dd.value();
+			Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
+			if (df != null)
+				return df.value();
+			Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
+			if (di != null)
+				return di.value();
+			Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
+			if (ds != null)
+				return ds.value();
+			Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
+			if (dsa != null)
+				return dsa.value();
+			Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
+			if (dsm != null)
+				return array2map(dsm.value());
+			
 			return method.getName();
 		}
 		

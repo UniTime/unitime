@@ -232,25 +232,31 @@ public class ClassAssignmentInterface implements IsSerializable {
 		
 		public int getStart() { return iStart; }
 		public void setStart(int start) { iStart = start; }
-		public String getStartString() {
+		public String getStartString(boolean useAmPm) {
 			if (!isAssigned()) return "";
 	        int h = iStart / 12;
 	        int m = 5 * (iStart % 12);
-	        return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 		
 		public int getLength() { return iLength; }
 		public void setLength(int length) { iLength = length; }
-		public String getEndString() {
+		public String getEndString(boolean useAmPm) {
 			if (!isAssigned()) return "";
 			int h = (5 * (iStart + iLength) - iBreakTime) / 60;
 			int m = (5 * (iStart + iLength) - iBreakTime) % 60;
-	        return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+			if (useAmPm)
+				return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+			else
+				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 		
-		public String getTimeString(String[] shortDays) {
+		public String getTimeString(String[] shortDays, boolean useAmPm) {
 			if (!isAssigned()) return "";
-			return getDaysString(shortDays) + " " + getStartString() + " - " + getEndString();
+			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
 		}
 		
 		public int getBreakTime() { return iBreakTime; }
@@ -359,7 +365,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubpart() + " " + getSection()) + 
-					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}) : "") +
+					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}, true) : "") +
 					(hasRoom() ? " " + getRooms(",") : "") +
 					(isSaved() || isPinned() || isOfHighDemand() || hasAlternatives() || hasDistanceConflict() || isUnlimited() ? "[" +
 							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +

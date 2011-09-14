@@ -23,7 +23,9 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.cpsolver.coursett.Constants;
 import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -39,6 +41,8 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -49,6 +53,8 @@ import org.unitime.timetable.model.dao._RootDAO;
  */
 public class OnlineSectioningHelper {
     protected static Log sLog = LogFactory.getLog(OnlineSectioningHelper.class);
+	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class); 
+
     public static enum LogLevel {
     	DEBUG(OnlineSectioningLog.Message.Level.DEBUG),
     	INFO(OnlineSectioningLog.Message.Level.INFO),
@@ -523,5 +529,22 @@ public class OnlineSectioningHelper {
 	public static long getCpuTime() {
 		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : 1000000l * System.currentTimeMillis();
 	}
+	
+	public static String getTimeString(int slot) {
+        int min = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int h = min / 60;
+        int m = min % 60;
+        if (CFG.useAmPm())
+        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h >= 12 ? "p" : "a");
+        else
+        	return h + ":" + (m < 10 ? "0" : "") + m;
+	}
+	
+	public static String toString(TimeLocation t) {
+		return DayCode.toString(t.getDayCode()) + " " + getTimeString(t.getStartSlot()) + " - " + getTimeString(t.getStartSlot() + t.getLength());
+	}
 
+	public static String toString(FreeTimeRequest f) {
+		return CFG.freePrefix() + toString(f.getTime());
+	}
 }
