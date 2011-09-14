@@ -32,7 +32,7 @@ import java.util.TreeSet;
 import net.sf.cpsolver.studentsct.model.Request;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -57,7 +57,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  * @author Tomas Muller
  */
 public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private boolean iKeepEnrollments;
@@ -79,7 +79,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			helper.beginTransaction();
 			try {
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-				if (student == null) throw new SectioningException(EXCEPTIONS.badStudentId());
+				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				
 				OnlineSectioningLog.Action.Builder action = helper.getAction();
 				
@@ -109,7 +109,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					server.update(oldStudent);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
-					throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
 				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), newStudent.getRequests());
 				
@@ -120,7 +120,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
-				throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
 		} finally {
 			lock.release();

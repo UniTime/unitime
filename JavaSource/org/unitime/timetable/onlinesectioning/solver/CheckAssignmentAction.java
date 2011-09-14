@@ -35,7 +35,7 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -44,7 +44,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config, List<Section>>>{
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
@@ -80,7 +80,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 	
 	public Map<Config, List<Section>> check(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Student student = server.getStudent(getStudentId());
-		if (student == null) throw new SectioningException(EXCEPTIONS.badStudentId());
+		if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 		Hashtable<Config, Course> config2course = new Hashtable<Config, Course>();
 		Hashtable<Config, List<Section>> config2sections = new Hashtable<Config, List<Section>>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
@@ -90,7 +90,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 			// Check section limits
 			Section section = server.getSection(ca.getClassId());
 			if (section == null)
-				throw new SectioningException(EXCEPTIONS.enrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
+				throw new SectioningException(MSG.exceptionEnrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
 
 			Config config = section.getSubpart().getConfig();
 			List<Section> sections = config2sections.get(config);
@@ -102,7 +102,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 					if (cx.getId() == ca.getCourseId()) { course = cx; break; }
 				}
 				if (course == null)
-					throw new SectioningException(EXCEPTIONS.enrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
+					throw new SectioningException(MSG.exceptionEnrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
 				config2course.put(config, course);
 			}
 			sections.add(section);
@@ -136,14 +136,14 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 						for (Enrollment e: section.getEnrollments())
 							if (e.getStudent().getId() == student.getId()) { contain = true; break; }
 						if (!contain)
-							throw new SectioningException(EXCEPTIONS.enrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName()));
+							throw new SectioningException(MSG.exceptionEnrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName()));
 					}
 					if ((reservation == null || !section.getSectionReservations().contains(reservation)) && section.getUnreservedSpace(null) <= 0) {
 						boolean contain = false;
 						for (Enrollment e: section.getEnrollments())
 							if (e.getStudent().getId() == student.getId()) { contain = true; break; }
 						if (!contain)
-							throw new SectioningException(EXCEPTIONS.enrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName()));
+							throw new SectioningException(MSG.exceptionEnrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpart().getName() + " " + section.getName()));
 					}
 				}
 				
@@ -152,14 +152,14 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 					for (Enrollment e: config.getEnrollments())
 						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
 					if (!contain)
-						throw new SectioningException(EXCEPTIONS.enrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName()));
+						throw new SectioningException(MSG.exceptionEnrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName()));
 				}
 				if ((reservation == null || !config.getConfigReservations().contains(reservation)) && config.getUnreservedSpace(null) <= 0) {
 					boolean contain = false;
 					for (Enrollment e: config.getEnrollments())
 						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
 					if (!contain)
-						throw new SectioningException(EXCEPTIONS.enrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName()));
+						throw new SectioningException(MSG.exceptionEnrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber() + " " + config.getName()));
 				}
 				
 				if (course.getLimit() >= 0 && course.getLimit() <= course.getEnrollments().size()) {
@@ -167,7 +167,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 					for (Enrollment e: course.getEnrollments())
 						if (e.getStudent().getId() == student.getId()) { contain = true; break; }
 					if (!contain)
-						throw new SectioningException(EXCEPTIONS.enrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber()));
+						throw new SectioningException(MSG.exceptionEnrollNotAvailable(course.getSubjectArea() + " " + course.getCourseNumber()));
 				}
 			}
 		}

@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -41,7 +41,7 @@ import net.sf.cpsolver.studentsct.model.Student;
  * @author Tomas Muller
  */
 public class ReloadStudent extends ReloadAllData {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iStudentIds = null;
 	
 	public ReloadStudent(Long... studentIds) {
@@ -130,7 +130,7 @@ public class ReloadStudent extends ReloadAllData {
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
 	

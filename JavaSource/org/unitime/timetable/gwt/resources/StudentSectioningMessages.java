@@ -25,6 +25,15 @@ import com.google.gwt.i18n.client.Messages;
  * @author Tomas Muller
  */
 public interface StudentSectioningMessages extends Messages {
+	/*  General messages
+	 */
+	@DefaultMessage("{0} {1}")
+	String courseName(String subject, String courseNbr);
+	
+	@DefaultMessage("{0} {1} - {2}")
+	String courseNameWithTitle(String subject, String courseNbr, String title);
+
+	
 	/*  Common column names
 	 */
 	@DefaultMessage("Lock")
@@ -200,13 +209,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Free <u>T</u>ime")
 	String courseSelectionFreeTime();
-	
-	@DefaultMessage("{0} {1}")
-	String courseName(String subject, String courseNbr);
-	
-	@DefaultMessage("{0} {1} - {2}")
-	String courseNameWithTitle(String subject, String courseNbr, String title);
-	
+		
 	@DefaultMessage("No course filter set.")
 	String courseSelectionNoCourseFilter();
 	
@@ -446,6 +449,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0} is a course.")
 	String notFreeTimeIsCourse(String text);
 	
+	/* Enrollment table messages
+	 */
+	
 	@DefaultMessage("Failed to load enrollments: {0}")
 	String failedToLoadEnrollments(String message);
 
@@ -500,24 +506,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Total Not Enrolled: {0}")
 	String totalWaitListed(int count);
 	
-	@DefaultMessage("Loading classes for {0}...")
-	String loadingEnrollment(String student);
-
-	@DefaultMessage("Classes for {0}")
-	String dialogEnrollments(String student);
-	
-	@DefaultMessage("Show External Ids")
-	String showExternalIds();
-	
-	@DefaultMessage("Show Class Numbers")
-	String showClassNumbers();
-	
-	@DefaultMessage("Export in iCalendar format.")
-	String exportICalendar();
-	
-	@DefaultMessage("Enrollments")
-	String enrollmentsTable();
-	
 	@DefaultMessage("{0} by {1}")
 	String approval(String approvedDate, String approvedBy);
 	
@@ -538,4 +526,120 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Failed to reject enrollments: {0}")
 	String failedToRejectEnrollments(String error);
+	
+	/* Enrollment dialog messages (opened from Enrollments table)
+	 */
+	
+	@DefaultMessage("Loading classes for {0}...")
+	String loadingEnrollment(String student);
+
+	@DefaultMessage("Classes for {0}")
+	String dialogEnrollments(String student);
+	
+	@DefaultMessage("Show External Ids")
+	String showExternalIds();
+	
+	@DefaultMessage("Show Class Numbers")
+	String showClassNumbers();
+	
+	@DefaultMessage("Export in iCalendar format.")
+	String exportICalendar();
+	
+	@DefaultMessage("Enrollments")
+	String enrollmentsTable();
+	
+	/* Sectioning exceptions
+	 */
+	@DefaultMessage("Course {0} does not exist.")
+	String exceptionCourseDoesNotExist(String course);
+	
+	@DefaultMessage("Academic session {0} does not exist.")
+	String exceptionSessionDoesNotExist(String session);
+	
+	@DefaultMessage("Academic session not selected.")
+	String exceptionNoAcademicSession();
+	
+	@DefaultMessage("No suitable academic sessions found.")
+	String exceptionNoSuitableAcademicSessions();
+	
+	@DefaultMessage("No classes found for {0}.")
+	String exceptionNoClassesForCourse(String course);
+	
+	@DefaultMessage("Unable to compute a schedule ({0}).")
+	String exceptionSectioningFailed(String message);
+	
+	@DefaultMessage("Too many bad attempts, login disabled.")
+	String exceptionTooManyLoginAttempts();
+	
+	@DefaultMessage("User name not provided.")
+	String exceptionLoginNoUsername();
+	
+	@DefaultMessage("Wrong username and/or password.")
+	String exceptionLoginFailed();
+	
+	@DefaultMessage("Login failed ({0}).")
+	String exceptionLoginFailedUnknown(String message);
+	
+	@DefaultMessage("User is not logged in.")
+	String exceptionUserNotLoggedIn();
+
+	@DefaultMessage("Unable to load section information ({0}).")
+	String exceptionCustomSectionNamesFailed(String reason);
+	
+	@DefaultMessage("Unable to retrive course details ({0}).")
+	String exceptionCustomCourseDetailsFailed(String reason);
+	
+	@DefaultMessage("Unable to retrive class details ({0}).")
+	String exceptionCustomSectionLimitsFailed(String reason);
+	
+	@DefaultMessage("Course detail interface not provided.")
+	String exceptionNoCustomCourseDetails();
+	
+	@DefaultMessage("Last academic session failed ({0}).")
+	String exceptionLastAcademicSessionFailed(String message);
+	
+	@DefaultMessage("Not a student.")
+	String exceptionNoStudent();
+	
+	@DefaultMessage("Wrong student id.")
+	String exceptionBadStudentId();
+	
+	@DefaultMessage("No requests stored for the student.")
+	String exceptionNoRequests();
+	
+	@DefaultMessage("Wrong academic session.")
+	String exceptionBadSession();
+	
+	@DefaultMessage("Your are not authenticated, please log in first.")
+	String exceptionEnrollNotAuthenticated();
+	
+	@DefaultMessage("Your are not registered as a student in {0}.")
+	String exceptionEnrollNotStudent(String session);
+	
+	@DefaultMessage("Unable to enroll into {0}, the class is no longer available.")
+	String exceptionEnrollNotAvailable(String clazz);
+	
+	@DefaultMessage("This feature is not supported in the current environment.")
+	String exceptionNotSupportedFeature();
+	
+	@DefaultMessage("No schedule stored for the student.")
+	String exceptionNoSchedule();
+	
+	@DefaultMessage("No courses provided.")
+	String exceptionNoCourse();
+	
+	@DefaultMessage("Unable to compute a schedule (no solution found).")
+	String exceptionNoSolution();
+
+	@DefaultMessage("{0}")
+	String exceptionUnknown(String reason);
+	
+	@DefaultMessage("Academic session is not available for student scheduling.")
+	String exceptionNoServerForSession();
+
+	@DefaultMessage("Wrong class or instructional offering.")
+	String exceptionBadClassOrOffering();
+	
+	@DefaultMessage("Wrong instructional offering.")
+	String exceptionBadOffering();
 }
