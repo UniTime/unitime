@@ -318,6 +318,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	            // Redirect to instr offering detail on success
 	            request.setAttribute("io", frm.getInstrOfferingId());
+	            request.setAttribute("op", "view");
 	            return mapping.findForward("instructionalOfferingDetail");
             }
             catch (Exception e) {
@@ -341,6 +342,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             // Redirect to instr offering detail on success
             request.setAttribute("io", frm.getInstrOfferingId());
             request.setAttribute("cfgDelete", "1");
+            request.setAttribute("op", "view");
             return mapping.findForward("instructionalOfferingDetail");
 		}
 

@@ -35,6 +35,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -47,6 +49,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 
 public class InstructionalOfferingModifyForm extends ActionForm {
 
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);	
 	/**
 	 * 
 	 */
@@ -161,28 +165,28 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         if (op.equals(rsc.getMessage("button.add"))) {
             // Check Added Course
 	        if (this.addTemplateClassId==null || this.addTemplateClassId.longValue()<=0) {
-	            errors.add("getAddTemplateClassId", new ActionMessage("errors.required", "Class"));            
+	            errors.add("getAddTemplateClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
 	        }
         }
         
         if (op.equals(rsc.getMessage("button.moveUp"))) {
             // Check Course to move up
 	        if (this.moveUpClassId==null || this.moveUpClassId.longValue()<=0) {
-	            errors.add("getMoveUpClassId", new ActionMessage("errors.required", "Class"));            
+	            errors.add("getMoveUpClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
 	        }
         }
         
         if (op.equals(rsc.getMessage("button.moveDown"))) {
             // Check Course to move down
 	        if (this.moveDownClassId==null || this.moveDownClassId.longValue()<=0) {
-	            errors.add("getMoveDownClassId", new ActionMessage("errors.required", "Class"));            
+	            errors.add("getMoveDownClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
 	        }
         }
         
-        if (op.equals(rsc.getMessage("button.update"))) {
+        if (op.equals(MSG.actionUpdateMultipleClassSetup())) {
 	        // Check Instructional Offering Config
 	        if (this.instrOffrConfigId==null || this.instrOffrConfigId.intValue()<=0) {
-	            errors.add("instrOffrConfigId", new ActionMessage("errors.required", "Instructional Offering Config"));            
+	            errors.add("instrOffrConfigId", new ActionMessage("errors.generic", MSG.errorRequiredIOConfiguration()));            
 	        }
 	        // Validate class limits provide space that is >= limit for the instructional offering config
 	        validateChildClassExistence(errors);
@@ -198,12 +202,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		if (Boolean.valueOf((String) this.getMustHaveChildClasses().get(index)).booleanValue()){
     			String classId = (String) this.getClassIds().get(index);
     			if ((index + 1) == this.getClassIds().size()){
-        			errors.add("mustHaveChildClasses", new ActionMessage("errors.class.mustHaveChildClasses", (String) this.getClassLabels().get(index)));
+        			errors.add("mustHaveChildClasses", 
+        					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
         			this.getClassHasErrors().set(index, new Boolean(true));    				
     			} else {
 	    			String parentOfNextClass = (String) this.getParentClassIds().get(index + 1);
 	    			if (parentOfNextClass == null || !parentOfNextClass.equals(classId)){
-	        			errors.add("mustHaveChildClasses", new ActionMessage("errors.class.mustHaveChildClasses", (String) this.getClassLabels().get(index)));
+	        			errors.add("mustHaveChildClasses", 
+	        					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
 	        			this.getClassHasErrors().set(index, new Boolean(true));    				    				
 	    			}
     			}
@@ -216,7 +222,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	String[] subparts = this.getOrigSubparts().split(",");
     	for(int i = 0; i < subparts.length; i++){
     		if (!this.getSubpartIds().contains(subparts[i])){
-    			errors.add("allSubpartsMustHaveAClass", new ActionMessage("errors.subpart.mustHaveClass"));
+    			errors.add("allSubpartsMustHaveAClass", new ActionMessage("errors.generic", MSG.errorEachSubpartMustHaveClass()));
     			break;
     		}
     	}
@@ -244,14 +250,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			maxLimit = 0;
     		}
     		if (minLimit > maxLimit){
-    			errors.add("minLimitGreaterThanMaxLimit", new ActionMessage("errors.limit.minGreaterThanMaxLimit", (String) this.getClassLabels().get(index)));
+    			errors.add("minLimitGreaterThanMaxLimit", new ActionMessage("errors.generic", MSG.errorMaxLessThanMinLimit((String) this.getClassLabels().get(index))));
     			this.getClassHasErrors().set(index, new Boolean(true));
     		}    		
     		index++;
     	}
     }
     
-    private void validateMinOrMaxParentClassLimits(ActionErrors errors, List limits, String errorName, String messageType){
+    private void validateMinOrMaxParentClassLimits(ActionErrors errors, List limits, String errorName, String errorMessage){
 		HashMap childClassLimits = new HashMap();
 		Iterator it1 = this.getSubpartIds().iterator();
 		Iterator it2 = limits.iterator();
@@ -318,7 +324,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		
 		// mark classes that are in error and build error messages
 		if (childClassesUnderLimit.size() > 0){
-			errors.add(errorName, new ActionMessage(messageType));  			
+			errors.add(errorName, new ActionMessage("errors.generic", errorMessage));  			
 		}
 		if ((childClassesUnderLimit.size() > 0)){
 			Iterator it6 = this.getParentClassIds().iterator();
@@ -389,9 +395,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		// mark classes that are in error and build error messages
 		if (subpartsUnderLimit.size() > 0){
 			if (getDisplayMaxLimit().booleanValue()){
-				errors.add("maxLimit", new ActionMessage("errors.limit.subpart"));
+				errors.add("maxLimit", new ActionMessage("errors.generic", MSG.errorMaxLimitsTotalTooLow()));
 			} else {
-				errors.add("maxLimit", new ActionMessage("errors.limit.subpart2"));
+				errors.add("maxLimit", new ActionMessage("errors.generic", MSG.errorLimitsForTopLevelClassesTooLow()));
 			}
 		}
 		if ((subpartsUnderLimit.size() > 0)){
@@ -433,7 +439,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	if (limit > 0) {
     		initClassHasErrorsToFalse();
     		validateMinLessThanMaxClassLimits(errors);
-    		validateMinOrMaxParentClassLimits(errors, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())?"errors.maxLimit.childClasses":"errors.limit.childClasses"));
+    		validateMinOrMaxParentClassLimits(errors, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())? MSG.errorTotalMaxChildrenAtLeastMaxParent():MSG.errorLimitsChildClasses()));
     		validateSubpartClassLimits(errors);
     	}
     }
