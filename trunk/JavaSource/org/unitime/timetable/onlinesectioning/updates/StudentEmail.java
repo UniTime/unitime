@@ -46,7 +46,7 @@ import javax.imageio.ImageIO;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -72,7 +72,7 @@ import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
 public class StudentEmail implements OnlineSectioningAction<Boolean> {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	private Long iStudentId = null;
 	private List<Request> iOldRequests = null, iNewRequests = null;
@@ -260,7 +260,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		} catch (Exception e) {
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		} finally {
 			lock.release();
 		}

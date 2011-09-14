@@ -21,7 +21,7 @@ package org.unitime.timetable.onlinesectioning;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -30,7 +30,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
  * @author Tomas Muller
  */
 public class CourseInfo implements Comparable<CourseInfo> {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iUniqueId;
 	private Long iAcademicSessionId;
 	private String iSubjectArea;
@@ -102,7 +102,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 			try {
 				provider = (CourseDetailsProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider")).newInstance();
 			} catch (Exception e) {
-				throw new SectioningException(EXCEPTIONS.noCustomCourseDetails());
+				throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
 			}
 			iDetails = provider.getDetails(OnlineSectioningService.getInstance(iAcademicSessionId).getAcademicSession(), iSubjectArea, iCourseNbr);
 		}

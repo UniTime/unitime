@@ -25,14 +25,14 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class CheckAllOfferingsAction extends CheckOfferingAction{
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	public CheckAllOfferingsAction() {
 		super();
@@ -52,7 +52,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 		
 		helper.info("Checking all offerings for " + server.getAcademicSession() + "...");
@@ -92,7 +92,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
 	

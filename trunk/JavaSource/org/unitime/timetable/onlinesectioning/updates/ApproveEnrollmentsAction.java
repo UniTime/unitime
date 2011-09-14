@@ -28,7 +28,7 @@ import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -38,7 +38,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean> {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iOfferingId;
 	private Collection<Long> iStudentIds;
 	private String iApproval;
@@ -69,7 +69,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 				
 				Offering offering = server.getOffering(getOfferingId());
 				if (offering == null) 
-					throw new SectioningException(EXCEPTIONS.badOffering());
+					throw new SectioningException(MSG.exceptionBadOffering());
 				
 				for (Config config: offering.getConfigs())
 					for (Enrollment enrollment: config.getEnrollments()) {
@@ -119,7 +119,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
 

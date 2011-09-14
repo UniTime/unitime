@@ -40,7 +40,7 @@ import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningExceptions;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -64,7 +64,7 @@ import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
  * @author Tomas Muller
  */
 public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
-	private static StudentSectioningExceptions EXCEPTIONS = Localization.create(StudentSectioningExceptions.class);
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private List<Long> iOfferingIds;
 	
 	public ReloadOfferingAction(Long... offeringIds) {
@@ -111,7 +111,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(EXCEPTIONS.unknown(e.getMessage()), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
 		
