@@ -187,7 +187,7 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), false)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), false)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays()), true)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), true)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), true)),
 											(clazz != null && clazz.hasDistanceConflict() ? 
 													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()),
@@ -249,7 +249,7 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), false)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), false)),
 											//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays()), true)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), true)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), true)),
 											(old != null && old.hasDistanceConflict() ? 
 													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
@@ -284,7 +284,7 @@ public class SuggestionsBox extends DialogBox {
 									new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), false)),
 									new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), false)),
 									//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays()), true)),
+									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), true)),
 									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), true)),
 									(old != null && old.hasDistanceConflict() ? 
 											new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
@@ -350,7 +350,7 @@ public class SuggestionsBox extends DialogBox {
 		iCurrent = rows;
 		iSource = null;
 		if (row.isFreeTime()) {
-			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(), row.getEndString());
+			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
 		} else {
 			if (row.getSubpart() == null)
 				iSource = MESSAGES.course(row.getSubject(), row.getCourseNbr());

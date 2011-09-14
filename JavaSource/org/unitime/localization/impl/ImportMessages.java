@@ -52,7 +52,7 @@ public class ImportMessages {
 			out.println("# with this program.  If not, see <http://www.gnu.org/licenses/>.");
 			out.println("# ");
 			
-			CSVFile csv = new CSVFile(new File(System.getProperty("file", "~/Downloads/UniTime Localization Czech.csv")));
+			CSVFile csv = new CSVFile(new File(System.getProperty("file", System.getProperty("user.home") + "/Downloads/UniTime Localization Czech.csv")));
 			for (CSVLine line: csv.getLines()) {
 				if (line.getFields().size() >= 2) {
 					out.println();

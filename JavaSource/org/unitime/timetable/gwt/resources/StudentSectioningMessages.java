@@ -413,11 +413,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not Enrolled")
 	String courseWaitListed();
 
-	@DefaultMessage("Conflicts with ")
-	String conflictWith();
+	@DefaultMessage("Conflicts with {0}")
+	String conflictWithFirst(String course);
 
-	@DefaultMessage("or ")
-	String conflictWithOr();
+	@DefaultMessage(", {0}")
+	String conflictWithMiddle(String course);
+
+	@DefaultMessage("or {0}")
+	String conflictWithLast(String course);
 	
 	@DefaultMessage(", assigned {0} instead")
 	String conflictAssignedAlternative(String alt);
@@ -527,6 +530,24 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to reject enrollments: {0}")
 	String failedToRejectEnrollments(String error);
 	
+	@DefaultMessage("Consent approved on {0}")
+	String consentApproved(String approvedDate);
+	
+	@DefaultMessage("Waiting for {0}")
+	String consentWaiting(String consent);
+
+	@DefaultMessage("Group")
+	String reservationGroup();
+
+	@DefaultMessage("Individual")
+	String reservationIndividual();
+
+	@DefaultMessage("Course")
+	String reservationCourse();
+
+	@DefaultMessage("Curriculum")
+	String reservationCurriculum();
+
 	/* Enrollment dialog messages (opened from Enrollments table)
 	 */
 	

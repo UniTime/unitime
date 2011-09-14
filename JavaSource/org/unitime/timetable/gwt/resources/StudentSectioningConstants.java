@@ -68,7 +68,7 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri"})
 	String[] freeTimeDays();
 	
-	@DefaultStringArrayValue({"M", "T", "W", "R", "F"})
+	@DefaultStringArrayValue({"M", "T", "W", "R", "F", "S", "U"})
 	String[] freeTimeShortDays();
 	
 	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"})
@@ -107,4 +107,10 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultStringValue("MM/dd/yyyy")
 	String requestDateFormat();
+	
+	@DefaultBooleanValue(true)
+	boolean useAmPm();
+	
+	@DefaultStringValue("MM/dd")
+	String patternDateFormat();
 }

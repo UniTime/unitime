@@ -336,6 +336,11 @@
 		<url-pattern>*.jsp</url-pattern>
 	</filter-mapping>
 
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
 	<jsp-config>
 		<jsp-property-group>
 			<url-pattern>*.jspf</url-pattern>

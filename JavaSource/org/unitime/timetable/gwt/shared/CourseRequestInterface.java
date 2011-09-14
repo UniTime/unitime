@@ -64,27 +64,33 @@ public class CourseRequestInterface implements IsSerializable {
 		
 		public int getStart() { return iStart; }
 		public void setStart(int startSlot) { iStart = startSlot; }
-		public String getStartString() {
+		public String getStartString(boolean useAmPm) {
 	        int h = iStart / 12;
 	        int m = 5 * (iStart % 12);
-	        return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + ( h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 
 		
 		public int getLength() { return iLength; }
 		public void setLength(int length) { iLength = length; }
-		public String getEndString() {
+		public String getEndString(boolean useAmPm) {
 			int h = (iStart + iLength) / 12;
 			int m = 5 * ((iStart + iLength) % 12);
-	        return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + ( h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 		
-		public String toString(String[] shortDays) {
-			return getDaysString(shortDays) + " " + getStartString() + " - " + getEndString();
+		public String toString(String[] shortDays, boolean useAmPm) {
+			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
 		}
 		
 		public String toString() {
-			return "Free " + toString(new String[] {"M", "T", "W", "R", "F", "S", "U"});
+			return "Free " + toString(new String[] {"M", "T", "W", "R", "F", "S", "U"}, true);
 		}
 	}
 	
