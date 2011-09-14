@@ -22,30 +22,32 @@ package org.unitime.timetable.gwt.server;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+
 /**
  * @author Tomas Muller
  */
 public enum DayCode {
-	MON (64, 0, "M" , "Mon", "Monday"),
-	TUE (32, 1, "T" , "Tue", "Tuesday"),
-	WED (16, 2, "W" , "Wed", "Wednesday"),
-	THU ( 8, 3, "R" , "Thu", "Thursday" ),
-	FRI ( 4, 4, "F" , "Fri", "Friday"),
-	SAT ( 2, 5, "S" , "Sat", "Saturday"),
-	SUN ( 1, 6, "U" , "Sun", "Sunday");
+	MON (64),
+	TUE (32),
+	WED (16),
+	THU ( 8),
+	FRI ( 4),
+	SAT ( 2),
+	SUN ( 1);
+	
+	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
 	
 	private final int iCode;
-	private final int iIndex;
-	private final String iAbbv;
-	private final String iShort;
-	private final String iName;
 	
-	DayCode(int code, int index, String abbv, String shortName, String name) { iCode = code; iIndex = index; iAbbv = abbv; iShort = shortName; iName = name;  }
-	public int getIndex() { return iIndex; }
+	DayCode(int code) { iCode = code; }
+	
 	public int getCode() { return iCode; }
-	public String getAbbv() { return iAbbv; }
-	public String getShort() { return iShort; }
-	public String getName() { return iName; }
+	public int getIndex() { return ordinal(); }
+	public String getAbbv() { return CFG.shortDays()[ordinal()]; }
+	public String getShort() { return CFG.days()[ordinal()]; }
+	public String getName() { return CFG.longDays()[ordinal()]; }
 	
 	public static int nrDays(int days) {
 		int nrDays = 0;
@@ -78,7 +80,7 @@ public enum DayCode {
 	public static ArrayList<DayCode> toDayCodes(Collection<Integer> days) {
 		ArrayList<DayCode> dayCodes = new ArrayList<DayCode>(DayCode.values().length);
 		for (DayCode dc: DayCode.values())
-	    	if (days.contains(dc.getIndex())) dayCodes.add(dc);
+	    	if (days.contains(dc.ordinal())) dayCodes.add(dc);
 		return dayCodes;
 	}
 

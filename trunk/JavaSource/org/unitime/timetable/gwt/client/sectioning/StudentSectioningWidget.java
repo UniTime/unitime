@@ -563,8 +563,8 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getLimitString()),
 								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-								new WebTable.Cell(clazz.getStartString()),
-								new WebTable.Cell(clazz.getEndString()),
+								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
@@ -599,12 +599,15 @@ public class StudentSectioningWidget extends Composite {
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
 					if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
-						unassignedMessage = MESSAGES.conflictWith();
+						unassignedMessage = "";
 						for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
 							String x = i.next();
-							if (course.getOverlaps().size() > 1 && !i.hasNext()) unassignedMessage += MESSAGES.conflictWithOr();
-							unassignedMessage += x;
-							if (i.hasNext()) unassignedMessage += ", ";
+							if (unassignedMessage.isEmpty())
+								unassignedMessage += MESSAGES.conflictWithFirst(x);
+							else if (!i.hasNext())
+								unassignedMessage += MESSAGES.conflictWithLast(x);
+							else
+								unassignedMessage += MESSAGES.conflictWithMiddle(x);
 						}
 						if (course.getInstead() != null)
 							unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
@@ -623,12 +626,12 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getLimitString()),
 								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-								new WebTable.Cell(clazz.getStartString()),
-								new WebTable.Cell(clazz.getEndString()),
+								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								new WebTable.Cell(unassignedMessage, 4, null),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
-						row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
+						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
 						break;
 					}
@@ -662,8 +665,8 @@ public class StudentSectioningWidget extends Composite {
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
 									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString()),
-									new WebTable.Cell(clazz.getEndString()),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 									new WebTable.Cell(clazz.getDatePattern()),
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
@@ -695,8 +698,8 @@ public class StudentSectioningWidget extends Composite {
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getLimitString()),
 								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-								new WebTable.Cell(clazz.getStartString()),
-								new WebTable.Cell(clazz.getEndString()),
+								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),

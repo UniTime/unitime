@@ -466,11 +466,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						}
 						for (Enrollment q: overlap) {
 							if (q.getRequest() instanceof FreeTimeRequest) {
-								FreeTimeRequest f = (FreeTimeRequest)q.getRequest();
-								ca.addOverlap("Free Time " +
-									DayCode.toString(f.getTime().getDayCode()) + " " + 
-									f.getTime().getStartTimeHeader() + " - " +
-									f.getTime().getEndTimeHeader());
+								ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
 							} else {
 								CourseRequest cr = (CourseRequest)q.getRequest();
 								Course o = q.getCourse();
@@ -512,11 +508,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					        	Assignment a = i.next();
 								if (r.isOverlapping(a)) {
 									if (x.getRequest() instanceof FreeTimeRequest) {
-										FreeTimeRequest f = (FreeTimeRequest)x.getRequest();
-										ca.addOverlap("Free Time " +
-											DayCode.toString(f.getTime().getDayCode()) + " " + 
-											f.getTime().getStartTimeHeader() + " - " +
-											f.getTime().getEndTimeHeader());
+										ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)x.getRequest()));
 									} else {
 										Course o = x.getCourse();
 										Section s = (Section)a;

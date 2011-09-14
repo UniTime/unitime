@@ -460,7 +460,7 @@ public class CourseSelectionBox extends Composite {
 					finderTimer.schedule(250);
 					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER || event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
 						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-							if (iCourses.getSelectedRow()>=0) {
+							if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length && iTabPanel.getSelectedTab() == 0) {
 								WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
 								if ("true".equals(r.getId()))
 									iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
@@ -850,8 +850,8 @@ public class CourseSelectionBox extends Composite {
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
 									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString()),
-									new WebTable.Cell(clazz.getEndString()),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 									new WebTable.Cell(clazz.getDatePattern()),
 									new WebTable.Cell(clazz.getRooms(", ")),
 									new WebTable.Cell(clazz.getInstructors(", ")),
@@ -1079,6 +1079,14 @@ public class CourseSelectionBox extends Composite {
 						found = true;
 					}
 				}
+				for (int i=0; i<CONSTANTS.freeTimeShortDays().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.freeTimeShortDays()[i].toLowerCase())) {
+						days.add(i);
+						token = token.substring(CONSTANTS.freeTimeShortDays()[i].length());
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
 			} while (found);
 			int startHour = 0, startMin = 0;
 			while (token.startsWith(" ")) token = token.substring(1);
@@ -1196,7 +1204,7 @@ public class CourseSelectionBox extends Composite {
 			if (ret.length() > 0) ret += ", ";
 			String days = ft.getDaysString(CONSTANTS.shortDays());
 			if (ft.getDays().size() == CONSTANTS.freeTimeDays().length && !ft.getDays().contains(5) && !ft.getDays().contains(6)) days = "";
-			ret += (days.isEmpty() || days.equals(lastDays) ? "" : days + " ") + ft.getStartString() + " - " + ft.getEndString();
+			ret += (days.isEmpty() || days.equals(lastDays) ? "" : days + " ") + ft.getStartString(CONSTANTS.useAmPm()) + " - " + ft.getEndString(CONSTANTS.useAmPm());
 			lastDays = days;
 		}
 		return CONSTANTS.freePrefix() + ret;

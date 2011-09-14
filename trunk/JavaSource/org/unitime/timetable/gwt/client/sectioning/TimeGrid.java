@@ -144,7 +144,7 @@ public class TimeGrid extends Composite {
 
 			SimplePanel sp3 = new SimplePanel();
 			sp3.setStyleName("dummy-time-interval");
-			Label title = new Label(i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm");
+			Label title = new Label(CONSTANTS.useAmPm() ? (i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm") : String.valueOf(i));
 			sp3.setWidget(title);
 			times.add(sp3, 0, 50 * (i - iStart));
 
@@ -186,7 +186,7 @@ public class TimeGrid extends Composite {
 	
 	public void addFreeTime(CourseRequestInterface.FreeTime ft) {
 		for (int day: ft.getDays())
-			addBusy("Free " + ft.toString(CONSTANTS.shortDays()), day, ft.getStart(), ft.getLength());
+			addBusy(CONSTANTS.freePrefix() + ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), day, ft.getStart(), ft.getLength());
 	}
 	
 	private void addBusy(String text, int day, int start, int length) {
@@ -383,7 +383,7 @@ public class TimeGrid extends Composite {
 		String name = (row.isFreeTime() ? MESSAGES.freeTimeCourse() + " " + MESSAGES.freeTimeSubject() :
 			row.getSubject() + " " + row.getCourseNbr() + " " + row.getSubpart());
 		String longName = name + (row.isFreeTime() ? "" : " " + row.getSection());
-		String time = row.getDaysString(CONSTANTS.shortDays()) + " " + row.getStartString() + " - " + row.getEndString();
+		String time = row.getDaysString(CONSTANTS.shortDays()) + " " + row.getStartString(CONSTANTS.useAmPm()) + " - " + row.getEndString(CONSTANTS.useAmPm());
 		ArrayList<String> notes = new ArrayList<String>();
 		ArrayList<String> notesNoHtml = new ArrayList<String>();
 		if (row.hasRoom()) {

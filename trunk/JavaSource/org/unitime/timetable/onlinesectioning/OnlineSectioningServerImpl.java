@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,6 +66,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -82,7 +84,7 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
  */
 public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static SimpleDateFormat sDateFormaShort = new SimpleDateFormat("yy/MM/dd");
+	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
     private Log iLog = LogFactory.getLog(OnlineSectioningServerImpl.class);
 	private AcademicSessionInfo iAcademicSession = null;
 	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
@@ -231,7 +233,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public ClassAssignmentInterface getAssignment(Long studentId) {
 		iLock.readLock().lock();
 		try {
-			
+			DateFormat df = new SimpleDateFormat(CFG.requestDateFormat());
 			Student student = iStudentTable.get(studentId);
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
@@ -280,11 +282,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							}
 							for (Enrollment q: overlap) {
 								if (q.getRequest() instanceof FreeTimeRequest) {
-									FreeTimeRequest f = (FreeTimeRequest)q.getRequest();
-									ca.addOverlap("Free Time " +
-										DayCode.toString(f.getTime().getDayCode()) + " " + 
-										f.getTime().getStartTimeHeader() + " - " +
-										f.getTime().getEndTimeHeader());
+									ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
 								} else {
 									CourseRequest cr = (CourseRequest)q.getRequest();
 									Course o = q.getCourse();
@@ -390,10 +388,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							if (a.getParentSection() == null) {
 								String consent = getCourseInfo(course.getId()).getConsent();
 								if (consent != null) {
-									if (r.getAssignment().getApproval() != null)
-										a.setParentSection("Consent approved on " + sDateFormaShort.format(new Date(Long.parseLong(r.getAssignment().getApproval().split(":")[0]))));
-									else
-										a.setParentSection("Waiting for " + consent.toLowerCase());
+									if (r.getAssignment().getApproval() != null) {
+										String[] approval = r.getAssignment().getApproval().split(":");
+										a.setParentSection(MSG.consentApproved(df.format(new Date(Long.parseLong(approval[0])))));
+									} else
+										a.setParentSection(MSG.consentWaiting(consent.toLowerCase()));
 								}
 							}
 							a.setExpected(Math.round(section.getSpaceExpected()));
@@ -412,11 +411,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					        	Assignment a = i.next();
 								if (r.isOverlapping(a)) {
 									if (x.getRequest() instanceof FreeTimeRequest) {
-										FreeTimeRequest f = (FreeTimeRequest)x.getRequest();
-										ca.addOverlap("Free Time " +
-											DayCode.toString(f.getTime().getDayCode()) + " " + 
-											f.getTime().getStartTimeHeader() + " - " +
-											f.getTime().getEndTimeHeader());
+										OnlineSectioningHelper.toString((FreeTimeRequest)x.getRequest());
 									} else {
 										Course o = x.getCourse();
 										Section s = (Section)a;
@@ -585,13 +580,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							if (request.getAssignment().getReservation() != null) {
 								Reservation r = request.getAssignment().getReservation();
 								if (r instanceof GroupReservation) {
-									e.setReservation("Group");
+									e.setReservation(MSG.reservationGroup());
 								} else if (r instanceof IndividualReservation) {
-									e.setReservation("Individual");
+									e.setReservation(MSG.reservationIndividual());
 								} else if (r instanceof CourseReservation) {
-									e.setReservation("Course");
+									e.setReservation(MSG.reservationCourse());
 								} else if (r instanceof CurriculumReservation) {
-									e.setReservation("Curriculum");
+									e.setReservation(MSG.reservationCurriculum());
 								}
 							}
 							if (request.getAssignment().getTimeStamp() != null)
@@ -703,13 +698,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						if (request.getAssignment().getReservation() != null) {
 							Reservation r = request.getAssignment().getReservation();
 							if (r instanceof GroupReservation) {
-								e.setReservation("Group");
+								e.setReservation(MSG.reservationGroup());
 							} else if (r instanceof IndividualReservation) {
-								e.setReservation("Individual");
+								e.setReservation(MSG.reservationIndividual());
 							} else if (r instanceof CourseReservation) {
-								e.setReservation("Course");
+								e.setReservation(MSG.reservationCourse());
 							} else if (r instanceof CurriculumReservation) {
-								e.setReservation("Curriculum");
+								e.setReservation(MSG.reservationCurriculum());
 							}
 						}
 						if (request.getAssignment().getTimeStamp() != null)
