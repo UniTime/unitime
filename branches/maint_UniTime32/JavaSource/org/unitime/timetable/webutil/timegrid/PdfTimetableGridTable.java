@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.webutil.timegrid;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,19 +31,18 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.Image;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
 
 
 /**
@@ -121,7 +121,7 @@ public class PdfTimetableGridTable {
 		*/
 	}
 	
-	private static BaseColor sBorderColor = new BaseColor(100,100,100);
+	private static Color sBorderColor = new Color(100,100,100);
 	
 	
 	public PdfPCell createCell() {
@@ -180,7 +180,7 @@ public class PdfTimetableGridTable {
 		float width = bf.getWidthPoint(text, font.getSize());
 		PdfTemplate template = iWriter.getDirectContent().createTemplate(2 * font.getSize() + 4, width);
 		template.beginText();
-		template.setColorFill(BaseColor.BLACK);
+		template.setColorFill(Color.BLACK);
 		template.setFontAndSize(bf, font.getSize());
 		template.setTextMatrix(0, 2);
 		template.showText(text);
@@ -237,9 +237,9 @@ public class PdfTimetableGridTable {
 		iPdfTable.setHeaderRows(1);
 	}
 	
-	private BaseColor getColor(String rgbColor) {
+	private Color getColor(String rgbColor) {
 		StringTokenizer x = new StringTokenizer(rgbColor.substring("rgb(".length(),rgbColor.length()-")".length()),",");
-		return new BaseColor(
+		return new Color(
 				Integer.parseInt(x.nextToken()),
 				Integer.parseInt(x.nextToken()),
 				Integer.parseInt(x.nextToken()));

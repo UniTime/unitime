@@ -35,7 +35,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.itextpdf.text.DocumentException;
+import com.lowagie.text.DocumentException;
 
 /**
  * @author Tomas Muller

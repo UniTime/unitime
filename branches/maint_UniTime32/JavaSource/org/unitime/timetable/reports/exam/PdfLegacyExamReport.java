@@ -69,7 +69,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import com.itextpdf.text.DocumentException;
+import com.lowagie.text.DocumentException;
 
 public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected static Logger sLog = Logger.getLogger(PdfLegacyExamReport.class);

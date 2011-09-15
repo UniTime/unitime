@@ -116,6 +116,7 @@
 			<name>Export PDF</name>
 			<description>
 				<line>Added ability to provide custom fonts (e.g., with better support of unicode characters).</line>
+				<line>iText library downgraded to version 2.1.7, which was the last version distributed under GNU Lesser General Public License (LGPL) v2.</line>
 			</description>
 		</item>
 	</category>

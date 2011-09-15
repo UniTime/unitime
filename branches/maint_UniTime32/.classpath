@@ -29,23 +29,23 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/standard-1.0.6.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-core-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-core-1.3.10.jar" sourcepath="/3rd_party/struts-core-1.3.10-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-el-1.3.10.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-extras-1.3.10.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-faces-1.3.10.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-mailreader-dao-1.3.10.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-scripting-1.3.10.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-taglib-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-taglib-1.3.10.jar" sourcepath="/3rd_party/struts-taglib-1.3.10-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-tiles-1.3.10.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool-1.5.4.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/iText-5.0.5.jar" sourcepath="/3rd_party/iText-5.0.5"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/Struts-Layout-1.3.jar" sourcepath="/3rd_party/struts-layout-1.3"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/backport-util-concurrent.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.jar" sourcepath="/3rd_party/org.restlet"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.ext.net.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/iText-2.1.7.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
