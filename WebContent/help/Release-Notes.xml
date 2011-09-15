@@ -139,6 +139,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>UniTime Frame Dialog (e.g., used to display Suggestions page and help)</name>
+			<description>
+				<line>If a displayed page (iframe) is a little wider than the dialog, widen the dialog to avoid showing horizontal scroll bar.</line>
+				<line>Disable page scroll bars while the dialog is shown (only allow scrolling of the dialog content).</line>
+			</description>
+ 		</item>
 	</category>
 	<category>
 		<title>Course Timetabling Solver</title>
