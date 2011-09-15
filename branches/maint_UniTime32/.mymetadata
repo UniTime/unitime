@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-module
   type="WEB"
-  name="UniTime_maint"
+  name="UniTime"
   id="myeclipse.1181586573000"
   context-root="/UniTime"
   j2ee-spec="1.4"
-  archive="UniTime_maint.war">
+  archive="UniTime.war">
   <attributes>
     <attribute name="webrootdir" value="/WebContent" />
   </attributes>
