@@ -83,6 +83,14 @@
 				<line>Number of instructor direct conflicts was counted wrong.</line>
 			</desription>
 		</item>
+		<item>
+			<name>Course Offerings / Timetable Export</name>
+			<desription>
+				<line>Export of date patterns: counting over a year end was wrong.
+					<line>If a date pattern started before a year end  -- all the dates exported for January the next year were wrong (the exported year was not properly incremented).</line>
+				</line>
+			</desription>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
