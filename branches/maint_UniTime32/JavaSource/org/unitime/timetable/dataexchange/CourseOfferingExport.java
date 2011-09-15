@@ -390,7 +390,7 @@ public class CourseOfferingExport extends BaseExport {
                 int d = (m==startMonth?startDate.get(Calendar.DAY_OF_MONTH):1);
                 for (;d<=daysOfMonth && charPosition<ptrn.length; d++) {
                     if (ptrn[charPosition]=='1' || (first!=null && dayOfWeek==Calendar.SUNDAY)) {
-                        if (first==null) first = (m<0?startYear-1:m>12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
+                        if (first==null) first = (m<0?startYear-1:m>=12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
                     } else {
                         if (first!=null) {
                             Element dateElement = classElement.addElement("date");
@@ -399,7 +399,7 @@ public class CourseOfferingExport extends BaseExport {
                             first=null;
                         }
                     }
-                    previous = (m<0?startYear-1:m>12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
+                    previous = (m<0?startYear-1:m>=12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
                     charPosition++;
                     dayOfWeek++;
                     if (dayOfWeek>Calendar.SATURDAY) dayOfWeek = Calendar.SUNDAY;
