@@ -21,7 +21,9 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.Date;
 
+import com.google.gwt.dom.client.BodyElement;
 import com.google.gwt.dom.client.FrameElement;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
@@ -29,6 +31,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * @author Tomas Muller
@@ -60,6 +63,7 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 			public void onClose(CloseEvent<PopupPanel> event) {
 				if (LoadingWidget.getInstance().isShowing())
 					LoadingWidget.getInstance().hide();
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
 	}
@@ -75,6 +79,7 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 	public void center() {
 		super.center();
 		iCheckLoadingWidgetIsShowing.schedule(30000);
+		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 	}
 	
 	public class MyFrame extends Frame {
@@ -92,6 +97,16 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 	
 	public static void notifyFrameLoaded() {
 		LoadingWidget.getInstance().hide();
+		if (sDialog != null) {
+			FrameElement frame = (FrameElement)sDialog.iFrame.getElement().cast();
+			BodyElement body = frame.getContentDocument().getBody();
+			if (body.getScrollWidth() > body.getClientWidth()) {
+				sDialog.iFrame.setWidth(Math.min(frame.getClientWidth() + body.getScrollWidth() - body.getClientWidth(), Window.getClientWidth() * 95 / 100) + "px");
+				sDialog.setPopupPosition(
+						Math.max(Window.getScrollLeft() + (Window.getClientWidth() - sDialog.getOffsetWidth()) / 2, 0),
+						Math.max(Window.getScrollTop() + (Window.getClientHeight() - sDialog.getOffsetHeight()) / 2, 0));
+			}
+		}
 	}
 
 	public static native void hookFrameLoaded(FrameElement element) /*-{
