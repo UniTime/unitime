@@ -61,11 +61,13 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
+	private boolean iSetStudentCourseLimits = false;
 
 	public CurriculaCourseDemands(DataProperties properties) {
 		if (properties != null)
 			iFallback = new ProjectedStudentCourseDemands(properties);
 		iIncludeOtherStudents = properties.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
+		iSetStudentCourseLimits = properties.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
 	}
 	
 	public CurriculaCourseDemands() {
@@ -134,8 +136,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		CurModel m = new CurModel(students);
 		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
-			int nrStudents = Math.round(clasf.getNrStudents() * course.getPercShare());
-			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), nrStudents);
+			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), course.getPercShare() * clasf.getNrStudents());
 			courses.put(course.getUniqueId(), course.getCourse());
 			
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
@@ -157,14 +158,16 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 
 		}
 		computeTargetShare(clasf, m);
-		m.setStudentLimits();
+		if (iSetStudentCourseLimits)
+			m.setStudentLimits();
 
 		// Load model from cache (if exists)
 		CurModel cachedModel = null;
 		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
 		if (cache != null && cache.getName().equals(getCacheName())) {
 			cachedModel = CurModel.loadFromXml(cache);
-			cachedModel.setStudentLimits();
+			if (iSetStudentCourseLimits)
+				cachedModel.setStudentLimits();
 		}
 
 		// Check the cached model
@@ -211,7 +214,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
 		for (CurriculumCourse c1: clasf.getCourses()) {
-			int x1 = Math.round(clasf.getNrStudents() * c1.getPercShare());
+			float x1 = c1.getPercShare() * clasf.getNrStudents();
 			Set<CurriculumCourse>[] group = new HashSet[] { new HashSet<CurriculumCourse>(), new HashSet<CurriculumCourse>()};
 			Queue<CurriculumCourse> queue = new LinkedList<CurriculumCourse>();
 			queue.add(c1);
@@ -225,9 +228,9 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 								queue.add(x);
 			}
 			for (CurriculumCourse c2: clasf.getCourses()) {
-				int x2 = Math.round(clasf.getNrStudents() * c2.getPercShare());
+				float x2 = c2.getPercShare() * clasf.getNrStudents();
 				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
-				int share = Math.round(c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents());
+				float share = c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents();
 				boolean opt = group[0].contains(c2);
 				boolean req = !opt && group[1].contains(c2);
 				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), opt ? 0.0 : req ? Math.min(x1, x2) : share);
