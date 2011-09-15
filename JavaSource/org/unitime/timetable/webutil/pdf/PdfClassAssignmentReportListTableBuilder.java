@@ -41,9 +41,9 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -133,7 +133,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 					subjectArea = c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea();
 					ct = 0;
 
-					iDocument.add(new Paragraph(labelForTable(subjectArea), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+					iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
 					iDocument.add(new Paragraph(" "));
 					pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
 				}

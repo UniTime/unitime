@@ -65,7 +65,6 @@ import org.unitime.timetable.util.Constants;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -555,7 +554,8 @@ public class PdfWorksheet {
     protected void printFooter() throws DocumentException {
         out("");
         out(renderEnd(renderMiddle("","Page "+(iPageNo+1)),"<"+iSubjectArea.getSubjectAreaAbbreviation()+(iCourseNumber!=null?" "+iCourseNumber:"")+">  "));
-        Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
+    	//FIXME: For some reason when a line starts with space, the line is shifted by one space in the resulting PDF (when using iText 5.0.2)
+        Paragraph p = new Paragraph(iBuffer.toString().replace("\n ", "\n  "), PdfFont.getFixedFont());
         p.setLeading(9.5f); //was 13.5f
         iDoc.add(p);
         iBuffer = new StringBuffer();

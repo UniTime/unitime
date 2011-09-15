@@ -72,6 +72,7 @@ import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder;
 
@@ -79,8 +80,6 @@ import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -143,12 +142,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, BaseColor color, boolean newLine) {
 		if (text==null) return;
 		if (cell.getPhrase()==null) {
-			Chunk ch = new Chunk(text, FontFactory.getFont(FontFactory.HELVETICA, 12, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color));
+			Chunk ch = new Chunk(text, PdfFont.getFont(bold, italic, color));
 			cell.setPhrase(new Paragraph(ch));
 			cell.setVerticalAlignment(Element.ALIGN_TOP);
 			cell.setHorizontalAlignment(orientation);
 		} else {
-			cell.getPhrase().add(new Chunk((newLine?"\n":"")+text,FontFactory.getFont(FontFactory.HELVETICA, 12, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color)));
+			cell.getPhrase().add(new Chunk((newLine?"\n":"")+text, PdfFont.getFont(bold, italic, color)));
 		}
 	}
 	
@@ -1637,7 +1636,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	iPdfTable.setSplitRows(false);
 
         	if(displayHeader) {
-   		    	iDocument.add(new Paragraph("Offered Courses", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20)));
+   		    	iDocument.add(new Paragraph("Offered Courses", PdfFont.getBigFont(true)));
     		}
     		pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
                   
@@ -1650,7 +1649,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("There are no courses currently offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, BaseColor.RED)));
+                	iDocument.add(new Paragraph("There are no courses currently offered for this subject.", PdfFont.getFont(true, false, BaseColor.RED))); 
             }
             
             iDocument.add(iPdfTable);
@@ -1665,7 +1664,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
         	if(displayHeader) {
    	        	iDocument.newPage();
-   				iDocument.add(new Paragraph("Not Offered Courses", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20)));
+   				iDocument.add(new Paragraph("Not Offered Courses", PdfFont.getBigFont(true)));
             }
             pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
             
@@ -1678,7 +1677,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("All courses are currently being offered for this subject.", FontFactory.getFont(FontFactory.HELVETICA, 12, Font.BOLD, BaseColor.BLACK)));
+                	iDocument.add(new Paragraph("All courses are currently being offered for this subject.", PdfFont.getFont()));
             }
             
     		iDocument.add(iPdfTable);

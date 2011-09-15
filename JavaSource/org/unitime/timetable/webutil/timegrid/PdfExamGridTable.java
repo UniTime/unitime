@@ -31,13 +31,13 @@ import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -132,11 +132,11 @@ public class PdfExamGridTable extends ExamGridTable {
         text = text.replaceAll("<br>", "\n");
         text = text.replaceAll("<BR>", "\n");
         if (cell.getPhrase()==null) {
-            cell.setPhrase(new Paragraph(text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+            cell.setPhrase(new Paragraph(text, PdfFont.getFont(bold)));
             cell.setVerticalAlignment(Element.ALIGN_TOP);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         } else {
-            cell.getPhrase().add(new Chunk("\n"+text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+            cell.getPhrase().add(new Chunk("\n"+text, PdfFont.getFont(bold)));
         }
     }
     
