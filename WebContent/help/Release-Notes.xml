@@ -68,6 +68,14 @@
 				<line>Class Assignment page only works with the committed solution which can be confusing when a different solution is selected (and displayed on a class).</line>
 			</description>
 		</item>
+		<item>
+			<name>Suggestions, Class Assignment, Examination Examination</name>
+			<description>
+				<line>Add noCacheTS argument (with current time stamp) to any suggestions / classInfo / examInfo url.
+					<line>This should fix the cache issues of Google Chrome Frame (in Internet Exporer 9).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>

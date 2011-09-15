@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -148,7 +149,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 		}
         public String toHtml() {
             String ret = "";
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.do?classId="+getOtherClass().getClassId()+"&op=Select';\">";
+            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.do?classId="+getOtherClass().getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += String.valueOf(getConflictingStudents().size());
             ret += "<td>"+getOtherClass().getClassNameHtml()+"</td>";
@@ -159,7 +160,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
         }
         public String toHtml2() {
             String ret = "";
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.do?classId="+getOtherClass().getClassId()+"&op=Select';\">";
+            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.do?classId="+getOtherClass().getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += String.valueOf(getConflictingStudents().size())+"<br>";
             ret += "<td nowrap>"+getClassNameHtml()+"<br>"+getOtherClass().getClassNameHtml()+"</td>";
