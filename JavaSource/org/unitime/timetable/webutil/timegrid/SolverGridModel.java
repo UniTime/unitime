@@ -41,6 +41,7 @@ import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
+import net.sf.cpsolver.coursett.criteria.TooBigRooms;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -364,7 +365,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			if (roomSize<lecture.minRoomSize())
 				background = TimetableGridCell.pref2color(PreferenceLevel.sRequired);
 			else
-				background = TimetableGridCell.pref2color(placement.getTooBigRoomPreference());
+				background = TimetableGridCell.pref2color(TooBigRooms.getTooBigRoomPreference(placement));
 			if (lecture.getNrRooms()>0) {
 				shortComment = "<span style='color:rgb(200,200,200)'>"+(lecture.nrRoomLocations()==1?"<u>":"")+lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+minRoomSize+" / "+roomSize+(lecture.nrRoomLocations()==1?"</u>":"")+"</span>";
 				shortCommentNoColor = lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+minRoomSize+" / "+roomSize;
