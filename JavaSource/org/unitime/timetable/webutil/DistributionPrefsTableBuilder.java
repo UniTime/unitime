@@ -62,11 +62,11 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Document;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 
 
 /**

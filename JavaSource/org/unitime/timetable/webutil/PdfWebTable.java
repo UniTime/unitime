@@ -31,18 +31,17 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 
 
 /**
@@ -65,7 +64,7 @@ public class PdfWebTable extends WebTable {
 	
 	private PdfPCell createCell() {
 		PdfPCell cell = new PdfPCell();
-		cell.setBorderColor(BaseColor.BLACK);
+		cell.setBorderColor(Color.BLACK);
 		cell.setPadding(3);
 		cell.setBorderWidth(0);
 		cell.setVerticalAlignment(Element.ALIGN_TOP);
@@ -114,7 +113,7 @@ public class PdfWebTable extends WebTable {
 		return width;
 	}
 
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color, BaseColor bgColor) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color, Color bgColor) {
 		Font font = PdfFont.getFont(bold, italic, underline, color);
 		Chunk chunk = new Chunk(text, font);
 		if (bgColor!=null) chunk.setBackground(bgColor);
@@ -134,15 +133,15 @@ public class PdfWebTable extends WebTable {
 		return width;
 	}
 	
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color,
-			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, BaseColor borderColor, BaseColor bgColor ) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
+			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, Color borderColor, Color bgColor ) {
 		
     	cell.setBorderWidth(1);
     	
 		if (borderTop) {
 			cell.setBorder(PdfPCell.TOP);
 			if (borderColor==null)
-				cell.setBorderColorTop(BaseColor.BLACK);
+				cell.setBorderColorTop(Color.BLACK);
 			else
 				cell.setBorderColorTop(borderColor);
 		}
@@ -150,7 +149,7 @@ public class PdfWebTable extends WebTable {
 		if (borderBottom) {
 			cell.setBorder(PdfPCell.BOTTOM);
 			if (borderColor==null)
-				cell.setBorderColorBottom(BaseColor.BLACK);
+				cell.setBorderColorBottom(Color.BLACK);
 			else
 				cell.setBorderColorBottom(borderColor);
 		}
@@ -158,7 +157,7 @@ public class PdfWebTable extends WebTable {
 		if (borderLeft) {
 			cell.setBorder(PdfPCell.LEFT);
 			if (borderColor==null)
-				cell.setBorderColorLeft(BaseColor.BLACK);
+				cell.setBorderColorLeft(Color.BLACK);
 			else
 				cell.setBorderColorLeft(borderColor);
 		}
@@ -166,7 +165,7 @@ public class PdfWebTable extends WebTable {
 		if (borderRight) {
 			cell.setBorder(PdfPCell.RIGHT);
 			if (borderColor==null)
-				cell.setBorderColorRight(BaseColor.BLACK);
+				cell.setBorderColorRight(Color.BLACK);
 			else
 				cell.setBorderColorRight(borderColor);
 		}
@@ -174,14 +173,14 @@ public class PdfWebTable extends WebTable {
 		return addText(cell, text, bold, italic, underline, color, bgColor);
 	}	
 	
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color,
-			boolean border, BaseColor borderColor, BaseColor bgColor) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
+			boolean border, Color borderColor, Color bgColor) {
 		
 		if (border) {
 	    	cell.setBorderWidth(1);
 			cell.setBorder(PdfPCell.RIGHT | PdfPCell.LEFT | PdfPCell.TOP | PdfPCell.BOTTOM );
 			if (borderColor==null)
-				cell.setBorderColor(BaseColor.BLACK);
+				cell.setBorderColor(Color.BLACK);
 			else
 				cell.setBorderColor(borderColor);
 		}
@@ -190,12 +189,12 @@ public class PdfWebTable extends WebTable {
 	}	
 	
 	private float addText(PdfPCell cell, String text, boolean bold) {
-		if (text==null) return addText(cell, "", bold, false, false, BaseColor.BLACK, null);
-		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, BaseColor.BLACK, null);
+		if (text==null) return addText(cell, "", bold, false, false, Color.BLACK, null);
+		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, Color.BLACK, null);
 		
-		BaseColor color = BaseColor.BLACK; 
-		BaseColor bcolor = BaseColor.BLACK;
-		BaseColor bgColor = null;
+		Color color = Color.BLACK; 
+		Color bcolor = Color.BLACK;
+		Color bgColor = null;
 		boolean bd=bold, it=false, un=false;
 		boolean ba=false, bt=false, bb=false, bl=false, br=false;		
 		float maxWidth = 0; 
@@ -250,15 +249,15 @@ public class PdfWebTable extends WebTable {
 				if ("COLOR".equals(cmd)) {
 					String hex = line.substring(pos, line.indexOf(' ',pos));
 					pos+=hex.length()+1;
-					color = new BaseColor(Integer.parseInt(hex,16));
+					color = new Color(Integer.parseInt(hex,16));
 				}
 				if ("END_COLOR".equals(cmd)) {
-					color = BaseColor.BLACK;
+					color = Color.BLACK;
 				}
                 if ("BGCOLOR".equals(cmd)) {
                     String hex = line.substring(pos, line.indexOf(' ',pos));
                     pos+=hex.length()+1;
-                    bgColor = new BaseColor(Integer.parseInt(hex,16));
+                    bgColor = new Color(Integer.parseInt(hex,16));
                 }
                 if ("END_BGCOLOR".equals(cmd)) {
                     bgColor = null;
@@ -274,7 +273,7 @@ public class PdfWebTable extends WebTable {
 					
 					String hex = line.substring(pos, line.indexOf(' ',pos));
 					pos+=hex.length()+1;
-					bcolor = new BaseColor(Integer.parseInt(hex,16));
+					bcolor = new Color(Integer.parseInt(hex,16));
 					
 					if ("BORDER_ALL".equals(cmd)) {
 						ba = true;

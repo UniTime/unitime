@@ -19,14 +19,14 @@
 */
 package org.unitime.timetable.util;
 
+import java.awt.Color;
 import java.util.Hashtable;
 
 import org.unitime.timetable.ApplicationProperties;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.pdf.BaseFont;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.pdf.BaseFont;
 
 public class PdfFont {
 	private static Hashtable<String, Font> sFontCache = new Hashtable<String, Font>();
@@ -91,14 +91,14 @@ public class PdfFont {
 		return getFont(false, false);
 	}
 	
-	public static Font getFont(boolean bold, boolean italic, boolean underline, BaseColor color) {
+	public static Font getFont(boolean bold, boolean italic, boolean underline, Color color) {
 		Font font = getFont(bold, italic);
 		if (underline) font.setStyle(font.getStyle() + Font.UNDERLINE);
 		if (color != null) font.setColor(color);
 		return font;
 	}
 
-	public static Font getFont(boolean bold, boolean italic, BaseColor color) {
+	public static Font getFont(boolean bold, boolean italic, Color color) {
 		return getFont(bold, italic, false, color);
 	}
 
@@ -115,14 +115,14 @@ public class PdfFont {
 		return getSmallFont(false, false);
 	}
 	
-	public static Font getSmallFont(boolean bold, boolean italic, boolean underline, BaseColor color) {
+	public static Font getSmallFont(boolean bold, boolean italic, boolean underline, Color color) {
 		Font font = getSmallFont(bold, italic);
 		if (underline) font.setStyle(font.getStyle() + Font.UNDERLINE);
 		if (color != null) font.setColor(color);
 		return font;
 	}
 	
-	public static Font getSmallFont(boolean bold, boolean italic, BaseColor color) {
+	public static Font getSmallFont(boolean bold, boolean italic, Color color) {
 		return getSmallFont(bold, italic, false, color);
 	}
 
