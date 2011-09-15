@@ -76,6 +76,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Solver</name>
+			<desription>
+				<line>Load XML: loading of examination period preferences was disabled.</line>
+				<line>Number of instructor direct conflicts was counted wrong.</line>
+			</desription>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
@@ -100,6 +107,14 @@
 	</category>
 	<category>
 		<title>Course Timetabling Solver</title>
+		<item>
+			<name>Optimization Objective Criteria</name>
+			<description>
+				<line>Criteria allows the optimization objective to be split into several (optimization) criteria and modeled as a weighted sum of these.
+					<line>This should help the course / examination / sectioning solvers to be more versatile, easily allowing to turn on and off different aspects of optimization (or implement new more institution dependent ones).</line>
+				</line>
+			</description>
+		</item>
 		<item>
 			<name>Curriculum Course Demands (including Curriculum Last Like Course Demands and Weighted Curriculum Course Demands)</name>
 			<description>
