@@ -71,7 +71,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public String getCourseNameWithTitle() {
 		return 
 			getSubjectAreaAbbv()+" "+getCourseNbr()+
-			(getTitle()!=null?" - "+getTitle():""); 
+			(getTitle()!=null && !getTitle().isEmpty()?" - "+getTitle():""); 
 	}
 
 	public String getCourseNumberWithTitle(){
