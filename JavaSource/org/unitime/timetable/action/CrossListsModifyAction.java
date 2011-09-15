@@ -198,6 +198,9 @@ public class CrossListsModifyAction extends Action {
         
         for (Iterator i=offerings.iterator(); i.hasNext(); ) {
             CourseOffering co = (CourseOffering) i.next();
+            if (!co.getInstructionalOffering().isNotOffered() || co.getInstructionalOffering().getCourseOfferings().size() > 1) {
+            	i.remove(); continue;
+            }
             for (Iterator j=existingOfferings.iterator(); j.hasNext(); ) {
                 String course = (String) j.next();
                 if (course.equals(co.getCourseName()))
