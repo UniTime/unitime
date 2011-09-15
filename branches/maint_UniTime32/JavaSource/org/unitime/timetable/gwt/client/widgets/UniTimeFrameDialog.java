@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.Date;
+
 import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -126,7 +128,13 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 		else if (sDialog.isShowing())
 			sDialog.hide();
 		sDialog.setText(title);
-		sDialog.setFrameUrl(source);
+		String hash = null;
+		int hashIdx = source.lastIndexOf('#');
+		if (hashIdx >= 0) {
+			hash = source.substring(hashIdx);
+			source = source.substring(0, hashIdx);
+		}
+		sDialog.setFrameUrl(source + (source.indexOf('?') >= 0 ? "&" : "?") + "noCacheTS=" + new Date().getTime() + (hash == null ? "" : hash));
 		String w = (width == null || width.isEmpty() ? String.valueOf(Window.getClientWidth() * 3 / 4) : width);
 		String h = (height == null || height.isEmpty() ? String.valueOf(Window.getClientHeight() * 3 / 4) : height);
 		if (w.endsWith("%")) w = String.valueOf(Integer.parseInt(w.substring(0, w.length() - 1)) * Window.getClientWidth() / 100);

@@ -74,6 +74,7 @@
 		s += '&days='+suggestionsForm['days'].value;
 		s += '&slot='+suggestionsForm['slot'].value;
 		s += '&pattern='+suggestionsForm['pattern'].value;
+		s += '&noCacheTS='+(new Date().getTime());
 		
 		displayLoading();
 		document.location = s;

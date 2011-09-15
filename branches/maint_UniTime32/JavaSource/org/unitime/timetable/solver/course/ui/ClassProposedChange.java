@@ -2,6 +2,7 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -120,9 +121,9 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
             		"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select';\">";
+            		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
-            ret += "<img src='images/Delete16.gif' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select';event.cancelBubble=true;\">&nbsp;";
+            ret += "<img src='images/Delete16.gif' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
             ret += current.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += current.getLeadingInstructorNames(", ");
@@ -151,7 +152,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
                 "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
                 "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='classInfo.do?classId="+conflict.getClassId()+"&op=Select';\">";
+                "onclick=\"document.location='classInfo.do?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
             ret += conflict.getClassNameHtml();
             ret += "</td><td nowrap>";

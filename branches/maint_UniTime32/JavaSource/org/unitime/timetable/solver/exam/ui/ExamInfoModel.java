@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -366,7 +367,7 @@ public class ExamInfoModel implements Serializable {
     
     public String getPeriodsTable() {
         try {
-            WebTable table = new WebTable(8, "Available Periods for "+getExam().getExamName(), "examInfo.do?op=Reorder&pord=%%", 
+            WebTable table = new WebTable(8, "Available Periods for "+getExam().getExamName(), "examInfo.do?op=Reorder&pord=%%&noCacheTS=" + new Date().getTime(), 
                     new String[] {"Available<br>Period","Violated<br>Distributions", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
                     new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
                     new boolean[] { true, true, true, true, true, true, true, true});
@@ -374,7 +375,7 @@ public class ExamInfoModel implements Serializable {
             for (ExamAssignmentInfo period : getPeriods()) {
                 boolean initial = (getExamOldAssignment()!=null && getExamOldAssignment().getPeriodId()!=null && getExamOldAssignment().getPeriodId().equals(period.getPeriodId()));
                 WebTable.WebTableLine line = table.addLine(
-                   "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
+                   "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"&noCacheTS=" + new Date().getTime()+"';\"",
                    new String[] {
                         (initial?"<u>":"")+period.getPeriodAbbreviationWithPref()+(initial?"</u>":""),
                         period.getDistributionConflictsHtml("<br>"),
@@ -748,7 +749,7 @@ public class ExamInfoModel implements Serializable {
             ret += "        };";
             ret += "    }";
             ret += "    roomOut(id);";
-            ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms;}";
+            ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms+'&noCacheTS=" + new Date().getTime()+"';}";
             ret += "    var c = document.getElementById('roomCapacityCounter');";
             ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
             ret += "}";

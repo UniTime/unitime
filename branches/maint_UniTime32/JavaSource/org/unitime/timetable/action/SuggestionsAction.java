@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Enumeration;
@@ -309,23 +310,23 @@ public class SuggestionsAction extends Action {
         WebTable webTable = (hasConfInfo?
         	(simple?
         		new WebTable(6,
-            			name, "suggestions.do?hord=%%",
+            			name, "suggestions.do?hord=%%&noCacheTS=" + new Date().getTime(),
             			new String[] {"Class", "Date", "Time", "Room", "Students", "Constraint"},
             			new String[] {"left", "left", "left", "left", "left", "left"},
             			null )
             :	new WebTable(15,
-            			name, "suggestions.do?hord=%%",
+            			name, "suggestions.do?hord=%%&noCacheTS=" + new Date().getTime(),
             			new String[] {"Class", "Date", "Time", "Room", "Std","Tm","Rm","Dist","Ins","Usl","Big","Dept","Subp","Pert", "Constraint"},
             			new String[] {"left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right", "left"},
             			null )
             ):(simple?
 	        		new WebTable(6,
-	            			name, "suggestions.do?hord=%%",
+	            			name, "suggestions.do?hord=%%&noCacheTS=" + new Date().getTime(),
 	            			new String[] {"Class", "Date", "Time", "Room", "Students"},
 	            			new String[] {"left", "left", "left", "left", "left"},
 	            			null )
 	            :	new WebTable(15,
-	            			name, "suggestions.do?hord=%%",
+	            			name, "suggestions.do?hord=%%&noCacheTS=" + new Date().getTime(),
 	            			new String[] {"Class", "Date", "Time", "Room", "Std","Tm","Rm","Dist","Ins","Usl","Big","Dept","Subp","Pert"},
 	            			new String[] {"left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right"},
 	            			null )));
@@ -344,7 +345,7 @@ public class SuggestionsAction extends Action {
         			ca = hint.getDetails(request.getSession(),false);
         		String remLink = null;
         		if (remove)
-        			remLink = "<a href='suggestions.do?id="+ca.getClazz().getClassId()+"&op=Remove'><img src='images/Delete16.gif' border='0'></a>&nbsp;";
+        			remLink = "<a href='suggestions.do?id="+ca.getClazz().getClassId()+"&op=Remove&noCacheTS=" + new Date().getTime()+"'><img src='images/Delete16.gif' border='0'></a>&nbsp;";
         		
         		String line[] = new String[hasConfInfo?(simple?6:15):(simple?5:14)];
         		Comparable cmp[] = new Comparable[hasConfInfo?(simple?6:15):(simple?5:14)];
@@ -466,12 +467,12 @@ public class SuggestionsAction extends Action {
 	   	WebTable webTable =
         	(simple?
        			new WebTable( 6,
-       	        	name, "suggestions.do?"+op+"_ord=%%",
+       	        	name, "suggestions.do?"+op+"_ord=%%&noCacheTS=" + new Date().getTime(),
        				new String[] {"Score", "Class", "Date", "Time", "Room", "Students"},
        				new String[] {"left", "left", "left", "left", "left", "left"},
        				null )
         	:	new WebTable( 16,
-        			name, "suggestions.do?"+op+"_ord=%%",
+        			name, "suggestions.do?"+op+"_ord=%%&noCacheTS=" + new Date().getTime(),
         			new String[] {"Score", "Class", "Date", "Time", "Room", "Conf","Std","Tm","Rm","Dist","Ins","Usl","Big","Dept","Subp","Pert"},
         			new String[] {"left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
@@ -568,7 +569,7 @@ public class SuggestionsAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    if (simple)
-            	    webTable.addLine("onClick=\"document.location='suggestions.do?id="+idx+"&op="+op+"';\"",
+            	    webTable.addLine("onClick=\"document.location='suggestions.do?id="+idx+"&op="+op+"&noCacheTS=" + new Date().getTime()+"';\"",
             	    		new String[] {
             	    			ClassAssignmentDetails.dispNumber(s.getValue()-empty.getValue()),
             	    			classes.toString(),
@@ -586,7 +587,7 @@ public class SuggestionsAction extends Action {
             	                new Long(s.getViolatedStudentConflicts()-empty.getViolatedStudentConflicts())
             	             });
         	    else
-            	    webTable.addLine("onClick=\"document.location='suggestions.do?id="+idx+"&op="+op+"';\"",
+            	    webTable.addLine("onClick=\"document.location='suggestions.do?id="+idx+"&op="+op+"&noCacheTS=" + new Date().getTime()+"';\"",
             	    		new String[] {
             	    			ClassAssignmentDetails.dispNumber(s.getValue()-empty.getValue()),
             	    			classes.toString(),
@@ -733,12 +734,12 @@ public class SuggestionsAction extends Action {
     	}
 		WebTable webTable = (hasViolDistConst?
 				new WebTable( 5,
-   	        	"Conflict Table", "suggestions.do?conf_ord=%%",
+   	        	"Conflict Table", "suggestions.do?conf_ord=%%&noCacheTS=" + new Date().getTime(),
    				new String[] {"Time", null, "Student Conflicts", null, "Violated Distr. Constr."},
    				new String[] {"left", "right", "left","right","left"},
    				null):
 		    new WebTable( 3,
-   	        	"Conflict Table", "suggestions.do?conf_ord=%%",
+   	        	"Conflict Table", "suggestions.do?conf_ord=%%&noCacheTS=" + new Date().getTime(),
    				new String[] {"Time", null, "Student Conflicts"},
    				new String[] {"left", "right", "left"},
    				null));
