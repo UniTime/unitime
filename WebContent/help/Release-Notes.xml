@@ -53,6 +53,7 @@
 					<line>Using Google Protocol Buffers for its effectiveness and extensibility.</line>
 				</line>
 				<line>Added basic schema for reporting from online student sectioning logs.</line>
+				<line>Logging can be disabled by setting unitime.sectioning.log to false.</line>
 			</description>
 		</item>
 		<item>
@@ -67,6 +68,14 @@
 					<line>Added ability to switch between External Id and Class Number (click on any itype column).</line>
 				</line>
 				<line>Show Enrollments table on Class Detail page too.</line>
+				<line>For offerings with a consent, a student enrollment can be approved or rejected using the Enrollments table.</line>
+			</description>
+		</item>
+		<item>
+			<name>By Reservation Only</name>
+			<description>
+				<line>Can be set on an instructional offering (Course Edit page for the controlling course), visible on Instructional Offering Detail page (if enabled).</line>
+				<line>If enabled, only students with a matching reservation can be enrolled into the offering.</line>
 			</description>
 		</item>
 	</category>
@@ -154,6 +163,95 @@
 			</description>
 		</item>
 		<item>
+			<name>Assigned Classes, Not-assigned Classes</name>
+			<description>
+				<line>Added ability to filter the list of assigned / not-assigned classes by subject area.</line>
+			</description>
+		</item>
+		<item>
+			<name>Session Roll-Forward</name>
+			<description>
+				<line>The exam roll forward process was not validating that final exams or midterm exams already existed.  It was doing this check for the Exam Configuration Data roll forward instead. This has been corrected.</line>
+				<line>Added additional checks into the session roll forward process to ensure if the same roll forward is submitted to the process queue multiple times, the subsequent roll forwards do not attempt to roll forward data that has already been rolled forward.</line>
+				<line>Added Refresh button (when the progress table is present).</line>
+				<line>Fixed a few typos (like forward instead of foward).</line>
+				<line>Page cleanup (line alignments, wrapped the roll forward actions into a section called "Roll Forward Actions" with right justified "Roll Forward" button on the top and bottom of the table).</line>
+				<line>When using data from the session to roll forward to in order to validate it is safe to move forward with the roll forward, do not expect that the hibernate session is still open.  Changed to use different methods to retrieve department, building, room, and subject area information from the session to roll forward to.</line>
+				<line>Validate that no class instructors exist for the subject areas being roll forward before the class instructors are rolled forward not after.</line>
+				<line>It is now possible to roll date and time patterns later in the roll forward process.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Projected demands (on classes): show expected enrollment (if computed using projected student demands), including current enrollment.
+					<line>That is, projected demand of a class == enrolled students + expected number of (projected, not yet enrolled) students.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering List, Exam List, Class List, Classes</name>
+			<description>
+				<line>The course number field suggestions were not clickable. This was caused by the value for the styleId being the same as the value for the property in the suggestAction.  These have been changed to be different values.</line>
+			</description>
+		</item>
+		<item>
+			<name>Classes</name>
+			<description>
+				<line>If there are more than 300 Offerings for a session, then do not allow the user to display all classes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Do not allow Class Assignment page (Assign button is hidden) when a solution is selected on Courses &gt; Course Timetabling &gt; Saved Timetables page.</line>
+				<line>Class Assignment page only works with the committed solution which can be confusing when a different solution is selected (and displayed on a class).</line>
+			</description>
+		</item>
+		<item>
+			<name>Suggestions, Class Assignment, Examination Examination</name>
+			<description>
+				<line>Add noCacheTS argument (with current time stamp) to any suggestions / classInfo / examInfo url.
+					<line>This should fix the cache issues of Google Chrome Frame (in Internet Exporer 9).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>Room Timetable: allow to see all the rooms (when unitime.event_timetable.event_rooms_only is set to false, defaults to true).</line>
+				<line>Subject Timetable: allow to enter course name (shows a timetable of a single course).</line>
+				<line>Resource selection: show suggestions when there is nothing entered (on focus).</line>
+				<line>Week selection: allow selection of multiple weeks (interval of weeks).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Only course offerings that are NOT offered (and NOT already included in a cross-list) can be added into a cross-list.
+					<line>This was added to prevent users from accidentally deleting an instructional offering.</line>
+					<line>It also resolves the issue (ConcurrentModificationException) when a user tries to add an already cross-listed course.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course coordinators</name>
+			<description>
+				<line>Can be set on an instructional offering (Course Edit page for the controlling course), visible on Instructional Offering Detail page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Detail</name>
+			<description>
+				<line>Only administrator is allowed to delete a room (a schedule deputy can only delete a non university location that she/he controls).
+					<line>It is no longer allowed for a schedule deputy to delete a room, even if it is solely controlled by the related department (or departments).</line>
+				</line>
+				<line>Rooms (and non university locations) that have events in them CAN NOT be deleted.
+					<line>Not even by an admin.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
@@ -164,6 +262,18 @@
 				<line>Contact Us: CC field was ignored.</line>
 				<line>Email: all emails are now encoded in UTF-8.</line>
 				<line>Export PDF: added ability to provide custom fonts (e.g., with better support of unicode characters).</line>
+				<line>iCalendar export: avoid NullPointerException when the first event has no room or when only special events are displayed.</line>
+				<line>Department Import: When the import is using external ids to match departments, put out a warning rather than failing when a manually created department exists without an external id but does have a department code that matches the department code of the department that is being imported.</line>
+				<line>Added ability to backup &amp; restore academic session (using Data Exchange page).</line>
+				<line>Test Session: added a concept of test sessions
+					<line>There is a new "Test Session" toggle in the status type.</line>
+					<line>A test session is not available to no-role users.</line>
+					<line>Also classes and examinations do not generate any events and test sessions are not available for event management.</line>
+				</line>
+				<line>Global room groups &amp; features made session dependent.
+					<line>This means that each academic session can have a different set of global room groups and features.</line>
+				</line>
+				<line>iText library downgraded to version 2.1.7, which was the last version distributed under GNU Lesser General Public License (LGPL) v2.</line>
 				<line>Version number changed to 3.3.</line>
 			</description>
 		</item>
@@ -214,6 +324,46 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Optimization Objective Criteria</name>
+			<description>
+				<line>Criteria allows the optimization objective to be split into several (optimization) criteria and modeled as a weighted sum of these.
+					<line>This should help the course / examination / sectioning solvers to be more versatile, easily allowing to turn on and off different aspects of optimization (or implement new more institution dependent ones).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Curriculum Course Demands (including Curriculum Last Like Course Demands and Weighted Curriculum Course Demands)</name>
+			<description>
+				<line>
+					Computation of target share between courses: use transitive enclosure of existing curriculum groups, e.g.,
+					if courses A1 and B1 are in an optional group, A1 and A2 in a required group, and B1 and B2 in another required group -&gt; target share between
+					A2 and B2 is zero (students should either take A1 &amp; A2 or B1 &amp; B2); there is also zero target share between A1 and B2, and between A2 and B1.
+				</line>
+				<line>When target percentage is exactly 0.0 (both courses are in an optional group), weight the penalty 10x more.
+					<line>This is the most obvious case that can be seen as a problem (when there is a conflict between two courses that are marked as never to share students) which needs to be avoided.</line>
+					<line>In all the other cases +/- 1 student difference in the share does no matter that much (even between courses that should share all the students).</line>
+				</line>
+				<line>Added ability to set min/max number of courses for each student as a parameter.</line>
+				<line>Count course sizes and shares in floating point (as this also improves the ability to avoid conflicts between courses of an optional group).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Allow student swaps between classes with different parents (swap is propagated over parent classes as well).
+					<line>Originally, student swaps were only initiated from the top most level or between classes with the same parent.</line>
+					<line>Which does not seem to work well with courses containing many parent -&gt; child relations -> hence this improvement.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Interactive Mode: Solution Info</name>
+			<description>
+				<line>Time / room preferences: exclude hard constraint violations in the percentage.</line>
+				<line>Added time / room violations: number of hard constraint violations (number of classes assigned in prohibited time or room).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Internationalization</title>
@@ -225,7 +375,17 @@
 					<line>Multiple resource (message) bundles.</line>
 					<line>Added support for JSP tags and Struts.</line>
 					<line>Added export/import of messages to/from CSV.</line>
-					<line>Instructional Offerings page made localizable (as an example).</line>
+					<line>Allow localization to be changed using locale parameter (in URL, for a particular user) or using browser settings.</line>
+					<line>Added ability to use localized (or customized) GWT constants on the server side.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Internationalized pages</name>
+			<description>
+				<line>
+					Instructional Offerings, Classes, Class Detail, Class Edit, Scheduling Subpart Edit, Scheduling Subpart Detail,
+					Instructional Offering Configuration Edit, Edit Course Offering, Student Scheduling Assistant, Multiple Class Setup
 				</line>
 			</description>
 		</item>
