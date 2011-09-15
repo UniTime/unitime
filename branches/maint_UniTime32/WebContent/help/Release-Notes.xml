@@ -128,6 +128,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Detail</name>
+			<description>
+				<line>Only administrator is allowed to delete a room (a schedule deputy can only delete a non university location that she/he controls).
+					<line>It is no longer allowed for a schedule deputy to delete a room, even if it is solely controlled by the related department (or departments).</line>
+				</line>
+				<line>Rooms (and non university locations) that have events in them CAN NOT be deleted.
+					<line>Not even by an admin.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling Solver</title>
