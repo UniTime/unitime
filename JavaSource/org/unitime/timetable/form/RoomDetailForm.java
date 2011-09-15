@@ -63,6 +63,7 @@ public class RoomDetailForm extends ActionForm {
 	private boolean editable = false;
 	private boolean examEnabled = false;
 	private boolean examEEnabled = false;
+	private boolean used = false;
 	private Integer examCapacity;
 	private String examPref;
 	private String examEPref;
@@ -97,7 +98,7 @@ public class RoomDetailForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
-		editable = false;
+		editable = false; used = false;
 		control = null;
 		examEnabled = false; examEEnabled = false;
 		examPref = null; examEPref = null;
@@ -336,5 +337,14 @@ public class RoomDetailForm extends ActionForm {
     public void setPrevious(Long previous) {
     	this.previos = previous;
     }
+    
+	public boolean isUsed() {
+	    return used;
+	}
+	
+	public void setUsed(boolean used) {
+	    this.used = used;
+	}
+
 }
 
