@@ -61,6 +61,13 @@
 				<line>Commit / Uncommit: ensure that (computed field) Class_.committedAssignment is kept up to date.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Do not allow Class Assignment page (Assign button is hidden) when a solution is selected on Courses &gt; Course Timetabling &gt; Saved Timetables page.</line>
+				<line>Class Assignment page only works with the committed solution which can be confusing when a different solution is selected (and displayed on a class).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
