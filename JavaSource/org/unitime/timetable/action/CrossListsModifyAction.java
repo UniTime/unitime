@@ -203,7 +203,7 @@ public class CrossListsModifyAction extends Action {
             }
             for (Iterator j=existingOfferings.iterator(); j.hasNext(); ) {
                 String course = (String) j.next();
-                if (course.equals(co.getCourseName()))
+                if (course.equals(co.getCourseNameWithTitle()))
                     i.remove();
             }
         }

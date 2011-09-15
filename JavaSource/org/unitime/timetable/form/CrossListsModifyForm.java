@@ -351,7 +351,7 @@ public class CrossListsModifyForm extends ActionForm {
      */
     public void addToCourseOfferings(CourseOffering co, Boolean isOwner) {
         this.courseOfferingIds.add(co.getUniqueId().toString());
-        this.courseOfferingNames.add((co.getCourseName() + " - " + co.getTitle()));
+        this.courseOfferingNames.add(co.getCourseNameWithTitle());
         this.ownedCourse.add(isOwner);
         this.resvId.add("");
         if (co.getReservation() != null)
