@@ -113,10 +113,18 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             }
             if (!eventIds.isEmpty()) eventIds += ",";
             eventIds += event.getUniqueId();
-            if (sid == null && event.getSession() != null) sid = event.getSession().getUniqueId();
+            if (sid == null) {
+            	if (event.getSession() != null)
+            		sid = event.getSession().getUniqueId();
+            	else
+            		for (Meeting m: event.getMeetings())
+            			if (m.getLocation() != null) {
+            				sid = m.getLocation().getSession().getUniqueId();
+            				break;
+            			}
+            }
         }
-        
-        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&eid=" + eventIds);
+        return "calendar?q=" + CalendarServlet.encode((sid == null ? "" : "sid=" + sid + "&") + "eid=" + eventIds);
     }
     
     public File calendarTableForEvents (EventListForm form){
@@ -174,9 +182,14 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             Meeting meeting = (Meeting) it.next();
             if (!meetingIds.isEmpty()) meetingIds += ",";
             meetingIds += meeting.getUniqueId();
-            if (sid == null && meeting.getEvent().getSession() != null) sid = meeting.getEvent().getSession().getUniqueId();
+            if (sid == null) {
+            	if (meeting.getEvent().getSession()  != null)
+            		sid = meeting.getEvent().getSession() .getUniqueId();
+            	else if (meeting.getLocation() != null)
+            		sid = meeting.getLocation().getSession().getUniqueId();
+            }
         }
-        return "calendar?q=" + CalendarServlet.encode("sid=" + sid + "&mid=" + meetingIds);
+        return "calendar?q=" + CalendarServlet.encode((sid == null ? "" : "sid=" + sid + "&") + "mid=" + meetingIds);
     }
 
     public File calendarTableForMeetings (MeetingListForm form){
