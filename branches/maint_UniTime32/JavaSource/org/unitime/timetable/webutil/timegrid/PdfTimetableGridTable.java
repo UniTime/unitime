@@ -28,12 +28,13 @@ import java.util.StringTokenizer;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
-import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
@@ -157,11 +158,11 @@ public class PdfTimetableGridTable {
         if (text.indexOf("<span")>=0)
             text = text.replaceAll("</span>","").replaceAll("<span .*>", "");
 		if (cell.getPhrase()==null) {
-			cell.setPhrase(new Paragraph(text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+			cell.setPhrase(new Paragraph(text, PdfFont.getSmallFont(bold)));
 			cell.setVerticalAlignment(Element.ALIGN_TOP);
 			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
 		} else {
-			cell.getPhrase().add(new Chunk("\n"+text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+			cell.getPhrase().add(new Chunk("\n"+text, PdfFont.getSmallFont(bold)));
 		}
 	}
 	
@@ -174,18 +175,18 @@ public class PdfTimetableGridTable {
 		if (text==null) return;
         if (text.indexOf("<span")>=0)
             text = text.replaceAll("</span>","").replaceAll("<span .*>", "");
-		BaseFont bf = BaseFont.createFont((bold?"Helvetica-Bold":"Helvetica"), "winansi", false);
-		float size = 12;
-		float width = bf.getWidthPoint(text, size);
-		PdfTemplate template = iWriter.getDirectContent().createTemplate(2*size+4, width);
+        Font font = PdfFont.getFont(bold);
+		BaseFont bf = font.getBaseFont();
+		float width = bf.getWidthPoint(text, font.getSize());
+		PdfTemplate template = iWriter.getDirectContent().createTemplate(2 * font.getSize() + 4, width);
 		template.beginText();
 		template.setColorFill(BaseColor.BLACK);
-		template.setFontAndSize(bf, size);
+		template.setFontAndSize(bf, font.getSize());
 		template.setTextMatrix(0, 2);
 		template.showText(text);
 		template.endText();
 		template.setWidth(width);
-		template.setHeight(size + 2);
+		template.setHeight(font.getSize() + 2);
 		//make an Image object from the template
 		Image img = Image.getInstance(template);
 		img.setRotationDegrees(270);
@@ -193,11 +194,11 @@ public class PdfTimetableGridTable {
 		Chunk ck = new Chunk(img, 0, 0);
 		
 		if (cell.getPhrase()==null) {
-			cell.setPhrase(new Paragraph(ck));//,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+			cell.setPhrase(new Paragraph(ck));
 			cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 			cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
 		} else {
-			cell.getPhrase().add(ck);//new Chunk("\n"+text,FontFactory.getFont(bold?FontFactory.HELVETICA_BOLD:FontFactory.HELVETICA, 12)));
+			cell.getPhrase().add(ck);
 		}
 	}
 	

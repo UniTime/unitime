@@ -29,13 +29,13 @@ import java.util.StringTokenizer;
 
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
@@ -93,7 +93,7 @@ public class PdfWebTable extends WebTable {
 	}
 	
 	public static float getWidth(String text, boolean bold, boolean italic) {
-		Font font = FontFactory.getFont(FontFactory.HELVETICA, 12, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL));
+		Font font = PdfFont.getFont(bold, italic);
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
 			for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();)
@@ -104,7 +104,7 @@ public class PdfWebTable extends WebTable {
 	}
 	
 	public static float getWidthOfLastLine(String text, boolean bold, boolean italic) {
-		Font font = FontFactory.getFont(FontFactory.HELVETICA, 12, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL));
+		Font font = PdfFont.getFont(bold, italic);
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
 			for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();)
@@ -115,8 +115,8 @@ public class PdfWebTable extends WebTable {
 	}
 
 	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color, BaseColor bgColor) {
-		Font font = FontFactory.getFont(FontFactory.HELVETICA, 12, (underline?Font.UNDERLINE:0)+(italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color);
-		Chunk chunk = new Chunk(text,font);
+		Font font = PdfFont.getFont(bold, italic, underline, color);
+		Chunk chunk = new Chunk(text, font);
 		if (bgColor!=null) chunk.setBackground(bgColor);
 		if (cell.getPhrase()==null) {
 		    cell.setPhrase(new Paragraph(chunk));
@@ -432,7 +432,7 @@ public class PdfWebTable extends WebTable {
     		doc.open();
 		
     		if (iName!=null)
-    			doc.add(new Paragraph(iName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+    			doc.add(new Paragraph(iName, PdfFont.getBigFont(true)));
 		
     		doc.add(table);
 		

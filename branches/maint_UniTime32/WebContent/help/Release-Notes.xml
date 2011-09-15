@@ -112,6 +112,12 @@
 				<line>If there are more than 300 Offerings for a session, then do not allow the user to display all classes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Export PDF</name>
+			<description>
+				<line>Added ability to provide custom fonts (e.g., with better support of unicode characters).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling Solver</title>

@@ -49,14 +49,13 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
+import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.WebEventTableBuilder;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -112,12 +111,12 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     public void addText(PdfPCell cell, String text, boolean bold, boolean italic,  int orientation, BaseColor color, boolean newLine) {
         if (text==null) return;
         if (cell.getPhrase()==null) {
-            Chunk ch = new Chunk(text, FontFactory.getFont(FontFactory.HELVETICA, 10, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color));
+            Chunk ch = new Chunk(text, PdfFont.getSmallFont(bold, italic, color));
             cell.setPhrase(new Paragraph(ch));
             cell.setVerticalAlignment(Element.ALIGN_TOP);
             cell.setHorizontalAlignment(orientation);
         } else {
-            cell.getPhrase().add(new Chunk((newLine?"\n":"")+text,FontFactory.getFont(FontFactory.HELVETICA, 10, (italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color)));
+            cell.getPhrase().add(new Chunk((newLine?"\n":"")+text,PdfFont.getSmallFont(bold, italic, color)));
         }
     }
     

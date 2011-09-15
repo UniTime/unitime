@@ -306,7 +306,7 @@ public class InstructorListBuilder {
 
 		// Loop through Instructor class
 		List list = null;
-		if (deptId.equals(Constants.ALL_OPTION_LABEL))
+		if (deptId.equals(Constants.ALL_OPTION_VALUE))
 		    list = DepartmentalInstructor.getInstructorByDept(sessionId, null);
 		else
 		    list = DepartmentalInstructor.getInstructorByDept(sessionId, new Long(deptId));
