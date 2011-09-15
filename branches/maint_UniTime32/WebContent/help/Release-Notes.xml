@@ -78,18 +78,18 @@
 		</item>
 		<item>
 			<name>Examination Solver</name>
-			<desription>
+			<description>
 				<line>Load XML: loading of examination period preferences was disabled.</line>
 				<line>Number of instructor direct conflicts was counted wrong.</line>
-			</desription>
+			</description>
 		</item>
 		<item>
 			<name>Course Offerings / Timetable Export</name>
-			<desription>
+			<description>
 				<line>Export of date patterns: counting over a year end was wrong.
 					<line>If a date pattern started before a year end  -- all the dates exported for January the next year were wrong (the exported year was not properly incremented).</line>
 				</line>
-			</desription>
+			</description>
 		</item>
 	</category>
 	<category>
@@ -117,6 +117,15 @@
 			<description>
 				<line>Added ability to provide custom fonts (e.g., with better support of unicode characters).</line>
 				<line>iText library downgraded to version 2.1.7, which was the last version distributed under GNU Lesser General Public License (LGPL) v2.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Only course offerings that are NOT offered (and NOT already included in a cross-list) can be added into a cross-list.
+					<line>This was added to prevent users from accidentally deleting an instructional offering.</line>
+					<line>It also resolves the issue (ConcurrentModificationException) when a user tries to add an already cross-listed course.</line>
+				</line>
 			</description>
 		</item>
 	</category>
