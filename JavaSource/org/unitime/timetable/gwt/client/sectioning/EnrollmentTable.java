@@ -974,7 +974,9 @@ public class EnrollmentTable extends Composite {
 			if (hasEnrolledDate)
 				line.add(new HTML(enrollment.getEnrolledDate() == null ? "&nbsp;" : sDF.format(enrollment.getEnrolledDate()), false));
 			if (canApprove) {
-				if (enrollment.getApprovedDate() == null) {
+				if (!enrollment.hasClasses()) { // not enrolled
+					line.add(new HTML("&nbsp;"));
+				} else if (enrollment.getApprovedDate() == null) { // not yet approved
 					CheckBox ch = new CheckBox();
 					ch.addClickHandler(new ClickHandler() {
 						@Override
@@ -983,7 +985,7 @@ public class EnrollmentTable extends Composite {
 						}
 					});
 					line.add(ch);
-				} else { 
+				} else { // already approved
 					line.add(new HTML(MESSAGES.approval(sDF.format(enrollment.getApprovedDate()), enrollment.getApprovedBy()), false));
 				}
 			}
