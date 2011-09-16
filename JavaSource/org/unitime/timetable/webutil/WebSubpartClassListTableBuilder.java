@@ -21,6 +21,7 @@ package org.unitime.timetable.webutil;
 
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 
 
@@ -51,7 +52,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 		return(sb.toString());
 	}
 
-    protected TableCell buildPrefGroupLabel(PreferenceGroup prefGroup, String indentSpaces, boolean isEditable){
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable){
     	if (prefGroup instanceof Class_) {
     		TableCell cell = initNormalCell(indentSpaces, isEditable);
         	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
@@ -68,7 +69,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 	        	cell.addContent("<A onclick=\"document.location='classEdit.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'\" >");
 	        }
 	    	cell.addContent("<b>");
-	        cell.addContent(aClass.getClassLabel());
+	        cell.addContent(aClass.getClassLabel(co));
 	        cell.addContent("</b>");
 	        if (isEditable){
 	        	cell.addContent("</A>");
@@ -79,7 +80,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 	        }
 	        return(cell);
         } else {
-        	return(super.buildPrefGroupLabel(prefGroup,indentSpaces, isEditable, null));
+        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null));
         }
     	
         

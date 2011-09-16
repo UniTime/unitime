@@ -63,7 +63,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -165,6 +165,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		    	UserData.setPropertyInt(httpSession,"ClassList.filterStartSlot", classListForm.getFilterStartSlot());
 		    	UserData.setPropertyInt(httpSession,"ClassList.filterLength", classListForm.getFilterLength());
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.sortByKeepSubparts", classListForm.getSortByKeepSubparts());
+		    	UserData.setPropertyBoolean(httpSession,"ClassList.showCrossListedClasses", classListForm.getShowCrossListedClasses());
 		    }
 		    
 	        String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
@@ -245,7 +246,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	}
 	
 	public static void setupGeneralFormFilters(HttpSession httpSession, ClassListFormInterface form){
-		form.setSortBy(UserData.getProperty(httpSession, "ClassList.sortBy", ClassListForm.sSortByName));
+		form.setSortBy(UserData.getProperty(httpSession, "ClassList.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
 		form.setFilterAssignedRoom(UserData.getProperty(httpSession, "ClassList.filterAssignedRoom", ""));
 		form.setFilterManager(UserData.getProperty(httpSession, "ClassList.filterManager", ""));
 		form.setFilterIType(UserData.getProperty(httpSession, "ClassList.filterIType", ""));
@@ -253,6 +254,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		form.setFilterStartSlot(UserData.getPropertyInt(httpSession, "ClassList.filterStartSlot", -1));
 		form.setFilterLength(UserData.getPropertyInt(httpSession, "ClassList.filterLength", -1));
 		form.setSortByKeepSubparts(UserData.getPropertyBoolean(httpSession, "ClassList.sortByKeepSubparts", true));
+		form.setShowCrossListedClasses(UserData.getPropertyBoolean(httpSession, "ClassList.showCrossListedClasses", false));
 	
 	}
 	
@@ -305,7 +307,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		String[] subjectIds = form.getSubjectAreaIds();
 		if (subjectIds != null && subjectIds.length > 0){
 			StringBuffer query = new StringBuffer();			
-			query.append("select c from Class_ as c ");
+			query.append("select c, co from Class_ as c ");
 			
 			if (fetchStructure) {
 				query.append("left join fetch c.childClasses as cc ");
@@ -336,8 +338,8 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			}
 			
 			query.append("inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co ");
-			query.append (" where c.schedulingSubpart in ( select ss2 from SchedulingSubpart as ss2 inner join ss2.instrOfferingConfig.instructionalOffering.courseOfferings as co2 ");
-			query.append(" where co2.subjectArea.uniqueId in ( ");
+			//query.append (" where c.schedulingSubpart in ( select ss2 from SchedulingSubpart as ss2 inner join ss2.instrOfferingConfig.instructionalOffering.courseOfferings as co2 ");
+			query.append(" where co.subjectArea.uniqueId in ( ");
 			boolean first = true;
 			for(int i = 0; i < subjectIds.length; i++){
 				if (!first){
@@ -350,7 +352,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			query.append(") ");			
 	        if (form.getCourseNbr() != null && form.getCourseNbr().length() > 0){
 	            String courseNbr = form.getCourseNbr();
-	            query.append(" and co2.courseNbr ");
+	            query.append(" and co.courseNbr ");
 			    if (courseNbr.indexOf('*')>=0) {
 		            query.append(" like '");
 		            courseNbr = courseNbr.replace('*', '%');
@@ -363,7 +365,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	            query.append(courseNbr);
 	            query.append("'  ");
 	        }
-	        query.append(" and co2.isControl = true ) ");
+	        // query.append(" ) ");
 
 	        if (doFilterManager) {
 	        	if (filterManager.longValue()<0) { //all departmental
@@ -415,11 +417,14 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			}
 			*/
 	        
-	        query.append(" and co.isControl = true ) ");
+	        // query.append(" ) ");
+	        if (!form.getShowCrossListedClasses()) {
+	        	query.append(" and co.isControl = true ");
+	        }
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(1000);
 			q.setCacheable(true);
-	        TreeSet ts = new TreeSet(new ClassComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));
+	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));
 			long sTime = new java.util.Date().getTime();
 			
 			boolean doFilterInstructor = form.getFilterInstructor()!=null && form.getFilterInstructor().length()>0;
@@ -449,21 +454,21 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			
 			Debug.debug(" --- Load structure ---");
 			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Class_ c = (Class_)i.next();
+				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 				Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs());
 			}
 			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Class_ c = (Class_)i.next();
+				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 				Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts());
 			}
 			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Class_ c = (Class_)i.next();
+				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 				Hibernate.initialize(c.getSchedulingSubpart().getClasses());
 			}
 
 			Debug.debug(" --- Filter classes ---");
 			for (Iterator i=q.list().iterator();i.hasNext();) {
-				Class_ c = (Class_)i.next();
+				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 				if (doFilterInstructor) {
 					boolean filterLine = true;
 					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
@@ -577,17 +582,17 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 					}
 				}
 				
-				ts.add(c);
+				ts.add(o);
 			}
 			
 			if (form.getInstructor().booleanValue() || form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
 				Debug.debug("---- Load Instructors ---- ");
 				for (Iterator i=ts.iterator();i.hasNext();) {
-					Class_ c = (Class_)i.next();
+					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 					Hibernate.initialize(c.getClassInstructors());
 				}
 				for (Iterator i=ts.iterator();i.hasNext();) {
-					Class_ c = (Class_)i.next();
+					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
 						ClassInstructor ci = (ClassInstructor)j.next();
 						Hibernate.initialize(ci.getInstructor());
@@ -598,7 +603,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			if (form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
 				Debug.debug("---- Load Preferences ---- ");
 				for (Iterator i=ts.iterator();i.hasNext();) {
-					Class_ c = (Class_)i.next();
+					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 					Hibernate.initialize(c.getPreferences());
 					Hibernate.initialize(c.getSchedulingSubpart().getPreferences());
 					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
@@ -615,7 +620,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			if (form.getTimetable()!=null && form.getTimetable().booleanValue() && classAssignmentProxy!=null && classAssignmentProxy instanceof Solution) {
 				Debug.debug("--- Load Assignments --- ");
 				for (Iterator i=ts.iterator();i.hasNext();) {
-					Class_ c = (Class_)i.next();
+					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
 					try {
 						Assignment a = classAssignmentProxy.getAssignment(c);
 						if (a!=null)

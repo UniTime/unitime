@@ -40,7 +40,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
-import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -51,6 +50,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
@@ -270,8 +270,8 @@ public class ClassInstructorAssignmentAction extends Action {
 
         	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
         		Collections.sort(classesList,
-        			new ClassComparator(
-        					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassListForm.sSortByName),
+        			new ClassCourseComparator(
+        					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
         					frm.getProxy(),
         					false
         			)

@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -39,7 +40,6 @@ import org.unitime.timetable.util.LookupTables;
  * @author Stephanie Schluttenhofer
  */
 public class ClassAssignmentsReportForm extends ActionForm implements ClassListFormInterface {
-
 	/**
 	 * Comment for <code>serialVersionUID</code>
 	 */
@@ -67,19 +67,10 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	private String filterAssignedTimeAmPm;
 	private String filterAssignedTimeLength;
 	private boolean sortByKeepSubparts;
+	private boolean showCrossListedClasses;
     
     private boolean isAdmin;
 	
-	private String[] sSortByOptions = {
-		ClassListForm.sSortByName,
-		ClassListForm.sSortByDivSec,
-		ClassListForm.sSortByDatePattern,
-		//ClassListForm.sSortByInstructor,
-		ClassListForm.sSortByAssignedTime,
-		ClassListForm.sSortByAssignedRoom,
-		ClassListForm.sSortByAssignedRoomCap
-	};
-
 	private boolean userIsAdmin;
 	private boolean returnAllControlClassesForSubjects;
 	private boolean sessionInLLREditStatus;
@@ -149,7 +140,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		subjectAreas = new ArrayList();
 		subjectAreaIds = new String[0];
 
-		sortBy = ClassListForm.sSortByName;
+		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 		filterManager = "";
 		filterAssignedRoom = "";
 		filterIType = "";
@@ -172,6 +163,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		returnAllControlClassesForSubjects = true;
 		userDeptIds = new String[0];
 		sessionInLLREditStatus = false;
+		showCrossListedClasses = false;
 	}
 
     /**
@@ -216,7 +208,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     
 	public String getSortBy() { return sortBy; }
 	public void setSortBy(String sortBy) { this.sortBy = sortBy; }
-	public String[] getSortByOptions() { return sSortByOptions; }
+	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
 	public String getFilterManager() { return filterManager; }
 	public void setFilterManager(String filterManager) { this.filterManager = filterManager; }
 	public String getFilterAssignedRoom() { return filterAssignedRoom; }
@@ -455,4 +447,10 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     public Boolean getCanSeeExams() {
         return Boolean.FALSE;
     }
+	public boolean getShowCrossListedClasses() {
+		return showCrossListedClasses;
+	}
+	public void setShowCrossListedClasses(boolean showCrossListedClasses) {
+		this.showCrossListedClasses = showCrossListedClasses;
+	}
 }

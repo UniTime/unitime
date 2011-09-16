@@ -136,6 +136,15 @@
 						</TD>
 					</TR>
 					<TR>
+						<TD>
+							<B>Cross Lists:</B>
+						</TD>
+						<TD>
+							<html:checkbox property="showCrossListedClasses"/>
+							Show cross-listed classes
+						</TD>
+					</TR>
+					<TR>
 						<TD colspan='2' align='right'>
 							<br>
 						</TD>

@@ -47,6 +47,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -109,7 +110,7 @@ public class WebClassListTableBuilder extends
                 		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
                 	}
     				for (Iterator i=classes.iterator();i.hasNext();) {
-    					Class_ clazz = (Class_)i.next();
+    					Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
     					if (classAssignment.getAssignment(clazz)!=null) {
         					hasTimetable = true; break;
         				}
@@ -123,15 +124,14 @@ public class WebClassListTableBuilder extends
         if (isShowExam())
             setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
 
-		Class_ c = null;
         TableStream table = null;
         int ct = 0;
         Iterator it = classes.iterator();
         SubjectArea subjectArea = null;
         String prevLabel = null;
         while (it.hasNext()){
-            c = (Class_) it.next();
-            if (subjectArea == null || !subjectArea.getUniqueId().equals(c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId())){
+        	Object[] o = (Object[])it.next(); Class_ c = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
+            if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
             	if(table != null) {
             		table.tableComplete();
 	            	try {
@@ -140,7 +140,7 @@ public class WebClassListTableBuilder extends
 						e.printStackTrace();
 					}
 				}
-            	subjectArea = c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea();
+            	subjectArea = co.getSubjectArea();
             	ct = 0;
             	try {
 					outputStream.print(labelForTable(subjectArea));
@@ -149,13 +149,13 @@ public class WebClassListTableBuilder extends
 				}
 		        table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
 		    }		        
-            this.buildClassRow(classAssignment,examAssignment, ++ct, table, c, "", user, prevLabel);
-            prevLabel = c.getClassLabel();
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", user, prevLabel);
+            prevLabel = c.getClassLabel(co);
         }  
         table.tableComplete();
     }
 	
-    protected TableCell buildPrefGroupLabel(PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
     	if (prefGroup instanceof Class_) {
     		TableCell cell = initNormalCell(indentSpaces, isEditable);
     		Class_ aClass = (Class_) prefGroup;
@@ -164,10 +164,10 @@ public class WebClassListTableBuilder extends
 	    	}
 	    	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
 	    		cell.addContent("<A name=\"back\"></A>");
-	    	cell.addContent("<b>");
+	    	if (co.isIsControl()) cell.addContent("<b>");
 	        cell.addContent("<A name=\"A" + prefGroup.getUniqueId().toString() + "\"></A>");
-	        String label = aClass.getClassLabel();
-	        String title = aClass.getClassLabelWithTitle();
+	        String label = aClass.getClassLabel(co);
+	        String title = aClass.getClassLabelWithTitle(co);
 	        if (prevLabel != null && label.equals(prevLabel)){
 	        	label = " &nbsp;";
 	        }
@@ -177,18 +177,18 @@ public class WebClassListTableBuilder extends
 			}
 	        cell.addContent(label);
 	        cell.setTitle(title);
-	        cell.addContent("</b>");
+	        if (co.isIsControl()) cell.addContent("</b>");
 	        cell.setNoWrap(true);
 	        if(!isEditable){
 	        	cell.addContent("</font>");
 	        }
 	        return(cell);
         } else {
-        	return(super.buildPrefGroupLabel(prefGroup,indentSpaces, isEditable, null));
+        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null));
         }     
     }
 	
-    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
+    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
     	Session session = Session.getCurrentAcadSession(user);
     	String[] columns;
          if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())) {
@@ -247,8 +247,8 @@ public class WebClassListTableBuilder extends
         int ct = 0;
         while (it.hasNext()){
             cls = (Class_) it.next();
-            this.buildClassRow(classAssignment, examAssignment, ++ct, table, cls, "", user, prevLabel);
-            prevLabel = cls.getClassLabel();
+            this.buildClassRow(classAssignment, examAssignment, ++ct, table, co, cls, "", user, prevLabel);
+            prevLabel = cls.getClassLabel(co);
         }     
         table.tableComplete();
         
@@ -273,8 +273,8 @@ public class WebClassListTableBuilder extends
 	        TreeSet ts = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 	    	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
 	    		ts = new TreeSet(
-	    			new ClassComparator(
-	    					UserData.getProperty(user.getId(),"ClassList.sortBy",ClassListForm.sSortByName),
+	    			new ClassCourseComparator(
+	    					UserData.getProperty(user.getId(),"ClassList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
 	    					classAssignment,
 	    					UserData.getPropertyBoolean(user.getId(),"ClassList.sortByKeepSubparts", false)
 	    			)
@@ -283,7 +283,7 @@ public class WebClassListTableBuilder extends
 	        
 	 		ts.addAll(ss.getClasses());
 	 		Navigation.set(session, Navigation.sClassLevel, ts);
-	        this.htmlTableForClasses(classAssignment, examAssignment, ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
+	        this.htmlTableForClasses(classAssignment, examAssignment, ss.getControllingCourseOffering(), ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
     	}
     }
     

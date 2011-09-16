@@ -25,16 +25,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -44,8 +49,10 @@ import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 
 
@@ -81,7 +88,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 		            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
 		            	}
             			for (Iterator i=classes.iterator();i.hasNext();) {
-            				Class_ clazz = (Class_)i.next();
+            				Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
             				if (classAssignment.getAssignment(clazz)!=null) {
             					hasTimetable = true; break;
             				}
@@ -97,6 +104,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
                 setShowExamTimetable(true);
                 setShowExamName(false);
             }
+            setShowInstructor(true);
             
             File file = ApplicationProperties.getTempFile("classassign", "pdf");
 	    	
@@ -111,14 +119,13 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 			iWriter = PdfEventHandler.initFooter(iDocument, out);
 			iDocument.open();
 
-			Class_ c = null;
             int ct = 0;
             Iterator it = classes.iterator();
             SubjectArea subjectArea = null;
             String prevLabel = null;
             while (it.hasNext()){
-                c = (Class_) it.next();
-                if (subjectArea == null || !subjectArea.getUniqueId().equals(c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId())){
+            	Object[] o = (Object[])it.next(); Class_ c = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
+            	if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
 					if (iPdfTable!=null) {
 						iDocument.add(iPdfTable);
 						iDocument.newPage();
@@ -130,7 +137,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 					iPdfTable.getDefaultCell().setBorderWidth(0);
 					iPdfTable.setSplitRows(false);
 
-					subjectArea = c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea();
+					subjectArea = co.getSubjectArea();
 					ct = 0;
 
 					iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
@@ -138,8 +145,8 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 					pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
 				}
                 
-                pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
-                prevLabel = c.getClassLabel();
+                pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", user, prevLabel);
+                prevLabel = c.getClassLabel(co);
             }  
             
             if (iPdfTable!=null)
@@ -156,5 +163,26 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
         	} catch (IOException e) {}
     	}
     	return null;
+    }
+    
+    @Override
+    protected PdfPCell pdfBuildInstructor(PreferenceGroup prefGroup, boolean isEditable){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	PdfPCell cell = createCell();
+    	
+    	if (prefGroup instanceof Class_) {
+    		Class_ aClass = (Class_) prefGroup;
+    		if (aClass.isDisplayInstructor()) {
+            	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+            	sortedInstructors.addAll(aClass.getClassInstructors());
+        		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
+        			ClassInstructor ci = (ClassInstructor)i.next();
+            		String label = ci.getInstructor().getName(getInstructorNameFormat());
+            		addText(cell, label, false, false, Element.ALIGN_LEFT, color, true);
+        		}
+    		}
+    	}
+    	
+        return cell;
     }
 }

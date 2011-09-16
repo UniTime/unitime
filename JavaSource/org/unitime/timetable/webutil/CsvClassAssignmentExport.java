@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.webutil;
 
-import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.List;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -65,17 +65,16 @@ public class CsvClassAssignmentExport {
 			});
 		
 		for (Iterator i=classes.iterator();i.hasNext();) {
-			Class_ clazz = (Class_)i.next();
-			List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
+			Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
 			StringBuffer leadsSb = new StringBuffer();
-			for (Iterator<DepartmentalInstructor> e=leads.iterator();e.hasNext();) {
-				DepartmentalInstructor instructor = e.next();
+			if (clazz.isDisplayInstructor()) 
+			for (ClassInstructor ci: clazz.getClassInstructors()) {
+				if (!leadsSb.toString().isEmpty())
+					leadsSb.append("\n");
+				DepartmentalInstructor instructor = ci.getInstructor();
 				leadsSb.append(instructor.getName(instructorFormat));
-				if (e.hasNext()) leadsSb.append("\n");
 			}
-            String divSec = clazz.getDivSecNumber();
-            if (divSec==null)
-                divSec = (new DecimalFormat("000")).format(clazz.getSectionNumber().intValue())+"-001";
+            String divSec = clazz.getClassSuffix(co);
 			Assignment assignment = null;
 			try {
 				assignment = proxy.getAssignment(clazz);
@@ -85,12 +84,12 @@ public class CsvClassAssignmentExport {
 			if (assignment!=null) {
 				Placement placement = assignment.getPlacement();
 				file.addLine(new CSVField[] {
-						new CSVField(clazz.getCourseName()),
+						new CSVField(co.getCourseName()),
 						new CSVField(clazz.getItypeDesc()),
 						new CSVField(clazz.getSectionNumber()),
 						new CSVField(clazz.getSchedulingSubpart().getSchedulingSubpartSuffix()),
 						new CSVField(divSec),
-						new CSVField(clazz.effectiveDatePattern().getName()),
+						new CSVField(assignment.getDatePattern().getName()),
 						new CSVField(placement.getTimeLocation().getDayHeader()),
 						new CSVField(placement.getTimeLocation().getStartTimeHeader()),
 						new CSVField(placement.getTimeLocation().getEndTimeHeader()),
@@ -101,7 +100,7 @@ public class CsvClassAssignmentExport {
 			} else {
                 int arrHrs = Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50f);
 				file.addLine(new CSVField[] {
-						new CSVField(clazz.getCourseName()),
+						new CSVField(co.getCourseName()),
 						new CSVField(clazz.getItypeDesc()),
 						new CSVField(clazz.getSectionNumber()),
 						new CSVField(clazz.getSchedulingSubpart().getSchedulingSubpartSuffix()),
@@ -146,7 +145,8 @@ public class CsvClassAssignmentExport {
         
         int idx = 1;
         for (Iterator i=classes.iterator();i.hasNext();) {
-            Class_ clazz = (Class_)i.next();
+        	Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0]; CourseOffering course = (CourseOffering)o[1];
+        	if (!course.isIsControl()) continue;
             List<DepartmentalInstructor> leads = clazz.getLeadInstructors();
             StringBuffer lastNameSb = new StringBuffer();
             StringBuffer firstNameSb = new StringBuffer();
@@ -187,15 +187,16 @@ public class CsvClassAssignmentExport {
             if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().size()>1) {
                 for (Iterator j=clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().iterator();j.hasNext();) {
                     CourseOffering co = (CourseOffering)j.next();
+                    /*
                     if (clazz.getClassLimit(proxy,co)>0) {
                         if (crossListSb.length()>0) crossListSb.append("\n");
                         crossListSb.append(co.getCourseName());
                     }
+                    */
+                    crossListSb.append(co.getCourseName());
                 }
             }
-            String divSec = clazz.getDivSecNumber();
-            if (divSec==null)
-                divSec = (new DecimalFormat("000")).format(clazz.getSectionNumber().intValue())+"-001";
+            String divSec = clazz.getClassSuffix(course);
             Assignment assignment = null;
             try {
                 assignment = proxy.getAssignment(clazz);
@@ -225,9 +226,9 @@ public class CsvClassAssignmentExport {
                 file.addLine(new CSVField[] {
                         new CSVField(idx++),
                         new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getCourseNbr()),
-                        new CSVField(divSec.substring(1,3)+divSec.substring(5,7)),
+                        new CSVField(divSec),
                         new CSVField(titleSb),
-                        new CSVField(clazz.effectiveDatePattern().getName()),
+                        new CSVField(assignment.getDatePattern().getName()),
                         new CSVField(placement.getTimeLocation().getDayHeader()),
                         new CSVField(placement.getTimeLocation().getStartTimeHeader()+" - "+placement.getTimeLocation().getEndTimeHeader()),
                         new CSVField(bldgSb),
@@ -247,7 +248,7 @@ public class CsvClassAssignmentExport {
                 file.addLine(new CSVField[] {
                         new CSVField(idx++),
                         new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getCourseNbr()),
-                        new CSVField(divSec.substring(1,3)+divSec.substring(5,7)),
+                        new CSVField(divSec),
                         new CSVField(titleSb),
                         new CSVField(clazz.effectiveDatePattern().getName()),
                         new CSVField(""),

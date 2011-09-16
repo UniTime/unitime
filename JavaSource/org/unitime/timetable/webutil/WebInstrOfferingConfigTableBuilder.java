@@ -30,8 +30,8 @@ import javax.servlet.jsp.JspWriter;
 import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
-import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -41,7 +41,7 @@ import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -168,8 +168,8 @@ public class WebInstrOfferingConfigTableBuilder extends
     	
     	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
     		setClassComparator(
-    			new ClassComparator(
-    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassListForm.sSortByName),
+    			new ClassCourseComparator(
+    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
     					classAssignment,
     					false
     			)
@@ -254,7 +254,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        setVisibleColumns(COLUMNS);	        	
 	        }
         	TableStream configTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
-        	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc, user, !getDisplayConfigOpButtons(), true);
+        	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, user, !getDisplayConfigOpButtons(), true);
         	configTable.tableComplete();
 	    }
     }
@@ -276,8 +276,8 @@ public class WebInstrOfferingConfigTableBuilder extends
     	
     	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
     		setClassComparator(
-    			new ClassComparator(
-    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassListForm.sSortByName),
+    			new ClassCourseComparator(
+    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
     					classAssignment,
     					false
     			)
@@ -312,8 +312,8 @@ public class WebInstrOfferingConfigTableBuilder extends
        	}
     }
     
-    protected TableCell buildPrefGroupLabel(PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
-    	TableCell cell = super.buildPrefGroupLabel(prefGroup, indentSpaces, isEditable, prevLabel);
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
+    	TableCell cell = super.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel);
     	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
     		cell.addContent("<A name=\"back\"></A>");
     	return cell;
