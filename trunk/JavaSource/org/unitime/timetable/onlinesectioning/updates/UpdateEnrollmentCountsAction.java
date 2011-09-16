@@ -25,8 +25,8 @@ import java.util.Collection;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
+@Deprecated
 public class UpdateEnrollmentCountsAction implements OnlineSectioningAction<Boolean>{
 	private Collection<Long> iOfferingIds;
 	
@@ -43,7 +43,9 @@ public class UpdateEnrollmentCountsAction implements OnlineSectioningAction<Bool
 	public Collection<Long> getOfferingIds() { return iOfferingIds; }
 
 	@Override
+	@Deprecated
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		/*
 		for (Long offeringId: getOfferingIds()) {
 			// offering is locked -> assuming that the offering will get checked when it is unlocked
 			if (server.isOfferingLocked(offeringId)) continue;
@@ -55,6 +57,7 @@ public class UpdateEnrollmentCountsAction implements OnlineSectioningAction<Bool
 				lock.release();
 			}
 		}
+		*/
 		return true;
 	}
 

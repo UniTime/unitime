@@ -1316,7 +1316,9 @@ public class Class_ extends BaseClass_ {
     	return iEvent;
     }
     
+    @Deprecated
     public static void updateClassEnrollmentForSession(Session acadSession, org.hibernate.Session hibSession) throws Exception{
+    	/*
        Transaction trans = null;
        try {
     	trans = hibSession.beginTransaction();
@@ -1346,17 +1348,6 @@ public class Class_ extends BaseClass_ {
 	                " where d.clazz.uniqueId =c.uniqueId) " + 
 	                " where c.uniqueId in (" + ids + ")").executeUpdate();
     	}
-    	/*
-    	// This does not work on MySQL (You can't specify target table 'CLASS_' for update in FROM clause)
-        hibSession.createQuery("update Class_  c " +
-        		"set c.enrollment=(select count(distinct d.student) " +
-                " from StudentClassEnrollment d " +
-                " where d.clazz.uniqueId =c.uniqueId) " + 
-                " where c.uniqueId in (select cls.uniqueId " + 
-                " from Class_ cls inner join cls.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
-                " where io.session.uniqueId = :sessionId)").
-                setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
-        */
         trans.commit();
        } catch (Exception e) {
     	   if (trans != null){
@@ -1364,6 +1355,7 @@ public class Class_ extends BaseClass_ {
     	   }
 		   throw(e);    	   
        }
+       */
     }
     
     public String unassignCommited(String managerExternalId, org.hibernate.Session hibSession) {

@@ -281,7 +281,9 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		}
 	}
 	
+	@Deprecated
 	public static void updateEnrollmentCounters(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
+		/*
 		if (offering == null) return;
 		helper.beginTransaction();
 		try {
@@ -304,6 +306,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 				throw (SectioningException)e;
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
+		*/
 	}
 
 	public boolean check(Enrollment e) {

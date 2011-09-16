@@ -27,7 +27,6 @@ import java.util.Vector;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -471,7 +470,9 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             uniqueResult();
     }
 
+    @Deprecated
     public static void updateCourseOfferingEnrollmentForSession(org.unitime.timetable.model.Session acadSession, org.hibernate.Session hibSession) throws Exception{
+    	/*
         Transaction trans = null;
         try {
      	trans = hibSession.beginTransaction();
@@ -490,6 +491,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
      	   }
  		   throw(e);
         }
+        */
      }
     
     public int compareTo(Object o) {
