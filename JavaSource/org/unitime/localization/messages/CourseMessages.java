@@ -594,6 +594,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Sort By:")
 	String filterSortBy();
 	
+	@DefaultMessage("Cross Lists:")
+	String filterCrossList();
+	
+	@DefaultMessage("Show cross-listed classes")
+	String showCrossListedClasses();
+	
 	@DefaultMessage("Subject:")
 	String filterSubject();
 

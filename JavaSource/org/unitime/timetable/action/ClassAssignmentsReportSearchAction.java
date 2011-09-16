@@ -41,9 +41,9 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
-import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
 import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
@@ -83,13 +83,14 @@ public class ClassAssignmentsReportSearchAction extends LookupDispatchAction {
 	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterDayCode", classListForm.getFilterDayCode());
 	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterStartSlot", classListForm.getFilterStartSlot());
 	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterLength", classListForm.getFilterLength());
+	    	UserData.setPropertyBoolean(httpSession,"ClassAssignments.showCrossListedClasses", classListForm.getShowCrossListedClasses());
 	    }
 
 	}
 	
     
     public static void setupGeneralFormFilters(HttpSession httpSession, ClassListFormInterface form){
-        form.setSortBy(UserData.getProperty(httpSession, "ClassAssignments.sortBy", ClassListForm.sSortByName));
+        form.setSortBy(UserData.getProperty(httpSession, "ClassAssignments.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
         form.setFilterAssignedRoom(UserData.getProperty(httpSession, "ClassAssignments.filterAssignedRoom", ""));
         form.setFilterManager(UserData.getProperty(httpSession, "ClassAssignments.filterManager", ""));
         form.setFilterIType(UserData.getProperty(httpSession, "ClassAssignments.filterIType", ""));
@@ -97,6 +98,7 @@ public class ClassAssignmentsReportSearchAction extends LookupDispatchAction {
         form.setFilterStartSlot(UserData.getPropertyInt(httpSession, "ClassAssignments.filterStartSlot", -1));
         form.setFilterLength(UserData.getPropertyInt(httpSession, "ClassAssignments.filterLength", -1));
         form.setSortByKeepSubparts(UserData.getPropertyBoolean(httpSession, "ClassAssignments.sortByKeepSubparts", true));
+        form.setShowCrossListedClasses(UserData.getPropertyBoolean(httpSession, "ClassAssignments.showCrossListedClasses", false));
     
     }
     

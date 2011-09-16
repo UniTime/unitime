@@ -22,17 +22,10 @@ package org.unitime.timetable.model.comparators;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
-import org.unitime.timetable.form.ClassListForm;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
 
 /**
@@ -60,9 +53,6 @@ public class ClassComparator implements Comparator<Class_> {
     
     // Decides method to compare 
     private short compareBy;
-    private String classListFormSortBy = null;
-    private ClassAssignmentProxy classAssignmentProxy = null;
-    private boolean keepSubparts = true;
 
     public ClassComparator (Long subjectUID, short compareBy) {
 		this.subjectUID = subjectUID;
@@ -71,13 +61,6 @@ public class ClassComparator implements Comparator<Class_> {
     
     public ClassComparator (short compareBy) {
     	this(null, compareBy);
-    }
-    
-    public ClassComparator (String classListFormSortBy, ClassAssignmentProxy classAssignmentProxy, boolean keepSubparts) {
-    	this(null, COMPARE_BY_HIERARCHY);
-    	this.classListFormSortBy = classListFormSortBy;
-    	this.classAssignmentProxy = classAssignmentProxy;
-    	this.keepSubparts = keepSubparts;
     }
     
     public static int compare(Comparable c1, Comparable c2) {
@@ -104,156 +87,7 @@ public class ClassComparator implements Comparator<Class_> {
 		return isParentSameIType(p1, s2);
 	}
 
-    public int compareByParentChildSameIType(Class_ c1, Class_ c2) {
-    	SchedulingSubpart s1 = c1.getSchedulingSubpart();
-    	SchedulingSubpart s2 = c2.getSchedulingSubpart();
-    	
-    	if (s1.equals(s2)) {
-			while (s1.getParentSubpart()!=null && s1.getParentSubpart().getItype().equals(s1.getItype()) && !c1.getParentClass().equals(c2.getParentClass())) {
-				s1 = s1.getParentSubpart(); c1 = c1.getParentClass();
-				s2 = s2.getParentSubpart(); c2 = c2.getParentClass();
-			}
-    		return compareByClassListFormSortBy(c1,c2);
-    	}
-    	
-    	if (s1.getItype().equals(s2.getItype())) {
-    		if (isParentSameIType(s1,s2)) {
-    			while (!s1.equals(s2)) {
-    				s1 = s1.getParentSubpart(); c1 = c1.getParentClass();
-    			}
-    			while (s1.getParentSubpart()!=null && s1.getParentSubpart().getItype().equals(s1.getItype())) {
-    				s1 = s1.getParentSubpart(); c1 = c1.getParentClass();
-    				s2 = s2.getParentSubpart(); c2 = c2.getParentClass();
-    			}
-    			int cmp = compareByClassListFormSortBy(c1,c2);
-    			if (cmp!=0) return cmp;
-    			return 1;
-    		} else if (isParentSameIType(s2,s1)) {
-    			while (!s2.equals(s1)) {
-    				s2 = s2.getParentSubpart(); c2 = c2.getParentClass();
-    			}
-    			while (s1.getParentSubpart()!=null && s1.getParentSubpart().getItype().equals(s1.getItype())) {
-    				s1 = s1.getParentSubpart(); c1 = c1.getParentClass();
-    				s2 = s2.getParentSubpart(); c2 = c2.getParentClass();
-    			}
-    			int cmp = compareByClassListFormSortBy(c1,c2);
-    			if (cmp!=0) return cmp;
-    			return -1;
-    		}
-    	}
-    	
-    	Comparator comparator = new SchedulingSubpartComparator(subjectUID);
-    	return comparator.compare(s1,s2);
-    }
-    
-    public int compareByClassListFormSortBy(Class_ c1, Class_ c2) {
-    	int cmp = 0;
-    	if (cmp!=0) return cmp;
-    	try {
-    		if (ClassListForm.sSortByName.equals(classListFormSortBy)) {
-        		if (!c1.getSchedulingSubpart().equals(c2.getSchedulingSubpart())) {
-        			Comparator comparator = new SchedulingSubpartComparator(subjectUID);
-        			cmp = comparator.compare(c1.getSchedulingSubpart(), c2.getSchedulingSubpart());
-        		} else
-        			cmp = c1.getSectionNumber().compareTo(c2.getSectionNumber());
-    		} else if (ClassListForm.sSortByDivSec.equals(classListFormSortBy)) {
-            		if (!c1.getSchedulingSubpart().equals(c2.getSchedulingSubpart())) {
-            			Comparator comparator = new SchedulingSubpartComparator(subjectUID);
-            			cmp = comparator.compare(c1.getSchedulingSubpart(), c2.getSchedulingSubpart());
-            		} else {
-            			String sx1 = c1.getClassSuffix();
-            			String sx2 = c2.getClassSuffix();
-            			if (sx1==null) {
-            				if (sx2==null) {
-            					cmp = c1.getSectionNumber().compareTo(c2.getSectionNumber());
-            				} else {
-            					return -1;
-            				}
-            			} else {
-            				if (sx2==null) {
-            					return 1;
-            				} else {
-            					cmp = sx1.compareTo(sx2);
-            					if (cmp!=0) return cmp;
-            					cmp = c1.getSectionNumber().compareTo(c2.getSectionNumber());
-            				}
-            			}
-            		}
-    		} else if (ClassListForm.sSortByTimePattern.equals(classListFormSortBy)) {
-        		Set t1s = c1.effectiveTimePatterns();
-        		Set t2s = c2.effectiveTimePatterns();
-        		TimePattern t1 = (t1s==null || t1s.isEmpty() ? null : (TimePattern)t1s.iterator().next());
-        		TimePattern t2 = (t2s==null || t2s.isEmpty() ? null : (TimePattern)t2s.iterator().next());
-        		cmp = compare(t1,t2);
-        	} else if (ClassListForm.sSortByLimit.equals(classListFormSortBy)) {
-        		cmp = compare(c1.getExpectedCapacity(),c2.getExpectedCapacity());
-        	} else if (ClassListForm.sSortByRoomSize.equals(classListFormSortBy)) {
-        		cmp = compare(c1.getMinRoomLimit(),c2.getMinRoomLimit());
-        	} else if (ClassListForm.sSortByDatePattern.equals(classListFormSortBy)) {
-        		cmp = compare(c1.effectiveDatePattern(),c2.effectiveDatePattern());
-        	} else if (ClassListForm.sSortByInstructor.equals(classListFormSortBy)) {
-        		cmp = compareInstructors(c1.getLeadInstructors(),c2.getLeadInstructors());
-        	} else if (ClassListForm.sSortByAssignedTime.equals(classListFormSortBy)) {
-        		Assignment a1 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c1));
-        		Assignment a2 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c2));
-        		if (a1==null) {
-        			cmp = (a2==null?0:-1);
-        		} else {
-        			if (a2==null)
-        				cmp = 1;
-        			else {
-        				TimeLocation t1 = a1.getPlacement().getTimeLocation();
-        				TimeLocation t2 = a2.getPlacement().getTimeLocation();
-        				cmp = t1.getStartSlots().nextElement().compareTo(t2.getStartSlots().nextElement());
-        				if (cmp==0)
-        					cmp = Double.compare(t1.getDayCode(), t2.getDayCode());
-        				if (cmp==0)
-        					cmp = Double.compare(t1.getLength(), t2.getLength());
-        			}
-        		}
-        	} else if (ClassListForm.sSortByAssignedRoom.equals(classListFormSortBy)) {
-        		Assignment a1 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c1));
-        		Assignment a2 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c2));
-        		if (a1==null) {
-        			cmp = (a2==null?0:-1);
-        		} else {
-        			if (a2==null)
-        				cmp = 1;
-        			else
-        				cmp = a1.getPlacement().getRoomName(",").compareTo(a2.getPlacement().getRoomName(","));
-        		}
-        	} else if (ClassListForm.sSortByAssignedRoomCap.equals(classListFormSortBy)) {
-        		Assignment a1 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c1));
-        		Assignment a2 = (classAssignmentProxy==null?null:classAssignmentProxy.getAssignment(c2));
-        		if (a1==null) {
-        			cmp = (a2==null?0:-1);
-        		} else {
-        			if (a2==null)
-        				cmp = 1;
-        			else
-        				cmp = Double.compare(a1.getPlacement().getRoomSize(),a2.getPlacement().getRoomSize());
-        		}
-        	}
-    	} catch (Exception e) {}
-    	if (cmp!=0) return cmp;
-		if (!c1.getSchedulingSubpart().equals(c2.getSchedulingSubpart())) {
-			Comparator comparator = new SchedulingSubpartComparator(subjectUID);
-			cmp = comparator.compare(c1.getSchedulingSubpart(), c2.getSchedulingSubpart());
-		}
-    	if (cmp!=0) return cmp;
-    	cmp = c1.getSectionNumber().compareTo(c2.getSectionNumber());
-    	if (cmp!=0) return cmp;
-    	return c1.getUniqueId().compareTo(c2.getUniqueId());
-    }
-    
     public int compare(Class_ c1, Class_ c2) {
-        if (classListFormSortBy!=null) {
-        	if (keepSubparts) {
-        		return compareByParentChildSameIType(c1, c2);
-        	} else {
-        		return compareByClassListFormSortBy(c1, c2);
-        	}
-        }
         int cmp = 0;
         switch (compareBy) {
         	case COMPARE_BY_LABEL :

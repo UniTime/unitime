@@ -33,6 +33,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -87,31 +88,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private String filterAssignedTimeAmPm;
 	private String filterAssignedTimeLength;
 	private boolean sortByKeepSubparts;
-	
-	public static String sSortByName = MSG.sortByName();
-	public static String sSortByDivSec = MSG.sortByDivSec();
-	public static String sSortByEnrollment = MSG.sortByEnrollment();
-	public static String sSortByLimit = MSG.sortByLimit();
-	public static String sSortByRoomSize = MSG.sortByRoomSize();
-	public static String sSortByDatePattern = MSG.sortByDatePattern();
-	public static String sSortByTimePattern = MSG.sortByTimePattern();
-	public static String sSortByInstructor = MSG.sortByInstructor();
-	public static String sSortByAssignedTime = MSG.sortByAssignedTime();
-	public static String sSortByAssignedRoom = MSG.sortByAssignedRoom();
-	public static String sSortByAssignedRoomCap = MSG.sortByAssignedRoomCapacity();
-	public static String[] sSortByOptions = {
-		sSortByName,
-		sSortByDivSec,
-		sSortByEnrollment,
-		sSortByLimit,
-		sSortByRoomSize,
-		sSortByDatePattern,
-		sSortByTimePattern,
-		sSortByInstructor,
-		sSortByAssignedTime,
-		sSortByAssignedRoom,
-		sSortByAssignedRoomCap
-	};
+	private boolean showCrossListedClasses;
 	
 	private boolean userIsAdmin;
 	private boolean returnAllControlClassesForSubjects;
@@ -207,7 +184,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		exams = new Boolean(false);
 		canSeeExams = new Boolean(false);
 		
-		sortBy = sSortByName;
+		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 		filterInstructor = "";
 		filterManager = "";
 		filterAssignedRoom = "";
@@ -225,6 +202,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		filterAssignedTimeAmPm = "";
 		filterAssignedTimeLength = "";
 		sortByKeepSubparts = false;
+		showCrossListedClasses = false;
 		
 		userIsAdmin = false;
 		returnAllControlClassesForSubjects = false;
@@ -359,7 +337,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	
 	public String getSortBy() { return sortBy; }
 	public void setSortBy(String sortBy) { this.sortBy = sortBy; }
-	public String[] getSortByOptions() { return sSortByOptions; }
+	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
 	public String getFilterManager() { return filterManager; }
 	public void setFilterManager(String filterManager) { this.filterManager = filterManager; }
 	public String getFilterAssignedRoom() { return filterAssignedRoom; }
@@ -450,7 +428,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		try {
 			int hour = Integer.parseInt(filterAssignedTimeHour);
 			int min = Integer.parseInt(filterAssignedTimeMin);
-			boolean morn = !("pm".equals(filterAssignedTimeAmPm));
+			boolean morn = !(MSG.timePm().equals(filterAssignedTimeAmPm));
 			if (hour==12) hour=0;
 			int startTime = ((hour+(morn?0:12))%24)*60 + min;
 			return (startTime - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;			
@@ -469,7 +447,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 			if (hour==0) hour = 12;
 			filterAssignedTimeHour = String.valueOf(hour);
 			filterAssignedTimeMin = (min<10?"0":"")+min;
-			filterAssignedTimeAmPm = (morn?"am":"pm");
+			filterAssignedTimeAmPm = (morn?MSG.timeAm():MSG.timePm());
 			
 		} else {
 			filterAssignedTimeHour = "";
@@ -592,6 +570,12 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	}
 	public void setDemandIsVisible(Boolean demandIsVisible) {
 		this.demandIsVisible = demandIsVisible;
+	}
+	public boolean getShowCrossListedClasses() {
+		return showCrossListedClasses;
+	}
+	public void setShowCrossListedClasses(boolean showCrossListedClasses) {
+		this.showCrossListedClasses = showCrossListedClasses;
 	}
 
 }

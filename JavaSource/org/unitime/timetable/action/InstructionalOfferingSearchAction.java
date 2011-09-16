@@ -48,7 +48,6 @@ import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -61,6 +60,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -762,7 +762,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		form.setTitle(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.title", false)));
 		form.setConsent(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.consent", false)));
 		form.setDesignatorRequired(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired", false)));
-		form.setSortBy(UserData.getProperty(httpSession,"InstructionalOfferingList.sortBy",ClassListForm.sSortByName));
+		form.setSortBy(UserData.getProperty(httpSession,"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
         try {
             User user = Web.getUser(httpSession);
             TimetableManager manager = TimetableManager.getManager(user);
