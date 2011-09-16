@@ -231,7 +231,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Display Classes in Schedule:")
 	String propertyDisplayClassesInSchedule();
 	
-	@DefaultMessage("All:") //used in Multiple Class Setup
+	@DefaultMessage("All:") //used in Multiple Class Setup, Assign Instructors
 	String propertyAll();
 
 	@DefaultMessage("By Reservation Only:")
@@ -402,6 +402,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Check Conflicts")
 	String columnInstructorCheckConflicts();
 	
+	@DefaultMessage("&nbsp;Check<br>Conflicts")
+	String columnInstructorCheckConflictsBr();
+	
 	@DefaultMessage("Classes / Courses")
 	String columnExamClassesCourses();
 	
@@ -534,6 +537,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructors")
 	String columnInstructors();
 	
+	@DefaultMessage("Display")
+	String columnDisplay();
+	
 	@DefaultMessage("Min")
 	String columnMin();
 	
@@ -641,6 +647,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Previous")
 	String actionPreviousExamination();
 	
+	@DefaultMessage("Previous")
+	String actionPreviousIO();
+	
 	@DefaultMessage("Next")
 	String actionNextClass();
 
@@ -652,6 +661,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Next")
 	String actionNextExamination();
+	
+	@DefaultMessage("Next")
+	String actionNextIO();
 	
 	@DefaultMessage("Back")
 	String actionBackClassDetail();
@@ -760,6 +772,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete")
 	String actionRemoveCoordinator();
+	
+	@DefaultMessage("Unassign All")
+	String actionUnassignAllInstructorsFromConfig();
+	
+	@DefaultMessage("Update")
+	String actionUpdateClassInstructorsAssignment();
 
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
@@ -796,6 +814,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("P")
 	String accessPreviousExamination();
+	
+	@DefaultMessage("P")
+	String accessPreviousIO();
 
 	@DefaultMessage("N")
 	String accessNextClass();
@@ -808,6 +829,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("N")
 	String accessNextExamination();
+	
+	@DefaultMessage("N")
+	String accessNextIO();
 	
 	@DefaultMessage("B")
 	String accessBackClassDetail();
@@ -899,6 +923,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("C")
 	String accessAddCoordinator();
 	
+	@DefaultMessage("U")
+	String accessUpdateClassInstructorsAssignment();
+	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
@@ -935,6 +962,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update and go to previous Scheduling Subpart (Alt+{0})")
 	String titlePreviousSubpartWithUpdate(String accessKey);
 	
+	@DefaultMessage("Update and go to previous Instructional Offering (Alt+{0})")
+	String titlePreviousIOWithUpdate(String accessKey);
+	
 	@DefaultMessage("Update and go to previous Instructor (Alt+{0})")
 	String titlePreviousInstructorWithUpdate(String accessKey);
 	
@@ -952,6 +982,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update and go to next Scheduling Subpart (Alt+{0})")
 	String titleNextSubpartWithUpdate(String accessKey);
+	
+	@DefaultMessage("Update and go to next Instructional Offering (Alt+{0})")
+	String titleNextIOWithUpdate(String accessKey);
 	
 	@DefaultMessage("Update and go to next Instructor (Alt+{0})")
 	String titleNextInstructorWithUpdate(String accessKey);
@@ -1049,8 +1082,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add Instructor (Alt+{0})")
 	String titleAddInstructor(String accessKey);
 	
+	@DefaultMessage("Add Instructor to Class")
+	String titleAddInstructorToClass();
+	
 	@DefaultMessage("Remove Instructor")
 	String titleRemoveInstructor();
+	
+	@DefaultMessage("Remove Instructor from Class")
+	String titleRemoveInstructorFromClass();
 	
 	@DefaultMessage("Add Examination (Alt+{0})")
 	String titleAddExamination(String accessKey);
@@ -1108,7 +1147,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Add Coordinator (Alt+{0})")
 	String titleAddCoordinator(String accessKey);
+	
+	@DefaultMessage("Unassign All Instructors")
+	String titleUnassignAllInstructorsFromConfig();
 
+	@DefaultMessage("Update Class Instructors (Alt+{0})")
+	String titleUpdateClassInstructorsAssignment(String accessKey);
+		
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -1133,9 +1178,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Number cannot be matched to regular expression: {0}. Reason: {1}")
 	String errorCourseDoesNotMatchRegEx(String regEx, String reason);
 	
-	@DefaultMessage("Access Denied.")
+	@DefaultMessage("Access Denied.")  //better use exceptionAccessDenied
 	String errorAccessDenied();
 
+	@DefaultMessage("ERRORS")
+	String errors();
+	
 	@DefaultMessage("ERRORS")
 	String errorsClassDetail();
 	
@@ -1310,6 +1358,24 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
 	String errorInitialIOSetupIncomplete();
 	
+	@DefaultMessage("Duplicate instructor for class.")
+	String errorDuplicateInstructorForClass();
+	
+	@DefaultMessage("Access Denied.")
+	String exceptionAccessDenied();
+	
+	@DefaultMessage("Operation could not be interpreted: ")
+	String exceptionOperationNotInterpreted();
+	
+	@DefaultMessage("Missing Instructional Offering Config.")
+	String exceptionMissingIOConfig();
+	
+	@DefaultMessage("Instructional Offering Config has not been defined.")
+	String exceptionIOConfigUndefined();
+	
+	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
+	String exceptionInitialIOSetupIncomplete();
+	
 	@DefaultMessage("Name")
 	String sortByName();
 	
@@ -1438,6 +1504,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("This operation will delete existing subparts and associated classes . Continue?")
 	String confirmDeleteExistingSubpartsClasses();
+	
+	@DefaultMessage("Do you really want to unassign all instructors?")
+	String confirmUnassignAllInstructors();
 	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();

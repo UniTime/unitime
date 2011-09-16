@@ -36,6 +36,8 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
 import org.unitime.timetable.form.ClassListForm;
@@ -57,6 +59,9 @@ import org.unitime.timetable.util.Constants;
 
 
 public class ClassInstructorAssignmentAction extends Action {
+
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	/**
      * Method execute
      * @param mapping
@@ -72,7 +77,7 @@ public class ClassInstructorAssignmentAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.exceptionAccessDenied());
         }
 
         MessageResources rsc = getResources(request);
@@ -92,7 +97,7 @@ public class ClassInstructorAssignmentAction extends Action {
             op = request.getParameter("hdnOp");
 
         if(op==null || op.trim().length()==0)
-            throw new Exception ("Operation could not be interpreted: " + op);
+            throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
 
         // Instructional Offering Config Id
         String instrOffrConfigId = "";
@@ -124,12 +129,12 @@ public class ClassInstructorAssignmentAction extends Action {
             doLoad(request, frm, instrOffrConfigId, user, ioc);
         }
 
-        if(op.equals(rsc.getMessage("button.classInstrUpdate")) ||
-        		op.equals(rsc.getMessage("button.nextInstructionalOffering")) ||
-        		op.equals(rsc.getMessage("button.previousInstructionalOffering")) ||
-        		op.equals(rsc.getMessage("button.unassignAll"))) {
+        if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) ||
+        		op.equals(MSG.actionNextIO()) ||
+        		op.equals(MSG.actionPreviousIO()) ||
+        		op.equals(MSG.actionUnassignAllInstructorsFromConfig())) {
 
-            if (op.equals(rsc.getMessage("button.unassignAll"))) {
+            if (op.equals(MSG.actionUnassignAllInstructorsFromConfig())) {
             	frm.unassignAllInstructors();
             }
 
@@ -161,12 +166,12 @@ public class ClassInstructorAssignmentAction extends Action {
 
                     request.setAttribute("io", frm.getInstrOfferingId());
 
-    	            if (op.equals(rsc.getMessage("button.nextInstructionalOffering"))) {
+    	            if (op.equals(MSG.actionNextIO())) {
     	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getNextId())+"&op="+rsc.getMessage("button.classInstructorAssignment"));
     	            	return null;
     	            }
 
-    	            if (op.equals(rsc.getMessage("button.previousInstructionalOffering"))) {
+    	            if (op.equals(MSG.actionPreviousIO())) {
     	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getPreviousId())+"&op="+rsc.getMessage("button.classInstructorAssignment"));
     	            	return null;
     	            }
@@ -210,7 +215,7 @@ public class ClassInstructorAssignmentAction extends Action {
 
         // Check uniqueid
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
-            throw new Exception ("Missing Instructional Offering Config.");
+            throw new Exception (MSG.exceptionMissingIOConfig());
 
         // Load details
         InstructionalOffering io = ioc.getInstructionalOffering();
@@ -230,7 +235,7 @@ public class ClassInstructorAssignmentAction extends Action {
         frm.setInstrOfferingName(name);
 
         if (ioc.getSchedulingSubparts() == null || ioc.getSchedulingSubparts().size() == 0)
-        	throw new Exception("Instructional Offering Config has not been defined.");
+        	throw new Exception(MSG.exceptionIOConfigUndefined());
 
         InstrOfferingConfig config = ioc.getNextInstrOfferingConfig(session, user, false, true);
         if(config != null) {
@@ -252,7 +257,7 @@ public class ClassInstructorAssignmentAction extends Action {
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
-    			throw new Exception("Initial setup of Instructional Offering Config has not been completed.");
+    			throw new Exception(MSG.exceptionInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
         		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String());
         	}
