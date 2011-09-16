@@ -71,7 +71,9 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 		return true;
 	}
 	
+	@Deprecated
 	public void updateAllEnrollmentCounters(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		/*
 		helper.beginTransaction();
 		try {
 	     	helper.getHibSession().createQuery(
@@ -94,6 +96,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 				throw (SectioningException)e;
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
+		*/
 	}
 	
 	@Override

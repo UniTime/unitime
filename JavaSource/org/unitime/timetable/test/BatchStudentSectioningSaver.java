@@ -211,6 +211,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
             }
 
             // Update class enrollments
+            /*
             for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
                 Offering offering = (Offering)e.next();
                 for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
@@ -234,6 +235,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                     }
                 }
             }
+            */
             
             StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
             

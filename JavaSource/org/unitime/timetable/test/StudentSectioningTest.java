@@ -518,7 +518,7 @@ public class StudentSectioningTest {
             for (Iterator i=s.getClassEnrollments().iterator();i.hasNext();) {
                 StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                 sce.getClazz().getStudentEnrollments().remove(sce);
-                sce.getClazz().setEnrollment(sce.getClazz().getEnrollment()-1);
+                // sce.getClazz().setEnrollment(sce.getClazz().getEnrollment()-1);
                 hibSession.delete(sce); i.remove();
             }
             for (Iterator i=s.getWaitlists().iterator();i.hasNext();) {
