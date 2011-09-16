@@ -301,31 +301,38 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         // Update class enrollments
+        /*
         if (!iProjections) {
-            iProgress.setPhase("Updating class enrollments...", getModel().getOfferings().size());
-            for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
-                Offering offering = (Offering)e.next(); iProgress.incProgress();
-                for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
-                    Config config = (Config)f.next();
-                    for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
-                        Subpart subpart = (Subpart)g.next();
-                        for (Iterator h=subpart.getSections().iterator();h.hasNext();) {
-                            Section section = (Section)h.next();
+            iProgress.setPhase("Updating enrollment counts...", getModel().getOfferings().size());
+            for (Offering offering: getModel().getOfferings()) {
+                iProgress.incProgress();
+                for (Config config: offering.getConfigs()) {
+                    for (Subpart subpart: config.getSubparts()) {
+                        for (Section section: subpart.getSections()) {
                             Class_ clazz = iClasses.get(section.getId());
                             if (clazz==null) continue;
                             int enrl = 0;
-                            for (Iterator i=section.getEnrollments().iterator();i.hasNext();) {
-                            	Enrollment en = (Enrollment)i.next();
+                            for (Enrollment en: section.getEnrollments())
                             	if (!en.getStudent().isDummy()) enrl++;
-                            }
                             clazz.setEnrollment(enrl);
                             hibSession.saveOrUpdate(clazz);
                             flushIfNeeded(hibSession);
                         }
                     }
                 }
+                for (Course course: offering.getCourses()) {
+                	CourseOffering co = iCourses.get(course.getId());
+                	if (co == null) continue;
+                    int enrl = 0;
+                    for (Enrollment en: course.getEnrollments())
+                    	if (!en.getStudent().isDummy()) enrl++;
+                    co.setEnrollment(enrl);
+                    hibSession.saveOrUpdate(co);
+                    flushIfNeeded(hibSession);
+                }
             }
         }
+        */
         
         flush(hibSession);
         

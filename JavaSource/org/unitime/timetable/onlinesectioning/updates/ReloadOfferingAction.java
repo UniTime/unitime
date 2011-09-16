@@ -377,6 +377,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			}			
 		}
 		
+		/*
      	helper.getHibSession().createQuery(
      			"update CourseOffering c set c.enrollment = " +
      			"(select count(distinct e.student) from StudentClassEnrollment e where e.courseOffering.uniqueId = c.uniqueId) " + 
@@ -389,6 +390,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
                  "where c.schedulingSubpart.uniqueId in " +
                  "(select s.uniqueId from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId)").
                  setLong("offeringId", offeringId).executeUpdate();
+         */
 	}
 	
 	public boolean check(Enrollment e) {
