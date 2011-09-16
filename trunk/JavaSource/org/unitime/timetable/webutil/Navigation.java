@@ -81,7 +81,10 @@ public class Navigation {
 				ids[level].add(o);
 			} else {
 				try {
-					ids[level].add(o.getClass().getMethod("getUniqueId", new Class[]{}).invoke(o,new Object[]{}));
+					if (o.getClass().isArray())
+						ids[level].add(((Object[])o)[0].getClass().getMethod("getUniqueId", new Class[]{}).invoke(((Object[])o)[0],new Object[]{}));
+					else
+						ids[level].add(o.getClass().getMethod("getUniqueId", new Class[]{}).invoke(o,new Object[]{}));
 				} catch (Exception e) {
 					Debug.error(e);
 				}

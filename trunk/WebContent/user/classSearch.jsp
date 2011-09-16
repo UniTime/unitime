@@ -241,6 +241,15 @@
 						</TD>
 					</TR>
 					<TR>
+						<TD>
+							<B><loc:message name="filterCrossList"/></B>
+						</TD>
+						<TD>
+							<html:checkbox property="showCrossListedClasses"/>
+							<loc:message name="showCrossListedClasses"/>
+						</TD>
+					</TR>
+					<TR>
 						<TD colspan='2' align='right'>
 							<br>
 						</TD>

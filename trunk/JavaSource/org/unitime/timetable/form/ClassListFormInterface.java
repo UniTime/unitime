@@ -32,6 +32,8 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	public int getFilterStartSlot();
 	public int getFilterLength();
 	public boolean getSortByKeepSubparts();
+	public boolean getShowCrossListedClasses();
+
 	public boolean isUserIsAdmin();
 	public void setUserIsAdmin(boolean userIsAdmin);
 	public String[] getUserDeptIds();
@@ -45,4 +47,5 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	public void setFilterStartSlot(int filterStartSlot);
 	public void setFilterLength(int filterLength);
 	public void setSortByKeepSubparts(boolean sortByKeepSubparts);
+	public void setShowCrossListedClasses(boolean showCrossListedClasses);
 }

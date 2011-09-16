@@ -41,6 +41,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 
 
@@ -259,7 +260,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		designatorRequired = new Boolean(false);
 		exams = new Boolean(false);
 		canSeeExams = new Boolean(false);
-		sortBy = ClassListForm.sSortByName;
+		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
 
 	/**
@@ -555,7 +556,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	public String getSortBy() { return sortBy; }
 	public void setSortBy(String sortBy) { this.sortBy = sortBy; }
-	public String[] getSortByOptions() { return ClassListForm.sSortByOptions; }
+	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
 	
 	public Boolean getEnrollmentInformation(){
 		return(new Boolean(getDemand().booleanValue() 

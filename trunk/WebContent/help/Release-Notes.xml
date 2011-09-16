@@ -252,6 +252,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Classes, Class Assignments</name>
+			<description>
+				<line>Added ability to show cross-listed classes.</line>
+				<line>Date pattern: show assigned date pattern if a timetable is being shown.</line>
+				<line>Sorting changes: compare by all instructors (not just lead); if keep subparts is false, compare among all listed classes (of a subject area).</line>
+				<line>Class Assignments: show instructor assignments (but only when display instructor is enabled on a class)</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>

@@ -95,7 +95,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 		            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
 		            	}
 						for (Iterator i=classes.iterator();i.hasNext();) {
-							Class_ clazz = (Class_)i.next();
+							Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
        						if (classAssignment.getAssignment(clazz)!=null) {
         						hasTimetable = true; break;
        						}	
@@ -123,14 +123,13 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 			iDocument.open();
         
 
-			Class_ c = null;
 			int ct = 0;
 			Iterator it = classes.iterator();
 			SubjectArea subjectArea = null;
 			String prevLabel = null;
 			while (it.hasNext()){
-				c = (Class_) it.next();
-				if (subjectArea == null || !subjectArea.getUniqueId().equals(c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId())){
+				Object[] o = (Object[])it.next(); Class_ c = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
+				if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
 					if (iPdfTable!=null) {
 						iDocument.add(iPdfTable);
 						iDocument.newPage();
@@ -142,15 +141,15 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 					iPdfTable.getDefaultCell().setBorderWidth(0);
 					iPdfTable.setSplitRows(false);
 
-					subjectArea = c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea();
+					subjectArea = co.getSubjectArea();
 					ct = 0;
 
 					iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
 					iDocument.add(new Paragraph(" "));
 					pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
 				}
-				pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
-				prevLabel = c.getClassLabel();
+				pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", user, prevLabel);
+				prevLabel = c.getClassLabel(co);
 			}
 		
             if (iPdfTable!=null)
@@ -169,19 +168,19 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
     	return null;
     }
 	
-    protected PdfPCell pdfBuildPrefGroupLabel(PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel) {
+    protected PdfPCell pdfBuildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel) {
     	if (prefGroup instanceof Class_) {
     		Color color = (isEditable?Color.BLACK:Color.GRAY);
     		String label = prefGroup.toString();
         	Class_ aClass = (Class_) prefGroup;
-        	label = aClass.getClassLabel();
+        	label = aClass.getClassLabel(co);
         	if (prevLabel != null && label.equals(prevLabel)){
         		label = "";
         	}
         	PdfPCell cell = createCell();
-        	addText(cell, indentSpaces+label, false, false, Element.ALIGN_LEFT, color, true);
+        	addText(cell, indentSpaces+label, co.isIsControl(), false, Element.ALIGN_LEFT, color, true);
         	return cell;
-    	} else return super.pdfBuildPrefGroupLabel(prefGroup, indentSpaces, isEditable, null);
+    	} else return super.pdfBuildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, null);
     }
     
     protected TreeSet getExams(Class_ clazz) {
