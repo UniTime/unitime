@@ -34,6 +34,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -48,6 +50,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 
 public class ClassInstructorAssignmentForm extends ActionForm {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String op;
     private Integer subjectAreaId;
 	private Long instrOfferingId;
@@ -132,7 +136,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
             (MessageResources) super.getServlet()
             	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
 
-        if(op.equals(rsc.getMessage("button.classInstrUpdate")) || op.equals(rsc.getMessage("button.nextInstructionalOffering")) || op.equals(rsc.getMessage("button.previousInstructionalOffering"))) {	
+        if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) || op.equals(MSG.actionNextIO()) || op.equals(MSG.actionPreviousIO())) {	
             // Check Added Instructors
 	        for (int i = 0; i < classIds.size(); i++) {
 	        	String classId = (String) classIds.get(i);
@@ -140,7 +144,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	        	for (int j = i + 1; j < classIds.size(); j++) {
 	        		if (((String) instructorUids.get(j)).length() > 0) {
 		        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid)) {
-		        			errors.add("duplicateInstructor", new ActionMessage("errors.generic", "Duplicate instructor for class"));
+		        			errors.add("duplicateInstructor", new ActionMessage("errors.generic", MSG.errorDuplicateInstructorForClass()));
 		        		}
 	        		}
 	        	}
