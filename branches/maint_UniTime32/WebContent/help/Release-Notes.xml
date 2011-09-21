@@ -30,6 +30,22 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>Fixed a bug (introduced by revision 1988) in Period Chart and Period Chart(Exams) reports.
+					<line>Only exams during the first day (both reports) and only the first time (Period Chart report) were shown.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.2.162</version>
+	<release-date>Fri, 16 Sep 2011</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Login Page</name>
 			<description>
 				<line>Display top menu (accidentally made hidden by revision 2531).</line>
