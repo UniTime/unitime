@@ -90,7 +90,7 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
         int lastDIdx = -1;
         boolean firstLine = true;
         for (int dIdx = 0; dIdx < days.size(); dIdx+=nrCols) {
-            for (Integer time: new TreeSet<Integer>(times.keySet())) {
+            for (int time: new TreeSet<Integer>(times.keySet())) {
                 int offset = 0;
                 String timeStr = times.get(time);
                 String header1 = "";
