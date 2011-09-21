@@ -93,7 +93,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         int lastDIdx = -1;
         boolean firstLine = true;
         for (int dIdx = 0; dIdx < days.size(); dIdx+=nrCols) {
-            for (Integer time: new TreeSet<Integer>(times.keySet())) {
+            for (int time: new TreeSet<Integer>(times.keySet())) {
                 int offset = 0;
                 String timeStr = times.get(time);
                 String header1 = "";
@@ -105,7 +105,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 String lastDay = null;
                 nrCols = 0;
                 for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator();f.hasNext();idx++) {
-                	Integer day = f.next();
+                	int day = f.next();
                     String dayStr = days.get(day);
                     if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==(iTotals?6:5)) continue;
                     if (firstDay==null) {
