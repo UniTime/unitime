@@ -1599,7 +1599,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		return getParentClass(clazz.getParentClass(), parentSubpart);
 	}
     
-    private static class ChildrenFirstDistributionObjectComparator implements Comparator<DistributionObject> {
+    public static class ChildrenFirstDistributionObjectComparator implements Comparator<DistributionObject> {
     	
     	public int compare(DistributionObject d1, DistributionObject d2) {
     		if (d1.getPrefGroup() instanceof Class_) {

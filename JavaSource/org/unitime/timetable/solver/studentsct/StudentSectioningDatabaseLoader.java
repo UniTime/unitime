@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -52,6 +53,8 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -68,8 +71,10 @@ import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.WaitList;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
@@ -972,7 +977,104 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	public static Date getDatePatternFirstDay(Session s) {
 		return DateUtils.getDate(1, s.getPatternStartMonth(), s.getSessionStartYear());
 	}
+	
+	private List<Collection<Section>> getSections(DistributionPref pref, Hashtable<Long, Section> classTable) {
+		List<Collection<Section>> ret = new ArrayList<Collection<Section>>();
+    	int groupingType = (pref.getGrouping() == null ? DistributionPref.sGroupingNone : pref.getGrouping().intValue());
+    	if (groupingType == DistributionPref.sGroupingProgressive) {
+    		int maxSize = 0;
+    		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
+        		DistributionObject distributionObject = (DistributionObject)i.next();
+        		if (distributionObject.getPrefGroup() instanceof Class_)
+        			maxSize = Math.max(maxSize, 1);
+        		else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart)
+        			maxSize = Math.max(maxSize, ((SchedulingSubpart)distributionObject.getPrefGroup()).getClasses().size());
+    		}
+    		Set<Section> sections[] = new Set[maxSize];
+    		for (int i=0;i<sections.length;i++)
+    			sections[i] = new HashSet<Section>();
 
+    		List<DistributionObject> distributionObjects = new ArrayList<DistributionObject>(pref.getDistributionObjects());
+    		Collections.sort(distributionObjects, new TimetableDatabaseLoader.ChildrenFirstDistributionObjectComparator());
+    		for (DistributionObject distributionObject: distributionObjects) {
+        		if (distributionObject.getPrefGroup() instanceof Class_) {
+        			Section section = classTable.get(distributionObject.getPrefGroup().getUniqueId());
+        			if (section!=null)
+        				for (int j = 0; j < sections.length; j++)
+        					sections[j].add(section);
+        		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
+        			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        	    	for (int j = 0; j < sections.length; j++) {
+        	    		Section section = null;
+        	    		sections: for (Section s: sections[j]) {
+        	    			Section p = s.getParent();
+        	    			while (p != null) {
+        	    				if (p.getSubpart().getId() == subpart.getUniqueId()) {
+        	    					section = s;
+        	    					break sections;
+        	    				}
+        	    				p  = p.getParent();
+        	    			}
+        	    		}
+        	    		if (section == null)
+        	    			section = classTable.get(classes.get(j%classes.size()).getUniqueId());
+        	    		if (section!=null)
+        	    			sections[j].add(section);
+        	    	}
+        		}
+    		}
+    		for (Set<Section> s: sections)
+    			ret.add(s);
+		} else {
+    		List<Section> sections = new ArrayList<Section>();
+        	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
+        		DistributionObject distributionObject = (DistributionObject)i.next();
+        		if (distributionObject.getPrefGroup() instanceof Class_) {
+        			Section section = classTable.get(distributionObject.getPrefGroup().getUniqueId());
+        			if (section != null)
+        				sections.add(section);
+        		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
+        			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        	    	for (Class_ clazz: classes) {
+        	    		Section section = classTable.get(clazz.getUniqueId());
+	        			if (section != null)
+	        				sections.add(section);
+        	    	}        	        	    		
+        		}
+        	}
+			if (groupingType == DistributionPref.sGroupingPairWise) {
+	        	if (sections.size() > 2) {
+	        		for (int idx1 = 0; idx1 < sections.size() - 1; idx1++) {
+	        			Section s1 = sections.get(idx1);
+	        			for (int idx2 = idx1 + 1; idx2 < sections.size(); idx2++) {
+	        				Section s2 = sections.get(idx2);
+	        				Set<Section> s = new HashSet<Section>();
+	        				s.add(s1); s.add(s2);
+	        				ret.add(s);
+	        			}
+	        		}
+	        	}
+			} else if (groupingType == DistributionPref.sGroupingNone) {
+				ret.add(sections);
+			} else {
+				List<Section> s = new ArrayList<Section>();
+				for (Section section: sections) {
+					s.add(section);
+					if (s.size() == groupingType) {
+						ret.add(s); s = new ArrayList<Section>();
+					}
+				}
+				if (s.size() > 2)
+					ret.add(new HashSet<Section>(s));
+			}
+	    }		
+		return ret;
+	}
+	
     public void load(Session session, org.hibernate.Session hibSession) {
     	iFreeTimePattern = getFreeTimeBitSet(session);
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
@@ -1180,6 +1282,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
 		*/
+        
+        List<DistributionPref> linkedSectionsPrefs = hibSession.createQuery(
+        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId and p.owner = d")
+        		.setString("ref", "LINKED_SECTIONS")
+        		.setLong("sessionId", iSessionId)
+        		.list();
+        if (!linkedSectionsPrefs.isEmpty()) {
+        	iProgress.setPhase("Loading linked sections...", linkedSectionsPrefs.size());
+        	for (DistributionPref pref: linkedSectionsPrefs) {
+        		iProgress.incProgress();
+        		for (Collection<Section> sections: getSections(pref, classTable))
+        			getModel().addLinkedSections(sections);
+        	}
+        }
         
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
