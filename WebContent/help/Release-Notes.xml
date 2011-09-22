@@ -375,6 +375,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Sectioning Solver</title>
+		<item>
+			<name>Linked Sections</name>
+			<description>
+				<line>Classes (of different courses) are to be attended by the same students.</line>
+				<line>For instance, if class A1 (of a course A) and class B1 (of a course B) are linked, a student requesting both courses must attend A1 if and only if he also attends B1.</line>
+				<line>This is a student sectioning constraint that is interpreted as Same Students constraint during course timetabling.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Internationalization</title>
 		<item>
 			<name>Added support for localization</name>
