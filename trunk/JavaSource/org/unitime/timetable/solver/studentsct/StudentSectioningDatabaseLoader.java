@@ -81,6 +81,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.DateUtils;
 
+import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -978,7 +979,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		return DateUtils.getDate(1, s.getPatternStartMonth(), s.getSessionStartYear());
 	}
 	
-	private List<Collection<Section>> getSections(DistributionPref pref, Hashtable<Long, Section> classTable) {
+	public static interface SectionProvider {
+		public Section get(Long classId);
+	}
+	
+	public static List<Collection<Section>> getSections(DistributionPref pref, SectionProvider classTable) {
 		List<Collection<Section>> ret = new ArrayList<Collection<Section>>();
     	int groupingType = (pref.getGrouping() == null ? DistributionPref.sGroupingNone : pref.getGrouping().intValue());
     	if (groupingType == DistributionPref.sGroupingProgressive) {
@@ -1080,7 +1085,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
     	
         Hashtable<Long, Course> courseTable = new Hashtable<Long, Course>();
-        Hashtable<Long, Section> classTable = new Hashtable<Long, Section>();
+        final Hashtable<Long, Section> classTable = new Hashtable<Long, Section>();
         List<InstructionalOffering> offerings = hibSession.createQuery(
                 "select distinct io from InstructionalOffering io " +
                 "left join fetch io.courseOfferings as co "+
@@ -1136,8 +1141,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 					((IndividualReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
                 				else if (enrollment.getReservation() instanceof GroupReservation)
                 					((GroupReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
-                				else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getLimit() > 0)
-                					((CurriculumReservation)enrollment.getReservation()).setLimit(enrollment.getReservation().getLimit() - 1);
+                				else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getReservationLimit() > 0)
+                					((CurriculumReservation)enrollment.getReservation()).setReservationLimit(enrollment.getReservation().getReservationLimit() - 1);
                 			}
                 		}
                 		if (request instanceof CourseRequest) {
@@ -1284,15 +1289,23 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		*/
         
         List<DistributionPref> linkedSectionsPrefs = hibSession.createQuery(
-        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId and p.owner = d")
-        		.setString("ref", "LINKED_SECTIONS")
+        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId" +
+        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+        		.setString("pref", PreferenceLevel.sRequired)
         		.setLong("sessionId", iSessionId)
         		.list();
         if (!linkedSectionsPrefs.isEmpty()) {
         	iProgress.setPhase("Loading linked sections...", linkedSectionsPrefs.size());
+        	SectionProvider p = new SectionProvider() {
+				@Override
+				public Section get(Long classId) {
+					return classTable.get(classId);
+				}
+			};
         	for (DistributionPref pref: linkedSectionsPrefs) {
         		iProgress.incProgress();
-        		for (Collection<Section> sections: getSections(pref, classTable))
+        		for (Collection<Section> sections: getSections(pref, p))
         			getModel().addLinkedSections(sections);
         	}
         }
