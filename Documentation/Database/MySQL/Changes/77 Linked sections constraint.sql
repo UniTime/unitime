@@ -20,7 +20,7 @@
 select 32767 * next_hi into @id from hibernate_unique_key;
 
 insert into distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
-	(@id, 'LINKED_SECTIONS', 'Linked Classes', 0, 42, '0R', 'Classes (of different courses) are to be attended by the same students. For instance, if class A1 (of a course A) and class B1 (of a course B) are linked, a student requesting both courses must attend A1 if and only if he also attends B1. This is a student sectioning constraint that is interpreted as Same Students constraint during course timetabling.', 'Linked', 0, 0);
+	(@id, 'LINKED_SECTIONS', 'Linked Classes', 0, 42, 'R', 'Classes (of different courses) are to be attended by the same students. For instance, if class A1 (of a course A) and class B1 (of a course B) are linked, a student requesting both courses must attend A1 if and only if he also attends B1. This is a student sectioning constraint that is interpreted as Same Students constraint during course timetabling.', 'Linked', 0, 0);
 
 update hibernate_unique_key set next_hi=next_hi+1;
 
