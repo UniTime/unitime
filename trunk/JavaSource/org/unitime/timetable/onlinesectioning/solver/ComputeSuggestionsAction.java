@@ -21,23 +21,28 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
+import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -100,14 +105,27 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				}
 				action.addEnrollment(enrollment);
 			}
+			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Set<LinkedSections> linkedSections = new HashSet<LinkedSections>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, student, original, c, false, true);
+				addRequest(server, model, student, original, c, false, true, classTable, linkedSections);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, student, original, c, true, true);
+				addRequest(server, model, student, original, c, true, true, classTable, linkedSections);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			for (LinkedSections link: linkedSections) {
+				List<Section> sections = new ArrayList<Section>();
+				for (Offering offering: link.getOfferings())
+					for (Subpart subpart: link.getSubparts(offering))
+						for (Section section: link.getSections(subpart)) {
+							Section x = classTable.get(section.getId());
+							if (x != null) sections.add(x);
+						}
+				if (sections.size() > 2)
+					model.addLinkedSections(sections);
+			}
 		} finally {
 			readLock.release();
 		}

@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -27,7 +28,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Assignment;
@@ -45,7 +48,9 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -59,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
 
 /**
  * @author Tomas Muller
@@ -115,7 +121,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		}
 	}
 		
-	public void reloadOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
+	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
 		// Load course request options
 		Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
 		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
@@ -135,8 +141,10 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		
 		// Existing offering
 		Offering oldOffering = server.getOffering(offeringId);
-		if (oldOffering != null)
+		if (oldOffering != null) {
 			server.remove(oldOffering);
+			server.removeLinkedSections(offeringId);
+		}
 		
 		// New offering
 		Offering newOffering = null;
@@ -147,6 +155,31 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				server.update(newOffering);
 			for (CourseOffering co: io.getCourseOfferings())
 				server.update(new CourseInfo(co));
+			
+			// Load linked sections
+	    	List<DistributionPref> linkedSectionsPrefs = helper.getHibSession().createQuery(
+	        		"select distinct p from DistributionPref p inner join p.distributionObjects o, Department d, " +
+	        		"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
+	        		"where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId " +
+	        		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
+	        		"and p.owner = d and p.prefLevel.prefProlog = :pref")
+	        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+	        		.setString("pref", PreferenceLevel.sRequired)
+	        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
+	        		.setLong("offeringId", offeringId)
+	        		.list();
+	        if (!linkedSectionsPrefs.isEmpty()) {
+	        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
+					@Override
+					public Section get(Long classId) {
+						return server.getSection(classId);
+					}
+				};
+	        	for (DistributionPref pref: linkedSectionsPrefs) {
+	        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p))
+	        			server.addLinkedSections(new LinkedSections(sections));
+	        	}
+	        }
 			
 			// Load sectioning info
         	List<SectioningInfo> infos = helper.getHibSession().createQuery(

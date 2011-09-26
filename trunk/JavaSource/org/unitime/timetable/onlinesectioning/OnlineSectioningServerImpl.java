@@ -42,6 +42,7 @@ import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
@@ -97,6 +98,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Hashtable<Long, Section> iClassTable = new Hashtable<Long, Section>();
 	private Hashtable<Long, Student> iStudentTable = new Hashtable<Long, Student>();
 	private Hashtable<Long, Offering> iOfferingTable = new Hashtable<Long, Offering>();
+	private Hashtable<Long, List<LinkedSections>> iLinkedSections = new Hashtable<Long, List<LinkedSections>>();
 	
 	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
 	private MultiLock iMultiLock;
@@ -1471,4 +1473,49 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public DataProperties getConfig() {
 		return iConfig;
 	}
+
+	@Override
+	public void addLinkedSections(LinkedSections link) {
+		iLock.writeLock().lock();
+		try {
+			for (Offering offering: link.getOfferings()) {
+				List<LinkedSections> list = iLinkedSections.get(offering.getId());
+				if (list == null) {
+					list = new ArrayList<LinkedSections>();
+					iLinkedSections.put(offering.getId(), list);
+				}
+				list.add(link);
+			}
+		} finally {
+			iLock.writeLock().unlock();
+		}
+	}
+	
+	@Override
+	public Collection<LinkedSections> getLinkedSections(Long offeringId) {
+		iLock.readLock().lock();
+		try {
+			return iLinkedSections.get(offeringId);
+
+		} finally {
+			iLock.readLock().unlock();
+		}		
+	}
+	
+	@Override
+	public void removeLinkedSections(Long offeringId) {
+		iLock.writeLock().lock();
+		try {
+			List<LinkedSections> list = iLinkedSections.get(offeringId);
+			if (list != null && !list.isEmpty())
+				for (LinkedSections link: new ArrayList<LinkedSections>(list)) {
+					for (Offering offering: link.getOfferings()) {
+						List<LinkedSections> l = iLinkedSections.get(offering.getId());
+						if (l != null) l.remove(link);
+					}
+				}
+		} finally {
+			iLock.writeLock().unlock();
+		}
+	}	
 }
