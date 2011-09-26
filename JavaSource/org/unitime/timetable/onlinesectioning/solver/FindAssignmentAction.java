@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import java.util.Vector;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -125,14 +127,27 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 				action.addEnrollment(enrollment);
 			}
+			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Set<LinkedSections> linkedSections = new HashSet<LinkedSections>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, student, original, c, false, false);
+				addRequest(server, model, student, original, c, false, false, classTable, linkedSections);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, student, original, c, true, false);
+				addRequest(server, model, student, original, c, true, false, classTable, linkedSections);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			for (LinkedSections link: linkedSections) {
+				List<Section> sections = new ArrayList<Section>();
+				for (Offering offering: link.getOfferings())
+					for (Subpart subpart: link.getSubparts(offering))
+						for (Section section: link.getSections(subpart)) {
+							Section x = classTable.get(section.getId());
+							if (x != null) sections.add(x);
+						}
+				if (sections.size() > 2)
+					model.addLinkedSections(sections);
+			}
 		} finally {
 			readLock.release();
 		}
@@ -231,7 +246,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public double value() { return iValue; }
 	
 	@SuppressWarnings("unchecked")
-	protected Course clone(Course course, long studentId, Student originalStudent) {
+	protected Course clone(Course course, long studentId, Student originalStudent, Map<Long, Section> classTable) {
 		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());
 		int courseLimit = course.getLimit();
 		if (courseLimit >= 0) {
@@ -288,6 +303,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						clonedSection.setPenalty(available / section.getLimit());
 			        }
 					sections.put(section, clonedSection);
+					classTable.put(section.getId(), clonedSection);
 				}
 			}
 		}
@@ -352,7 +368,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		}
 	}
 	
-	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, Student originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache) {
+	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, Student originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<LinkedSections> linkedSections) {
 		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourseInfo(request.getRequestedCourse()) != null)
 			request.getRequestedFreeTime().clear();			
 		if (request.hasRequestedFreeTime()) {
@@ -372,23 +388,26 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			if (courseInfo != null) course = server.getCourse(courseInfo.getUniqueId());
 			if (course != null) {
 				Vector<Course> cr = new Vector<Course>();
-				cr.add(clone(course, student.getId(), originalStudent));
+				cr.add(clone(course, student.getId(), originalStudent, classTable));
 				if (request.hasFirstAlternative()) {
 					CourseInfo ci = server.getCourseInfo(request.getFirstAlternative());
 					if (ci != null) {
 						Course x = server.getCourse(ci.getUniqueId());
-						if (x != null) cr.add(clone(x, student.getId(), originalStudent));
+						if (x != null) cr.add(clone(x, student.getId(), originalStudent, classTable));
 					}
 				}
 				if (request.hasSecondAlternative()) {
 					CourseInfo ci = server.getCourseInfo(request.getSecondAlternative());
 					if (ci != null) {
 						Course x = server.getCourse(ci.getUniqueId());
-						if (x != null) cr.add(clone(x, student.getId(), originalStudent));
+						if (x != null) cr.add(clone(x, student.getId(), originalStudent, classTable));
 					}
 				}
-				for (Course clonedCourse: cr)
+				for (Course clonedCourse: cr) {
 					updateLimits(server, clonedCourse, updateFromCache);
+					Collection<LinkedSections> links = server.getLinkedSections(clonedCourse.getOffering().getId());
+					if (links != null) linkedSections.addAll(links);
+				}
 				new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false, null);
 			}
 		}
