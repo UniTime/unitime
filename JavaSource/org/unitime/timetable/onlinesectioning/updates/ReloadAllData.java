@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -34,8 +35,10 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
 import net.sf.cpsolver.studentsct.model.Choice;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -70,9 +73,11 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -86,6 +91,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
 
 /**
  * @author Tomas Muller
@@ -95,7 +101,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
 
 	@Override
-	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public Boolean execute(final OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.lockAll();
 		try {
 			helper.beginTransaction();
@@ -159,6 +165,26 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    						", expected: " + section.getSpaceExpected() + ")");
 		    		}
 		    	}
+		    	
+		    	List<DistributionPref> linkedSectionsPrefs = helper.getHibSession().createQuery(
+		        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId" +
+		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+		        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+		        		.setString("pref", PreferenceLevel.sRequired)
+		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
+		        		.list();
+		        if (!linkedSectionsPrefs.isEmpty()) {
+		        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
+						@Override
+						public Section get(Long classId) {
+							return server.getSection(classId);
+						}
+					};
+		        	for (DistributionPref pref: linkedSectionsPrefs) {
+		        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p))
+		        			server.addLinkedSections(new LinkedSections(sections));
+		        	}
+		        }
 		        
 				long t1 = System.currentTimeMillis();
 				helper.info("  Update of session " + server.getAcademicSession() + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");

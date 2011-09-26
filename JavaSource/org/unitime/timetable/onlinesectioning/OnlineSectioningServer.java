@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Offering;
@@ -73,6 +74,10 @@ public interface OnlineSectioningServer {
 	public void update(CourseInfo info);
 	public void clearAll();
 	public void clearAllStudents();
+	
+	public void addLinkedSections(LinkedSections link);
+	public Collection<LinkedSections> getLinkedSections(Long offeringId);
+	public void removeLinkedSections(Long offeringId);
 	
 	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests);
 	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment);
