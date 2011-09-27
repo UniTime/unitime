@@ -329,7 +329,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 				Reservation clonedReservation = new DummyReservation(reservation.getId(), clonedOffering,
 						reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
-						applicable, reservation.mustBeUsed());
+						applicable, reservation.mustBeUsed(), reservation.isAllowOverlap());
 				for (Config config: reservation.getConfigs())
 					clonedReservation.addConfig(configs.get(config));
 				for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
