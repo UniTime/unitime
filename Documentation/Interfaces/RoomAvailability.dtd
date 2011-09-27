@@ -1,0 +1,64 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT parameters ( year, term, campus, beginDate, endDate, startTime, endTime ) >
+<!ATTLIST parameters created CDATA #REQUIRED >
+
+<!ELEMENT year EMPTY >
+<!ATTLIST year value CDATA #REQUIRED >
+
+<!ELEMENT term EMPTY >
+<!ATTLIST term value CDATA #REQUIRED >
+
+<!ELEMENT campus EMPTY >
+<!ATTLIST campus value CDATA #REQUIRED >
+
+<!ELEMENT beginDate EMPTY >
+<!ATTLIST beginDate value CDATA #REQUIRED >
+
+<!ELEMENT endDate EMPTY >
+<!ATTLIST endDate value CDATA #REQUIRED >
+
+<!ELEMENT startTime EMPTY >
+<!ATTLIST startTime value CDATA #REQUIRED >
+
+<!ELEMENT endTime EMPTY >
+<!ATTLIST endTime value CDATA #REQUIRED >
+
+<!ELEMENT availability ( room* ) >
+<!ATTLIST availability created CDATA #REQUIRED >
+<!ATTLIST availability dateFormat CDATA #REQUIRED >
+<!ATTLIST availability timeFormat CDATA #REQUIRED >
+
+<!ELEMENT room ( event* ) >
+<!ATTLIST room externalId CDATA #IMPLIED >
+<!ATTLIST room building CDATA #REQUIRED >
+<!ATTLIST room roomNbr CDATA #REQUIRED >
+
+<!ELEMENT event EMPTY >
+<!ATTLIST event name CDATA #REQUIRED >
+<!ATTLIST event type CDATA #REQUIRED >
+<!ATTLIST event date CDATA #REQUIRED >
+<!ATTLIST event startTime CDATA #REQUIRED >
+<!ATTLIST event endTime CDATA #REQUIRED >
+
+<!ATTLIST sessionDates examBegin CDATA #IMPLIED >
+<!ATTLIST sessionDates eventBegin CDATA #IMPLIED >
+<!ATTLIST sessionDates eventEnd CDATA #IMPLIED >
+
