@@ -30,7 +30,9 @@ import org.dom4j.Element;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -134,9 +136,9 @@ public class StudentEnrollmentImport extends BaseImport {
 		            student.setClassEnrollments(new HashSet<StudentClassEnrollment>());
             	}
             	
-            	Hashtable<Long, StudentClassEnrollment> enrollments = new Hashtable<Long, StudentClassEnrollment>();
+            	Hashtable<Pair, StudentClassEnrollment> enrollments = new Hashtable<Pair, StudentClassEnrollment>();
             	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
-            		enrollments.put(enrollment.getClazz().getUniqueId(), enrollment);
+            		enrollments.put(new Pair(enrollment.getCourseOffering().getUniqueId(), enrollment.getClazz().getUniqueId()), enrollment);
             	}
             	
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
@@ -193,7 +195,7 @@ public class StudentEnrollmentImport extends BaseImport {
             					{ course = co; break; }
             		}
             		
-            		StudentClassEnrollment enrollment = enrollments.remove(clazz.getUniqueId());
+            		StudentClassEnrollment enrollment = enrollments.remove(new Pair(course.getUniqueId(), clazz.getUniqueId()));
             		if (enrollment != null) continue; // enrollment already exists
             		
             		enrollment = new StudentClassEnrollment();
@@ -203,12 +205,24 @@ public class StudentEnrollmentImport extends BaseImport {
             		enrollment.setTimestamp(new java.util.Date());
             		student.getClassEnrollments().add(enrollment);
             		
+            		demands: for (CourseDemand d: student.getCourseDemands()) {
+            			for (CourseRequest r: d.getCourseRequests()) {
+            				if (r.getCourseOffering().equals(course)) {
+            					r.getClassEnrollments().add(enrollment);
+            					enrollment.setCourseRequest(r);
+            					break demands;
+            				}
+            			}
+            		}
+            		
             		if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
             	}
             	
             	if (!enrollments.isEmpty()) {
             		for (StudentClassEnrollment enrollment: enrollments.values()) {
             			student.getClassEnrollments().remove(enrollment);
+            			if (enrollment.getCourseRequest() != null)
+            				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
             			getHibSession().delete(enrollment);
                 		updatedStudents.add(student.getUniqueId());
             		}
@@ -225,6 +239,8 @@ public class StudentEnrollmentImport extends BaseImport {
  	        for (Student student: students.values()) {
         		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
         			StudentClassEnrollment enrollment = i.next();
+        			if (enrollment.getCourseRequest() != null)
+        				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
         			getHibSession().delete(enrollment);
         			i.remove();
      	        	updatedStudents.add(student.getUniqueId());
@@ -279,6 +295,23 @@ public class StudentEnrollmentImport extends BaseImport {
             	hibSession.close();
             }
         }
+	}
+	
+	public static class Pair {
+		private Long iCourseId, iClassId;
+		public Pair(Long courseId, Long classId) {
+			iCourseId = courseId; iClassId = classId;
+		}
+		public Long getCourseId() { return iCourseId; }
+		public Long getClassId() { return iClassId; }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Pair)) return false;
+			Pair p = (Pair)o;
+			return getCourseId().equals(p.getCourseId()) && getClassId().equals(p.getClassId());
+		}
+		public int hashCode() {
+			return getCourseId().hashCode() ^ getClassId().hashCode();
+		}
 	}
 	
 }
