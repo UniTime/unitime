@@ -890,14 +890,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		private int iLimit;
 		private boolean iApply;
 		private boolean iMustUse;
+		private boolean iAllowOverlap;
 		
-		public DummyReservation(long id, Offering offering, int priority, boolean over, int limit, boolean apply, boolean mustUse) {
+		public DummyReservation(long id, Offering offering, int priority, boolean over, int limit, boolean apply, boolean mustUse, boolean allowOverlap) {
 			super(id, offering);
 			iPriority = priority;
 			iOver = over;
 			iLimit = limit;
 			iApply = apply;
 			iMustUse = mustUse;
+			iAllowOverlap = allowOverlap;
 		}
 		
 		@Override
@@ -924,7 +926,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		public boolean isApplicable(Student student) {
 			return iApply;
 		}
-		
+
+		@Override
+		public boolean isAllowOverlap() {
+			return iAllowOverlap;
+		}
 	}
 
 	@Override
