@@ -1138,7 +1138,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		if (request.getInitialAssignment() != null && request.getInitialAssignment().isCourseRequest()) {
                 			Enrollment enrollment = request.getInitialAssignment();
                 			if (enrollment.getConfig().getLimit() > 0)
-                				enrollment.getConfig().setLimit(enrollment.getConfig().getLimit());
+                				enrollment.getConfig().setLimit(enrollment.getConfig().getLimit() - 1);
                 			for (Section section: enrollment.getSections())
                 				if (section.getLimit() > 0)
                 					section.setLimit(section.getLimit() - 1);
