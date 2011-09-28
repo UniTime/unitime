@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -81,6 +82,8 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 		}
 		
 		hibSession.close();
+		
+		Collections.shuffle(operations);
 
 		return operations;
 	}
