@@ -56,6 +56,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
@@ -647,7 +648,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     private PdfPCell pdfBuildPrefGroupProjectedDemand(PreferenceGroup prefGroup, boolean isEditable){
-    	return createCell();
+    	PdfPCell cell = createCell();
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_)prefGroup;
+    		SectioningInfo i = c.getSectioningInfo();
+    		if (i != null && i.getNbrExpectedStudents() != null) {
+    			addText(cell, String.valueOf(Math.round(Math.max(0.0, c.getEnrollment() + i.getNbrExpectedStudents()))));
+    			cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+    		}
+    	}
+    	return cell;
     }
     
     private PdfPCell pdfBuildLimit(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
