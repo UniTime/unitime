@@ -261,6 +261,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Examination Detail, Examination Assignment, Examination Reports, Examination PDF Reports</name>
+			<description>
+				<line>
+					Comparison of direct class conflicts in the Examination Assignment Info was wrong: direct class conflicts with the same number of students were considered equal.
+					<line>This bug was causing some class conflicts not to be visible on the Examination Detail / Assignment page or in the examination reports.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
