@@ -650,8 +650,9 @@ public class PersonalizedExamReportAction extends Action {
     
     public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student, User user) {
         String nl = (html?"<br>":"\n");
+        boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.student.btb","true"));
         PdfWebTable table = new PdfWebTable( 6,
-                student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Examinations for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
+                student.getSession().getLabel()+" Examination Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o3=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
                 new String[] {
                     "Type",
@@ -720,54 +721,55 @@ public class PersonalizedExamReportAction extends Action {
                             new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
                         });
             }
-            for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
-                if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
-                if (!conflict.getStudents().contains(student.getUniqueId())) continue;
-                String classes = "", date = "", time = "", room = "", distance = "", blank="";
-                boolean firstSection = true;
-                for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                    if (!section.getStudentIds().contains(student.getUniqueId())) continue;
-                    if (classes.length()>0) {
-                        blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+            if (showBackToBack)
+                for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
+                    if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
+                    if (!conflict.getStudents().contains(student.getUniqueId())) continue;
+                    String classes = "", date = "", time = "", room = "", distance = "", blank="";
+                    boolean firstSection = true;
+                    for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
+                        if (!section.getStudentIds().contains(student.getUniqueId())) continue;
+                        if (classes.length()>0) {
+                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                        }
+                        classes += section.getName();
+                        if (firstSection) {
+                            date += exam.getDate(false);
+                            time += exam.getTime(false);
+                            room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));;
+                        }
+                        firstSection = false;
                     }
-                    classes += section.getName();
-                    if (firstSection) {
-                        date += exam.getDate(false);
-                        time += exam.getTime(false);
-                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));;
+                    firstSection = true;
+                    for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
+                        if (!section.getStudentIds().contains(student.getUniqueId())) continue;
+                        if (classes.length()>0) {
+                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                        }
+                        classes += section.getName();
+                        if (firstSection) {
+                            time += conflict.getOtherExam().getTime(false);
+                            room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
+                        }
+                        firstSection = false;
                     }
-                    firstSection = false;
+                    table.addLine(
+                            new String[] {
+                                (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
+                                classes,
+                                date,
+                                time,
+                                room,
+                                (int)(conflict.getDistance()*10.0)+" m"
+                            }, new Comparable[] {
+                                new MultiComparable(-exam.getExamType(), 2, exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
+                                new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
+                            });
                 }
-                firstSection = true;
-                for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
-                    if (!section.getStudentIds().contains(student.getUniqueId())) continue;
-                    if (classes.length()>0) {
-                        blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
-                    }
-                    classes += section.getName();
-                    if (firstSection) {
-                        time += conflict.getOtherExam().getTime(false);
-                        room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
-                    }
-                    firstSection = false;
-                }
-                table.addLine(
-                        new String[] {
-                            (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
-                            classes,
-                            date,
-                            time,
-                            room,
-                            (int)(conflict.getDistance()*10.0)+" m"
-                        }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 2, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
-                        });
-            }
             conflicts: for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
                 for (ExamAssignment other : conflict.getOtherExams())
                     if (exam.compareTo(other)>=0 && exams.contains(other)) continue conflicts;
@@ -889,8 +891,9 @@ public class PersonalizedExamReportAction extends Action {
     
     public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor, User user) {
         String nl = (html?"<br>":"\n");
+        boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.instructor.btb","true"));
         PdfWebTable table = new PdfWebTable( 8,
-                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Examinations for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
+                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o4=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Type",
@@ -968,59 +971,60 @@ public class PersonalizedExamReportAction extends Action {
                             new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
                         });
             }
-            for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
-                if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
-                String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
-                boolean firstSection = true;
-                for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                    if (classes.length()>0) {
-                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+            if (showBackToBack)
+                for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
+                    if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
+                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                    boolean firstSection = true;
+                    for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
+                        if (classes.length()>0) {
+                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                        }
+                        classes += section.getName();
+                        enrollment += String.valueOf(section.getNrStudents());
+                        if (firstSection) {
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
+                            date += exam.getDate(false);
+                            time += exam.getTime(false);
+                            room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
+                        }
+                        firstSection = false;
                     }
-                    classes += section.getName();
-                    enrollment += String.valueOf(section.getNrStudents());
-                    if (firstSection) {
-                        seating += Exam.sSeatingTypes[exam.getSeatingType()];
-                        date += exam.getDate(false);
-                        time += exam.getTime(false);
-                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
+                    firstSection = true;
+                    for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
+                        if (classes.length()>0) {
+                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                        }
+                        classes += section.getName();
+                        enrollment += String.valueOf(section.getNrStudents());
+                        if (firstSection) {
+                            seating += Exam.sSeatingTypes[conflict.getOtherExam().getSeatingType()];
+                            time += conflict.getOtherExam().getTime(false);
+                            room += (conflict.getOtherExam().getNrRooms()==0?conflict.getOtherExam():exam.getRoomsName(false,", "));
+                        }
+                        firstSection = false;
                     }
-                    firstSection = false;
+                    table.addLine(
+                            new String[] {
+                                (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
+                                classes,
+                                enrollment,
+                                seating,
+                                date,
+                                time,
+                                room,
+                                (int)(conflict.getDistance()*10.0)+" m"
+                            }, new Comparable[] {
+                                new MultiComparable(-exam.getExamType(), 2, exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
+                                new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
+                            });
                 }
-                firstSection = true;
-                for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
-                    if (classes.length()>0) {
-                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
-                    }
-                    classes += section.getName();
-                    enrollment += String.valueOf(section.getNrStudents());
-                    if (firstSection) {
-                        seating += Exam.sSeatingTypes[conflict.getOtherExam().getSeatingType()];
-                        time += conflict.getOtherExam().getTime(false);
-                        room += (conflict.getOtherExam().getNrRooms()==0?conflict.getOtherExam():exam.getRoomsName(false,", "));
-                    }
-                    firstSection = false;
-                }
-                table.addLine(
-                        new String[] {
-                            (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
-                            classes,
-                            enrollment,
-                            seating,
-                            date,
-                            time,
-                            room,
-                            (int)(conflict.getDistance()*10.0)+" m"
-                        }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 2, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
-                        });
-            }
             conflicts: for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
                 for (ExamAssignment other : conflict.getOtherExams())
                     if (exam.compareTo(other)>=0 && exams.contains(other)) continue conflicts;
