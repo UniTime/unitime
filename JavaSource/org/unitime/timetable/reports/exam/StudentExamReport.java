@@ -234,7 +234,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 setHeader(new String[]{
                         "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Dates                     Time            Room        Instructor",
                         "---- ------ "+(iItype?"------ ":"")+"----- ------------------------- --------------- ----------- -------------------------"});
-                println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+                println(mpad("~ ~ ~ ~ ~ CLASS SCHEDULE ~ ~ ~ ~ ~",iNrChars));
                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                 for (Class_ clazz : allClasses) {
                     String instructor = "";
@@ -310,7 +310,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         setHeader(new String[]{
                 "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                          Date And Time                   Room      ",
                 "---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -------------------------------- -----------"});
-        println(mpad("~ ~ ~ ~ ~ EXAMINATION SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+        println(mpad("~ ~ ~ ~ ~ EXAMINATION SCHEDULE ~ ~ ~ ~ ~",iNrChars));
         for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
         iSubjectPrinted = false; String lastSubject = null;
         iCoursePrinted = false; String lastCourse = null;
