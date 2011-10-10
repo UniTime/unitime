@@ -274,7 +274,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                 setHeader(new String[]{
                         "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Dates                     Time            Room       Chk  Share",
                         "---- ------ "+(iItype?"------ ":"")+"----- ------------------------- --------------- ----------- ---- -----"});
-                println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+                println(mpad("~ ~ ~ ~ ~ CLASS SCHEDULE ~ ~ ~ ~ ~",iNrChars));
                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                 for (Iterator i=allClasses.iterator();i.hasNext();) {
                     ClassInstructor ci = (ClassInstructor)i.next();
@@ -360,7 +360,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         setHeader(new String[]{
                 "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
                 "---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
-        println(mpad("~ ~ ~ ~ ~ EXAMINATION SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+        println(mpad("~ ~ ~ ~ ~ EXAMINATION SCHEDULE ~ ~ ~ ~ ~",iNrChars));
         for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
         iSubjectPrinted = false; String lastSubject = null;
         iCoursePrinted = false; String lastCourse = null;
