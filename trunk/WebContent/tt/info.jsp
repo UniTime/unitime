@@ -59,7 +59,7 @@
 		</logic:notEqual>
 		<tr><td>Class Limit:</td><td><bean:write name="clazz" property="classLimit"/></td></tr>
 		<tr><td>Number of Rooms:</td><td><bean:write name="clazz" property="numberOfRooms"/></td></tr>
-		<tr><td>Room Ration:</td><td><bean:write name="clazz" property="roomRatio"/> ( Minimum Room Capacity: <bean:write name="clazz" property="minRoomCapacity"/> )</td></tr>
+		<tr><td>Room Ratio:</td><td><bean:write name="clazz" property="roomRatio"/> ( Minimum Room Capacity: <bean:write name="clazz" property="minRoomCapacity"/> )</td></tr>
 		<logic:notEmpty name="clazz" property="datePatternHtml">
 			<tr><td>Date Pattern:</td><td><bean:write name="clazz" property="datePatternHtml" filter="false"/></td></tr>
 		</logic:notEmpty>
