@@ -655,8 +655,6 @@ public class SuggestionsAction extends Action {
 			if (dispDate)
 				sb.append("<TR><TD>"+MSG.propertyDate()+"</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
 			sb.append("<TR><TD>"+MSG.propertyTime()+"</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
-				sb.append("<TR><TD>Date:</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
-			sb.append("<TR><TD>Time:</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
 			if (ca.getAssignedRoom()!=null) {
 				sb.append("<TR><TD>"+MSG.propertyRoom()+"</TD><TD>");
 				for (int i=0;i<ca.getAssignedRoom().length;i++) {
