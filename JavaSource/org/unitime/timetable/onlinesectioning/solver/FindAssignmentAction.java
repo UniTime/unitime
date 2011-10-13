@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -68,6 +69,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.DummyReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.EnrollmentSectionComparator;
+import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 
 /**
  * @author Tomas Muller
@@ -209,11 +211,22 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		}
 		long t1 = System.currentTimeMillis();
 		
-        SuggestionSelection onlineSelection = new SuggestionSelection(model.getProperties(), preferredSectionsForCourse, requiredSectionsForCourse, requiredFreeTimes);
-        onlineSelection.setModel(model);
-        
-
-        BranchBoundNeighbour neighbour = onlineSelection.getSelection(student).select();
+		OnlineSectioningSelection selection = null;
+		
+		try {
+			selection = (OnlineSectioningSelection)
+				Class.forName(server.getConfig().getProperty("OnlineStudentSectioning.Selection", MultiCriteriaBranchAndBoundSelection.class.getName()))
+				.getConstructor(DataProperties.class).newInstance(server.getConfig());
+		} catch (Exception e) {
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()));
+		}
+		
+		selection.setModel(model);
+		selection.setPreferredSections(preferredSectionsForCourse);
+		selection.setRequiredSections(requiredSectionsForCourse);
+		selection.setRequiredFreeTimes(requiredFreeTimes);
+		
+		BranchBoundNeighbour neighbour = selection.select(student);
 		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
 
         neighbour.assign(0);
