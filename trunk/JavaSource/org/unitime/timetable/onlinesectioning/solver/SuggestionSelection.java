@@ -40,7 +40,7 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 /**
  * @author Tomas Muller
  */
-public class SuggestionSelection extends BranchBoundSelection {
+public class SuggestionSelection extends BranchBoundSelection implements OnlineSectioningSelection {
 	protected Set<FreeTimeRequest> iRequiredFreeTimes;
 	protected Hashtable<CourseRequest, Config> iRequiredConfig = new Hashtable<CourseRequest, Config>();
 	protected Hashtable<CourseRequest, Hashtable<Subpart, Section>> iRequiredSection = new Hashtable<CourseRequest, Hashtable<Subpart,Section>>();
@@ -48,11 +48,18 @@ public class SuggestionSelection extends BranchBoundSelection {
 	/** add up to 50% for preferred sections */
 	private double iPreferenceFactor = 0.500;
 	
-    public SuggestionSelection(DataProperties properties, Hashtable<CourseRequest, Set<Section>> preferredSections,
-    		Hashtable<CourseRequest, Set<Section>> requiredSections, Set<FreeTimeRequest> requiredFreeTimes) {
+    public SuggestionSelection(DataProperties properties) {
     	super(properties);
     	iPreferenceFactor = properties.getPropertyDouble("StudentWeights.PreferenceFactor", iPreferenceFactor);
-    	iRequiredFreeTimes = requiredFreeTimes;
+    }
+    
+	@Override
+	public void setPreferredSections(Hashtable<CourseRequest, Set<Section>> preferredSections) {
+    	iPreferredSections = preferredSections;
+	}
+
+	@Override
+	public void setRequiredSections(Hashtable<CourseRequest, Set<Section>> requiredSections) {
     	if (requiredSections != null) {
     		for (Map.Entry<CourseRequest, Set<Section>> entry: requiredSections.entrySet()) {
     			Hashtable<Subpart, Section> subSection = new Hashtable<Subpart, Section>();
@@ -64,8 +71,17 @@ public class SuggestionSelection extends BranchBoundSelection {
     			}
     		}
     	}
-    	iPreferredSections = preferredSections;
-    }
+	}
+
+	@Override
+	public void setRequiredFreeTimes(Set<FreeTimeRequest> requiredFreeTimes) {
+    	iRequiredFreeTimes = requiredFreeTimes;
+	}
+
+	@Override
+	public BranchBoundNeighbour select(Student student) {
+		return getSelection(student).select();
+	}
     
     public Selection getSelection(Student student) {
         return new Selection(student);
