@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowClickEvent;
@@ -34,14 +35,26 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -65,6 +78,11 @@ public class SuggestionsBox extends DialogBox {
 	private HTML iMessages;
 	private ScrollPanel iSuggestionsScroll;
 	private String iSource;
+	private TextBox iFilter;
+	private int iIndex;
+	private CourseRequestInterface iRequest;
+	private HorizontalPanel iFilterPanel;
+	private Button iSearch;
 	
 	public SuggestionsBox() {
 		super();
@@ -77,6 +95,28 @@ public class SuggestionsBox extends DialogBox {
 		
 		VerticalPanel suggestionPanel = new VerticalPanel();
 		suggestionPanel.setSpacing(5);
+		
+		iFilterPanel = new HorizontalPanelWithHint(new HTML(MESSAGES.suggestionsFilterHint(), false));
+		iFilterPanel.setSpacing(3);
+		
+		Label filterLabel = new Label("Filter:");
+		iFilterPanel.add(filterLabel);
+		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		iFilter = new TextBox();
+		iFilter.setStyleName("gwt-SuggestBox");
+		iFilter.setWidth("600");
+		iFilter.setHeight("26");
+		iFilterPanel.add(iFilter);
+		
+		iSearch = new Button(MESSAGES.buttonSearch());
+		iSearch.setAccessKey('s');
+		iSearch.addStyleName("unitime-NoPrint");
+		iFilterPanel.add(iSearch);
+		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_MIDDLE);
+
+		suggestionPanel.add(iFilterPanel);
+		suggestionPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
 
 		iSuggestions = new WebTable();
 		iSuggestions.setHeader(new WebTable.Row(
@@ -114,10 +154,14 @@ public class SuggestionsBox extends DialogBox {
 
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
 				iResult = (ArrayList<ClassAssignmentInterface>)result;
+				iMessages.setHTML("");
  
 				if (result.isEmpty()) {
 					iSuggestions.clearData(true);
-					iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+					if (iFilter.getText().isEmpty())
+						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+					else
+						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
 					LoadingWidget.getInstance().hide();
 					center();
 				} else {
@@ -175,8 +219,8 @@ public class SuggestionsBox extends DialogBox {
 											if (x.isFreeTime() && x.isCourseAssigned() && x.getDaysString(CONSTANTS.shortDays()).equals(clazz.getDaysString(CONSTANTS.shortDays())) &&
 												x.getStart() == clazz.getStart() && x.getLength() == clazz.getLength()) continue clazz;
 										} else {
-											if (clazz.getClassId().equals(x.getClassId())) continue clazz; // the exact same assignment
-											if (clazz.getSubpartId().equals(x.getSubpartId())) { old = x; break; }
+											if (clazz.getCourseId().equals(x.getCourseId()) && clazz.getClassId().equals(x.getClassId())) continue clazz; // the exact same assignment
+											if (clazz.getCourseId().equals(x.getCourseId()) && clazz.getSubpartId().equals(x.getSubpartId())) { old = x; break; }
 										}
 									}
 									if (old == null && clazzIdx < sameCourse.size()) old = sameCourse.get(clazzIdx);
@@ -311,10 +355,18 @@ public class SuggestionsBox extends DialogBox {
 					for (WebTable.Row row: rows) rowArray[idx++] = row;
 					iSuggestions.setData(rowArray);
 					if (rows.isEmpty()) {
-						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+						if (iFilter.getText().isEmpty())
+							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
+						else
+							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
 					}
 					LoadingWidget.getInstance().hide();
 					center();
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						public void execute() {
+							iFilter.setFocus(true);
+						}
+					});
 				}
 			}
 		};
@@ -328,7 +380,33 @@ public class SuggestionsBox extends DialogBox {
 				hide();
 			}
 		});
-
+		
+		iFilter.addKeyDownHandler(new KeyDownHandler() {
+			@Override
+			public void onKeyDown(KeyDownEvent event) {
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					if (iSuggestions.getSelectedRow() >= 0) {
+						ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
+						SuggestionSelectedEvent e = new SuggestionSelectedEvent(suggestion);
+						for (SuggestionSelectedHandler h: iSuggestionSelectedHandlers)
+							h.onSuggestionSelected(e);
+						hide();
+					} else {
+						LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
+						iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+					}
+				}
+			}
+		});
+		
+		iSearch.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
+				iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+			}
+		});
+		
 		setWidget(suggestionPanel);
 	}
 	
@@ -349,6 +427,8 @@ public class SuggestionsBox extends DialogBox {
 		iAssignment = row;
 		iCurrent = rows;
 		iSource = null;
+		iRequest = request;
+		iIndex = index;
 		if (row.isFreeTime()) {
 			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
 		} else {
@@ -362,7 +442,8 @@ public class SuggestionsBox extends DialogBox {
 		iSuggestions.clearData(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
 		iMessages.setHTML("");
-		iSectioningService.computeSuggestions(request, rows, index, iCallback);
+		iFilter.setText("");
+		iSectioningService.computeSuggestions(request, rows, index, iFilter.getText(), iCallback);
 	}
 
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {

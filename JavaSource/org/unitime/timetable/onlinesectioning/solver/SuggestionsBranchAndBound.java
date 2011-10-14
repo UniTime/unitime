@@ -19,20 +19,28 @@
 */
 package org.unitime.timetable.onlinesectioning.solver;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.Query;
 
+import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -51,6 +59,7 @@ import net.sf.cpsolver.studentsct.model.Student;
  * @author Tomas Muller
  */
 public class SuggestionsBranchAndBound {
+	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private Hashtable<CourseRequest, Set<Section>> iRequiredSections = null;
 	private Set<FreeTimeRequest> iRequiredFreeTimes = null;
 	private Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
@@ -67,12 +76,16 @@ public class SuggestionsBranchAndBound {
 	private StudentSectioningModel iModel;
 	private Hashtable<Request, List<Enrollment>> iValues = new Hashtable<Request, List<Enrollment>>();
 	private long iLastSuggestionId = 0;
+	private Query iFilter = null;
+	private Date iFirstDate = null;
+	protected Comparator<Enrollment> iComparator = null;
+	protected int iMatched = 0;
 	
 	public SuggestionsBranchAndBound(DataProperties properties, Student student,
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
-			Request selectedRequest, Section selectedSection) {
+			Request selectedRequest, Section selectedSection, String filter, Date firstDate) {
 		iRequiredSections = requiredSections;
 		iRequiredFreeTimes = requiredFreeTimes;
 		iPreferredSections = preferredSections;
@@ -83,6 +96,24 @@ public class SuggestionsBranchAndBound {
 		iMaxDepth = properties.getPropertyInt("Suggestions.MaxDepth", iMaxDepth);
 		iTimeout = properties.getPropertyLong("Suggestions.Timeout", iTimeout);
 		iMaxSuggestions = properties.getPropertyInt("Suggestions.MaxSuggestions", iMaxSuggestions);
+		iFilter = (filter == null || filter.isEmpty() ? null : new Query(filter));
+		iFirstDate = firstDate;
+		iComparator = new Comparator<Enrollment>() {
+            private HashMap<Enrollment, Double> iValues = new HashMap<Enrollment, Double>();
+            private Double value(Enrollment e) {
+                Double value = iValues.get(e);
+                if (value == null) {
+                    value = iModel.getStudentWeights().getWeight(e,
+                                    (iModel.getDistanceConflict() == null ? null : iModel.getDistanceConflict().conflicts(e)),
+                                    (iModel.getTimeOverlaps() == null ? null : iModel.getTimeOverlaps().freeTimeConflicts(e)));
+                    iValues.put(e, value);       
+                }
+                return value;
+            }
+            public int compare(Enrollment e1, Enrollment e2) {
+                return value(e2).compareTo(value(e1));
+            }
+        };
 	}
 	
 	public long getTime() { return iT1 - iT0; }
@@ -123,14 +154,14 @@ public class SuggestionsBranchAndBound {
     		request.setInitialAssignment(request.getAssignment());
         }
 		
-        backtrack(requests2resolve, altRequests2resolve, 0, iMaxDepth);
+        backtrack(requests2resolve, altRequests2resolve, 0, iMaxDepth, false);
         
 		iT1 = System.currentTimeMillis();
 		return iSuggestions;
 	}
 		
     @SuppressWarnings("unchecked")
-	protected void backtrack(ArrayList<Request> requests2resolve, TreeSet<Request> altRequests2resolve, int idx, int depth) {
+	protected void backtrack(ArrayList<Request> requests2resolve, TreeSet<Request> altRequests2resolve, int idx, int depth, boolean alt) {
         if (!iTimeoutReached && iTimeout > 0 && System.currentTimeMillis() - iT0 > iTimeout)
             iTimeoutReached = true;
         int nrUnassigned = requests2resolve.size() - idx;
@@ -148,13 +179,15 @@ public class SuggestionsBranchAndBound {
         	}
     		Suggestion s = new Suggestion(requests2resolve);
     		if (iSuggestions.size() >= iMaxSuggestions && iSuggestions.last().compareTo(s) <= 0) return;
-    		for (Iterator<Suggestion> i = iSuggestions.iterator(); i.hasNext();) {
-    			Suggestion x = (Suggestion)i.next();
-        		if (x.sameSelectedSection()) {
-        			if (x.compareTo(s) <= 0) return;
-        			i.remove();
-        		}
-        	}
+    		if (iMatched != 1) {
+        		for (Iterator<Suggestion> i = iSuggestions.iterator(); i.hasNext();) {
+        			Suggestion x = (Suggestion)i.next();
+            		if (x.sameSelectedSection()) {
+            			if (x.compareTo(s) <= 0) return;
+            			i.remove();
+            		}
+            	}
+    		}
     		s.init();
 			iSuggestions.add(s);
 			if (iSuggestions.size() > iMaxSuggestions) iSuggestions.remove(iSuggestions.last());
@@ -168,6 +201,7 @@ public class SuggestionsBranchAndBound {
             if (!canContinueEvaluation()) break;
             if (!isAllowed(enrollment)) continue;
             if (enrollment.equals(request.getAssignment())) continue;
+            if (enrollment.getAssignments().isEmpty() && alt) continue;
             Set<Enrollment> conflicts = iModel.conflictValues(enrollment);
             if (!checkBound(requests2resolve, idx, depth, enrollment, conflicts)) continue;
             Enrollment current = (Enrollment)request.getAssignment();
@@ -186,19 +220,19 @@ public class SuggestionsBranchAndBound {
                 	int sizeBefore = iSuggestions.size();
                 	for (Request r: altRequests2resolve) {
                 		newVariables2resolve.add(r);
-                		backtrack(newVariables2resolve, null, idx+1, depth);
+                		backtrack(newVariables2resolve, null, idx+1, depth, true);
                 		newVariables2resolve.remove(r);
                 	}
                 	Suggestion lastAfter = (iSuggestions.isEmpty() ? null : iSuggestions.last());
                 	int sizeAfter = iSuggestions.size();
                 	// did not succeeded with an alternative -> try without it
                 	if (sizeBefore == sizeAfter && (sizeAfter < iMaxSuggestions || sizeAfter == 0 || lastAfter.compareTo(lastBefore) == 0))
-                		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
+                		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1, alt);
             	} else {
-            		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
+            		backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1, alt);
             	}
             } else {
-                backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1);
+                backtrack(newVariables2resolve, altRequests2resolve, idx+1, depth-1, alt);
             }
             if (current==null)
                 request.unassign(0);
@@ -218,25 +252,7 @@ public class SuggestionsBranchAndBound {
     	if (request instanceof CourseRequest) {
     		CourseRequest cr = (CourseRequest)request;
     		values = (cr.equals(iSelectedRequest) ? cr.getAvaiableEnrollments() : cr.getAvaiableEnrollmentsSkipSameTime());
-            Collections.sort(values, new Comparator<Enrollment>() {
-                private HashMap<Enrollment, Double> iValues = new HashMap<Enrollment, Double>();
-                private Double value(Enrollment e) {
-                    Double value = iValues.get(e);
-                    if (value == null) {
-                        value = iModel.getStudentWeights().getWeight(e,
-                                        (iModel.getDistanceConflict() == null ? null : iModel.getDistanceConflict().conflicts(e)),
-                                        (iModel.getTimeOverlaps() == null ? null : iModel.getTimeOverlaps().freeTimeConflicts(e)));
-                        iValues.put(e, value);       
-                    }
-                    return value;
-                }
-                public int compare(Enrollment e1, Enrollment e2) {
-                    if (e1.equals(request.getAssignment())) return -1;
-                    if (e2.equals(request.getAssignment())) return -1;
-                    return value(e2).compareTo(value(e1));
-                }
-                
-            });
+            Collections.sort(values, iComparator);
     	} else {
     		values = new ArrayList<Enrollment>();
     		values.add(((FreeTimeRequest)request).createEnrollment());
@@ -248,9 +264,230 @@ public class SuggestionsBranchAndBound {
     		values.add(new Enrollment(request, 0, config, new HashSet<Section>()));
 		}
 		iValues.put(request, values);
+		if (request.equals(iSelectedRequest) && iFilter != null && request instanceof CourseRequest) {
+			for (Iterator<Enrollment> i = values.iterator(); i.hasNext();) {
+				Enrollment enrollment = i.next();
+        		if (enrollment.getAssignments() != null && !enrollment.getAssignments().isEmpty()) {
+    				boolean match = false;
+        			for (Iterator<Section> j = enrollment.getSections().iterator(); j.hasNext();) {
+        				Section section = j.next();
+            			if (iSelectedSection != null) {
+            				if (section.getSubpart().getId() == iSelectedSection.getSubpart().getId()) {
+            					if (iFilter.match(new SectionMatcher(enrollment.getCourse(), section))) { match = true; break; }
+            				}
+            				if (section.getSubpart().getConfig().getId() != iSelectedSection.getSubpart().getConfig().getId() &&
+            					section.getSubpart().getInstructionalType().equals(iSelectedSection.getSubpart().getInstructionalType())) {
+            					if (iFilter.match(new SectionMatcher(enrollment.getCourse(), section))) { match = true; break; }
+            				}
+            			} else {
+            				if (iFilter.match(new SectionMatcher(enrollment.getCourse(), section))) { match = true; break; }
+            			}
+        			}
+        			if (!match) i.remove();
+        		}
+			}
+		}
+		if (request.equals(iSelectedRequest)) iMatched = values.size();
         return values;
     }
+    
+    private class SectionMatcher implements Query.TermMatcher {
+    	private Course iCourse;
+    	private Section iSection;
+    	
+    	public SectionMatcher(Course course, Section section) {
+    		iCourse = course;
+    		iSection = section;
+    	}
 
+		@Override
+		public boolean match(String attr, String term) {
+			if (term.isEmpty()) return true;
+			if (attr == null || attr.equals("crn") || attr.equals("id") || attr.equals("externalId") || attr.equals("exid") || attr.equals("name")) {
+				if (iSection.getName(iCourse.getId()) != null && iSection.getName(iCourse.getId()).toLowerCase().startsWith(term.toLowerCase()))
+					return true;
+			}
+			if (attr == null || attr.equals("day")) {
+				if (iSection.getTime() == null && term.equalsIgnoreCase("none")) return true;
+				if (iSection.getTime() != null) {
+					int day = parseDay(term);
+					if (day > 0 && (iSection.getTime().getDayCode() & day) == day) return true;
+				}
+			}
+			if (attr == null || attr.equals("time")) {
+				if (iSection.getTime() == null && term.equalsIgnoreCase("none")) return true;
+				if (iSection.getTime() != null) {
+					int start = parseStart(term);
+					if (start >= 0 && iSection.getTime().getStartSlot() == start) return true;
+				}
+			}
+			if (attr != null && attr.equals("before")) {
+				if (iSection.getTime() != null) {
+					int end = parseStart(term);
+					if (end >= 0 && iSection.getTime().getStartSlot() + iSection.getTime().getLength() - iSection.getTime().getBreakTime() / 5 <= end) return true;
+				}
+			}
+			if (attr != null && attr.equals("after")) {
+				if (iSection.getTime() != null) {
+					int start = parseStart(term);
+					if (start >= 0 && iSection.getTime().getStartSlot() >= start) return true;
+				}
+			}
+			if (attr == null || attr.equals("date")) {
+				if (iSection.getTime() == null && term.equalsIgnoreCase("none")) return true;
+				if (iSection.getTime() != null && !iSection.getTime().getWeekCode().isEmpty()) {
+					SimpleDateFormat df = new SimpleDateFormat(CONSTANTS.patternDateFormat());
+			    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+			    	cal.setTime(iFirstDate);
+			    	for (int i = 0; i < iSection.getTime().getWeekCode().size(); i++) {
+			    		if (iSection.getTime().getWeekCode().get(i)) {
+			    			DayCode day = null;
+			    			switch (cal.get(Calendar.DAY_OF_WEEK)) {
+			    			case Calendar.MONDAY:
+			    				day = DayCode.MON; break;
+			    			case Calendar.TUESDAY:
+			    				day = DayCode.TUE; break;
+			    			case Calendar.WEDNESDAY:
+			    				day = DayCode.WED; break;
+			    			case Calendar.THURSDAY:
+			    				day = DayCode.THU; break;
+			    			case Calendar.FRIDAY:
+			    				day = DayCode.FRI; break;
+			    			case Calendar.SATURDAY:
+			    				day = DayCode.SAT; break;
+			    			case Calendar.SUNDAY:
+			    				day = DayCode.SUN; break;
+			    			}
+			    			if ((iSection.getTime().getDayCode() & day.getCode()) == day.getCode()) {
+				    			int d = cal.get(Calendar.DAY_OF_MONTH);
+				    			int m = cal.get(Calendar.MONTH) + 1;
+				    			if (df.format(cal.getTime()).equalsIgnoreCase(term) || eq(d + "." + m + ".",term) || eq(m + "/" + d, term)) return true;
+			    			}
+			    		}
+			    		cal.add(Calendar.DAY_OF_YEAR, 1);
+			    	}
+				}
+			}
+			if (attr == null || attr.equals("room")) {
+				if ((iSection.getRooms() == null || iSection.getRooms().isEmpty()) && term.equalsIgnoreCase("none")) return true;
+				if (iSection.getRooms() != null) {
+					for (RoomLocation r: iSection.getRooms()) {
+						if (has(r.getName(), term)) return true;
+					}
+				}
+			}
+			if (attr == null || attr.equals("instr") || attr.equals("instructor")) {
+				if (attr != null && (iSection.getChoice().getInstructorNames() == null || iSection.getChoice().getInstructorNames().isEmpty()) && term.equalsIgnoreCase("none")) return true;
+				for (String instructor: iSection.getChoice().getInstructorNames().split(":")) {
+					String[] nameEmail = instructor.split("\\|");
+					if (has(nameEmail[0], term)) return true;
+					if (nameEmail.length == 2) {
+						String email = nameEmail[1];
+						if (email.indexOf('@') >= 0) email = email.substring(0, email.indexOf('@'));
+						if (eq(email, term)) return true;
+					}
+				}
+			}
+			if (attr != null && iSection.getTime() != null) {
+				int start = parseStart(attr + ":" + term);
+				if (start >= 0 && iSection.getTime().getStartSlot() == start) return true;
+			}
+			return false;
+		}
+		
+		private boolean eq(String name, String term) {
+			if (name == null) return false;
+			return name.equalsIgnoreCase(term);
+		}
+
+		private boolean has(String name, String term) {
+			if (name == null) return false;
+			for (String t: name.split(" "))
+				if (t.equalsIgnoreCase(term)) return true;
+			return false;
+		}
+		
+		private int parseDay(String token) {
+			int days = 0;
+			boolean found = false;
+			do {
+				found = false;
+				for (int i=0; i<CONSTANTS.longDays().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.longDays()[i].toLowerCase())) {
+						days |= DayCode.values()[i].getCode(); 
+						token = token.substring(CONSTANTS.longDays()[i].length());
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
+				for (int i=0; i<CONSTANTS.days().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.days()[i].toLowerCase())) {
+						days |= DayCode.values()[i].getCode(); 
+						token = token.substring(CONSTANTS.days()[i].length());
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
+				for (int i=0; i<CONSTANTS.days().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.days()[i].substring(0,2).toLowerCase())) {
+						days |= DayCode.values()[i].getCode(); 
+						token = token.substring(2);
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
+				for (int i=0; i<CONSTANTS.shortDays().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.shortDays()[i].toLowerCase())) {
+						days |= DayCode.values()[i].getCode(); 
+						token = token.substring(CONSTANTS.shortDays()[i].length());
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
+				for (int i=0; i<CONSTANTS.freeTimeShortDays().length; i++) {
+					if (token.toLowerCase().startsWith(CONSTANTS.freeTimeShortDays()[i].toLowerCase())) {
+						days |= DayCode.values()[i].getCode(); 
+						token = token.substring(CONSTANTS.freeTimeShortDays()[i].length());
+						while (token.startsWith(" ")) token = token.substring(1);
+						found = true;
+					}
+				}
+			} while (found);
+			return (token.isEmpty() ? days : 0);
+		}
+		
+		private int parseStart(String token) {
+			int startHour = 0, startMin = 0;
+			String number = "";
+			while (!token.isEmpty() && token.charAt(0) >= '0' && token.charAt(0) <= '9') { number += token.substring(0, 1); token = token.substring(1); }
+			if (number.isEmpty()) return -1;
+			if (number.length() > 2) {
+				startHour = Integer.parseInt(number) / 100;
+				startMin = Integer.parseInt(number) % 100;
+			} else {
+				startHour = Integer.parseInt(number);
+			}
+			while (token.startsWith(" ")) token = token.substring(1);
+			if (token.startsWith(":")) {
+				token = token.substring(1);
+				while (token.startsWith(" ")) token = token.substring(1);
+				number = "";
+				while (!token.isEmpty() && token.charAt(0) >= '0' && token.charAt(0) <= '9') { number += token.substring(0, 1); token = token.substring(1); }
+				if (number.isEmpty()) return -1;
+				startMin = Integer.parseInt(number);
+			}
+			while (token.startsWith(" ")) token = token.substring(1);
+			boolean hasAmOrPm = false;
+			if (token.toLowerCase().startsWith("am")) { token = token.substring(2); hasAmOrPm = true; }
+			if (token.toLowerCase().startsWith("a")) { token = token.substring(1); hasAmOrPm = true; }
+			if (token.toLowerCase().startsWith("pm")) { token = token.substring(2); hasAmOrPm = true; if (startHour<12) startHour += 12; }
+			if (token.toLowerCase().startsWith("p")) { token = token.substring(1); hasAmOrPm = true; if (startHour<12) startHour += 12; }
+			if (startHour < 7 && !hasAmOrPm) startHour += 12;
+			if (startMin % 5 != 0) startMin = 5 * ((startMin + 2)/ 5);
+			if (startHour == 7 && startMin == 0 && !hasAmOrPm) startHour += 12;
+			return (60 * startHour + startMin) / 5;
+		}
+    }
 	
     protected boolean canContinue(ArrayList<Request> requests2resolve, int idx, int depth) {
         if (depth<=0) return false;
@@ -263,6 +500,8 @@ public class SuggestionsBranchAndBound {
     }
         
     protected boolean checkBound(ArrayList<Request> requests2resolve, int idx, int depth, Enrollment value, Set<Enrollment> conflicts) {
+    	if (idx > 0 && !conflicts.isEmpty())
+    		return false;
         int nrUnassigned = requests2resolve.size()-idx;
         if ((nrUnassigned + conflicts.size() > depth)) {
             return false;
@@ -310,13 +549,8 @@ public class SuggestionsBranchAndBound {
 		return true;
 	}
 	
-	public double value(Enrollment enrollment) {
-		if (enrollment.getAssignments() == null || enrollment.getAssignments().isEmpty()) return 0.0;
-		return enrollment.toDouble();
-	}
-	
-	public double bound(Request request) {
-		return request.getBound();
+	protected int compare(Suggestion s1, Suggestion s2) {
+		return Double.compare(s1.getValue(), s2.getValue());
 	}
 	
 	public class Suggestion implements Comparable<Suggestion> {
@@ -339,7 +573,7 @@ public class SuggestionsBranchAndBound {
         			iNrUnassigned ++;
         			iUnassignedPriority += request.getPriority();
         		}
-        		iValue += value(enrollment);
+        		iValue += (enrollment == null || enrollment.getAssignments() == null || enrollment.getAssignments().isEmpty() ? 0.0 : enrollment.toDouble());
         		if (request.getInitialAssignment() != null && enrollment.isCourseRequest()) {
             		Enrollment original = (Enrollment)request.getInitialAssignment();
         			for (Iterator<Section> i = enrollment.getSections().iterator(); i.hasNext();) {
@@ -442,7 +676,7 @@ public class SuggestionsBranchAndBound {
 				if (cmp != 0) return cmp;
 			}
 
-			cmp = Double.compare(getValue(), suggestion.getValue());
+			cmp = compare(this, suggestion);
 			if (cmp != 0) return cmp;
 
 			return Double.compare(iId, suggestion.iId);
@@ -496,5 +730,8 @@ public class SuggestionsBranchAndBound {
 		}
 	}
 
+	public int getNrMatched() {
+		return iMatched;
+	}
 
 }

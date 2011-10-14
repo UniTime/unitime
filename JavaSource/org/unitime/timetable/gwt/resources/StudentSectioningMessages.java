@@ -265,12 +265,18 @@ public interface StudentSectioningMessages extends Messages {
 	 */
 	@DefaultMessage("Waiting for alternatives ...")
 	String suggestionsLoading();
-
+	
 	@DefaultMessage("Alternatives for {0}")
 	String suggestionsAlternatives(String source);
 
 	@DefaultMessage("There are no alternatives for {0}.")
 	String suggestionsNoAlternative(String source);
+
+	@DefaultMessage("There are no alternatives for {0} matching {1}.")
+	String suggestionsNoAlternativeWithFilter(String source, String filter);
+
+	@DefaultMessage("No alternative for {0} is matching {1}.")
+	String suggestionsNoMatch(String source, String filter);
 
 	@DefaultMessage("Free Time {0} {1} - {2}")
 	String freeTime(String days, String start, String end);
@@ -663,4 +669,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Wrong instructional offering.")
 	String exceptionBadOffering();
+	
+	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
+			"<br><br>You can also use the following tags:" +
+			"<ul>" +
+			"<li><i>name:</i> class name" + 
+			"<li><i>day:</i> class must meet on this day or days (e.g., monday, MWF)" + 
+			"<li><i>time:</i> class must start at this time (e.g., 730)" +
+			"<li><i>before:</i> class must end before or by this time" +
+			"<li><i>after:</i> class must start on or after this time" +
+			"<li><i>date:</i> class must meet on this date" +
+			"<li><i>room:</i> class must use this room or building" +
+			"<li><i>instructor:</i> class must have this instructor" +
+			"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
+			"<br><br>Example: day: monday and (time: 730 or time: 830)")
+	String suggestionsFilterHint();
+	
+	@DefaultMessage("<u>S</u>earch")
+	String buttonSearch();
 }

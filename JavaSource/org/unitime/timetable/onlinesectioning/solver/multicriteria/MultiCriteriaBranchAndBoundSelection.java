@@ -236,7 +236,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
             return;
         }
         if (idx == iAssignment.length) {
-            if (iBestAssignment == null || iComparator.isBetter(iAssignment, iBestAssignment))
+            if (iBestAssignment == null || iComparator.compare(iAssignment, iBestAssignment) < 0)
                 saveBest();
             return;
         } else if (iBestAssignment != null && !iComparator.canImprove(idx, iAssignment, iBestAssignment)) {
@@ -291,7 +291,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     }
     
     public interface SelectionCriterion extends Comparator<Enrollment> {
-    	public boolean isBetter(Enrollment[] current, Enrollment[] best);
+    	public int compare(Enrollment[] current, Enrollment[] best);
     	public boolean canImprove(int idx, Enrollment[] current, Enrollment[] best);
     	public double getTotalWeight(Enrollment[] assignment);
     }

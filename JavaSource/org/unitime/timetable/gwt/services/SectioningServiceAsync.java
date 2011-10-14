@@ -37,11 +37,11 @@ public interface SectioningServiceAsync {
 	void listCourseOfferings(Long sessionId, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
 	void listAcademicSessions(boolean sectioning, AsyncCallback<Collection<String[]>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseDetails(Long sessionId, String course, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
-	void listClasses(Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws IllegalArgumentException;
+	void listClasses(Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseOfferingId(Long sessionId, String course, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
 	void section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void checkCourses(CourseRequestInterface request, AsyncCallback<Collection<String>> callback) throws SectioningException, PageAccessException;
-	void computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, AsyncCallback<Collection<ClassAssignmentInterface>> callback) throws SectioningException, PageAccessException;
+	void computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter, AsyncCallback<Collection<ClassAssignmentInterface>> callback) throws SectioningException, PageAccessException;
 	void logIn(String userName, String password, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void logOut(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void whoAmI(AsyncCallback<String> callback) throws SectioningException, PageAccessException;

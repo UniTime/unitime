@@ -565,7 +565,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public 	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex) throws SectioningException, PageAccessException {
+	public 	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex, String filter) throws SectioningException, PageAccessException {
 		try {
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
@@ -573,7 +573,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment));
+			Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment, filter));
 			if (ret != null) {
 				boolean canEnroll = server.getAcademicSession().isSectioningEnabled();
 				if (canEnroll) {
