@@ -58,7 +58,7 @@ public class SuggestionsTest extends OnlineSectioningTestFwk {
 					for (ClassAssignmentInterface.CourseAssignment course: assignment.getCourseAssignments())
 						classes.addAll(course.getClassAssignments());
 					if (classes.isEmpty()) return 1.0;
-					ComputeSuggestionsAction action = new ComputeSuggestionsAction(request, classes, ToolBox.random(classes));
+					ComputeSuggestionsAction action = new ComputeSuggestionsAction(request, classes, ToolBox.random(classes), null);
 					s.execute(action);
 					return action.value();
 				}

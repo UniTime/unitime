@@ -39,11 +39,11 @@ public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException;
 	Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
-	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws IllegalArgumentException;
+	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Collection<String> checkCourses(CourseRequestInterface request) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
-	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter) throws SectioningException, PageAccessException;
 	String logIn(String userName, String password) throws SectioningException, PageAccessException;
 	Boolean logOut() throws SectioningException, PageAccessException;
 	String whoAmI() throws SectioningException, PageAccessException;
