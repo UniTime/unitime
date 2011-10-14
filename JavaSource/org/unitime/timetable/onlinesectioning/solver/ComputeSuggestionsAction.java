@@ -54,6 +54,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
 
 /**
  * @author Tomas Muller
@@ -62,14 +63,17 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private ClassAssignmentInterface.ClassAssignment iSelection;
 	private double iValue = 0.0;
+	private String iFilter = null;
 	
-	
-	public ComputeSuggestionsAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment) throws SectioningException {
+	public ComputeSuggestionsAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment, String filter) throws SectioningException {
 		super(request, currentAssignment);
 		iSelection = selectedAssignment;
+		iFilter = filter;
 	}
 	
 	public ClassAssignmentInterface.ClassAssignment getSelection() { return iSelection; }
+	
+	public String getFilter() { return iFilter; }
 
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -206,7 +210,20 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		
 		long t2 = System.currentTimeMillis();
         
-        SuggestionsBranchAndBound suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse, selectedRequest, selectedSection);
+		SuggestionsBranchAndBound suggestionBaB = null;
+		if (server.getConfig().getPropertyBoolean("Suggestions.MultiCriteria", true)) {
+			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
+					model.getProperties(), student,
+					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
+					selectedRequest, selectedSection,
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate());
+		} else {
+			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
+					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
+					selectedRequest, selectedSection,
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate());
+		}
+		
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
 		iValue = (suggestions.isEmpty() ? 0.0 : - suggestions.first().getValue());
         

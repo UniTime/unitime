@@ -155,7 +155,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		}
 		
 		public String toString() {
-			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? "NOT ASSIGNED" : getClassAssignments());
+			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? getClassAssignments() : "NOT ASSIGNED");
 		}
 	}
 	

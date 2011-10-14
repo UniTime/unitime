@@ -355,7 +355,7 @@ public class OnlineSectioningTest extends Composite {
 			}
 			int idx = (int)(Random.nextDouble() * assignments.size());
 			debug("computeSuggestions(" + request + "," + assignments + "," + idx + ")");
-			iSectioningService.computeSuggestions(request, assignments, idx, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+			iSectioningService.computeSuggestions(request, assignments, idx, null, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;computeSuggestions(" + request + ") failed: " + caught.getMessage());
