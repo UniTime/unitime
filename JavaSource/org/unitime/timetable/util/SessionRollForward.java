@@ -1205,7 +1205,7 @@ public class SessionRollForward {
 		} else if (fromRoomGroupPref.getRoomGroup().isGlobal()) {
 			RoomGroup toRoomGroup = RoomGroup.findGlobalRoomGroupForName(toSession, fromRoomGroupPref.getRoomGroup().getName());
 			if (toRoomGroup != null) {
-				toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
+				toRoomGroupPref.setRoomGroup(toRoomGroup);
 				toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 				toRoomGroupPref.setOwner(toPrefGroup);
 				toPrefGroup.addTopreferences(toRoomGroupPref);
