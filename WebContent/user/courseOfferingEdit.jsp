@@ -98,7 +98,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errorsCourseOfferingEdit"/></U></B><BR>
+					<B><U><loc:message name="errors"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
