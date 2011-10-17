@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -41,6 +43,8 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * @struts:form name="instructionalOfferingConfigDetailForm"
  */
 public class InstructionalOfferingDetailForm extends ActionForm {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     /**
 	 * 
@@ -101,7 +105,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         HttpServletRequest request) {
 
         throw new UnsupportedOperationException(
-            "Generated method 'validate(...)' not implemented.");
+            MSG.exceptionValidateNotImplemented());
     }
 
     /** 

@@ -34,6 +34,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %> 
 <tiles:importAttribute />
 <% 
 	User user = Web.getUser(session);
@@ -44,6 +45,7 @@
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
 %>
+<loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -52,7 +54,7 @@
 			if (jsConfirm!=null && !jsConfirm)
 				return true;
 
-			if (!confirm('Do you really want to make this offering offered?')) {
+			if (!confirm('<%=MSG.confirmMakeOffered() %>')) {
 				return false;
 			}
 
@@ -63,7 +65,7 @@
 			if (jsConfirm!=null && !jsConfirm)
 				return true;
 				
-			if (!confirm('Do you really want to make this offering not offered?')) {
+			if (!confirm('<%=MSG.confirmMakeNotOffered() %>')) {
 				return false;
 			}
 			
@@ -74,7 +76,7 @@
 			if (jsConfirm!=null && !jsConfirm)
 				return true;
 
-			if (!confirm('This option will delete all associated course offerings.\nDo you really want to delete this offering?')) {
+			if (!confirm('<%=MSG.confirmDeleteIO() %>')) {
 				return false;
 			}
 
@@ -97,8 +99,8 @@
 					
 				<tt:section-header>
 					<tt:section-title>
-							<A  title="Back to Instructional Offering List (Alt+I)" 
-								accesskey="I"
+							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>" 
+								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8" 
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
 							><bean:write name="instructionalOfferingDetailForm" property="instrOfferingName" /></A> 
@@ -117,8 +119,10 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 					
 							<html:submit property="op" 
-								styleClass="btn" accesskey="C" titleKey="title.addConfig">
-								<bean:message key="button.addConfig" />
+									styleClass="btn" 
+									accesskey="<%=MSG.accessAddConfiguration() %>" 
+									title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
+								<loc:message name="actionAddConfiguration" />
 							</html:submit>
 						</logic:equal>
 						
@@ -129,8 +133,10 @@
 
 						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 							<html:submit property="op" 
-								styleClass="btn" accesskey="L" titleKey="title.crossLists">
-								<bean:message key="button.crossLists" />
+									styleClass="btn" 
+									accesskey="<%=MSG.accessCrossLists() %>" 
+									title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
+								<loc:message name="actionCrossLists" />
 							</html:submit>
 						</logic:equal>
 					</logic:equal>
@@ -139,17 +145,21 @@
 						<!-- Display 'Make Offered' if offering is currently 'Not Offered' -->
 						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="true">
 							<html:submit property="op" 
-								onclick="return confirmMakeOffered();"
-								styleClass="btn" accesskey="F" titleKey="title.makeOffered">
-								<bean:message key="button.makeOffered" />
+									onclick="return confirmMakeOffered();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessMakeOffered() %>" 
+									title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
+								<loc:message name="actionMakeOffered" />
 							</html:submit>
 							
 						<% if (user!=null
 								&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 							<html:submit property="op" 
-								onclick="return confirmDelete();"
-								styleClass="btn" accesskey="D" titleKey="title.deleteIo">
-								<bean:message key="button.deleteIo" />
+									onclick="return confirmDelete();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessDeleteIO() %>" 
+									title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
+								<loc:message name="actionDeleteIO" />
 							</html:submit>
 						<% } %>
 						
@@ -158,35 +168,53 @@
 						<!-- Display 'Make NOT Offered' if offering is currently 'Offered' -->
 						<logic:notEqual name="instructionalOfferingDetailForm" property="notOffered" value="true">
 							<html:submit property="op" 
-								onclick="return confirmMakeNotOffered();"
-								styleClass="btn" accesskey="F" titleKey="title.makeNotOffered">
-								<bean:message key="button.makeNotOffered" />
+									onclick="return confirmMakeNotOffered();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessMakeNotOffered() %>"
+									title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
+								<loc:message name="actionMakeNotOffered" />
 							</html:submit>
 						</logic:notEqual>
 			
 					</logic:equal>
 					
 					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Lock Offering (Alt+X)">Lock</html:submit> 
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessLockIO() %>" 
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>">
+							<loc:message name="actionLockIO"/>
+						</html:submit> 
 					</logic:equal>
 					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Unlock Offering (Alt+X)">Unlock</html:submit> 
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessUnlockIO() %>" 
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>">
+							<loc:message name="actionUnlockIO"/>
+						</html:submit> 
 					</logic:equal>
 				
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
-								styleClass="btn" accesskey="P" titleKey="title.previousInstructionalOffering">
-							<bean:message key="button.previousInstructionalOffering" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessPreviousIO() %>" 
+								title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
+							<loc:message name="actionPreviousIO" />
 						</html:submit> 
 					</logic:notEmpty>
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextInstructionalOffering">
-							<bean:message key="button.nextInstructionalOffering" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessNextIO() %>" 
+								title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
+							<loc:message name="actionNextIO" />
 						</html:submit> 
 					</logic:notEmpty>
 
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="InstructionalOffering">
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackIODetail() %>" 
+							title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
+							accesskey="<%=MSG.accessBackIODetail() %>" 
+							type="InstructionalOffering">
 						<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
 					</tt:back>
 				</tt:section-header>					
@@ -198,7 +226,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errors"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -213,22 +241,28 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD width="20%" valign="top">Course Offerings: </TD>
+			<TD width="20%" valign="top"><loc:message name="propertyCourseOfferings"/></TD>
 			<TD>
 				<TABLE border="0" width="100%" cellspacing="0" cellpadding="2">
 					<TR>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
-						<TD align="left" class="WebTableHeader">Title</TD>
-						<TD align="left" class="WebTableHeader">Reserved</TD>
-						<TD align="left" class="WebTableHeader">Schedule of Classes Note</TD>
+						<TD align="left" class="WebTableHeader"><loc:message name="columnTitle"/></TD>
+						<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
+						<TD align="left" class="WebTableHeader"><loc:message name="columnScheduleOfClassesNote"/></TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
-							<TD align="left" class="WebTableHeader">Demands From</TD>
+							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
 						</logic:equal>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
 					<TR>
-						<TD align="center" class="BottomBorderGray">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
+						<TD align="center" class="BottomBorderGray">
+							&nbsp;
+							<logic:equal name="co" property="isControl" value="true">
+								<IMG src="images/tick.gif" alt="<%=MSG.altControllingCourse() %>" title="<%=MSG.titleControllingCourse() %>" border="0">
+							</logic:equal>
+							&nbsp;
+						</TD>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
 						<TD class="BottomBorderGray">
 							<logic:notEmpty name="co" property="reservation">
@@ -258,8 +292,9 @@
 
 								<% if (isEditableBy) { %>
 								<html:submit property="op" 
-									styleClass="btn" titleKey="title.editCourseOffering">
-									<bean:message key="button.editCourseOffering" />
+										styleClass="btn" 
+										title="<%=MSG.titleEditCourseOffering() %>">
+									<loc:message name="actionEditCourseOffering" />
 								</html:submit>
 								<% } %>
 							</html:form>
@@ -274,14 +309,14 @@
 		</TR>
 		
 		<TR>
-			<TD>Enrollment: </TD>
+			<TD><loc:message name="propertyEnrollment"/> </TD>
 			<TD>
 				<bean:write name="instructionalOfferingDetailForm" property="enrollment" /> 
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Last Enrollment: </TD>
+			<TD><loc:message name="propertyLastEnrollment"/> </TD>
 			<TD>
 				<logic:equal name="instructionalOfferingDetailForm" property="demand" value="0">
 					-
@@ -294,7 +329,7 @@
 
 		<logic:notEqual name="instructionalOfferingDetailForm" property="projectedDemand" value="0">
 			<TR>
-				<TD>Projected Demand: </TD>
+				<TD><loc:message name="propertyProjectedDemand"/> </TD>
 				<TD>
 					<bean:write name="instructionalOfferingDetailForm" property="projectedDemand" /> 
 				</TD>
@@ -302,42 +337,42 @@
 		</logic:notEqual>
 
 		<TR>
-			<TD>Offering Limit: </TD>
+			<TD><loc:message name="propertyOfferingLimit"/> </TD>
 			<TD>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
 					<bean:write name="instructionalOfferingDetailForm" property="limit" /> 
 					<% if (request.getAttribute("limitsDoNotMatch")!=null) { %>
 						&nbsp;
-						<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;
-						<font color="#FF0000">Spaces reserved for course offerings should total to at least the offering limit - <%= request.getAttribute("limitsDoNotMatch").toString() %></font>
+						<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;
+						<font color="#FF0000"><%= MSG.errorReservedSpacesForOfferingsTotal(request.getAttribute("limitsDoNotMatch").toString()) %></font>
 					<% } %>
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
-					<span title="Unlimited Enrollment"><font size="+1">&infin;</font></span>
+					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
 				</logic:equal>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Consent: </TD>
+			<TD><loc:message name="propertyConsent"/> </TD>
 			<TD>
 				<bean:write name="instructionalOfferingDetailForm" property="consentType" /> 
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Designator Required: </TD>
+			<TD><loc:message name="propertyDesignatorRequired"/></TD>
 			<TD>
 				<logic:equal name="instructionalOfferingDetailForm" property="designatorRequired" value="true">
-					<IMG src="images/tick.gif" alt="Designator Required" title="Designator Required" border="0">
+					<IMG src="images/tick.gif" alt="<%=MSG.altDesignatorRequired() %>" title="<%=MSG.titleDesignatorRequired() %>" border="0">
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="designatorRequired" value="false">
-					No
+					<loc:message name="no"/>
 				</logic:equal>&nbsp;
 			</TD>
 		</TR>
 		<TR>
-			<TD>Credit:</TD>
+			<TD><loc:message name="propertyCredit"/></TD>
 			<TD>
 				<bean:write name="instructionalOfferingDetailForm" property="creditText" />
 			</TD>
@@ -345,17 +380,17 @@
 		
 		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
 			<TR>
-				<TD>By Reservation Only:</TD>
+				<TD><loc:message name="propertyByReservationOnly"/></TD>
 				<TD>
-					<IMG src="images/tick.gif" alt="ENABLED" title="Only students meeting reservations are allowed to enroll into this offering." border="0">
-					<i>Only students meeting reservations are allowed to enroll into this offering.</i>
+					<IMG src="images/tick.gif" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+					<i><loc:message name="descriptionByReservationOnly2"/></i>
 				</TD>
 			</TR>
 		</logic:equal>
 		
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="coordinators">
 			<TR>
-				<TD valign="top">Coordinators:</TD>
+				<TD valign="top"><loc:message name="propertyCoordinators"/></TD>
 				<TD>
 					<bean:write name="instructionalOfferingDetailForm" property="coordinators" filter="false"/>
 				</TD>
@@ -364,9 +399,10 @@
 		
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
 		<TR>
-			<TD>Course Catalog: </TD>
+			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
-				<A href="<bean:write name="instructionalOfferingDetailForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="instructionalOfferingDetailForm" property="catalogLinkLabel" /></A>
+				<A href="<bean:write name="instructionalOfferingDetailForm" property="catalogLinkLocation" />" 
+						target="_blank"><bean:write name="instructionalOfferingDetailForm" property="catalogLinkLabel" /></A>
 			</TD>
 		</TR>
 		</logic:notEmpty>
@@ -478,8 +514,10 @@
 					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 				
 						<html:submit property="op" 
-							styleClass="btn" accesskey="C" titleKey="title.addConfig">
-							<bean:message key="button.addConfig" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessAddConfiguration() %>" 
+								title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
+							<loc:message name="actionAddConfiguration" />
 						</html:submit>
 					</logic:equal>
 					
@@ -490,8 +528,10 @@
 
 					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="L" titleKey="title.crossLists">
-							<bean:message key="button.crossLists" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessCrossLists() %>" 
+								title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
+							<loc:message name="actionCrossLists" />
 						</html:submit>
 					</logic:equal>
 
@@ -501,17 +541,21 @@
 					<!-- Display 'Make Offered' if offering is currently 'Not Offered' -->
 					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="true">
 						<html:submit property="op" 
-							onclick="return confirmMakeOffered();"
-							styleClass="btn" accesskey="F" titleKey="title.makeOffered">
-							<bean:message key="button.makeOffered" />
+								onclick="return confirmMakeOffered();"
+								styleClass="btn" 
+								accesskey="<%=MSG.accessMakeOffered() %>" 
+								title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
+							<loc:message name="actionMakeOffered" />
 						</html:submit>
 
 						<% if (user!=null
 								&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 						<html:submit property="op" 
-							onclick="return confirmDelete();"
-							styleClass="btn" accesskey="D" titleKey="title.deleteIo">
-							<bean:message key="button.deleteIo" />
+								onclick="return confirmDelete();"
+								styleClass="btn" 
+								accesskey="<%=MSG.accessDeleteIO() %>" 
+								title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
+							<loc:message name="actionDeleteIO" />
 						</html:submit>
 						<% } %>
 						
@@ -520,40 +564,60 @@
 					<!-- Display 'Make NOT Offered' if offering is currently 'Offered' -->
 					<logic:notEqual name="instructionalOfferingDetailForm" property="notOffered" value="true">
 						<html:submit property="op" 
-							onclick="return confirmMakeNotOffered();"
-							styleClass="btn" accesskey="F" titleKey="title.makeNotOffered">
-							<bean:message key="button.makeNotOffered" />
+								onclick="return confirmMakeNotOffered();"
+								styleClass="btn" 
+								accesskey="<%=MSG.accessMakeNotOffered() %>"
+								title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
+							<loc:message name="actionMakeNotOffered" />
 						</html:submit>
 					</logic:notEqual>
 		
 				</logic:equal>
 
+
 				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Lock Offering (Alt+X)">Lock</html:submit> 
+					<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessLockIO() %>" 
+							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>">
+						<loc:message name="actionLockIO"/>
+					</html:submit> 
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="X" titleKey="Unlock Offering (Alt+X)">Unlock</html:submit> 
+					<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessUnlockIO() %>" 
+							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>">
+						<loc:message name="actionUnlockIO"/>
+					</html:submit> 
 				</logic:equal>
 
 				<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousInstructionalOffering">
-						<bean:message key="button.previousInstructionalOffering" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessPreviousIO() %>" 
+							title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
+						<loc:message name="actionPreviousIO" />
 					</html:submit> 
 				</logic:notEmpty>
 				<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextInstructionalOffering">
-						<bean:message key="button.nextInstructionalOffering" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextIO() %>" 
+							title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
+						<loc:message name="actionNextIO" />
 					</html:submit> 
 				</logic:notEmpty>
 
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="InstructionalOffering">
+				<tt:back styleClass="btn" 
+						name="<%=MSG.actionBackIODetail() %>" 
+						title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
+						accesskey="<%=MSG.accessBackIODetail() %>" 
+						type="InstructionalOffering">
 					<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
-				</tt:back>
-				
+				</tt:back>				
+
 				</html:form>					
 			</TD>
 		</TR>
 
 	</TABLE>
+</loc:bundle>

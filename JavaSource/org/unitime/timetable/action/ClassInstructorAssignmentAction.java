@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -92,7 +93,7 @@ public class ClassInstructorAssignmentAction extends Action {
 						                : request.getAttribute("op").toString()
 						        : frm.getOp()
 						: request.getParameter("op");
-
+						        
         if(op==null)
             op = request.getParameter("hdnOp");
 
@@ -125,7 +126,8 @@ public class ClassInstructorAssignmentAction extends Action {
         request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME, instructors);
 
         // First access to screen
-        if(op.equalsIgnoreCase(rsc.getMessage("button.classInstructorAssignment"))) {
+        Boolean areEqual = op.equalsIgnoreCase(MSG.actionAssignInstructors());
+        if(op.equalsIgnoreCase(MSG.actionAssignInstructors())) {
             doLoad(request, frm, instrOffrConfigId, user, ioc);
         }
 
@@ -167,12 +169,12 @@ public class ClassInstructorAssignmentAction extends Action {
                     request.setAttribute("io", frm.getInstrOfferingId());
 
     	            if (op.equals(MSG.actionNextIO())) {
-    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getNextId())+"&op="+rsc.getMessage("button.classInstructorAssignment"));
+    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getNextId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
     	            	return null;
     	            }
 
     	            if (op.equals(MSG.actionPreviousIO())) {
-    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getPreviousId())+"&op="+rsc.getMessage("button.classInstructorAssignment"));
+    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getPreviousId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
     	            	return null;
     	            }
 
