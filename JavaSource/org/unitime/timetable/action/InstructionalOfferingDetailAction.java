@@ -92,7 +92,7 @@ public class InstructionalOfferingDetailAction extends Action {
         HttpServletResponse response) throws Exception {
 
         if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
+            throw new Exception (MSG.exceptionAccessDenied());
         }
         
         HttpSession httpSession = request.getSession();
@@ -118,7 +118,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Check operation
 		if(op==null || op.trim().length()==0)
-		    throw new Exception ("Operation could not be interpreted: " + op);
+		    throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
 		
 		if ("n".equals(request.getParameter("confirm")))
 			op = rsc.getMessage("op.view");
@@ -126,7 +126,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		Debug.debug ("Op: " + op);
 
 		// Delete insructional offering
-		if(op.equals(rsc.getMessage("button.deleteIo"))
+		if(op.equals(MSG.actionDeleteIO())
 				&& request.getAttribute("cfgDelete")==null) {
 			doDelete(request, frm);
 			
@@ -138,11 +138,11 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Display detail - default
 		if(op.equals(rsc.getMessage("op.view"))
-		        || op.equals(rsc.getMessage("button.createClasses")) 
-		        || op.equals(rsc.getMessage("button.updateConfig")) 
-		        || op.equals(rsc.getMessage("button.saveConfig")) 
-		        || op.equals(rsc.getMessage("button.deleteConfig"))
-		        || op.equals(rsc.getMessage("button.unassignAll")) ) {
+		       // || op.equals(rsc.getMessage("button.createClasses"))
+		        || op.equals(MSG.actionUpdateConfiguration()) 
+		        || op.equals(MSG.actionSaveConfiguration()) 
+		        || op.equals(MSG.actionDeleteConfiguration())
+		        || op.equals(MSG.actionUnassignAllInstructorsFromConfig()) ) {
 		    String instrOfferingId = (request.getParameter("io")==null)
 		    							? (request.getAttribute("io")==null)
 		    							        ? null
@@ -151,7 +151,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		    if (instrOfferingId==null && frm.getInstrOfferingId()!=null)
 		    	instrOfferingId=frm.getInstrOfferingId().toString();
 			if(instrOfferingId==null || instrOfferingId.trim().length()==0)
-			    throw new Exception ("Instructional Offering data was not correct: " + instrOfferingId);
+			    throw new Exception (MSG.exceptionIODataNotCorrect() + instrOfferingId);
 			else  {
 			    doLoad(request, frm, instrOfferingId);
 			}
@@ -167,7 +167,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		}
 
 		// Add Configuration
-		if(op.equals(rsc.getMessage("button.addConfig"))) {
+		if(op.equals(MSG.actionAddConfiguration())) {
 		    // Redirect to config edit
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
@@ -176,7 +176,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		}
 		
 		// Make Offering 'Offered'
-		if(op.equals(rsc.getMessage("button.makeOffered"))) {
+		if(op.equals(MSG.actionMakeOffered())) {
 		    doMakeOffered(request, frm);
 		    
 		    // Redirect to config edit
@@ -187,30 +187,30 @@ public class InstructionalOfferingDetailAction extends Action {
 		}
 		
 		// Make Offering 'Not Offered'
-		if(op.equals(rsc.getMessage("button.makeNotOffered"))) {
+		if(op.equals(MSG.actionMakeNotOffered())) {
 		    doMakeNotOffered(request, frm);
 	        return mapping.findForward("showInstructionalOfferings");
 		}
 		
 		// Change controlling course, add other offerings
-		if(op.equals(rsc.getMessage("button.crossLists"))) {
+		if(op.equals(MSG.actionCrossLists())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 		    request.setAttribute("uid",io.getControllingCourseOffering().getUniqueId().toString());
 		    return mapping.findForward("modifyCrossLists");
 		}
 		
-        if (op.equals(rsc.getMessage("button.nextInstructionalOffering"))) {
+        if (op.equals(MSG.actionNextIO())) {
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getNextId()));
         	return null;
         }
         
-        if (op.equals(rsc.getMessage("button.previousInstructionalOffering"))) {
+        if (op.equals(MSG.actionPreviousIO())) {
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getPreviousId()));
         	return null;
         }
         
-        if (op.equals("Lock")) {
+        if (op.equals(MSG.actionLockIO())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 	        io.getSession().lockOffering(io.getUniqueId());
@@ -218,7 +218,7 @@ public class InstructionalOfferingDetailAction extends Action {
         	return null;
         }
 		
-        if (op.equals("Unlock")) {
+        if (op.equals(MSG.actionUnlockIO())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 	        io.getSession().unlockOffering(io.getUniqueId());
@@ -229,7 +229,7 @@ public class InstructionalOfferingDetailAction extends Action {
         BackTracker.markForBack(
 				request,
 				"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
-				"Instructional Offering ("+frm.getInstrOfferingName()+")",
+				MSG.backInstructionalOffering(frm.getInstrOfferingName()),
 				true, false);
 		
 		// Go back to instructional offerings
@@ -352,7 +352,7 @@ public class InstructionalOfferingDetailAction extends Action {
         }
         
         if (io.getConsentType()==null)
-            frm.setConsentType("None Required");
+            frm.setConsentType(MSG.noConsentRequired());
         else
             frm.setConsentType(io.getConsentType().getLabel());
         
@@ -398,7 +398,7 @@ public class InstructionalOfferingDetailAction extends Action {
 	    
 		DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
         String html = tbl.getDistPrefsTableForInstructionalOffering(request, io, true);
-        if (html!=null && html.indexOf("No preferences found")<0)
+        if (html!=null && html.indexOf(MSG.noPreferencesFound())<0)
         	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);	    
         
     }

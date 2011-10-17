@@ -144,7 +144,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setOp(op);
 
         // First access to screen
-        if(op.equalsIgnoreCase(rsc.getMessage("button.modifyOffering"))) {
+        if(op.equalsIgnoreCase(MSG.actionClassSetup())) {
 
         	instrOffrConfigId = (request.getParameter("uid")==null)
 								? (request.getAttribute("uid")==null)

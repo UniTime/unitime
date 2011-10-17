@@ -385,7 +385,7 @@ public class DistributionPrefsTableBuilder {
         }       
         
         if (nrPrefs==0)
-            tbl.addLine(null,  new String[] { "No preferences found", "", "", "" }, null);
+            tbl.addLine(null,  new String[] { MSG.noPreferencesFound(), "", "", "" }, null);
         
         return tbl.printTable(WebTable.getOrder(request.getSession(),"distPrefsTable.ord"));
     }

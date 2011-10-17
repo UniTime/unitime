@@ -111,7 +111,7 @@ public class CrossListsModifyForm extends ActionForm {
 	        }
         }
         
-        if (op.equals(rsc.getMessage("button.update"))) {
+        if (op.equals(MSG.actionUpdateCrossLists())) {
 	        // Check controlling course
 	        if (this.ctrlCrsOfferingId==null || this.ctrlCrsOfferingId.intValue()<=0) {
 	            errors.add("ctrlCrsOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredControllingCourse()));            

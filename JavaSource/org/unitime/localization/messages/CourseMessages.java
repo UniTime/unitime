@@ -237,6 +237,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("By Reservation Only:")
 	String propertyByReservationOnly();
 	
+	@DefaultMessage("Last Enrollment:")
+	String propertyLastEnrollment();
+	
+	@DefaultMessage("Projected Demand:")
+	String propertyProjectedDemand();
+	
+	@DefaultMessage("Offering Limit:")
+	String propertyOfferingLimit();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -336,7 +345,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Designator Required")
 	String columnDesignatorRequired();
 
-	@DefaultMessage("Schedule of Classes Note")
+	@DefaultMessage("Schedule Print Note")
 	String columnSchedulePrintNote();
 	
 	@DefaultMessage("Student Schedule Note")
@@ -545,7 +554,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Max")
 	String columnMax();
+	
+	@DefaultMessage("Reserved")
+	String columnReserved();
+	
+	@DefaultMessage("Schedule of Classes Note")
+	String columnScheduleOfClassesNote();
 		
+	@DefaultMessage("Demands From")
+	String columnDemandsFrom();
+	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
@@ -575,6 +593,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Limits do not match")
 	String altCrossListsLimitsDoNotMatch();
+	
+	@DefaultMessage("Limits do not match")
+	String altLimitsDoNotMatch();
+	
+	@DefaultMessage("Controlling Course")
+	String altControllingCourse();
+	
+	@DefaultMessage("Designator Required")
+	String altDesignatorRequired();
 	
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
@@ -784,7 +811,46 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update")
 	String actionUpdateClassInstructorsAssignment();
+	
+	@DefaultMessage("Add Configuration")
+	String actionAddConfiguration();
 
+	@DefaultMessage("Cross Lists")
+	String actionCrossLists();
+	
+	@DefaultMessage("Make Offered")
+	String actionMakeOffered();
+
+	@DefaultMessage("Make NOT Offered")
+	String actionMakeNotOffered();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteIO();
+	
+	@DefaultMessage("Back")
+	String actionBackToIOList();
+	
+	@DefaultMessage("Edit Course Offering")
+	String actionEditCourseOffering();
+	
+	@DefaultMessage("Lock")
+	String actionLockIO();
+	
+	@DefaultMessage("Unlock")
+	String actionUnlockIO();
+	
+	@DefaultMessage("Back")
+	String actionBackIODetail();
+	
+	@DefaultMessage("Edit Configuration")
+	String actionEditConfiguration();
+	
+	@DefaultMessage("Class Setup")
+	String actionClassSetup();
+	
+	@DefaultMessage("Assign Instructors")
+	String actionAssignInstructors();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -932,6 +998,33 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("U")
 	String accessUpdateClassInstructorsAssignment();
 	
+	@DefaultMessage("C")
+	String accessAddConfiguration();
+	
+	@DefaultMessage("L")
+	String accessCrossLists();
+	
+	@DefaultMessage("F")
+	String accessMakeOffered();
+
+	@DefaultMessage("F")
+	String accessMakeNotOffered();
+	
+	@DefaultMessage("B")
+	String accessBackToIOListButton();
+	
+	@DefaultMessage("D")
+	String accessDeleteIO();
+	
+	@DefaultMessage("X")
+	String accessLockIO();
+	
+	@DefaultMessage("X")
+	String accessUnlockIO();
+	
+	@DefaultMessage("B")
+	String accessBackIODetail();
+	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
@@ -967,6 +1060,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update and go to previous Scheduling Subpart (Alt+{0})")
 	String titlePreviousSubpartWithUpdate(String accessKey);
+
+	@DefaultMessage("Previous Instructional Offering (Alt+{0})")
+	String titlePreviousIO(String accessKey);
 	
 	@DefaultMessage("Update and go to previous Instructional Offering (Alt+{0})")
 	String titlePreviousIOWithUpdate(String accessKey);
@@ -988,6 +1084,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update and go to next Scheduling Subpart (Alt+{0})")
 	String titleNextSubpartWithUpdate(String accessKey);
+	
+	@DefaultMessage("Next Instructional Offering (Alt+{0})")
+	String titleNextIO(String accessKey);
 	
 	@DefaultMessage("Update and go to next Instructional Offering (Alt+{0})")
 	String titleNextIOWithUpdate(String accessKey);
@@ -1127,6 +1226,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Limits do not match")
 	String titleCrossListsLimitsDoNotMatch();
 	
+	@DefaultMessage("Limits do not match")
+	String titleLimitsDoNotMatch();
+	
 	@DefaultMessage("Remove course from instructional offering & mark it as not offered.")
 	String titleRemoveCourseFromCrossList();
 	
@@ -1159,7 +1261,52 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Update Class Instructors (Alt+{0})")
 	String titleUpdateClassInstructorsAssignment(String accessKey);
-		
+	
+	@DefaultMessage("Add Configuration (Alt+{0})")
+	String titleAddConfiguration(String accessKey);
+	
+	@DefaultMessage("Add/Delete cross-listed courses and change controlling course Alt+{0})")
+	String titleCrossLists(String accessKey);
+	
+	@DefaultMessage("Make this offering 'Offered' (Alt+{0})")
+	String titleMakeOffered(String accessKey);
+
+	@DefaultMessage("Make this offering 'Not Offered' (Alt+{0})")
+	String titleMakeNotOffered(String accessKey);
+
+	@DefaultMessage("Delete Instructional Offering (Alt+{0})")
+	String titleDeleteIO(String accessKey);
+	
+	@DefaultMessage("Lock Offering (Alt+{0})")
+	String titleLockIO(String accessKey);
+	
+	@DefaultMessage("Unlock Offering (Alt+{0})")
+	String titleUnlockIO(String accessKey);
+	
+	@DefaultMessage("Return to %% (Alt+{0})")
+	String titleBackIODetail(String accessKey);	
+	
+	@DefaultMessage("Controlling Course")
+	String titleControllingCourse();
+	
+	@DefaultMessage("Edit Course Offering")
+	String titleEditCourseOffering();
+	
+	@DefaultMessage("Unlimited Enrollment")
+	String titleUnlimitedEnrollment();
+	
+	@DefaultMessage("Designator Required")
+	String titleDesignatorRequired();
+	
+	@DefaultMessage("Set Up Configuration")
+	String titleEditConfiguration();
+	
+	@DefaultMessage("Multiple Class Setup")
+	String titleClassSetup();
+	
+	@DefaultMessage("Class Instructor Assignment")
+	String titleAssignInstructors();
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -1187,7 +1334,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Access Denied.")  //better use exceptionAccessDenied
 	String errorAccessDenied();
 
-	@DefaultMessage("ERRORS")
+	@DefaultMessage("ERRORS") //preferable to use this than errors for each page
 	String errors();
 	
 	@DefaultMessage("ERRORS")
@@ -1204,9 +1351,6 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsConfigurationEdit();
-	
-	@DefaultMessage("ERRORS")
-	String errorsCourseOfferingEdit();
 	
 	@DefaultMessage("ERRORS")
 	String errorsIOCrossLists();
@@ -1367,6 +1511,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Duplicate instructor for class.")
 	String errorDuplicateInstructorForClass();
 	
+	@DefaultMessage("Spaces reserved for course offerings ({0}) should total to at least the offering limit.")
+	String errorReservedSpacesForOfferingsTotal(String coursesTotal);
+	
 	@DefaultMessage("Access Denied.")
 	String exceptionAccessDenied();
 	
@@ -1381,6 +1528,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Initial setup of Instructional Offering Config has not been completed.")
 	String exceptionInitialIOSetupIncomplete();
+	
+	@DefaultMessage("Instructional Offering data was not correct: ")
+	String exceptionIODataNotCorrect();
+	
+	@DefaultMessage("Generated method 'validate(...)' not implemented.")
+	String exceptionValidateNotImplemented();
+	
+	@DefaultMessage("Course Offering Id need for operation. ")
+	String exceptionCourseOfferingIdNeeded();
 	
 	@DefaultMessage("Name")
 	String sortByName();
@@ -1433,6 +1589,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("pm")
 	String timePm();
 	
+	@DefaultMessage("None Required")
+	String noConsentRequired();
+	
+	@DefaultMessage("No preferences found")
+	String noPreferencesFound();
+	
 	@DefaultMessage("Class Assignment")
 	String dialogClassAssignment();
 	
@@ -1478,6 +1640,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Examination")
 	String sectionTitleExamination();
 	
+	@DefaultMessage("Configuration ")
+	String sectionTitleConfiguration();
+	
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -1514,6 +1679,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Do you really want to unassign all instructors?")
 	String confirmUnassignAllInstructors();
 	
+	@DefaultMessage("Do you really want to make this offering offered?")
+	String confirmMakeOffered();
+	
+	@DefaultMessage("Do you really want to make this offering not offered?")
+	String confirmMakeNotOffered();
+	
+	@DefaultMessage("This option will delete all associated course offerings. \\nDo you really want to delete this offering?")
+	String confirmDeleteIO();
+	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();
 
@@ -1534,4 +1708,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("If checked, only students meeting reservations will be allowed to enroll into the offering.")
 	String descriptionByReservationOnly();
+	
+	@DefaultMessage("Only students meeting reservations are allowed to enroll into this offering.")
+	String descriptionByReservationOnly2();
+	
+	@DefaultMessage("No")
+	String no();
 }

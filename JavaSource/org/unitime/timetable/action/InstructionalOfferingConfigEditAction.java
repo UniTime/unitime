@@ -165,8 +165,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // First access to screen
         if(op.equalsIgnoreCase(rsc.getMessage("op.edit"))
-                || op.equalsIgnoreCase(rsc.getMessage("button.modifyConfig"))
-                || op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")) ) {
+        	//	|| op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")) --- probably never used
+                || op.equalsIgnoreCase(MSG.actionEditConfiguration()) ) {
             Long configId = null;
 
             try {
@@ -181,8 +181,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
             // load existing config from database
             Vector sp = loadOriginalConfig(user, frm.getConfigId(), frm);
             boolean createAsNew = false;
-            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")))
-                createAsNew = true;
+//            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")))
+//                createAsNew = true;
 
             if(sp!=null && sp.size()>0) {
 	            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
@@ -194,15 +194,15 @@ public class InstructionalOfferingConfigEditAction extends Action {
             }
 
             // For duplication set configID to 0
-            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig"))) {
-                frm.setConfigId(new Long(0));
-                frm.setName(InstrOfferingConfig.getGeneratedName(
-                        ( new InstrOfferingConfigDAO().get(configId)).getInstructionalOffering() ));
-            }
+//            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig"))) {
+//                frm.setConfigId(new Long(0));
+//                frm.setName(InstrOfferingConfig.getGeneratedName(
+//                        ( new InstrOfferingConfigDAO().get(configId)).getInstructionalOffering() ));
+//            }
         }
 
         // Add a new configuration
-		if(op.equals(rsc.getMessage("button.addConfig"))) {
+		if(op.equals(MSG.actionAddConfiguration())) {
     		String courseOfferingId = (request.getParameter("uid")==null)
 			? (request.getAttribute("uid")==null)
 			        ? null
@@ -211,7 +211,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 
 			if(courseOfferingId==null || courseOfferingId.trim().length()==0)
-			    throw new Exception ("Course Offering Id need for operation. ");
+			    throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, false);
             httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -220,7 +220,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		}
 
         // Redirect after making course offered
-        if (op.equalsIgnoreCase(rsc.getMessage("button.makeOffered")) ) {
+        if (op.equalsIgnoreCase(MSG.actionMakeOffered()) ) {
 
     		String courseOfferingId = (request.getParameter("uid")==null)
 						? (request.getAttribute("uid")==null)
@@ -230,7 +230,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 
 	        if(courseOfferingId==null || courseOfferingId.trim().length()==0)
-	            throw new Exception ("Course Offering Id need for operation. ");
+	            throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 
             // Get first available config
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, true);
