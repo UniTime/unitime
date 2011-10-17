@@ -43,6 +43,7 @@ public class EncodingFilter implements Filter {
 	*/
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
 		req.setCharacterEncoding(iEncoding);
+		resp.setCharacterEncoding(iEncoding);
 		chain.doFilter(req, resp);
 	}
 
