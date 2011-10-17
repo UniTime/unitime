@@ -30,6 +30,8 @@ import javax.servlet.jsp.JspWriter;
 import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -54,6 +56,8 @@ import org.unitime.timetable.util.Constants;
 public class WebInstrOfferingConfigTableBuilder extends
 		WebInstructionalOfferingTableBuilder {
 	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
     private String[] COLUMNS = {LABEL,
 		MSG.columnExternalId(),
 		MSG.columnMinPerWk(),
@@ -77,7 +81,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		btnTable.append("<DIV class='WelcomeRowHeadNoLine'>");
 		String configName = ioc.getName();
 	    if (configName==null || configName.trim().length()==0) configName = ioc.getUniqueId().toString();
-		btnTable.append("Configuration "+configName);
+		btnTable.append(MSG.sectionTitleConfiguration() + configName);
 		btnTable.append("</DIV>");
 		btnTable.append("</td><td style='padding-bottom: 3px' nowrap>");
 		boolean notOffered = ioc.getInstructionalOffering().isNotOffered().booleanValue();
@@ -88,7 +92,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='Edit Configuration' title='Set Up Configuration' class='btn'>");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='btn'>");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
@@ -97,7 +101,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='Class Setup' title='Multiple Class Setup' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='btn'> ");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
@@ -106,7 +110,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='classInstructorAssignment.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='Assign Instructors' title='Class Instructor Assignment' class='btn'> ");
+		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='btn'> ");
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }

@@ -119,7 +119,7 @@ public class CourseOfferingEditAction extends Action {
 
 		Debug.debug ("Op: " + op);
 
-		if(op.equals(rsc.getMessage("button.editCourseOffering")) ) {
+		if(op.equals(MSG.actionEditCourseOffering()) ) {
 
 		    String courseOfferingId = (request.getParameter("courseOfferingId")==null)
 		    							? (request.getAttribute("courseOfferingId")==null)

@@ -129,7 +129,7 @@ public class CrossListsModifyAction extends Action {
         LookupTables.setupCourseOfferings(request);
         
         // First access to screen
-        if(op.equalsIgnoreCase(rsc.getMessage("button.crossLists"))) {
+        if(op.equalsIgnoreCase(MSG.actionCrossLists())) {
             
 		    courseOfferingId = (request.getParameter("uid")==null)
 								? (request.getAttribute("uid")==null)
