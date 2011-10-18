@@ -93,6 +93,7 @@ public class StaffImport extends BaseImport {
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 				Element element = (Element) it.next();
 				String externalId = getRequiredStringAttribute(element, "externalId", elementName);
+				String dept = getOptionalStringAttribute(element, "department");
 				Staff staff = null;
 				if(externalId != null && externalId.length() > 0) {
 		            if (trimLeadingZerosFromExternalId){
@@ -103,7 +104,7 @@ public class StaffImport extends BaseImport {
 							// do nothing
 						}
 			        }
-	 				staff = findByExternalId(externalId);
+	 				staff = findByExternalId(externalId, dept);
 				}
 				if(staff == null) {
 					staff = new Staff();
@@ -124,7 +125,6 @@ public class StaffImport extends BaseImport {
 				}
 				staff.setPositionCode(posCodeType);
 				staff.setExternalUniqueId(externalId);
-				String dept = getOptionalStringAttribute(element, "department");
 				if (dept != null)
 					staff.setDept(dept);
 				String email = getOptionalStringAttribute(element, "email");
@@ -144,13 +144,22 @@ public class StaffImport extends BaseImport {
         
 	}
 
-	private Staff findByExternalId(String externalId) {
-		return (Staff) this.
-			getHibSession().
-			createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId").
-			setString("externalId", externalId).
-			setCacheable(true).
-			uniqueResult();
+	private Staff findByExternalId(String externalId, String deptCode) {
+		if (deptCode != null)
+			return
+				(Staff)getHibSession().
+				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId and a.dept=:deptCode").
+				setString("externalId", externalId).
+				setString("deptCode", deptCode).
+				setCacheable(true).
+				uniqueResult();
+		else
+			return
+				(Staff)getHibSession().
+				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId").
+				setString("externalId", externalId).
+				setCacheable(true).
+				uniqueResult();
 	}
 	
 }
