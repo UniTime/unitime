@@ -356,7 +356,8 @@ public class CourseSelectionBox extends Composite {
 					new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
 					new WebTable.Cell(MESSAGES.colInstructor(), 1, "120"),
 					new WebTable.Cell(MESSAGES.colParent(), 1, "90"),
-					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
+					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10"),
+					new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
 				));
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
@@ -856,7 +857,8 @@ public class CourseSelectionBox extends Composite {
 									new WebTable.Cell(clazz.getRooms(", ")),
 									new WebTable.Cell(clazz.getInstructors(", ")),
 									new WebTable.Cell(clazz.getParentSection()),
-									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
+									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
 							row.setId(clazz.getClassId().toString());
 							String styleName = "unitime-ClassRow";
 							if (lastSubpartId != null && !clazz.getSubpartId().equals(lastSubpartId))

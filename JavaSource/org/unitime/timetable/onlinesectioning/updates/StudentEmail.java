@@ -175,12 +175,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								generateTimetable(out, server, helper);
 								out.flush(); out.close();
 								return new ByteArrayInputStream(
-										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes());
+										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
 							}
 							
 							@Override
 							public String getContentType() {
-								return "text/html";
+								return "text/html; charset=UTF-8";
 							}
 						});
 						
@@ -229,7 +229,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									
 									@Override
 									public String getContentType() {
-										return "text/calendar";
+										return "text/calendar; charset=UTF-8";
 									}
 								});
 						} catch (IOException e) {
@@ -325,6 +325,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		out.println("<html>");
 		out.println("<head>");
+		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
 		out.println("	<title>Current Class Schedule</title>");
 		out.println("</head>");
 		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
@@ -403,6 +404,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<td style=\"" + style + "\">Room</td>");
 		out.println("	<td style=\"" + style + "\">Instructor</td>");
 		out.println("	<td style=\"" + style + "\">Requires</td>");
+		out.println("	<td style=\"" + style + "\">Note</td>");
 		out.println("</tr>");
 	}
 	
@@ -469,6 +471,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			out.println("	<td style= \"" + style + "\">" + html + "</td>");
 		}
 		out.println("	<td style= \"" + style + "\">" + (section.getParent() == null ? consent == null ? "&nbsp;" : consent : section.getParent().getName()) + "</td>");
+		out.println("	<td style= \"" + style + "\">" + (section.getNote() == null ? "&nbsp;" : section.getNote()) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -551,6 +554,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<td style= \"" + style + "\">" + diff(oldInstructors, instructors) + "</td>");
 
 		out.println("	<td style= \"" + style + "\">" + (old.getParent() == null && section.getParent() == null ? consent : diff(old.getParent() == null ? null : old.getParent().getName(), section.getParent() == null ? null : section.getParent().getName())) + "</td>");
+		out.println("	<td style= \"" + style + "\">" + diff(old.getNote(), section.getNote()) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -567,9 +571,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				out.println("	<td style= \"" + style + "\">&nbsp;</td>");
 				out.println("	<td style= \"" + style + "\">&nbsp;</td>");
 				if (request.isAlternative())
-					out.println("	<td style= \"" + style + "\" colspan=\"7\" align=\"center\">wait-listed alternative</td>");
+					out.println("	<td style= \"" + style + "\" colspan=\"8\" align=\"center\">wait-listed alternative</td>");
 				else
-					out.println("	<td style= \"" + style + "\" colspan=\"7\" align=\"center\">wait-listed</td>");
+					out.println("	<td style= \"" + style + "\" colspan=\"8\" align=\"center\">wait-listed</td>");
 				out.println("</tr>");
 			}
 			return;
@@ -585,7 +589,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			out.println("	<td style= \"" + style + "\">" + DayCode.toString(fr.getTime().getDayCode()) + "</td>");
 			out.println("	<td style= \"" + style + "\">" + fr.getTime().getStartTimeHeader() + "</td>");
 			out.println("	<td style= \"" + style + "\">" + fr.getTime().getEndTimeHeader() + "</td>");
-			out.println("	<td style= \"" + style + "\" colspan=\"4\">&nbsp;</td>");
+			out.println("	<td style= \"" + style + "\" colspan=\"5\">&nbsp;</td>");
 			out.println("</tr>");
 			return;
 		}
@@ -941,6 +945,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty()) {
 							out.println("<span style='white-space: nowrap'>" + section.getTime().getDatePatternName() + "</span>");
 						}
+						if (section.getNote() != null && !section.getNote().isEmpty())
+							out.println("<br>" + section.getNote());
 						out.println("</div></div>");
 					}
 				}
@@ -990,7 +996,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
         BufferedImage image = new BufferedImage(39 + 180 * nrDays, 21 + 50 * (lastHour - firstHour), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
 
-        g.setFont(new Font("Sans Serif", Font.PLAIN, 11));
+        g.setFont(new Font("Sans Serif", Font.TRUETYPE_FONT, 11));
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(new Color(0xff, 0xff, 0xff));
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
@@ -1098,26 +1104,36 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty())
 							texts.add(section.getTime().getDatePatternName());
 						
+						if (section.getNote() != null && !section.getNote().isEmpty())
+							texts.add(section.getNote());
+						
 						int tt = t + fh; 
 						String next = "";
 						int idx = 0;
-						while (idx < texts.size()) {
-							next += texts.get(idx);
-							if (idx + 1 < texts.size()) next += ", ";
-							while (g.getFontMetrics().stringWidth(next.trim()) < w - 10 && idx + 1 < texts.size()) {
-								if (g.getFontMetrics().stringWidth(next + texts.get(idx + 1) + ",") < w - 10) {
-									idx ++;
-									next += texts.get(idx);
-									if (idx + 1 < texts.size()) next += ", ";
+						while (idx < texts.size() || !next.isEmpty()) {
+							if (idx < texts.size()) {
+								next += texts.get(idx++);
+								if (idx < texts.size()) next += ", ";
+							}
+							while (g.getFontMetrics().stringWidth(next.trim()) < w - 10 && idx < texts.size()) {
+								if (g.getFontMetrics().stringWidth(next + texts.get(idx) + ",") < w - 10) {
+									next += texts.get(idx++);
+									if (idx < texts.size()) next += ", ";
 								} else  break;
 							}
-							text = next; next = ""; idx ++;
+							text = next; next = "";
 					        while (g.getFontMetrics().stringWidth(text.trim()) > w - 10) {
-					        	next = text.substring(text.length() - 1, text.length()) + next;
-					        	text = text.substring(0, text.length() - 1);
-							}
+					        	int sp = text.lastIndexOf(' ');
+					        	if (sp >= 0 && g.getFontMetrics().stringWidth(text.substring(sp)) < w - 10) {
+					        		next = text.substring(sp);
+					        		text = text.substring(0, sp);
+					        	} else {
+					        		next = text.substring(text.length() - 1, text.length()) + next;
+					        		text = text.substring(0, text.length() - 1);
+					        	}
+					        }
 					        if (tt + fh - 2 > t + h) break;
-					        g.drawString(text, l + 5, tt + fh - 2);
+					        g.drawString(text.trim(), l + 5, tt + fh - 2);
 					        tt += fh;
 						}
 					}

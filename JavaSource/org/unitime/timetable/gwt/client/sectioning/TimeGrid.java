@@ -328,7 +328,7 @@ public class TimeGrid extends Composite {
 		return color;
 	}
 	
-	protected Meeting addMeeting(int index, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, boolean pinned, ArrayList<Meeting> meetings) {
+	protected Meeting addMeeting(int index, int day, int startSlot, int length, String name, ArrayList<String> body, String note, String title, String color, boolean pinned, ArrayList<Meeting> meetings) {
 		int col = -1;
 		for (int i = 0; i < length; i++) {
 			if (iMeetingTable[day][startSlot + i] != null) {
@@ -354,7 +354,7 @@ public class TimeGrid extends Composite {
 			for (int i = 0; i < cols - 1; i++)
 				if (!used[i]) {col = i; cols--; break; }
 		}
-        Meeting meeting = new Meeting(index, name, note, day, startSlot, length, col, cols, pinned, meetings);
+        Meeting meeting = new Meeting(index, name, body, note, day, startSlot, length, col, cols, pinned, meetings);
         meeting.addStyleName(color);
 
         meeting.setTitle(title);
@@ -430,7 +430,7 @@ public class TimeGrid extends Composite {
 		}
 		final ArrayList<Meeting> meetings = new ArrayList<Meeting>();
 		for (int day: row.getDays()) {
-			meetings.add(addMeeting(index, day, row.getStart(), row.getLength(), name, notes, title, color, row.isPinned(), meetings));
+			meetings.add(addMeeting(index, day, row.getStart(), row.getLength(), name, notes, row.getNote(), title, color, row.isPinned(), meetings));
 		}
 		if (row.isPinned())
 			for (Meeting m: meetings) m.setPinned(true);
@@ -504,7 +504,7 @@ public class TimeGrid extends Composite {
 		private Image iSaved;
 		private boolean iDummy = false;
 		
-		private Meeting(int index, String name, ArrayList<String> note, int day, int start, int length, int column, int nrColumns, boolean pinned, ArrayList<Meeting> meetings) {
+		private Meeting(int index, String name, ArrayList<String> body, String note, int day, int start, int length, int column, int nrColumns, boolean pinned, ArrayList<Meeting> meetings) {
 			super();
 			iMeetings = meetings;
 			iIndex = index;
@@ -537,13 +537,14 @@ public class TimeGrid extends Composite {
 	        mbot.setStylePrimaryName("footer");
 	        String notes = "";
 	        String delim = "<br>";
-	        if (note.size() > 2 && length <= 14) delim = ", ";
-	        if (note.size() > 3 && length <= 20) delim = ", ";
-	        for (String n: note) {
+	        if (body.size() + (note == null || note.isEmpty() ? 0 : 1) > 2 && length <= 14) delim = ", ";
+	        if (body.size() + (note == null || note.isEmpty() ? 0 : 1) > 3 && length <= 20) delim = ", ";
+	        for (String n: body) {
 	        	if (n == null || n.isEmpty()) continue;
 	        	if (notes.length() > 0) notes += delim;
 	        	notes += "<span  style=\"white-space: nowrap\">" + n + "</span>";
 	        }
+	        if (note != null && !note.isEmpty()) notes += "<br>" + note;
 	        mbot.add(new HTML(notes));
 	        setStylePrimaryName("meeting");
 	        add(iHeaderPanel);
