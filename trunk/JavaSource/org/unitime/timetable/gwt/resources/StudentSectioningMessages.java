@@ -98,7 +98,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Campus")
 	String colCampus();
-	
+
+	@DefaultMessage("&nbsp;")
+	String colNoteIcon();
+
 	/* Academic Session Selector messages
 	 */
 	@DefaultMessage("No academic session is selected.")
@@ -687,4 +690,14 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
+	
+	@DefaultMessage("Overlaps with {0}")
+	String noteAllowedOverlapFirst(String classOrCourse);
+	
+	@DefaultMessage(", {0}")
+	String noteAllowedOverlapMiddle(String classOrCourse);
+
+	@DefaultMessage(" and {0}")
+	String noteAllowedOverlapLast(String classOrCourse);
+
 }

@@ -131,7 +131,8 @@ public class SuggestionsBox extends DialogBox {
 				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
 				new WebTable.Cell(MESSAGES.colParent(), 1, "85"),
 				new WebTable.Cell(MESSAGES.colSaved(), 1, "10"),
-				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
+				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10"),
+				new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
 			));
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
@@ -241,7 +242,8 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), false)),
 											(clazz != null && clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) :
-											(clazz != null && clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell(""))));
+											(clazz != null && clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell(""))),
+											(clazz != null && clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell("")));
 									String style = "unitime-ClassRow" + (selected?"Blue":"") + (lastSize > 0 && rows.size() == lastSize ? "First2" : clazzIdx == 0 && !rows.isEmpty() ? "First": "");
 									row.setId(String.valueOf(suggestionId));
 									for (WebTable.Cell cell: row.getCells())
@@ -304,7 +306,8 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), false)),
 											(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : 
-											(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell(""))));
+											(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell(""))),
+											(old != null && old.hasNote() ? new WebTable.IconCell(RESOURCES.note(), old.getNote(), "") : new WebTable.Cell("")));
 									row.setId(String.valueOf(suggestionId));
 									String style = "unitime-ClassRowRed" + (lastSize > 0 && rows.size() == lastSize ? "First2" : idx == 0 && !rows.isEmpty() ? "First": "");
 									for (WebTable.Cell cell: row.getCells())
@@ -338,7 +341,8 @@ public class SuggestionsBox extends DialogBox {
 									new WebTable.InstructorCell(old == null ? null : old.getInstructors(), old == null ? null : old.getInstructorEmails(), ", "),
 									new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), false)),
 									(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
-									(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell("")));
+									(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell("")),
+									(old != null && old.hasNote() ? new WebTable.IconCell(RESOURCES.note(), old.getNote(), "") : new WebTable.Cell("")));
 							row.setId(String.valueOf(suggestionId));
 							String style = "unitime-ClassRowRed" + (lastSize > 0 && rows.size() == lastSize ? "First2" : !old.getCourseId().equals(lastCourseId) && !rows.isEmpty() ? "First": "");
 							for (WebTable.Cell cell: row.getCells())

@@ -176,6 +176,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private String iBackToBackRooms = null;
 		private boolean iSaved = false;
 		private Integer iExpected = null;
+		private String iNote = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -374,6 +375,24 @@ public class ClassAssignmentInterface implements IsSerializable {
 		
 		public String getClassNumber() { return iNumber; }
 		public void setClassNumber(String number) { iNumber = number; }
+		
+		public boolean hasNote() {
+			return iNote != null && !iNote.isEmpty();
+		}
+		public String getNote() { return (iNote == null ? "" : iNote); }
+		public void setNote(String note) { iNote = note; }
+		public void addNote(String note) {
+			if (note == null || note.isEmpty()) return;
+			if (iNote == null || iNote.isEmpty())
+				iNote = note;
+			else {
+				if (iNote.endsWith(".") || iNote.endsWith(","))
+					iNote += " ";
+				else
+					iNote += "; ";
+				iNote += note;
+			}
+		}
 	}
 	
 	public static class Student implements IsSerializable {

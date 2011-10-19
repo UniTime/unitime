@@ -270,8 +270,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
 				a.setSection(clazz.getClassSuffix(courseOffering));
 				a.setClassNumber(clazz.getSectionNumberString(hibSession));
+				a.addNote(clazz.getSchedulePrintNote());
 
-				
 				Assignment ass = clazz.getCommittedAssignment();
 				Placement p = (ass == null ? null : ass.getPlacement());
 				
@@ -385,6 +385,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							if (enrollment.getStudent().getId() == studentId) { a.setSaved(true); break; }
 						}
 					}
+					a.addNote(section.getNote());
 					if (section.getTime() != null) {
 						for (DayCode d: DayCode.toDayCodes(section.getTime().getDayCode()))
 							a.addDay(d.getIndex());
@@ -1280,6 +1281,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							if (clazz.getParentSection() == null)
 								clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
 						}
+						if (enrollment.getClazz().getSchedulePrintNote() != null)
+							clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
 						Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
 						int minLimit = enrollment.getClazz().getExpectedCapacity();
 	                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();

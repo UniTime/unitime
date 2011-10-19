@@ -138,7 +138,8 @@ public class EnrollmentTable extends Composite {
 								new WebTable.Cell(MESSAGES.colDate(), 1, "75"),
 								new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
 								new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
-								new WebTable.Cell(MESSAGES.colParent(), 1, "75")
+								new WebTable.Cell(MESSAGES.colParent(), 1, "75"),
+								new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
 							));
 						
 						ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
@@ -159,7 +160,8 @@ public class EnrollmentTable extends Composite {
 											new WebTable.Cell(clazz.getDatePattern()),
 											(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 											new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-											new WebTable.Cell(clazz.getParentSection()));
+											new WebTable.Cell(clazz.getParentSection()),
+											clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
 									rows.add(row);
 									for (WebTable.Cell cell: row.getCells())
 										cell.setStyleName(style);
@@ -200,7 +202,8 @@ public class EnrollmentTable extends Composite {
 											new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
 											new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 											new WebTable.Cell(clazz.getDatePattern()),
-											new WebTable.Cell(unassignedMessage, 3, null));
+											new WebTable.Cell(unassignedMessage, 3, null),
+											clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""));
 									break;
 								}
 								if (row == null) {
