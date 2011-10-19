@@ -364,8 +364,10 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 								a.setParentSection(section.getParent().getName(course.getId()));
 							a.setSubpartId(section.getSubpart().getId());
 							a.setHasAlternatives(hasAlt);
+							a.addNote(section.getNote());
 							int dist = 0;
 							String from = null;
+							TreeSet<String> overlap = new TreeSet<String>();
 							for (Request q: student.getRequests()) {
 								Enrollment x = q.getAssignment();
 								if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -382,7 +384,22 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 									if (d > s.getTime().getBreakTime()) {
 										a.setDistanceConflict(true);
 									}
+									if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+										overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
+									}
 								}
+							}
+							if (!overlap.isEmpty()) {
+								String note = null;
+								for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {
+									String n = j.next();
+									if (note == null)
+										note = MSG.noteAllowedOverlapFirst(n);
+									else if (j.hasNext())
+										note += MSG.noteAllowedOverlapMiddle(n);
+									else
+										note += MSG.noteAllowedOverlapLast(n);
+								}								a.addNote(note);
 							}
 							a.setBackToBackDistance(dist);
 							a.setBackToBackRooms(from);
@@ -632,8 +649,10 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 								if (section.getParent() != null)
 									a.setParentSection(section.getParent().getName(course.getId()));
 								a.setSubpartId(section.getSubpart().getId());
+								a.addNote(section.getNote());
 								int dist = 0;
 								String from = null;
+								TreeSet<String> overlap = new TreeSet<String>();
 								for (Request q: request.getStudent().getRequests()) {
 									Enrollment x = q.getAssignment();
 									if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -650,7 +669,23 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 										if (d > s.getTime().getBreakTime()) {
 											a.setDistanceConflict(true);
 										}
+										if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+											overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
+										}
 									}
+								}
+								if (!overlap.isEmpty()) {
+									String note = null;
+									for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {
+										String n = j.next();
+										if (note == null)
+											note = MSG.noteAllowedOverlapFirst(n);
+										else if (j.hasNext())
+											note += MSG.noteAllowedOverlapMiddle(n);
+										else
+											note += MSG.noteAllowedOverlapLast(n);
+									}
+									a.addNote(note);
 								}
 								a.setBackToBackDistance(dist);
 								a.setBackToBackRooms(from);
@@ -744,8 +779,10 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							if (section.getParent() != null)
 								a.setParentSection(section.getParent().getName(course.getId()));
 							a.setSubpartId(section.getSubpart().getId());
+							a.addNote(section.getNote());
 							int dist = 0;
 							String from = null;
+							TreeSet<String> overlap = new TreeSet<String>();
 							for (Request q: request.getStudent().getRequests()) {
 								Enrollment x = q.getAssignment();
 								if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -762,7 +799,23 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 									if (d > s.getTime().getBreakTime()) {
 										a.setDistanceConflict(true);
 									}
+									if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+										overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
+									}
 								}
+							}
+							if (!overlap.isEmpty()) {
+								String note = null;
+								for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {
+									String n = j.next();
+									if (note == null)
+										note = MSG.noteAllowedOverlapFirst(n);
+									else if (j.hasNext())
+										note += MSG.noteAllowedOverlapMiddle(n);
+									else
+										note += MSG.noteAllowedOverlapLast(n);
+								}
+								a.addNote(note);
 							}
 							a.setBackToBackDistance(dist);
 							a.setBackToBackRooms(from);
