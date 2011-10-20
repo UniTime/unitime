@@ -215,12 +215,12 @@ public class CurriculaImport extends BaseImport {
                     	String externalId = acadClasfElement.attributeValue("externalId");
                     	String code = acadClasfElement.attributeValue("code");
                     	acadClasf = (externalId != null ? clasfsByExtId.get(externalId) : clasfsByCode.get(code));
-                    	if (area == null) {
+                    	if (acadClasf == null) {
                     		error("Academic classification " + acadClasfElement + " does not exist.");
                     		continue classifications;
                     	}
                     }
-                    if (area == null) {
+                    if (acadClasf == null) {
                 		error("No academic classification provided for a curriculum classification.");
                 		continue classifications;
                     }
