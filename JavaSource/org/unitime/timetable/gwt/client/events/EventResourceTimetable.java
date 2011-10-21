@@ -162,6 +162,7 @@ public class EventResourceTimetable extends Composite {
 				UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
 				for (int i = 1; i < iPanel.getRowCount(); i++)
 					iPanel.getRowFormatter().setVisible(i, false);
+				iGridPanel.setVisible(false);
 				resourceTypeChanged(false);
 			}
 		});
@@ -299,6 +300,7 @@ public class EventResourceTimetable extends Composite {
 
 		for (int i = 1; i < iPanel.getRowCount(); i++)
 			iPanel.getRowFormatter().setVisible(i, false);
+		iGridPanel.setVisible(false);
 					
 		iHeader.addButton("print", "<u>P</u>rint", 'p', 75, new ClickHandler() {
 			@Override
@@ -388,6 +390,7 @@ public class EventResourceTimetable extends Composite {
 						iFilterHeader.setErrorMessage(caught.getMessage());
 						for (int i = 1; i < iPanel.getRowCount(); i++)
 							iPanel.getRowFormatter().setVisible(i, i == iLastRow);
+						iGridPanel.setVisible(false);
 						iHeader.setEnabled("print", false);
 						iHeader.setEnabled("export", false);
 					}
@@ -417,6 +420,7 @@ public class EventResourceTimetable extends Composite {
 					iFilterHeader.setErrorMessage((iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel().substring(0, 1).toUpperCase() + iResource.getType().getLabel().substring(1) + " ") + iResource.getName() + " has no events in " + iResource.getSessionName() + "."); 
 					for (int i = 1; i < iPanel.getRowCount(); i++)
 						iPanel.getRowFormatter().setVisible(i, i == iLastRow);
+					iGridPanel.setVisible(false);
 					iHeader.setEnabled("print", false);
 					iHeader.setEnabled("export", false);
 				} else {
@@ -480,6 +484,7 @@ public class EventResourceTimetable extends Composite {
 					iHeader.setEnabled("print", true);
 					for (int i = 1; i < iPanel.getRowCount(); i++)
 						iPanel.getRowFormatter().setVisible(i, i != iWeekRow || iResource.hasWeeks());
+					iGridPanel.setVisible(true);
 				}
 			}
 	
@@ -489,6 +494,7 @@ public class EventResourceTimetable extends Composite {
 				iFilterHeader.setErrorMessage(caught.getMessage());
 				for (int i = 1; i < iPanel.getRowCount(); i++)
 					iPanel.getRowFormatter().setVisible(i, i == iLastRow);
+				iGridPanel.setVisible(false);
 				iHeader.setEnabled("print", false);
 				iHeader.setEnabled("export", false);
 			}
