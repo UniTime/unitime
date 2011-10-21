@@ -203,7 +203,8 @@ public class CrossListsModifyAction extends Action {
         
         for (Iterator i=offerings.iterator(); i.hasNext(); ) {
             CourseOffering co = (CourseOffering) i.next();
-            if (!co.getInstructionalOffering().isNotOffered() || co.getInstructionalOffering().getCourseOfferings().size() > 1) {
+            if ((!co.getInstructionalOffering().isNotOffered() && !co.getInstructionalOffering().getInstrOfferingConfigs().isEmpty())
+            	|| co.getInstructionalOffering().getCourseOfferings().size() > 1) {
             	i.remove(); continue;
             }
             for (Iterator j=existingOfferings.iterator(); j.hasNext(); ) {
