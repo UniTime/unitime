@@ -507,7 +507,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	        return mapping.findForward("showInstructionalOfferingDetail");
 	    	*/
 	        MessageResources rsc = getResources(request);
-	        request.setAttribute("op", rsc.getMessage("button.editCourseOffering"));
+	        request.setAttribute("op", MSG.actionEditCourseOffering());
 	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
 	        return mapping.findForward("showCourseOfferingEdit");
 	    }
