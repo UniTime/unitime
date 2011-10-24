@@ -277,7 +277,7 @@ public class SimpleEditPage extends Composite {
 			fillRow(r, row++);
 			empty = r.isEmpty();
 		}
-		if (!empty && iEditable && iData.isEditable())
+		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);
 		
 		iBottom.setVisible(true);
@@ -293,10 +293,11 @@ public class SimpleEditPage extends Composite {
 		List<Widget> line = new ArrayList<Widget>();
 		int col = 0;
 		for (Field field: iData.getFields()) {
-			MyCell cell = new MyCell(iData.isEditable() && iEditable, field, record, col++);
+			MyCell cell = new MyCell(iData.isEditable() && iEditable && record.isEditable(col), field, record, col);
 			line.add(cell);
+			col++;
 		}
-		if (iData.isEditable() && iEditable) {
+		if (iData.isAddable() && iEditable) {
 			Image add = new Image(RESOURCES.add());
 			add.getElement().getStyle().setCursor(Cursor.POINTER);
 			add.setTitle("Insert a new row above this row.");
@@ -308,6 +309,10 @@ public class SimpleEditPage extends Composite {
 				}
 			});
 			line.add(add);
+		} else {
+			line.add(new Label());
+		}
+		if (iData.isEditable() && iEditable && record.isDeletable()) {
 			Image delete = new Image(RESOURCES.delete());
 			delete.setTitle("Delete this row.");
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -320,6 +325,8 @@ public class SimpleEditPage extends Composite {
 				}
 			});
 			line.add(delete);
+		} else {
+			line.add(new Label());
 		}
 		iTable.setRow(row, record, line);
 	}

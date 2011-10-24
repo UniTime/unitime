@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.server;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,17 +45,31 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Type;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.CourseCreditFormat;
+import org.unitime.timetable.model.CourseCreditType;
+import org.unitime.timetable.model.CourseCreditUnitType;
+import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.PositionCodeType;
+import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
+import org.unitime.timetable.model.dao.CourseCreditFormatDAO;
+import org.unitime.timetable.model.dao.CourseCreditTypeDAO;
+import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
+import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
+import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.util.Constants;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -145,6 +160,122 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(2, minor.getName());
 					for (AcademicArea area: minor.getAcademicAreas())
 						r.setField(3, area.getUniqueId().toString());
+				}
+				break;
+			case group:
+				data = new SimpleEditInterface(type,
+						new Field("External Id", FieldType.text, 120, 40),
+						new Field("Code", FieldType.text, 80, 10),
+						new Field("Name", FieldType.text, 300, 50));
+				data.setSortBy(1,2);
+				for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, sessionId)) {
+					Record r = data.addRecord(group.getUniqueId());
+					r.setField(0, group.getExternalUniqueId());
+					r.setField(1, group.getGroupAbbreviation());
+					r.setField(2, group.getGroupName());
+				}
+				break;
+			case consent:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60));
+				data.setSortBy(0, 1);
+				data.setAddable(false);
+				for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll()) {
+					Record r = data.addRecord(consent.getUniqueId(), false);
+					r.setField(0, consent.getReference(), false);
+					r.setField(1, consent.getLabel(), true);
+				}
+				break;
+			case creditFormat:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 80, 10));
+				data.setSortBy(0, 1, 2);
+				data.setAddable(false);
+				for (CourseCreditFormat credit: CourseCreditFormatDAO.getInstance().findAll()) {
+					Record r = data.addRecord(credit.getUniqueId(), false);
+					r.setField(0, credit.getReference(), false);
+					r.setField(1, credit.getLabel());
+					r.setField(2, credit.getAbbreviation());
+				}
+				break;
+			case creditType:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 80, 10));
+				data.setSortBy(0, 1, 2);
+				for (CourseCreditType credit: CourseCreditTypeDAO.getInstance().findAll()) {
+					int used =
+						((Number)hibSession.createQuery(
+								"select count(c) from CourseCreditUnitConfig c where c.creditType.uniqueId = :uniqueId")
+								.setLong("uniqueId", credit.getUniqueId()).uniqueResult()).intValue();
+					Record r = data.addRecord(credit.getUniqueId(), used == 0);
+					r.setField(0, credit.getReference());
+					r.setField(1, credit.getLabel());
+					r.setField(2, credit.getAbbreviation());
+				}
+				break;
+			case creditUnit:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 80, 10));
+				data.setSortBy(0, 1, 2);
+				for (CourseCreditUnitType credit: CourseCreditUnitTypeDAO.getInstance().findAll()) {
+					int used =
+						((Number)hibSession.createQuery(
+								"select count(c) from CourseCreditUnitConfig c where c.creditUnitType.uniqueId = :uniqueId")
+								.setLong("uniqueId", credit.getUniqueId()).uniqueResult()).intValue();
+					Record r = data.addRecord(credit.getUniqueId(), used == 0);
+					r.setField(0, credit.getReference());
+					r.setField(1, credit.getLabel());
+					r.setField(2, credit.getAbbreviation());
+				}
+				break;
+			case positionType:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Sort Order", FieldType.text, 80, 10)
+						);
+				data.setSortBy(2, 0, 1);
+				DecimalFormat df = new DecimalFormat("0000");
+				for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
+					int used =
+						((Number)hibSession.createQuery(
+								"select count(f) from Staff f where f.positionCode.positionType.uniqueId = :uniqueId")
+								.setLong("uniqueId", position.getUniqueId()).uniqueResult()).intValue() +
+						((Number)hibSession.createQuery(
+								"select count(f) from DepartmentalInstructor f where f.positionType.uniqueId = :uniqueId")
+								.setLong("uniqueId", position.getUniqueId()).uniqueResult()).intValue();
+					Record r = data.addRecord(position.getUniqueId(), used == 0);
+					r.setField(0, position.getReference());
+					r.setField(1, position.getLabel());
+					r.setField(2, df.format(position.getSortOrder()));
+				}
+				break;
+			case positionCode:
+				List<ListItem> positions = new ArrayList<ListItem>();
+				for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
+					positions.add(new ListItem(position.getUniqueId().toString(), position.getReference() + " - " + position.getLabel()));
+				}
+				data = new SimpleEditInterface(type,
+						new Field("Code", FieldType.text, 160, 20),
+						new Field("Position", FieldType.list, 300, positions)
+						);
+				data.setSortBy(0);
+				long id = 0;
+				for (PositionCodeType code: PositionCodeTypeDAO.getInstance().findAll()) {
+					int used =
+						((Number)hibSession.createQuery(
+								"select count(f) from Staff f where f.positionCode.positionCode = :code")
+								.setString("code", code.getPositionCode()).uniqueResult()).intValue();
+					Record r = data.addRecord(id++, used == 0);
+					r.setField(0, code.getPositionCode());
+					r.setField(1, code.getPositionType().getUniqueId().toString());
 				}
 				break;
 			}
@@ -417,6 +548,318 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								null,
 								null);
 					}
+					break;
+				case group:
+					for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, sessionId)) {
+						Record r = data.getRecord(group.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									group,
+									group.getGroupAbbreviation() + " " + group.getGroupName(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(group);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(group.getExternalUniqueId(), r.getField(0)) ||
+								!ToolBox.equals(group.getGroupAbbreviation(), r.getField(1)) ||
+								!ToolBox.equals(group.getGroupName(), r.getField(2));
+							group.setExternalUniqueId(r.getField(0));
+							group.setGroupAbbreviation(r.getField(1));
+							group.setGroupName(r.getField(2));
+							hibSession.saveOrUpdate(group);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										group,
+										group.getGroupAbbreviation() + " " + group.getGroupName(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						StudentGroup group = new StudentGroup();
+						group.setExternalUniqueId(r.getField(0));
+						group.setGroupAbbreviation(r.getField(1));
+						group.setGroupName(r.getField(2));
+						group.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
+						r.setUniqueId((Long)hibSession.save(group));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								group,
+								group.getGroupAbbreviation() + " " + group.getGroupName(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case consent:
+					for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll()) {
+						Record r = data.getRecord(consent.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									consent,
+									consent.getReference() + " " + consent.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(consent);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(consent.getReference(), r.getField(0)) ||
+								!ToolBox.equals(consent.getLabel(), r.getField(1));
+							consent.setReference(r.getField(0));
+							consent.setLabel(r.getField(1));
+							hibSession.saveOrUpdate(consent);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										consent,
+										consent.getReference() + " " + consent.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						OfferingConsentType consent = new OfferingConsentType();
+						consent.setReference(r.getField(0));
+						consent.setLabel(r.getField(1));
+						r.setUniqueId((Long)hibSession.save(consent));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								consent,
+								consent.getReference() + " " + consent.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case creditFormat:
+					for (CourseCreditFormat credit: CourseCreditFormatDAO.getInstance().findAll()) {
+						Record r = data.getRecord(credit.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									credit,
+									credit.getReference() + " " + credit.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(credit);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(credit.getReference(), r.getField(0)) ||
+								!ToolBox.equals(credit.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(credit.getAbbreviation(), r.getField(2));
+							credit.setReference(r.getField(0));
+							credit.setLabel(r.getField(1));
+							credit.setAbbreviation(r.getField(2));
+							hibSession.saveOrUpdate(credit);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										credit,
+										credit.getReference() + " " + credit.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						CourseCreditFormat credit = new CourseCreditFormat();
+						credit.setReference(r.getField(0));
+						credit.setLabel(r.getField(1));
+						credit.setAbbreviation(r.getField(2));
+						r.setUniqueId((Long)hibSession.save(credit));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								credit,
+								credit.getReference() + " " + credit.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case creditType:
+					for (CourseCreditType credit: CourseCreditTypeDAO.getInstance().findAll()) {
+						Record r = data.getRecord(credit.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									credit,
+									credit.getReference() + " " + credit.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(credit);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(credit.getReference(), r.getField(0)) ||
+								!ToolBox.equals(credit.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(credit.getAbbreviation(), r.getField(2));
+							credit.setReference(r.getField(0));
+							credit.setLabel(r.getField(1));
+							credit.setAbbreviation(r.getField(2));
+							hibSession.saveOrUpdate(credit);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										credit,
+										credit.getReference() + " " + credit.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						CourseCreditType credit = new CourseCreditType();
+						credit.setReference(r.getField(0));
+						credit.setLabel(r.getField(1));
+						credit.setAbbreviation(r.getField(2));
+						r.setUniqueId((Long)hibSession.save(credit));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								credit,
+								credit.getReference() + " " + credit.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case creditUnit:
+					for (CourseCreditUnitType credit: CourseCreditUnitTypeDAO.getInstance().findAll()) {
+						Record r = data.getRecord(credit.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									credit,
+									credit.getReference() + " " + credit.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(credit);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(credit.getReference(), r.getField(0)) ||
+								!ToolBox.equals(credit.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(credit.getAbbreviation(), r.getField(2));
+							credit.setReference(r.getField(0));
+							credit.setLabel(r.getField(1));
+							credit.setAbbreviation(r.getField(2));
+							hibSession.saveOrUpdate(credit);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										credit,
+										credit.getReference() + " " + credit.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						CourseCreditUnitType credit = new CourseCreditUnitType();
+						credit.setReference(r.getField(0));
+						credit.setLabel(r.getField(1));
+						credit.setAbbreviation(r.getField(2));
+						r.setUniqueId((Long)hibSession.save(credit));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								credit,
+								credit.getReference() + " " + credit.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case positionType:
+					for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
+						Record r = data.getRecord(position.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									position,
+									position.getReference() + " " + position.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(position);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(position.getReference(), r.getField(0)) ||
+								!ToolBox.equals(position.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(position.getSortOrder().toString(), r.getField(2));
+							position.setReference(r.getField(0));
+							position.setLabel(r.getField(1));
+							position.setSortOrder(Integer.valueOf(r.getField(2)));
+							hibSession.saveOrUpdate(position);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										position,
+										position.getReference() + " " + position.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						PositionType position = new PositionType();
+						position.setReference(r.getField(0));
+						position.setLabel(r.getField(1));
+						position.setSortOrder(Integer.valueOf(r.getField(2)));
+						r.setUniqueId((Long)hibSession.save(position));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								position,
+								position.getReference() + " " + position.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case positionCode:
+					for (PositionCodeType code: PositionCodeTypeDAO.getInstance().findAll()) {
+						Record r = null;
+						for (Record x: data.getRecords())
+							if (code.getPositionCode().equals(x.getField(0))) { r = x; break; }
+						if (r == null) {
+							hibSession.delete(code);
+						} else {
+							code.setPositionCode(r.getField(0));
+							code.setPositionType(PositionTypeDAO.getInstance().get(Long.valueOf(r.getField(1))));
+							hibSession.saveOrUpdate(code);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						PositionCodeType code = new PositionCodeType();
+						code.setPositionCode(r.getField(0));
+						code.setPositionType(PositionTypeDAO.getInstance().get(Long.valueOf(r.getField(1))));
+						hibSession.save(code);
+					}	
 					break;
 				}
 				hibSession.flush();

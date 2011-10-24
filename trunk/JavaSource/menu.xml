@@ -321,6 +321,7 @@
 			<item name="Academic Classifications" page="admin&amp;type=classification" type="gwt"/>
 			<item name="Majors" page="admin&amp;type=major" type="gwt"/>
 			<item name="Minors" page="admin&amp;type=minor" type="gwt"/>
+			<item name="Student Groups" page="admin&amp;type=group" type="gwt"/>
 			<separator/>
 			<item name="Examination Periods" page="examPeriodEdit.do"/>
 			<item name="Data Exchange" page="dataImport.do"/>
@@ -344,6 +345,13 @@
 			<item name="Room Types" page="roomTypeEdit.do"/>
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do"/>
 			<item name="Standard Notes" page="eventStandardNotes.do"/>
+			<separator/>
+			<item name="Consent Types" page="admin&amp;type=consent" type="gwt"/>
+			<item name="Course Credit Formats" page="admin&amp;type=creditFormat" type="gwt"/>
+			<item name="Course Credit Types" page="admin&amp;type=creditType" type="gwt"/>
+			<item name="Course Credit Units" page="admin&amp;type=creditUnit" type="gwt"/>
+			<item name="Position Types" page="admin&amp;type=positionType" type="gwt"/>
+			<item name="Position Codes" page="admin&amp;type=positionCode" type="gwt"/>
 		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do"/>
