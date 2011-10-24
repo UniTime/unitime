@@ -22,7 +22,7 @@
 	<!-- Add custom administration menu with users -->
 	<menu name="Administration">
 		<menu name="Other">
-			<item name="Users" page="userEdit.do">
+			<item name="Users" page="userEdit.do" position="5">
 				<!-- Only when LDAP is not configured -->
 				<condition>
 					<propertyEquals name="tmtbl.authenticate.ldap.provider" value="" defaultValue=""/>
@@ -40,7 +40,9 @@
 	<!-- 
 	<menu name="Courses">
 		<menu name="Input Data">
-			<remove name="Designator List"/>
+			<menu name="Instructors">
+				<remove name="Designator List"/>
+			</menu>
 		</menu>
 	</menu>
 	-->
@@ -65,7 +67,7 @@
 	<!-- Example 5: show the old sectioning demo instead of the scheduling assistant (change the existing item) -->
 	<!-- 
 	<menu name="Students">
-		<item name="Scheduling Assistant" page="sectioningDemo.do" type=""/>
+		<item name="Scheduling Assistant" page="sectioningDemo.do" type="page"/>
 	</menu>
 	-->
 </unitime-menu>
