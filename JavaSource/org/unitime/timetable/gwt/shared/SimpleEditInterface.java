@@ -34,7 +34,15 @@ public class SimpleEditInterface implements IsSerializable {
 		area("Academic Areas"),
 		classification("Academic Classifications"),
 		major("Majors"),
-		minor("Minors");
+		minor("Minors"),
+		group("Student Groups"),
+		consent("Offering Consent Types"),
+		creditFormat("Course Credit Formats"),
+		creditType("Course Credit Types"),
+		creditUnit("Course Credit Units"),
+		positionType("Position Types"),
+		positionCode("Position Codes")
+		;
 	
 		private String iPageName;
 		
@@ -52,7 +60,7 @@ public class SimpleEditInterface implements IsSerializable {
 	private Type iType = null;
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
-	private boolean iEditable = true;
+	private boolean iEditable = true, iAddable = true;
 	private int[] iSort = null;
 	
 	public SimpleEditInterface() {
@@ -66,10 +74,14 @@ public class SimpleEditInterface implements IsSerializable {
 	public Type getType() { return iType; }
 	
 	public List<Record> getRecords() { return iRecords; }
-	public Record addRecord(Long uniqueId) {
-		Record r = new Record(uniqueId, iFields.length);
+	public Record addRecord(Long uniqueId, boolean deletable) {
+		Record r = new Record(uniqueId, iFields.length, deletable);
 		iRecords.add(r);
 		return r;
+	}
+	
+	public Record addRecord(Long uniqueId) {
+		return addRecord(uniqueId, true);
 	}
 	
 	public Record insertEmptyRecord(int pos) {
@@ -111,6 +123,9 @@ public class SimpleEditInterface implements IsSerializable {
 	public boolean isEditable() { return iEditable; }
 	public void setEditable(boolean editable) { iEditable = editable; }
 	
+	public boolean isAddable() { return iAddable; }
+	public void setAddable(boolean addable) { iAddable = addable; }
+	
 	public int[] getSortBy() { return iSort; }
 	public void setSortBy(int... columns) { iSort = columns; }
 	public Comparator<Record> getComparator() {
@@ -141,28 +156,47 @@ public class SimpleEditInterface implements IsSerializable {
 	public static class Record implements IsSerializable {
 		private Long iUniqueId = null;
 		private String[] iValues = null;
+		private boolean[] iEditable = null;
+		private boolean iDeletable = true;
 		
 		public Record() {
 		}
 		
-		public Record(Long uniqueId, int nrFields) {
+		public Record(Long uniqueId, int nrFields, boolean deletable) {
 			iUniqueId = uniqueId;
 			iValues = new String[nrFields];
-			for (int i = 0; i < nrFields; i++)
+			iEditable = new boolean[nrFields];
+			for (int i = 0; i < nrFields; i++) {
 				iValues[i] = null;
+				iEditable[i] = true;
+			}
+			iDeletable = deletable;
+		}
+		
+		public Record(Long uniqueId, int nrFields) {
+			this(uniqueId, nrFields, true);
 		}
 		
 		public Long getUniqueId() { return iUniqueId; }
 		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 		
-		public void setField(int index, String value) {
+		public void setField(int index, String value, boolean editable) {
 			iValues[index] = value;
+			iEditable[index] = editable;
+		}
+		
+		public void setField(int index, String value) {
+			setField(index, value, true);
 		}
 		
 		public String getField(int index) {
 			return iValues[index];
 		}
 		
+		public boolean isEditable(int index) {
+			return iEditable[index];
+		}
+
 		public void addToField(int index, String value) {
 			if (iValues[index] == null)
 				iValues[index] = value;
@@ -206,6 +240,9 @@ public class SimpleEditInterface implements IsSerializable {
 			}
 			return true;
 		}
+		
+		public boolean isDeletable() { return iDeletable; }
+		public void setDeletable(boolean deletable) { iDeletable = deletable; }
 	}
 	
 	public static class ListItem implements IsSerializable {
