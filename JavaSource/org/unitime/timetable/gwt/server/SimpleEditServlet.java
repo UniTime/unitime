@@ -51,7 +51,6 @@ import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
-import org.unitime.timetable.model.PositionCodeType;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.StudentGroup;
@@ -66,7 +65,6 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
-import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
@@ -178,13 +176,15 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 			case consent:
 				data = new SimpleEditInterface(type,
 						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60));
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 160, 20));
 				data.setSortBy(0, 1);
 				data.setAddable(false);
 				for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll()) {
 					Record r = data.addRecord(consent.getUniqueId(), false);
 					r.setField(0, consent.getReference(), false);
 					r.setField(1, consent.getLabel(), true);
+					r.setField(2, consent.getAbbv(), true);
 				}
 				break;
 			case creditFormat:
@@ -235,7 +235,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(2, credit.getAbbreviation());
 				}
 				break;
-			case positionType:
+			case position:
 				data = new SimpleEditInterface(type,
 						new Field("Reference", FieldType.text, 160, 20),
 						new Field("Name", FieldType.text, 300, 60),
@@ -246,7 +246,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 				for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
 					int used =
 						((Number)hibSession.createQuery(
-								"select count(f) from Staff f where f.positionCode.positionType.uniqueId = :uniqueId")
+								"select count(f) from Staff f where f.positionType.uniqueId = :uniqueId")
 								.setLong("uniqueId", position.getUniqueId()).uniqueResult()).intValue() +
 						((Number)hibSession.createQuery(
 								"select count(f) from DepartmentalInstructor f where f.positionType.uniqueId = :uniqueId")
@@ -255,27 +255,6 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(0, position.getReference());
 					r.setField(1, position.getLabel());
 					r.setField(2, df.format(position.getSortOrder()));
-				}
-				break;
-			case positionCode:
-				List<ListItem> positions = new ArrayList<ListItem>();
-				for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
-					positions.add(new ListItem(position.getUniqueId().toString(), position.getReference() + " - " + position.getLabel()));
-				}
-				data = new SimpleEditInterface(type,
-						new Field("Code", FieldType.text, 160, 20),
-						new Field("Position", FieldType.list, 300, positions)
-						);
-				data.setSortBy(0);
-				long id = 0;
-				for (PositionCodeType code: PositionCodeTypeDAO.getInstance().findAll()) {
-					int used =
-						((Number)hibSession.createQuery(
-								"select count(f) from Staff f where f.positionCode.positionCode = :code")
-								.setString("code", code.getPositionCode()).uniqueResult()).intValue();
-					Record r = data.addRecord(id++, used == 0);
-					r.setField(0, code.getPositionCode());
-					r.setField(1, code.getPositionType().getUniqueId().toString());
 				}
 				break;
 			}
@@ -615,9 +594,11 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						} else {
 							boolean changed = 
 								!ToolBox.equals(consent.getReference(), r.getField(0)) ||
-								!ToolBox.equals(consent.getLabel(), r.getField(1));
+								!ToolBox.equals(consent.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(consent.getAbbv(), r.getField(2));
 							consent.setReference(r.getField(0));
 							consent.setLabel(r.getField(1));
+							consent.setAbbv(r.getField(2));
 							hibSession.saveOrUpdate(consent);
 							if (changed)
 								ChangeLog.addChange(hibSession,
@@ -634,6 +615,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						OfferingConsentType consent = new OfferingConsentType();
 						consent.setReference(r.getField(0));
 						consent.setLabel(r.getField(1));
+						consent.setAbbv(r.getField(2));
 						r.setUniqueId((Long)hibSession.save(consent));
 						ChangeLog.addChange(hibSession,
 								getThreadLocalRequest(),
@@ -792,7 +774,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								null);
 					}	
 					break;
-				case positionType:
+				case position:
 					for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
 						Record r = data.getRecord(position.getUniqueId());
 						if (r == null) {
@@ -839,26 +821,6 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								Operation.CREATE,
 								null,
 								null);
-					}	
-					break;
-				case positionCode:
-					for (PositionCodeType code: PositionCodeTypeDAO.getInstance().findAll()) {
-						Record r = null;
-						for (Record x: data.getRecords())
-							if (code.getPositionCode().equals(x.getField(0))) { r = x; break; }
-						if (r == null) {
-							hibSession.delete(code);
-						} else {
-							code.setPositionCode(r.getField(0));
-							code.setPositionType(PositionTypeDAO.getInstance().get(Long.valueOf(r.getField(1))));
-							hibSession.saveOrUpdate(code);
-						}
-					}
-					for (Record r: data.getNewRecords()) {
-						PositionCodeType code = new PositionCodeType();
-						code.setPositionCode(r.getField(0));
-						code.setPositionType(PositionTypeDAO.getInstance().get(Long.valueOf(r.getField(1))));
-						hibSession.save(code);
 					}	
 					break;
 				}

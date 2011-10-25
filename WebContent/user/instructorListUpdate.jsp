@@ -296,8 +296,8 @@
 						<%	
 							Staff s = (Staff) staff;
 							PositionType posType2 = null;
-							if (s.getPositionCode()!=null) 
-								posType2 = s.getPositionCode().getPositionType();
+							if (s.getPositionType()!=null) 
+								posType2 = s.getPositionType();
 							
 							if (posType2 == null) {
 								currPosType2 = "Position Type Not Set";

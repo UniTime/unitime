@@ -398,8 +398,8 @@ public class ImportPreferences {
 						instructor.setMiddleName(staff.getMiddleName());
 					if (staff.getLastName()!=null)
 						instructor.setLastName(staff.getLastName());
-					if (staff.getPositionCode()!=null)
-						instructor.setPositionType(staff.getPositionCode().getPositionType());
+					if (staff.getPositionType()!=null)
+						instructor.setPositionType(staff.getPositionType());
 					hibSession.save(instructor);
 					hibSession.flush();
 					hibSession.refresh(instructor);

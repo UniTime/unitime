@@ -72,7 +72,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_ROOM_RATIO = "roomRatio";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_ENROLLMENT = "enrollment";
 
 	public BaseClass_() {
 		initialize();
@@ -193,7 +192,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	DatePattern: " + getDatePattern() +
 			"\n	DisplayInScheduleBook: " + getDisplayInScheduleBook() +
 			"\n	DisplayInstructor: " + getDisplayInstructor() +
-			"\n	Enrollment: " + getEnrollment() +
 			"\n	ExpectedCapacity: " + getExpectedCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	ManagingDept: " + getManagingDept() +

@@ -21,7 +21,7 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.PositionCodeType;
+import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Staff;
 
 public abstract class BaseStaff implements Serializable {
@@ -35,7 +35,7 @@ public abstract class BaseStaff implements Serializable {
 	private String iDept;
 	private String iEmail;
 
-	private PositionCodeType iPositionCode;
+	private PositionType iPositionType;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
@@ -77,8 +77,8 @@ public abstract class BaseStaff implements Serializable {
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
-	public PositionCodeType getPositionCode() { return iPositionCode; }
-	public void setPositionCode(PositionCodeType positionCode) { iPositionCode = positionCode; }
+	public PositionType getPositionType() { return iPositionType; }
+	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Staff)) return false;
@@ -103,7 +103,7 @@ public abstract class BaseStaff implements Serializable {
 			"\n	FirstName: " + getFirstName() +
 			"\n	LastName: " + getLastName() +
 			"\n	MiddleName: " + getMiddleName() +
-			"\n	PositionCode: " + getPositionCode() +
+			"\n	PositionType: " + getPositionType() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

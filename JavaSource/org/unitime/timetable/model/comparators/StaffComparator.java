@@ -62,12 +62,12 @@ public class StaffComparator implements Comparator {
         
         if (compareBy==COMPARE_BY_POSITION) {
             Integer l1 = new Integer(-1);
-            if (s1.getPositionCode()!=null)
-                l1 = s1.getPositionCode().getPositionType().getSortOrder();
+            if (s1.getPositionType()!=null)
+                l1 = s1.getPositionType().getSortOrder();
             
             Integer l2 = new Integer(-1);
-            if (s2.getPositionCode()!=null)
-                l2 = s2.getPositionCode().getPositionType().getSortOrder();
+            if (s2.getPositionType()!=null)
+                l2 = s2.getPositionType().getSortOrder();
             
             int ret = l1.compareTo(l2);
             if (ret!=0)

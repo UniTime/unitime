@@ -115,11 +115,11 @@ public class Staff extends BaseStaff implements Comparable {
 	public int compareTo(Object o) {
 		if (o==null || !(o instanceof Staff)) return -1;
 		Staff i = (Staff)o;
-		if (getPositionCode()==null) {
-			if (i.getPositionCode()!=null) return 1;
+		if (getPositionType()==null) {
+			if (i.getPositionType()!=null) return 1;
 		} else {
-			if (i.getPositionCode()==null) return -1;
-			int cmp = getPositionCode().getPositionType().getSortOrder().compareTo(i.getPositionCode().getPositionType().getSortOrder());
+			if (i.getPositionType()==null) return -1;
+			int cmp = getPositionType().getSortOrder().compareTo(i.getPositionType().getSortOrder());
 			if (cmp!=0) return cmp;
 		}
 		int cmp = nameLastNameFirst().compareToIgnoreCase(i.nameLastNameFirst());

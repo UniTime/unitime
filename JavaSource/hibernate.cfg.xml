@@ -156,7 +156,6 @@
 	<mapping resource="Reservation.hbm.xml" />
 	<mapping resource="StudentGroup.hbm.xml" />
 	<mapping resource="Designator.hbm.xml" />
-	<mapping resource="PositionCodeType.hbm.xml" />
 	<mapping resource="ApplicationConfig.hbm.xml" />
 	<mapping resource="History.hbm.xml" />
 	<mapping resource="AcademicAreaClassification.hbm.xml" />

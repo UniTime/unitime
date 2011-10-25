@@ -513,8 +513,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupPositionTypes(HttpServletRequest request) throws Exception{
-        Vector v = PositionType.getPositionTypeList(false);
-        request.setAttribute(PositionType.POSTYPE_ATTR_NAME, v);
+        request.setAttribute(PositionType.POSTYPE_ATTR_NAME, PositionType.getPositionTypeList());
     }
 
     /**

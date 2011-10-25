@@ -181,7 +181,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
             addPerson(people, peopleWithoutId, new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
                     staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),
                     staff.getEmail(), null, staff.getDept(), 
-                    (staff.getPositionCode()==null?null:staff.getPositionCode().getPositionType()==null?staff.getPositionCode().getPositionCode():staff.getPositionCode().getPositionType().getLabel()),
+                    (staff.getPositionType() == null ? null : staff.getPositionType().getLabel()),
                     "Staff"));
         }
     }

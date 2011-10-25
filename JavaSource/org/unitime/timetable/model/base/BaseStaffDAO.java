@@ -39,7 +39,7 @@ public abstract class BaseStaffDAO extends _RootDAO<Staff,Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Staff> findByPositionCode(org.hibernate.Session hibSession, String positionCodeId) {
-		return hibSession.createQuery("from Staff x where x.positionCode.positionCode = :positionCodeId").setString("positionCodeId", positionCodeId).list();
+	public List<Staff> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
+		return hibSession.createQuery("from Staff x where x.positionType.uniqueId = :positionTypeId").setLong("positionTypeId", positionTypeId).list();
 	}
 }

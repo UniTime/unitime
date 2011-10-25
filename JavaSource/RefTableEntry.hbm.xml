@@ -114,7 +114,15 @@
         <union-subclass
             name="OfferingConsentType"
             table="offr_consent_type"
-            abstract="false"/>
+            abstract="false">
+            <property
+                name="abbv"
+                column="abbv"
+                type="java.lang.String"
+                not-null="true"
+                length="20"/>
+
+        </union-subclass>
 
         <union-subclass
             name="CourseCreditFormat"

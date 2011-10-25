@@ -84,7 +84,6 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OnlineSectioningLog;
-import org.unitime.timetable.model.PositionCodeType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -177,7 +176,6 @@ public class SessionRestore {
 		if (entity.getObject() instanceof OfferingConsentType && lookup(entity, "label", ((OfferingConsentType)entity.getObject()).getLabel())) save = false;
 		if (entity.getObject() instanceof ChangeLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
-		if (entity.getObject() instanceof PositionCodeType && lookup(entity, "positionCode", ((PositionCodeType)entity.getObject()).getPositionCode())) save = false;
 		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
 		if (entity.getObject() instanceof EventContact && lookup(entity, "externalUniqueId", ((EventContact)entity.getObject()).getExternalUniqueId())) save = false;
 		if (save)
@@ -247,8 +245,6 @@ public class SessionRestore {
 				if (value != null)
 					metadata.setPropertyValue(object, property, value, EntityMode.POJO);
 			}
-			if (object instanceof PositionCodeType)
-				((PositionCodeType)object).setPositionCode(record.getId());
 			add(new Entity(metadata, record, object, record.getId()));
 		}
 	}

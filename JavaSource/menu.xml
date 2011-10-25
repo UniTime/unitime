@@ -350,8 +350,7 @@
 			<item name="Course Credit Formats" page="admin&amp;type=creditFormat" type="gwt"/>
 			<item name="Course Credit Types" page="admin&amp;type=creditType" type="gwt"/>
 			<item name="Course Credit Units" page="admin&amp;type=creditUnit" type="gwt"/>
-			<item name="Position Types" page="admin&amp;type=positionType" type="gwt"/>
-			<item name="Position Codes" page="admin&amp;type=positionCode" type="gwt"/>
+			<item name="Position Types" page="admin&amp;type=position" type="gwt"/>
 		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do"/>

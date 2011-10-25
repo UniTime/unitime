@@ -74,10 +74,9 @@
             length="200"/>
 
         <many-to-one
-            name="positionCode"
-            class="PositionCodeType"
-            column="pos_code"
-            not-found="ignore"/>
-
+            name="positionType"
+            class="PositionType"
+            column="pos_type"
+            foreign-key="fk_staff_pos_type"/>
     </class>
 </hibernate-mapping>
