@@ -1,4 +1,5 @@
 /*
+ * UniTime 3.3 (University Timetabling Application)
  * Copyright (C) 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -18,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -43,7 +43,6 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -60,7 +59,6 @@ import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
  */
 public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInterface> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static DecimalFormat sDF = new DecimalFormat("+0.000;-0.000");
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
@@ -241,6 +239,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						
 						server.execute(new CheckOfferingAction(oldEnrollment.getOffering().getId()), offeringChecked);
 						updateSpace(helper, newEnrollment, oldEnrollment);
+						server.persistExpectedSpaces(oldEnrollment.getOffering().getId());
 					}
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
@@ -261,6 +260,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest() && oldRequest.getInitialAssignment().getOffering().getId() == newEnrollment.getOffering().getId())
 									continue requests;
 						updateSpace(helper, newEnrollment, null);
+						server.persistExpectedSpaces(newEnrollment.getOffering().getId());
 						server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), enrollmentsUpdated);
 					}
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
@@ -354,42 +354,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                 }
             }
     	}
-    	
-    	for (SectioningInfo info: (List<SectioningInfo>)helper.getHibSession().createQuery(
-    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
-    			setLong("offeringId", (newEnrollment == null ? oldEnrollment : newEnrollment).getCourse().getOffering().getId()).
-    			setCacheable(true).list()) {
-    		Section section = sections.remove(info.getClazz().getUniqueId());
-    		if (section == null) continue;
-    		if (info.getNbrExpectedStudents() == section.getSpaceExpected() && info.getNbrHoldingStudents() == section.getSpaceHeld()) continue;
-    		helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected() - info.getNbrExpectedStudents()) +
-    				", held " + sDF.format(section.getSpaceHeld() - info.getNbrHoldingStudents()));
-    		if (section.getLimit() >= 0 && section.getLimit() >= info.getNbrExpectedStudents() && section.getLimit() < section.getSpaceExpected())
-    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
-    		if (section.getLimit() >= 0 && section.getLimit() < info.getNbrExpectedStudents() && section.getLimit() >= section.getSpaceExpected())
-    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
-    		info.setNbrExpectedStudents(section.getSpaceExpected());
-    		info.setNbrHoldingStudents(section.getSpaceHeld());
-    		helper.getHibSession().saveOrUpdate(info);
-    	}
-    	
-    	if (!sections.isEmpty())
-        	for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
-        			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
-        			setLong("offeringId", (newEnrollment == null ? oldEnrollment : newEnrollment).getCourse().getOffering().getId()).
-        			setCacheable(true).list()) {
-        		Section section = sections.remove(clazz.getUniqueId());
-        		if (section == null) continue;
-                SectioningInfo info = new SectioningInfo();
-        		helper.debug(clazz.getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected()) +
-        				", held " + sDF.format(section.getSpaceHeld()) + " (new)");
-        		if (section.getLimit() >= 0 && section.getLimit() < section.getSpaceExpected())
-        			helper.info(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
-                info.setClazz(clazz);
-                info.setNbrExpectedStudents(section.getSpaceExpected());
-                info.setNbrHoldingStudents(section.getSpaceHeld());
-                helper.getHibSession().saveOrUpdate(info);
-        	}
     }
 	
 	@Override

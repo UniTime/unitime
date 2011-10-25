@@ -400,6 +400,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				helper.getHibSession().save(student);
 			
 				EnrollStudent.updateSpace(helper, r.getRequest().getAssignment(), r.getLastEnrollment());
+				server.persistExpectedSpaces(offeringId);
 
 				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
 						r.getRequest(), r.getLastEnrollment());

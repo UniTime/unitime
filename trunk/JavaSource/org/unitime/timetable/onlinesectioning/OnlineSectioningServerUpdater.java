@@ -29,8 +29,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Callback;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ExpireReservationsAction;
+import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
@@ -73,6 +75,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			while (iRun) {
 				checkForUpdates();
 				checkForExpiredReservations();
+				persistExpectedSpaces();
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
@@ -135,6 +138,29 @@ public class OnlineSectioningServerUpdater extends Thread {
 				} catch (Exception e) {
 					iLog.error("Expire reservations failed: " + e.getMessage(), e);
 				}
+			}
+		}
+	}
+	
+	public void persistExpectedSpaces() {
+		if (getAcademicSession() == null) return; // no work for general updater
+		
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getAcademicSession().getUniqueId());
+		if (server != null) {
+			try {
+				List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
+				if (!offeringIds.isEmpty()) {
+					server.execute(new PersistExpectedSpacesAction(offeringIds), new Callback<Boolean>() {
+						@Override
+						public void onSuccess(Boolean result) {}
+						@Override
+						public void onFailure(Throwable exception) {
+							iLog.error("Failed to persist expected spaces: " + exception.getMessage(), exception);
+						}
+					});
+				}
+			} catch (Exception e) {
+				iLog.error("Failed to persist expected spaces: " + e.getMessage(), e);
 			}
 		}
 	}
