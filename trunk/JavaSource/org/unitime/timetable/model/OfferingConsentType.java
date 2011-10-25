@@ -83,11 +83,4 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 		return(null);
 	}
 	
-	public String getAbbv() {
-		//FIXME: put abbreviation into DB
-		if (getLabel()==null) return null;
-		return getLabel().replaceAll("Consent of ", "");
-	}
-	
-
 }

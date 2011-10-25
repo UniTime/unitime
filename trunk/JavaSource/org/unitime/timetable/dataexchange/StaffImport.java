@@ -27,10 +27,9 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.PositionCodeType;
+import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Staff;
-import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
 
 
 /**
@@ -81,6 +80,7 @@ public class StaffImport extends BaseImport {
         String term   = root.attributeValue("term");
         String created = root.attributeValue("created");
         String elementName = "staffMember";
+        boolean posCodeWarning = false;
 		try {
 			beginTransaction();
 
@@ -118,12 +118,15 @@ public class StaffImport extends BaseImport {
 				staff.setFirstName(getOptionalStringAttribute(element, "firstName"));
 				staff.setMiddleName(getOptionalStringAttribute(element, "middleName"));
 				staff.setLastName(getRequiredStringAttribute(element, "lastName", elementName));
-				PositionCodeType posCodeType = null;
-				String positionCode = getOptionalStringAttribute(element, "positionCode");
-				if (positionCode != null){
-					posCodeType = new PositionCodeTypeDAO().get(positionCode);
+				PositionType posType = null;
+				String positionType = getOptionalStringAttribute(element, "positionType");
+				if (positionType != null)
+					posType = PositionType.findByRef(positionType);
+				if (!posCodeWarning && getOptionalStringAttribute(element, "positionCode") != null) {
+					warn("Attribute positionCode is no longer supported, please use positionType attribute instead.");
+					posCodeWarning = true;
 				}
-				staff.setPositionCode(posCodeType);
+				staff.setPositionType(posType);
 				staff.setExternalUniqueId(externalId);
 				if (dept != null)
 					staff.setDept(dept);

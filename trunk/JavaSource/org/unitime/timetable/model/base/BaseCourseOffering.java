@@ -55,7 +55,6 @@ public abstract class BaseCourseOffering implements Serializable {
 	public static String PROP_PROJ_DEMAND = "projectedDemand";
 	public static String PROP_NBR_EXPECTED_STDENTS = "nbrExpectedStudents";
 	public static String PROP_LASTLIKE_DEMAND = "demand";
-	public static String PROP_ENROLLMENT = "enrollment";
 	public static String PROP_RESERVATION = "reservation";
 	public static String PROP_COURSE_NBR = "courseNbr";
 	public static String PROP_TITLE = "title";
@@ -150,7 +149,6 @@ public abstract class BaseCourseOffering implements Serializable {
 			"\n	Demand: " + getDemand() +
 			"\n	DemandOffering: " + getDemandOffering() +
 			"\n	DemandOfferingType: " + getDemandOfferingType() +
-			"\n	Enrollment: " + getEnrollment() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	IsControl: " + getIsControl() +

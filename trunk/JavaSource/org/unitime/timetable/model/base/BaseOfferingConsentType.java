@@ -27,7 +27,10 @@ import org.unitime.timetable.model.RefTableEntry;
 public abstract class BaseOfferingConsentType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private String iAbbv;
 
+
+	public static String PROP_ABBV = "abbv";
 
 	public BaseOfferingConsentType() {
 		initialize();
@@ -39,6 +42,9 @@ public abstract class BaseOfferingConsentType extends RefTableEntry implements S
 	}
 
 	protected void initialize() {}
+
+	public String getAbbv() { return iAbbv; }
+	public void setAbbv(String abbv) { iAbbv = abbv; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof OfferingConsentType)) return false;
@@ -57,6 +63,7 @@ public abstract class BaseOfferingConsentType extends RefTableEntry implements S
 
 	public String toDebugString() {
 		return "OfferingConsentType[" +
+			"\n	Abbv: " + getAbbv() +
 			"\n	Label: " + getLabel() +
 			"\n	Reference: " + getReference() +
 			"\n	UniqueId: " + getUniqueId() +

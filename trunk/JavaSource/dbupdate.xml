@@ -3838,4 +3838,45 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+	<update version="78" date="25-Sep-2011" comment="Removed position code types, added consent abbreviation">
+		<plsql>
+			alter table %SCHEMA%.staff add pos_type number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.staff add pos_type decimal(20,0) null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.staff add constraint fk_staff_pos_type foreign key (pos_type)
+			references %SCHEMA%.position_type(uniqueid) on delete set null
+		</sql>
+		<sql>
+			update %SCHEMA%.staff s set s.pos_type =
+				(select c.pos_code_type from %SCHEMA%.position_code_to_type c where s.pos_code = c.position_code)
+				where s.pos_type is not null
+		</sql>
+		<sql>
+			drop table %SCHEMA%.position_code_to_type
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.offr_consent_type add abbv varchar2(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.offr_consent_type add abbv varchar(20)
+		</mysql>
+		<sql>
+			update %SCHEMA%.offr_consent_type set reference = 'IN' where reference = 'instructor'
+		</sql>
+		<sql>
+			update %SCHEMA%.offr_consent_type set reference = 'DP' where reference = 'department'
+		</sql>
+		<sql>
+			update %SCHEMA%.offr_consent_type set abbv = 'Instructor' where reference = 'instructor' or reference = 'IN'
+		</sql>
+		<sql>
+			update %SCHEMA%.offr_consent_type set abbv = 'Department' where reference = 'department' or reference = 'DP'
+		</sql>
+		<sql>
+			alter table %SCHEMA%.offr_consent_type add constraint nn_offr_consent_abbv check (abbv is not null)
+		</sql>
+	</update>
 </dbupdate>

@@ -29,7 +29,10 @@
 <!ATTLIST staffMember firstName CDATA #IMPLIED >
 <!ATTLIST staffMember lastName CDATA #REQUIRED >
 <!ATTLIST staffMember middleName CDATA #IMPLIED >
-<!ATTLIST staffMember positionCode CDATA #IMPLIED >
+<!ATTLIST staffMember positionType CDATA #IMPLIED >
 <!ATTLIST staffMember email CDATA #IMPLIED >
+
+<!-- Deprecated in UniTime 3.3 -->
+<!ATTLIST staffMember positionCode CDATA #IMPLIED >
 
 

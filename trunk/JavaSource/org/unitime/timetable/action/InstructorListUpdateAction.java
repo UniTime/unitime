@@ -285,8 +285,8 @@ public class InstructorListUpdateAction extends Action {
 						if (staff.getExternalUniqueId() != null) {
 							inst.setExternalUniqueId(staff.getExternalUniqueId());
 						}
-						if (staff.getPositionCode() != null) {
-						    inst.setPositionType(staff.getPositionCode().getPositionType());
+						if (staff.getPositionType() != null) {
+						    inst.setPositionType(staff.getPositionType());
 						}
                         
                         inst.setIgnoreToFar(Boolean.FALSE);
