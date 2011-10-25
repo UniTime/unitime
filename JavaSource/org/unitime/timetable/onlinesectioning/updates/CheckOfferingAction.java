@@ -1,4 +1,5 @@
 /*
+ * UniTime 3.3 (University Timetabling Application)
  * Copyright (C) 2011, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -252,6 +253,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 					helper.getHibSession().save(student);
 		
 					EnrollStudent.updateSpace(helper, r.getRequest().getAssignment(), r.getLastEnrollment());
+					server.persistExpectedSpaces(offering.getId());
 
 					server.notifyStudentChanged(r.getRequest().getStudent().getId(),
 							r.getRequest(),

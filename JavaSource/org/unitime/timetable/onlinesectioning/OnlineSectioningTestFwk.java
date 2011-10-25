@@ -33,6 +33,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl;
+import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 
 public abstract class OnlineSectioningTestFwk { 
 	protected static Logger sLog = Logger.getLogger(OnlineSectioningTestFwk.class);
@@ -82,8 +83,12 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	protected void stopServer() {
-		if (iServer != null)
+		if (iServer != null) {
+			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
+			if (!offeringIds.isEmpty())
+				iServer.execute(new PersistExpectedSpacesAction(offeringIds));
 			iServer.unload();
+		}
 		iServer = null;
 	}
 	
