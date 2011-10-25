@@ -42,6 +42,7 @@ import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.ifs.util.JProf;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -105,6 +106,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Map<Long, Lock> iOfferingLocks = new Hashtable<Long, Lock>();
 	private AsyncExecutor iExecutor;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
+	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	
 	OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -1576,5 +1578,27 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		} finally {
 			iLock.writeLock().unlock();
 		}
-	}	
+	}
+
+	@Override
+	public void persistExpectedSpaces(Long offeringId) {
+		synchronized(iOfferingsToPersistExpectedSpaces) {
+			iOfferingsToPersistExpectedSpaces.add(new CacheElement<Long>(offeringId));
+		}
+	}
+	
+	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge) {
+		List<Long> offeringIds = new ArrayList<Long>();
+		long current = JProf.currentTimeMillis();
+		synchronized (iOfferingsToPersistExpectedSpaces) {
+			for (Iterator<CacheElement<Long>> i = iOfferingsToPersistExpectedSpaces.iterator(); i.hasNext(); ) {
+				CacheElement<Long> c = i.next();
+				if (current - c.created() >= minimalAge) {
+					offeringIds.add(c.element());
+					i.remove();
+				}
+			}
+		}
+		return offeringIds;
+	}
 }

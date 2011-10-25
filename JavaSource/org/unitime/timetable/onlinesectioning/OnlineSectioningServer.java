@@ -98,6 +98,9 @@ public interface OnlineSectioningServer {
 	
 	public int distance(Section s1, Section s2);
 	
+	public void persistExpectedSpaces(Long offeringId);
+	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge);
+	
 	public void unload();
 	
 	public static interface Lock {
