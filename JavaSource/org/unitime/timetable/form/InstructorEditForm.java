@@ -21,8 +21,6 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -189,11 +187,9 @@ public class InstructorEditForm extends PreferencesForm  {
 	 * @param request
 	 */
 	private void setPosType(HttpServletRequest request) {
-		TreeSet tset = PositionType.findAll();
 		ArrayList list = new ArrayList();
 		
-		for (Iterator iter = tset.iterator(); iter.hasNext(); ) {
-			PositionType pt = (PositionType) iter.next();
+		for (PositionType pt: PositionType.getPositionTypeList()) {
 			list.add(new LabelValueBean(pt.getLabel().trim(), pt.getUniqueId().toString()));
 		}
 		

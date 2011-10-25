@@ -40,8 +40,7 @@ public class SimpleEditInterface implements IsSerializable {
 		creditFormat("Course Credit Formats"),
 		creditType("Course Credit Types"),
 		creditUnit("Course Credit Units"),
-		positionType("Position Types"),
-		positionCode("Position Codes")
+		position("Position Types"),
 		;
 	
 		private String iPageName;

@@ -110,24 +110,14 @@ public class PositionType extends BasePositionType implements Comparable{
 			return (null);
 	}
 
-    /** Position Type List **/
-    private static Vector posTypeList = null;
-    
 	/**
 	 * Retrieves all position types in the database
 	 * ordered by column label
 	 * @param refresh true - refreshes the list from database
 	 * @return Vector of PositionType objects
 	 */
-    public static synchronized Vector getPositionTypeList(boolean refresh) {
-        if(posTypeList!=null && !refresh)
-            return posTypeList;
-        
-        PositionTypeDAO pdao = new PositionTypeDAO();
-
-        List l = pdao.findAll(Order.asc("label"));
-        posTypeList = new Vector(l);
-        return posTypeList;
+    public static synchronized List<PositionType> getPositionTypeList() {
+        return PositionTypeDAO.getInstance().findAll(Order.asc("sortOrder"));
     }
 
 }
