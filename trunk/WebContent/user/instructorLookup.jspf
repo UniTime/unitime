@@ -127,12 +127,11 @@
 										<%=((Staff)staff).getDeptName(sessionId)%> &nbsp;
 									</td>
 									<td>
-										<logic:notEmpty name="staff" property="positionCode">
-											<bean:define id="positionCode" name="staff" property="positionCode" />
-											<bean:define id="positionType" name="positionCode" property="positionType" />
+										<logic:notEmpty name="staff" property="positionType">
+											<bean:define id="positionType" name="staff" property="positionType" />
 											<bean:write name="positionType" property="label" />
 										</logic:notEmpty>
-										<logic:empty name="staff" property="positionCode">
+										<logic:empty name="staff" property="positionType">
 											N/A
 										</logic:empty>
 									</td>
