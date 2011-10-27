@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.page;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
@@ -44,6 +45,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class UniTimePageLabel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private final MenuServiceAsync iService = GWT.create(MenuService.class);
 
@@ -75,7 +77,7 @@ public class UniTimePageLabel extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iUrl == null) return;
-				UniTimeFrameDialog.openDialog(iName.getText() + " Help", iUrl);
+				UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(iName.getText()), iUrl);
 			}
 		});
 		
@@ -96,22 +98,32 @@ public class UniTimePageLabel extends Composite {
 		panel.setVisible(true);
 	}
 	
-	public void setPageName(String title) {
+	public void setPageName(final String title) {
 		Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
 		iName.setText(title);
-		iHelp.setTitle(title + " Help");
+		iHelp.setTitle(MESSAGES.pageHelp(title));
 		iHelp.setVisible(false);
-		iService.getHelpPage(title, new AsyncCallback<String>() {
+		iService.getHelpPageAndLocalizedTitle(title, new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHelp.setVisible(false);
 				iUrl = null;
 			}
 			@Override
-			public void onSuccess(String result) {
-				iHelp.setVisible(true);
-				iUrl = result;
+			public void onSuccess(String[] result) {
+				if (result[0] == null) {
+					iHelp.setVisible(false);
+					iUrl = null;
+				} else {
+					iHelp.setVisible(true);
+					iUrl = result[0];
+				}
+				if (result[1] != null && !title.equals(result[1])) {
+					iName.setText(result[1]);
+					iHelp.setTitle(MESSAGES.pageHelp(result[1]));
+					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result[1]);
+				}
 			}
-		});		
+		});
 	}
 }
