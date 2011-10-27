@@ -39,7 +39,7 @@ public interface MenuServiceAsync {
 	public void getVersion(AsyncCallback<String> callback) throws MenuException;
 	public void getSolverInfo(boolean includeSolutionInfo, AsyncCallback<HashMap<String, String>> callback) throws MenuException;
 
-	public void getHelpPage(String title, AsyncCallback<String> callback) throws MenuException;
+	public void getHelpPageAndLocalizedTitle(String title, AsyncCallback<String[]> callback) throws MenuException;
 	
 	public void getUserData(String property, AsyncCallback<String> callback) throws MenuException;
 	public void setUserData(String property, String value, AsyncCallback<Boolean> callback) throws MenuException;

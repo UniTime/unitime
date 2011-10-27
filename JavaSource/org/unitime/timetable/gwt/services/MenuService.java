@@ -40,7 +40,7 @@ public interface MenuService extends RemoteService {
 	public String getVersion() throws MenuException;
 	public HashMap<String, String> getSolverInfo(boolean includeSolutionInfo) throws MenuException;
 	
-	public String getHelpPage(String title) throws MenuException;
+	public String[] getHelpPageAndLocalizedTitle(String title) throws MenuException;
 	
 	public String getUserData(String property) throws MenuException;
 	public Boolean setUserData(String property, String value) throws MenuException;

@@ -115,10 +115,10 @@ public class Localization {
 			return getProperty("", name); // try default message bundle
 		}
 		
-		private String fillArgumentsIn(String value, Object[] args) {
+		private String fillArgumentsIn(String value, Object[] args, int firstIndex) {
 			if (value == null || args == null) return value;
-			for (int i = 0; i < args.length; i++)
-				value = value.replaceAll("\\{" + i + "\\}", (args[i] == null ? "" : args[i].toString()));
+			for (int i = 0; i + firstIndex < args.length; i++)
+				value = value.replaceAll("\\{" + i + "\\}", (args[i + firstIndex] == null ? "" : args[i + firstIndex].toString()));
 			return value;
 		}
 		
@@ -168,12 +168,16 @@ public class Localization {
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 1)
 				return getStrutsActions(proxy, (Class<? extends LocalizedLookupDispatchAction>) args[0]);
+			if ("translateMessage".equals(method.getName()) && method.getParameterTypes().length >= 2) {
+				String value = (args[0] == null ? null : getProperty((String) args[0]));
+				return (value == null ? (String) args[1] : fillArgumentsIn(value, args, 2));
+			}
 			String value = getProperty(method.getName());
 			if (value != null) 
-				return type(fillArgumentsIn(value, args), method.getReturnType());
+				return type(fillArgumentsIn(value, args, 0), method.getReturnType());
 			Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
 			if (dm != null)
-				return fillArgumentsIn(dm.value(), args);
+				return fillArgumentsIn(dm.value(), args, 0);
 			Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
 			if (db != null)
 				return db.value();
