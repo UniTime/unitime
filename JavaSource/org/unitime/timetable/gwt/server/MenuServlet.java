@@ -44,6 +44,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.form.ListSolutionsForm;
@@ -80,6 +82,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	private static final long serialVersionUID = 9021169012914612488L;
 	private static Logger sLog = Logger.getLogger(MenuServlet.class);
     private static Element iRoot = null;
+    private static PageNames sPageNames = Localization.create(PageNames.class);
 
 	public void init() throws ServletException {
 		try {
@@ -216,8 +219,12 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	}
 	
 	private MenuInterface getMenu(UserInfo user, Element menuElement) {
+		try {
 		MenuInterface menu = new MenuInterface();
-		menu.setName(menuElement.attributeValue("name"));
+		String name = menuElement.attributeValue("name");
+		String localizedName = (name == null ? null : sPageNames.translateMessage(
+				name.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_'), null));
+		menu.setName(localizedName == null ? name : localizedName);
 		menu.setTitle(menuElement.attributeValue("title"));
 		menu.setTarget(menuElement.attributeValue("target"));
 		menu.setPage(menuElement.attributeValue("page"));
@@ -238,6 +245,10 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			}
 		}
 		return menu;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	private boolean check(UserInfo userInfo, Element conditionElement) {
@@ -539,12 +550,16 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		}
 	}
 	
-	public String getHelpPage(String title) throws MenuException {
+	public String[] getHelpPageAndLocalizedTitle(String title) throws MenuException {
+		String name = title.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
+		String help = null;
 		if ("true".equals(ApplicationProperties.getProperty("tmtbl.wiki.help", "true")) && ApplicationProperties.getProperty("tmtbl.wiki.url") != null) {
-			return ApplicationProperties.getProperty("tmtbl.wiki.url") + title.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
-		} else {
-			throw new MenuException("help pages are disabled");
+			help = ApplicationProperties.getProperty("tmtbl.wiki.url") + name;
 		}
+		return new String[] {
+				help,
+				sPageNames.translateMessage(name, title)
+				};
 	}
 	
 	public String getUserData(String property) throws MenuException {
