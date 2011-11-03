@@ -134,6 +134,7 @@ public class StudentEnrollmentImport extends BaseImport {
 		            student.setFreeTimeCategory(0);
 		            student.setSchedulePreference(0);
 		            student.setClassEnrollments(new HashSet<StudentClassEnrollment>());
+		            student.setCourseDemands(new HashSet<CourseDemand>());
             	}
             	
             	Hashtable<Pair, StudentClassEnrollment> enrollments = new Hashtable<Pair, StudentClassEnrollment>();
