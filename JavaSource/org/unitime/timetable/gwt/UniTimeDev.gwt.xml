@@ -21,5 +21,5 @@
  
  <module rename-to='unitime'>
 	<inherits name='org.unitime.timetable.gwt.UniTime' />
-	<set-property name="user.agent" value="gecko1_8" />
+	<set-property name="user.agent" value="safari" />
 </module>

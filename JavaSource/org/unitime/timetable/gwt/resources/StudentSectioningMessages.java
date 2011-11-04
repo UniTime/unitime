@@ -673,6 +673,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wrong instructional offering.")
 	String exceptionBadOffering();
 	
+	@DefaultMessage("Insufficient user privileges.")
+	String exceptionInsufficientPrivileges();
+	
+	@DefaultMessage("Your timetabling session has expired. Please log in again.")
+	String exceptionHttpSessionExpired();
+	
+	@DefaultMessage("Login is required to use this page.")
+	String exceptionLoginRequired();
+	
 	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
 			"<br><br>You can also use the following tags:" +
 			"<ul>" +
@@ -699,5 +708,85 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage(" and {0}")
 	String noteAllowedOverlapLast(String classOrCourse);
+	
+	@DefaultMessage("Filter:")
+	String filter();
+	
+	@DefaultMessage("Loading data...")
+	String loadingData();
+	
+	@DefaultMessage("Available")
+	String colAvailable();
+	
+	@DefaultMessage("Projection")
+	String colProjection();
+	
+	@DefaultMessage("Enrollment")
+	String colEnrollment();
+	
+	@DefaultMessage("Wait-Listed")
+	String colWaitListed();
+	
+	@DefaultMessage("Reservation")
+	String colReserved();
+	
+	@DefaultMessage("Consent")
+	String colConsent();
 
+	@DefaultMessage("Enrollments of {0}")
+	String titleEnrollments(String courseOrClass);
+	
+	@DefaultMessage("Total")
+	String total();
+	
+	@DefaultMessage("Limit not defined.")
+	String availableNoLimit();
+	
+	@DefaultMessage("Unlimited, reservation required")
+	String availableUnlimitedWithReservation();
+	
+	@DefaultMessage("Unlimited, reservation not needed")
+	String availableUnlimited();
+	
+	@DefaultMessage("No space available, limit of {0} was spaces reached")
+	String availableNot(int limit);
+	
+	@DefaultMessage("Available {0} out of {1} spaces, reservation not needed")
+	String available(int available, int limit);
+	
+	@DefaultMessage("Available {0} out of {1} spaces, reservation required")
+	String availableWithReservation(int available, int limit);
+	
+	@DefaultMessage("Available {0} out of {1} spaces, reservation required for {2} of them")
+	String availableSomeReservation(int available, int limit, int availableWithReservation);
+	
+	@DefaultMessage("<sup><font color='#9CB0CE'>r)</font></sup>")
+	String htmlReservationSign();
+	
+	@DefaultMessage("r) Space available only with a reservation.")
+	String sectioningStatusHint();
+	
+	@DefaultMessage("No courses matching filter {0} found.")
+	String exceptionNoCourses(String filter);
+	
+	@DefaultMessage("Filter course, enrollments, and wait-listed course requests by any word<br>from the course name or title." +
+			"<br><br>You can also use the following tags:" +
+			"<ul>" +
+			"<li><i>area:</i> academic area abbreviation" + 
+			"<li><i>classification:</i> academic classification code" +
+			"<li><i>consent:</i> offering consent" +
+			"<li><i>course:</i> course offering name" +
+			"<li><i>department:</i> course controling department code or abbreviation" +
+			"<li><i>group:</i> student group abbreviation" +
+			"<li><i>major:</i> academic major code" +
+			"<li><i>reserved:</i> enrollments with a reservation" +
+			"<li><i>student:</i> student name or external id" +
+			"<li><i>subject:</i> subject area abbreviation" +
+			"<li><i>waitlist:</i> wait-listed course requests" +
+			"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
+			"<br><br>Example: subject:AAE and (waitlist:true or consent:waiting)")
+	String sectioningStatusFilterHint();
+	
+	@DefaultMessage("Loading enrollments for {0}...")
+	String loadingEnrollments(String classOrCourse);
 }

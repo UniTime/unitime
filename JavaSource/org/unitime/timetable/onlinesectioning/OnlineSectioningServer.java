@@ -50,6 +50,7 @@ public interface OnlineSectioningServer {
 	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId);
 	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
+	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
 	public List<Section> getSections(CourseInfo courseInfo);
 	
 	public CourseInfo getCourseInfo(Long courseId);
@@ -110,5 +111,9 @@ public interface OnlineSectioningServer {
 	public static interface Callback<E> {
 		public void onFailure(Throwable exception);
 		public void onSuccess(E result);
+	}
+	
+	public static interface CourseInfoMatcher {
+		public boolean match(CourseInfo course);
 	}
 }

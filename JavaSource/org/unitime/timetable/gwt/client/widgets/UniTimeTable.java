@@ -52,6 +52,7 @@ public class UniTimeTable<T> extends FlexTable {
 	private HintProvider<T> iHintProvider = null;
 	
 	private int iLastHoverRow = -1;
+	private String iLastHoverBackgroundColor = null;
 	private boolean iAllowSelection = false;
 	
 	public UniTimeTable() {
@@ -362,6 +363,9 @@ public class UniTimeTable<T> extends FlexTable {
 					getRowFormatter().addStyleName(row, "unitime-TableRowHover");
 				}
 				iLastHoverRow = row;
+				iLastHoverBackgroundColor = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
+				if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
+					getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
 			}
 			if (!iHintPanel.isShowing() && hint != null) {
 				iHintPanel.setWidget(hint);
@@ -388,7 +392,10 @@ public class UniTimeTable<T> extends FlexTable {
 				} else {
 					getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
 				}
+				if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
+					getRowFormatter().getElement(row).getStyle().setBackgroundColor(iLastHoverBackgroundColor);
 				iLastHoverRow = -1;
+				iLastHoverBackgroundColor = null;
 			}
 			if (iHintPanel.isShowing()) iHintPanel.hide();
 			for (MouseOutListener<T> listener: iMouseOutListeners)
@@ -500,8 +507,11 @@ public class UniTimeTable<T> extends FlexTable {
 			} else {
 				getRowFormatter().removeStyleName(iLastHoverRow, "unitime-TableRowHover");
 			}
+			if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
+				getRowFormatter().getElement(iLastHoverRow).getStyle().setBackgroundColor(iLastHoverBackgroundColor);
 		}
-		iLastHoverRow = 1;
+		iLastHoverRow = -1;
+		iLastHoverBackgroundColor = null;
 	}
 	
 	public boolean isSelected(int row) {

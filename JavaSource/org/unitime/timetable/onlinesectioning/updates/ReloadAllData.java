@@ -81,6 +81,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.WaitList;
@@ -210,7 +211,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         Offering offering = new Offering(io.getUniqueId().longValue(), courseName);
         for (Iterator<CourseOffering> i = io.getCourseOfferings().iterator(); i.hasNext(); ) {
         	CourseOffering co = i.next();
-            int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
+            int projected = (co.getProjectedDemand() != null ? co.getProjectedDemand().intValue() : co.getDemand() != null ? co.getDemand().intValue() : 0);
             boolean unlimited = false;
             int limit = 0;
             for (Iterator<InstrOfferingConfig> j = io.getInstrOfferingConfigs().iterator(); j.hasNext(); ) {
@@ -365,6 +366,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     
             }
         }
+        for (StudentGroup g: s.getGroups())
+        	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
         
         if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save", "false"))) {
         	Date ts = new Date();

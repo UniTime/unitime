@@ -137,7 +137,7 @@ public class OnlineSectioningHelper {
     }
 
     public org.hibernate.Session getHibSession() {
-        return iHibSession;
+        return (iHibSession == null ? new _RootDAO().getSession() : iHibSession);
     }
     
     public boolean beginTransaction() {

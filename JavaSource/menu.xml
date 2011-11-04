@@ -136,6 +136,11 @@
 				<hasRight name="isSectioningEnabled"/>
 			</condition>
 		</item>
+		<item name="Online Sectioning Progress" page="sectioningstatus" type="gwt">
+			<condition>
+				<hasRight name="isSectioningEnabled"/>
+			</condition>
+		</item>
 		<item name="Course Requests" page="requests" type="gwt">
 			<condition>
 				<hasRight name="isRegistrationEnabled"/>
