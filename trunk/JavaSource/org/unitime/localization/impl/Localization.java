@@ -118,7 +118,7 @@ public class Localization {
 		private String fillArgumentsIn(String value, Object[] args, int firstIndex) {
 			if (value == null || args == null) return value;
 			for (int i = 0; i + firstIndex < args.length; i++)
-				value = value.replaceAll("\\{" + i + "\\}", (args[i + firstIndex] == null ? "" : args[i + firstIndex].toString()));
+				value = value.replace("{" + i + "}", (args[i + firstIndex] == null ? "" : args[i + firstIndex].toString()));
 			return value;
 		}
 		

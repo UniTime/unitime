@@ -34,6 +34,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	private Long iUniqueId;
 	private Long iAcademicSessionId;
 	private String iSubjectArea;
+	private String iDepartment;
 	private String iCourseNbr;
 	private String iTitle;
 	private String iCourseNameLowerCase;
@@ -41,17 +42,20 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	private String iNote;
 	private String iDetails = null;
 	private boolean iHasUniqueName = true;
-	private String iConsent = null;
+	private String iConsent = null, iConsentAbbv = null;
 	
 	public CourseInfo(CourseOffering course)  throws SectioningException {
 		iUniqueId = course.getUniqueId();
 		iAcademicSessionId = course.getSubjectArea().getSession().getUniqueId();
 		iSubjectArea = course.getSubjectArea().getSubjectAreaAbbreviation();
+		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
 		iCourseNbr = course.getCourseNbr().trim();
 		iTitle = (course.getTitle() == null ? null : course.getTitle().trim());
 		iNote = course.getScheduleBookNote();
-		if (course.getInstructionalOffering().getConsentType() != null)
+		if (course.getInstructionalOffering().getConsentType() != null) {
 			iConsent = course.getInstructionalOffering().getConsentType().getLabel();
+			iConsentAbbv = course.getInstructionalOffering().getConsentType().getAbbv();
+		}
 		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
 		iTitleLowerCase = (iTitle == null ? null : iTitle.toLowerCase());
 	}
@@ -66,11 +70,13 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	public Long getAcademicSessionId() { return iAcademicSessionId; }
 	public String getSubjectArea() { return iSubjectArea; }
 	public String getCourseNbr() { return iCourseNbr; }
+	public String getDepartment() { return iDepartment; }
 	public String getTitle() { return iTitle; }
 	public String getNote() { return iNote; }
 	public boolean hasUniqueName() { return iHasUniqueName; }
 	public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }
 	public String getConsent() { return iConsent; }
+	public String getConsentAbbv() { return iConsentAbbv; }
 
 	public int compareTo(CourseInfo c) {
 		int cmp = getSubjectArea().compareToIgnoreCase(c.getSubjectArea());

@@ -89,6 +89,10 @@ public class ClassAssignmentInterface implements IsSerializable {
 		
 		public String getCourseNbr() { return iCourseNbr; }
 		public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+		
+		public String getCourseName() {
+			return isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr();
+		}
 
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
@@ -483,12 +487,10 @@ public class ClassAssignmentInterface implements IsSerializable {
 	}
 	public static class Enrollment implements IsSerializable {
 		private Student iStudent;
-		private List<ClassAssignment> iClasses = null;
+		private CourseAssignment iCourse = null;
 		private int iPriority = 0;
 		private String iAlternative = null;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
-		private long iCourseId = 0;
-		private String iCourseName = null;
 		private String iReservation = null;
 		private String iApprovedBy = null;
 		
@@ -497,15 +499,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public Student getStudent() { return iStudent; }
 		public void setStudent(Student student) { iStudent = student; }
 		
-		public boolean hasClasses() {
-			return iClasses != null && !iClasses.isEmpty();
-		}
-		public List<ClassAssignment> getClasses() { return iClasses; }
-		public void add(ClassAssignment clazz) {
-			if (iClasses == null)
-				iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
-			iClasses.add(clazz);
-		}
+		public CourseAssignment getCourse() { return iCourse; }
+		public void setCourse(CourseAssignment course) { iCourse = course; }
 		
 		public int getPriority() { return iPriority; }
 		public void setPriority(int priority) { iPriority = priority; }
@@ -520,21 +515,16 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
 		
-		public long getCourseId() { return iCourseId; }
-		public void setCourseId(long courseId) { iCourseId = courseId; }
-		public String getCourseName() { return iCourseName; }
-		public void setCourseName(String courseName) { iCourseName = courseName; }
-		
 		public Date getApprovedDate() { return iApprovedDate; }
 		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
 		public String getApprovedBy() { return iApprovedBy; }
 		public void setApprovedBy(String approvedBy) { iApprovedBy = approvedBy; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
-			if (!hasClasses()) return "";
+			if (getCourse() == null || getCourse().getClassAssignments().isEmpty()) return "";
 			String ret = "";
 			TreeSet<String> sections = new TreeSet<String>();
-			for (ClassAssignment c: getClasses()) {
+			for (ClassAssignment c: getCourse().getClassAssignments()) {
 				if (subpart.equals(c.getSubpart()))
 					sections.add(showClassNumbers && c.getClassNumber() != null ? c.getClassNumber() : c.getSection());
 			}
@@ -545,9 +535,144 @@ public class ClassAssignmentInterface implements IsSerializable {
 			return ret;
 		}
 		
+		public boolean hasClasses() {
+			return getCourse() != null && !getCourse().getClassAssignments().isEmpty();
+		}
+		
+		public List<ClassAssignment> getClasses() {
+			return getCourse() == null ? null : getCourse().getClassAssignments();
+		}
+		
+		public Long getCourseId() {
+			return getCourse() == null ? null : getCourse().getCourseId();
+		}
+
+		public String getCourseName() {
+			return getCourse() == null ? null : getCourse().getCourseName();
+		}
+
 		public String getReservation() { return iReservation; }
 		public void setReservation(String reservation) { iReservation = reservation; }
 	}
+	
+	public static class EnrollmentInfo implements IsSerializable {
+		private String iArea, iMajor, iClassification;
+		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
+		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
+		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
+		private Integer iConsentNeeded, iTotalConsentNeeded, iConsentApproved, iTotalConsentApproved;
+		private ClassAssignment iAssignment;
+		
+		public EnrollmentInfo() {}
+		
+		public String getArea() { return iArea; }
+		public void setArea(String area) { iArea = area; }
+		
+		public String getMajor() { return iMajor; }
+		public void setMajor(String major) { iMajor = major; }
+		
+		public String getClassification() { return iClassification; }
+		public void setClassification(String classification) { iClassification = classification; }
+		
+		public String getSubject() { return iSubject; }
+		public void setSubject(String subject) { iSubject = subject; }
+		
+		public String getCourseNbr() { return iCourseNbr; }
+		public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+		
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+
+		public String getConsent() { return iConsent; }
+		public void setConsent(String consent) { iConsent = consent; }
+
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		
+		public Long getOfferingId() { return iOfferingId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+
+		public Long getSubjectId() { return iSubjectId; }
+		public void setSubjectId(Long subjectId) { iSubjectId = subjectId; }
+		
+		public String getConfig() { return iConfig; }
+		public void setConfig(String config) { iConfig = config; }
+		
+		public Long getConfigId() { return iConfigId; }
+		public void setConfigId(Long configId) { iConfigId = configId; }
+		
+		public String getSubpart() { return iSubpart; }
+		public void setSubpart(String subpart) { iSubpart = subpart; }
+		
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+		
+		public String getClazz() { return iClazz; }
+		public void setClazz(String clazz) { iClazz = clazz; }
+		
+		public Long getClazzId() { return iClazzId; }
+		public void setClazzId(Long clazzId) { iClazzId = clazzId; }
+		
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
+		public boolean hasLimit() { return iLimit != null; }
+		
+		public Integer getOther() { return iOther; }
+		public void setOther(Integer other) { iOther = other; }
+		public boolean hasOther() { return iOther != null; }
+
+		public Integer getEnrollment() { return iEnrollment; }
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+		public boolean hasEnrollment() { return iEnrollment != null; }
+		
+		public Integer getProjection() { return iProjection ; }
+		public void setProjection(Integer projection) { iProjection = projection; }
+		public boolean hasProjection() { return iProjection != null; }
+		
+		public Integer getWaitlist() { return iWaitlist; }
+		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
+		public boolean hasWaitlist() { return iWaitlist != null; }
+		
+		public Integer getReservation() { return iReservation; }
+		public void setReservation(Integer reservation) { iReservation = reservation; }
+		public boolean hasReservation() { return iReservation !=null; }
+
+		public Integer getTotalEnrollment() { return iTotalEnrollment; }
+		public void setTotalEnrollment(Integer enrollment) { iTotalEnrollment = enrollment; }
+		public boolean hasTotalEnrollment() { return iTotalEnrollment != null; }
+
+		public Integer getTotalWaitlist() { return iTotalWaitlist; }
+		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
+		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
+		
+		public Integer getTotalReservation() { return iTotalReservation; }
+		public void setTotalReservation(Integer reservation) { iTotalReservation = reservation; }
+		public boolean hasTotalReservation() { return iTotalReservation !=null; }
+		
+		public Integer getAvailable() { return iAvailable; }
+		public void setAvailable(Integer available) { iAvailable = available; }
+		public boolean hasAvailable() { return iAvailable !=null; }
+		
+		public void setAssignment(ClassAssignment assignment) { iAssignment = assignment; }
+		public ClassAssignment getAssignment() { return iAssignment; }
+		
+		public Integer getConsentNeeded() { return iConsentNeeded; }
+		public void setConsentNeeded(Integer consentNeeded) { iConsentNeeded = consentNeeded; }
+		public int hasConsentNeeded() { return iConsentNeeded; }
+		
+		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
+		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
+		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
+
+		public Integer getConsentApproved() { return iConsentApproved; }
+		public void setConsentApproved(Integer consentApproved) { iConsentApproved = consentApproved; }
+		public int hasConsentApproved() { return iConsentApproved; }
+
+		public Integer getTotalConsentApproved() { return iTotalConsentApproved; }
+		public void setTotalConsentApproved(Integer totalConsentApproved) { iTotalConsentApproved = totalConsentApproved; }
+		public int hasTotalConsentApproved() { return iTotalConsentApproved; }
+}
 	
 	
 }

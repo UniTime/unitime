@@ -74,6 +74,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
@@ -584,8 +585,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 						e.setStudent(st);
 						e.setPriority(1 + request.getPriority());
-						e.setCourseId(course.getId());
-						e.setCourseName(course.getName());
+						CourseAssignment c = new CourseAssignment();
+						c.setCourseId(course.getId());
+						c.setSubject(course.getSubjectArea());
+						c.setCourseNbr(course.getCourseNumber());
+						e.setCourse(c);
 						if (!request.getCourses().get(0).equals(course))
 							e.setAlternative(request.getCourses().get(0).getName());
 						if (request.isAlternative()) {
@@ -619,7 +623,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							}
 							
 							for (Section section: request.getAssignment().getSections()) {
-								ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
+								ClassAssignmentInterface.ClassAssignment a = e.getCourse().addClassAssignment();
 								a.setAlternative(request.isAlternative());
 								a.setClassId(section.getId());
 								a.setSubpart(section.getSubpart().getName());
@@ -695,7 +699,6 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 								if (a.getParentSection() == null)
 									a.setParentSection(getCourseInfo(course.getId()).getConsent());
 								a.setExpected(Math.round(section.getSpaceExpected()));
-								e.add(a);
 							}
 						}
 						enrollments.add(e);
@@ -720,8 +723,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 					e.setStudent(st);
 					e.setPriority(1 + request.getPriority());
-					e.setCourseId(course.getId());
-					e.setCourseName(course.getName());
+					CourseAssignment c = new CourseAssignment();
+					c.setCourseId(course.getId());
+					c.setSubject(course.getSubjectArea());
+					c.setCourseNbr(course.getCourseNumber());
+					e.setCourse(c);
 					if (!request.getCourses().get(0).equals(course))
 						e.setAlternative(request.getCourses().get(0).getName());
 					if (request.isAlternative()) {
@@ -749,7 +755,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						if (request.getAssignment().getTimeStamp() != null)
 							e.setEnrolledDate(new Date(request.getAssignment().getTimeStamp()));
 						for (Section section: request.getAssignment().getSections()) {
-							ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
+							ClassAssignmentInterface.ClassAssignment a = e.getCourse().addClassAssignment();
 							a.setAlternative(request.isAlternative());
 							a.setClassId(section.getId());
 							a.setSubpart(section.getSubpart().getName());
@@ -825,7 +831,6 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 							if (a.getParentSection() == null)
 								a.setParentSection(getCourseInfo(course.getId()).getConsent());
 							a.setExpected(Math.round(section.getSpaceExpected()));
-							e.add(a);
 						}
 					}
 					enrollments.add(e);
@@ -851,6 +856,20 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					if (c.matchTitle(queryInLowerCase)) ret.add(c);
 					if (limit != null && ret.size() == limit) return ret;
 				}
+			}
+			return ret;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
+	
+	@Override
+	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher) {
+		iLock.readLock().lock();
+		try {
+			List<CourseInfo> ret = new ArrayList<CourseInfo>();
+			for (CourseInfo c : iCourses) {
+				if (matcher.match(c)) ret.add(c);
 			}
 			return ret;
 		} finally {
@@ -1601,4 +1620,5 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		return offeringIds;
 	}
+	
 }
