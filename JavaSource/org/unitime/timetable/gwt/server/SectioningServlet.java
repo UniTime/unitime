@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
@@ -54,35 +56,50 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.AcademicAreaDAO;
+import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -93,6 +110,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.solver.FindEnrollmentAction;
+import org.unitime.timetable.onlinesectioning.solver.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
@@ -111,7 +130,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	private OnlineSectioningServerUpdater iUpdater;
 
 	public void init() throws ServletException {
-		System.out.println("Student Sectioning Service is starting up ...");
+		sLog.info("Student Sectioning Service is starting up ...");
 		OnlineSectioningService.init();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
@@ -163,7 +182,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public void destroy() {
-		System.out.println("Student Sectioning Service is going down ...");
+		sLog.info("Student Sectioning Service is going down ...");
 		iUpdater.stopUpdating();
 		OnlineSectioningService.unloadAll();
 	}
@@ -1006,7 +1025,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			return Roles.ADMIN_ROLE.equals(user.getRole());
 		} catch (PageAccessException e) {
 			throw e;
@@ -1022,8 +1041,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
 			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1051,7 +1070,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				}
 				return false;
 			} else {
-				return true;
+				return Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()) && 
+					tm.getDepartments().contains(offering.getControllingCourseOffering().getSubjectArea().getDepartment());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1067,8 +1087,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1106,8 +1126,11 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
 							e.setEnrolledDate(enrollment.getTimestamp());
-							e.setCourseId(enrollment.getCourseOffering().getUniqueId());
-							e.setCourseName(enrollment.getCourseOffering().getCourseName());
+							CourseAssignment c = new CourseAssignment();
+							c.setCourseId(enrollment.getCourseOffering().getUniqueId());
+							c.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+							c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+							e.setCourse(c);
 							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
 							if (enrollment.getCourseRequest() != null) {
 								e.setPriority(1 + enrollment.getCourseRequest().getCourseDemand().getPriority());
@@ -1163,14 +1186,13 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 								e.setPriority(-1);
 							}
 						}
-						ClassAssignmentInterface.ClassAssignment c = new ClassAssignmentInterface.ClassAssignment();
+						ClassAssignmentInterface.ClassAssignment c = e.getCourse().addClassAssignment();
 						c.setClassId(enrollment.getClazz().getUniqueId());
 						c.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 						if (c.getSection() == null)
 							c.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
 						c.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
 						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
-						e.add(c);
 					}
 					if (classOrOfferingId >= 0)
 						for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
@@ -1190,8 +1212,11 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 							}
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
-							e.setCourseId(request.getCourseOffering().getUniqueId());
-							e.setCourseName(request.getCourseOffering().getCourseName());
+							CourseAssignment c = new CourseAssignment();
+							c.setCourseId(request.getCourseOffering().getUniqueId());
+							c.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+							c.setCourseNbr(request.getCourseOffering().getCourseNbr());
+							e.setCourse(c);
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
 							e.setPriority(1 + request.getCourseDemand().getPriority());
 							if (request.getCourseDemand().getCourseRequests().size() > 1) {
@@ -1240,8 +1265,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
@@ -1386,8 +1411,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
 			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1421,8 +1446,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
 			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1449,5 +1474,417 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
+	
+	public List<EnrollmentInfo> findEnrollmentInfos(String query, Long courseId) {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+			
+			Session session = Session.getCurrentAcadSession(user);
+			if (session == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(session.getUniqueId());
+			if (server == null || !server.getAcademicSession().isSectioningEnabled())
+				throw new SectioningException(MSG.exceptionBadSession());
 
+			return server.execute(new FindEnrollmentInfoAction(query, courseId));
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
+	}
+
+	public List<String[]> querySuggestions(String query, int limit) {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+			
+			Session session = Session.getCurrentAcadSession(user);
+			if (session == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+			
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(session.getUniqueId());
+			if (server == null || !server.getAcademicSession().isSectioningEnabled())
+				throw new SectioningException(MSG.exceptionBadSession());
+			
+			if (query == null) query = "";
+
+			List<String[]> ret = new ArrayList<String[]>();
+			Matcher m = Pattern.compile("^(.*\\W?subject:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (SubjectArea subject: (List<SubjectArea>)SubjectAreaDAO.getInstance().getSession().createQuery(
+						"select a from SubjectArea a where" +
+						" (lower(a.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.shortTitle) like '%' || :q || '%' or lower(a.longTitle) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.subjectAreaAbbreviation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (subject.getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + subject.getSubjectAreaAbbreviation() + "\"" : subject.getSubjectAreaAbbreviation()),
+							subject.getSubjectAreaAbbreviation() + " - " + (subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle())
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?department:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (Department dept: (List<Department>)DepartmentDAO.getInstance().getSession().createQuery(
+						"select a from Department a where" +
+						" (lower(a.abbreviation) like :q || '%' or lower(a.deptCode) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(name) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.deptCode"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (dept.getDeptCode().indexOf(' ') >= 0 ? "\"" + dept.getDeptCode() + "\"" : dept.getDeptCode()),
+							dept.getDeptCode() + " - " + dept.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?area:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (AcademicArea area: (List<AcademicArea>)AcademicAreaDAO.getInstance().getSession().createQuery(
+						"select a from AcademicArea a where " +
+						" (lower(a.academicAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.shortTitle) like '%' || :q || '%' or lower(a.longTitle) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (area.getAcademicAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + area.getAcademicAreaAbbreviation() + "\"" : area.getAcademicAreaAbbreviation()),
+							area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?classification:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (AcademicClassification clasf: (List<AcademicClassification>)AcademicClassificationDAO.getInstance().getSession().createQuery(
+						"select a from AcademicClassification a where " +
+						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.code"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (clasf.getCode().indexOf(' ') >= 0 ? "\"" + clasf.getCode() + "\"" : clasf.getCode()),
+							clasf.getCode() + " - " + clasf.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?clasf:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (AcademicClassification clasf: (List<AcademicClassification>)AcademicClassificationDAO.getInstance().getSession().createQuery(
+						"select a from AcademicClassification a where " +
+						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.code"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (clasf.getCode().indexOf(' ') >= 0 ? "\"" + clasf.getCode() + "\"" : clasf.getCode()),
+							clasf.getCode() + " - " + clasf.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?major:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				String area = null;
+				Matcher x = Pattern.compile("area:[ ]?\"([^\\\"]*)\"|area:[ ]?(\\w*)").matcher(query);
+				if (x.find()) area = (x.group(1) == null ? x.group(2) : x.group(1));
+				for (PosMajor major: (List<PosMajor>)AcademicClassificationDAO.getInstance().getSession().createQuery(
+						"select distinct a from PosMajor a " + (area == null ? "" : "inner join a.academicAreas x ") + "where " +
+						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
+						(area == null ? "" : " and lower(x.academicAreaAbbreviation) = '" + area.toLowerCase() + "'") +
+						" and a.session.uniqueId = :sessionId order by a.code"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (major.getCode().indexOf(' ') >= 0 ? "\"" + major.getCode() + "\"" : major.getCode()),
+							major.getCode() + " - " + major.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?course:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				String subject = null;
+				Matcher x = Pattern.compile("subject:[ ]?\"([^\\\"]*)\"|subject:[ ]?(\\w*)").matcher(query);
+				if (x.find()) subject = (x.group(1) == null ? x.group(2) : x.group(1));
+				for (CourseOffering course: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+						"select c from CourseOffering c where " +
+						" (lower(c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(c.title) like '%' || :q || '%'") + ")" +
+						(subject == null ? "" : " and lower(c.subjectArea.subjectAreaAbbreviation) = '" + subject.toLowerCase() + "'") +
+						" and c.subjectArea.session.uniqueId = :sessionId order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + "\"" + course.getCourseName() + "\"",
+							course.getCourseNameWithTitle()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?number:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				String subject = null;
+				Matcher x = Pattern.compile("subject:[ ]?\"([^\\\"]*)\"|subject:[ ]?(\\w*)").matcher(query);
+				if (x.find()) subject = (x.group(1) == null ? x.group(2) : x.group(1));
+				for (CourseOffering course: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+						"select c from CourseOffering c where " +
+						" (lower(c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(c.title) like '%' || :q || '%'") + ")" +
+						(subject == null ? "" : " and lower(c.subjectArea.subjectAreaAbbreviation) = '" + subject.toLowerCase() + "'") +
+						" and c.subjectArea.session.uniqueId = :sessionId order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (course.getCourseNbr().indexOf(' ') >= 0 ? "\"" + course.getCourseNbr() + "\"" : course.getCourseNbr()) +
+							(subject == null ? " subject: " + (course.getSubjectArea().getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + course.getSubjectArea().getSubjectAreaAbbreviation() + "\"" : course.getSubjectArea().getSubjectAreaAbbreviation()) : ""),
+							course.getCourseNameWithTitle()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?group:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				for (StudentGroup group: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
+						"select a from StudentGroup a where " +
+						" (lower(a.groupAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.groupName) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.groupAbbreviation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (group.getGroupAbbreviation().indexOf(' ') >= 0 ? "\"" + group.getGroupAbbreviation() + "\"" : group.getGroupAbbreviation()),
+							group.getGroupAbbreviation() + " - " + group.getGroupName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?student:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches() && m.group(2).length() > 0) {
+				for (PersonInterface person: new LookupServlet().lookupPeople(m.group(2), "mustHaveExternalId,source=students,session=" + session.getUniqueId() + ",maxResults=" + limit)) {
+					ret.add(new String[] {
+							m.group(1) + (person.getId().indexOf(' ') >= 0 ? "\"" + person.getId() + "\"" : person.getId()),
+							person.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?assigned:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Assigned enrollments"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Wait-listed course requests"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?scheduled:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Assigned enrollments"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Wait-listed course requests"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?waitlist:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Wait-listed course requests"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Assigned enrollments"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?waitlisted:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Wait-listed course requests"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Assigned enrollments"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?reservation:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Enrollments with a reservation"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Enrollments without a reservation"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?reserved:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("true".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "true",
+							"true - Enrollments with a reservation"
+					});
+				if ("false".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "false",
+							"false - Enrollments without a reservation"
+					});
+			}
+			m = Pattern.compile("^(.*\\W?consent:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("none".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "none",
+							"none - Courses with no consent"
+					});
+				if ("required".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "required",
+							"required - Courses requiring a consent"
+					});
+				for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll())
+					if (consent.getAbbv().toLowerCase().startsWith(m.group(2).toLowerCase()))
+						ret.add(new String[] {
+								m.group(1) + (consent.getAbbv().indexOf(' ') >= 0 ? "\"" + consent.getAbbv() + "\"" : consent.getAbbv()).toLowerCase(),
+								consent.getAbbv().toLowerCase() + " - " + consent.getLabel() + " required"
+						});
+				if ("waiting".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "waiting",
+							"waiting - Enrollments waiting for a consent"
+					});
+				if ("approved".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "approved",
+							"approved - Enrollments with an approved consent"
+					});
+				if (m.group(2).length() > 0) {
+					for (TimetableManager manager: (List<TimetableManager>)TimetableManagerDAO.getInstance().getSession().createQuery(
+							"select distinct m from TimetableManager m inner join m.managerRoles r inner join m.departments d where " +
+							" (lower(m.externalUniqueId) like :q || '%' or lower(m.emailAddress) like :q || '%' or lower(m.lastName) || ' ' || lower(m.firstName) like :q || '%')" +
+							" and r.role.reference in ('Administrator', 'Dept Sched Mgr') and d.session.uniqueId = :sessionId order by m.lastName, m.firstName, m.middleName"
+							).setString("q", m.group(2).toLowerCase()).setLong("sessionId", session.getUniqueId()).setMaxResults(limit).list()) {
+						ret.add(new String[] {
+								m.group(1) + (manager.getExternalUniqueId().indexOf(' ') >= 0 ? "\"" + manager.getExternalUniqueId() + "\"" : manager.getExternalUniqueId()),
+								manager.getLastName().toLowerCase() + " - Enrollments approved by " + manager.getName()
+						});
+					}
+				} else {
+					ret.add(new String[] {
+							m.group(1) + user.getId(),
+							(user.getName().contains(",") ? user.getName().substring(0, user.getName().indexOf(',')).toLowerCase() : user.getName().toLowerCase()) + " - " + "Enrollments approved by " + user.getName()
+					});
+				}
+			}
+
+			if (ret.isEmpty() && !query.isEmpty()) {
+				for (CourseInfo c: server.findCourses(query, limit)) {
+					ret.add(new String[] {
+							c.getSubjectArea() + " " + c.getCourseNbr(),
+							c.getSubjectArea() + " " + c.getCourseNbr() + (c.getTitle() == null ? "" : " - " + c.getTitle())
+					});
+				}
+			}
+			
+			m = Pattern.compile("^(.*[^: ][ ]+)?(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(query);
+			if (m.matches()) {
+				if ("area".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "area:",
+							"area: Academic Area"
+					});
+				if ("classification".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "classification:",
+							"classification: Academic Classification"
+					});
+				if ("consent".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "consent:",
+							"consent: Courses with consent"
+					});
+				if ("course".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "course:",
+							"course: Course Offering"
+					});
+				if ("department".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "department:",
+							"department: Department"
+					});
+				if ("group".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "group:",
+							"group: Student Group"
+					});
+				if ("major".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "major:",
+							"major: Major"
+					});
+				if ("reservation".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "reservation:",
+							"reservation: Enrollments with a reservation"
+					});
+				if ("student".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "student:",
+							"student: Student"
+					});
+				if ("subject".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "subject:",
+							"subject: Subject Area"
+					});
+				if ("waitlist".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "waitlist:",
+							"waitlist: Wait-Listed Course Requests"
+					});
+			}
+			return ret;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
+	}
+
+	@Override
+	public List<org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment> findEnrollments(
+			String query, Long courseId, Long classId)
+			throws SectioningException, PageAccessException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new PageAccessException(
+					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+			
+			Session session = Session.getCurrentAcadSession(user);
+			if (session == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(session.getUniqueId());
+			if (server == null || !server.getAcademicSession().isSectioningEnabled())
+				throw new SectioningException(MSG.exceptionBadSession());
+
+			return server.execute(new FindEnrollmentAction(query, courseId, classId));
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch  (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
+	}
 }

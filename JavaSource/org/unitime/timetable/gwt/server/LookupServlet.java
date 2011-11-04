@@ -80,6 +80,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 	}
 
 	private Long getAcademicSessionId() {
+		if (getThreadLocalRequest() == null) return null;
 		User user = Web.getUser(getThreadLocalRequest().getSession());
 		if (user == null) throw new LookupException("not authenticated");
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
@@ -107,7 +108,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 							displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
 						else if (option.startsWith("maxResults="))
 							maxResults = Integer.parseInt(option.substring("maxResults=".length()));
-						else if (options.startsWith("session="))
+						else if (option.startsWith("session="))
 							sessionId = Long.valueOf(option.substring("session=".length()));
 						else if (option.startsWith("source=")) {
 							ldap = students = staff = managers = events = instructors = false;

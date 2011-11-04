@@ -290,7 +290,7 @@ public class EnrollmentTable extends Composite {
 		}
 	}
 	
-	private void clear(boolean loading) {
+	public void clear(boolean loading) {
 		for (int row = iEnrollments.getRowCount() - 1; row >= 0; row--) {
 			iEnrollments.removeRow(row);
 		}
@@ -300,7 +300,7 @@ public class EnrollmentTable extends Composite {
 	}
 
 
-	private void populate(List<ClassAssignmentInterface.Enrollment> enrollments, boolean canApprove) {
+	public void populate(List<ClassAssignmentInterface.Enrollment> enrollments, boolean canApprove) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		Collections.sort(enrollments, new Comparator<ClassAssignmentInterface.Enrollment>() {
@@ -1064,6 +1064,8 @@ public class EnrollmentTable extends Composite {
 		panel.add(this);
 		panel.setVisible(true);
 	}
+	
+	public void setId(Long id) { iOfferingId = id; }
 
 	public void setErrorMessage(String message) {
 		iErrorLabel.setStyleName("unitime-ErrorMessage");
