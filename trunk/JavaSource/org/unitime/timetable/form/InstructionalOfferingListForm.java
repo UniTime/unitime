@@ -119,6 +119,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	private Boolean canSeeExams;
 	
 	private String sortBy;
+	
+	private boolean iCanAddCourse;
 		
 	/**
 	 * @return Returns the controlCourseOfferings.
@@ -261,6 +263,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		exams = new Boolean(false);
 		canSeeExams = new Boolean(false);
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
+		iCanAddCourse = false;
 	}
 
 	/**
@@ -587,4 +590,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public void setCatalogInformation(){
 		; //do nothing
 	}
+	
+	public boolean getCanAddCourse() { return iCanAddCourse; }
+	public void setCanAddCourse(boolean canAddCourse) { iCanAddCourse = canAddCourse; }
 }
