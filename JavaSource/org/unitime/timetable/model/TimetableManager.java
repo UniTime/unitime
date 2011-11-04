@@ -212,8 +212,24 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
             for (Iterator i=getDepartments().iterator();i.hasNext();) {
                 Department d = (Department)i.next();
+                if (!d.getSession().equals(session)) continue;
                 if (d.isExternalManager() && d.effectiveStatusType().canManagerView()) return true;
                 if (!d.isExternalManager() && d.effectiveStatusType().canOwnerView()) return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean canAddCourses(Session session, User user) {
+    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+    	
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
+            for (Iterator i=getDepartments().iterator();i.hasNext();) {
+                Department d = (Department)i.next();
+                if (!d.getSession().equals(session)) continue;
+                if (d.isExternalManager() && d.effectiveStatusType().canManagerEdit()) return true;
+                if (!d.isExternalManager() && d.effectiveStatusType().canOwnerEdit()) return true;
             }
         }
         

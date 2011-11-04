@@ -37,7 +37,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.unitime.commons.Debug;
@@ -118,7 +117,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	        if(!Web.isLoggedIn( httpSession )) {
 	            throw new Exception ("Access Denied.");
 	        }
-        
+	        
 	        // Check that a valid subject area is selected
 		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
 		    ActionMessages errors = null;
@@ -506,7 +505,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	        request.setAttribute("io", io.getUniqueId().toString());
 	        return mapping.findForward("showInstructionalOfferingDetail");
 	    	*/
-	        MessageResources rsc = getResources(request);
 	        request.setAttribute("op", MSG.actionEditCourseOffering());
 	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
 	        return mapping.findForward("showCourseOfferingEdit");
@@ -773,6 +771,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
             } else {
                 form.setCanSeeExams(Boolean.FALSE);
             }
+            form.setCanAddCourse(manager.canAddCourses(session, user));
         } catch (Exception e) {}
 	}
 
