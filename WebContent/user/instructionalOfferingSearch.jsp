@@ -284,11 +284,14 @@
 					</html:submit>
 				</tt:propertyEquals> 
 
+				<html:hidden property="canAddCourse"/>
+				<logic:equal name="instructionalOfferingListForm" property="canAddCourse" value="true">
 				<html:submit
 					accesskey="<%=MSG.accessAddNewInstructionalOffering()%>" styleClass="btn" title='<%=MSG.titleAddNewInstructionalOffering(MSG.accessAddNewInstructionalOffering())%>'
 					onclick="doit.value=this.value;">
 					<loc:message name="actionAddNewInstructionalOffering"/>
 				</html:submit>
+				</logic:equal>
 				
 			</TD>
 			<TD width="100%"></TD>
