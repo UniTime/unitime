@@ -192,7 +192,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		setSize((int) Math.round(size));
 		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
 			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : bgMode), firstDay);
-			String group = groups.get(entry.getKey().variable().getConfiguration().getOfferingId());
+			String group = (entry.getKey().variable().getConfiguration() == null ? null : groups.get(entry.getKey().variable().getConfiguration().getOfferingId()));
 			while (cell != null) {
 				cell.setRoomName(cell.getRoomName() + " (" + Math.round(entry.getValue()) + (group == null ? "" : ", " + group) + ")");
 				cell = cell.getParent();
