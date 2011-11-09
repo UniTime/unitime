@@ -28,7 +28,9 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -45,20 +47,18 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -76,12 +76,11 @@ public class CourseCurriculaTable extends Composite {
 
 	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
 
-	private VerticalPanel iCurriculaPanel;
-	private Image iCurriculaImage, iLoadingImage;
+	private SimpleForm iCurriculaPanel;
 	private MyFlexTable iCurricula;
 	private DialogBox iDialog;
 	private CurriculumEdit iCurriculumEdit;
-	private Label iErrorLabel, iHint;
+	private Label iHint;
 	
 	private AsyncCallback<TreeSet<CurriculumInterface>> iCourseCurriculaCallback = null;
 	
@@ -100,8 +99,8 @@ public class CourseCurriculaTable extends Composite {
 	private int iSelectedRow = -1;
 	private boolean iEditable = true;
 	
-	private Button iOperations;
 	private ClickHandler iMenu;
+	private UniTimeHeaderPanel iHeader;
 	
 	public static enum Type {
 		EXP ("Requested"),
@@ -128,11 +127,11 @@ public class CourseCurriculaTable extends Composite {
 	private static int sRowTypeOther = 4;
 	private static int sRowTypeTotal = 5;
 	
-	public CourseCurriculaTable(boolean editable, boolean showHeader) {
+	public CourseCurriculaTable(boolean editable, final boolean showHeader) {
 		iEditable = editable;
 		
-		iCurriculaPanel = new VerticalPanel();
-		iCurriculaPanel.setWidth("100%");
+		iCurriculaPanel = new SimpleForm();
+		iCurriculaPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		// Menu
 		iMenu = new ClickHandler() {
@@ -145,8 +144,7 @@ public class CourseCurriculaTable extends Composite {
 					public void execute() {
 						popup.hide();
 						CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-						if (iCurriculaImage != null)
-							iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+						iHeader.setCollapsible(showHeader ? CurriculumCookie.getInstance().getCurriculaCoursesDetails() : null);
 						if (iCurricula.getRowCount() > 2) {
 							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 								int rowType = iRowTypes.get(row);
@@ -244,7 +242,7 @@ public class CourseCurriculaTable extends Composite {
 
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								iHeader.setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
 								LoadingWidget.getInstance().hide();
 							}
 
@@ -266,7 +264,7 @@ public class CourseCurriculaTable extends Composite {
 						iCurriculaService.populateCourseProjectedDemands(true, iOfferingId, new AsyncCallback<Boolean>(){
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								iHeader.setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
 								LoadingWidget.getInstance().hide();
 							}
 
@@ -288,53 +286,34 @@ public class CourseCurriculaTable extends Composite {
 			}
 		};
 		
+		iHeader = new UniTimeHeaderPanel(showHeader ? "Curricula" : "");
+		iHeader.setCollapsible(showHeader ? CurriculumCookie.getInstance().getCurriculaCoursesDetails() : null);
+		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		if (showHeader) {
-			HorizontalPanel header = new HorizontalPanel();
-			iCurriculaImage = new Image(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-			iCurriculaImage.getElement().getStyle().setCursor(Cursor.POINTER);
-			iCurriculaImage.setVisible(false);
-			header.add(iCurriculaImage);
-			Label curriculaLabel = new Label("Curricula", false);
-			curriculaLabel.setStyleName("unitime3-HeaderTitle");
-			curriculaLabel.getElement().getStyle().setPaddingLeft(2, Unit.PX);
-			header.add(curriculaLabel);
-			header.setCellWidth(curriculaLabel, "100%");
-			header.setStyleName("unitime3-HeaderPanel");
-			iCurriculaPanel.add(header);
-			iOperations = new Button("Curricula&nbsp;<u>O</u>perations&nbsp;&or;");
-			iOperations.setAccessKey('o');
-			iOperations.addStyleName("unitime-NoPrint");
-			iOperations.getElement().getStyle().setMarginBottom(2, Unit.PX);
-			iOperations.addClickHandler(iMenu);
-			iOperations.setVisible(false);
-			header.add(iOperations);
-			
-			iCurriculaImage.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-					iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-					if (iCurricula.getRowCount() > 2) {
-						for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
-							int rowType = iRowTypes.get(row);
-							if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
-							iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-						}
-						for (int col = 0; col < iClassifications.size()  + 2; col++) {
-							iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
-						}
+			iHeader.addButton("operations", "Curricula&nbsp;<u>O</u>perations&nbsp;&or;", 'o', (Integer)null, iMenu);
+			iHeader.setEnabled("operations", false);
+			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
+		}
+		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				CurriculumCookie.getInstance().setCurriculaCoursesDetails(event.getValue());
+				if (iCurricula.getRowCount() > 2) {
+					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+						int rowType = iRowTypes.get(row);
+						if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+						iCurricula.getRowFormatter().setVisible(row, CurriculumCookie.getInstance().getCurriculaCoursesDetails());
+					}
+					for (int col = 0; col < iClassifications.size()  + 2; col++) {
+						iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
 					}
 				}
-			});
-		}
-
-		iLoadingImage = new Image(RESOURCES.loading_small());
-		iLoadingImage.setVisible(false);
-		iLoadingImage.getElement().getStyle().setMarginTop(10, Unit.PX);
-		iCurriculaPanel.add(iLoadingImage);
-		iCurriculaPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
-		iCurriculaPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
+			}
+		});
 		
+		if (showHeader)
+			iCurriculaPanel.addHeaderRow(iHeader);
+
 		VerticalPanel tableAndHint = new VerticalPanel();
 		
 		iCurricula = new MyFlexTable();
@@ -345,7 +324,7 @@ public class CourseCurriculaTable extends Composite {
 		iHint.setVisible(false);
 		tableAndHint.add(iHint);
 		tableAndHint.setCellHorizontalAlignment(iHint, HasHorizontalAlignment.ALIGN_RIGHT);
-		iCurriculaPanel.add(tableAndHint);
+		iCurriculaPanel.addRow(tableAndHint);
 		iHint.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -363,12 +342,9 @@ public class CourseCurriculaTable extends Composite {
 			}
 		});
 		
+		if (!showHeader)
+			iCurriculaPanel.addRow(iHeader);
 		
-		iErrorLabel = new Label("Oooops, something went wrong.");
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iCurriculaPanel.add(iErrorLabel);
-		iErrorLabel.setVisible(false);
-				
 		initWidget(iCurriculaPanel);
 	}
 	
@@ -403,7 +379,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurriculaService.loadAcademicAreas(new AsyncCallback<TreeSet<AcademicAreaInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					setErrorMessage("Failed to load academic areas (" + caught.getMessage() + ")");
+					iHeader.setErrorMessage("Failed to load academic areas (" + caught.getMessage() + ")");
 					next.executeOnFailure();
 				}
 				@Override
@@ -412,7 +388,7 @@ public class CourseCurriculaTable extends Composite {
 					iCurriculaService.loadDepartments(new AsyncCallback<TreeSet<DepartmentInterface>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							setErrorMessage("Failed to load departments (" + caught.getMessage() + ")");
+							iHeader.setErrorMessage("Failed to load departments (" + caught.getMessage() + ")");
 							next.executeOnFailure();
 						}
 						@Override
@@ -459,7 +435,7 @@ public class CourseCurriculaTable extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				setErrorMessage("Failed to load classifications (" + caught.getMessage() + ").");
+				iHeader.setErrorMessage("Failed to load classifications (" + caught.getMessage() + ").");
 			}
 		});
 	}
@@ -469,8 +445,10 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.removeRow(row);
 		}
 		iCurricula.clear(true);
-		iLoadingImage.setVisible(loading);
-		iErrorLabel.setVisible(false);
+		if (loading)
+			iHeader.showLoading();
+		else
+			iHeader.clearMessage();
 		iHint.setVisible(false);
 	}
 	
@@ -647,7 +625,7 @@ public class CourseCurriculaTable extends Composite {
 						iCurriculaService.loadCurriculum(curriculum.getId(), new AsyncCallback<CurriculumInterface>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage("Failed to load details for " + curriculum.getAbbv() + " (" + caught.getMessage() + ")");
+								iHeader.setErrorMessage("Failed to load details for " + curriculum.getAbbv() + " (" + caught.getMessage() + ")");
 								next.executeOnFailure();
 							}
 							@Override
@@ -860,8 +838,8 @@ public class CourseCurriculaTable extends Composite {
 			@Override
 			public void execute(ConditionalCommand next) {
 				CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
-				if (iCurriculaImage != null)
-					iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				if (iHeader.isCollapsible() != null)
+					iHeader.setCollapsible(CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 				if (iCurricula.getRowCount() > 2) {
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);
@@ -990,11 +968,10 @@ public class CourseCurriculaTable extends Composite {
 			}
 		}
 		
-		iLoadingImage.setVisible(false);
+		iHeader.clearMessage();
+		iHeader.setEnabled("operations", true);
+		
 		iHint.setVisible(true);
-		iCurriculaImage.setVisible(true);
-		if (iOperations != null)
-			iOperations.setEnabled(true);
 	}
 	
 	private int getHeaderCols(int row) {
@@ -1012,23 +989,19 @@ public class CourseCurriculaTable extends Composite {
 			iCourseCurriculaCallback = new AsyncCallback<TreeSet<CurriculumInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					setErrorMessage("Failed to load curricula (" + caught.getMessage() + ").");
-					iLoadingImage.setVisible(false);
+					iHeader.setErrorMessage("Failed to load curricula (" + caught.getMessage() + ").");
 				}
 				@Override
 				public void onSuccess(TreeSet<CurriculumInterface> result) {
 					if (result.isEmpty()) {
-						setMessage("The selected offering has no curricula.");
-						if (iOperations != null)
-							iOperations.setVisible(false);
+						iHeader.setMessage("The selected offering has no curricula.");
+						iHeader.setEnabled("operations", false);
+						iHeader.setCollapsible(null);
 					} else {
-						if (iOperations != null) {
-							iOperations.setVisible(true);
-							iOperations.setEnabled(false);
-						}
+						iHeader.clearMessage();
+						iHeader.setEnabled("operations", true);
 						populate(result);
 					}
-					iLoadingImage.setVisible(false);
 				}
 			};			
 		}
@@ -1229,16 +1202,7 @@ public class CourseCurriculaTable extends Composite {
 		public void executeOnFailure();
 	}
 	
-	public void setErrorMessage(String message) {
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-	}
-	
 	public void setMessage(String message) {
-		iErrorLabel.setStyleName("unitime-Message");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
+		iHeader.setMessage(message);
 	}
-	
 }
