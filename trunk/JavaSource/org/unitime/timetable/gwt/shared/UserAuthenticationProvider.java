@@ -21,24 +21,9 @@ package org.unitime.timetable.gwt.shared;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-/**
- * @author Tomas Muller
- */
-public interface AcademicSessionProvider {
-	public Long getAcademicSessionId();
-	public String getAcademicSessionName();
-	public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler);
+public interface UserAuthenticationProvider {
 	
-	public static interface AcademicSessionChangeEvent {
-		public Long getNewAcademicSessionId();
-		public Long getOldAcademicSessionId();
-		public boolean isChanged();
-	}
+	public String getUser();
+	public void setUser(String user, AsyncCallback<Boolean> callback);
 
-
-	public static interface AcademicSessionChangeHandler {
-		public void onAcademicSessionChange(AcademicSessionChangeEvent event);
-	}
-	
-	public void selectSession(Long sessionId, AsyncCallback<Boolean> callback);
 }
