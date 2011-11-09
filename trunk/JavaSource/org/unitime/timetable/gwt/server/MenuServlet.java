@@ -299,6 +299,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				return OnlineSectioningService.isEnabled();
 			} else if ("isStudent".equals(right)) {
 				return userInfo != null && userInfo.isStudent();
+			} else if ("isInstructor".equals(right)) {
+				return userInfo != null && userInfo.isInstructor();
 			} else if ("isRegistrationEnabled".equals(right)) {
 				return OnlineSectioningService.isRegistrationEnabled();
 			} else {
@@ -363,6 +365,12 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		public boolean isStudent() {
 			if (getUser() == null) return false;
 			return ((Number)StudentDAO.getInstance().getSession().createQuery("select count(s) from Student s where " +
+					"s.externalUniqueId = :uid")
+					.setString("uid", getUser().getId()).setCacheable(true).uniqueResult()).intValue() > 0;
+		}
+		public boolean isInstructor() {
+			if (getUser() == null) return false;
+			return ((Number)StudentDAO.getInstance().getSession().createQuery("select count(s) from DepartmentalInstructor s where " +
 					"s.externalUniqueId = :uid")
 					.setString("uid", getUser().getId()).setCacheable(true).uniqueResult()).intValue() > 0;
 		}
