@@ -530,11 +530,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Approve Selected Enrollments")
 	String approveSelectedEnrollments();
 	
+	@DefaultMessage("<u>A</u>pprove")
+	String buttonApproveSelectedEnrollments();
+	
 	@DefaultMessage("Failed to approve enrollments: {0}")
 	String failedToApproveEnrollments(String error);
 
 	@DefaultMessage("Reject Selected Enrollments")
 	String rejectSelectedEnrollments();
+	
+	@DefaultMessage("<u>R</u>eject")
+	String buttonRejectSelectedEnrollments();
 
 	@DefaultMessage("Failed to reject enrollments: {0}")
 	String failedToRejectEnrollments(String error);
@@ -789,4 +795,20 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Loading enrollments for {0}...")
 	String loadingEnrollments(String classOrCourse);
+	
+	@DefaultMessage("Scheduling <u>A</u>ssistant")
+	String buttonAssistant();
+
+	@DefaultMessage("Student Scheduling Assistant for {0}")
+	String dialogAssistant(String student);
+	
+	@DefaultMessage("Close")
+	String buttonClose();
+	
+	@DefaultMessage("Loading scheduling assistant for {0}...")
+	String loadingAssistant(String student);
+		
+	@DefaultMessage("Need<br>Consent")
+	String colNeedConsent();
+
 }

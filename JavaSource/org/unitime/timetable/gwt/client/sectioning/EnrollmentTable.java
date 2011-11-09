@@ -330,6 +330,7 @@ public class EnrollmentTable extends Composite {
 								});
 							}
 						});
+						buttons.setEnabled("assistant", false);
 						buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
@@ -346,7 +347,7 @@ public class EnrollmentTable extends Composite {
 						iSectioningService.canEnroll(event.getData().getStudent().getId(), new AsyncCallback<Long>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								buttons.setErrorMessage(caught.getMessage());
+								buttons.clearMessage();
 							}
 
 							@Override

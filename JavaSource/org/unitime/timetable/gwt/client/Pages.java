@@ -49,7 +49,7 @@ public enum Pages {
 	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } }),
 	sectioningtest("Online Student Sectioning Test", new PageFactory() { public Widget create() { return new OnlineSectioningTest(); } }),
 	hql("Simple Reports", new PageFactory() { public Widget create() { return new SavedHQLPage(); } }),
-	sectioningstatus("Online Student Scheduling Progress", new PageFactory() { public Widget create() { return new SectioningStatusPage(); } }),
+	sectioningstatus("Online Student Scheduling Dashboard", new PageFactory() { public Widget create() { return new SectioningStatusPage(); } }),
 	;
 	
 	private String iTitle;

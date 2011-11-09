@@ -50,7 +50,7 @@ public interface SectioningServiceAsync {
 	void lastResult(Long sessionId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
-	void isAdmin(AsyncCallback<Boolean> isAdmin) throws SectioningException, PageAccessException;
+	void isAdminOrAdvisor(AsyncCallback<Boolean> isAdmin) throws SectioningException, PageAccessException;
 	void listEnrollments(Long offeringId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
 	void getEnrollment(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void canApprove(Long classOrOfferingId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
@@ -59,4 +59,9 @@ public interface SectioningServiceAsync {
 	void findEnrollmentInfos(String query, Long courseId, AsyncCallback<List<ClassAssignmentInterface.EnrollmentInfo>> callback) throws SectioningException, PageAccessException;
 	void findEnrollments(String query, Long courseId, Long classId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
 	void querySuggestions(String query, int limit, AsyncCallback<List<String[]>> callback) throws SectioningException, PageAccessException;
+	void lastStatusQuery(AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void canEnroll(Long studentId, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
+	void savedRequest(Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
+	void savedResult(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
+	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 }

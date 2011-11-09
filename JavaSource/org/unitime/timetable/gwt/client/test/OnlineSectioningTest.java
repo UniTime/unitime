@@ -67,7 +67,7 @@ public class OnlineSectioningTest extends Composite {
 		iSessions.setHint("An academic session with enabled student sectioning.");
 		
 		LoadingWidget.getInstance().show("Loading...");
-		iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+		iSectioningService.isAdminOrAdvisor(new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());

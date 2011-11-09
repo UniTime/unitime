@@ -60,15 +60,26 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private Query iQuery;
 	private Long iCourseId;
+	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
-	public FindEnrollmentInfoAction(String query, Long courseId) {
+	public FindEnrollmentInfoAction(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
+		iCoursesIcanApprove = coursesIcanApprove;
+		iCoursesIcoordinate = coursesIcoordinage;
 	}
 	
 	public Query query() { return iQuery; }
 	
 	public Long courseId() { return iCourseId; }
+	
+	public boolean isConsentToDoCourse(CourseInfo course) {
+		return iCoursesIcanApprove != null && course.getConsent() != null && iCoursesIcanApprove.contains(course.getUniqueId());
+	}
+	
+	public boolean isCourseVisible(Long courseId) {
+		return iCoursesIcoordinate == null || iCoursesIcoordinate.contains(courseId);
+	}
 	
 	@Override
 	public List<EnrollmentInfo> execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -84,11 +95,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			for (CourseInfo info: server.findCourses(new OnlineSectioningServer.CourseInfoMatcher() {
 				@Override
 				public boolean match(CourseInfo course) {
-					return query().match(new CourseInfoMatcher(helper, course));
+					return isCourseVisible(course.getUniqueId()) && query().match(new CourseInfoMatcher(helper, course, isConsentToDoCourse(course)));
 				}
 			})) {
 				Course course = server.getCourse(info.getUniqueId());
 				if (course == null) continue;
+				boolean isConsentToDoCourse = isConsentToDoCourse(info);
 				EnrollmentInfo e = new EnrollmentInfo();
 				e.setCourseId(info.getUniqueId());
 				e.setOfferingId(course.getOffering().getId());
@@ -106,8 +118,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				for (CourseRequest request: course.getRequests()) {
 					if (students.add(request.getStudent().getId()))
 						addedStudents.add(request.getStudent().getId());
-					if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, request);
+					if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) { continue; }
+					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudent().getId());
 						match++;
@@ -158,11 +170,30 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						limit += config.getLimit();
 					}
 				}
-				
+									
 				e.setLimit(course.getLimit());
 				e.setProjection(course.getProjected());
-				e.setAvailable(Math.min((int)Math.floor(Math.max(0.0, course.getOffering().getUnreservedSpace(null))), course.getLimit() - course.getEnrollments().size()));
-				if (e.getAvailable() == Integer.MAX_VALUE) e.setAvailable(-1);
+				int av = (int)Math.floor(Math.max(0.0, course.getOffering().getUnreservedSpace(null)));
+				if (course.getLimit() >= 0 && av > course.getLimit() - course.getEnrollments().size())
+					av = course.getLimit() - course.getEnrollments().size();
+				if (av == Integer.MAX_VALUE) av = -1;
+				e.setAvailable(av);
+				if (av >= 0) {
+					int other = 0;
+					for (Course c: course.getOffering().getCourses())
+						if (!c.equals(course))
+							other += c.getEnrollments().size();
+					e.setOther(Math.min(course.getLimit() - course.getEnrollments().size() - av, other));
+					int lim = 0;
+					for (Config f: course.getOffering().getConfigs()) {
+						if (lim < 0 || f.getLimit() < 0)
+							lim = -1;
+						else
+							lim += f.getLimit();
+					}
+					if (lim >= 0 && lim < course.getLimit())
+						e.setOther(e.getOther() + course.getLimit() - limit);
+				}
 				
 				e.setEnrollment(enrl);
 				e.setReservation(res);
@@ -206,7 +237,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		} else {
 			CourseInfo info = server.getCourseInfo(courseId());
 			Course course = server.getCourse(courseId());
-			if (course == null) return ret;
+			if (info == null || course == null) return ret;
+			boolean isConsentToDoCourse = isConsentToDoCourse(info);
 			
 			List<Section> sections = server.getSections(info);
 			Collections.sort(sections, new Comparator<Section>() {
@@ -312,7 +344,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 
 				for (Enrollment enrollment: section.getEnrollments()) {
 					if (enrollment.getCourse().getId() != course.getId()) {other++; continue; }
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, (CourseRequest)enrollment.getRequest());
+					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, (CourseRequest)enrollment.getRequest(), isConsentToDoCourse);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -331,7 +363,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 
 				for (CourseRequest request: course.getRequests()) {
 					if (request.getAssignment() != null || !request.getStudent().canAssign(request)) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, request);
+					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse);
 					boolean hasEnrollment = true;
 					values: for (Enrollment en: request.values()) {
 						if (!en.getSections().contains(section)) continue;
@@ -427,15 +459,19 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	public static class CourseInfoMatcher implements TermMatcher {
 		private CourseInfo iInfo;
 		private OnlineSectioningHelper iHelper;
+		private boolean iConsentToDoCourse;
 		
-		public CourseInfoMatcher(OnlineSectioningHelper helper, CourseInfo course) {
+		public CourseInfoMatcher(OnlineSectioningHelper helper, CourseInfo course, boolean isConsentToDoCourse) {
 			iHelper = helper;
 			iInfo = course;
+			iConsentToDoCourse = isConsentToDoCourse;
 		}
 		
 		public OnlineSectioningHelper helper() { return iHelper; }
 
 		public CourseInfo info() { return iInfo; }
+		
+		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
 		
 		@Override
 		public boolean match(String attr, String term) {
@@ -459,6 +495,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			if ("consent".equals(attr)) {
 				if ("none".equalsIgnoreCase(term))
 					return info().getConsent() == null;
+				else if ("todo".equalsIgnoreCase(term))
+					return isConsentToDoCourse();
 				else
 					return info().getConsent() != null;
 			}
@@ -470,8 +508,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		private CourseRequest iRequest;
 		private Date iFirstDate;
 		
-		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, CourseRequest request) {
-			super(helper, info);
+		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, CourseRequest request, boolean isConsentToDoCourse) {
+			super(helper, info, isConsentToDoCourse);
 			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
 			iRequest = request;
 		}
@@ -546,6 +584,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					return info().getConsent() != null && enrollment() != null && enrollment().getApproval() != null;
 				} else if (eq("waiting", term)) {
 					return info().getConsent() != null && enrollment() != null && enrollment().getApproval() == null;
+				} else if (eq("todo", term)) {
+					return isConsentToDoCourse() && enrollment() != null && enrollment().getApproval() == null;
 				} else {
 					return info().getConsent() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().split(":")[2], term) || eq(enrollment().getApproval().split(":")[1], term))) || eq(info().getConsentAbbv(), term));
 				}
