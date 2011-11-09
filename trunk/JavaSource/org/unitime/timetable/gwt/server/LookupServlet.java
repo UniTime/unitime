@@ -83,6 +83,7 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 		if (getThreadLocalRequest() == null) return null;
 		User user = Web.getUser(getThreadLocalRequest().getSession());
 		if (user == null) throw new LookupException("not authenticated");
+		if (user.getRole() == null) throw new LookupException("insufficient rights");
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		if (sessionId == null) throw new LookupException("academic session not selected");
 		return sessionId;
