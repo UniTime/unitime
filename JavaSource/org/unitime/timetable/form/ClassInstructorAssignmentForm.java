@@ -131,11 +131,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
 		ActionErrors errors = new ActionErrors();
 
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-
         if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) || op.equals(MSG.actionNextIO()) || op.equals(MSG.actionPreviousIO())) {	
             // Check Added Instructors
 	        for (int i = 0; i < classIds.size(); i++) {

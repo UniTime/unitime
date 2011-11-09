@@ -126,7 +126,6 @@ public class ClassInstructorAssignmentAction extends Action {
         request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME, instructors);
 
         // First access to screen
-        Boolean areEqual = op.equalsIgnoreCase(MSG.actionAssignInstructors());
         if(op.equalsIgnoreCase(MSG.actionAssignInstructors())) {
             doLoad(request, frm, instrOffrConfigId, user, ioc);
         }
