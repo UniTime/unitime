@@ -75,7 +75,7 @@ public class DesignatorListBuilder {
 			    new String[] {"Instructor", "Code"},
 			    new String[] {"left", "left"},
 			    new boolean[] {true, true} );
-        webTable.enableHR("#EFEFEF");
+        webTable.enableHR("#9CB0CE");
 
 
         SubjectAreaDAO sDao = new SubjectAreaDAO();
@@ -152,7 +152,7 @@ public class DesignatorListBuilder {
     			    new String[] {"left", "left"},
     			    new boolean[] {true, true} );
 
-            webTable.enableHR("#EFEFEF");
+            webTable.enableHR("#9CB0CE");
 
             for (Iterator i=designators.iterator(); i.hasNext(); ) {
                 Designator d = (Designator) i.next();
@@ -185,7 +185,7 @@ public class DesignatorListBuilder {
 			    new String[] {"Instructor", "Code"},
 			    new String[] {"left", "left"},
 			    new boolean[] {true, true} );
-        webTable.enableHR("#EFEFEF");
+        webTable.enableHR("#9CB0CE");
         
         if (designators==null || designators.size()==0) 
         	return;

@@ -70,7 +70,7 @@ public class PreferenceLegend extends TagSupport {
     	
     	String border = "";
     	if (iSeparator!=null && iSeparator.length()>0)
-    		border = "border-"+iSeparator+":black 1px dashed";
+    		border = "border-"+iSeparator+":1px dashed #9CB0CE";
     	if ("none".equals(iSeparator)) border = null;
         
         StringBuffer html = new StringBuffer(border==null?"":"<table width='100%' cellspacing='1' cellpadding='1' border='0' style='"+border+"'><tr><td align='center'>");

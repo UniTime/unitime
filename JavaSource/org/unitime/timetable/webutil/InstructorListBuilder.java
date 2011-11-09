@@ -85,7 +85,7 @@ public class InstructorListBuilder {
 				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left"},
 				new boolean[] { true, true, true, true, true, true, true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap;");
-		webTable.enableHR("#EFEFEF");
+		webTable.enableHR("#9CB0CE");
 
 		// Loop through Instructor class
 		List list = null;

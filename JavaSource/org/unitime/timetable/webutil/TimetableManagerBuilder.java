@@ -76,7 +76,7 @@ public class TimetableManagerBuilder {
                         new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group"}),
 			    new String[] {"left", "left", "left", "left", "left", "left", "left", "left"},
 			    new boolean[] {true, true, true, true, true, true, true, false} );
-        webTable.enableHR("#EFEFEF");
+        webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
         	
 	    TimetableManagerDAO empDao = new TimetableManagerDAO();

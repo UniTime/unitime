@@ -132,7 +132,7 @@ public class WebTable {
     
     /** enable horizontal lines */
     public void enableHR(String colorCode) {
-        setRowStyle("border-bottom: 1px solid " + colorCode);
+        setRowStyle("border-bottom: 1px dashed " + colorCode);
     }
     
     /** add line to the table */

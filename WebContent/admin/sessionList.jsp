@@ -54,7 +54,7 @@
 						"left", "left", "left", "left", "right", "left", "left", "left" }, 
 					new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true });
 					
-			webTable.enableHR("#EFEFEF");
+			webTable.enableHR("#9CB0CE");
 					
 		%>
 
