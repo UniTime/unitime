@@ -99,11 +99,6 @@ public class CrossListsModifyForm extends ActionForm {
 
         ActionErrors errors = new ActionErrors();
 
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-
         if (op.equals(MSG.actionAddCourseToCrossList())) {
             // Check Added Course
 	        if (this.addCourseOfferingId==null || this.addCourseOfferingId.intValue()<=0) {
