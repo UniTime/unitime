@@ -156,7 +156,7 @@
 			pattern = Pattern.compile("^tmtbl\\..*$");
 		}
 		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Name","Value"}, new String[] {"left","left"}, null);
-		table.enableHR("#EFEFEF");
+		table.enableHR("#9CB0CE");
 		for (Object prop: props) {
 			if (!pattern.matcher(prop.toString()).matches()) continue;
 			String value = ApplicationProperties.getProperty(prop.toString());
