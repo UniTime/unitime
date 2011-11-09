@@ -30,6 +30,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
@@ -43,6 +45,8 @@ import org.unitime.timetable.util.Constants;
  * @struts:form name="instructorSearchForm"
  */
 public class InstructorSearchForm extends ActionForm {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -132,7 +136,7 @@ public class InstructorSearchForm extends ActionForm {
 	}
 	
 	/**
-	 * this function is used to determin whether there should be a dropdown list for departments on the instructor search page.
+	 * this function is used to determine whether there should be a dropdown list for departments on the instructor search page.
 	 * if deptSize is 1, no dropdown list; otherwise, there should be a list.
 	 * @param request
 	 * @return
@@ -159,7 +163,7 @@ public class InstructorSearchForm extends ActionForm {
       
         if(deptUniqueId==null || deptUniqueId.equalsIgnoreCase("")) {
         	errors.add("deptUniqueId", 
-                    new ActionMessage("errors.required", "Department") );
+                    new ActionMessage("errors.generic", MSG.errorRequiredDepartment()) );
         }
        
         return errors;

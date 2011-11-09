@@ -246,6 +246,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Offering Limit:")
 	String propertyOfferingLimit();
 	
+	@DefaultMessage("Department:")
+	String propertyDepartment();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -413,6 +416,30 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("&nbsp;Check<br>Conflicts")
 	String columnInstructorCheckConflictsBr();
+	
+	@DefaultMessage("Position")
+	String columnInstructorPosition();
+	
+	@DefaultMessage("Designator")
+	String columnInstructorDesignatorNr();
+	
+	@DefaultMessage("Note")
+	String columnInstructorNote();
+	
+	@DefaultMessage("Class<BR>Assignments")
+	String columnInstructorClassAssignments();
+
+	@DefaultMessage("Class\nAssignments")
+	String columnInstructorClassAssignmentsPDF(); //has a new line ("\n") for printing out pdf
+	
+	@DefaultMessage("Exam<BR>Assignments")
+	String columnInstructorExamAssignments();
+
+	@DefaultMessage("Exam\nAssignments")
+	String columnInstructorExamAssignmentsPDF(); //has a new line ("\n") for printing out pdf
+	
+	@DefaultMessage("Ignore<BR>Too Far")
+	String columnInstructorIgnoreTooFar();
 	
 	@DefaultMessage("Classes / Courses")
 	String columnExamClassesCourses();
@@ -603,6 +630,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Designator Required")
 	String altDesignatorRequired();
 	
+	@DefaultMessage("Not Available")
+	String altNotAvailableExternalId();
+	
+	@DefaultMessage("Yes")
+	String altYes(); //an alt text to a check (as in Ignore Too Far - Checked)
+		
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
 	
@@ -646,6 +679,9 @@ public interface CourseMessages extends Messages {
 		apply = ClassSearchAction.class
 	)
 	String actionSearchClasses();
+	
+	@DefaultMessage("Search")
+	String actionSearchInstructors();
 
 	@DefaultMessage("Export PDF")
 	@StrutsAction("exportPdf")
@@ -727,7 +763,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update")
 	String actionUpdateMultipleClassSetup();
-	
+		
 	@DefaultMessage("Clear Class Preferences")
 	String actionClearClassPreferences();
 	
@@ -781,6 +817,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Add Instructor")
 	String actionAddInstructor();
+	
+	@DefaultMessage("Add New Instructor")
+	String actionAddNewInstructor();
 	
 	@DefaultMessage("Delete")
 	String actionRemoveInstructor();
@@ -851,11 +890,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Assign Instructors")
 	String actionAssignInstructors();
 	
+	@DefaultMessage("Manage Instructor List")
+	String actionManageInstructorList();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
 	@DefaultMessage("S")
 	String accessSearchClasses();
+	
+	@DefaultMessage("S")
+	String accessSearchInstructors();
 
 	@DefaultMessage("P")
 	String accessExportPdf();
@@ -974,6 +1019,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("I")
 	String accessAddInstructor();
 	
+	@DefaultMessage("A")
+	String accessAddNewInstructor();
+	
 	@DefaultMessage("X")
 	String accessAddExamination();
 	
@@ -1025,11 +1073,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("B")
 	String accessBackIODetail();
 	
+	@DefaultMessage("M")
+	String accessManageInstructorList();
+	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
 	@DefaultMessage("Search/Display Classes (Alt+{0})")
 	String titleSearchClasses(String accessKey);
+	
+	@DefaultMessage("Search/Display Instructors (Alt+{0})")
+	String titleSearchInstructors(String accessKey);
 	
 	@DefaultMessage("Export PDF (Alt+{0})")
 	String titleExportPdf(String accessKey);
@@ -1187,6 +1241,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add Instructor (Alt+{0})")
 	String titleAddInstructor(String accessKey);
 	
+	@DefaultMessage("Add New Instructor (Alt+{0})")
+	String titleAddNewInstructor(String accessKey);
+	
 	@DefaultMessage("Add Instructor to Class")
 	String titleAddInstructorToClass();
 	
@@ -1306,6 +1363,27 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Class Instructor Assignment")
 	String titleAssignInstructors();
+	
+	@DefaultMessage("Add Instructor from Staff / Remove from Dept List (Alt+{0})")
+	String titleManageInstructorList(String accessKey);
+	
+	@DefaultMessage("Instructor ExternalId not supplied")
+	String titleInstructorExternalIdNotSupplied();
+	
+	@DefaultMessage("Do Not Display Instructor.")
+	String titleDoNotDisplayInstructor();
+	
+	@DefaultMessage("check conflicts")
+	String titleCheckConflicts();
+	
+	@DefaultMessage("Midterm Examination")
+	String titleMidtermExamination();
+	
+	@DefaultMessage("Final Examination")
+	String titleFinalExamination();
+	
+	@DefaultMessage("Ignore too far distances")
+	String titleIgnoreTooFarDistances();
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -1514,6 +1592,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Spaces reserved for course offerings ({0}) should total to at least the offering limit.")
 	String errorReservedSpacesForOfferingsTotal(String coursesTotal);
 	
+	@DefaultMessage("Department is required.")
+	String errorRequiredDepartment();
+	
+	@DefaultMessage("No instructors for the selected department were found.")
+	String errorNoInstructorsFoundForDepartment();
+	
+	@DefaultMessage("No instructors were found. Use the option 'Manage Instructor List' to add instructors to your list.")
+	String errorNoInstructorsFoundInSearch();
+	
 	@DefaultMessage("Access Denied.")
 	String exceptionAccessDenied();
 	
@@ -1537,6 +1624,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Course Offering Id need for operation. ")
 	String exceptionCourseOfferingIdNeeded();
+	
+	@DefaultMessage("You do not have any department to manage. ")
+	String exceptionNoDepartmentToManage();
 	
 	@DefaultMessage("Name")
 	String sortByName();
@@ -1582,6 +1672,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Instructional Offering ({0})")
 	String backInstructionalOffering(String ioName);
+	
+	@DefaultMessage("Instructors ({0})")
+	String backInstructors(String deptName);
+	
+	@DefaultMessage("Instructors")
+	String backInstructors2(); //when there is no department selected in the Instructors screen
 	
 	@DefaultMessage("am")
 	String timeAm();
@@ -1642,6 +1738,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Configuration ")
 	String sectionTitleConfiguration();
+	
+	@DefaultMessage("Instructor List")
+	String sectionTitleInstructorList();
 	
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
@@ -1714,4 +1813,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No")
 	String no();
+	
+	@DefaultMessage("Not Specified")
+	String instructorPositionNotSpecified();
+
+	@DefaultMessage("Not Specified")
+	String instructorExternalIdNotSpecified();
 }
