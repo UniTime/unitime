@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
@@ -55,6 +57,8 @@ import org.unitime.timetable.util.Constants;
  */
 public class InstructorListBuilder {
     
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
     public String htmlTableForInstructor(HttpServletRequest request, String deptId, int order, String backId) throws Exception {
         
 		int cols = 11;
@@ -67,8 +71,17 @@ public class InstructorListBuilder {
 		// Create new table
 		WebTable webTable = new WebTable(cols, "",
 				"instructorList.do?order=%%&deptId=" + deptId,
-				new String[] { "External Id", "Name", "Position", "Designator", "Note", "Preferences<BR>Time",
-						"<BR>Room", "<BR>Distribution", "Class<BR>Assignments", "Exam<BR>Assignments", "Ignore Too Far"}, 
+				new String[] { 	MSG.columnExternalId(),
+								MSG.columnInstructorName(),
+								MSG.columnInstructorPosition(),
+								MSG.columnInstructorDesignatorNr(),
+								MSG.columnInstructorNote(),
+								MSG.columnPreferences()+"<BR>"+MSG.columnTimePref(),
+								"<BR>"+MSG.columnRoomPref(),
+								"<BR>"+MSG.columnDistributionPref(),
+								MSG.columnInstructorClassAssignments(),
+								MSG.columnInstructorExamAssignments(),
+								MSG.columnInstructorIgnoreTooFar()}, 
 				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left"},
 				new boolean[] { true, true, true, true, true, true, true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap;");
@@ -96,7 +109,8 @@ public class InstructorListBuilder {
 				if (di.getExternalUniqueId()!=null && di.getExternalUniqueId().trim().length()>0)
 				    puid = di.getExternalUniqueId();
 				else
-				    puid = "<center><IMG src='images/Error16.jpg' border='0' alt='Not Available' title='Instructor PuID not supplied'></center>";
+				    puid = "<center><IMG src='images/Error16.jpg' border='0' alt='" + MSG.altNotAvailableExternalId()+
+				    		"' title='"+MSG.titleInstructorExternalIdNotSupplied()+"'></center>";
 				
 				//get instructor name 
 				String name = Constants.toInitialCase(di.getName(instructorNameFormat), "-".toCharArray());
@@ -105,7 +119,7 @@ public class InstructorListBuilder {
 				    nameOrd = name.toLowerCase();
 							
 				// position
-				String posType = "Not Specified";
+				String posType = MSG.instructorPositionNotSpecified();
 				if (di.getPositionType()!=null)
 				    posType = di.getPositionType().getLabel();
 				
@@ -231,9 +245,9 @@ public class InstructorListBuilder {
 					Class_ c = ci.getClassInstructing(); 
 					String className = c.getClassLabel();
 		    		String title = className;
-		    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", check conflicts":"")+")";
+		    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", " + MSG.titleCheckConflicts() :"")+")";
 		    		if (!c.isDisplayInstructor().booleanValue()){
-		    			title += " - Do Not Display Instructor.";
+		    			title += " - " + MSG.titleDoNotDisplayInstructor();
 		    		}
 		    		if (ci.isLead().booleanValue()){
 		    			classesStr +=  "<span style='font-weight:bold;"+(c.isDisplayInstructor().booleanValue()?"":"font-style:italic;")+"' title='"+title+"'>";
@@ -251,9 +265,9 @@ public class InstructorListBuilder {
 				    Exam exam = (Exam)i.next();
                     String examName = exam.getLabel();
                     if (exam.getExamType()==Exam.sExamTypeMidterm) {
-                        examsStr += "<span title='"+examName+" Midterm Examination'>"+examName+"</span>";
+                        examsStr += "<span title='"+examName+" "+MSG.titleMidtermExamination()+"'>"+examName+"</span>";
                     } else {
-                        examsStr += "<span style='font-weight:bold;' title='"+examName+" Final Examination'>"+examName+"</span>";
+                        examsStr += "<span style='font-weight:bold;' title='"+examName+" "+MSG.titleFinalExamination()+"'>"+examName+"</span>";
                     }
                     if (i.hasNext()) examsStr += "<br>";
 				}
@@ -278,7 +292,7 @@ public class InstructorListBuilder {
 					        putSpace(distPref),
 					        putSpace(classesStr),
 					        putSpace(examsStr),
-                            (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;")}, 
+                            (itf?"<IMG border='0' title='"+MSG.titleIgnoreTooFarDistances()+"' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;")}, 
 						new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, null, new Integer(itf?0:1) });
 
 			}
@@ -297,10 +311,19 @@ public class InstructorListBuilder {
 		String timeGridSize = RequiredTimeTable.getTimeGridSize(user);
 
 		// Create new table
-		PdfWebTable webTable = new PdfWebTable(cols, "Instructor List",
+		PdfWebTable webTable = new PdfWebTable(cols, 
+				MSG.sectionTitleInstructorList(),
 				null,
-				new String[] { "External Id", "Name", "Position", "Designator", "Note", "Preferences\nTime",
-						"\nRoom", "\nDistribution", "Class\nAssignments", "Exam\nAssignments" }, 
+				new String[] { 	MSG.columnExternalId(),
+						MSG.columnInstructorName(),
+						MSG.columnInstructorPosition(),
+						MSG.columnInstructorDesignatorNr(),
+						MSG.columnInstructorNote(),
+						MSG.columnPreferences()+"\n"+MSG.columnTimePref(),
+						"\n"+MSG.columnRoomPref(),
+						"\n"+MSG.columnDistributionPref(),
+						MSG.columnInstructorClassAssignmentsPDF(),
+						MSG.columnInstructorExamAssignmentsPDF()},
 				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left" },
 				new boolean[] { true, true, true, true, true, true, true, true, true, true });
 
@@ -325,7 +348,7 @@ public class InstructorListBuilder {
 			if (di.getExternalUniqueId()!=null && di.getExternalUniqueId().trim().length()>0)
 			    puid = di.getExternalUniqueId();
 			else
-			    puid = "@@ITALIC Not Specified";
+			    puid = "@@ITALIC "+MSG.instructorExternalIdNotSpecified();
 			
 			//get instructor name 
 			String name = Constants.toInitialCase(di.getName(instructorNameFormat), "-".toCharArray());
@@ -334,7 +357,7 @@ public class InstructorListBuilder {
 			    nameOrd = name.toLowerCase();
 						
 			// position
-			String posType = "@@ITALIC Not Specified";
+			String posType = "@@ITALIC "+MSG.instructorPositionNotSpecified();
 			if (di.getPositionType()!=null)
 			    posType = di.getPositionType().getLabel();
 			

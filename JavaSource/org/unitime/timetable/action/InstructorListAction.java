@@ -38,6 +38,8 @@ import org.apache.struts.util.LabelValueBean;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.InstructorSearchForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
@@ -59,6 +61,8 @@ import org.unitime.timetable.webutil.InstructorListBuilder;
  * @struts:action-forward name="showInstructorList" path="instructorListTile"
  */
 public class InstructorListAction extends Action {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance
 	// Variables
@@ -81,7 +85,7 @@ public class InstructorListAction extends Action {
 		// Check permissions
 		HttpSession httpSession = request.getSession();
 		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception("Access Denied.");
+			throw new Exception(MSG.exceptionAccessDenied());
 		}
 
 		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
@@ -89,9 +93,12 @@ public class InstructorListAction extends Action {
 
 		// Check if to return to search page
 		String op = instructorSearchForm.getOp();
+
+/* Suspected unused code
 		if (op != null && op.equalsIgnoreCase("Back to Search")) {
 			return mapping.findForward("showInstructorSearch");
 		}
+*/	
 		
 		//get deptCode from request - for user with only one department
 		String deptId = (String)request.getAttribute("deptId");
@@ -123,7 +130,7 @@ public class InstructorListAction extends Action {
 		
 		// Validate input
 		errors = instructorSearchForm.validate(mapping, request);
-
+		
 		// Validation fails
 		if (errors.size() > 0) {
 			saveErrors(request, errors);
@@ -148,10 +155,10 @@ public class InstructorListAction extends Action {
 			        "searchResult", 
 			        new ActionMessage(
 			                "errors.generic",
-			                "No instructors were found. Use the option 'Manage Instructor List' to add instructors to your list."));
+			                MSG.errorNoInstructorsFoundInSearch()));
 			saveErrors(request, errors);
 		} else {
-			if ("Export PDF".equals(op)) {
+			if (MSG.actionExportPdf().equals(op)) {
 				ilb.pdfTableForInstructor(request, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(request.getSession(),"instructorList.ord"));
 			}
 		}
@@ -163,7 +170,7 @@ public class InstructorListAction extends Action {
 				BackTracker.markForBack(
 						request,
 						"instructorList.do?deptId="+d.getUniqueId(),
-						"Instructors ("+d.getDeptCode()+" - "+d.getName()+")",
+						MSG.backInstructors(d.getDeptCode()+" - "+d.getName()),
 						true, true
 						);
 			}
@@ -174,7 +181,7 @@ public class InstructorListAction extends Action {
 				BackTracker.markForBack(
 						request,
 						"instructorList.do?deptId="+d.getUniqueId(),
-						"Instructors ("+d.getDeptCode()+" - "+d.getName()+")",
+						MSG.backInstructors(d.getDeptCode()+" - "+d.getName()),
 						true, true
 						);
 			}
@@ -182,7 +189,7 @@ public class InstructorListAction extends Action {
 			BackTracker.markForBack(
 					request,
 					"instructorList.do",
-					"Instructors",
+					MSG.backInstructors2(),
 					true, true
 					);
 		}
@@ -212,8 +219,7 @@ public class InstructorListAction extends Action {
 		
 		//get depts owned by user and forward to the appropriate page
 		if (mgrDepts.size() == 0) {
-			throw new Exception(
-					"You do not have any department to manage. ");
+			throw new Exception(MSG.exceptionNoDepartmentToManage());
 		} 
 		
 		Vector labelValueDepts = new Vector();
