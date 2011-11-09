@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -51,7 +52,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * @author Tomas Muller
  */
-public class UserAuthentication extends Composite {
+public class UserAuthentication extends Composite implements UserAuthenticationProvider {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 
 	private Label iUserLabel;
