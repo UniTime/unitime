@@ -98,7 +98,6 @@ public class CourseOfferingEditAction extends Action {
         }
 
         HttpSession httpSession = request.getSession();
-        MessageResources rsc = getResources(request);
         ActionMessages errors = new ActionMessages();
         CourseOfferingEditForm frm = (CourseOfferingEditForm) form;
 
