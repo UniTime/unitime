@@ -712,11 +712,11 @@ A.submenuLink {
 }
 
 .BottomBorder {
-	border-bottom: #35526F 1px solid;
+	border-bottom: 1px solid #9CB0CE;
 }
 
 .BottomBorderGray {
-	border-bottom: #EFEFEF 1px solid;
+	border-bottom: 1px dashed #9CB0CE;
 }
 
 .WelcomeHead {
@@ -736,7 +736,7 @@ A.submenuLink {
 	font-weight: bold;
 	font-size: medium;
 	font-family: sans-serif, verdana, arial;
-	border-bottom: #35526F 1px solid;
+	border-bottom: 1px solid #9CB0CE;
 }
 
 .WelcomeRowHeadNoLine {
@@ -751,7 +751,7 @@ A.submenuLink {
 	font-weight: bold;
 	font-size: medium;
 	font-family: sans-serif, verdana, arial;
-	border-bottom: #35526F 1px solid;
+	border-bottom: 1px solid #9CB0CE;
 }
 
 .WelcomeRowHead A {

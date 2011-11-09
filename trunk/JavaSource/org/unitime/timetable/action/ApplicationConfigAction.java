@@ -219,7 +219,7 @@ public class ApplicationConfigAction extends Action {
 			    new String[] {"Name", "Value", "Description"},
 			    new String[] {"left", "left", "left"},
 			    null );
-        webTable.enableHR("#EFEFEF");
+        webTable.enableHR("#9CB0CE");
         
         try {
             ApplicationConfigDAO sDao = new ApplicationConfigDAO();

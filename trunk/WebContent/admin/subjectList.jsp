@@ -66,7 +66,7 @@
 		    new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book Only", "Pseudo"}),
 	    new String[] {"left", "left","left","left","left","left","right"},
 	    new boolean[] {true, true, true, true, true, true, false} );
-    webTable.enableHR("#EFEFEF");
+    webTable.enableHR("#9CB0CE");
     webTable.setRowStyle("white-space: nowrap");
     WebTable.setOrder(session,"SubjectList.ord",request.getParameter("ord"),1);
 %>

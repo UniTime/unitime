@@ -73,7 +73,7 @@
 				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left" },
 				new boolean[] { true, true, true, true, true, true, true, true, true, false });
 		WebTable.setOrder(session, "DepartmentList.ord", request.getParameter("ord"), 1);
-        webTable.enableHR("#EFEFEF");
+        webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
 	%>
 
