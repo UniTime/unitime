@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
@@ -22,16 +24,22 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -39,12 +47,9 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EnrollmentTable extends Composite {
@@ -56,60 +61,63 @@ public class EnrollmentTable extends Composite {
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
-	private VerticalPanel iEnrollmentPanel;
-	private Image iOpenCloseImage, iLoadingImage;
+	private SimpleForm iEnrollmentPanel;
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
-	private Label iErrorLabel;
+	private UniTimeHeaderPanel iHeader;
+	private Operation iApprove, iReject;
+	private Long iSessionId;
 	
 	public EnrollmentTable(boolean showHeader) {
-		iEnrollmentPanel = new VerticalPanel();
-		iEnrollmentPanel.setWidth("100%");
+		iEnrollmentPanel = new SimpleForm();
+		
+		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");
+		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				SectioningCookie.getInstance().setEnrollmentCoursesDetails(event.getValue());
+				if (iEnrollments.getRowCount() > 2) {
+					for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
+						iEnrollments.getRowFormatter().setVisible(row, event.getValue());
+					}
+				}
+				if (iEnrollments.getRowCount() == 0)
+					refresh();
+			}
+		});
+		iHeader.setCollapsible(showHeader ? SectioningCookie.getInstance().getEnrollmentCoursesDetails() : null);
+		iHeader.setTitleStyleName("unitime3-HeaderTitle");
+		iEnrollmentPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		if (showHeader) {
-			HorizontalPanel header = new HorizontalPanel();
-			iOpenCloseImage = new Image(SectioningCookie.getInstance().getEnrollmentCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-			iOpenCloseImage.getElement().getStyle().setCursor(Cursor.POINTER);
-			iOpenCloseImage.setVisible(false);
-			header.add(iOpenCloseImage);
-			Label curriculaLabel = new Label(MESSAGES.enrollmentsTable(), false);
-			curriculaLabel.setStyleName("unitime3-HeaderTitle");
-			curriculaLabel.getElement().getStyle().setPaddingLeft(2, Unit.PX);
-			header.add(curriculaLabel);
-			header.setCellWidth(curriculaLabel, "100%");
-			header.setStyleName("unitime3-HeaderPanel");
-			iEnrollmentPanel.add(header);
-			
-			iOpenCloseImage.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					SectioningCookie.getInstance().setEnrollmentCoursesDetails(!SectioningCookie.getInstance().getEnrollmentCoursesDetails());
-					iOpenCloseImage.setResource(SectioningCookie.getInstance().getEnrollmentCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-					if (iEnrollments.getRowCount() > 2) {
-						for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
-							iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
-						}
-					}
-					if (iEnrollments.getRowCount() == 0)
-						refresh();
-				}
-			});
+			iEnrollmentPanel.addHeaderRow(iHeader);
+			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
 		}
-
-		iLoadingImage = new Image(RESOURCES.loading_small());
-		iLoadingImage.setVisible(false);
-		iLoadingImage.getElement().getStyle().setMarginTop(10, Unit.PX);
-		iEnrollmentPanel.add(iLoadingImage);
-		iEnrollmentPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
-		iEnrollmentPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iEnrollments = new UniTimeTable<ClassAssignmentInterface.Enrollment>();
-		iEnrollmentPanel.add(iEnrollments);
+		iEnrollmentPanel.addRow(iEnrollments);
 		
-		iErrorLabel = new Label();
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iEnrollmentPanel.add(iErrorLabel);
-		iErrorLabel.setVisible(false);
-				
+		if (!showHeader)
+			iEnrollmentPanel.addBottomRow(iHeader);
+		
+		iHeader.addButton("approve", MESSAGES.buttonApproveSelectedEnrollments(), 'a', (Integer) null, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iApprove != null && iApprove.isApplicable())
+					iApprove.execute();
+			}
+		});
+		
+		iHeader.addButton("reject", MESSAGES.buttonRejectSelectedEnrollments(), 'r', (Integer) null, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iReject != null && iReject.isApplicable())
+					iReject.execute();
+			}
+		});
+		
+		iHeader.setEnabled("approve", false);
+		iHeader.setEnabled("reject", false);
+		
 		initWidget(iEnrollmentPanel);
 		
 		iEnrollments.addMouseClickListener(new UniTimeTable.MouseClickListener<ClassAssignmentInterface.Enrollment>() {
@@ -223,14 +231,129 @@ public class EnrollmentTable extends Composite {
 						for (WebTable.Row row: rows) rowArray[idx++] = row;
 						assignments.setData(rowArray);
 						LoadingWidget.getInstance().hide();
-						UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
-						dialog.setWidget(assignments);
+						SimpleForm form = new SimpleForm();
+						form.addRow(assignments);
+						final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+						form.addBottomRow(buttons);
+						final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+						dialog.setWidget(form);
 						dialog.setText(MESSAGES.dialogEnrollments(event.getData().getStudent().getName()));
 						dialog.setEscapeToHide(true);
+						buttons.addButton("assistant", MESSAGES.buttonAssistant(), 'a', (Integer)null, new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent e) {
+								// Window.open("gwt.jsp?page=sectioning&session=" + iSessionId + "&student=" + event.getData().getStudent().getExternalId(), "_blank", "");
+								
+								/*
+								UniTimeFrameDialog d = new UniTimeFrameDialog();
+								d.setText(MESSAGES.dialogAssistant());
+								d.setEscapeToHide(true);
+								d.setFrameUrl("gwt.jsp?page=sectioning&session=" + iSessionId + "&student=" + event.getData().getStudent().getExternalId() + "&menu=hide&noCacheTS=" + new Date().getTime());
+								d.setFrameSize(dialog.getElement().getClientWidth() + "px", String.valueOf(Window.getClientHeight() * 9 / 10) + "px");
+
+								dialog.hide();
+								d.center();
+								
+								*/
+
+								UserAuthenticationProvider user = new UserAuthenticationProvider() {
+									@Override
+									public String getUser() {
+										return event.getData().getStudent().getName();
+									}
+									@Override
+									public void setUser(String user, AsyncCallback<Boolean> callback) {
+									}
+								};
+								
+								AcademicSessionProvider session = new AcademicSessionProvider() {
+									@Override
+									public Long getAcademicSessionId() {
+										return iSessionId;
+									}
+									@Override
+									public String getAcademicSessionName() {
+										return "Current Session";
+									}
+									@Override
+									public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+									}
+									@Override
+									public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+									}
+								};
+																
+								final StudentSectioningWidget widget = new StudentSectioningWidget(session, user, StudentSectioningPage.Mode.SECTIONING, false);
+								
+								LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(event.getData().getStudent().getName()));
+								iSectioningService.logIn("LOOKUP", event.getData().getStudent().getExternalId(), new AsyncCallback<String>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().fail(caught.getMessage());
+									}
+									@Override
+									public void onSuccess(String result) {
+										iSectioningService.savedRequest(event.getData().getStudent().getId(), new AsyncCallback<CourseRequestInterface>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												LoadingWidget.getInstance().fail(caught.getMessage());
+											}
+											@Override
+											public void onSuccess(final CourseRequestInterface request) {
+												iSectioningService.savedResult(event.getData().getStudent().getId(), new AsyncCallback<ClassAssignmentInterface>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														LoadingWidget.getInstance().fail(caught.getMessage());
+													}
+
+													@Override
+													public void onSuccess(ClassAssignmentInterface result) {
+														LoadingWidget.getInstance().hide();
+														widget.setData(request, result);
+														final UniTimeDialogBox d = new UniTimeDialogBox(true, true);
+														d.setWidget(widget);
+														d.setText(MESSAGES.dialogAssistant(event.getData().getStudent().getName()));
+														d.setEscapeToHide(true);
+														dialog.hide();
+														d.center();
+														widget.addResizeHandler(new ResizeHandler() {
+															@Override
+															public void onResize(ResizeEvent event) {
+																d.center();
+															}
+														});
+													}
+												});
+											}
+										});
+									}
+								});
+							}
+						});
+						buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								dialog.hide();
+							}
+						});
 						dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 							@Override
 							public void onClose(CloseEvent<PopupPanel> event) {
 								iEnrollments.clearHover();
+							}
+						});
+						buttons.showLoading();
+						iSectioningService.canEnroll(event.getData().getStudent().getId(), new AsyncCallback<Long>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								buttons.setErrorMessage(caught.getMessage());
+							}
+
+							@Override
+							public void onSuccess(Long result) {
+								buttons.clearMessage();
+								buttons.setEnabled("assistant", result != null);
+								iSessionId = result;
 							}
 						});
 						dialog.center();
@@ -239,6 +362,8 @@ public class EnrollmentTable extends Composite {
 			}
 		});
 	}
+	
+	public UniTimeHeaderPanel getHeader() { return iHeader; }
 	
 	private static class Number extends HTML implements HasCellAlignment {
 		public Number(String text) {
@@ -252,37 +377,40 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	private void refresh() {
-		clear(true);
+		clear();
+		iHeader.showLoading();
+		iHeader.setEnabled("approve", false);
+		iHeader.setEnabled("reject", false);
 		if (iOfferingId != null) {
 			iSectioningService.canApprove(iOfferingId, new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
-					iLoadingImage.setVisible(false);
+					iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 				}
 				@Override
 				public void onSuccess(final Boolean canApprove) {
 					iSectioningService.listEnrollments(iOfferingId, new AsyncCallback<List<ClassAssignmentInterface.Enrollment>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
-							iLoadingImage.setVisible(false);
+							iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 						}
 						@Override
 						public void onSuccess(List<ClassAssignmentInterface.Enrollment> result) {
 							if (result.isEmpty()) {
-								setMessage(iOfferingId >= 0 ? MESSAGES.offeringHasNoEnrollments() : MESSAGES.classHasNoEnrollments());
-								iOpenCloseImage.setVisible(false);
+								iHeader.setMessage(iOfferingId >= 0 ? MESSAGES.offeringHasNoEnrollments() : MESSAGES.classHasNoEnrollments());
+								iHeader.setCollapsible(null);
 							} else {
+								iHeader.clearMessage();
+								iHeader.setCollapsible(true);
 								populate(result, canApprove);
 								if (iEnrollments.getRowCount() > 2) {
 									for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
 										iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
 									}
 								}
-								iOpenCloseImage.setVisible(true);
+								iHeader.setEnabled("approve", canApprove && iApprove != null && iApprove.isApplicable());
+								iHeader.setEnabled("reject", canApprove && iReject != null && iReject.isApplicable());
 							}
-							iLoadingImage.setVisible(false);
 						}
 					});					
 				}
@@ -290,13 +418,11 @@ public class EnrollmentTable extends Composite {
 		}
 	}
 	
-	public void clear(boolean loading) {
+	public void clear() {
 		for (int row = iEnrollments.getRowCount() - 1; row >= 0; row--) {
 			iEnrollments.removeRow(row);
 		}
 		iEnrollments.clear(true);
-		iLoadingImage.setVisible(loading);
-		iErrorLabel.setVisible(false);
 	}
 
 
@@ -773,6 +899,8 @@ public class EnrollmentTable extends Composite {
 						if (w instanceof CheckBox)
 							((CheckBox)w).setValue(true);
 					}
+					iHeader.setEnabled("approve", iApprove != null && iApprove.isApplicable());
+					iHeader.setEnabled("reject", iReject != null && iReject.isApplicable());
 				}
 				@Override
 				public boolean isApplicable() {
@@ -800,6 +928,8 @@ public class EnrollmentTable extends Composite {
 						if (w instanceof CheckBox)
 							((CheckBox)w).setValue(false);
 					}
+					iHeader.setEnabled("approve", iApprove != null && iApprove.isApplicable());
+					iHeader.setEnabled("reject", iReject != null && iReject.isApplicable());
 				}
 				@Override
 				public boolean isApplicable() {
@@ -819,7 +949,8 @@ public class EnrollmentTable extends Composite {
 					return MESSAGES.clearAll();
 				}
 			});
-			hApproved.addOperation(new Operation() {
+			
+			iApprove = new Operation() {
 				@Override
 				public void execute() {
 					List<Long> studentIds = new ArrayList<Long>();
@@ -828,11 +959,11 @@ public class EnrollmentTable extends Composite {
 						if (w instanceof CheckBox && ((CheckBox)w).getValue())
 							studentIds.add(iEnrollments.getData(row).getStudent().getId());
 					}
-					iLoadingImage.setVisible(true);
+					iHeader.showLoading();
 					iSectioningService.approveEnrollments(iOfferingId, studentIds, new AsyncCallback<String>() {
 						@Override
 						public void onSuccess(String result) {
-							iLoadingImage.setVisible(false);
+							iHeader.clearMessage();
 							String[] approval = result.split(":");
 							for (int row = 0; row < iEnrollments.getRowCount(); row++) {
 								Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
@@ -840,11 +971,12 @@ public class EnrollmentTable extends Composite {
 									iEnrollments.replaceWidget(row, iEnrollments.getCellCount(row) - 1,
 											new HTML(MESSAGES.approval(sDF.format(new Date(Long.valueOf(approval[0]))), approval[2]), false));
 							}
+							iHeader.setEnabled("approve", iApprove != null && iApprove.isApplicable());
+							iHeader.setEnabled("reject", iReject != null && iReject.isApplicable());
 						}
 						@Override
 						public void onFailure(Throwable caught) {
-							iLoadingImage.setVisible(false);
-							setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
+							iHeader.setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
 						}
 					});
 				}
@@ -865,8 +997,10 @@ public class EnrollmentTable extends Composite {
 				public String getName() {
 					return MESSAGES.approveSelectedEnrollments();
 				}
-			});
-			hApproved.addOperation(new Operation() {
+			};
+			hApproved.addOperation(iApprove);
+			
+			iReject = new Operation() {
 				@Override
 				public void execute() {
 					List<Long> studentIds = new ArrayList<Long>();
@@ -875,11 +1009,11 @@ public class EnrollmentTable extends Composite {
 						if (w instanceof CheckBox && ((CheckBox)w).getValue())
 							studentIds.add(iEnrollments.getData(row).getStudent().getId());
 					}
-					iLoadingImage.setVisible(true);
+					iHeader.showLoading();
 					iSectioningService.rejectEnrollments(iOfferingId, studentIds, new AsyncCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean result) {
-							iLoadingImage.setVisible(false);
+							iHeader.clearMessage();
 							for (int row = 0; row < iEnrollments.getRowCount(); ) {
 								Widget w = iEnrollments.getWidget(row, iEnrollments.getCellCount(row) - 1);
 								if (w instanceof CheckBox && ((CheckBox)w).getValue())
@@ -887,11 +1021,12 @@ public class EnrollmentTable extends Composite {
 								else
 									row++;
 							}
+							iHeader.setEnabled("approve", iApprove != null && iApprove.isApplicable());
+							iHeader.setEnabled("reject", iReject != null && iReject.isApplicable());
 						}
 						@Override
 						public void onFailure(Throwable caught) {
-							iLoadingImage.setVisible(false);
-							setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
+							iHeader.setErrorMessage(MESSAGES.failedToApproveEnrollments(caught.getMessage()));
 						}
 					});
 				}
@@ -912,7 +1047,9 @@ public class EnrollmentTable extends Composite {
 				public String getName() {
 					return MESSAGES.rejectSelectedEnrollments();
 				}
-			});
+			};
+			hApproved.addOperation(iReject);
+			
 			hApproved.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -941,6 +1078,9 @@ public class EnrollmentTable extends Composite {
 				}
 			});
 			header.add(hApproved);	
+		} else {
+			iApprove = null;
+			iReject = null;
 		}
 
 		
@@ -985,6 +1125,8 @@ public class EnrollmentTable extends Composite {
 						@Override
 						public void onClick(ClickEvent event) {
 							event.stopPropagation();
+							iHeader.setEnabled("approve", iApprove != null && iApprove.isApplicable());
+							iHeader.setEnabled("reject", iReject != null && iReject.isApplicable());
 						}
 					});
 					line.add(ch);
@@ -1057,8 +1199,9 @@ public class EnrollmentTable extends Composite {
 		if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
 			refresh();
 		} else {
-			clear(false);
-			iOpenCloseImage.setVisible(true);
+			clear();
+			iHeader.clearMessage();
+			iHeader.setCollapsible(false);
 		}
 		panel.getElement().setInnerText(null);
 		panel.add(this);
@@ -1067,18 +1210,6 @@ public class EnrollmentTable extends Composite {
 	
 	public void setId(Long id) { iOfferingId = id; }
 
-	public void setErrorMessage(String message) {
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-	}
-	
-	public void setMessage(String message) {
-		iErrorLabel.setStyleName("unitime-Message");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-	}
-	
 	public void scrollIntoView(Long studentId) {
 		for (int r = 1; r < iEnrollments.getRowCount(); r++) {
 			if (iEnrollments.getData(r) != null && iEnrollments.getData(r).getStudent().getId() == studentId) {
@@ -1113,5 +1244,4 @@ public class EnrollmentTable extends Composite {
 				iEnrollments.getRowFormatter().removeStyleName(i, "unitime-TableRowSelected");
 		}
 	}
-
 }
