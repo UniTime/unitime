@@ -3879,4 +3879,10 @@
 			alter table %SCHEMA%.offr_consent_type add constraint nn_offr_consent_abbv check (abbv is not null)
 		</sql>
 	</update>
+	<update version="79" date="9-Nov-2011" comment="Student advisor role">
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.ROLE_SEQ.nextval, 'Advisor', 'Student Advisor')</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Advisor', 'Student Advisor')</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+	</update>
 </dbupdate>
