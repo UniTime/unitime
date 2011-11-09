@@ -24,6 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
@@ -47,20 +49,18 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IndividualReservation;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -75,10 +75,9 @@ public class ReservationTable extends Composite {
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat("MM/dd/yyyy");
 	private Long iOfferingId = null;
 	
-	private VerticalPanel iReservationPanel;
-	private Image iOpenCloseImage, iLoadingImage;
+	private SimpleForm iReservationPanel;
 	private UniTimeTable<ReservationInterface> iReservations;
-	private Label iErrorLabel;
+	private UniTimeHeaderPanel iHeader;
 	
 	private AsyncCallback<List<ReservationInterface>> iLoadCallback = null;
 	
@@ -87,64 +86,45 @@ public class ReservationTable extends Composite {
 	private String iLastQuery = null;
 
 	public ReservationTable(boolean editable, boolean showHeader) {
-		iReservationPanel = new VerticalPanel();
-		iReservationPanel.setWidth("100%");
+		iReservationPanel = new SimpleForm();
+		iReservationPanel.removeStyleName("unitime-NotPrintableBottomLine");
+		
+		iHeader = new UniTimeHeaderPanel(showHeader ? "Reservations" : "");
+		iHeader.setCollapsible(showHeader ? ReservationCookie.getInstance().getReservationCoursesDetails() : null);
+		iHeader.setTitleStyleName("unitime3-HeaderTitle");
+		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				ReservationCookie.getInstance().setReservationCoursesDetails(event.getValue());
+				if (iReservations.getRowCount() > 2) {
+					for (int row = 1; row < iReservations.getRowCount() - 1; row++) {
+						iReservations.getRowFormatter().setVisible(row, event.getValue());
+					}
+				}
+			}
+		});
 		
 		if (showHeader) {
-			HorizontalPanel header = new HorizontalPanel();
-			iOpenCloseImage = new Image(ReservationCookie.getInstance().getReservationCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-			iOpenCloseImage.getElement().getStyle().setCursor(Cursor.POINTER);
-			iOpenCloseImage.setVisible(false);
-			header.add(iOpenCloseImage);
-			Label curriculaLabel = new Label("Reservations", false);
-			curriculaLabel.setStyleName("unitime3-HeaderTitle");
-			curriculaLabel.getElement().getStyle().setPaddingLeft(2, Unit.PX);
-			header.add(curriculaLabel);
-			header.setCellWidth(curriculaLabel, "100%");
+			iReservationPanel.addHeaderRow(iHeader);
+			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
 			if (editable) {
-				Button add = new Button("Add&nbsp;<u>R</u>eservation");
-				add.setAccessKey('r');
-				add.addClickHandler(new ClickHandler() {
+				iHeader.addButton("add", "Add&nbsp;<u>R</u>eservation", 'r', (Integer)null, new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						ToolBox.open("gwt.jsp?page=reservation&offering=" + iOfferingId);
 					}
 				});
-				add.getElement().getStyle().setMarginBottom(2, Unit.PX);
-				header.add(add);
 			}
-			header.setStyleName("unitime3-HeaderPanel");
-			iReservationPanel.add(header);
-			
-			iOpenCloseImage.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					ReservationCookie.getInstance().setReservationCoursesDetails(!ReservationCookie.getInstance().getReservationCoursesDetails());
-					iOpenCloseImage.setResource(ReservationCookie.getInstance().getReservationCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
-					if (iReservations.getRowCount() > 2) {
-						for (int row = 1; row < iReservations.getRowCount() - 1; row++) {
-							iReservations.getRowFormatter().setVisible(row, ReservationCookie.getInstance().getReservationCoursesDetails());
-						}
-					}
-				}
-			});
 		}
 
-		iLoadingImage = new Image(RESOURCES.loading_small());
-		iLoadingImage.setVisible(false);
-		iLoadingImage.getElement().getStyle().setMarginTop(10, Unit.PX);
-		iReservationPanel.add(iLoadingImage);
-		iReservationPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
-		iReservationPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iReservations = new UniTimeTable<ReservationInterface>();
-		iReservationPanel.add(iReservations);
+		iReservationPanel.addRow(iReservations);
 		
-		iErrorLabel = new Label("Oooops, something went wrong.");
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iReservationPanel.add(iErrorLabel);
-		iErrorLabel.setVisible(false);
-				
+
+		if (!showHeader)
+			iReservationPanel.addRow(iHeader);
+
 		initWidget(iReservationPanel);
 		
 		if (editable) {
@@ -167,13 +147,13 @@ public class ReservationTable extends Composite {
 			iLoadCallback = new AsyncCallback<List<ReservationInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					setErrorMessage("Failed to load reservations (" + caught.getMessage() + ").");
-					iLoadingImage.setVisible(false);
+					iHeader.setErrorMessage("Failed to load reservations (" + caught.getMessage() + ").");
 				}
 				@Override
 				public void onSuccess(List<ReservationInterface> result) {
 					if (result.isEmpty()) {
-						setMessage("The selected offering has no reservations.");
+						iHeader.setMessage("The selected offering has no reservations.");
+						iHeader.setCollapsible(null);
 					} else {
 						populate(result);
 						if (iReservations.getRowCount() > 2) {
@@ -181,10 +161,8 @@ public class ReservationTable extends Composite {
 								iReservations.getRowFormatter().setVisible(row, ReservationCookie.getInstance().getReservationCoursesDetails());
 							}
 						}
-						iLoadingImage.setVisible(false);
-						iOpenCloseImage.setVisible(true);
+						iHeader.clearMessage();
 					}
-					iLoadingImage.setVisible(false);
 				}
 			};			
 		}
@@ -204,8 +182,10 @@ public class ReservationTable extends Composite {
 			iReservations.removeRow(row);
 		}
 		iReservations.clear(true);
-		iLoadingImage.setVisible(loading);
-		iErrorLabel.setVisible(false);
+		if (loading)
+			iHeader.showLoading();
+		else
+			iHeader.clearMessage();
 	}
 
 
@@ -598,7 +578,7 @@ public class ReservationTable extends Composite {
 			footer.add(new TotalLabel("&nbsp;", 1));
 			iReservations.addRow(null, footer);
 		} else if (reservations.isEmpty()) {
-			setErrorMessage("No reservation matching the above filter found.");
+			iHeader.setErrorMessage("No reservation matching the above filter found.");
 		}
 	}
 	
@@ -660,18 +640,6 @@ public class ReservationTable extends Composite {
 		});
 	}
 
-	public void setErrorMessage(String message) {
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-	}
-	
-	public void setMessage(String message) {
-		iErrorLabel.setStyleName("unitime-Message");
-		iErrorLabel.setText(message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-	}
-	
 	public void scrollIntoView(Long reservationId) {
 		for (int r = 1; r < iReservations.getRowCount(); r++) {
 			if (iReservations.getData(r) != null && iReservations.getData(r).getId().equals(reservationId)) {
@@ -703,21 +671,19 @@ public class ReservationTable extends Composite {
 	public void query(String filter, final Command next) {
 		iLastQuery = filter;
 		clear(true);
-		setMessage(null);
 		iReservationService.findReservations(filter, new AsyncCallback<List<ReservationInterface>>() {
 			
 			@Override
 			public void onSuccess(List<ReservationInterface> result) {
 				populate(result);
-				iLoadingImage.setVisible(false);
+				iHeader.clearMessage();
 				if (next != null)
 					next.execute();
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iLoadingImage.setVisible(false);
-				setErrorMessage("Unable to retrieve curricula (" + caught.getMessage() + ").");
+				iHeader.setErrorMessage("Unable to retrieve curricula (" + caught.getMessage() + ").");
 				ToolBox.checkAccess(caught);
 				if (next != null)
 					next.execute();
@@ -735,5 +701,9 @@ public class ReservationTable extends Composite {
 				iReservations.getRowFormatter().removeStyleName(i, "unitime-TableRowSelected");
 				
 		}
+	}
+	
+	public void setErrorMessage(String message) {
+		iHeader.setErrorMessage(message);
 	}
 }
