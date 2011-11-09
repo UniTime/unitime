@@ -54,11 +54,13 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Query iQuery;
 	private Long iCourseId, iClassId;
+	private boolean iConsentToDoCourse;
 	
-	public FindEnrollmentAction(String query, Long courseId, Long classId) {
+	public FindEnrollmentAction(String query, Long courseId, Long classId, boolean isConsentToDoCourse) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iClassId = classId;
+		iConsentToDoCourse = isConsentToDoCourse;
 	}
 	
 	public Query query() { return iQuery; }
@@ -66,6 +68,8 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	public Long courseId() { return iCourseId; }
 	
 	public Long classId() { return iClassId; }
+	
+	public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
 
 	@Override
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -79,7 +83,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) continue;
 			if (filterSection != null && request.getAssignment() != null && !request.getAssignment().getSections().contains(filterSection)) continue;
 			if (request.getAssignment() == null && !request.getStudent().canAssign(request)) continue;
-			if (!query().match(new CourseRequestMatcher(helper, server, info, request))) continue;
+			if (!query().match(new CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse()))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(request.getStudent().getId());

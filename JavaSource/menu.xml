@@ -136,7 +136,7 @@
 				<hasRight name="isSectioningEnabled"/>
 			</condition>
 		</item>
-		<item name="Online Sectioning Progress" page="sectioningstatus" type="gwt">
+		<item name="Online Scheduling Dashboard" page="sectioningstatus" type="gwt">
 			<condition>
 				<hasRight name="isSectioningEnabled"/>
 			</condition>
@@ -275,7 +275,10 @@
 	<item name="Course Requests" page="requests" type="gwt">
 		<condition>
 			<and>
-				<hasRight name="isStudent"/>
+				<or>
+					<hasRight name="isStudent"/>
+					<hasRole name="Advisor"/>
+				</or>
 				<hasRight name="isRegistrationEnabled"/>
 			</and>
 		</condition>
@@ -287,12 +290,26 @@
 					<not>
 						<isAuthenticated/>
 					</not>
-					<not>
-						<hasRole/>
-					</not>
+					<and>
+						<not>
+							<hasRole/>
+						</not>
+						<hasRight name="isStudent"/>
+					</and>
+					<hasRole name="Advisor"/>
 				</or>
 				<hasRight name="isSectioningEnabled"/>
 			</and>
+		</condition>
+	</item>
+	<item name="Scheduling Dashboard" page="sectioningstatus" type="gwt">
+		<condition>
+			<or>
+				<hasRight name="isInstructor"/>
+				<hasRole name="Dept Sched Mgr"/>
+				<hasRole name="Advisor"/>
+			</or>
+			<hasRight name="isSectioningEnabled"/>
 		</condition>
 	</item>
 	<item name="Personal Schedule" page="personalSchedule.do">

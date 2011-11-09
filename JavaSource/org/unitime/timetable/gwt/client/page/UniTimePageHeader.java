@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.sectioning.AcademicSessionSelector;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 
@@ -84,6 +85,12 @@ public class UniTimePageHeader extends Composite {
 		reloadSessionInfo();
 		reloadUserInfo();
 		reloadSolverInfo(false, null);
+	}
+	
+	public void setSessionSelector(AcademicSessionSelector selector) {
+		iPanel.remove(iSessionInfo);
+		iPanel.add(selector);
+		iPanel.setCellHorizontalAlignment(iSessionInfo, HasHorizontalAlignment.ALIGN_RIGHT);
 	}
 	
 	public void insert(final RootPanel panel) {

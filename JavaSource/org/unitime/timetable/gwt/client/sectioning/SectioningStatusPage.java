@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -41,6 +43,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 
@@ -80,6 +83,7 @@ import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.SuggestBox.DefaultSuggestionDisplay;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
@@ -111,7 +115,7 @@ public class SectioningStatusPage extends Composite {
 	private ScrollPanel iEnrollmentScroll = null;
 	
 	private HTML iHint = null, iError = null;
-	private String iLastFilter = null;
+	private String iLastFilterOnEnter = null, iCourseFilter = null;
 
 	public SectioningStatusPage() {
 		iPanel = new VerticalPanel();
@@ -198,10 +202,10 @@ public class SectioningStatusPage extends Composite {
 		iFilter.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					if (iFilter.getText().equals(iLastFilter))
+					if (iFilter.getText().equals(iLastFilterOnEnter) && !iFilter.getText().equals(iCourseFilter))
 						loadCourses();
 					else
-						iLastFilter = iFilter.getText();
+						iLastFilterOnEnter = iFilter.getText();
 				}
 			}
 		});
@@ -213,19 +217,6 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		if (Window.Location.getParameter("q") != null) {
-			iFilter.setText(Window.Location.getParameter("q"));
-			loadCourses();
-		} else if (Window.Location.getHash() != null && !Window.Location.getHash().isEmpty()) {
-			String hash = URL.decode(Window.Location.getHash().substring(1));
-			if (!hash.matches("^[0-9]+\\:[0-9]+$")) {
-				iFilter.setText(hash);
-				loadCourses();
-			}
-		} else {
-			// retrieve last query
-		}
-		
 		iCourseTable.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.EnrollmentInfo>() {
 			@Override
 			public void onMouseClick(final TableEvent<EnrollmentInfo> event) {
@@ -241,7 +232,7 @@ public class SectioningStatusPage extends Composite {
 				iSectioningService.canApprove(id, new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(final Boolean canApprove) {
-						iSectioningService.findEnrollments(iFilter.getText(), event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
+						iSectioningService.findEnrollments(iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().fail(caught.getMessage());
@@ -254,7 +245,7 @@ public class SectioningStatusPage extends Composite {
 							public void onSuccess(List<Enrollment> result) {
 								LoadingWidget.getInstance().hide();
 								setLoading(false);
-								iEnrollmentTable.clear(false);
+								iEnrollmentTable.clear();
 								iEnrollmentTable.setId(id);
 								iEnrollmentTable.populate(result, canApprove);
 								if (event.getData().getConfigId() == null)
@@ -303,12 +294,81 @@ public class SectioningStatusPage extends Composite {
 						Math.max(Window.getScrollTop() + (Window.getClientHeight() - iEnrollmentDialog.getOffsetHeight()) / 2, 0));
 			}
 		});
+		iEnrollmentTable.getHeader().addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEnrollmentDialog.hide();
+			}
+		});
+
 		iEnrollmentDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 			@Override
 			public void onClose(CloseEvent<PopupPanel> event) {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
+		
+		iSectioningService.lastAcademicSession(true, new AsyncCallback<String[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
+				AcademicSessionSelector session = new AcademicSessionSelector(StudentSectioningPage.Mode.SECTIONING);
+				header.setSessionSelector(session);
+				session.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
+					@Override
+					public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+						iSectioningService.selectSession(event.getNewAcademicSessionId(), new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								iError.setHTML(caught.getMessage());
+								iError.setVisible(true);
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								checkLastQuery();								
+							}
+						});
+					}
+				});
+				session.selectSession();
+			}
+
+			@Override
+			public void onSuccess(String[] result) {
+				checkLastQuery();
+			}
+		});
+	}
+	
+	private void checkLastQuery() {
+		if (Window.Location.getParameter("q") != null) {
+			iFilter.setText(Window.Location.getParameter("q"));
+			loadCourses();
+		} else if (Window.Location.getHash() != null && !Window.Location.getHash().isEmpty()) {
+			String hash = URL.decode(Window.Location.getHash().substring(1));
+			if (!hash.matches("^[0-9]+\\:?[0-9]*$")) {
+				iFilter.setText(hash);
+				loadCourses();
+			}
+		} else {
+			iSectioningService.lastStatusQuery(new AsyncCallback<String>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iError.setHTML(caught.getMessage());
+					iError.setVisible(true);
+					ToolBox.checkAccess(caught);
+				}
+
+				@Override
+				public void onSuccess(String result) {
+					if (result != null) {
+						iFilter.setText(result);
+						loadCourses();
+					}
+				}
+			});
+		}
 	}
 	
 	private void setLoading(boolean loading) {
@@ -317,13 +377,16 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void loadCourses() {
+		if (((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).isSuggestionListShowing())
+			((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).hideSuggestions();
 		iCourseTable.clearTable();
 		iHint.setVisible(false);
-		History.newItem(iFilter.getText(), false);
+		iCourseFilter = iFilter.getText();
+		History.newItem(iCourseFilter, false);
 		LoadingWidget.getInstance().show(MESSAGES.loadingData());
 		setLoading(true);
 		iError.setVisible(false);
-		iSectioningService.findEnrollmentInfos(iFilter.getText(), null, new AsyncCallback<List<EnrollmentInfo>>() {
+		iSectioningService.findEnrollmentInfos(iCourseFilter, null, new AsyncCallback<List<EnrollmentInfo>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
@@ -336,7 +399,7 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onSuccess(List<EnrollmentInfo> result) {
 				if (result.isEmpty()) {
-					iError.setHTML(MESSAGES.exceptionNoCourses(iFilter.getText()));
+					iError.setHTML(MESSAGES.exceptionNoCourses(iCourseFilter));
 					iError.setVisible(true);
 				} else {
 					populateCourseTable(result);
@@ -361,7 +424,7 @@ public class SectioningStatusPage extends Composite {
 							setLoading(true);
 							iError.setVisible(false);
 							showDetails.setResource(RESOURCES.treeOpen());
-							iSectioningService.findEnrollmentInfos(iFilter.getText(), e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
+							iSectioningService.findEnrollmentInfos(iCourseFilter, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									setLoading(false);
@@ -416,7 +479,7 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(e.getEnrollment(), e.getTotalEnrollment()));
 		line.add(new NumberCell(e.getWaitlist(), e.getTotalWaitlist()));
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
-		line.add(new NumberCell(e.getConsentApproved() + e.getConsentNeeded(), e.getTotalConsentApproved() + e.getTotalConsentNeeded()));
+		line.add(new NumberCell(e.getConsentNeeded(), e.getTotalConsentNeeded()));
 		return line;
 	}
 	
@@ -619,12 +682,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
+		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
 		header.add(hConsent);
 		hConsent.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.NBR_CONSENT));
+				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.NEED_CONSENT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -636,7 +699,7 @@ public class SectioningStatusPage extends Composite {
 			}
 			@Override
 			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colConsent());
+				return MESSAGES.sortBy(MESSAGES.colNeedConsent().replace("<br>", " "));
 			}
 		});
 
@@ -689,7 +752,7 @@ public class SectioningStatusPage extends Composite {
 		
 		public void onFailure(Throwable caught) {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
-			suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
+			// suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 			ToolBox.checkAccess(caught);
 		}
@@ -794,7 +857,7 @@ public class SectioningStatusPage extends Composite {
 			ENROLLMENT,
 			WAITLIST,
 			RESERVATION,
-			NBR_CONSENT
+			NEED_CONSENT
 		}
 		
 		private SortBy iSortBy;
@@ -869,12 +932,10 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.getTotalReservation() == null ? new Integer(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
 				if (cmp != 0) return - cmp;
 				break;
-			case NBR_CONSENT:
-				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : new Integer(e1.getConsentNeeded() + e1.getConsentApproved())).compareTo(
-						e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded() + e2.getConsentApproved());
+			case NEED_CONSENT:
+				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : new Integer(e1.getConsentNeeded())).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalConsentNeeded() == null ? new Integer(0) : new Integer(e1.getTotalConsentNeeded() + e1.getTotalConsentApproved())).compareTo(
-						e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded() + e2.getTotalConsentApproved());
+				cmp = (e1.getTotalConsentNeeded() == null ? new Integer(0) : new Integer(e1.getTotalConsentNeeded())).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
 				if (cmp != 0) return - cmp;
 				break;
 			}

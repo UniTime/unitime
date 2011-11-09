@@ -52,7 +52,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException, PageAccessException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;
     ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
-	Boolean isAdmin() throws SectioningException, PageAccessException;
+	Boolean isAdminOrAdvisor() throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException, PageAccessException;
 	Boolean canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException;
@@ -61,4 +61,9 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.EnrollmentInfo> findEnrollmentInfos(String query, Long courseId) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> findEnrollments(String query, Long courseId, Long classId) throws SectioningException, PageAccessException;
 	List<String[]> querySuggestions(String query, int limit) throws SectioningException, PageAccessException;
+	String lastStatusQuery() throws SectioningException, PageAccessException;
+	Long canEnroll(Long studentId) throws SectioningException, PageAccessException;
+	CourseRequestInterface savedRequest(Long studentId) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface savedResult(Long studentId) throws SectioningException, PageAccessException;
+	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 }
