@@ -23,6 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <%
 	boolean flag = true;
@@ -30,13 +31,14 @@
 		flag = false;
 %>
 
+<loc:bundle name="CourseMessages">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan="11">
 					
 				<tt:section-header>
 					<tt:section-title>
-						Instructor List
+						<loc:message name="sectionTitleInstructorList"/>
 					</tt:section-title>						
 					<logic:equal name="instructorSearchForm" property="editable" value="true">
 						<TABLE border="0" cellspacing="1" cellpadding="0" align="right">
@@ -44,23 +46,29 @@
 							<logic:equal name="instructorSearchForm" property="displayDeptList" value="false">
 								<TD>
 									<html:form action="instructorList" styleClass="FormWithNoPadding">			
-										<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-											<bean:message key="button.exportPDF" />
+										<html:submit property="op" onclick="displayLoading();" styleClass="btn" 
+												accesskey="<%=MSG.accessExportPdf() %>" 
+												title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
+											<loc:message name="actionExportPdf" />
 										</html:submit>
 									</html:form>
 								</TD>
 							</logic:equal>
 							<TD>
 								<html:form action="instructorListUpdate" styleClass="FormWithNoPadding">			
-									<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateInstructorsList">
-										<bean:message key="button.updateInstructorsList" />
+									<html:submit onclick="displayLoading();" styleClass="btn" 
+											accesskey="<%=MSG.accessManageInstructorList() %>" 
+											title="<%=MSG.titleManageInstructorList(MSG.accessManageInstructorList()) %>">
+										<loc:message name="actionManageInstructorList" />
 									</html:submit>
 								</html:form>
 							</TD>
 							<TD>
 								<html:form action="instructorAdd" styleClass="FormWithNoPadding">			
-									<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" titleKey="title.addNewInstructor">
-										<bean:message key="button.addNewInstructor" />
+									<html:submit onclick="displayLoading();" styleClass="btn" 
+											accesskey="<%=MSG.accessAddNewInstructor() %>" 
+											title="<%=MSG.titleAddNewInstructor(MSG.accessAddNewInstructor()) %>">
+										<loc:message name="actionAddNewInstructor" />
 									</html:submit>
 								</html:form>
 							</TD>
@@ -101,23 +109,30 @@
 					<logic:equal name="instructorSearchForm" property="displayDeptList" value="false">
 						<TD>
 							<html:form action="instructorList" styleClass="FormWithNoPadding">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
+								<html:submit property="op" onclick="displayLoading();" 
+										styleClass="btn" 
+										accesskey="<%=MSG.accessExportPdf() %>" 
+										title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
+									<loc:message name="actionExportPdf" />
 								</html:submit>
 							</html:form>
 						</TD>
 					</logic:equal>
 					<TD>
 						<html:form action="instructorListUpdate" styleClass="FormWithNoPadding">			
-							<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateInstructorsList">
-								<bean:message key="button.updateInstructorsList" />
+							<html:submit onclick="displayLoading();" styleClass="btn" 
+									accesskey="<%=MSG.accessManageInstructorList() %>" 
+									title="<%=MSG.titleManageInstructorList(MSG.accessManageInstructorList()) %>">
+								<loc:message name="actionManageInstructorList" />
 							</html:submit>
 						</html:form>
 					</TD>
 					<TD>
 						<html:form action="instructorAdd" styleClass="FormWithNoPadding">			
-							<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" titleKey="title.addNewInstructor">
-								<bean:message key="button.addNewInstructor" />
+							<html:submit onclick="displayLoading();" styleClass="btn" 
+									accesskey="<%=MSG.accessAddNewInstructor() %>" 
+									title="<%=MSG.titleAddNewInstructor(MSG.accessAddNewInstructor()) %>">
+								<loc:message name="actionAddNewInstructor" />
 							</html:submit>
 						</html:form>
 					</TD>
@@ -128,5 +143,5 @@
 	</logic:equal>
 	
 </TABLE>
-
+</loc:bundle>
 

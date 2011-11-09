@@ -38,6 +38,8 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.InstructorSearchForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -56,6 +58,8 @@ import org.unitime.timetable.util.Constants;
  */
 public class InstructorSearchAction extends Action {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -75,7 +79,7 @@ public class InstructorSearchAction extends Action {
 		//Check permissions
 		HttpSession httpSession = request.getSession();
 		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception("Access Denied.");
+			throw new Exception(MSG.exceptionAccessDenied());
 		}		
 
 		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
@@ -134,7 +138,7 @@ public class InstructorSearchAction extends Action {
 			errors.add("searchResult", 
 			        	new ActionMessage(
 			        	        "errors.generic",
-			        	        "No instructors for the selected department were found."));
+			        	        MSG.errorNoInstructorsFoundForDepartment()));
 			saveErrors(request, errors);
 		}
 	}
@@ -160,7 +164,7 @@ public class InstructorSearchAction extends Action {
 		//get depts owned by user and forward to the appropriate page
 		if (mgrDepts.size() == 0) {
 			throw new Exception(
-					"You do not have any department to manage. ");
+					MSG.exceptionNoDepartmentToManage());
 		} 
 		
 		Vector labelValueDepts = new Vector();

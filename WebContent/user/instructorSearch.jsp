@@ -24,6 +24,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <%
 	// Get Form 
@@ -32,12 +33,13 @@
 %>
 	
 <tiles:importAttribute />
+<loc:bundle name="CourseMessages">
 <html:form action="instructorList">
 	<TABLE border="0" cellspacing="0" cellpadding="3">
 		<% if (frm.isDisplayDeptList()) {%>
 		<TR>
 			<TD>
-				<B>Department: </B>
+				<B><loc:message name="propertyDepartment"/></B>
 				<html:select property="deptUniqueId"
 					onchange="displayLoading(); submit()"
 					onfocus="setUp();" 
@@ -51,12 +53,18 @@
 		
 			<TD align="right">			
 				&nbsp;&nbsp;&nbsp;
-				<html:submit property='op' onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchInstructors">
-					<bean:message key="button.search" />
+				<html:submit property='op' onclick="displayLoading();" 
+						accesskey="<%=MSG.accessSearchInstructors() %>" 
+						styleClass="btn" 
+						title="<%=MSG.titleSearchInstructors(MSG.accessSearchInstructors()) %>">
+					<loc:message name="actionSearchInstructors" />
 				</html:submit>
 				&nbsp;&nbsp;
-				<html:submit property='op' onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
-					<bean:message key="button.exportPDF" />
+				<html:submit property='op' onclick="displayLoading();" 
+						accesskey="<%=MSG.accessExportPdf() %>" 
+						styleClass="btn" 
+						title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
+					<loc:message name="actionExportPdf" />
 				</html:submit>
 			</TD>
 		</TR>
@@ -64,6 +72,7 @@
 		
 	</TABLE>
 </html:form>
+</loc:bundle>
 
 <logic:notEmpty name="body2">
 	<script language="javascript">displayLoading();</script>
