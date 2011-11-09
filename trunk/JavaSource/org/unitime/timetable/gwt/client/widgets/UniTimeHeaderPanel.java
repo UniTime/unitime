@@ -30,6 +30,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -50,29 +51,37 @@ public class UniTimeHeaderPanel extends Composite {
 	private HorizontalPanel iButtons;
 	private HorizontalPanel iPanel;
 	private Image iLoadingImage;
-	
+	private OpenCloseSectionImage iOpenCloseImage;
+		
 	private List<UniTimeHeaderPanel> iClones = new ArrayList<UniTimeHeaderPanel>();
 	
 	public UniTimeHeaderPanel(String title) {
 		iPanel = new HorizontalPanel();
 		
+		iOpenCloseImage = new OpenCloseSectionImage(true);
+		iOpenCloseImage.setVisible(false);
+		iPanel.add(iOpenCloseImage);
+		iPanel.setCellHorizontalAlignment(iOpenCloseImage, HasHorizontalAlignment.ALIGN_LEFT);
+		iPanel.setCellVerticalAlignment(iOpenCloseImage, HasVerticalAlignment.ALIGN_MIDDLE);
+
+		
 		iTitle = new HTML(title, false);
 		iTitle.setStyleName("unitime-MainHeader");
 		iPanel.add(iTitle);
 		iPanel.setCellHorizontalAlignment(iTitle, HasHorizontalAlignment.ALIGN_LEFT);
-		iPanel.setCellWidth(iTitle, "33%");
+		iPanel.setCellVerticalAlignment(iTitle, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iMessage = new HTML("", false);
 		iMessage.setStyleName("unitime-Message");
 		iMessage.setVisible(false);
 		iPanel.add(iMessage);
 		iPanel.setCellHorizontalAlignment(iMessage, HasHorizontalAlignment.ALIGN_CENTER);
-		iPanel.setCellWidth(iMessage, "34%");
+		iPanel.setCellVerticalAlignment(iMessage, HasVerticalAlignment.ALIGN_MIDDLE);
+		iPanel.setCellWidth(iMessage, "100%");
 		
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.setVisible(false);
-		iLoadingImage.getElement().getStyle().setMargin(20, Unit.PX);
-		
+		// iLoadingImage.getElement().getStyle().setMargin(20, Unit.PX);
 		iPanel.add(iLoadingImage);
 		iPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
 		iPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -82,12 +91,29 @@ public class UniTimeHeaderPanel extends Composite {
 		iButtons.addStyleName("unitime-NoPrint");
 		iPanel.add(iButtons);
 		iPanel.setCellHorizontalAlignment(iButtons, HasHorizontalAlignment.ALIGN_RIGHT);
-		iPanel.setCellWidth(iButtons, "33%");
 		
 		iPanel.setWidth("100%");
 		// iPanel.getElement().getStyle().setMarginTop(2, Unit.PX);
 		
 		initWidget(iPanel);
+	}
+	
+	public void setTitleStyleName(String styleName) {
+		iTitle.setStyleName(styleName);
+	}
+	
+	public void addCollapsibleHandler(ValueChangeHandler<Boolean> handler) {
+		iOpenCloseImage.addValueChangeHandler(handler);
+	}
+	
+	public void setCollapsible(Boolean opened) {
+		iOpenCloseImage.setVisible(opened != null);
+		if (opened != null)
+			iOpenCloseImage.setValue(opened, false);
+	}
+	
+	public Boolean isCollapsible() {
+		return iOpenCloseImage.isVisible() ? iOpenCloseImage.getValue() : null;
 	}
 	
 	public void setHeaderTitle(String title) {
@@ -164,6 +190,7 @@ public class UniTimeHeaderPanel extends Composite {
 	
 	public void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
 		Button button = new Button(name, clickHandler);
+		button.getElement().getStyle().setProperty("white-space", "nowrap");
 		if (accessKey != null)
 			button.setAccessKey(accessKey);
 		if (width != null)
@@ -182,15 +209,18 @@ public class UniTimeHeaderPanel extends Composite {
 	}
 	
 	public void setEnabled(String operation, boolean enabled) {
-		setEnabled(iOperations.get(operation), enabled);
+		Integer op = iOperations.get(operation);
+		if (op != null)
+			setEnabled(iOperations.get(operation), enabled);
 	}
 	
 	public boolean isEnabled(int button) {
 		return ((Button)iButtons.getWidget(button)).isVisible();
 	}
 
-	public boolean isEnabled(String operation) {
-		return isEnabled(iOperations.get(operation));
+	public Boolean isEnabled(String operation) {
+		Integer op = iOperations.get(operation);
+		return (op == null ? null : isEnabled(op));
 	}
 	
 	public UniTimeHeaderPanel clonePanel(String newTitle) {
