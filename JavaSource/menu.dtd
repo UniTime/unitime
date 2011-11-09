@@ -54,7 +54,7 @@
 <!ATTLIST propertyEquals defaultValue CDATA #IMPLIED >
 
 <!ELEMENT hasRight EMPTY >
-<!ATTLIST hasRight name (canSeeCourses|canSeeTimetable|hasASolverGroup|canDoTimetable|canAudit|canSectionStudents|isSectioningEnabled|isRegistrationEnabled|canSeeEvents|isChameleon|hasPersonalReport|isStudent|hasRoomAvailability|canSeeExams|canTimetableExams|hasCourseReports|hasExamReports|hasStudentReports|hasEventReports) #REQUIRED >
+<!ATTLIST hasRight name (canSeeCourses|canSeeTimetable|hasASolverGroup|canDoTimetable|canAudit|canSectionStudents|isSectioningEnabled|isRegistrationEnabled|canSeeEvents|isChameleon|hasPersonalReport|isStudent|hasRoomAvailability|canSeeExams|canTimetableExams|hasCourseReports|hasExamReports|hasStudentReports|hasEventReports|isInstructor) #REQUIRED >
 
 <!-- custom menu -->
 <!ATTLIST item position CDATA #IMPLIED >
