@@ -33,9 +33,11 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
@@ -49,10 +51,14 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.HasResizeHandlers;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -73,15 +79,15 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class StudentSectioningWidget extends Composite {
+public class StudentSectioningWidget extends Composite implements HasResizeHandlers {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
-	private AcademicSessionSelector iSessionSelector;
-	private UserAuthentication iUserAuthentication;
+	private AcademicSessionProvider iSessionSelector;
+	private UserAuthenticationProvider iUserAuthentication;
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
@@ -102,10 +108,12 @@ public class StudentSectioningWidget extends Composite {
 	private ArrayList<HistoryItem> iHistory = new ArrayList<HistoryItem>();
 	private int iAssignmentTab = 0;
 	private boolean iInRestore = false;
+	private boolean iTrackHistory = true;
 
-	public StudentSectioningWidget(AcademicSessionSelector sessionSelector, UserAuthentication userAuthentication, StudentSectioningPage.Mode mode) {
+	public StudentSectioningWidget(AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
+		iTrackHistory = history;
 		
 		iPanel = new VerticalPanel();
 		
@@ -200,13 +208,13 @@ public class StudentSectioningWidget extends Composite {
 	
 	
 	private void addHistory() {
-		if (iInRestore) return;
+		if (iInRestore || !iTrackHistory) return;
 		iHistory.add(new HistoryItem());
 		History.newItem(String.valueOf(iHistory.size() - 1), false);
 	}
 	
 	private void updateHistory() {
-		if (iInRestore) return;
+		if (iInRestore || !iTrackHistory) return;
 		if (!iHistory.isEmpty())
 			iHistory.remove(iHistory.size() - 1);
 		addHistory();
@@ -262,6 +270,7 @@ public class StudentSectioningWidget extends Composite {
 				if (event.getSelectedItem() == 1)
 					iAssignmentGrid.scrollDown();
 				addHistory();
+				ResizeEvent.fire(StudentSectioningWidget.this, StudentSectioningWidget.this.getOffsetWidth(), StudentSectioningWidget.this.getOffsetHeight());
 			}
 		});
 
@@ -440,24 +449,26 @@ public class StudentSectioningWidget extends Composite {
 			}
 		});
 		
-		History.addValueChangeHandler(new ValueChangeHandler<String>() {
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (!event.getValue().isEmpty()) {
-					int item = iHistory.size() - 1;
-					try {
-						item = Integer.parseInt(event.getValue());
-					} catch (NumberFormatException e) {}
-					if (item < 0) item = 0;
-					if (item >= iHistory.size()) item = iHistory.size() - 1;
-					if (item >= 0) iHistory.get(item).restore();
-				} else {
-					iCourseRequests.clear();
-					if (!iSchedule.isVisible()) prev();
+		if (iTrackHistory) {
+			History.addValueChangeHandler(new ValueChangeHandler<String>() {
+				public void onValueChange(ValueChangeEvent<String> event) {
+					if (!event.getValue().isEmpty()) {
+						int item = iHistory.size() - 1;
+						try {
+							item = Integer.parseInt(event.getValue());
+						} catch (NumberFormatException e) {}
+						if (item < 0) item = 0;
+						if (item >= iHistory.size()) item = iHistory.size() - 1;
+						if (item >= 0) iHistory.get(item).restore();
+					} else {
+						iCourseRequests.clear();
+						if (!iSchedule.isVisible()) prev();
+					}
 				}
-			}
-		});
+			});
 		
-		addHistory();
+			addHistory();
+		}
 		
 		iSessionSelector.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
 			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
@@ -763,6 +774,7 @@ public class StudentSectioningWidget extends Composite {
 			if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
 			iAssignmentGrid.setCalendarUrl(calendarUrl);
 			iCalendar.setUrl(calendarUrl);
+			ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 		} else {
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
@@ -780,6 +792,7 @@ public class StudentSectioningWidget extends Composite {
 		iExport.setVisible(false);
 		iSchedule.setVisible(true);
 		iErrorMessage.setVisible(false);
+		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 	}
 	
 	public void clear() {
@@ -910,6 +923,7 @@ public class StudentSectioningWidget extends Composite {
 									}
 								}
 								iInRestore = false;
+								ResizeEvent.fire(StudentSectioningWidget.this, getOffsetWidth(), getOffsetHeight());
 							}
 							public void onFailure(Throwable reason) {
 								iInRestore = false;
@@ -924,5 +938,22 @@ public class StudentSectioningWidget extends Composite {
 				}
 			});
 		}
+	}
+	
+	public void setData(CourseRequestInterface request, ClassAssignmentInterface response) {
+		clear();
+		iCourseRequests.setRequest(request);
+		if (response != null) {
+			if (request.isSaved()) {
+				iSavedAssignment = response;
+				iShowUnassignments.setVisible(true);
+			}
+			fillIn(response);
+		}
+	}
+
+	@Override
+	public HandlerRegistration addResizeHandler(ResizeHandler handler) {
+		return addHandler(handler, ResizeEvent.getType());
 	}
 }

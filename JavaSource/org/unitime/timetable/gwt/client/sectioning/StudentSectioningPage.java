@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -64,34 +65,51 @@ public class StudentSectioningPage extends Composite {
 		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning());
 		titlePanel.setWidget(0, 1, userAuthentication);
 		
-		iSectioningService.whoAmI(new AsyncCallback<String>() {
-			public void onFailure(Throwable caught) {
-				userAuthentication.authenticate();
-			}
-			public void onSuccess(String result) {
-				if (!mode.isSectioning() && MESSAGES.userGuest().equals(result)) {
+		if (Window.Location.getParameter("student") == null)
+			iSectioningService.whoAmI(new AsyncCallback<String>() {
+				public void onFailure(Throwable caught) {
 					userAuthentication.authenticate();
-				} else {
-					userAuthentication.authenticated(result);
 				}
-			}
-		});
-		iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
-			public void onFailure(Throwable caught) {
-			}
-
-			public void onSuccess(Boolean result) {
-				if (result) userAuthentication.setAllowLookup(true);
-			}
-		});
+				public void onSuccess(String result) {
+					if (!mode.isSectioning() && MESSAGES.userGuest().equals(result)) {
+						userAuthentication.authenticate();
+					} else {
+						userAuthentication.authenticated(result);
+					}
+				}
+			});
 		
 		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(mode);
 		titlePanel.setWidget(0, 2, sessionSelector);
 		
+		iSectioningService.isAdminOrAdvisor(new AsyncCallback<Boolean>() {
+			public void onFailure(Throwable caught) {
+			}
+
+			public void onSuccess(Boolean result) {
+				if (result) {
+					userAuthentication.setAllowLookup(true);
+					if (Window.Location.getParameter("session") != null)
+						sessionSelector.selectSession(Long.valueOf(Window.Location.getParameter("session")), new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								if (Window.Location.getParameter("student") != null)
+									UserAuthentication.personFound(Window.Location.getParameter("student"));
+							}
+						});
+				}
+			}
+		});
+
+		
 		RootPanel.get("UniTimeGWT:Header").clear();
 		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
 
-		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication, mode);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication, mode, true);
 		
 		initWidget(widget);
 
@@ -120,16 +138,17 @@ public class StudentSectioningPage extends Composite {
 			}
 		});
 		
-		iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<String[]>() {
-			public void onFailure(Throwable caught) {
-				if (!userAuthentication.isShowing())
-					sessionSelector.selectSession();
-			}
-			public void onSuccess(String[] result) {
-				sessionSelector.selectSession(result);
-				widget.lastRequest(sessionSelector.getAcademicSessionId());
-				Lookup.getInstance().setOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
-			}
-		});
+		if (Window.Location.getParameter("session") == null)
+			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<String[]>() {
+				public void onFailure(Throwable caught) {
+					if (!userAuthentication.isShowing())
+						sessionSelector.selectSession();
+				}
+				public void onSuccess(String[] result) {
+					sessionSelector.selectSession(result);
+					widget.lastRequest(sessionSelector.getAcademicSessionId());
+					Lookup.getInstance().setOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
+				}
+			});
 	}
 }
