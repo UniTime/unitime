@@ -24,13 +24,13 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.Globals;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.LabelValueBean;
-import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.PositionType;
 
 
@@ -43,6 +43,8 @@ import org.unitime.timetable.model.PositionType;
  */
 public class InstructorEditForm extends PreferencesForm  {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	// --------------------------------------------------------- Instance Variables
 
 	/**
@@ -209,18 +211,12 @@ public class InstructorEditForm extends PreferencesForm  {
 		
         ActionErrors errors = new ActionErrors();
 
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-        
-
-        if (op.equals(rsc.getMessage("button.checkPuId"))) {
+        if (op.equals(MSG.actionLookupInstructor())) {
     		if ( (fname==null || fname.trim().length()==0) 
     		        && (lname==null || lname.trim().length()==0) 
     		        && (careerAcct==null || careerAcct.trim().length()==0) ) {
 				errors.add("fname", 
-	                    new ActionMessage("errors.generic", "Supply one or more of the following information: Account Name / First Name / Last Name") );
+	                    new ActionMessage("errors.generic", MSG.errorSupplyInfoForInstructorLookup()) );
     		}
     		
     		return errors;
@@ -230,7 +226,7 @@ public class InstructorEditForm extends PreferencesForm  {
 					
 			if (lname == null || lname.trim().equals("")) {
 				errors.add("Last Name", 
-	                    new ActionMessage("errors.required", "Last Name") );
+	                    new ActionMessage("errors.generic", MSG.errorRequiredLastName()) );
 			}
         }
         

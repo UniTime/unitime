@@ -33,6 +33,8 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
@@ -53,6 +55,8 @@ import org.unitime.timetable.util.Constants;
  */
 public class InstructorAction extends Action {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	/** 
 	 * Method execute
 	 * @param mapping
