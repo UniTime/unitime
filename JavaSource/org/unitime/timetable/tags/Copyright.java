@@ -38,9 +38,9 @@ public class Copyright extends BodyTagSupport {
     	// WARNING: Changing or removing the following copyright notice will violate the license terms.
     	// If you need a different licensing, please contact us at support@unitime.org
     	String body = 
-    		"<a class='unitime-FooterLink' href='http://www.unitime.org'>&copy;&nbsp;2008&nbsp;-&nbsp;2011&nbsp;UniTime&nbsp;LLC</a>," + 
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org' tabIndex='-1'>&copy;&nbsp;2008&nbsp;-&nbsp;2011&nbsp;UniTime&nbsp;LLC</a>," + 
     		(isBr() ? "<br>" : " ") + 
-    		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php'>distributed&nbsp;under&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License.</a>";
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php' tabIndex='-1'>distributed&nbsp;under&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License.</a>";
         try {
             pageContext.getOut().print(body);
         }
