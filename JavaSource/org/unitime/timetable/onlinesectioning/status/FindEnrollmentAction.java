@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.solver;
+package org.unitime.timetable.onlinesectioning.status;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +48,6 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.solver.FindEnrollmentInfoAction.CourseRequestMatcher;
 
 public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -83,7 +82,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) continue;
 			if (filterSection != null && request.getAssignment() != null && !request.getAssignment().getSections().contains(filterSection)) continue;
 			if (request.getAssignment() == null && !request.getStudent().canAssign(request)) continue;
-			if (!query().match(new CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse()))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse()))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(request.getStudent().getId());

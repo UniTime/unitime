@@ -561,7 +561,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
 		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable;
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
-		private Integer iConsentNeeded, iTotalConsentNeeded, iConsentApproved, iTotalConsentApproved;
+		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private ClassAssignment iAssignment;
 		
 		public EnrollmentInfo() {}
@@ -664,15 +664,70 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
 		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
 		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
+	}
+	
+	public static class StudentInfo implements IsSerializable {
+		private Student iStudent;
+		private Integer iEnrollment, iWaitlist, iReservation, iRequested;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
+		private Integer iConsentNeeded, iTotalConsentNeeded;
+		private Integer iTopWaitingPriority;
+		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
+		
+		public StudentInfo() {}
+		
+		public Student getStudent() { return iStudent; }
+		public void setStudent(Student student) { iStudent = student; }
+		
+		public Integer getRequested() { return iRequested; }
+		public void setRequested(Integer requested) { iRequested = requested; }
+		public boolean hasRequested() { return iRequested != null; }
 
-		public Integer getConsentApproved() { return iConsentApproved; }
-		public void setConsentApproved(Integer consentApproved) { iConsentApproved = consentApproved; }
-		public int hasConsentApproved() { return iConsentApproved; }
+		public Integer getEnrollment() { return iEnrollment; }
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+		public boolean hasEnrollment() { return iEnrollment != null; }
+		
+		public Integer getWaitlist() { return iWaitlist; }
+		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
+		public boolean hasWaitlist() { return iWaitlist != null; }
+		
+		public Integer getReservation() { return iReservation; }
+		public void setReservation(Integer reservation) { iReservation = reservation; }
+		public boolean hasReservation() { return iReservation !=null; }
+		
+		public Integer getTotalEnrollment() { return iTotalEnrollment; }
+		public void setTotalEnrollment(Integer enrollment) { iTotalEnrollment = enrollment; }
+		public boolean hasTotalEnrollment() { return iTotalEnrollment != null; }
+	
+		public Integer getTotalWaitlist() { return iTotalWaitlist; }
+		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
+		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
+		
+		public Integer getTotalReservation() { return iTotalReservation; }
+		public void setTotalReservation(Integer reservation) { iTotalReservation = reservation; }
+		public boolean hasTotalReservation() { return iTotalReservation !=null; }
+		
+		public Integer getConsentNeeded() { return iConsentNeeded; }
+		public void setConsentNeeded(Integer consentNeeded) { iConsentNeeded = consentNeeded; }
+		public int hasConsentNeeded() { return iConsentNeeded; }
+		
+		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
+		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
+		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
 
-		public Integer getTotalConsentApproved() { return iTotalConsentApproved; }
-		public void setTotalConsentApproved(Integer totalConsentApproved) { iTotalConsentApproved = totalConsentApproved; }
-		public int hasTotalConsentApproved() { return iTotalConsentApproved; }
-}
+		public Integer getTopWaitingPriority() { return iTopWaitingPriority; }
+		public void setTopWaitingPriority(Integer topWaitingPriority) { iTopWaitingPriority = topWaitingPriority; }
+		public int hasTopWaitingPriority() { return iTopWaitingPriority; }
+		
+		public Date getRequestedDate() { return iRequestedDate; }
+		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
+
+		public Date getEnrolledDate() { return iEnrolledDate; }
+		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
+		
+		public Date getApprovedDate() { return iApprovedDate; }
+		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
+	}
 	
 	
 }

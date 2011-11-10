@@ -52,6 +52,7 @@ public interface OnlineSectioningServer {
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
 	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
 	public List<Section> getSections(CourseInfo courseInfo);
+	public Collection<Student> findStudents(StudentMatcher matcher);
 	
 	public CourseInfo getCourseInfo(Long courseId);
 	public CourseInfo getCourseInfo(String course);
@@ -115,5 +116,9 @@ public interface OnlineSectioningServer {
 	
 	public static interface CourseInfoMatcher {
 		public boolean match(CourseInfo course);
+	}
+
+	public static interface StudentMatcher {
+		public boolean match(Student course);
 	}
 }
