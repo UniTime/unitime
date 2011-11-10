@@ -130,7 +130,7 @@
 	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
 	    <tr><td>
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td rowspan="2"><a href='http://www.unitime.org'><img src="images/unitime.png" border="0"/></a></td>
+		   		<tr><td rowspan="2"><a href='http://www.unitime.org' tabindex="-1"><img src="images/unitime.png" border="0"/></a></td>
 		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px; height: 55px;">
 		   				<span class='unitime-Title'>University Timetabling Application</span>
 		   			</td>
