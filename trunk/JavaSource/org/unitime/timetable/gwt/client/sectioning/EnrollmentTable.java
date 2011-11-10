@@ -65,9 +65,8 @@ public class EnrollmentTable extends Composite {
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
 	private UniTimeHeaderPanel iHeader;
 	private Operation iApprove, iReject;
-	private Long iSessionId;
 	
-	public EnrollmentTable(boolean showHeader) {
+	public EnrollmentTable(final boolean showHeader) {
 		iEnrollmentPanel = new SimpleForm();
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");
@@ -122,242 +121,24 @@ public class EnrollmentTable extends Composite {
 		
 		iEnrollments.addMouseClickListener(new UniTimeTable.MouseClickListener<ClassAssignmentInterface.Enrollment>() {
 			@Override
-			public void onMouseClick(final UniTimeTable.TableEvent<ClassAssignmentInterface.Enrollment> event) {
+			public void onMouseClick(UniTimeTable.TableEvent<ClassAssignmentInterface.Enrollment> event) {
 				if (event.getData() == null) return;
 				LoadingWidget.getInstance().show(MESSAGES.loadingEnrollment(event.getData().getStudent().getName()));
-				iSectioningService.getEnrollment(event.getData().getStudent().getId(), new AsyncCallback<ClassAssignmentInterface>() {
+				iHeader.clearMessage();
+				showStudentSchedule(event.getData().getStudent(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().fail(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+						if (showHeader) {
+							LoadingWidget.getInstance().fail(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+						} else {
+							LoadingWidget.getInstance().hide();
+							iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+						}
 					}
 
 					@Override
-					public void onSuccess(ClassAssignmentInterface result) {
-						WebTable assignments = new WebTable();
-						assignments.setHeader(new WebTable.Row(
-								new WebTable.Cell(MESSAGES.colSubject(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colCourse(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
-								new WebTable.Cell(MESSAGES.colClass(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
-								new WebTable.Cell(MESSAGES.colDays(), 1, "50"),
-								new WebTable.Cell(MESSAGES.colStart(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colEnd(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colDate(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
-								new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
-								new WebTable.Cell(MESSAGES.colParent(), 1, "75"),
-								new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
-							));
-						
-						ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-						for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
-							if (course.isAssigned()) {
-								boolean firstClazz = true;
-								for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-									String style = "unitime-ClassRow" + (firstClazz && !rows.isEmpty() ? "First": "");
-									final WebTable.Row row = new WebTable.Row(
-											new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
-											new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
-											new WebTable.Cell(clazz.getSubpart()),
-											new WebTable.Cell(clazz.getSection()),
-											new WebTable.Cell(clazz.getLimitString()),
-											new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-											new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-											new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-											new WebTable.Cell(clazz.getDatePattern()),
-											(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
-											new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-											new WebTable.Cell(clazz.getParentSection()),
-											clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
-									rows.add(row);
-									for (WebTable.Cell cell: row.getCells())
-										cell.setStyleName(style);
-									firstClazz = false;
-								}
-							} else {
-								String style = "unitime-ClassRowRed" + (!rows.isEmpty() ? "First": "");
-								WebTable.Row row = null;
-								String unassignedMessage = MESSAGES.courseNotAssigned();
-								if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
-									unassignedMessage = "";
-									for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
-										String x = i.next();
-										if (unassignedMessage.isEmpty())
-											unassignedMessage += MESSAGES.conflictWithFirst(x);
-										else if (!i.hasNext())
-											unassignedMessage += MESSAGES.conflictWithLast(x);
-										else
-											unassignedMessage += MESSAGES.conflictWithMiddle(x);
-										if (i.hasNext()) unassignedMessage += ", ";
-									}
-									if (course.getInstead() != null)
-										unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
-									unassignedMessage += ".";
-								} else if (course.isNotAvailable()) {
-									unassignedMessage = MESSAGES.classNotAvailable();
-								} else if (course.isLocked()) {
-									unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
-								}
-								for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-									row = new WebTable.Row(
-											new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-											new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
-											new WebTable.Cell(clazz.getSubpart()),
-											new WebTable.Cell(clazz.getSection()),
-											new WebTable.Cell(clazz.getLimitString()),
-											new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-											new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-											new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-											new WebTable.Cell(clazz.getDatePattern()),
-											new WebTable.Cell(unassignedMessage, 3, null),
-											clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""));
-									break;
-								}
-								if (row == null) {
-									row = new WebTable.Row(
-											new WebTable.Cell(course.getSubject()),
-											new WebTable.Cell(course.getCourseNbr()),
-											new WebTable.Cell(unassignedMessage, 10, null));
-								}
-								for (WebTable.Cell cell: row.getCells())
-									cell.setStyleName(style);
-								row.getCell(row.getNrCells() - 1).setStyleName("unitime-ClassRowProblem" + (!rows.isEmpty() ? "First": ""));
-								rows.add(row);
-							}
-						}
-						WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
-						int idx = 0;
-						for (WebTable.Row row: rows) rowArray[idx++] = row;
-						assignments.setData(rowArray);
+					public void onSuccess(Boolean result) {
 						LoadingWidget.getInstance().hide();
-						SimpleForm form = new SimpleForm();
-						form.addRow(assignments);
-						final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
-						form.addBottomRow(buttons);
-						final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
-						dialog.setWidget(form);
-						dialog.setText(MESSAGES.dialogEnrollments(event.getData().getStudent().getName()));
-						dialog.setEscapeToHide(true);
-						buttons.addButton("assistant", MESSAGES.buttonAssistant(), 'a', (Integer)null, new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent e) {
-								// Window.open("gwt.jsp?page=sectioning&session=" + iSessionId + "&student=" + event.getData().getStudent().getExternalId(), "_blank", "");
-								
-								/*
-								UniTimeFrameDialog d = new UniTimeFrameDialog();
-								d.setText(MESSAGES.dialogAssistant());
-								d.setEscapeToHide(true);
-								d.setFrameUrl("gwt.jsp?page=sectioning&session=" + iSessionId + "&student=" + event.getData().getStudent().getExternalId() + "&menu=hide&noCacheTS=" + new Date().getTime());
-								d.setFrameSize(dialog.getElement().getClientWidth() + "px", String.valueOf(Window.getClientHeight() * 9 / 10) + "px");
-
-								dialog.hide();
-								d.center();
-								
-								*/
-
-								UserAuthenticationProvider user = new UserAuthenticationProvider() {
-									@Override
-									public String getUser() {
-										return event.getData().getStudent().getName();
-									}
-									@Override
-									public void setUser(String user, AsyncCallback<Boolean> callback) {
-									}
-								};
-								
-								AcademicSessionProvider session = new AcademicSessionProvider() {
-									@Override
-									public Long getAcademicSessionId() {
-										return iSessionId;
-									}
-									@Override
-									public String getAcademicSessionName() {
-										return "Current Session";
-									}
-									@Override
-									public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
-									}
-									@Override
-									public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
-									}
-								};
-																
-								final StudentSectioningWidget widget = new StudentSectioningWidget(session, user, StudentSectioningPage.Mode.SECTIONING, false);
-								
-								LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(event.getData().getStudent().getName()));
-								iSectioningService.logIn("LOOKUP", event.getData().getStudent().getExternalId(), new AsyncCallback<String>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										LoadingWidget.getInstance().fail(caught.getMessage());
-									}
-									@Override
-									public void onSuccess(String result) {
-										iSectioningService.savedRequest(event.getData().getStudent().getId(), new AsyncCallback<CourseRequestInterface>() {
-											@Override
-											public void onFailure(Throwable caught) {
-												LoadingWidget.getInstance().fail(caught.getMessage());
-											}
-											@Override
-											public void onSuccess(final CourseRequestInterface request) {
-												iSectioningService.savedResult(event.getData().getStudent().getId(), new AsyncCallback<ClassAssignmentInterface>() {
-													@Override
-													public void onFailure(Throwable caught) {
-														LoadingWidget.getInstance().fail(caught.getMessage());
-													}
-
-													@Override
-													public void onSuccess(ClassAssignmentInterface result) {
-														LoadingWidget.getInstance().hide();
-														widget.setData(request, result);
-														final UniTimeDialogBox d = new UniTimeDialogBox(true, true);
-														d.setWidget(widget);
-														d.setText(MESSAGES.dialogAssistant(event.getData().getStudent().getName()));
-														d.setEscapeToHide(true);
-														dialog.hide();
-														d.center();
-														widget.addResizeHandler(new ResizeHandler() {
-															@Override
-															public void onResize(ResizeEvent event) {
-																d.center();
-															}
-														});
-													}
-												});
-											}
-										});
-									}
-								});
-							}
-						});
-						buttons.setEnabled("assistant", false);
-						buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								dialog.hide();
-							}
-						});
-						dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-							@Override
-							public void onClose(CloseEvent<PopupPanel> event) {
-								iEnrollments.clearHover();
-							}
-						});
-						buttons.showLoading();
-						iSectioningService.canEnroll(event.getData().getStudent().getId(), new AsyncCallback<Long>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								buttons.clearMessage();
-							}
-
-							@Override
-							public void onSuccess(Long result) {
-								buttons.clearMessage();
-								buttons.setEnabled("assistant", result != null);
-								iSessionId = result;
-							}
-						});
-						dialog.center();
 					}
 				});
 			}
@@ -365,6 +146,257 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
+	
+	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		iSectioningService.getEnrollment(student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+
+			@Override
+			public void onSuccess(ClassAssignmentInterface result) {
+				callback.onSuccess(true);
+				WebTable assignments = new WebTable();
+				assignments.setHeader(new WebTable.Row(
+						new WebTable.Cell(MESSAGES.colSubject(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colCourse(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
+						new WebTable.Cell(MESSAGES.colClass(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
+						new WebTable.Cell(MESSAGES.colDays(), 1, "50"),
+						new WebTable.Cell(MESSAGES.colStart(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colEnd(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colDate(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
+						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
+						new WebTable.Cell(MESSAGES.colParent(), 1, "75"),
+						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
+					));
+				
+				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+				for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+					if (course.isAssigned()) {
+						boolean firstClazz = true;
+						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+							String style = "unitime-ClassRow" + (firstClazz && !rows.isEmpty() ? "First": "");
+							final WebTable.Row row = new WebTable.Row(
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getDatePattern()),
+									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+									new WebTable.Cell(clazz.getParentSection()),
+									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
+							rows.add(row);
+							for (WebTable.Cell cell: row.getCells())
+								cell.setStyleName(style);
+							firstClazz = false;
+						}
+					} else {
+						String style = "unitime-ClassRowRed" + (!rows.isEmpty() ? "First": "");
+						WebTable.Row row = null;
+						String unassignedMessage = MESSAGES.courseNotAssigned();
+						if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
+							unassignedMessage = "";
+							for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
+								String x = i.next();
+								if (unassignedMessage.isEmpty())
+									unassignedMessage += MESSAGES.conflictWithFirst(x);
+								else if (!i.hasNext())
+									unassignedMessage += MESSAGES.conflictWithLast(x);
+								else
+									unassignedMessage += MESSAGES.conflictWithMiddle(x);
+								if (i.hasNext()) unassignedMessage += ", ";
+							}
+							if (course.getInstead() != null)
+								unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
+							unassignedMessage += ".";
+						} else if (course.isNotAvailable()) {
+							unassignedMessage = MESSAGES.classNotAvailable();
+						} else if (course.isLocked()) {
+							unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
+						}
+						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+							row = new WebTable.Row(
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getDatePattern()),
+									new WebTable.Cell(unassignedMessage, 3, null),
+									clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""));
+							break;
+						}
+						if (row == null) {
+							row = new WebTable.Row(
+									new WebTable.Cell(course.getSubject()),
+									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(unassignedMessage, 10, null));
+						}
+						for (WebTable.Cell cell: row.getCells())
+							cell.setStyleName(style);
+						row.getCell(row.getNrCells() - 1).setStyleName("unitime-ClassRowProblem" + (!rows.isEmpty() ? "First": ""));
+						rows.add(row);
+					}
+				}
+				WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
+				int idx = 0;
+				for (WebTable.Row row: rows) rowArray[idx++] = row;
+				assignments.setData(rowArray);
+				SimpleForm form = new SimpleForm();
+				form.addRow(assignments);
+				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+				form.addBottomRow(buttons);
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+				dialog.setWidget(form);
+				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
+				dialog.setEscapeToHide(true);
+				buttons.addButton("assistant", MESSAGES.buttonAssistant(), 'a', (Integer)null, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent e) {
+						LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(student.getName()));
+						showStudentAssistant(student, new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().fail(caught.getMessage());
+							}
+							@Override
+							public void onSuccess(Boolean result) {
+								LoadingWidget.getInstance().hide();
+								if (result)
+									dialog.hide();
+							}
+						});
+					}
+				});
+				buttons.setEnabled("assistant", false);
+				buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						dialog.hide();
+					}
+				});
+				dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+					@Override
+					public void onClose(CloseEvent<PopupPanel> event) {
+						iEnrollments.clearHover();
+					}
+				});
+				buttons.showLoading();
+				iSectioningService.canEnroll(student.getId(), new AsyncCallback<Long>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						buttons.clearMessage();
+					}
+
+					@Override
+					public void onSuccess(Long result) {
+						buttons.clearMessage();
+						buttons.setEnabled("assistant", result != null);
+					}
+				});
+				dialog.center();
+			}
+		});
+	}
+	
+	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		iSectioningService.canEnroll(student.getId(), new AsyncCallback<Long>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+			@Override
+			public void onSuccess(final Long sessionId) {
+				if (sessionId == null) {
+					callback.onSuccess(false);
+					return;
+				}
+
+				UserAuthenticationProvider user = new UserAuthenticationProvider() {
+					@Override
+					public String getUser() {
+						return student.getName();
+					}
+					@Override
+					public void setUser(String user, AsyncCallback<Boolean> callback) {
+					}
+				};
+				
+				AcademicSessionProvider session = new AcademicSessionProvider() {
+					@Override
+					public Long getAcademicSessionId() {
+						return sessionId;
+					}
+					@Override
+					public String getAcademicSessionName() {
+						return "Current Session";
+					}
+					@Override
+					public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+					}
+					@Override
+					public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+					}
+				};
+												
+				final StudentSectioningWidget widget = new StudentSectioningWidget(session, user, StudentSectioningPage.Mode.SECTIONING, false);
+				
+				iSectioningService.logIn("LOOKUP", student.getExternalId(), new AsyncCallback<String>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						callback.onFailure(caught);
+					}
+					@Override
+					public void onSuccess(String result) {
+						iSectioningService.savedRequest(student.getId(), new AsyncCallback<CourseRequestInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								callback.onFailure(caught);
+							}
+							@Override
+							public void onSuccess(final CourseRequestInterface request) {
+								iSectioningService.savedResult(student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										callback.onFailure(caught);
+									}
+
+									@Override
+									public void onSuccess(ClassAssignmentInterface result) {
+										widget.setData(request, result);
+										final UniTimeDialogBox d = new UniTimeDialogBox(true, true);
+										d.setWidget(widget);
+										d.setText(MESSAGES.dialogAssistant(student.getName()));
+										d.setEscapeToHide(true);
+										callback.onSuccess(true);
+										d.center();
+										widget.addResizeHandler(new ResizeHandler() {
+											@Override
+											public void onResize(ResizeEvent event) {
+												d.center();
+											}
+										});
+									}
+								});
+							}
+						});
+					}
+				});				
+			}
+		});
+	}
 	
 	private static class Number extends HTML implements HasCellAlignment {
 		public Number(String text) {
