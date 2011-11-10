@@ -28,8 +28,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -44,6 +45,8 @@ import org.unitime.timetable.util.Constants;
  * @struts.action path="/addNewInstructor" name="instructorEditForm" input="/user/addNewInstructor.jsp" scope="request"
  */
 public class InstructorAddAction extends InstructorAction {
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -66,19 +69,18 @@ public class InstructorAddAction extends InstructorAction {
 		//Check permissions
 		HttpSession httpSession = request.getSession();
 		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception("Access Denied.");
+			throw new Exception(MSG.exceptionAccessDenied());
 		}	
 		
 		super.execute(mapping, form, request, response);
 		
 		InstructorEditForm frm = (InstructorEditForm) form;
 		frm.setMatchFound(null);
-		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		String op = frm.getOp();
 		
-        // Cancel - Go back to Instructors Detail Screen
-        if(op.equals(rsc.getMessage("button.backToInstructorList"))) {
+        // Cancel adding an instructor - Go back to Instructors screen
+        if(op.equals(MSG.actionBackToInstructors())) {
         	response.sendRedirect( response.encodeURL("instructorList.do"));
         }
         
@@ -90,7 +92,7 @@ public class InstructorAddAction extends InstructorAction {
 		}
 				
         //update - Update the instructor and go back to Instructor List Screen
-        if(op.equals(rsc.getMessage("button.saveInstructor")) ) {
+        if(op.equals(MSG.actionSaveInstructor()) ) {
             errors = frm.validate(mapping, request);
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
@@ -98,7 +100,7 @@ public class InstructorAddAction extends InstructorAction {
             } else {
                 if (errors.size()==0) {
                     errors.add( "uniqueId", 
-                        	new ActionMessage("errors.generic", "This Instructor Id already exists in your instructor list."));
+                        	new ActionMessage("errors.generic", MSG.errorInstructorIdAlreadyExistsInList()));
             	}
             	saveErrors(request, errors);
             	return mapping.findForward("showAdd");
@@ -106,13 +108,13 @@ public class InstructorAddAction extends InstructorAction {
         }
 		
         // lookup 
-        if(op.equals(rsc.getMessage("button.checkPuId")) ) {
+        if(op.equals(MSG.actionLookupInstructor()) ) {
             errors = frm.validate(mapping, request);
             if(errors.size()==0) {
                 findMatchingInstructor(frm, request);
                 if (frm.getMatchFound()==null || !frm.getMatchFound().booleanValue()) {
                     errors.add("lookup", 
-                            	new ActionMessage("errors.generic", "No matching records found"));
+                            	new ActionMessage("errors.generic", MSG.errorNoMatchingRecordsFound()));
                 }
             }
             
@@ -121,7 +123,7 @@ public class InstructorAddAction extends InstructorAction {
         }
         
         // search select
-        if(op.equals(rsc.getMessage("button.selectInstructor")) ) {
+        if(op.equals(MSG.actionSelectInstructor()) ) {
             String select = frm.getSearchSelect();            
             if (select!=null && select.trim().length()>0) {
 	            if (select.equalsIgnoreCase("i2a2")) {
@@ -133,7 +135,7 @@ public class InstructorAddAction extends InstructorAction {
             }
             else {
                 errors.add("lookup", 
-                    	new ActionMessage("errors.generic", "No instructor was selected from the list"));
+                    	new ActionMessage("errors.generic", MSG.errorNoInstructorSelectedFromList()));
             	saveErrors(request, errors);
             }
         	return mapping.findForward("showAdd");

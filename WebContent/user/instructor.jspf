@@ -22,6 +22,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
+<loc:bundle name="CourseMessages">
 <TR>
 	<bean:parameter id="operation" name="operation"/>
 	<bean:parameter id="frmName" name="frmName"/>
@@ -31,45 +34,69 @@
 
 					<% if (operation.equals("add")) { %>
 						<html:submit property="op" 
-							styleClass="btn" accesskey="S" titleKey="title.saveInstructor" >
-							<bean:message key="button.saveInstructor" />
+								styleClass="btn" 
+								accesskey="<%= MSG.accessSaveInstructor() %>" 
+								title="<%= MSG.titleSaveInstructor(MSG.accessSaveInstructor()) %>" >
+							<loc:message name="actionSaveInstructor" />
 						</html:submit> 
 					<% } %>
 
 					<% if (operation.equals("update")) { %>
 						<html:submit property="op" 
-							styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
-							<bean:message key="button.update" />
+								styleClass="btn" 
+								accesskey="<%= MSG.accessUpdateInstructor() %>" 
+								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
+							<loc:message name="actionUpdateInstructor" />
 						</html:submit> 	
 						<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
 						<html:submit property="op" 
-							styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
-							onclick="return(confirmDelete());">
-							<bean:message key="button.deleteInstructor" />
+								styleClass="btn" 
+								accesskey="<%= MSG.accessDeleteInstructor() %>" 
+								title="<%= MSG.titleDeleteInstructor(MSG.accessDeleteInstructor())%>" 
+								onclick="return(confirmDelete());">
+							<loc:message name="actionDeleteInstructor" />
 						</html:submit> 
 						</logic:equal>	
 					<% } %>
 					
 					<html:submit property="op" 
-						styleClass="btn" accesskey="L" titleKey="title.checkPuId" >
-						<bean:message key="button.checkPuId" />
+							styleClass="btn" 
+							accesskey="<%= MSG.accessLookupInstructor() %>" 
+							title="<%= MSG.titleLookupInstructor(MSG.accessLookupInstructor()) %>" >
+						<loc:message name="actionLookupInstructor" />
 					</html:submit> 
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						<html:submit property="op" 
-								styleClass="btn" accesskey="P" titleKey="title.previousInstructorWithUpdate">
-							<bean:message key="button.previousInstructor" />
+								styleClass="btn" 
+								accesskey="<%= MSG.accessPreviousInstructor() %>" 
+								title="<%= MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor()) %>">
+							<loc:message name="actionPreviousInstructor" />
 						</html:submit> 
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextInstructorWithUpdate">
-							<bean:message key="button.nextInstructor" />
+								styleClass="btn" 
+								accesskey="<%= MSG.accessNextInstructor() %>" 
+								title="<%= MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor())%>">
+							<loc:message name="actionNextInstructor" />
 						</html:submit> 
 					</logic:notEmpty>
+					<% if (operation.equals("add")) { %>
 					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-						<bean:message key="button.returnToDetail" />
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToInstructors() %>" 
+							title="<%= MSG.titleBackToInstructors(MSG.accessBackToInstructors())%>">
+						<loc:message name="actionBackToInstructors" />
 					</html:submit>
+					<% } %>
+					<% if (operation.equals("update")) { %>
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToDetail() %>" 
+							title="<%= MSG.titleBackToDetail(MSG.accessBackToDetail())%>">
+						<loc:message name="actionBackToDetail" />
+					</html:submit>
+					<% } %>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -77,7 +104,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errors"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -92,7 +119,7 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD>External Id:</TD>
+			<TD><loc:message name="propertyExternalId"/></TD>
 			<TD>
 				<tt:propertyEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
 					<html:text property="puId" maxlength="40" size="10" styleId="uid"/> 
@@ -105,50 +132,50 @@
 		</TR>
 		
 		<TR>
-			<TD>Account Name:</TD>
+			<TD><loc:message name="propertyAccountName"/></TD>
 			<TD>
 				<html:text property="careerAcct" maxlength="20" size="20"/> 
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>First Name:</TD>
+			<TD><loc:message name="propertyFirstName"/></TD>
 			<TD>
 				<html:text property="fname" maxlength="100" size="30" styleId="fname" />
-				<input type='button' value='Lookup' onclick="lookup();" style="btn">
+				<input type='button' value="<%= MSG.actionLookupInstructor() %>" onclick="lookup();" style="btn">
 			</TD>
 		</TR>	
 		
 		<TR>
-			<TD>Middle Name:</TD>
+			<TD><loc:message name="propertyMiddleName"/></TD>
 			<TD>
 				<html:text property="mname" maxlength="100" size="30" styleId="mname" />
 			</TD>
 		</TR>	
 		
 		<TR>
-			<TD>Last Name: <font class="reqField">*</font></TD>
+			<TD> <loc:message name="propertyLastName"/> <font class="reqField">*</font></TD>
 			<TD>
 				<html:text property="lname" maxlength="100" size="30" styleId="lname" />
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Email:</TD>
+			<TD><loc:message name="propertyEmail"/></TD>
 			<TD>
 				<html:text property="email" maxlength="200" size="50" styleId="email" /> 
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Department:</TD>
+			<TD><loc:message name="propertyDepartment"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="deptName" />
 			</TD>
 		</TR>
 				
 		<TR>
-			<TD>Position:</TD>
+			<TD><loc:message name="propertyInstructorPosition"/></TD>
 			<TD>
 				<html:select property="posType" size="1">  
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -159,14 +186,14 @@
 		</TR>
 		
 		<TR>
-			<TD>Notes:</TD>
+			<TD><loc:message name="propertyNotes"/></TD>
 			<TD>
 				<html:text property="note" maxlength="20" size="20" />
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Ignore Too Far:</TD>
+			<TD><loc:message name="propertyIgnoreTooFar"/></TD>
 			<TD>
 				<html:checkbox property="ignoreDist" />
 			</TD>
@@ -180,48 +207,71 @@
 		
 		<TR>
 			<TD valign="middle" colspan='2' align='right'>
-				<% if (operation.equals("add")) { %>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="S" titleKey="title.saveInstructor" >
-						<bean:message key="button.saveInstructor" />
-					</html:submit> 
-				<% } %>
+					<% if (operation.equals("add")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessSaveInstructor() %>" 
+								title="<%= MSG.titleSaveInstructor(MSG.accessSaveInstructor()) %>" >
+							<loc:message name="actionSaveInstructor" />
+						</html:submit> 
+					<% } %>
 
-				<% if (operation.equals("update")) { %>
+					<% if (operation.equals("update")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessUpdateInstructor() %>" 
+								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
+							<loc:message name="actionUpdateInstructor" />
+						</html:submit> 	
+						<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessDeleteInstructor() %>" 
+								title="<%= MSG.titleDeleteInstructor(MSG.accessDeleteInstructor())%>" 
+								onclick="return(confirmDelete());">
+							<loc:message name="actionDeleteInstructor" />
+						</html:submit> 
+						</logic:equal>	
+					<% } %>
+					
 					<html:submit property="op" 
-						styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
-						<bean:message key="button.update" />
-					</html:submit> 					
-					<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
-					<html:submit property="op" 
-						styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
-						onclick="return(confirmDelete());" >
-						<bean:message key="button.deleteInstructor" />
+							styleClass="btn" 
+							accesskey="<%= MSG.accessLookupInstructor() %>" 
+							title="<%= MSG.titleLookupInstructor(MSG.accessLookupInstructor()) %>" >
+						<loc:message name="actionLookupInstructor" />
 					</html:submit> 
-					</logic:equal>
-				<% } %>
-				
-				<html:submit property="op" 
-					styleClass="btn" accesskey="L" titleKey="title.checkPuId" >
-					<bean:message key="button.checkPuId" />
-				</html:submit> 
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessPreviousInstructor() %>" 
+								title="<%= MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor()) %>">
+							<loc:message name="actionPreviousInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessNextInstructor() %>" 
+								title="<%= MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor())%>">
+							<loc:message name="actionNextInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<% if (operation.equals("add")) { %>
 					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousInstructorWithUpdate">
-						<bean:message key="button.previousInstructor" />
-					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToInstructors() %>" 
+							title="<%= MSG.titleBackToInstructors(MSG.accessBackToInstructors())%>">
+						<loc:message name="actionBackToInstructors" />
+					</html:submit>
+					<% } %>
+					<% if (operation.equals("update")) { %>
 					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextInstructorWithUpdate">
-						<bean:message key="button.nextInstructor" />
-					</html:submit> 
-				</logic:notEmpty>
-				<html:submit property="op" 
-					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-					<bean:message key="button.returnToDetail" />
-				</html:submit>
-			</TD>
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToDetail() %>" 
+							title="<%= MSG.titleBackToDetail(MSG.accessBackToDetail())%>">
+						<loc:message name="actionBackToDetail" />
+					</html:submit>
+					<% } %>			</TD>
 		</TR>
 		
 <script language="javascript">
@@ -237,3 +287,5 @@
 		}, "mustHaveExternalId");
 	}
 </script>
+
+</loc:bundle>
