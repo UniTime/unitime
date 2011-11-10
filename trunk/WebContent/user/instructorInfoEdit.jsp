@@ -27,6 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <%
 	// Get Form 
@@ -35,6 +36,8 @@
 	InstructorEditForm frm = (InstructorEditForm) request.getAttribute(frmName);	
 %>	
 
+<loc:bundle name="CourseMessages">
+
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -42,7 +45,7 @@
 			if (jsConfirm!=null && !jsConfirm)
 				return true;
 
-			return ( confirm('Any instructor class assignments will be deleted as well. Continue?'));
+			return ( confirm("<%=MSG.confirmDeleteInstructor()%>"));
 		}
 		
 	// -->
@@ -67,3 +70,4 @@
 	</TABLE>
 </html:form>
 
+</loc:bundle>

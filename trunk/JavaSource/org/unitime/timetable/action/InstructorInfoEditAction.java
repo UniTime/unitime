@@ -31,11 +31,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
@@ -62,6 +63,8 @@ import org.unitime.timetable.webutil.BackTracker;
  */
 public class InstructorInfoEditAction extends InstructorAction {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -83,15 +86,14 @@ public class InstructorInfoEditAction extends InstructorAction {
 		//Check permissions
 		HttpSession httpSession = request.getSession();
 		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception("Access Denied.");
+			throw new Exception(MSG.exceptionAccessDenied());
 		}	
 		
 		super.execute(mapping, form, request, response);
 		
 		InstructorEditForm frm = (InstructorEditForm) form;
 				
-        MessageResources rsc = getResources(request);
-        ActionMessages errors = new ActionMessages();
+		ActionMessages errors = new ActionMessages();
         
         //Read parameters
         String instructorId = request.getParameter("instructorId");
@@ -99,24 +101,24 @@ public class InstructorInfoEditAction extends InstructorAction {
         
         //Check instructor exists
         if(instructorId==null || instructorId.trim()=="") 
-            throw new Exception ("Instructor Info not supplied.");
+            throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
         
         frm.setInstructorId(instructorId);
         
         // Cancel - Go back to Instructors Detail Screen
-        if(op.equals(rsc.getMessage("button.returnToDetail")) 
+        if(op.equals(MSG.actionBackToDetail()) 
                 && instructorId!=null && instructorId.trim()!="") {
         	response.sendRedirect( response.encodeURL("instructorDetail.do?instructorId="+instructorId));
         }
         
         // Check ID
-        if(op.equals(rsc.getMessage("button.checkPuId"))) {
+        if(op.equals(MSG.actionLookupInstructor())) {
             errors = frm.validate(mapping, request);
             if(errors.size()==0) {
                 findMatchingInstructor(frm, request);
                 if (frm.getMatchFound()==null || !frm.getMatchFound().booleanValue()) {
                     errors.add("lookup", 
-                            	new ActionMessage("errors.generic", "No matching records found"));
+                            	new ActionMessage("errors.generic", MSG.errorNoMatchingRecordsFound()));
                 }
             }
             
@@ -125,37 +127,39 @@ public class InstructorInfoEditAction extends InstructorAction {
         }
         
         //update - Update the instructor and go back to Instructor Detail Screen
-        if((op.equals(rsc.getMessage("button.update")) || op.equals(rsc.getMessage("button.nextInstructor")) || op.equals(rsc.getMessage("button.previousInstructor")))
+        if((op.equals(MSG.actionUpdateInstructor()) 
+        		|| op.equals(MSG.actionNextInstructor()) 
+        		|| op.equals(MSG.actionPreviousInstructor()))
                 && instructorId!=null && instructorId.trim()!="") {
             errors = frm.validate(mapping, request);
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
 	        	request.setAttribute("instructorId", frm.getInstructorId());
 	            
-	        	if (op.equals(rsc.getMessage("button.nextInstructor")))
+	        	if (op.equals(MSG.actionNextInstructor()))
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getNextId()));
 	            
-	            if (op.equals(rsc.getMessage("button.previousInstructor")))
+	            if (op.equals(MSG.actionPreviousInstructor()))
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getPreviousId()));
 
 	            return mapping.findForward("showDetail");
             } else {
                 if (errors.size()==0) {
                     errors.add( "uniqueId", 
-                        	new ActionMessage("errors.generic", "This Instructor Id already exists in your instructor list."));
+                        	new ActionMessage("errors.generic", MSG.errorInstructorIdAlreadyExistsInList()));
             	}
             	saveErrors(request, errors);            	
             }
         }
 
         // Delete Instructor
-        if(op.equals(rsc.getMessage("button.deleteInstructor"))) {
+        if(op.equals(MSG.actionDeleteInstructor())) {
         	doDelete(request, frm);
         	return mapping.findForward("showList");
         }
 
         // search select
-        if(op.equals(rsc.getMessage("button.selectInstructor")) ) {
+        if(op.equals(MSG.actionSelectInstructor()) ) {
             String select = frm.getSearchSelect();            
             if (select!=null && select.trim().length()>0) {
 	            if (select.equalsIgnoreCase("i2a2")) {
@@ -174,7 +178,7 @@ public class InstructorInfoEditAction extends InstructorAction {
         BackTracker.markForBack(
         		request,
         		"instructorDetail.do?instructorId="+frm.getInstructorId(),
-        		"Instructor ("+ (frm.getName()==null?"null":frm.getName().trim()) +")",
+        		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
         		true, false);
 
         return mapping.findForward("showEdit");
@@ -318,7 +322,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 			    if (instructor!=null)
 			        frm.setCareerAcct(instructor.getLogin());
 			    else 
-			        frm.setCareerAcct("Not Found");
+			        frm.setCareerAcct(MSG.valueInstructorAccountNameNotFound());
 			}
 		}
 		

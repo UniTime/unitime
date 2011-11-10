@@ -249,6 +249,30 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Department:")
 	String propertyDepartment();
 	
+	@DefaultMessage("Account Name:")
+	String propertyAccountName();
+	
+	@DefaultMessage("First Name:")
+	String propertyFirstName();
+	
+	@DefaultMessage("Middle Name:")
+	String propertyMiddleName();
+	
+	@DefaultMessage("Last Name:")
+	String propertyLastName();
+	
+	@DefaultMessage("Email:")
+	String propertyEmail();
+	
+	@DefaultMessage("Position:")
+	String propertyInstructorPosition();
+	
+	@DefaultMessage("Notes:")
+	String propertyNotes();
+	
+	@DefaultMessage("Ignore Too Far:")
+	String propertyIgnoreTooFar();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -591,6 +615,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Demands From")
 	String columnDemandsFrom();
 	
+	@DefaultMessage("Login")
+	String columnLogin();
+	
+	@DefaultMessage("Department")
+	String columnDepartment();
+	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
@@ -893,6 +923,27 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Manage Instructor List")
 	String actionManageInstructorList();
 	
+	@DefaultMessage("Select Instructor")
+	String actionSelectInstructor();
+	
+	@DefaultMessage("Cancel")
+	String actionCancel();
+	
+	@DefaultMessage("Save")
+	String actionSaveInstructor();
+	
+	@DefaultMessage("Update")
+	String actionUpdateInstructor();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteInstructor();
+	
+	@DefaultMessage("Lookup")
+	String actionLookupInstructor();
+	
+	@DefaultMessage("Back")
+	String actionBackToInstructors();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -1075,6 +1126,27 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("M")
 	String accessManageInstructorList();
+	
+	@DefaultMessage("E")
+	String accessSelectInstructor();
+	
+	@DefaultMessage("C")
+	String accessCancel();
+	
+	@DefaultMessage("S")
+	String accessSaveInstructor();
+	
+	@DefaultMessage("U")
+	String accessUpdateInstructor();
+	
+	@DefaultMessage("D")
+	String accessDeleteInstructor();
+	
+	@DefaultMessage("L")
+	String accessLookupInstructor();
+	
+	@DefaultMessage("B")
+	String accessBackToInstructors();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -1385,6 +1457,27 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Ignore too far distances")
 	String titleIgnoreTooFarDistances();
 	
+	@DefaultMessage("Select Instructor (Alt+{0})")
+	String titleSelectInstructor(String accessKey);
+	
+	@DefaultMessage("Cancel (Alt+{0})")
+	String titleCancel(String accessKey);
+	
+	@DefaultMessage("Save Instructor Information (Alt+{0})")
+	String titleSaveInstructor(String accessKey);
+	
+	@DefaultMessage("Update Instructor (Alt+{0})")
+	String titleUpdateInstructor(String accessKey);
+	
+	@DefaultMessage("Delete Instructor (Alt+{0})")
+	String titleDeleteInstructor(String accessKey);
+	
+	@DefaultMessage("Look for matches in Staff List and Directory (Alt+{0})")
+	String titleLookupInstructor(String accessKey);
+	
+	@DefaultMessage("Back to Instructors (Alt+{0})")
+	String titleBackToInstructors(String accessKey);
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -1601,6 +1694,24 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("No instructors were found. Use the option 'Manage Instructor List' to add instructors to your list.")
 	String errorNoInstructorsFoundInSearch();
 	
+	@DefaultMessage("Supply one or more of the following information: Account Name / First Name / Last Name")
+	String errorSupplyInfoForInstructorLookup();
+	
+	@DefaultMessage("Last Name is required.")
+	String errorRequiredLastName();
+	
+	@DefaultMessage("This Instructor Id already exists in your instructor list.")
+	String errorInstructorIdAlreadyExistsInList();
+	
+	@DefaultMessage("No matching records found")
+	String errorNoMatchingRecordsFound();
+	
+	@DefaultMessage("No instructor was selected from the list")
+	String errorNoInstructorSelectedFromList();
+	
+	@DefaultMessage("Instructor Info not supplied.")
+	String exceptionInstructorInfoNotSupplied();
+	
 	@DefaultMessage("Access Denied.")
 	String exceptionAccessDenied();
 	
@@ -1676,8 +1787,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructors ({0})")
 	String backInstructors(String deptName);
 	
+	@DefaultMessage("Instructor ({0})")
+	String backInstructor(String instructorName);
+	
 	@DefaultMessage("Instructors")
 	String backInstructors2(); //when there is no department selected in the Instructors screen
+	
+	@DefaultMessage("Not Found")
+	String valueInstructorAccountNameNotFound();
 	
 	@DefaultMessage("am")
 	String timeAm();
@@ -1742,6 +1859,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructor List")
 	String sectionTitleInstructorList();
 	
+	@DefaultMessage("Search Results")
+	String sectionTitleSearchResults();
+	
+	@DefaultMessage("External Lookup Match")
+	String sectionTitleExternalLookupMatch();
+	
+	@DefaultMessage("Staff File Matches")
+	String sectionTitleStaffFileMatches();
+	
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -1786,6 +1912,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("This option will delete all associated course offerings. \\nDo you really want to delete this offering?")
 	String confirmDeleteIO();
+	
+	@DefaultMessage("Any instructor class assignments will be deleted as well. Continue?")
+	String confirmDeleteInstructor();
 	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();

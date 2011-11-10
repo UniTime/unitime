@@ -23,6 +23,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
+<loc:bundle name="CourseMessages">
 <bean:parameter id="frmName" name="frmName"/>
 <logic:notEmpty name="<%=frmName%>" property="matchFound">
 			<logic:equal name="<%=frmName%>" property="matchFound" value="true">
@@ -31,15 +34,19 @@
 					<TD valign="middle" colspan='2' align='right'>
 						<tt:section-header>		
 							<tt:section-title>	
-								Search Results	
+								<loc:message name="sectionTitleSearchResults"/>	
 							</tt:section-title>
 							<html:submit property="op" 
-								styleClass="btn" accesskey="E" titleKey="title.selectInstructor" >
-								<bean:message key="button.selectInstructor" />
+									styleClass="btn" 
+									accesskey="<%=MSG.accessSelectInstructor() %>" 
+									title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
+								<loc:message name="actionSelectInstructor" />
 							</html:submit> 
 							<html:submit property="op" 
-								styleClass="btn" accesskey="C" titleKey="title.cancel" >
-								<bean:message key="button.cancel" />
+									styleClass="btn" 
+									accesskey="<%=MSG.accessCancel() %>" 
+									title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
+								<loc:message name="actionCancel" />
 							</html:submit> 
 						</tt:section-header>		
 					</TD>
@@ -54,7 +61,7 @@
 				</TR>
 				<TR>
 					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-					External Lookup Match
+					<loc:message name="sectionTitleExternalLookupMatch"/>
 					</TD>
 				</TR>				
 				<TR>
@@ -62,9 +69,9 @@
 						<table align='left' border='0'>
 							<tr>
 								<td></td>
-								<td><i>External Id</i></td>
-								<td><i>Name</i></td>
-								<td><i>Login</i></td>
+								<td><i><loc:message name="columnExternalId"/></i></td>
+								<td><i><loc:message name="columnInstructorName"/></i></td>
+								<td><i><loc:message name="columnLogin"/></i></td>
 							</tr>
 							<tr>
 								<td>
@@ -93,7 +100,7 @@
 				</TR>
 				<TR>
 					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
-					Staff File Matches
+					<loc:message name="sectionTitleStaffFileMatches"/>
 					</TD>
 				</TR>
 				
@@ -106,10 +113,10 @@
 						<table align='left' border='0'>
 							<tr>
 								<td></td>
-								<td><i>External Id</i></td>
-								<td><i>Name</i></td>
-								<td><i>Department</i></td>
-								<td><i>Position</i></td>
+								<td><i><loc:message name="columnExternalId"/></i></td>
+								<td><i><loc:message name="columnInstructorName"/></i></td>
+								<td><i><loc:message name="columnDepartment"/></i></td>
+								<td><i><loc:message name="columnInstructorPosition"/></i></td>
 							</tr>
 							<logic:iterate id="staff" name="<%=frmName%>" property="staffMatch">
 								<bean:define id="staffUid" name="staff" property="uniqueId" />
@@ -160,16 +167,20 @@
 						<html:hidden name="<%=frmName%>" property="puId" />
 						
 						<html:submit property="op" 
-							styleClass="btn" accesskey="E" titleKey="title.selectInstructor" >
-							<bean:message key="button.selectInstructor" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessSelectInstructor() %>" 
+								title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
+							<loc:message name="actionSelectInstructor" />
 						</html:submit> 
 						<html:submit property="op" 
-							styleClass="btn" accesskey="C" titleKey="title.cancel" >
-							<bean:message key="button.cancel" />
+								styleClass="btn" 
+								accesskey="<%=MSG.accessCancel() %>" 
+								title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
+							<loc:message name="actionCancel" />
 						</html:submit> 
 					</TD>
 				</TR>
 				
 			</logic:equal>
 		</logic:notEmpty>
-
+</loc:bundle>

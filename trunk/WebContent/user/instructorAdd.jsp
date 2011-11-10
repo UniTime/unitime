@@ -25,7 +25,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
+<loc:bundle name="CourseMessages">
 <html:form action="instructorAdd">
 	<html:hidden property="instructorId"/>
 	
@@ -41,3 +43,4 @@
 		</logic:notEqual>
 	</TABLE>
 </html:form>
+</loc:bundle>
