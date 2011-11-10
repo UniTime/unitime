@@ -643,7 +643,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No requests stored for the student.")
 	String exceptionNoRequests();
 	
-	@DefaultMessage("Wrong academic session.")
+	@DefaultMessage("Online student scheduling is not available for this academic session.")
 	String exceptionBadSession();
 	
 	@DefaultMessage("Your are not authenticated, please log in first.")
@@ -679,6 +679,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wrong instructional offering.")
 	String exceptionBadOffering();
 	
+	@DefaultMessage("Wrong course offering.")
+	String exceptionBadCourse();
+
 	@DefaultMessage("Insufficient user privileges.")
 	String exceptionInsufficientPrivileges();
 	
@@ -769,11 +772,8 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<sup><font color='#9CB0CE'>r)</font></sup>")
 	String htmlReservationSign();
 	
-	@DefaultMessage("r) Space available only with a reservation.")
-	String sectioningStatusHint();
-	
-	@DefaultMessage("No courses matching filter {0} found.")
-	String exceptionNoCourses(String filter);
+	@DefaultMessage("No results matching filter {0} found.")
+	String exceptionNoMatchingResultsFound(String filter);
 	
 	@DefaultMessage("Filter course, enrollments, and wait-listed course requests by any word<br>from the course name or title." +
 			"<br><br>You can also use the following tags:" +
@@ -810,5 +810,19 @@ public interface StudentSectioningMessages extends Messages {
 		
 	@DefaultMessage("Need<br>Consent")
 	String colNeedConsent();
+	
+	@DefaultMessage("<u>E</u>nrollments")
+	String tabEnrollments();
 
+	@DefaultMessage("<u>S</u>tudents")
+	String tabStudents();
+	
+	@DefaultMessage("<sup><font color='#9CB0CE'>({0}p)</font></sup>")
+	String firstWaitListedPrioritySign(int priority);
+	
+	@DefaultMessage("r) Space available only with a reservation.")
+	String sectioningStatusReservationHint();
+	
+	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
+	String sectioningStatusPriorityHint();
 }

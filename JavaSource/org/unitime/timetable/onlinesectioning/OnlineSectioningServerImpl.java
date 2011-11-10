@@ -1620,5 +1620,18 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		return offeringIds;
 	}
+
+	@Override
+	public Collection<Student> findStudents(StudentMatcher matcher) {
+		iLock.readLock().lock();
+		try {
+			List<Student> ret = new ArrayList<Student>();
+			for (Student s: iStudentTable.values())
+				if (matcher.match(s)) ret.add(s);
+			return ret;
+		} finally {
+			iLock.readLock().unlock();
+		}
+	}
 	
 }
