@@ -22,9 +22,11 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Components;
@@ -137,6 +139,7 @@ public class SectioningStatusPage extends Composite {
 	private int iStatusColumn = 0;
 	private UniTimeTextBox iSubject, iCC;
 	private TextArea iMessage;
+	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 
 	public SectioningStatusPage() {
 		iPanel = new VerticalPanel();
@@ -932,18 +935,17 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null && !((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
-					}
-					return false;
+					return iSelectedStudentIds.size() != iStudentTable.getRowCount() + 2;
 				}
 				@Override
 				public void execute() {
+					iSelectedStudentIds.clear();
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null)
+						if (i != null && i.getStudent() != null) {
 							((CheckBox)iStudentTable.getWidget(row, 0)).setValue(true);
+							iSelectedStudentIds.add(i.getStudent().getId());
+						}
 					}
 				}
 			});
@@ -958,14 +960,11 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
-					}
-					return false;
+					return iSelectedStudentIds.size() > 0;
 				}
 				@Override
 				public void execute() {
+					iSelectedStudentIds.clear();
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 						StudentInfo i = iStudentTable.getData(row);
 						if (i != null && i.getStudent() != null)
@@ -984,11 +983,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
-					}
-					return false;
+					return iSelectedStudentIds.size() > 0;
 				}
 				@Override
 				public void execute() {
@@ -1009,7 +1004,7 @@ public class SectioningStatusPage extends Composite {
 							List<Long> studentIds = new ArrayList<Long>();
 							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 								StudentInfo i = iStudentTable.getData(row);
-								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) { 
+								if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) { 
 									studentIds.add(i.getStudent().getId());
 									iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
 								}
@@ -1036,28 +1031,15 @@ public class SectioningStatusPage extends Composite {
 						}
 						@Override
 						public boolean hasSeparator() {
-							return false;
+							return "".equals(ref);
 						}
 						@Override
 						public boolean isApplicable() {
-							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-								StudentInfo i = iStudentTable.getData(row);
-								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) {
-									if (ref.isEmpty() && i.getStatus() == null) continue;
-									if (ref.equals(i.getStatus())) continue;
-									return true;
-								}
-							}
-							return false;
+							return iSelectedStudentIds.size() > 0;
 						}
 						@Override
 						public void execute() {
-							List<Long> studentIds = new ArrayList<Long>();
-							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-								StudentInfo i = iStudentTable.getData(row);
-								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) 
-									studentIds.add(i.getStudent().getId());
-							}
+							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(iStates.get(ref)));
 							iSectioningService.changeStatus(studentIds, ref, new AsyncCallback<Boolean>() {
 
@@ -1566,6 +1548,7 @@ public class SectioningStatusPage extends Composite {
 		
 		iStudentTable.addRow(null, header);
 		
+		Set<Long> newlySelected = new HashSet<Long>();
 		for (StudentInfo info: result) {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
@@ -1575,6 +1558,26 @@ public class SectioningStatusPage extends Composite {
 						@Override
 						public void onClick(ClickEvent event) {
 							event.stopPropagation();
+						}
+					});
+					final Long sid = info.getStudent().getId();
+					if (iSelectedStudentIds.contains(sid)) {
+						ch.setValue(true);
+						newlySelected.add(sid);
+					}
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							if (event.getValue())
+								iSelectedStudentIds.add(sid);
+							else
+								iSelectedStudentIds.remove(sid);
 						}
 					});
 					line.add(ch);
@@ -1626,6 +1629,8 @@ public class SectioningStatusPage extends Composite {
 			}
 			iStudentTable.addRow(info, line);
 		}
+		iSelectedStudentIds.clear();
+		iSelectedStudentIds.addAll(newlySelected);
 		
 		if (iStudentTable.getRowCount() >= 2) {
 			for (int c = 0; c < iStudentTable.getCellCount(iStudentTable.getRowCount() - 1); c++)
