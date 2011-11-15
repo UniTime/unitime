@@ -103,6 +103,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (AcademicAreaCode ac: request.getStudent().getMajors()) {
 							st.addMajor(ac.getCode());
 						}
+						for (AcademicAreaCode ac: request.getStudent().getMinors()) {
+							st.addGroup(ac.getCode());
+						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0;
 						for (Request r: request.getStudent().getRequests()) {
 							if (r instanceof CourseRequest) {
@@ -134,6 +137,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setWaitlist(0);
 						s.setConsentNeeded(0);
 						s.setRequested(tReq);
+						s.setStatus(request.getStudent().getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : request.getStudent().getStatus());
+						s.setEmailDate(request.getStudent().getEmailTimeStamp() == null ? null : new Date(request.getStudent().getEmailTimeStamp()));
 					}
 					if (m.enrollment() != null) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;

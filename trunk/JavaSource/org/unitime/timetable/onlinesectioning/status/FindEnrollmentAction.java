@@ -95,6 +95,9 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			for (AcademicAreaCode ac: request.getStudent().getMajors()) {
 				st.addMajor(ac.getCode());
 			}
+			for (AcademicAreaCode ac: request.getStudent().getMinors()) {
+				st.addGroup(ac.getCode());
+			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 			e.setStudent(st);

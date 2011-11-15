@@ -21,44 +21,40 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.StudentStatusType;
+import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.StudentSectioningStatus;
 
-public abstract class BaseStudentStatusType implements Serializable {
+public abstract class BaseStudentSectioningStatus extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Long iUniqueId;
-	private String iAbbreviation;
-	private String iName;
+	private Integer iStatus;
+	private String iMessage;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_NAME = "name";
+	public static String PROP_STATUS = "status";
+	public static String PROP_MESSAGE = "message";
 
-	public BaseStudentStatusType() {
+	public BaseStudentSectioningStatus() {
 		initialize();
 	}
 
-	public BaseStudentStatusType(Long uniqueId) {
+	public BaseStudentSectioningStatus(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
 
 	protected void initialize() {}
 
-	public Long getUniqueId() { return iUniqueId; }
-	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+	public Integer getStatus() { return iStatus; }
+	public void setStatus(Integer status) { iStatus = status; }
 
-	public String getAbbreviation() { return iAbbreviation; }
-	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
-
-	public String getName() { return iName; }
-	public void setName(String name) { iName = name; }
+	public String getMessage() { return iMessage; }
+	public void setMessage(String message) { iMessage = message; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof StudentStatusType)) return false;
-		if (getUniqueId() == null || ((StudentStatusType)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((StudentStatusType)o).getUniqueId());
+		if (o == null || !(o instanceof StudentSectioningStatus)) return false;
+		if (getUniqueId() == null || ((StudentSectioningStatus)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentSectioningStatus)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -67,13 +63,15 @@ public abstract class BaseStudentStatusType implements Serializable {
 	}
 
 	public String toString() {
-		return "StudentStatusType["+getUniqueId()+" "+getName()+"]";
+		return "StudentSectioningStatus["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "StudentStatusType[" +
-			"\n	Abbreviation: " + getAbbreviation() +
-			"\n	Name: " + getName() +
+		return "StudentSectioningStatus[" +
+			"\n	Label: " + getLabel() +
+			"\n	Message: " + getMessage() +
+			"\n	Reference: " + getReference() +
+			"\n	Status: " + getStatus() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

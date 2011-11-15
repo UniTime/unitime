@@ -43,6 +43,8 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	private String iDetails = null;
 	private boolean iHasUniqueName = true;
 	private String iConsent = null, iConsentAbbv = null;
+	private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
+
 	
 	public CourseInfo(CourseOffering course)  throws SectioningException {
 		iUniqueId = course.getUniqueId();
@@ -58,6 +60,9 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		}
 		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
 		iTitleLowerCase = (iTitle == null ? null : iTitle.toLowerCase());
+		iWkEnroll = course.getInstructionalOffering().getLastWeekToEnroll();
+		iWkChange = course.getInstructionalOffering().getLastWeekToChange();
+		iWkDrop = course.getInstructionalOffering().getLastWeekToDrop();
 	}
 	
 	public CourseInfo(CourseOffering course, String courseNbr)  throws SectioningException {
@@ -118,4 +123,8 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	public String toString() {
 		return (getSubjectArea() + " " + getCourseNbr()).toLowerCase();
 	}
+	
+	public Integer getLastWeekToEnroll() { return iWkEnroll; }
+	public Integer getLastWeekToChange() { return iWkChange; }
+	public Integer getLastWeekToDrop() { return iWkDrop; }
 }

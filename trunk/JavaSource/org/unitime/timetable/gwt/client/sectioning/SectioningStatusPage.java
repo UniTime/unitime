@@ -21,14 +21,20 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
@@ -72,6 +78,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -85,6 +92,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestBox.DefaultSuggestionDisplay;
@@ -125,6 +133,10 @@ public class SectioningStatusPage extends Composite {
 	
 	private HTML iError = null, iCourseTableHint, iStudentTableHint;
 	private String iLastFilterOnEnter = null, iCourseFilter = null;
+	private Map<String, String> iStates = null;
+	private int iStatusColumn = 0;
+	private UniTimeTextBox iSubject, iCC;
+	private TextArea iMessage;
 
 	public SectioningStatusPage() {
 		iPanel = new VerticalPanel();
@@ -432,6 +444,26 @@ public class SectioningStatusPage extends Composite {
 				checkLastQuery();
 			}
 		});
+		
+		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<Map<String,String>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+
+			@Override
+			public void onSuccess(Map<String, String> result) {
+				iStates = result;
+			}
+		});
+		
+		iSubject = new UniTimeTextBox(512, 473);
+		iCC = new UniTimeTextBox(512, 473);
+		iMessage = new TextArea();
+		iMessage.setStyleName("unitime-TextArea");
+		iMessage.setVisibleLines(10);
+		iMessage.setCharacterWidth(80);
+
 	}
 	
 	private void checkLastQuery() {
@@ -448,7 +480,7 @@ public class SectioningStatusPage extends Composite {
 			}
 		} else if (Window.Location.getHash() != null && !Window.Location.getHash().isEmpty()) {
 			String hash = URL.decode(Window.Location.getHash().substring(1));
-			if (!hash.matches("^[0-9]+\\:?[0-9]*$")) {
+			if (!hash.matches("^[0-9]+\\:?[0-9]*@?$")) {
 				if (hash.endsWith("@")) {
 					iFilter.setText(hash.substring(0, hash.length() - 1));
 					iTabPanel.selectTab(1);
@@ -528,7 +560,7 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 		} else {
-			iSectioningService.findStudentInfos(iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+			iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					LoadingWidget.getInstance().hide();
@@ -540,20 +572,33 @@ public class SectioningStatusPage extends Composite {
 				}
 
 				@Override
-				public void onSuccess(List<StudentInfo> result) {
-					if (result.isEmpty()) {
-						iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
-						iError.setVisible(true);
-						iTabPanel.setVisible(false);
-					} else {
-						populateStudentTable(result);
-						iTabPanel.setVisible(true);
-					}
-					setLoading(false);
-					LoadingWidget.getInstance().hide();
-				}
-			});
+				public void onSuccess(final Boolean isAdmin) {
+					iSectioningService.findStudentInfos(iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							setLoading(false);
+							iError.setHTML(caught.getMessage());
+							iError.setVisible(true);
+							iTabPanel.setVisible(false);
+							ToolBox.checkAccess(caught);
+						}
 
+						@Override
+						public void onSuccess(List<StudentInfo> result) {
+							if (result.isEmpty()) {
+								iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
+								iError.setVisible(true);
+								iTabPanel.setVisible(false);
+							} else {
+								populateStudentTable(result, isAdmin);
+								iTabPanel.setVisible(true);
+							}
+							setLoading(false);
+							LoadingWidget.getInstance().hide();
+						}
+					});				}
+			});
 		}
 	}
 	
@@ -868,8 +913,176 @@ public class SectioningStatusPage extends Composite {
 		iCourseTableHint.setVisible(hasReservation);
 	}
 	
-	public void populateStudentTable(List<StudentInfo> result) {
+	public void populateStudentTable(List<StudentInfo> result, boolean isAdmin) {
 		List<Widget> header = new ArrayList<Widget>();
+		
+		if (isAdmin) {
+			UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
+			header.add(hSelect);
+			hSelect.setWidth("10px");
+			hSelect.addAdditionalStyleName("unitime-NoPrint");
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.selectAll();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null && !((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
+					}
+					return false;
+				}
+				@Override
+				public void execute() {
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null)
+							((CheckBox)iStudentTable.getWidget(row, 0)).setValue(true);
+					}
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.clearAll();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
+					}
+					return false;
+				}
+				@Override
+				public void execute() {
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null)
+							((CheckBox)iStudentTable.getWidget(row, 0)).setValue(false);
+					}
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.sendStudentEmail();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) return true;
+					}
+					return false;
+				}
+				@Override
+				public void execute() {
+					SimpleForm sf = new SimpleForm();
+					final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+					sf.removeStyleName("unitime-NotPrintableBottomLine");
+					sf.addRow(MESSAGES.emailSubject(), iSubject);
+					sf.addRow(MESSAGES.emailCC(), iCC);
+					sf.addRow(MESSAGES.emailBody(), iMessage);
+					sf.addBottomRow(buttons);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+					dialog.setWidget(sf);
+					dialog.setText(MESSAGES.sendStudentEmail());
+					dialog.setEscapeToHide(true);
+					buttons.addButton("send", MESSAGES.emailSend(), null, (Integer)null, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							List<Long> studentIds = new ArrayList<Long>();
+							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+								StudentInfo i = iStudentTable.getData(row);
+								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) { 
+									studentIds.add(i.getStudent().getId());
+									iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
+								}
+							}
+							dialog.hide();
+							sendEmail(studentIds.iterator(), iSubject.getText(), iMessage.getText(), iCC.getText(), 0);
+						}
+					});
+					buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+						}
+					});
+					dialog.center();
+				}
+			});
+			if (iStates != null) {
+				for (final String ref: new TreeSet<String>(iStates.keySet())) {
+					hSelect.addOperation(new Operation() {
+						@Override
+						public String getName() {
+							return MESSAGES.changeStatusTo(iStates.get(ref));
+						}
+						@Override
+						public boolean hasSeparator() {
+							return false;
+						}
+						@Override
+						public boolean isApplicable() {
+							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+								StudentInfo i = iStudentTable.getData(row);
+								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) {
+									if (ref.isEmpty() && i.getStatus() == null) continue;
+									if (ref.equals(i.getStatus())) continue;
+									return true;
+								}
+							}
+							return false;
+						}
+						@Override
+						public void execute() {
+							List<Long> studentIds = new ArrayList<Long>();
+							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+								StudentInfo i = iStudentTable.getData(row);
+								if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) 
+									studentIds.add(i.getStudent().getId());
+							}
+							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(iStates.get(ref)));
+							iSectioningService.changeStatus(studentIds, ref, new AsyncCallback<Boolean>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().fail(caught.getMessage());
+								}
+
+								@Override
+								public void onSuccess(Boolean result) {
+									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+										StudentInfo i = iStudentTable.getData(row);
+										if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) { 
+											i.setStatus(ref);
+											((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(ref);
+										}
+									}
+									LoadingWidget.getInstance().hide();
+								}
+							});
+						}
+					});
+				}
+			}
+		}
 		
 		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
@@ -904,16 +1117,19 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hTotal = new UniTimeTableHeader("&nbsp;");
 		header.add(hTotal);
 		
-		boolean hasEnrollment = false, hasWaitList = false, hasArea = false, hasMajor = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false;
+		boolean hasEnrollment = false, hasWaitList = false, hasArea = false, hasMajor = false, hasGroup = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
+			// if (e.getStatus() != null) hasStatus = true;
 			if (e.getTotalEnrollment() != null && e.getTotalEnrollment() > 0) hasEnrollment = true;
 			if (e.getTotalWaitlist() != null && e.getTotalWaitlist() > 0) hasWaitList = true;
 			if (e.getStudent().hasArea()) hasArea = true;
 			if (e.getStudent().hasMajor()) hasMajor = true;
+			if (e.getStudent().hasGroup()) hasGroup = true;
 			if (e.getTotalReservation() != null && e.getTotalReservation() > 0) hasReservation = true;
 			if (e.getRequestedDate() != null) hasRequestedDate = true;
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
+			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
 		}
 		
@@ -1027,6 +1243,77 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 		}
+		
+		if (hasGroup) {
+			UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
+			//hGroup.setWidth("100px");
+			header.add(hGroup);
+			hGroup.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+						@Override
+						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+							if (e1.getStudent() == null) return 1;
+							if (e2.getStudent() == null) return -1;
+							int cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colGroup());
+				}
+			});
+		}
+		
+		iStatusColumn = header.size();
+		UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
+		//hMajor.setWidth("100px");
+		header.add(hStatus);
+		hStatus.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					@Override
+					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+						if (e1.getStudent() == null) return 1;
+						if (e2.getStudent() == null) return -1;
+						int cmp = (e1.getStatus() == null ? "" : e1.getStatus()).compareToIgnoreCase(e2.getStatus() == null ? "" : e2.getStatus());
+						if (cmp != 0) return cmp;
+						cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+						if (cmp != 0) return cmp;
+						return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colStatus());
+			}
+		});
 		
 		if (hasEnrollment) {
 			UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
@@ -1185,7 +1472,7 @@ public class SectioningStatusPage extends Composite {
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
 							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getRequestedDate().compareTo(e2.getRequestedDate());
+							int cmp = (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
 							if (cmp != 0) return cmp;
 							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
 							if (cmp != 0) return cmp;
@@ -1220,7 +1507,7 @@ public class SectioningStatusPage extends Composite {
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
 							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getEnrolledDate().compareTo(e2.getEnrolledDate());
+							int cmp = (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
 							if (cmp != 0) return cmp;
 							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
 							if (cmp != 0) return cmp;
@@ -1244,11 +1531,54 @@ public class SectioningStatusPage extends Composite {
 			header.add(hTimeStamp);			
 		}
 		
+		UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
+		//hTimeStamp.setWidth("100px");
+		hTimeStamp.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					@Override
+					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+						if (e1.getStudent() == null) return 1;
+						if (e2.getStudent() == null) return -1;
+						int cmp = (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
+						if (cmp != 0) return cmp;
+						cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+						if (cmp != 0) return cmp;
+						return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colEmailTimeStamp());
+			}
+		});
+		header.add(hTimeStamp);
+		
 		iStudentTable.addRow(null, header);
 		
 		for (StudentInfo info: result) {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
+				if (isAdmin) {
+					CheckBox ch = new CheckBox();
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					line.add(ch);
+				}
 				line.add(new TitleCell(info.getStudent().getName()));
 				if (hasArea) {
 					line.add(new HTML(info.getStudent().getArea("<br>"), false));
@@ -1256,7 +1586,11 @@ public class SectioningStatusPage extends Composite {
 				}
 				if (hasMajor)
 					line.add(new HTML(info.getStudent().getMajor("<br>"), false));
+				if (hasGroup)
+					line.add(new HTML(info.getStudent().getGroup("<br>"), false));
+				line.add(new HTML(info.getStatus(), false));
 			} else {
+				if (isAdmin) line.add(new HTML("&nbsp;", false));
 				line.add(new Label(MESSAGES.total()));
 				line.add(new NumberCell(null, result.size() - 1));
 				if (hasArea) {
@@ -1265,6 +1599,9 @@ public class SectioningStatusPage extends Composite {
 				}
 				if (hasMajor)
 					line.add(new HTML("&nbsp;", false));
+				if (hasGroup)
+					line.add(new HTML("&nbsp;", false));
+				line.add(new HTML("&nbsp;", false));
 			}
 			if (hasEnrollment)
 				line.add(new NumberCell(info.getEnrollment(), info.getTotalEnrollment()));
@@ -1279,11 +1616,13 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
 				if (hasEnrolledDate)
 					line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
+				line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
 			} else {
 				if (hasRequestedDate)
 					line.add(new HTML("&nbsp;", false));
 				if (hasEnrolledDate)
 					line.add(new HTML("&nbsp;", false));
+				line.add(new HTML("&nbsp;", false));
 			}
 			iStudentTable.addRow(info, line);
 		}
@@ -1554,5 +1893,60 @@ public class SectioningStatusPage extends Composite {
 
 
 		
+	}
+	
+	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails) {
+		if (!studentIds.hasNext()) return;
+		final Long studentId = studentIds.next();
+		iSectioningService.sendEmail(studentId, subject, message, cc, new AsyncCallback<Boolean>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+					StudentInfo i = iStudentTable.getData(row);
+					if (i != null && i.getStudent() != null && studentId.equals(i.getStudent().getId())) {
+						HTML error = new HTML(caught.getMessage());
+						error.setStyleName("unitime-ErrorMessage");
+						iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
+						i.setEmailDate(null);
+					}
+				}
+				if (fails >= 4) {
+					while (studentIds.hasNext()) {
+						Long sid = studentIds.next();
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && sid.equals(i.getStudent().getId())) {
+								HTML error = new HTML(MESSAGES.exceptionCancelled(caught.getMessage()));
+								error.setStyleName("unitime-ErrorMessage");
+								iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
+								i.setEmailDate(null);
+							}
+						}
+					}
+				}
+				sendEmail(studentIds, subject, message, cc, fails + 1);
+			}
+
+			@Override
+			public void onSuccess(Boolean result) {
+				LoadingWidget.getInstance().hide();
+				for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+					StudentInfo i = iStudentTable.getData(row);
+					if (i != null && i.getStudent() != null && studentId.equals(i.getStudent().getId())) {
+						if (result) {
+							i.setEmailDate(new Date());
+							iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new HTML(sDF.format(i.getEmailDate()), false));
+						} else {
+							HTML error = new HTML(MESSAGES.exceptionNoEmail());
+							error.setStyleName("unitime-ErrorMessage");
+							iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
+							i.setEmailDate(null);
+						}
+					}
+					sendEmail(studentIds, subject, message, cc, fails);
+				}
+			}
+		});
 	}
 }

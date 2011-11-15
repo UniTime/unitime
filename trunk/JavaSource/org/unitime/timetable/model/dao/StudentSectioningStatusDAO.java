@@ -1,8 +1,8 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -19,15 +19,10 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentStatusTypeDAO;
+import org.unitime.timetable.model.base.BaseStudentSectioningStatusDAO;
 
+public class StudentSectioningStatusDAO extends BaseStudentSectioningStatusDAO {
 
-public class StudentStatusTypeDAO extends BaseStudentStatusTypeDAO {
-
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StudentStatusTypeDAO () {}
-
+	public StudentSectioningStatusDAO() {}
 
 }

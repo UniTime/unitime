@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights.LastSectionProvider;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -113,7 +114,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return new Long(getRequest().getStudent().getId()).compareTo(r.getRequest().getStudent().getId());
 	}
 
-	public Enrollment resection(ResectioningWeights w, DistanceConflict dc, TimeOverlapsCounter toc) {
+	public Enrollment resection(OnlineSectioningServer server, ResectioningWeights w, DistanceConflict dc, TimeOverlapsCounter toc) {
 		w.setLastSectionProvider(this);
 		
 		List<Enrollment> enrollments = new ArrayList<Enrollment>();
@@ -123,6 +124,15 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 			for (Request other: getRequest().getStudent().getRequests())
 				if (other.getAssignment() != null && !other.equals(getRequest()) && other.getAssignment().isOverlapping(e))
 					continue enrollments;
+			
+			for (Section s: e.getSections()) {
+				if (getLastEnrollment() == null) {
+					if (!server.checkDeadline(s, OnlineSectioningServer.Deadline.NEW)) continue enrollments;
+				} else {
+					if (!getLastEnrollment().getSections().contains(s) && !server.checkDeadline(s, OnlineSectioningServer.Deadline.CHANGE)) continue enrollments;
+				}
+			}
+			
 			double value = w.getWeight(e, dc.allConflicts(e), toc.allConflicts(e));
 			if (enrollments.isEmpty() || value > bestValue) {
 				enrollments.clear();

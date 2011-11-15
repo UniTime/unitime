@@ -35,6 +35,7 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 	private Date iTimestamp;
 	private Date iApprovedDate;
 	private String iApprovedBy;
+	private String iChangedBy;
 
 	private Student iStudent;
 	private CourseRequest iCourseRequest;
@@ -45,6 +46,7 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 	public static String PROP_TIMESTAMP = "timestamp";
 	public static String PROP_APPROVED_DATE = "approvedDate";
 	public static String PROP_APPROVED_BY = "approvedBy";
+	public static String PROP_CHANGED_BY = "changedBy";
 
 	public BaseStudentClassEnrollment() {
 		initialize();
@@ -68,6 +70,9 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 
 	public String getApprovedBy() { return iApprovedBy; }
 	public void setApprovedBy(String approvedBy) { iApprovedBy = approvedBy; }
+
+	public String getChangedBy() { return iChangedBy; }
+	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
@@ -100,6 +105,7 @@ public abstract class BaseStudentClassEnrollment implements Serializable {
 		return "StudentClassEnrollment[" +
 			"\n	ApprovedBy: " + getApprovedBy() +
 			"\n	ApprovedDate: " + getApprovedDate() +
+			"\n	ChangedBy: " + getChangedBy() +
 			"\n	Clazz: " + getClazz() +
 			"\n	CourseOffering: " + getCourseOffering() +
 			"\n	CourseRequest: " + getCourseRequest() +

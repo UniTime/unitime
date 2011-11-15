@@ -62,16 +62,19 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
+	private String iRequestedBy;
 	
-	public EnrollStudent(Long studentId, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> assignment) {
+	public EnrollStudent(Long studentId, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> assignment, String requestedBy) {
 		iStudentId = studentId;
 		iRequest = request;
 		iAssignment = assignment;
+		iRequestedBy = requestedBy;
 	}
 	
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
+	public String getRequestedBy() { return iRequestedBy; }
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -160,7 +163,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					classes.put(clazz.getUniqueId(), clazz);
 				}
 				
-				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
+				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false, getRequestedBy());
 				
 				// save requested enrollment
 				for (Map.Entry<Long, org.unitime.timetable.model.CourseRequest> e: req.entrySet()) {
@@ -204,6 +207,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.getClassEnrollments().add(enrl);
 					enrl.setTimestamp(ts);
 					enrl.setStudent(student);
+					enrl.setChangedBy(getRequestedBy());
 					student.getClassEnrollments().add(enrl);
 				}
 				

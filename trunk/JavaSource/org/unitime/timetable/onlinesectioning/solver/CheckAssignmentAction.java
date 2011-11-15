@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Set;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
@@ -42,6 +44,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+
+import com.ibm.icu.text.SimpleDateFormat;
 
 public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config, List<Section>>>{
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -91,7 +95,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 			Section section = server.getSection(ca.getClassId());
 			if (section == null)
 				throw new SectioningException(MSG.exceptionEnrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
-
+			
 			Config config = section.getSubpart().getConfig();
 			List<Section> sections = config2sections.get(config);
 			if (sections == null) {
@@ -106,6 +110,41 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 				config2course.put(config, course);
 			}
 			sections.add(section);
+		}
+		
+		// Check for NEW and CHANGE deadlines
+		check: for (Map.Entry<Config, List<Section>> entry: config2sections.entrySet()) {
+			Config config = entry.getKey();
+			Course course = config2course.get(config);
+			List<Section> sections = entry.getValue();
+
+			for (Request r: student.getRequests()) {
+				if (r.getAssignment() != null && course.equals(r.getAssignment().getCourse())) { // course change
+					for (Section s: sections)
+						if (!r.getAssignment().getSections().contains(s)) {
+							if (!server.checkDeadline(s, OnlineSectioningServer.Deadline.CHANGE))
+								throw new SectioningException(MSG.exceptionEnrollDeadlineChange(course.getSubjectArea() + " " + course.getCourseNumber() + " " + s.getSubpart().getName() + " " + s.getName(course.getId())));
+						}
+					continue check;
+				}
+			}
+			
+			// new course
+			for (Section s: sections) {
+				if (!server.checkDeadline(s, OnlineSectioningServer.Deadline.NEW))
+					throw new SectioningException(MSG.exceptionEnrollDeadlineNew(course.getSubjectArea() + " " + course.getCourseNumber() + " " + s.getSubpart().getName() + " " + s.getName(course.getId())));
+			}
+		}
+		
+		// Check for DROP deadlines
+		for (Request r: student.getRequests()) {
+			if (r.getAssignment() != null && r.getAssignment().getCourse() != null && !r.getAssignment().getCourse().equals(config2course.get(r.getAssignment().getConfig()))) {
+				Course course = r.getAssignment().getCourse(); // course dropped
+				for (Section s: r.getAssignment().getSections()) {
+					if (!server.checkDeadline(s, OnlineSectioningServer.Deadline.DROP))
+						throw new SectioningException(MSG.exceptionEnrollDeadlineDrop(course.getSubjectArea() + " " + course.getCourseNumber() + " " + s.getSubpart().getName() + " " + s.getName(course.getId())));
+				}
+			}
 		}
 		
 		for (Map.Entry<Config, List<Section>> entry: config2sections.entrySet()) {
@@ -181,4 +220,19 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 	}
 	
 
+	public static void main(String[] args) {
+		try {
+			long start = new SimpleDateFormat("MM/dd/yyyy").parse("11/19/2011").getTime();
+			long now = new Date().getTime();
+			int week = 0;
+			if (now >= start) {
+				week = (int)((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
+			} else {
+				week = -((int)(start - now) / (1000 * 60 * 60 * 24 * 7));
+			}
+			System.out.println("DIFF:" + week);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

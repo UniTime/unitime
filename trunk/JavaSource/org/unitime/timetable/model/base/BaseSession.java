@@ -32,6 +32,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 
 public abstract class BaseSession extends PreferenceGroup implements Serializable {
@@ -47,9 +48,13 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private Date iEventBeginDate;
 	private Date iEventEndDate;
 	private String iHolidays;
+	private Integer iLastWeekToEnroll;
+	private Integer iLastWeekToChange;
+	private Integer iLastWeekToDrop;
 
 	private DepartmentStatusType iStatusType;
 	private DatePattern iDefaultDatePattern;
+	private StudentSectioningStatus iDefaultSectioningStatus;
 	private Set<SubjectArea> iSubjectAreas;
 	private Set<Building> iBuildings;
 	private Set<Department> iDepartments;
@@ -66,6 +71,9 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public static String PROP_EVENT_BEGIN_DATE = "eventBeginDate";
 	public static String PROP_EVENT_END_DATE = "eventEndDate";
 	public static String PROP_HOLIDAYS = "holidays";
+	public static String PROP_WK_ENROLL = "lastWeekToEnroll";
+	public static String PROP_WK_CHANGE = "lastWeekToChange";
+	public static String PROP_WK_DROP = "lastWeekToDrop";
 
 	public BaseSession() {
 		initialize();
@@ -108,11 +116,23 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public String getHolidays() { return iHolidays; }
 	public void setHolidays(String holidays) { iHolidays = holidays; }
 
+	public Integer getLastWeekToEnroll() { return iLastWeekToEnroll; }
+	public void setLastWeekToEnroll(Integer lastWeekToEnroll) { iLastWeekToEnroll = lastWeekToEnroll; }
+
+	public Integer getLastWeekToChange() { return iLastWeekToChange; }
+	public void setLastWeekToChange(Integer lastWeekToChange) { iLastWeekToChange = lastWeekToChange; }
+
+	public Integer getLastWeekToDrop() { return iLastWeekToDrop; }
+	public void setLastWeekToDrop(Integer lastWeekToDrop) { iLastWeekToDrop = lastWeekToDrop; }
+
 	public DepartmentStatusType getStatusType() { return iStatusType; }
 	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
 	public DatePattern getDefaultDatePattern() { return iDefaultDatePattern; }
 	public void setDefaultDatePattern(DatePattern defaultDatePattern) { iDefaultDatePattern = defaultDatePattern; }
+
+	public StudentSectioningStatus getDefaultSectioningStatus() { return iDefaultSectioningStatus; }
+	public void setDefaultSectioningStatus(StudentSectioningStatus defaultSectioningStatus) { iDefaultSectioningStatus = defaultSectioningStatus; }
 
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
@@ -171,10 +191,14 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 			"\n	AcademicYear: " + getAcademicYear() +
 			"\n	ClassesEndDateTime: " + getClassesEndDateTime() +
 			"\n	DefaultDatePattern: " + getDefaultDatePattern() +
+			"\n	DefaultSectioningStatus: " + getDefaultSectioningStatus() +
 			"\n	EventBeginDate: " + getEventBeginDate() +
 			"\n	EventEndDate: " + getEventEndDate() +
 			"\n	ExamBeginDate: " + getExamBeginDate() +
 			"\n	Holidays: " + getHolidays() +
+			"\n	LastWeekToChange: " + getLastWeekToChange() +
+			"\n	LastWeekToDrop: " + getLastWeekToDrop() +
+			"\n	LastWeekToEnroll: " + getLastWeekToEnroll() +
 			"\n	SessionBeginDateTime: " + getSessionBeginDateTime() +
 			"\n	SessionEndDateTime: " + getSessionEndDateTime() +
 			"\n	StatusType: " + getStatusType() +

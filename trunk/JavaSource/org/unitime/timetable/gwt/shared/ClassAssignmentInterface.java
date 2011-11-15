@@ -402,7 +402,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 	public static class Student implements IsSerializable {
 		private long iId;
 		private String iExternalId, iName;
-		private List<String> iArea, iClassification, iMajor;
+		private List<String> iArea, iClassification, iMajor, iGroup;
 		
 		public Student() {}
 
@@ -462,6 +462,22 @@ public class ClassAssignmentInterface implements IsSerializable {
 			iMajor.add(major);
 		}
 		public List<String> getMajors() { return iMajor; }
+		
+		public boolean hasGroup() { return iGroup != null && !iGroup.isEmpty(); }
+		public String getGroup(String delim) { 
+			if (iGroup == null) return "";
+			String ret = "";
+			for (String group: iGroup) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += group;
+			}
+			return ret;
+		}
+		public void addGroup(String group) {
+			if (iGroup == null) iGroup = new ArrayList<String>();
+			iGroup.add(group);
+		}
+		public List<String> getGroups() { return iGroup; }
 		
 		public String getCurriculum(String delim) {
 			if (!hasArea()) return "";
@@ -672,7 +688,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
-		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
+		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
+		private String iStatus;
 		
 		public StudentInfo() {}
 		
@@ -727,6 +744,12 @@ public class ClassAssignmentInterface implements IsSerializable {
 		
 		public Date getApprovedDate() { return iApprovedDate; }
 		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
+		
+		public Date getEmailDate() { return iEmailDate; }
+		public void setEmailDate(Date ts) { iEmailDate = ts; }
+
+		public String getStatus() { return iStatus; }
+		public void setStatus(String status) { iStatus = status; }
 	}
 	
 	

@@ -34,7 +34,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
-import org.unitime.timetable.model.StudentStatusType;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.WaitList;
 
 public abstract class BaseStudent implements Serializable {
@@ -48,10 +48,10 @@ public abstract class BaseStudent implements Serializable {
 	private String iEmail;
 	private Integer iFreeTimeCategory;
 	private Integer iSchedulePreference;
-	private Date iStatusChangeDate;
+	private Date iScheduleEmailedDate;
 
-	private StudentStatusType iStatus;
 	private Session iSession;
+	private StudentSectioningStatus iSectioningStatus;
 	private Set<AcademicAreaClassification> iAcademicAreaClassifications;
 	private Set<PosMajor> iPosMajors;
 	private Set<PosMinor> iPosMinors;
@@ -70,7 +70,7 @@ public abstract class BaseStudent implements Serializable {
 	public static String PROP_EMAIL = "email";
 	public static String PROP_FREE_TIME_CAT = "freeTimeCategory";
 	public static String PROP_SCHEDULE_PREFERENCE = "schedulePreference";
-	public static String PROP_STATUS_CHANGE_DATE = "statusChangeDate";
+	public static String PROP_SCHEDULE_EMAILED = "scheduleEmailedDate";
 
 	public BaseStudent() {
 		initialize();
@@ -107,14 +107,14 @@ public abstract class BaseStudent implements Serializable {
 	public Integer getSchedulePreference() { return iSchedulePreference; }
 	public void setSchedulePreference(Integer schedulePreference) { iSchedulePreference = schedulePreference; }
 
-	public Date getStatusChangeDate() { return iStatusChangeDate; }
-	public void setStatusChangeDate(Date statusChangeDate) { iStatusChangeDate = statusChangeDate; }
-
-	public StudentStatusType getStatus() { return iStatus; }
-	public void setStatus(StudentStatusType status) { iStatus = status; }
+	public Date getScheduleEmailedDate() { return iScheduleEmailedDate; }
+	public void setScheduleEmailedDate(Date scheduleEmailedDate) { iScheduleEmailedDate = scheduleEmailedDate; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
+
+	public StudentSectioningStatus getSectioningStatus() { return iSectioningStatus; }
+	public void setSectioningStatus(StudentSectioningStatus sectioningStatus) { iSectioningStatus = sectioningStatus; }
 
 	public Set<AcademicAreaClassification> getAcademicAreaClassifications() { return iAcademicAreaClassifications; }
 	public void setAcademicAreaClassifications(Set<AcademicAreaClassification> academicAreaClassifications) { iAcademicAreaClassifications = academicAreaClassifications; }
@@ -202,10 +202,10 @@ public abstract class BaseStudent implements Serializable {
 			"\n	FreeTimeCategory: " + getFreeTimeCategory() +
 			"\n	LastName: " + getLastName() +
 			"\n	MiddleName: " + getMiddleName() +
+			"\n	ScheduleEmailedDate: " + getScheduleEmailedDate() +
 			"\n	SchedulePreference: " + getSchedulePreference() +
+			"\n	SectioningStatus: " + getSectioningStatus() +
 			"\n	Session: " + getSession() +
-			"\n	Status: " + getStatus() +
-			"\n	StatusChangeDate: " + getStatusChangeDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

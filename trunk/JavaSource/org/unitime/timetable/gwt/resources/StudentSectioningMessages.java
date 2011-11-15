@@ -655,6 +655,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to enroll into {0}, the class is no longer available.")
 	String exceptionEnrollNotAvailable(String clazz);
 	
+	@DefaultMessage("Unable to enroll into {0}, the class is no longer available (it is after the deadline).")
+	String exceptionEnrollDeadlineChange(String clazz);
+
+	@DefaultMessage("Unable to enroll into {0}, the class is no longer available (it is after the deadline).")
+	String exceptionEnrollDeadlineNew(String clazz);
+	
+	@DefaultMessage("Unable to drop from {0} (it is after the deadline).")
+	String exceptionEnrollDeadlineDrop(String clazz);
+
 	@DefaultMessage("This feature is not supported in the current environment.")
 	String exceptionNotSupportedFeature();
 	
@@ -825,4 +834,48 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
 	String sectioningStatusPriorityHint();
+	
+	@DefaultMessage("Enrollment disabled.")
+	String exceptionEnrollmentDisabled();
+
+	@DefaultMessage("Enrollment disabled: {0}")
+	String exceptionEnrollmentDisabledWithMessage(String message);
+	
+	@DefaultMessage("Status")
+	String colStatus();
+	
+	@DefaultMessage("Emailed")
+	String colEmailTimeStamp();
+
+	@DefaultMessage("Group")
+	String colGroup();
+	
+	@DefaultMessage("Send email...")
+	String sendStudentEmail();
+	
+	@DefaultMessage("Change status to {0}")
+	String changeStatusTo(String newStatus);
+	
+	@DefaultMessage("Changing status to {0}...")
+	String changingStatusTo(String newStatus);
+
+	
+	@DefaultMessage("Subject:")
+	String emailSubject();
+
+	@DefaultMessage("CC:")
+	String emailCC();
+
+	@DefaultMessage("Body:")
+	String emailBody();
+
+	@DefaultMessage("Send")
+	String emailSend();
+
+	@DefaultMessage("No email on file.")
+	String exceptionNoEmail();
+	
+	@DefaultMessage("Cancelled due to: {0}")
+	String exceptionCancelled(String exception);
+
 }

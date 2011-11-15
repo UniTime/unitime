@@ -1948,4 +1948,34 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Not Specified")
 	String instructorExternalIdNotSpecified();
+	
+	@DefaultMessage("New Enrollment Deadline:")
+	String propertyLastWeekEnrollment();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to enroll to this course, defaults to {0} when left blank.")
+	String descriptionLastWeekEnrollment(String wkEnrollmentDefault);
+	
+	@DefaultMessage("Student are allowed to enroll to this course up to {0}. week of classes.")
+	String textLastWeekEnrollment(String wkEnrollment);
+
+	@DefaultMessage("Weeks start on the day of session start date, number of weeks is relative to class start ({0}).")
+	String descriptionEnrollmentDeadlines(String weekStartDayOfWeek);
+
+	@DefaultMessage("Class Changes Deadline:")
+	String propertyLastWeekChange();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to change existing enrollments, defaults to {0} when left blank.")
+	String descriptionLastWeekChange(String wkChangeDefault);
+
+	@DefaultMessage("Student are allowed to change existing enrollments up to {0}. week of classes.")
+	String textLastWeekChange(String wkChange);
+
+	@DefaultMessage("Course Drop Deadline:")
+	String propertyLastWeekDrop();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to drop to this course, defaults to {0} when left blank.")
+	String descriptionLastWeekDrop(String wkDropDefault);
+	
+	@DefaultMessage("Student are allowed to drop to this course up to {0}. week of classes.")
+	String textLastWeekDrop(String wkDrop);
 }

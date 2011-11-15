@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -80,7 +81,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private Date iTimeStamp = null;
 	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MMMM dd, yyyy hh:mm:ss aa");
 	private static SimpleDateFormat sDateFormaShort = new SimpleDateFormat("yy/MM/dd");
-	private String iSubject = "Class schedule change for %session%";
+	private String iSubject = "Class schedule change for %session%", iSubjectExt = null, iMessage = null, iCC = null;
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
 	private byte[] iTimetableImage = null;
 	
@@ -99,8 +100,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	public List<Request> getOldRequests() { return iOldRequests; }
 	public List<Request> getNewRequests() { return iNewRequests; }
 	public Date getTimeStamp() { return iTimeStamp; }
-	public String getSubject() { return iSubject; }
-	public void setSubject(String subject) { iSubject = subject; }
+	private String getSubject() { return iSubject; }
+	private void setSubject(String subject) { iSubject = subject; }
+	public String getEmailSubject() { return iSubjectExt; }
+	public void setEmailSubject(String subject) { iSubjectExt = subject; }
+	public String getMessage() { return iMessage; }
+	public void setMessage(String message) { iMessage = message; }
+	public String getCC() { return iCC; }
+	public void setCC(String cc) { iCC = cc; }
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -149,42 +156,28 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			try {
 				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId());
 				if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
-					final String html = generateMessage(dbStudent, server, helper);
-					if (html != null) {
-						Email email = new Email();
+					boolean emailEnabled = true;
+					StudentSectioningStatus status = dbStudent.getSectioningStatus();
+					if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
+					if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
+						emailEnabled = false;
+					}
+					
+					if (emailEnabled) {
+						final String html = generateMessage(dbStudent, server, helper);
+						if (html != null) {
+							Email email = new Email();
 
-						email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-						
-						email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
-						
-						email.addAttachement(new DataSource() {
-							@Override
-							public OutputStream getOutputStream() throws IOException {
-								throw new IOException("No output stream.");
-							}
+							email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 							
-							@Override
-							public String getName() {
-								return "message.html";
-							}
+							if (getCC() != null && !getCC().isEmpty())
+								email.addRecipientCC(getCC(), null);
 							
-							@Override
-							public InputStream getInputStream() throws IOException {
-								StringWriter buffer = new StringWriter();
-								PrintWriter out = new PrintWriter(buffer);
-								generateTimetable(out, server, helper);
-								out.flush(); out.close();
-								return new ByteArrayInputStream(
-										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
-							}
+							if (getEmailSubject() != null && !getEmailSubject().isEmpty())
+								email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+							else
+								email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
 							
-							@Override
-							public String getContentType() {
-								return "text/html; charset=UTF-8";
-							}
-						});
-						
-						if (iTimetableImage != null) {
 							email.addAttachement(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
@@ -193,24 +186,26 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								
 								@Override
 								public String getName() {
-									return "timetable.png";
+									return "message.html";
 								}
 								
 								@Override
 								public InputStream getInputStream() throws IOException {
-									return new ByteArrayInputStream(iTimetableImage);
+									StringWriter buffer = new StringWriter();
+									PrintWriter out = new PrintWriter(buffer);
+									generateTimetable(out, server, helper);
+									out.flush(); out.close();
+									return new ByteArrayInputStream(
+											html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
 								}
 								
 								@Override
 								public String getContentType() {
-									return "image/png";
+									return "text/html; charset=UTF-8";
 								}
 							});
-						}
-						
-						try {
-							final String calendar = CalendarServlet.getCalendar(server, student);
-							if (calendar != null)
+							
+							if (iTimetableImage != null) {
 								email.addAttachement(new DataSource() {
 									@Override
 									public OutputStream getOutputStream() throws IOException {
@@ -219,36 +214,69 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									
 									@Override
 									public String getName() {
-										return "timetable.ics";
+										return "timetable.png";
 									}
 									
 									@Override
 									public InputStream getInputStream() throws IOException {
-										return new ByteArrayInputStream(calendar.getBytes());
+										return new ByteArrayInputStream(iTimetableImage);
 									}
 									
 									@Override
 									public String getContentType() {
-										return "text/calendar; charset=UTF-8";
+										return "image/png";
 									}
 								});
-						} catch (IOException e) {
-							helper.warn("Unable to create calendar for student " + student.getId() + ":" + e.getMessage());
+							}
+							
+							try {
+								final String calendar = CalendarServlet.getCalendar(server, student);
+								if (calendar != null)
+									email.addAttachement(new DataSource() {
+										@Override
+										public OutputStream getOutputStream() throws IOException {
+											throw new IOException("No output stream.");
+										}
+										
+										@Override
+										public String getName() {
+											return "timetable.ics";
+										}
+										
+										@Override
+										public InputStream getInputStream() throws IOException {
+											return new ByteArrayInputStream(calendar.getBytes());
+										}
+										
+										@Override
+										public String getContentType() {
+											return "text/calendar; charset=UTF-8";
+										}
+									});
+							} catch (IOException e) {
+								helper.warn("Unable to create calendar for student " + student.getId() + ":" + e.getMessage());
+							}
+							
+							String lastMessageId = sLastMessage.get(student.getId());
+							if (lastMessageId != null)
+								email.setInReplyTo(lastMessageId);
+							
+							email.setHTML(html);
+							email.send();
+							
+							String messageId = email.getMessageId();
+							if (messageId != null)
+								sLastMessage.put(student.getId(), messageId);
+							
+							Date ts = new Date();
+							dbStudent.setScheduleEmailedDate(ts);
+							student.setEmailTimeStamp(ts.getTime());
+							
+							helper.getHibSession().saveOrUpdate(dbStudent);
+							
+							ret = true;
 						}
-						
-						String lastMessageId = sLastMessage.get(student.getId());
-						if (lastMessageId != null)
-							email.setInReplyTo(lastMessageId);
-						
-						email.setHTML(html);
-						email.send();
-						
-						String messageId = email.getMessageId();
-						if (messageId != null)
-							sLastMessage.put(student.getId(), messageId);
-						
-						ret = true;
-					}
+					}						
 				}
 				helper.commitTransaction();
 			} catch (Exception e) {
@@ -326,14 +354,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("<html>");
 		out.println("<head>");
 		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
-		out.println("	<title>Current Class Schedule</title>");
+		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
+			out.println("	<title>Current Class Schedule</title>");
+		} else {
+			out.println("	<title>" + getEmailSubject() + "</title>");
+		}
 		out.println("</head>");
 		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
 		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; width: 800px;\" align=\"center\">");
 		out.println("		<tr><td><table width=\"100%\">");
 		out.println("			<tr>");
 		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
-		out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">Class Schedule</td>");
+		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
+			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">Class Schedule</td>");
+		} else {
+			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + getEmailSubject() + "</td>");
+		}
 		out.println("			</tr>");
 		out.println("			<tr>");
 		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + 
@@ -342,6 +378,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				server.getAcademicSession().getTerm() + " " + server.getAcademicSession().getYear() + " (" + server.getAcademicSession().getCampus() + ")</td>");
 		out.println("			</tr>");
 		out.println("		</table></td></tr>");
+		if (getMessage() != null && !getMessage().isEmpty()) {
+			out.println("		<tr><td " +
+					"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
+					"Message</td></tr>");
+			out.println("		<tr><td>");
+			out.println(getMessage().replace("\n", "<br>"));
+			out.println("		</td></tr>");
+		}
 		generateChange(out, server, helper);
 		out.println("		<tr><td " +
 				"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
@@ -795,8 +839,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (section.getParent() == null) firstWithNoParent = false;
 					}
 				}
-				if (nrLines == 0)
-					out.println("<tr><td colspan='11'><i>No enrollment change detected.</i></td></tr>");
+				if (nrLines == 0) {
+					if (getMessage() == null || getMessage().isEmpty())
+						out.println("<tr><td colspan='11'><i>No enrollment change detected.</i></td></tr>");
+				}
 				generateListOfClassesFooter(out, false);
 				out.println("		</td></tr>");
 			} else {
