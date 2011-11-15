@@ -23,10 +23,14 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,14 +59,45 @@ public class Localization {
              return ApplicationProperties.getProperty("unitime.locale", "en");
 		 }
 	};
+	private static final ThreadLocal<Locale> sJavaLocale = new ThreadLocal<Locale>() {
+		 @Override
+		 protected Locale initialValue() {
+            return guessJavaLocale(ApplicationProperties.getProperty("unitime.locale", "en"));
+		 }
+	};
 	
-	public static void setLocale(String locale) { sLocale.set(locale); }
+	public static void setLocale(String locale) { 
+		sLocale.set(locale);
+		sJavaLocale.set(guessJavaLocale(locale));
+	}
+	
 	public static String getLocale() { return sLocale.get(); }
+	
+	public static Locale getJavaLocale() { return sJavaLocale.get(); }
+	
+	public static DateFormat getDateFormat(String pattern) { return new SimpleDateFormat(pattern, getJavaLocale()); }
+	
 	public static String getFirstLocale() {
 		String locale = getLocale();
 		if (locale.indexOf(',') >= 0) locale = locale.substring(0, locale.indexOf(','));
 		if (locale.indexOf(';') >= 0) locale = locale.substring(0, locale.indexOf(';'));
 		return locale.trim();
+	}
+	
+	private static Locale guessJavaLocale(String locale) {
+		for (StringTokenizer s = new StringTokenizer(locale, ",;"); s.hasMoreTokens(); ) {
+			String lang = s.nextToken();
+			String cc = null;
+			if (lang.indexOf('_') >= 0) {
+				cc = lang.substring(lang.indexOf('_') + 1);
+				lang = lang.substring(0, lang.indexOf('_'));
+			}
+			for (Locale loc: Locale.getAvailableLocales())
+				if ((lang == null || lang.isEmpty() || lang.equals(loc.getLanguage())) && (cc == null || cc.isEmpty() || cc.equals(loc.getCountry()))) {
+					return loc;
+				}
+		}
+		return Locale.getDefault();
 	}
 	
 	public static <T> T create(Class<T> bundle) {
