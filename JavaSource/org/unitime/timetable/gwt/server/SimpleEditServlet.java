@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CourseCreditFormatDAO;
@@ -68,6 +69,7 @@ import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Constants;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -257,6 +259,26 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(2, df.format(position.getSortOrder()));
 				}
 				break;
+			case sectioning:
+				data = new SimpleEditInterface(type,
+						new Field("Abbreviation", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Access", FieldType.toggle, 40),
+						new Field("Advisor", FieldType.toggle, 40),
+						new Field("Email", FieldType.toggle, 40),
+						new Field("Message", FieldType.text, 400, 200)
+						);
+				data.setSortBy(0, 1);
+				for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll()) {
+					Record r = data.addRecord(status.getUniqueId());
+					r.setField(0, status.getReference());
+					r.setField(1, status.getLabel());
+					r.setField(2, status.hasOption(StudentSectioningStatus.Option.enabled) ? "true" : "false");
+					r.setField(3, status.hasOption(StudentSectioningStatus.Option.advisor) ? "true" : "false");
+					r.setField(4, status.hasOption(StudentSectioningStatus.Option.email) ? "true" : "false");
+					r.setField(5, status.getMessage());
+				}
+				break;				
 			}
 			data.setEditable(isAdmin());
 			return data;
@@ -817,6 +839,66 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 								getThreadLocalRequest(),
 								position,
 								position.getReference() + " " + position.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case sectioning:
+					for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll()) {
+						Record r = data.getRecord(status.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getThreadLocalRequest(),
+									status,
+									status.getReference() + " " + status.getLabel(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(status);
+						} else {
+							int value = 0;
+							if ("true".equals(r.getField(2))) value += StudentSectioningStatus.Option.enabled.toggle();
+							if ("true".equals(r.getField(3))) value += StudentSectioningStatus.Option.advisor.toggle();
+							if ("true".equals(r.getField(4))) value += StudentSectioningStatus.Option.email.toggle();
+							boolean changed = 
+								!ToolBox.equals(status.getReference(), r.getField(0)) ||
+								!ToolBox.equals(status.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(status.getStatus(), value) ||
+								!ToolBox.equals(status.getMessage(), r.getField(5));
+							status.setReference(r.getField(0));
+							status.setLabel(r.getField(1));
+							status.setStatus(value);
+							status.setMessage(r.getField(5));
+							hibSession.saveOrUpdate(status);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getThreadLocalRequest(),
+										status,
+										status.getReference() + " " + status.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						StudentSectioningStatus status = new StudentSectioningStatus();
+						int value = 0;
+						if ("true".equals(r.getField(2))) value += StudentSectioningStatus.Option.enabled.toggle();
+						if ("true".equals(r.getField(3))) value += StudentSectioningStatus.Option.advisor.toggle();
+						if ("true".equals(r.getField(4))) value += StudentSectioningStatus.Option.email.toggle();
+						status.setReference(r.getField(0));
+						status.setLabel(r.getField(1));
+						status.setStatus(value);
+						status.setMessage(r.getField(5));
+						r.setUniqueId((Long)hibSession.save(status));
+						ChangeLog.addChange(hibSession,
+								getThreadLocalRequest(),
+								status,
+								status.getReference() + " " + status.getLabel(),
 								Source.SIMPLE_EDIT, 
 								Operation.CREATE,
 								null,

@@ -81,6 +81,9 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private Boolean canLock, canUnlock;
     private boolean byReservationOnly;
     private String coordinators;
+    private String wkEnroll, wkChange, wkDrop;
+    private String weekStartDayOfWeek;
+
 
     // --------------------------------------------------------- Classes
 
@@ -139,6 +142,8 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         catalogLinkLocation = null;
         canLock = null; canUnlock = null;
         byReservationOnly = false; coordinators = null;
+        wkEnroll = null; wkChange = null; wkDrop = null;
+        weekStartDayOfWeek = null;
     }
     
     public List getCourseOfferings() {
@@ -362,4 +367,20 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 	
 	public String getCoordinators() { return coordinators; }
 	public void setCoordinators(String coordinators) { this.coordinators = coordinators; }
+	
+    public String getWkEnroll() { return wkEnroll; }
+    public void setWkEnroll(String wkEnroll) { this.wkEnroll = wkEnroll; }
+
+    public String getWkChange() { return wkChange; }
+    public void setWkChange(String wkChange) { this.wkChange = wkChange; }
+
+    public String getWkDrop() { return wkDrop; }
+    public void setWkDrop(String wkDrop) { this.wkDrop = wkDrop; }
+    
+    public String getWeekStartDayOfWeek() { return weekStartDayOfWeek; }
+    public void setWeekStartDayOfWeek(String weekStartDayOfWeek) { this.weekStartDayOfWeek = weekStartDayOfWeek; }
+    
+    public boolean isDisplayEnrollmentDeadlineNote() {
+    	return (wkEnroll != null && !wkEnroll.isEmpty()) || (wkChange != null && !wkChange.isEmpty()) || (wkDrop != null && !wkDrop.isEmpty());
+    }
 }

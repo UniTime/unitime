@@ -38,6 +38,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	private Boolean iWaitlist;
 	private Boolean iAlternative;
 	private Date iTimestamp;
+	private String iChangedBy;
 
 	private Student iStudent;
 	private FreeTime iFreeTime;
@@ -49,6 +50,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	public static String PROP_WAITLIST = "waitlist";
 	public static String PROP_IS_ALTERNATIVE = "alternative";
 	public static String PROP_TIMESTAMP = "timestamp";
+	public static String PROP_CHANGED_BY = "changedBy";
 
 	public BaseCourseDemand() {
 		initialize();
@@ -77,6 +79,9 @@ public abstract class BaseCourseDemand implements Serializable {
 
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
+
+	public String getChangedBy() { return iChangedBy; }
+	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
 
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
@@ -116,6 +121,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	public String toDebugString() {
 		return "CourseDemand[" +
 			"\n	Alternative: " + getAlternative() +
+			"\n	ChangedBy: " + getChangedBy() +
 			"\n	FreeTime: " + getFreeTime() +
 			"\n	Priority: " + getPriority() +
 			"\n	Student: " + getStudent() +

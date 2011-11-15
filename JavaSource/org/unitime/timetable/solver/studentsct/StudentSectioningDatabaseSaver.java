@@ -177,6 +177,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         	continue;
                         }
                         StudentClassEnrollment sce = new StudentClassEnrollment();
+                        sce.setChangedBy(StudentClassEnrollment.SystemChange.BATCH.toString());
                         sce.setStudent(s);
                         sce.setClazz(clazz);
                         if (cr == null) {

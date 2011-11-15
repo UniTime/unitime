@@ -78,5 +78,12 @@
             length="40"
             not-null="false"/>
 
+        <property
+            name="changedBy"
+            column="changed_by"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
     </class>
 </hibernate-mapping>

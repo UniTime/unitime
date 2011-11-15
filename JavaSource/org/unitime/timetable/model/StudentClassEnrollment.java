@@ -43,6 +43,19 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public static enum SystemChange {
+		WAITLIST("System: Wait-List"),
+		SYSTEM("System: Course Change"),
+		IMPORT("Data Exchange"),
+		BATCH("Batch Sectioning"),
+		TEST("Test");
+		
+		private String iName;
+		SystemChange(String name) { iName = name; }
+		
+		public String getName() { return iName; }
+	}
 
 	public static List findAll(Long sessionId) {
 	    return new StudentClassEnrollmentDAO().getSession().createQuery(

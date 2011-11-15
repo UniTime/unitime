@@ -39,12 +39,12 @@ public abstract class BaseStudentDAO extends _RootDAO<Student,Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Student> findByStatus(org.hibernate.Session hibSession, Long statusId) {
-		return hibSession.createQuery("from Student x where x.status.uniqueId = :statusId").setLong("statusId", statusId).list();
+	public List<Student> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Student x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Student> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Student x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+	public List<Student> findBySectioningStatus(org.hibernate.Session hibSession, Long sectioningStatusId) {
+		return hibSession.createQuery("from Student x where x.sectioningStatus.uniqueId = :sectioningStatusId").setLong("sectioningStatusId", sectioningStatusId).list();
 	}
 }

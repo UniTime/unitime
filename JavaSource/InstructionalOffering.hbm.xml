@@ -175,5 +175,26 @@
                 column="instructor_id"
                 foreign-key="fk_offering_coord_instructor"/>
         </set>
-</class>
+
+		<property
+			name="lastWeekToEnroll"
+			column="wk_enroll"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+
+		<property
+			name="lastWeekToChange"
+			column="wk_change"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+
+		<property
+			name="lastWeekToDrop"
+			column="wk_drop"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+	</class>
 </hibernate-mapping>

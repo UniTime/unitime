@@ -37,8 +37,14 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	private Date iSessionBegin = null;
 	private Date iDatePatternFirstDate = null;
 	private boolean iSectioningEnabled = false;;
+	private int iWkEnroll = 1, iWkChange = 1, iWkDrop = 4;
+	private String iDefaultStatus = null;
 	
 	public AcademicSessionInfo(Session session) {
+		update(session);
+	}
+	
+	public void update(Session session) {
 		iUniqueId = session.getUniqueId();
 		iYear = session.getAcademicYear();
 		iTerm = session.getAcademicTerm();
@@ -48,9 +54,13 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 			iWeekPattern = session.getDefaultDatePattern().getPatternBitSet();
 		}
 		iFreeTimePattern = getFreeTimeBitSet(session);
-		iSessionBegin = session.getEventBeginDate();
+		iSessionBegin = session.getSessionBeginDateTime();
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
 		iSectioningEnabled = session.getStatusType().canOnlineSectionStudents();
+		iWkEnroll = session.getLastWeekToEnroll();
+		iWkChange = session.getLastWeekToChange();
+		iWkDrop = session.getLastWeekToDrop();
+		iDefaultStatus = session.getDefaultSectioningStatus() == null ? null : session.getDefaultSectioningStatus().getReference();
 	}
 	
 	public AcademicSessionInfo(Long uniqueId, String year, String term, String campus) {
@@ -84,6 +94,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	public BitSet getDefaultWeekPattern() { return iWeekPattern; }
 	public BitSet getFreeTimePattern() { return iFreeTimePattern; }
 	public Date getDatePatternFirstDate() { return iDatePatternFirstDate; }
+	public Date getSessionBeginDate() { return iSessionBegin; }
 	
 	public int compareTo(AcademicSessionInfo a) {
 		int cmp = iSessionBegin.compareTo(a.iSessionBegin);
@@ -107,4 +118,10 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
 	
 	public boolean isSectioningEnabled() { return iSectioningEnabled; }
 	public void setSectioningEnabled(boolean enable) { iSectioningEnabled = enable; }
+	
+	public int getLastWeekToEnroll() { return iWkEnroll; }
+	public int getLastWeekToChange() { return iWkChange; }
+	public int getLastWeekToDrop() { return iWkDrop; }
+	
+	public String getDefaultSectioningStatus() { return iDefaultStatus; }
 }

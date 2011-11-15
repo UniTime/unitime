@@ -1,8 +1,8 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -17,28 +17,22 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.model.base;
 
-import org.unitime.timetable.model.base.BaseStudentStatusType;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 
+public abstract class BaseStudentSectioningStatusDAO extends _RootDAO<StudentSectioningStatus,Long> {
 
+	private static StudentSectioningStatusDAO sInstance;
 
-public class StudentStatusType extends BaseStudentStatusType {
-	private static final long serialVersionUID = 1L;
-
-/*[CONSTRUCTOR MARKER BEGIN]*/
-	public StudentStatusType () {
-		super();
+	public static StudentSectioningStatusDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentSectioningStatusDAO();
+		return sInstance;
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public StudentStatusType (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public Class<StudentSectioningStatus> getReferenceClass() {
+		return StudentSectioningStatus.class;
 	}
-
-/*[CONSTRUCTOR MARKER END]*/
-
-
 }

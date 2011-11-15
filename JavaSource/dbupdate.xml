@@ -3885,4 +3885,136 @@
 		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Advisor', 'Student Advisor')</mysql>
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 	</update>
+	<update version="80" date="11-Nov-2011" comment="Student status">
+		<plsql>
+			create table %SCHEMA%.sectioning_status (
+				uniqueid number(20,0) constraint nn_sect_status_uniqueid not null,
+				reference varchar2(20) constraint nn_sect_status_reference not null,
+				label varchar2(60) constraint nn_sect_status_label not null,
+				status number(10,0) constraint nn_sect_status_enabled not null,
+				message varchar2(200)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_status add constraint pk_sect_status primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.sectioning_status (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				status bigint(10) not null,
+				message varchar(200)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.student add sect_status number(20,0)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.student add sect_status decimal(20,0) null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.student
+  			add constraint fk_student_sect_status foreign key (sect_status)
+  			references %SCHEMA%.sectioning_status (uniqueid) on delete set null
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.sessions add sect_status number(20,0)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions add sect_status decimal(20,0) null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.sessions
+  			add constraint fk_session_sect_status foreign key (sect_status)
+  			references %SCHEMA%.sectioning_status (uniqueid) on delete set null
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.sessions add wk_enroll number(10,0) default 1
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.sessions add constraint nn_session_wk_enroll check (wk_enroll is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions add wk_enroll bigint(10) not null default 1
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.sessions add wk_change number(10,0) default 1
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.sessions add constraint nn_session_wk_change check (wk_change is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions add wk_change bigint(10) not null default 1
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.sessions add wk_drop number(10,0) default 1
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.sessions add constraint nn_session_wk_drop check (wk_drop is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.sessions add wk_drop bigint(10) not null default 1
+		</mysql>
+		
+		<plsql>
+			alter table %SCHEMA%.instructional_offering add wk_enroll number(10,0)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.instructional_offering add wk_enroll bigint(10)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.instructional_offering add wk_change number(10,0)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.instructional_offering add wk_change bigint(10)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.instructional_offering add wk_drop number(10,0)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.instructional_offering add wk_drop bigint(10)
+		</mysql>
+		
+		<mysql>alter table %SCHEMA%.course_demand add changed_by varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.course_demand add changed_by varchar2(40)</plsql>
+
+		<mysql>alter table %SCHEMA%.student_class_enrl add changed_by varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.student_class_enrl add changed_by varchar2(40)</plsql>
+		
+		<mysql>alter table %SCHEMA%.student add schedule_emailed datetime null</mysql>
+		<plsql>alter table %SCHEMA%.student add schedule_emailed date</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql>
+			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values
+			(%ID% + 0, 'Enabled', 'Access enabled', 7, null),
+			(%ID% + 1, 'Disabled', 'Access disabled', 4, null),
+			(%ID% + 2, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...'),
+			(%ID% + 3, 'No Email', 'Access enabled, no email notification', 3, null)
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Enabled', 'Access enabled', 7, null)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Disabled', 'Access disabled', 4, null)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'No Email', 'Access enabled, no email notification', 3, null)
+		</plsql>
+		<mysql>alter table %SCHEMA%.student drop foreign key fk_student_status_student</mysql>
+		<mysql>alter table %SCHEMA%.student drop column status_type_id</mysql>
+		<mysql>alter table %SCHEMA%.student drop column status_change_date</mysql>
+		<mysql>drop table %SCHEMA%.student_status_type</mysql>
+		<plsql>alter table %SCHEMA%.student drop constraint fk_student_status_student</plsql>
+		<plsql>alter table %SCHEMA%.student drop column status_type_id</plsql>
+		<plsql>alter table %SCHEMA%.student drop column status_change_date</plsql>
+		<plsql>drop table %SCHEMA%.student_status_type</plsql>
+	</update>
+	
 </dbupdate>

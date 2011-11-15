@@ -751,6 +751,35 @@
 				<one-to-many class="org.unitime.timetable.model.DepartmentalInstructor"/>
 			</set>
 			-->
+			
+			<property
+				name="lastWeekToEnroll"
+				column="wk_enroll"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+			<property
+				name="lastWeekToChange"
+				column="wk_change"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+			<property
+				name="lastWeekToDrop"
+				column="wk_drop"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+	        <many-to-one
+    	        name="defaultSectioningStatus"
+	            class="StudentSectioningStatus"
+        	    column="sect_status"
+    	        foreign-key="fk_session_sect_status"
+	            not-null="false"/>
+
         </union-subclass>
 
         <union-subclass name="DepartmentalInstructor" table="departmental_instructor">

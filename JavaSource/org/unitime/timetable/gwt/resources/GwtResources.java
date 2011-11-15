@@ -62,4 +62,10 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 
 	@Source("org/unitime/timetable/gwt/resources/icons/action_delete.png")
 	ImageResource delete();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/accept.png")
+	ImageResource on();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/cross.png")
+	ImageResource off();
 }

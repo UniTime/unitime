@@ -302,6 +302,21 @@ public class CourseOfferingEditAction extends Action {
 		        }
 
 		        io.setByReservationOnly(frm.isByReservationOnly());
+		        try {
+		        	io.setLastWeekToEnroll(Integer.parseInt(frm.getWkEnroll()));
+		        } catch (Exception e) {
+		        	io.setLastWeekToEnroll(null);
+		        }
+		        try {
+			        io.setLastWeekToChange(Integer.parseInt(frm.getWkChange()));
+		        } catch (Exception e) {
+			        io.setLastWeekToChange(null);
+		        }
+		        try{
+			        io.setLastWeekToDrop(Integer.parseInt(frm.getWkDrop()));
+		        } catch (Exception e) {
+		        	io.setLastWeekToDrop(null);
+		        }
 		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
 		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
 		            DepartmentalInstructor instructor = i.next();
@@ -395,6 +410,14 @@ public class CourseOfferingEditAction extends Action {
         frm.setIsControl(co.getIsControl());
         frm.setIoNotOffered(io.getNotOffered());
         frm.setByReservationOnly(io.isByReservationOnly());
+        frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
+        frm.setWkEnrollDefault(io.getSession().getLastWeekToEnroll());
+        frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
+        frm.setWkChangeDefault(io.getSession().getLastWeekToChange());
+        frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
+        frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
+        frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
+        
         
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
             frm.getInstructors().add(instructor.getUniqueId().toString());

@@ -26,6 +26,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
@@ -63,7 +64,7 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 									List<ClassAssignmentInterface.ClassAssignment> assignment = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 									for (ClassAssignmentInterface.CourseAssignment course: assignments.get(0).getCourseAssignments())
 										assignment.addAll(course.getClassAssignments());
-									s.execute(new EnrollStudent(studentId, request, assignment));
+									s.execute(new EnrollStudent(studentId, request, assignment, StudentClassEnrollment.SystemChange.TEST.toString()));
 								}
 								break;
 							} catch (SectioningException e) {

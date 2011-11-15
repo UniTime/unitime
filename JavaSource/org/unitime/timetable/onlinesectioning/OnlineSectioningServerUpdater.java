@@ -244,7 +244,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 				OnlineSectioningService.unload(server.getAcademicSession().getUniqueId());
 				server = null;
 			}
-
+			
 			if (!load) return;
 			
 			if (server == null) { 
@@ -253,6 +253,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 				if (server.getAcademicSession().isSectioningEnabled() && !session.getStatusType().canOnlineSectionStudents())
 					server.releaseAllOfferingLocks();
 				server.getAcademicSession().setSectioningEnabled(session.getStatusType().canOnlineSectionStudents());
+				server.getAcademicSession().update(session);
 			}
 		} finally {
 			hibSession.close();
