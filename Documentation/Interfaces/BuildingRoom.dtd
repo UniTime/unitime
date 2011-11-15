@@ -23,7 +23,7 @@
 
 <!ELEMENT building ( room* ) >
 <!ATTLIST building abbreviation CDATA #REQUIRED >
-<!ATTLIST building externalId CDATA #IMPLIED >
+<!ATTLIST building externalId CDATA #REQUIRED >
 <!ATTLIST building locationX CDATA #REQUIRED >
 <!ATTLIST building locationY CDATA #REQUIRED >
 <!ATTLIST building name CDATA #REQUIRED >
@@ -38,7 +38,7 @@
 <!ATTLIST room capacity CDATA #REQUIRED >
 <!ATTLIST room examCapacity CDATA #IMPLIED >
 <!ATTLIST room displayName CDATA #IMPLIED >
-<!ATTLIST room externalId CDATA #IMPLIED >
+<!ATTLIST room externalId CDATA #REQUIRED >
 <!ATTLIST room instructional ( false | False | true | True ) #REQUIRED >
 <!ATTLIST room locationX CDATA #IMPLIED >
 <!ATTLIST room locationY CDATA #IMPLIED >
