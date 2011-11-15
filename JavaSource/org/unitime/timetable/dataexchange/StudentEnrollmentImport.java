@@ -204,6 +204,7 @@ public class StudentEnrollmentImport extends BaseImport {
             		enrollment.setClazz(clazz);
             		enrollment.setCourseOffering(course);
             		enrollment.setTimestamp(new java.util.Date());
+            		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
             		student.getClassEnrollments().add(enrollment);
             		
             		demands: for (CourseDemand d: student.getCourseDemands()) {

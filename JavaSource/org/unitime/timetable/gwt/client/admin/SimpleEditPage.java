@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
@@ -60,6 +61,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -331,7 +334,7 @@ public class SimpleEditPage extends Composite {
 		iTable.setRow(row, record, line);
 	}
 	
-	public class MyCell extends Composite implements HasFocus {
+	public class MyCell extends Composite implements HasFocus, HasCellAlignment {
 		private Field iField;
 		private Record iRecord;
 		private int iIndex;
@@ -406,8 +409,13 @@ public class SimpleEditPage extends Composite {
 					initWidget(check);
 				}
 			} else {
-				Label label = new Label(getValue());
-				initWidget(label);
+				if (field.getType() == FieldType.toggle) {
+					Image image = new Image(record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index)) ? RESOURCES.on() : RESOURCES.off());
+					initWidget(image);
+				} else {
+					Label label = new Label(getValue());
+					initWidget(label);
+				}
 			}
 		}
 				
@@ -443,6 +451,11 @@ public class SimpleEditPage extends Composite {
 				return true;
 			}
 			return false;
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return (iField.getType() == FieldType.toggle ? HasHorizontalAlignment.ALIGN_CENTER : HasHorizontalAlignment.ALIGN_LEFT);
 		}
 	}
 

@@ -218,6 +218,25 @@
                 not-null="true"/>
 
         </union-subclass>
+        
+        <union-subclass
+        	name="StudentSectioningStatus"
+        	table="sectioning_status"
+        	abstract="false">
+            <property
+                name="status"
+                column="status"
+                type="java.lang.Integer"
+                not-null="true"/>
+
+            <property
+                name="message"
+                column="message"
+                type="java.lang.String"
+                not-null="false"
+                length="200"/>
+
+        </union-subclass>
 
     </class>
 </hibernate-mapping>

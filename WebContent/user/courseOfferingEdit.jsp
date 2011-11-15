@@ -277,6 +277,32 @@
 				</table>
 				</TD>
 			</TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
+				<TD valign="top">
+					<html:text property="wkEnroll" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekEnrollment"><bean:write name="courseOfferingEditForm" property="wkEnrollDefault" /></loc:message></i>
+					<html:hidden property="wkEnrollDefault"/>
+				</TD>
+			</TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
+				<TD valign="top">
+					<html:text property="wkChange" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekChange"><bean:write name="courseOfferingEditForm" property="wkChangeDefault" /></loc:message></i>
+					<html:hidden property="wkChangeDefault"/>
+				</TD>
+			</TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
+				<TD valign="top">
+					<html:text property="wkDrop" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekDrop"><bean:write name="courseOfferingEditForm" property="wkDropDefault" /></loc:message></i>
+					<html:hidden property="wkDropDefault"/>
+					<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
+					<html:hidden property="weekStartDayOfWeek"/>
+				</TD>
+			</TR>
 		</logic:equal>
 
 <!-- Buttons -->

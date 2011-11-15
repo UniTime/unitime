@@ -352,6 +352,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         Student student = new Student(s.getUniqueId());
         student.setExternalId(s.getExternalUniqueId());
         student.setName(s.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+        student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
+        student.setEmailTimeStamp(s.getScheduleEmailedDate() == null ? null : s.getScheduleEmailedDate().getTime());
         
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
             AcademicAreaClassification aac = (AcademicAreaClassification)i.next();

@@ -54,6 +54,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -144,7 +145,13 @@ public class SessionEditAction extends LookupDispatchAction {
 		
         Session sessn = Session.getSessionById(id);
 		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-		request.setAttribute("Sessions.holidays", sessionEditForm.getSession().getHolidaysHtml());		
+		request.setAttribute("Sessions.holidays", sessionEditForm.getSession().getHolidaysHtml());
+		
+		sessionEditForm.setWkEnroll(acadSession.getLastWeekToEnroll());
+		sessionEditForm.setWkChange(acadSession.getLastWeekToChange());
+		sessionEditForm.setWkDrop(acadSession.getLastWeekToDrop());
+		sessionEditForm.setSectStatus(acadSession.getDefaultSectioningStatus() == null ? -1 : acadSession.getDefaultSectioningStatus().getUniqueId());
+		
 		return mapping.findForward("showEdit");
 	}
 	
@@ -378,6 +385,10 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessn.setEventBeginDate(sdf.parse(sessionEditForm.getEventStart()));
 		sessn.setEventEndDate(sdf.parse(sessionEditForm.getEventEnd()));
 		sessn.setHolidays(request);
+		sessn.setLastWeekToEnroll(sessionEditForm.getWkEnroll());
+		sessn.setLastWeekToChange(sessionEditForm.getWkChange());
+		sessn.setLastWeekToDrop(sessionEditForm.getWkDrop());
+		sessn.setDefaultSectioningStatus(sessionEditForm.getSectStatus() == null || sessionEditForm.getSectStatus() < 0 ? null : StudentSectioningStatusDAO.getInstance().get(sessionEditForm.getSectStatus())); 
 	}
 
 

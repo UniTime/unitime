@@ -397,6 +397,42 @@
 			</TR>
 		</logic:notEmpty>
 		
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkEnroll">
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
+				<TD>
+					<loc:message name="textLastWeekEnrollment"><bean:write name="instructionalOfferingDetailForm" property="wkEnroll" /></loc:message>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkChange">
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
+				<TD>
+					<loc:message name="textLastWeekChange"><bean:write name="instructionalOfferingDetailForm" property="wkChange" /></loc:message>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkDrop">
+			<TR>
+				<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
+				<TD>
+					<loc:message name="textLastWeekDrop"><bean:write name="instructionalOfferingDetailForm" property="wkDrop" /></loc:message>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
+		<logic:equal name="instructionalOfferingDetailForm" property="displayEnrollmentDeadlineNote" value="true">
+			<TR>
+				<TD valign="top">&nbsp;</TD>
+				<TD>
+					<i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="instructionalOfferingDetailForm" property="weekStartDayOfWeek" /></loc:message></i>
+				</TD>
+			</TR>
+		</logic:equal>
+
 		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>

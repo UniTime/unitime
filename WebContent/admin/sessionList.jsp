@@ -16,6 +16,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  --%>
+<%@page import="java.util.Locale"%>
+<%@page import="java.util.Calendar"%>
 <%@ page import="java.text.DecimalFormat"%>
 <%@ page import="java.text.DateFormat"%>
 <%@ page import="org.unitime.commons.web.*"%>
@@ -49,10 +51,10 @@
 					new String[] {
 						"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
 						"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", 
-						"Events<br>Begins", "Events<br>Ends", "Event<br>Management" },
+						"Events<br>Begins", "Events<br>Ends", "Event<br>Management", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
 					new String[] { "center", "left", "left", "left", "left",
-						"left", "left", "left", "left", "right", "left", "left", "left" }, 
-					new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true });
+						"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
+					new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
 					
 			webTable.enableHR("#9CB0CE");
 					
@@ -72,6 +74,16 @@
 					}
 					if (all) roomTypes = "<i>All</i>";
 					if (roomTypes.length()==0) roomTypes = "<i>N/A</i>";
+					
+					Calendar ce = Calendar.getInstance(Locale.US); ce.setTime(s.getSessionBeginDateTime());
+					ce.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToEnroll()); ce.add(Calendar.DAY_OF_YEAR, -1);
+
+					Calendar cc = Calendar.getInstance(Locale.US); cc.setTime(s.getSessionBeginDateTime());
+					cc.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToChange()); cc.add(Calendar.DAY_OF_YEAR, -1);
+
+					Calendar cd = Calendar.getInstance(Locale.US); cd.setTime(s.getSessionBeginDateTime());
+					cd.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToDrop()); cd.add(Calendar.DAY_OF_YEAR, -1);
+					
 					webTable
 					.addLine(
 							"onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"",
@@ -88,7 +100,12 @@
 								df5.format(s.getSubjectAreas().size()),
 								(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate()).replace(" ", "&nbsp;")),
 								(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate()).replace(" ", "&nbsp;")),
-								roomTypes },
+								roomTypes,
+								df.format(ce.getTime()).replace(" ", "&nbsp;"),
+								df.format(cc.getTime()).replace(" ", "&nbsp;"),
+								df.format(cd.getTime()).replace(" ", "&nbsp;"),
+								(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
+								 },
 							new Comparable[] {
 								s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
 								s.getLabel(),
@@ -102,7 +119,9 @@
 								df5.format(s.getSubjectAreas().size()),
 								s.getEventBeginDate(),
 								s.getEventEndDate(),
-								roomTypes } );
+								roomTypes,
+								ce.getTime(), cc.getTime(), cd.getTime(),
+								(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()) } );
 			%>
 
 		</logic:iterate>

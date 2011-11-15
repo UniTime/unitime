@@ -323,7 +323,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			for (SectioningRequest r: queue) {
 				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
 				long c0 = OnlineSectioningHelper.getCpuTime();
-				Enrollment e = r.resection(w, dc, toc);
+				Enrollment e = r.resection(server, w, dc, toc);
 				if (e != null) {
 					Lock wl = server.writeLock();
 					try {
@@ -385,6 +385,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 						enrl.setCourseOffering(co);
 						enrl.setCourseRequest(cr);
 						enrl.setTimestamp(ts);
+						enrl.setChangedBy(StudentClassEnrollment.SystemChange.SYSTEM.toString());
 						enrl.setStudent(student);
 						student.getClassEnrollments().add(enrl);
 						helper.info("Adding " + enrl.getClazz().getClassLabel());

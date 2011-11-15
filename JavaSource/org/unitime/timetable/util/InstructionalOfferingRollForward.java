@@ -400,6 +400,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
 		toInstructionalOffering.setInstrOfferingPermId(fromInstructionalOffering.getInstrOfferingPermId());
 		toInstructionalOffering.setByReservationOnly(fromInstructionalOffering.isByReservationOnly());
+		toInstructionalOffering.setLastWeekToEnroll(fromInstructionalOffering.getLastWeekToEnroll());
+		toInstructionalOffering.setLastWeekToChange(fromInstructionalOffering.getLastWeekToChange());
+		toInstructionalOffering.setLastWeekToDrop(toInstructionalOffering.getLastWeekToDrop());
 		if(fromInstructionalOffering.getCreditConfigs() != null && !fromInstructionalOffering.getCreditConfigs().isEmpty()){
 			CourseCreditUnitConfig ccuc = null;
 			for(Iterator ccIt = fromInstructionalOffering.getCreditConfigs().iterator(); ccIt.hasNext();){

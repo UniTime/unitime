@@ -171,7 +171,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
 				r.setOriginalEnrollment(options.get(r.getRequest().getStudent().getId()));
 				long c0 = OnlineSectioningHelper.getCpuTime();
-				Enrollment enrollment = r.resection(w, dc, toc);
+				Enrollment enrollment = r.resection(server, w, dc, toc);
 				Lock wl = server.writeLock();
 				try {
 					if (enrollment != null) {
@@ -234,6 +234,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 								co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 							StudentClassEnrollment enrl = new StudentClassEnrollment();
 							enrl.setClazz(clazz);
+							enrl.setChangedBy(StudentClassEnrollment.SystemChange.WAITLIST.toString());
 							clazz.getStudentEnrollments().add(enrl);
 							enrl.setCourseOffering(co);
 							enrl.setCourseRequest(cr);

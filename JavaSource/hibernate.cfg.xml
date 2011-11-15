@@ -168,7 +168,6 @@
 	<mapping resource="StudentClassEnrollment.hbm.xml" />
 	<mapping resource="StudentEnrollmentMessage.hbm.xml" />
 	<mapping resource="StudentSectHistory.hbm.xml" />
-	<mapping resource="StudentStatusType.hbm.xml" />
 	<mapping resource="WaitList.hbm.xml" />
 	<mapping resource="SectioningInfo.hbm.xml" />
 	<mapping resource="CourseRequestOption.hbm.xml" />

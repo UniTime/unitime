@@ -582,6 +582,9 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						for (AcademicAreaCode ac: request.getStudent().getMajors()) {
 							st.addMajor(ac.getCode());
 						}
+						for (AcademicAreaCode ac: request.getStudent().getMinors()) {
+							st.addGroup(ac.getCode());
+						}
 						ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 						e.setStudent(st);
 						e.setPriority(1 + request.getPriority());
@@ -719,6 +722,9 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					}
 					for (AcademicAreaCode ac: request.getStudent().getMajors()) {
 						st.addMajor(ac.getCode());
+					}
+					for (AcademicAreaCode ac: request.getStudent().getMinors()) {
+						st.addGroup(ac.getCode());
 					}
 					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 					e.setStudent(st);
@@ -1632,6 +1638,55 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		} finally {
 			iLock.readLock().unlock();
 		}
+	}
+
+	@Override
+	public boolean checkDeadline(Section section, Deadline type) {
+		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.deadline", "true"))) return true;
+		
+		CourseInfo info = getCourseInfo(section.getSubpart().getConfig().getOffering().getCourses().get(0).getId());
+		int deadline = 0;
+		switch (type) {
+		case NEW:
+			if (info != null && info.getLastWeekToEnroll() != null)
+				deadline = info.getLastWeekToEnroll();
+			else
+				deadline = getAcademicSession().getLastWeekToEnroll();
+			break;
+		case CHANGE:
+			if (info != null && info.getLastWeekToChange() != null)
+				deadline = info.getLastWeekToChange();
+			else
+				deadline = getAcademicSession().getLastWeekToChange();
+			break;
+		case DROP:
+			if (info != null && info.getLastWeekToDrop() != null)
+				deadline = info.getLastWeekToDrop();
+			else
+				deadline = getAcademicSession().getLastWeekToDrop();
+			break;
+		}
+		long start = getAcademicSession().getSessionBeginDate().getTime();
+		long now = new Date().getTime();
+		int week = 0;
+		if (now >= start) {
+			week = (int)((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
+		} else {
+			week = -((int)(start - now) / (1000 * 60 * 60 * 24 * 7));
+		}
+
+		if (section.getTime() == null)
+			return week <= deadline; // no time, just compare week and the deadline
+		
+		int offset = 0;
+		long time = getAcademicSession().getDatePatternFirstDate().getTime() + (long) section.getTime().getWeekCode().nextSetBit(0) * (1000l * 60l * 60l * 24l);
+		if (time >= start) {
+			offset = (int)((time - start) / (1000 * 60 * 60 * 24 * 7));
+		} else {
+			offset = -((int)(start - time) / (1000 * 60 * 60 * 24 * 7)) - 1;
+		}
+		
+		return week <= deadline + offset;
 	}
 	
 }

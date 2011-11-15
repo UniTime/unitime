@@ -61,16 +61,19 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private boolean iKeepEnrollments;
+	private String iRequestedBy;
 	
-	public SaveStudentRequests(Long studentId, CourseRequestInterface request, boolean keepEnrollments) {
+	public SaveStudentRequests(Long studentId, CourseRequestInterface request, boolean keepEnrollments, String requestedBy) {
 		iStudentId = studentId;
 		iRequest = request;
 		iKeepEnrollments = keepEnrollments;
+		iRequestedBy = requestedBy;
 	}
 	
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public boolean getKeepEnrollments() { return iKeepEnrollments; }
+	public String getRequestedBy() { return iRequestedBy; }
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -89,7 +92,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							.setUniqueId(getStudentId()));
 				
 				// Save requests
-				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
+				saveRequest(server, helper, student, getRequest(), getKeepEnrollments(), getRequestedBy());
 				
 				// Reload student
 				net.sf.cpsolver.studentsct.model.Student oldStudent = server.getStudent(getStudentId());
@@ -146,7 +149,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	}
 
 	
-	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
+	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments, String requestedBy) throws SectioningException {
 		Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
 		int priority = 0;
 		Date ts = new Date();
@@ -166,6 +169,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					if (cd == null) {
 						cd = new CourseDemand();
 						cd.setTimestamp(ts);
+						cd.setChangedBy(requestedBy);
 						student.getCourseDemands().add(cd);
 						cd.setStudent(student);
 					}
@@ -217,6 +221,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				if (cd == null) {
 					cd = new CourseDemand();
 					cd.setTimestamp(ts);
+					cd.setChangedBy(requestedBy);
 					cd.setCourseRequests(new HashSet<CourseRequest>());
 					cd.setStudent(student);
 					student.getCourseDemands().add(cd);

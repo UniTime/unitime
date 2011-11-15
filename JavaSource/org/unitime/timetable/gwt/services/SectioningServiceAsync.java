@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -50,7 +51,8 @@ public interface SectioningServiceAsync {
 	void lastResult(Long sessionId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
-	void isAdminOrAdvisor(AsyncCallback<Boolean> isAdmin) throws SectioningException, PageAccessException;
+	void isAdmin(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void isAdminOrAdvisor(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void listEnrollments(Long offeringId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
 	void getEnrollment(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void canApprove(Long classOrOfferingId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
@@ -65,4 +67,7 @@ public interface SectioningServiceAsync {
 	void savedRequest(Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void savedResult(Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void lookupStudentSectioningStates(AsyncCallback<Map<String, String>> callback) throws SectioningException, PageAccessException;
+	void sendEmail(Long studentId, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void changeStatus(List<Long> studentIds, String status, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 }

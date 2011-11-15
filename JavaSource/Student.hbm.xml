@@ -81,20 +81,6 @@
             length="10"/>
 
         <many-to-one
-            name="status"
-            class="StudentStatusType"
-            column="status_type_id"
-            not-null="false"
-            foreign-key="fk_student_status_student"/>
-
-        <property
-            name="statusChangeDate"
-            column="status_change_date"
-            type="java.util.Date"
-            not-null="false"
-            length="20"/>
-
-        <many-to-one
             name="session"
             class="Session"
             column="session_id"
@@ -213,6 +199,19 @@
             <key column="student_id" foreign-key="fk_lastlike_course_demand_student"/>
             <one-to-many class="LastLikeCourseDemand"/>
         </set>
+        
+        <many-to-one
+            name="sectioningStatus"
+            class="StudentSectioningStatus"
+            column="sect_status"
+            foreign-key="fk_student_sect_status"
+            not-null="false"/>
+
+        <property
+            name="scheduleEmailedDate"
+            column="schedule_emailed"
+            type="java.util.Date"
+            not-null="false"/>
 
     </class>
 </hibernate-mapping>

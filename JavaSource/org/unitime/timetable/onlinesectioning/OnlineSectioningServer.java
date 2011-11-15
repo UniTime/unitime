@@ -103,6 +103,10 @@ public interface OnlineSectioningServer {
 	public void persistExpectedSpaces(Long offeringId);
 	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge);
 	
+	public static enum Deadline { NEW, CHANGE, DROP };
+	
+	public boolean checkDeadline(Section section, Deadline type);
+	
 	public void unload();
 	
 	public static interface Lock {

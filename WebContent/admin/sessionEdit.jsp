@@ -233,6 +233,49 @@
 		</logic:iterate>
 
 		<TR>
+			<TD colspan='3'>
+				<tt:section-title><br>Online Student Scheduling Default Settings</tt:section-title>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD valign="top">New Enrollment Deadline:</TD>
+			<TD valign="top">
+				<html:text property="wkEnroll" maxlength="4" size="4"/>
+			</TD><TD>
+				<i>Number of weeks during which students are allowed to enroll to a new course.<br>
+				Weeks start on the day of session start date, number of weeks is relative to class start.<br>
+				For instance, 1 means that new enrollments will be allowed during the first week of classes.</i>
+			</TD>
+		</TR>
+		<TR>
+			<TD valign="top">Class Changes Deadline:</TD>
+			<TD valign="top">
+				<html:text property="wkChange" maxlength="4" size="4"/>
+			</TD><TD>
+				<i>Number of weeks during which students are allowed to change existing enrollments.<br>
+				If smaller than new enrollment deadline, they will not be able to add a new course to their schedule during the weeks between the two.</i>
+			</TD>
+		</TR>
+		<TR>
+			<TD valign="top">Course Drop Deadline:</TD>
+			<TD valign="top">
+				<html:text property="wkDrop" maxlength="4" size="4"/>
+			</TD><TD>
+				<i>Number of weeks during which students are allowed to drom from courses they are enrolled into.<br>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Deafult Student Scheduling Status:</TD>
+			<TD colspan="2">
+				<html:select property="sectStatus">
+					<html:option value="-1">System Default (No Restrictions)</html:option>
+					<html:optionsCollection property="sectStates" value="id" label="value" />
+				</html:select>
+			</TD>
+		</TR>
+		
+		</TR>
 			<TD colspan="3">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
 			</TD>

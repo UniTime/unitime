@@ -46,6 +46,9 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
 	private Boolean iByReservationOnly;
+	private Integer iLastWeekToEnroll;
+	private Integer iLastWeekToChange;
+	private Integer iLastWeekToDrop;
 
 	private Session iSession;
 	private OfferingConsentType iConsentType;
@@ -62,6 +65,9 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_REQ_RESERVATION = "byReservationOnly";
+	public static String PROP_WK_ENROLL = "lastWeekToEnroll";
+	public static String PROP_WK_CHANGE = "lastWeekToChange";
+	public static String PROP_WK_DROP = "lastWeekToDrop";
 
 	public BaseInstructionalOffering() {
 		initialize();
@@ -109,6 +115,15 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public Boolean isByReservationOnly() { return iByReservationOnly; }
 	public Boolean getByReservationOnly() { return iByReservationOnly; }
 	public void setByReservationOnly(Boolean byReservationOnly) { iByReservationOnly = byReservationOnly; }
+
+	public Integer getLastWeekToEnroll() { return iLastWeekToEnroll; }
+	public void setLastWeekToEnroll(Integer lastWeekToEnroll) { iLastWeekToEnroll = lastWeekToEnroll; }
+
+	public Integer getLastWeekToChange() { return iLastWeekToChange; }
+	public void setLastWeekToChange(Integer lastWeekToChange) { iLastWeekToChange = lastWeekToChange; }
+
+	public Integer getLastWeekToDrop() { return iLastWeekToDrop; }
+	public void setLastWeekToDrop(Integer lastWeekToDrop) { iLastWeekToDrop = lastWeekToDrop; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -173,6 +188,9 @@ public abstract class BaseInstructionalOffering implements Serializable {
 			"\n	DesignatorRequired: " + getDesignatorRequired() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	InstrOfferingPermId: " + getInstrOfferingPermId() +
+			"\n	LastWeekToChange: " + getLastWeekToChange() +
+			"\n	LastWeekToDrop: " + getLastWeekToDrop() +
+			"\n	LastWeekToEnroll: " + getLastWeekToEnroll() +
 			"\n	NotOffered: " + getNotOffered() +
 			"\n	Session: " + getSession() +
 			"\n	UniqueId: " + getUniqueId() +

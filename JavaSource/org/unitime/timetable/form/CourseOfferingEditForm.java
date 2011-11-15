@@ -79,6 +79,9 @@ public class CourseOfferingEditForm extends ActionForm {
     private String catalogLinkLocation;
     private Boolean byReservationOnly;
     private List instructors;
+    private String wkEnroll, wkChange, wkDrop;
+    private Integer wkEnrollDefault, wkChangeDefault, wkDropDefault;
+    private String weekStartDayOfWeek;
 
     // --------------------------------------------------------- Methods
 
@@ -164,6 +167,9 @@ public class CourseOfferingEditForm extends ActionForm {
         catalogLinkLocation = null;
         instructors = DynamicList.getInstance(new ArrayList(), factory);
         byReservationOnly = false;
+        wkEnroll = null; wkChange = null; wkDrop = null;
+        wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
+        weekStartDayOfWeek = null;
     }
 
     public Long getCourseOfferingId() {
@@ -341,5 +347,23 @@ public class CourseOfferingEditForm extends ActionForm {
 
     public boolean isByReservationOnly() { return byReservationOnly; }
     public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }
+    
+    public String getWkEnroll() { return wkEnroll; }
+    public void setWkEnroll(String wkEnroll) { this.wkEnroll = wkEnroll; }
+    public Integer getWkEnrollDefault() { return wkEnrollDefault; }
+    public void setWkEnrollDefault(Integer wkEnrollDefault) { this.wkEnrollDefault = wkEnrollDefault; }
+
+    public String getWkChange() { return wkChange; }
+    public void setWkChange(String wkChange) { this.wkChange = wkChange; }
+    public Integer getWkChangeDefault() { return wkChangeDefault; }
+    public void setWkChangeDefault(Integer wkChangeDefault) { this.wkChangeDefault = wkChangeDefault; }
+
+    public String getWkDrop() { return wkDrop; }
+    public void setWkDrop(String wkDrop) { this.wkDrop = wkDrop; }
+    public Integer getWkDropDefault() { return wkDropDefault; }
+    public void setWkDropDefault(Integer wkDropDefault) { this.wkDropDefault = wkDropDefault; }
+    
+    public String getWeekStartDayOfWeek() { return weekStartDayOfWeek; }
+    public void setWeekStartDayOfWeek(String weekStartDayOfWeek) { this.weekStartDayOfWeek = weekStartDayOfWeek; }
 
 }

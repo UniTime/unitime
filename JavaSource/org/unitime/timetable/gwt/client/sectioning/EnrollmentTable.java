@@ -540,12 +540,13 @@ public class EnrollmentTable extends Composite {
 			});			
 		}
 		
-		boolean hasPriority = false, hasArea = false, hasMajor = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false;
+		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false;
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
 			if (e.isAlternative()) hasAlternative = true;
 			if (e.getStudent().hasArea()) hasArea = true;
 			if (e.getStudent().hasMajor()) hasMajor = true;
+			if (e.getStudent().hasGroup()) hasGroup = true;
 			if (e.getReservation() != null) hasReservation = true;
 			if (e.getRequestedDate() != null) hasRequestedDate = true;
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
@@ -725,6 +726,41 @@ public class EnrollmentTable extends Composite {
 				}
 			});
 		}
+		
+		if (hasGroup) {
+			UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
+			//hGroup.setWidth("100px");
+			header.add(hGroup);
+			hGroup.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iEnrollments.sort(new Comparator<ClassAssignmentInterface.Enrollment>() {
+						@Override
+						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
+							int cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colGroup());
+				}
+			});
+		}
 
 		if (hasReservation) {
 			UniTimeTableHeader hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
@@ -769,7 +805,7 @@ public class EnrollmentTable extends Composite {
 		for (final String subpart: subparts) {
 			UniTimeTableHeader hSubpart = new UniTimeTableHeader(subpart);
 			//hSubpart.setWidth("100px");
-			final int col = 1 + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasReservation ? 1 : 0);
+			final int col = 1 + (crosslist ? 1 : 0) + (hasPriority ? 1 : 0) + (hasAlternative ? 1 : 0) + (hasArea ? 2 : 0) + (hasMajor ? 1 : 0) + (hasGroup ? 1 : 0) + (hasReservation ? 1 : 0);
 			hSubpart.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -864,7 +900,7 @@ public class EnrollmentTable extends Composite {
 					iEnrollments.sort(new Comparator<ClassAssignmentInterface.Enrollment>() {
 						@Override
 						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
-							int cmp = e1.getRequestedDate().compareTo(e2.getRequestedDate());
+							int cmp = (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
 							if (cmp != 0) return cmp;
 							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
 							if (cmp != 0) return cmp;
@@ -897,7 +933,7 @@ public class EnrollmentTable extends Composite {
 					iEnrollments.sort(new Comparator<ClassAssignmentInterface.Enrollment>() {
 						@Override
 						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
-							int cmp = e1.getEnrolledDate().compareTo(e2.getEnrolledDate());
+							int cmp = (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
 							if (cmp != 0) return cmp;
 							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
 							if (cmp != 0) return cmp;
@@ -1136,6 +1172,8 @@ public class EnrollmentTable extends Composite {
 			}
 			if (hasMajor)
 				line.add(new HTML(enrollment.getStudent().getMajor("<br>"), false));
+			if (hasGroup)
+				line.add(new HTML(enrollment.getStudent().getGroup("<br>"), false));
 			if (hasReservation)
 				line.add(new HTML(enrollment.getReservation() == null ? "&nbsp;" : enrollment.getReservation(), false));
 			if (!subparts.isEmpty()) {

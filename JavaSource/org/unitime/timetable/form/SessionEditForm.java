@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -34,7 +36,10 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -65,6 +70,8 @@ public class SessionEditForm extends ActionForm {
 	String eventEnd;
 	String defaultDatePatternId;
 	String defaultDatePatternLabel;
+	Integer wkEnroll = 1, wkChange = 1, wkDrop = 4;
+	Long sectStatus;
 	
 	Hashtable<String,String> roomOptionMessage = new Hashtable();
 	Hashtable<String,Boolean> roomOptionScheduleEvents = new Hashtable();
@@ -367,6 +374,24 @@ public class SessionEditForm extends ActionForm {
     }
     public void setRoomOptionScheduleEvents(String roomType, boolean enable) {
         roomOptionScheduleEvents.put(roomType, enable);
+    }
+    
+    public Integer getWkEnroll() { return wkEnroll; }
+    public void setWkEnroll(Integer wkEnroll) { this.wkEnroll = wkEnroll; }
+
+    public Integer getWkChange() { return wkChange; }
+    public void setWkChange(Integer wkChange) { this.wkChange = wkChange; }
+
+    public Integer getWkDrop() { return wkDrop; }
+    public void setWkDrop(Integer wkDrop) { this.wkDrop = wkDrop; }
+    
+    public Long getSectStatus() { return sectStatus; }
+    public void setSectStatus(Long sectStatus) { this.sectStatus = sectStatus; }
+    public List<IdValue> getSectStates() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll())
+    		ret.add(new IdValue(status.getUniqueId(), status.getLabel()));
+    	return ret;
     }
 
 }
