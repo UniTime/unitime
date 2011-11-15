@@ -20,11 +20,10 @@
  * 
  -->
 
-	<!-- building            ==> Required:  abbreviation, locationX, locationY, name
-	                             Optional:  externalId
+	<!-- building            ==> Required:  external Id, abbreviation, locationX, locationY, name
 	       room              ==> [0 ==> N entries] 
-	                             Required:  roomNumber, locationX, locationY, instructional, roomClassification, capacity
-                                 Optional:  externalId, scheduledRoomType, displayName
+	                             Required:  externalId, roomNumber, locationX, locationY, instructional, roomClassification, capacity
+                                 Optional:  scheduledRoomType, displayName
              roomDepartments ==> [1 ==> N entries]
                assigned      ==> [1 ==> N entries]
                                  Required:  departmentNumber, percent
