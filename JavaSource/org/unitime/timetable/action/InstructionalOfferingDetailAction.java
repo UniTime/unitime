@@ -306,10 +306,6 @@ public class InstructionalOfferingDetailAction extends Action {
                 && httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString().length()>0)
             httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, io.getControllingCourseOffering().getCourseNbr());
         
-        // Get Configuration
-        TreeSet ts = new TreeSet();
-        ts.add(io);
-	    
         // Sort Offerings
         ArrayList offerings = new ArrayList(io.getCourseOfferings());
         Collections.sort(
