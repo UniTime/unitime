@@ -1281,7 +1281,7 @@ public class SectioningStatusPage extends Composite {
 			});
 		}
 		
-		iStatusColumn = header.size();
+		iStatusColumn = header.size() - 1;
 		UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
 		//hMajor.setWidth("100px");
 		header.add(hStatus);
