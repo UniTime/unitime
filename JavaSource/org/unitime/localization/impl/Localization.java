@@ -24,6 +24,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -77,6 +80,8 @@ public class Localization {
 	
 	public static DateFormat getDateFormat(String pattern) { return new SimpleDateFormat(pattern, getJavaLocale()); }
 	
+	public static NumberFormat getNumberFormat(String pattern) { return new DecimalFormat(pattern, new DecimalFormatSymbols(getJavaLocale())); }
+
 	public static String getFirstLocale() {
 		String locale = getLocale();
 		if (locale.indexOf(',') >= 0) locale = locale.substring(0, locale.indexOf(','));
