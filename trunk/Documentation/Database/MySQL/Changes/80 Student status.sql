@@ -60,7 +60,7 @@ select 32767 * next_hi into @id from hibernate_unique_key;
 insert into sectioning_status (uniqueid, reference, label, status, message) values
 	(@id + 0, 'Enabled', 'Access enabled', 7, null),
 	(@id + 1, 'Disabled', 'Access disabled', 4, null),
-	(@id + 2, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...'),
+	(@id + 2, 'Not Available', 'Temporarily not available', 6, 'Access is temporarily disabled. Please try again later...'),
 	(@id + 3, 'No Email', 'Access enabled, no email notification', 3, null);
 
 update hibernate_unique_key set next_hi=next_hi+1;

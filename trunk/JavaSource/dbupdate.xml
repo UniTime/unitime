@@ -3988,7 +3988,7 @@
 			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values
 			(%ID% + 0, 'Enabled', 'Access enabled', 7, null),
 			(%ID% + 1, 'Disabled', 'Access disabled', 4, null),
-			(%ID% + 2, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...'),
+			(%ID% + 2, 'Not Available', 'Temporarily not available', 6, 'Access is temporarily disabled. Please try again later...'),
 			(%ID% + 3, 'No Email', 'Access enabled, no email notification', 3, null)
 		</mysql>
 		<plsql>
@@ -4001,7 +4001,7 @@
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 
-			(%SCHEMA%.ref_table_seq.nextval, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...')
+			(%SCHEMA%.ref_table_seq.nextval, 'Not Available', 'Temporarily not available', 6, 'Access is temporarily disabled. Please try again later...')
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.sectioning_status (uniqueid, reference, label, status, message) values 

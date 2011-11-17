@@ -64,7 +64,7 @@ insert into sectioning_status (uniqueid, reference, label, status, message) valu
 insert into sectioning_status (uniqueid, reference, label, status, message) values 
 	(ref_table_seq.nextval, 'Disabled', 'Access disabled', 4, null);
 insert into sectioning_status (uniqueid, reference, label, status, message) values 
-	(ref_table_seq.nextval, 'Not Available', 'Temporarily not available', 6, 'Acassess is temporarily disabled. Please try again later...');
+	(ref_table_seq.nextval, 'Not Available', 'Temporarily not available', 6, 'Access is temporarily disabled. Please try again later...');
 insert into sectioning_status (uniqueid, reference, label, status, message) values 
 	(ref_table_seq.nextval, 'No Email', 'Access enabled, no email notification', 3, null);
 
