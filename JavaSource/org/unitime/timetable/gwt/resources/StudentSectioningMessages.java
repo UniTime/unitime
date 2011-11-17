@@ -877,5 +877,40 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Cancelled due to: {0}")
 	String exceptionCancelled(String exception);
+	
+	@DefaultMessage("Change <u>L</u>og")
+	String buttonChangeLog();
+	
+	@DefaultMessage("Loading change log for {0}...")
+	String loadingChangeLog(String student);
 
+	@DefaultMessage("Operation")
+	String colOperation();
+
+	@DefaultMessage("Date")
+	String colTimeStamp();
+	
+	@DefaultMessage("Result")
+	String colResult();
+
+	@DefaultMessage("User")
+	String colUser();
+
+	@DefaultMessage("Message")
+	String colMessage();
+
+	@DefaultMessage("Message")
+	String tableMessages();
+
+	@DefaultMessage("CPU Time [s]")
+	String colCpuTime();
+	
+	@DefaultMessage("Change log for {0}")
+	String dialogChangeLog(String student);
+	
+	@DefaultMessage("Change message for {0}")
+	String dialogChangeMessage(String student);
+
+	@DefaultMessage("Proto Buffer")
+	String tableProto();
 }

@@ -108,6 +108,9 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultStringValue("MM/dd/yyyy")
 	String requestDateFormat();
 	
+	@DefaultStringValue("MM/dd/yyyy HH:mm:ss")
+	String timeStampFormat();
+
 	@DefaultBooleanValue(true)
 	boolean useAmPm();
 	
