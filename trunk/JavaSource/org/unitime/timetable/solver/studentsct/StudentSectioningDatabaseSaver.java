@@ -97,7 +97,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             save(session, hibSession);
             
-            StudentSectioningQueue.sessionStatusChanged(hibSession, session.getUniqueId(), true);
+            StudentSectioningQueue.sessionStatusChanged(hibSession, null, session.getUniqueId(), true);
             
             hibSession.flush();
             

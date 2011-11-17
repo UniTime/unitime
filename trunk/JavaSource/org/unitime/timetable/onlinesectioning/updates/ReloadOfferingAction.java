@@ -274,7 +274,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			if (newRequest == null) {
 				// nothing to re-assign
 				action.setEndTime(System.currentTimeMillis());
-				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), oldEnrollment.getRequest(), oldEnrollment);
+				server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), oldEnrollment.getRequest(), oldEnrollment, helper.getUser());
 				continue;
 			} else {
 				action.addRequest(OnlineSectioningHelper.toProto(newRequest));
@@ -299,7 +299,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 					action.setEndTime(System.currentTimeMillis());
 					
 					if (!ResectioningWeights.isVerySame(newEnrollment, oldEnrollment))
-						server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), newRequest, oldEnrollment);
+						server.notifyStudentChanged(student[0] == null ? student[1].getId() : student[0].getId(), newRequest, oldEnrollment, helper.getUser());
 					continue;
 				}
 				newRequest.getSelectedChoices().clear();
@@ -385,7 +385,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 						enrl.setCourseOffering(co);
 						enrl.setCourseRequest(cr);
 						enrl.setTimestamp(ts);
-						enrl.setChangedBy(StudentClassEnrollment.SystemChange.SYSTEM.toString());
+						enrl.setChangedBy(helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
 						enrl.setStudent(student);
 						student.getClassEnrollments().add(enrl);
 						helper.info("Adding " + enrl.getClazz().getClassLabel());
@@ -404,7 +404,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				server.persistExpectedSpaces(offeringId);
 
 				server.notifyStudentChanged(r.getRequest().getStudent().getId(),
-						r.getRequest(), r.getLastEnrollment());
+						r.getRequest(), r.getLastEnrollment(), helper.getUser());
 				
 				r.getAction().setResult(e == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				r.getAction().setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);

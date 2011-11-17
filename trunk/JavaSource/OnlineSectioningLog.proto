@@ -35,6 +35,7 @@ message Entity {
 		CURRICULUM_RESERVATION = 9;
 		COURSE_RESERVATION = 10;
 		MANAGER = 11;
+		OTHER = 12;
 	}
 	optional int64 unique_id = 1;
 	optional EntityType type = 2;
@@ -115,6 +116,9 @@ message Action {
 	
 	repeated Message message = 10;
 	optional ResultType result = 11;
+	
+	optional Entity user = 12;
+	repeated Property option = 13;
 }
 
 message Message {
@@ -129,6 +133,11 @@ message Message {
 	required string text = 2;
 	optional string exception = 3;
 	optional int64 time_stamp = 4;
+}
+
+message Property {
+	required string key = 1;
+	required string value = 2;
 }
 
 message Log {

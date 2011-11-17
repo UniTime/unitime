@@ -115,7 +115,7 @@ public class ReloadStudent extends ReloadAllData {
 						action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
 					}
 					
-					server.notifyStudentChanged(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));
+					server.notifyStudentChanged(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()), helper.getUser());
 
 				} finally {
 					lock.release();

@@ -62,19 +62,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
-	private String iRequestedBy;
 	
-	public EnrollStudent(Long studentId, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> assignment, String requestedBy) {
+	public EnrollStudent(Long studentId, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iStudentId = studentId;
 		iRequest = request;
 		iAssignment = assignment;
-		iRequestedBy = requestedBy;
 	}
 	
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
-	public String getRequestedBy() { return iRequestedBy; }
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -163,7 +160,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					classes.put(clazz.getUniqueId(), clazz);
 				}
 				
-				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false, getRequestedBy());
+				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
 				
 				// save requested enrollment
 				for (Map.Entry<Long, org.unitime.timetable.model.CourseRequest> e: req.entrySet()) {
@@ -207,7 +204,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr.getClassEnrollments().add(enrl);
 					enrl.setTimestamp(ts);
 					enrl.setStudent(student);
-					enrl.setChangedBy(getRequestedBy());
+					enrl.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
 					student.getClassEnrollments().add(enrl);
 				}
 				
@@ -241,7 +238,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								}
 						if (newEnrollment != null && newEnrollment.getSections().equals(oldEnrollment.getSections())) continue; // same assignment
 						
-						server.execute(new CheckOfferingAction(oldEnrollment.getOffering().getId()), offeringChecked);
+						server.execute(new CheckOfferingAction(oldEnrollment.getOffering().getId()), helper.getUser(), offeringChecked);
 						updateSpace(helper, newEnrollment, oldEnrollment);
 						server.persistExpectedSpaces(oldEnrollment.getOffering().getId());
 					}
@@ -265,7 +262,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									continue requests;
 						updateSpace(helper, newEnrollment, null);
 						server.persistExpectedSpaces(newEnrollment.getOffering().getId());
-						server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), enrollmentsUpdated);
+						server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), helper.getUser(), enrollmentsUpdated);
 					}
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
@@ -277,7 +274,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					action.addEnrollment(enrollment);
 				}
 
-				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));
+				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()), helper.getUser());
 				
 				helper.commitTransaction();
 			} catch (Exception e) {

@@ -52,6 +52,7 @@ import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LazyInitializationException;
+import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -240,7 +241,7 @@ public class ClassInfoModel implements Serializable {
         }
     }
     
-    public String assign(Long sessionId) {
+    public String assign(Long sessionId, User user) {
         if (iChange==null) return "Nothing to assign.";
         if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
         	if (!iChange.getConflicts().isEmpty())
@@ -290,11 +291,11 @@ public class ClassInfoModel implements Serializable {
             		if (!session.isOfferingLocked(offeringId))
             			unlockedOfferings.add(offeringId);
             	if (!unlockedOfferings.isEmpty())
-            		StudentSectioningQueue.offeringChanged(hibSession, sessionId, unlockedOfferings);
+            		StudentSectioningQueue.offeringChanged(hibSession, user, sessionId, unlockedOfferings);
             } else if (session.getStatusType().canSectionAssistStudents()) {
             	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
             		if (!session.isOfferingLocked(entry.getKey()))
-            			StudentSectioningQueue.classAssignmentChanged(hibSession, sessionId, entry.getValue());        		
+            			StudentSectioningQueue.classAssignmentChanged(hibSession, user, sessionId, entry.getValue());        		
             	}
             }
         }

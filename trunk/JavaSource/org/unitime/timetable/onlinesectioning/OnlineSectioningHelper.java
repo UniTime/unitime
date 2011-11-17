@@ -73,14 +73,19 @@ public class OnlineSectioningHelper {
     protected org.hibernate.Transaction iTx = null;
     protected int iFlushIfNeededCounter = 0;
     protected OnlineSectioningLog.Log.Builder iLog = OnlineSectioningLog.Log.newBuilder();
+    protected OnlineSectioningLog.Entity iUser = null;
     protected static int sBatchSize = 100;
     
-    public OnlineSectioningHelper() {
+    public OnlineSectioningHelper(OnlineSectioningLog.Entity user) {
+    	iUser = user;
     }
     
-    public OnlineSectioningHelper(org.hibernate.Session hibSession) {
+    public OnlineSectioningHelper(org.hibernate.Session hibSession, OnlineSectioningLog.Entity user) {
     	iHibSession = hibSession;
+    	iUser = user;
     }
+    
+    public OnlineSectioningLog.Entity getUser() { return iUser; }
 
     public void log(Message m) {
     	if (m.getLevel() != LogLevel.DEBUG) {
@@ -289,12 +294,18 @@ public class OnlineSectioningHelper {
     			.setName(session.toCompactString())
     			);
     	a.setStartTime(System.currentTimeMillis());
+    	if (iUser != null)
+    		a.setUser(iUser);
     	iLog.addAction(a);
     	return iLog.getActionBuilder(iLog.getActionCount() - 1);
     }
     
     public OnlineSectioningLog.Action.Builder getAction() {
     	return iLog.getActionBuilder(0);
+    }
+    
+    public void logOption(String key, String value) {
+    	getAction().addOptionBuilder().setKey(key).setValue(value);
     }
     
     public OnlineSectioningLog.Log getLog() {
