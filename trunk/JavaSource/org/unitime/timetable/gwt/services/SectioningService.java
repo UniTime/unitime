@@ -72,4 +72,5 @@ public interface SectioningService extends RemoteService {
 	Map<String, String> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
 	Boolean sendEmail(Long studentId, String subject, String message, String cc) throws SectioningException, PageAccessException;
 	Boolean changeStatus(List<Long> studentIds, String status) throws SectioningException, PageAccessException;
+	List<ClassAssignmentInterface.SectioningAction> changeLog(String studentExternalId) throws SectioningException, PageAccessException;
 }

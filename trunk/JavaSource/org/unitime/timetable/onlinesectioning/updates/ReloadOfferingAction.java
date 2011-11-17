@@ -295,7 +295,6 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 					for (Assignment assignment: newEnrollment.getAssignments())
 						enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newEnrollment));
 					action.addEnrollment(enrollment);
-					action.addRequest(OnlineSectioningHelper.toProto(newEnrollment.getRequest()));
 					action.setEndTime(System.currentTimeMillis());
 					
 					if (!ResectioningWeights.isVerySame(newEnrollment, oldEnrollment))

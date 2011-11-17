@@ -751,6 +751,43 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public String getStatus() { return iStatus; }
 		public void setStatus(String status) { iStatus = status; }
 	}
-	
+
+	public static class SectioningAction implements IsSerializable {
+		private Student iStudent;
+		private Date iTimeStamp;
+		private String iOperation;
+		private String iUser;
+		private String iMessage;
+		private String iProto;
+		private String iResult;
+		private Long iCpuTime;
+		
+		public SectioningAction() {
+		}
+
+		public Student getStudent() { return iStudent; }
+		public void setStudent(Student student) { iStudent = student; }
+		
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
+		
+		public String getOperation() { return iOperation; }
+		public void setOperation(String operation) { iOperation = operation; }
+		
+		public String getUser() { return iUser; }
+		public void setUser(String user) { iUser = user; }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		
+		public String getResult() { return iResult; }
+		public void setResult(String result) { iResult = result; }
+		
+		public Long getCpuTime() { return iCpuTime; }
+		public void setCpuTime(Long cpuTime) { iCpuTime = cpuTime; }
+
+		public String getProto() { return iProto; }
+		public void setProto(String proto) { iProto = proto; }
+}
 	
 }

@@ -282,7 +282,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							
 							email.setHTML(html);
 							
-							helper.logOption("email", html);
+							helper.logOption("email", html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()));
 
 							email.send();
 							
