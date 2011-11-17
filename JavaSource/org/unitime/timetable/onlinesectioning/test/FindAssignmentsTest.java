@@ -50,7 +50,7 @@ public class FindAssignmentsTest extends OnlineSectioningTestFwk {
 					CourseRequestInterface request = s.getRequest(studentId);
 					if (request != null && !request.getCourses().isEmpty()) {
 						FindAssignmentAction action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
-						s.execute(action);
+						s.execute(action, user());
 						return action.value();
 					} else {
 						return 1.0;

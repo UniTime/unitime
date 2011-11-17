@@ -28,6 +28,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -120,7 +121,8 @@ public class ClassInfoAction extends Action {
         
         if ("Assign".equals(op)) {
             synchronized (model) {
-                String message = model.assign(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+            	User user = Web.getUser(request.getSession());
+                String message = model.assign(Session.getCurrentAcadSession(user).getUniqueId(), user);
                 if (message==null || message.trim().length()==0) {
                     myForm.setOp("Close");
                 } else {

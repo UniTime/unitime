@@ -30,6 +30,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.unitime.timetable.model.base.BaseStudentSectioningQueue;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 public class StudentSectioningQueue extends BaseStudentSectioningQueue implements Comparable<StudentSectioningQueue> {
 	private static final long serialVersionUID = 8492171207847794888L;
@@ -86,33 +87,41 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		return getUniqueId().compareTo(q.getUniqueId());
 	}
 	
-	protected static void addItem(org.hibernate.Session hibSession, Long sessionId, Type type, Collection<Long> ids) {
+	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Collection<Long> ids) {
 		StudentSectioningQueue q = new StudentSectioningQueue();
 		q.setTimeStamp(new Date());
 		q.setType(type.ordinal());
 		q.setSessionId(sessionId);
+		Document d = DocumentHelper.createDocument();
+		Element root = d.addElement("generic");
+		if (user != null) {
+			Element e = root.addElement("user");
+			e.addAttribute("id", user.getId()).setText(user.getName());
+		}
 		if (ids != null && !ids.isEmpty()) {
-			Document d = DocumentHelper.createDocument();
-			Element root = d.addElement("generic");
 			for (Long id: ids)
 				root.addElement("id").setText(id.toString());
-			q.setMessage(d);
 		}
+		q.setMessage(d);
 		hibSession.save(q);
 	}
 	
-	protected static void addItem(org.hibernate.Session hibSession, Long sessionId, Type type, Long... ids) {
+	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Long... ids) {
 		StudentSectioningQueue q = new StudentSectioningQueue();
 		q.setTimeStamp(new Date());
 		q.setType(type.ordinal());
 		q.setSessionId(sessionId);
+		Document d = DocumentHelper.createDocument();
+		Element root = d.addElement("generic");
+		if (user != null) {
+			Element e = root.addElement("user");
+			e.addAttribute("id", user.getId()).setText(user.getName());
+		}
 		if (ids != null && ids.length > 0) {
-			Document d = DocumentHelper.createDocument();
-			Element root = d.addElement("generic");
 			for (Long id: ids)
 				root.addElement("id").setText(id.toString());
-			q.setMessage(d);
 		}
+		q.setMessage(d);
 		hibSession.save(q);
 	}
 	
@@ -126,35 +135,52 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		return ids;
 	}
 	
-	public static void sessionStatusChanged(org.hibernate.Session hibSession, Long sessionId, boolean reload) {
-		addItem(hibSession, sessionId, (reload ? Type.SESSION_RELOAD : Type.SESSION_STATUS_CHANGE));
+	public OnlineSectioningLog.Entity getUser() {
+		if (getMessage() == null) return null;
+		Element root = getMessage().getRootElement();
+		if (!"generic".equals(root.getName())) return null;
+		Element user = root.element("user");
+		if (user == null)
+			return OnlineSectioningLog.Entity.newBuilder()
+				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
+		else
+			return OnlineSectioningLog.Entity.newBuilder()
+				.setExternalId(user.attributeValue("id"))
+				.setName(user.getText())
+				.setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build();
 	}
 	
-	public static void allStudentsChanged(org.hibernate.Session hibSession, Long sessionId) {
-		addItem(hibSession, sessionId, Type.STUDENT_ENROLLMENT_CHANGE);
+	public static void sessionStatusChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, boolean reload) {
+		addItem(hibSession, user, sessionId, (reload ? Type.SESSION_RELOAD : Type.SESSION_STATUS_CHANGE));
+	}
+	
+	public static void allStudentsChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId) {
+		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE);
 	}
 
-	public static void studentChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> studentIds) {
-		addItem(hibSession, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
+	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> studentIds) {
+		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
 	
-	public static void studentChanged(org.hibernate.Session hibSession, Long sessionId, Long... studentIds) {
-		addItem(hibSession, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
+	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... studentIds) {
+		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
 	
-	public static void classAssignmentChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> classIds) {
-		addItem(hibSession, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
+	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> classIds) {
+		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 	
-	public static void classAssignmentChanged(org.hibernate.Session hibSession, Long sessionId, Long... classIds) {
-		addItem(hibSession, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
+	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... classIds) {
+		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 
-	public static void offeringChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> offeringId) {
-		addItem(hibSession, sessionId, Type.OFFERING_CHANGE, offeringId);
+	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> offeringId) {
+		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 
-	public static void offeringChanged(org.hibernate.Session hibSession, Long sessionId, Long... offeringId) {
-		addItem(hibSession, sessionId, Type.OFFERING_CHANGE, offeringId);
+	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... offeringId) {
+		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 }

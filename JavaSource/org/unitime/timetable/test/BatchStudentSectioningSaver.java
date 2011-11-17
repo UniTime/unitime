@@ -237,7 +237,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
             }
             */
             
-            StudentSectioningQueue.allStudentsChanged(hibSession, session.getUniqueId());
+            StudentSectioningQueue.allStudentsChanged(hibSession, null, session.getUniqueId());
             
             tx.commit();
         } catch (Exception e) {

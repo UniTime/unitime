@@ -221,7 +221,7 @@ public class InstructionalOfferingDetailAction extends Action {
         if (op.equals(MSG.actionUnlockIO())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-	        io.getSession().unlockOffering(io.getUniqueId());
+	        io.getSession().unlockOffering(io.getUniqueId(), Web.getUser(request.getSession()));
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
         	return null;
         }

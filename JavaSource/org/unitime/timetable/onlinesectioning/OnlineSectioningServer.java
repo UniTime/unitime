@@ -66,8 +66,8 @@ public interface OnlineSectioningServer {
 	
 	public Collection<String> checkCourses(CourseRequestInterface req);
 	
-	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException;
-	public <E> void execute(OnlineSectioningAction<E> action, Callback<E> callback) throws SectioningException;
+	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
+	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, Callback<E> callback) throws SectioningException;
 	
 	public void remove(Student student);
 	public void update(Student student);
@@ -81,8 +81,8 @@ public interface OnlineSectioningServer {
 	public Collection<LinkedSections> getLinkedSections(Long offeringId);
 	public void removeLinkedSections(Long offeringId);
 	
-	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests);
-	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment);
+	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests, OnlineSectioningLog.Entity user);
+	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment, OnlineSectioningLog.Entity user);
 	
 	public Lock readLock();
 	public Lock writeLock();

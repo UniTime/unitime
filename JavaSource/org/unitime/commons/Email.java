@@ -91,7 +91,7 @@ public class Email {
 			iMail.setFrom(new InternetAddress(email, name, "UTF-8"));
 	}
 	
-	private void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
+	public void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
 		if (email != null)
 			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name, "UTF-8")});
 	}
@@ -188,8 +188,9 @@ public class Email {
 	        		ApplicationProperties.getProperty("unitime.email.sender.name", 
 	        				ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")))
 	        		);
-	        setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"),
-	        		ApplicationProperties.getProperty("unitime.email.replyto.name"));
+	        if (iMail.getReplyTo() == null || iMail.getReplyTo().length == 0)
+	        	setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"),
+	        			ApplicationProperties.getProperty("unitime.email.replyto.name"));
 	        		
 	        iMail.setSentDate(new Date());
 	        iMail.setContent(iBody);

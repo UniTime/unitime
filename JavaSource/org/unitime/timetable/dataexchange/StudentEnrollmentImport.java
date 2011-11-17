@@ -251,7 +251,7 @@ public class StudentEnrollmentImport extends BaseImport {
  	        }
  	        
  	        if (!updatedStudents.isEmpty())
- 	 	        StudentSectioningQueue.studentChanged(getHibSession(), session.getUniqueId(), updatedStudents);
+ 	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
             
             commitTransaction();
             

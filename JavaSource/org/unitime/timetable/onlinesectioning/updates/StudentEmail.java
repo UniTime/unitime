@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.activation.DataSource;
 import javax.imageio.ImageIO;
@@ -52,6 +53,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -154,8 +156,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			
 			helper.beginTransaction();
 			try {
-				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId());
+				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 				if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
+					action.getStudentBuilder().setName(dbStudent.getEmail());
 					boolean emailEnabled = true;
 					StudentSectioningStatus status = dbStudent.getSectioningStatus();
 					if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
@@ -170,14 +173,34 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 							email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 							
-							if (getCC() != null && !getCC().isEmpty())
-								email.addRecipientCC(getCC(), null);
+							if (getCC() != null && !getCC().isEmpty()) {
+								helper.logOption("cc", getCC());
+								for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
+									email.addRecipientCC(s.nextToken(), null);
+								}
+							}
 							
-							if (getEmailSubject() != null && !getEmailSubject().isEmpty())
+							if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
 								email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-							else
+								helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+							} else
 								email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
 							
+							if (getMessage() != null && !getMessage().isEmpty())
+								helper.logOption("message", getMessage());
+							
+							if (helper.getUser() != null && getOldEnrollment() == null && getOldRequests() == null) {
+								TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
+								if (manager != null && manager.getEmailAddress() != null) {
+									email.setReplyTo(manager.getEmailAddress(), manager.getName());
+									helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
+								}
+							}
+							
+							final StringWriter buffer = new StringWriter();
+							PrintWriter out = new PrintWriter(buffer);
+							generateTimetable(out, server, helper);
+							out.flush(); out.close();							
 							email.addAttachement(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
@@ -191,10 +214,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								
 								@Override
 								public InputStream getInputStream() throws IOException {
-									StringWriter buffer = new StringWriter();
-									PrintWriter out = new PrintWriter(buffer);
-									generateTimetable(out, server, helper);
-									out.flush(); out.close();
 									return new ByteArrayInputStream(
 											html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
 								}
@@ -262,6 +281,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								email.setInReplyTo(lastMessageId);
 							
 							email.setHTML(html);
+							
+							helper.logOption("email", html);
+
 							email.send();
 							
 							String messageId = email.getMessageId();
@@ -357,7 +379,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
 			out.println("	<title>Current Class Schedule</title>");
 		} else {
-			out.println("	<title>" + getEmailSubject() + "</title>");
+			out.println("	<title>" + getEmailSubject().replace("%session%", server.getAcademicSession().toString()) + "</title>");
 		}
 		out.println("</head>");
 		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
@@ -368,7 +390,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
 			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">Class Schedule</td>");
 		} else {
-			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + getEmailSubject() + "</td>");
+			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + getEmailSubject().replace("%session%", server.getAcademicSession().toString()) + "</td>");
 		}
 		out.println("			</tr>");
 		out.println("			<tr>");
@@ -413,6 +435,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				out.println("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>");
 			
 			out.println("		</td></tr>");
+		}
+		
+		if (getOldEnrollment() == null && getOldRequests() == null && helper.getUser() != null) {
+			out.println("		<tr><td>This email was send on behalf of " + helper.getUser().getName() + ".</td></tr>"); 
 		}
 
 		out.println("	</table>");
