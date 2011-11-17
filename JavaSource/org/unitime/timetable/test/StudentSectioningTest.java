@@ -650,7 +650,7 @@ public class StudentSectioningTest {
             }
             hibSession.saveOrUpdate(s);
             
- 	        StudentSectioningQueue.studentChanged(hibSession, s.getSession().getUniqueId(), s.getUniqueId());
+ 	        StudentSectioningQueue.studentChanged(hibSession, null, s.getSession().getUniqueId(), s.getUniqueId());
 
             hibSession.flush();
             tx.commit();

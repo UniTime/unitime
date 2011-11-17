@@ -114,7 +114,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 								course.getRequests().remove(cr);
 							enrollment.getStudent().getRequests().remove(cr);
 							cr.setInitialAssignment(null);
-							server.notifyStudentChanged(enrollment.getStudent().getId(), cr, enrollment);
+							server.notifyStudentChanged(enrollment.getStudent().getId(), cr, enrollment, helper.getUser());
 						}
 					}
 			} finally {
@@ -123,7 +123,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 
 			helper.commitTransaction();
 			
-			server.execute(new UpdateEnrollmentCountsAction(getOfferingId()), new OnlineSectioningServer.Callback<Boolean>() {
+			server.execute(new UpdateEnrollmentCountsAction(getOfferingId()), helper.getUser(), new OnlineSectioningServer.Callback<Boolean>() {
 				@Override
 				public void onFailure(Throwable exception) {
 				}

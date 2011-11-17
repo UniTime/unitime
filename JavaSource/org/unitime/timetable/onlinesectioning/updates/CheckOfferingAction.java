@@ -234,7 +234,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 								co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 							StudentClassEnrollment enrl = new StudentClassEnrollment();
 							enrl.setClazz(clazz);
-							enrl.setChangedBy(StudentClassEnrollment.SystemChange.WAITLIST.toString());
+							enrl.setChangedBy(helper.getUser() == null ? StudentClassEnrollment.SystemChange.WAITLIST.toString() : helper.getUser().getExternalId());
 							clazz.getStudentEnrollments().add(enrl);
 							enrl.setCourseOffering(co);
 							enrl.setCourseRequest(cr);
@@ -258,7 +258,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 
 					server.notifyStudentChanged(r.getRequest().getStudent().getId(),
 							r.getRequest(),
-							r.getLastEnrollment());
+							r.getLastEnrollment(), helper.getUser());
 					
 					helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);

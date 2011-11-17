@@ -31,6 +31,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
@@ -86,7 +87,7 @@ public abstract class OnlineSectioningTestFwk {
 		if (iServer != null) {
 			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
 			if (!offeringIds.isEmpty())
-				iServer.execute(new PersistExpectedSpacesAction(offeringIds));
+				iServer.execute(new PersistExpectedSpacesAction(offeringIds), user());
 			iServer.unload();
 		}
 		iServer = null;
@@ -221,6 +222,13 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	public abstract List<Operation> operations();
+	
+	public OnlineSectioningLog.Entity user() {
+		return OnlineSectioningLog.Entity.newBuilder()
+			.setExternalId(StudentClassEnrollment.SystemChange.TEST.name())
+			.setName(StudentClassEnrollment.SystemChange.TEST.getName())
+			.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
+	}
 	
 	public void test(int nrTasks, int... nrConcurrent) {
 		try {

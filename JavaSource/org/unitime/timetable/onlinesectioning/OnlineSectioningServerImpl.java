@@ -76,6 +76,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
@@ -120,27 +121,31 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iMultiLock = new MultiLock(iAcademicSession);
 			iExecutor = new AsyncExecutor();
 			iExecutor.start();
+			final OnlineSectioningLog.Entity user = OnlineSectioningLog.Entity.newBuilder()
+				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 			if (waitTillStarted) {
 				try {
-					execute(new ReloadAllData());
+					execute(new ReloadAllData(), user);
 				} catch (Throwable exception) {
 					iLog.error("Failed to load server: " + exception.getMessage(), exception);
 					throw exception;
 				}
 				if (iAcademicSession.isSectioningEnabled()) {
 					try {
-						execute(new CheckAllOfferingsAction());
+						execute(new CheckAllOfferingsAction(), user);
 					} catch (Throwable exception) {
 						iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
 						throw exception;
 					}
 				}
 			} else {
-				execute(new ReloadAllData(), new Callback<Boolean>() {
+				execute(new ReloadAllData(), user, new Callback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (iAcademicSession.isSectioningEnabled())
-							execute(new CheckAllOfferingsAction(), new Callback<Boolean>() {
+							execute(new CheckAllOfferingsAction(), user, new Callback<Boolean>() {
 								@Override
 								public void onSuccess(Boolean result) {}
 								@Override
@@ -1178,9 +1183,9 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
     }
 	
 	@Override
-	public <E> E execute(OnlineSectioningAction<E> action) throws SectioningException {
+	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
-		OnlineSectioningHelper h = new OnlineSectioningHelper();
+		OnlineSectioningHelper h = new OnlineSectioningHelper(user);
 		try {
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
@@ -1365,7 +1370,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		return iMultiLock.lock(ids);
 	}
 	
-	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests) {
+	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests, OnlineSectioningLog.Entity user) {
 		Student student = getStudent(studentId);
 		if (student != null) {
 			String message = "Student " + student.getId() + " changed.";
@@ -1397,7 +1402,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			}
 			iLog.info(message);
 			if (getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
-				execute(new StudentEmail(studentId, oldRequests, newRequests), new Callback<Boolean>() {
+				execute(new StudentEmail(studentId, oldRequests, newRequests), user, new Callback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
 						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -1411,7 +1416,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 	
 	@Override
-	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment) {
+	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment, OnlineSectioningLog.Entity user) {
 		Student student = getStudent(studentId);
 		if (student != null) {
 			String message = "Student " + student.getId() + " changed.";
@@ -1440,7 +1445,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				if (oldEnrollment == null) {
 					oldEnrollment = new Enrollment(request, 0, (request instanceof CourseRequest ? ((CourseRequest)request).getCourses().get(0) : null), null, null, null);
 				}
-				execute(new StudentEmail(studentId, oldEnrollment, student.getRequests()), new Callback<Boolean>() {
+				execute(new StudentEmail(studentId, oldEnrollment, student.getRequests()), user, new Callback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
 						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -1501,13 +1506,13 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 
 	@Override
-	public <E> void execute(final OnlineSectioningAction<E> action, final Callback<E> callback) throws SectioningException {
+	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final Callback<E> callback) throws SectioningException {
 		synchronized (iExecutorQueue) {
 			iExecutorQueue.offer(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						callback.onSuccess(execute(action));
+						callback.onSuccess(execute(action, user));
 					} catch (Throwable t) {
 						callback.onFailure(t);
 					}

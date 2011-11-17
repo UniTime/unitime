@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
@@ -134,12 +135,19 @@ public class OnlineSectioningServerUpdater extends Thread {
 			if (server != null) {
 				iLastReservationCheck = ts;
 				try {
-					server.execute(new ExpireReservationsAction());
+					server.execute(new ExpireReservationsAction(), user());
 				} catch (Exception e) {
 					iLog.error("Expire reservations failed: " + e.getMessage(), e);
 				}
 			}
 		}
+	}
+	
+	protected OnlineSectioningLog.Entity user() {
+		return OnlineSectioningLog.Entity.newBuilder()
+			.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+			.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+			.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 	}
 	
 	public void persistExpectedSpaces() {
@@ -150,7 +158,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			try {
 				List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
 				if (!offeringIds.isEmpty()) {
-					server.execute(new PersistExpectedSpacesAction(offeringIds), new Callback<Boolean>() {
+					server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new Callback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean result) {}
 						@Override
@@ -179,20 +187,20 @@ public class OnlineSectioningServerUpdater extends Thread {
 				List<Long> studentIds = q.getIds();
 				if (studentIds == null || studentIds.isEmpty()) {
 					iLog.info("All students changed for " + server.getAcademicSession());
-					server.execute(new ReloadAllStudents());
+					server.execute(new ReloadAllStudents(), q.getUser());
 				} else {
-					server.execute(new ReloadStudent(studentIds));
+					server.execute(new ReloadStudent(studentIds), q.getUser());
 				}
 			}
 			break;
 		case CLASS_ASSIGNMENT_CHANGE:
 			if (server != null) {
-				server.execute(new ClassAssignmentChanged(q.getIds()));
+				server.execute(new ClassAssignmentChanged(q.getIds()), q.getUser());
 			}
 			break;
 		case OFFERING_CHANGE:
 			if (server != null) {
-				server.execute(new ReloadOfferingAction(q.getIds()));
+				server.execute(new ReloadOfferingAction(q.getIds()), q.getUser());
 			}
 			break;
 		default:

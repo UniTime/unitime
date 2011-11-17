@@ -291,7 +291,7 @@ public class SessionEditAction extends LookupDispatchAction {
                     null);
             
             if (sessionEditForm.getSessionId() != null)
-            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionEditForm.getSessionId(), false);
+            	StudentSectioningQueue.sessionStatusChanged(hibSession, Web.getUser(request.getSession()), sessionEditForm.getSessionId(), false);
             
             TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
             EventContact contact = EventContact.findByExternalUniqueId(manager.getExternalUniqueId());

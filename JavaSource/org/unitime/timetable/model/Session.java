@@ -42,6 +42,7 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
@@ -786,10 +787,13 @@ public class Session extends BaseSession implements Comparable {
 		}
 	}
 	
-	public void unlockOffering(Long offeringId) {
+	public void unlockOffering(Long offeringId, User user) {
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		if (server != null) {
-			server.execute(new ReloadOfferingAction(offeringId));
+			server.execute(new ReloadOfferingAction(offeringId),
+					(user == null ? null :
+					OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
+					));
 			server.unlockOffering(offeringId);
 		}
 	}
