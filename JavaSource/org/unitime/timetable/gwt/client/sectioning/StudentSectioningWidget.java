@@ -189,9 +189,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		initWidget(iPanel);
 		
-		initAsync();
+		init();
 	}
 	
+	/*
 	private void initAsync() {
 		GWT.runAsync(new RunAsyncCallback() {
 			public void onSuccess() {
@@ -205,7 +206,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 	}
-	
+	*/
 	
 	private void addHistory() {
 		if (iInRestore || !iTrackHistory) return;
