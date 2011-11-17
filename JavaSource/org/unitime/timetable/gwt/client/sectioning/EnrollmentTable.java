@@ -13,11 +13,14 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasVerticalCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -26,30 +29,37 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EnrollmentTable extends Composite {
@@ -57,6 +67,7 @@ public class EnrollmentTable extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
+	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private Long iOfferingId = null;
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
@@ -281,6 +292,24 @@ public class EnrollmentTable extends Composite {
 					}
 				});
 				buttons.setEnabled("assistant", false);
+				buttons.addButton("log", MESSAGES.buttonChangeLog(), 'l', (Integer) null, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						LoadingWidget.getInstance().show(MESSAGES.loadingChangeLog(student.getName()));
+						showChangeLog(student, new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().fail(caught.getMessage());
+							}
+							@Override
+							public void onSuccess(Boolean result) {
+								LoadingWidget.getInstance().hide();
+								if (result)
+									dialog.hide();
+							}
+						});
+					}
+				});
 				buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -394,6 +423,92 @@ public class EnrollmentTable extends Composite {
 						});
 					}
 				});				
+			}
+		});
+	}
+	
+	public void showChangeLog(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		iSectioningService.changeLog(student.getExternalId(), new AsyncCallback<List<ClassAssignmentInterface.SectioningAction>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+			@Override
+			public void onSuccess(List<ClassAssignmentInterface.SectioningAction> logs) {
+				if (logs == null || logs.isEmpty()) {
+					callback.onSuccess(false);
+					return;
+				}
+				
+				final UniTimeTable<ClassAssignmentInterface.SectioningAction> table = new UniTimeTable<ClassAssignmentInterface.SectioningAction>();
+				
+				table.addRow(null,
+						new UniTimeTableHeader(MESSAGES.colOperation()),
+						new UniTimeTableHeader(MESSAGES.colTimeStamp()),
+						new UniTimeTableHeader(MESSAGES.colResult()),
+						new UniTimeTableHeader(MESSAGES.colUser()),
+						new UniTimeTableHeader(MESSAGES.colMessage()));
+				
+				for (ClassAssignmentInterface.SectioningAction log: logs) {
+					table.addRow(log,
+							new TopCell(log.getOperation()),
+							new TopCell(sTSF.format(log.getTimeStamp())),
+							new TopCell(log.getResult()),
+							new TopCell(log.getUser() == null ? "" : log.getUser()),
+							new HTML(log.getMessage() == null ? "" : log.getMessage())
+					);
+				}
+				table.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
+					@Override
+					public void onMouseClick(TableEvent<SectioningAction> event) {
+						if (event.getData() != null && event.getData().getProto() != null) {
+							final HTML widget = new HTML(event.getData().getProto());
+							final ScrollPanel scroll = new ScrollPanel(widget);
+							scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+							scroll.setStyleName("unitime-ScrollPanel");
+							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+							dialog.setWidget(scroll);
+							dialog.setText(MESSAGES.dialogChangeMessage(student.getName()));
+							dialog.setEscapeToHide(true);
+							dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+								@Override
+								public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+									scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+									dialog.setPopupPosition(
+											Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+											Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+								}
+							});
+							dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+								@Override
+								public void onClose(CloseEvent<PopupPanel> event) {
+									table.clearHover();
+								}
+							});
+							dialog.center();
+						}
+					}
+				});
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+				final ScrollPanel scroll = new ScrollPanel(table);
+				scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+				scroll.setStyleName("unitime-ScrollPanel");
+				dialog.setWidget(scroll);
+				dialog.setText(MESSAGES.dialogChangeLog(student.getName()));
+				dialog.setEscapeToHide(true);
+				dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+					@Override
+					public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+						RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+						scroll.setHeight(Math.min(table.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+						dialog.setPopupPosition(
+								Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+								Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+					}
+				});
+				callback.onSuccess(true);
+				dialog.center();
 			}
 		});
 	}
@@ -1313,6 +1428,17 @@ public class EnrollmentTable extends Composite {
 				iEnrollments.getRowFormatter().setStyleName(i, "unitime-TableRowSelected");
 			else if ("unitime-TableRowSelected".equals(iEnrollments.getRowFormatter().getStyleName(i)))
 				iEnrollments.getRowFormatter().removeStyleName(i, "unitime-TableRowSelected");
+		}
+	}
+	
+	public static class TopCell extends Label implements HasVerticalCellAlignment {
+		TopCell(String cell) {
+			super(cell);
+		}
+
+		@Override
+		public VerticalAlignmentConstant getVerticalCellAlignment() {
+			return HasVerticalAlignment.ALIGN_TOP;
 		}
 	}
 }

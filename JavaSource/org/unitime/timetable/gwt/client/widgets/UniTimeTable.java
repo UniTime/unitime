@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
@@ -115,6 +116,8 @@ public class UniTimeTable<T> extends FlexTable {
 			}
 			if (widget instanceof  HasCellAlignment)
 				getFlexCellFormatter().setHorizontalAlignment(row, col, ((HasCellAlignment)widget).getCellAlignment());
+			if (widget instanceof  HasVerticalCellAlignment)
+				getFlexCellFormatter().setVerticalAlignment(row, col, ((HasVerticalCellAlignment)widget).getVerticalCellAlignment());
 			setWidget(row, col++, cell);
 		}
 		if (data != null) {
@@ -628,6 +631,10 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	public static interface HasCellAlignment {
 		public HorizontalAlignmentConstant getCellAlignment();
+	}
+	
+	public static interface HasVerticalCellAlignment {
+		public VerticalAlignmentConstant getVerticalCellAlignment();
 	}
 	
 	public static interface HasStyleName {
