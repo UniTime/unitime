@@ -25,4 +25,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} Help")
 	String pageHelp(String pageTitle);
+
+	@DefaultMessage("Version {0} built on {1}")
+	String pageVersion(String version, String buildDate);
+	
+	@DefaultMessage("&copy; 2008 - 2011 UniTime LLC,<br>distributed under GNU General Public License.")
+	String pageCopyright();
 }
