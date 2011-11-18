@@ -278,9 +278,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are no alternatives for {0} matching {1}.")
 	String suggestionsNoAlternativeWithFilter(String source, String filter);
 
-	@DefaultMessage("No alternative for {0} is matching {1}.")
-	String suggestionsNoMatch(String source, String filter);
-
 	@DefaultMessage("Free Time {0} {1} - {2}")
 	String freeTime(String days, String start, String end);
 
@@ -899,7 +896,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message")
 	String colMessage();
 
-	@DefaultMessage("Message")
+	@DefaultMessage("Messages")
 	String tableMessages();
 
 	@DefaultMessage("CPU Time [s]")
@@ -913,4 +910,74 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Proto Buffer")
 	String tableProto();
+	
+	@DefaultMessage("Class schedule change for %session%")
+	String emailDeafultSubject();
+	
+	@DefaultMessage("Class Schedule")
+	String emailDeafultTitle();
+	
+	@DefaultMessage("Message")
+	String emailMessage();
+	
+	@DefaultMessage("List of Classes")
+	String emailClassList();
+	
+	@DefaultMessage("Timetable")
+	String emailTimetable();
+
+	@DefaultMessage("This email was send on behalf of {0}.")
+	String emailSentBy(String manager);
+
+	@DefaultMessage("The changes in your schedule were made by {0}.")
+	String emailChangesMadeBy(String manager);
+	
+	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/gwt.jsp?page=sectioning' style='color: inherit; background-color : transparent;'>{0}</a>.")
+	String emailLinkToUniTime(String baseUrl);
+
+	@DefaultMessage("Class schedule notification for %session%")
+	String emailSubjectNotification();
+	
+	@DefaultMessage("No enrollment change detected.")
+	String emailNoChange();
+	
+	@DefaultMessage("Enrollment Changes")
+	String emailEnrollmentChanges();
+	
+	@DefaultMessage("You have not been granted the {0}, please contact your advisor for further information.")
+	String emailConsentRejected(String consent);
+	
+	@DefaultMessage("Course is wait-listed.")
+	String emailCourseWaitListed();
+	
+	@DefaultMessage("Course is wait-listed alternative.")
+	String emailCourseWaitListedAlternative();
+	
+	@DefaultMessage("Course {0} {1} dropped due to a reject.")
+	String emailCourseDropReject(String subject, String courseNbr);
+	
+
+	@DefaultMessage("Course {0} {1} dropped due to a course change.")
+	String emailCourseDropChange(String subject, String courseNbr);
+	
+	@DefaultMessage("Enrollment changed in {0} {1}")
+	String emailEnrollmentChanged(String subject, String courseNbr);
+	
+	@DefaultMessage("{0} {1} Enrollment")
+	String emailCourseEnrollment(String subject, String courseNbr);
+
+	@DefaultMessage("You are now enrolled in {0} {1}")
+	String emailEnrollmentNew(String subject, String courseNbr);
+
+	@DefaultMessage("No class schedule.")
+	String emailNoSchedule();
+	
+	@DefaultMessage("wait-listed")
+	String emailWaitListedRequest();
+	
+	@DefaultMessage("wait-listed alternative")
+	String emailWaitListedAlternativeRequest();
+	
+	@DefaultMessage("Arrange Hours")
+	String emailArrangeHours();
 }
