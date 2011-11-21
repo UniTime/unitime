@@ -428,7 +428,7 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void showChangeLog(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.changeLog(student.getExternalId(), new AsyncCallback<List<ClassAssignmentInterface.SectioningAction>>() {
+		iSectioningService.changeLog("id:" + student.getExternalId(), new AsyncCallback<List<ClassAssignmentInterface.SectioningAction>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);

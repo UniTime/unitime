@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -52,6 +54,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<EnrollmentInfo>> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Query iQuery;
+	private Integer iLimit = null;
 	private Long iCourseId;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
@@ -60,9 +63,15 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		iCourseId = courseId;
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
+		if (m.find()) {
+			iLimit = Integer.parseInt(m.group(1));
+		}
 	}
 	
 	public Query query() { return iQuery; }
+	
+	public Integer limit() { return iLimit; }
 	
 	public Long courseId() { return iCourseId; }
 	
@@ -197,6 +206,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setTotalConsentNeeded(tConNeed);
 
 				ret.add(e);
+				if (limit() != null && ret.size() >= limit()) break;
 			}
 			
 			// if students.size() > 0) {

@@ -140,6 +140,10 @@ public class OnlineSectioningLogger extends Thread {
 								}
 								log.setStudent(studentExternalId);
 								log.setTimeStamp(new Date(q.getStartTime()));
+								if (q.hasResult())
+									log.setResult(q.getResult().getNumber());
+								if (q.hasUser() && q.getUser().hasExternalId())
+									log.setUser(q.getUser().getExternalId());
 								Long sessionId = q.getSession().getUniqueId();
 								Session session = sessions.get(sessionId);
 								if (session == null) {
