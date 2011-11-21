@@ -4016,5 +4016,10 @@
 		<plsql>alter table %SCHEMA%.student drop column status_change_date</plsql>
 		<plsql>drop table %SCHEMA%.student_status_type</plsql>
 	</update>
-	
+	<update version="81" date="21-Nov-2011" comment="Sectioning log result">
+		<mysql>alter table %SCHEMA%.sectioning_log add result bigint(10) null</mysql>
+		<plsql>alter table %SCHEMA%.sectioning_log add result number(10)</plsql> 
+		<mysql>alter table %SCHEMA%.sectioning_log add user varchar(40) null</mysql>
+		<plsql>alter table %SCHEMA%.sectioning_log add user varchar2(40)</plsql> 
+	</update>
 </dbupdate>

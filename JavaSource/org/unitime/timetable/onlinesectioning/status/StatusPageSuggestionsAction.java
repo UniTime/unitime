@@ -59,13 +59,16 @@ import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
+import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.util.Constants;
 
 public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<String[]>> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -356,7 +359,60 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					});
 				}
 			}
-
+			m = Pattern.compile("^(.*\\W?user:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				if (m.group(2).length() > 0) {
+					for (TimetableManager manager: (List<TimetableManager>)TimetableManagerDAO.getInstance().getSession().createQuery(
+							"select distinct m from TimetableManager m inner join m.managerRoles r inner join m.departments d where " +
+							" (lower(m.externalUniqueId) like :q || '%' or lower(m.emailAddress) like :q || '%' or lower(m.lastName) || ' ' || lower(m.firstName) like :q || '%')" +
+							" and r.role.reference in ('Administrator', 'Dept Sched Mgr') and d.session.uniqueId = :sessionId order by m.lastName, m.firstName, m.middleName"
+							).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						ret.add(new String[] {
+								m.group(1) + (manager.getExternalUniqueId().indexOf(' ') >= 0 ? "\"" + manager.getExternalUniqueId() + "\"" : manager.getExternalUniqueId()),
+								manager.getLastName().toLowerCase() + " - Enrollments approved by " + manager.getName()
+						});
+					}
+				} else {
+					ret.add(new String[] {
+							m.group(1) + iUser.getId(),
+							(iUser.getName().contains(",") ? iUser.getName().substring(0, iUser.getName().indexOf(',')).toLowerCase() : iUser.getName().toLowerCase()) + " - " + "Enrollments approved by " + iUser.getName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?operation:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
+						"select distinct operation from OnlineSectioningLog where " +
+						"lower(operation) like :q || '%' and session.uniqueId = :sessionId order by operation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+					ret.add(new String[] {
+							m.group(1) + op,
+							Constants.toInitialCase(op.replace('-', ' '))
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?op:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
+						"select distinct operation from OnlineSectioningLog where " +
+						"lower(operation) like :q || '%' and session.uniqueId = :sessionId order by operation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+					ret.add(new String[] {
+							m.group(1) + op,
+							Constants.toInitialCase(op.replace('-', ' '))
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?result:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				for (OnlineSectioningLog.Action.ResultType t: OnlineSectioningLog.Action.ResultType.values())
+					if (t.name().toLowerCase().startsWith(m.group(2).toLowerCase())) {
+						ret.add(new String[] {
+								m.group(1) + t.name().toLowerCase(),
+								Constants.toInitialCase(t.name().toLowerCase())
+						});
+					}
+			}
 			if (ret.isEmpty() && !iQuery.isEmpty()) {
 				for (CourseInfo c: server.findCourses(iQuery, iLimit)) {
 					ret.add(new String[] {
@@ -455,6 +511,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		@Override
 		public boolean match(String attr, String term) {
 			if (term.isEmpty()) return true;
+			if ("limit".equals(attr)) return true;
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
 				return info().getSubjectArea().equalsIgnoreCase(term) || info().getCourseNbr().equalsIgnoreCase(term) || (info().getSubjectArea() + " " + info().getCourseNbr()).equalsIgnoreCase(term);
 			}
@@ -513,6 +570,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public boolean match(String attr, String term) {
 			if (attr == null || "name".equals(attr) || "title".equals(attr) || "subject".equals(attr) || "number".equals(attr) || "course".equals(attr) || "department".equals(attr) || "registered".equals(attr))
 				return super.match(attr, term);
+			
+			if ("limit".equals(attr)) return true;
 			
 			if ("area".equals(attr)) {
 				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
@@ -781,6 +840,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		@Override
 		public boolean match(String attr, String term) {
 			if (attr == null && term.isEmpty()) return true;
+			if ("limit".equals(attr)) return true;
 			if ("area".equals(attr)) {
 				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
 					if (eq(ac.getArea(), term)) return true;
