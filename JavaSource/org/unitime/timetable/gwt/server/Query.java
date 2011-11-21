@@ -42,6 +42,10 @@ public class Query {
 		return iQuery.toString();
 	}
 	
+	public String toString(QueryFormatter f) {
+		return iQuery.toString(f);
+	}
+	
 	private static List<String> split(String query, String... splits) {
 		List<String> ret = new ArrayList<String>();
 		int bracket = 0;
@@ -127,6 +131,7 @@ public class Query {
 	
 	public static interface Term {
 		public boolean match(TermMatcher m);
+		public String toString(QueryFormatter f);
 	}
 
 	public static abstract class CompositeTerm implements Term {
@@ -153,6 +158,15 @@ public class Query {
 			for (Term t: terms()) {
 				if (!ret.isEmpty()) ret += " " + getOp() + " ";
 				ret += t;
+			}
+			return (terms().size() > 1 ? "(" + ret + ")" : ret);
+		}
+		
+		public String toString(QueryFormatter f) {
+			String ret = "";
+			for (Term t: terms()) {
+				if (!ret.isEmpty()) ret += " " + getOp() + " ";
+				ret += t.toString(f);
 			}
 			return (terms().size() > 1 ? "(" + ret + ")" : ret);
 		}
@@ -200,7 +214,8 @@ public class Query {
 		}
 		
 		public String toString() { return "NOT " + iTerm.toString(); }
-
+		
+		public String toString(QueryFormatter f) { return "NOT " + iTerm.toString(f); }
 	}
 
 	public static class AtomTerm implements Term {
@@ -215,12 +230,18 @@ public class Query {
 		public boolean match(TermMatcher m) {
 			return m.match(iAttr, iBody);
 		}
-
+		
 		public String toString() { return (iAttr == null ? "" : iAttr + ":") + iBody; }
+		
+		public String toString(QueryFormatter f) { return f.format(iAttr, iBody); }
 	}
 	
 	public static interface TermMatcher {
 		public boolean match(String attr, String term);
+	}
+	
+	public static interface QueryFormatter {
+		String format(String attr, String term);
 	}
 	
 	public static void main(String[] args) {

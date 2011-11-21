@@ -63,5 +63,18 @@
             type="byte[]"
             not-null="true"
             lazy="true"/>
+
+        <property
+            name="result"
+            column="result"
+            type="java.lang.Integer"
+            not-null="false"/>
+
+        <property
+            name="user"
+            column="user"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
     </class>
 </hibernate-mapping>

@@ -63,7 +63,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	public Query query() { return iQuery; }
-	
+
 	public Long courseId() { return iCourseId; }
 	
 	public Long classId() { return iClassId; }

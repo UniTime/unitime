@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
+import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -55,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 
 import com.google.gwt.core.client.GWT;
@@ -109,6 +111,7 @@ public class SectioningStatusPage extends Composite {
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
+	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 
@@ -125,6 +128,7 @@ public class SectioningStatusPage extends Composite {
 	
 	private UniTimeTable<EnrollmentInfo> iCourseTable = null;
 	private UniTimeTable<StudentInfo> iStudentTable = null;
+	private UniTimeTable<SectioningAction> iLogTable = null;
 	
 	private UniTimeDialogBox iEnrollmentDialog = null;
 	private EnrollmentTable iEnrollmentTable = null;
@@ -197,7 +201,8 @@ public class SectioningStatusPage extends Composite {
 		
 		iCourseTable = new UniTimeTable<EnrollmentInfo>();
 		iStudentTable = new UniTimeTable<StudentInfo>();
-		
+		iLogTable = new UniTimeTable<SectioningAction>();
+
 		VerticalPanel courseTableWithHint = new VerticalPanel();
 		courseTableWithHint.add(iCourseTable);
 		iCourseTableHint = new HTML(MESSAGES.sectioningStatusReservationHint());
@@ -238,6 +243,10 @@ public class SectioningStatusPage extends Composite {
 				}
 				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='s' || event.getNativeKeyCode()=='S')) {
 					iTabPanel.selectTab(1);
+					event.preventDefault();
+				}
+				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
+					iTabPanel.selectTab(2);
 					event.preventDefault();
 				}
 			}
@@ -367,14 +376,51 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
+		iLogTable.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
+			@Override
+			public void onMouseClick(TableEvent<SectioningAction> event) {
+				if (event.getData() != null && event.getData().getProto() != null) {
+					final HTML widget = new HTML(event.getData().getProto());
+					final ScrollPanel scroll = new ScrollPanel(widget);
+					scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+					scroll.setStyleName("unitime-ScrollPanel");
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+					dialog.setWidget(scroll);
+					dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
+					dialog.setEscapeToHide(true);
+					dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+						@Override
+						public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+							scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+							dialog.setPopupPosition(
+									Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+									Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+						}
+					});
+					dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+						@Override
+						public void onClose(CloseEvent<PopupPanel> event) {
+							iLogTable.clearHover();
+						}
+					});
+					dialog.center();
+				}
+			}
+		});
+		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				iCourseTable.clearTable();
 				iStudentTable.clearTable();
+				iLogTable.clearTable();
 				if (event.getValue().endsWith("@")) {
 					iFilter.setText(event.getValue().substring(0, event.getValue().length() - 1));
 					iTabPanel.selectTab(1);
+				} else if (event.getValue().endsWith("$")) {
+					iFilter.setText(event.getValue().substring(0, event.getValue().length() - 1));
+					iTabPanel.selectTab(2);
 				} else {
 					iFilter.setText(event.getValue());
 					if (iTabIndex != 0)
@@ -413,6 +459,20 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onClose(CloseEvent<PopupPanel> event) {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+			}
+		});
+		
+		
+		iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+			
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result)
+					iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
 			}
 		});
 		
@@ -487,6 +547,9 @@ public class SectioningStatusPage extends Composite {
 				if (hash.endsWith("@")) {
 					iFilter.setText(hash.substring(0, hash.length() - 1));
 					iTabPanel.selectTab(1);
+				} else if (hash.endsWith("$")) {
+					iFilter.setText(hash.substring(0, hash.length() - 1));
+					iTabPanel.selectTab(2);
 				} else {
 					iFilter.setText(hash);
 					loadData();
@@ -520,18 +583,20 @@ public class SectioningStatusPage extends Composite {
 	private void loadData() {
 		iCourseTable.clearTable();
 		iStudentTable.clearTable();
+		iLogTable.clearTable();
 		loadDataIfNeeded();
 	}
 	
 	private void loadDataIfNeeded() {
 		iCourseFilter = iFilter.getText();
-		History.newItem(iCourseFilter + (iTabIndex == 0 ? "" : "@"), false);
+		History.newItem(iCourseFilter + (iTabIndex == 1 ? "@" : iTabIndex == 2 ? "$" : ""), false);
 		
 		if (((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).isSuggestionListShowing())
 			((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).hideSuggestions();
 		
 		if (iTabIndex == 0 && iCourseTable.getRowCount() > 0) return;
 		if (iTabIndex == 1 && iStudentTable.getRowCount() > 0) return;
+		if (iTabIndex == 2 && iLogTable.getRowCount() > 0) return;
 		
 		LoadingWidget.getInstance().show(MESSAGES.loadingData());
 		setLoading(true);
@@ -562,7 +627,7 @@ public class SectioningStatusPage extends Composite {
 					LoadingWidget.getInstance().hide();
 				}
 			});
-		} else {
+		} else if (iTabIndex == 1) {
 			iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -600,7 +665,28 @@ public class SectioningStatusPage extends Composite {
 							setLoading(false);
 							LoadingWidget.getInstance().hide();
 						}
-					});				}
+					});
+				}
+			});
+		} else {
+			iSectioningService.changeLog(iCourseFilter, new AsyncCallback<List<SectioningAction>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					LoadingWidget.getInstance().hide();
+					setLoading(false);
+					iError.setHTML(caught.getMessage());
+					iError.setVisible(true);
+					iTabPanel.setVisible(false);
+					ToolBox.checkAccess(caught);
+				}
+
+				@Override
+				public void onSuccess(final List<SectioningAction> result) {
+					populateChangeLog(result);
+					iTabPanel.setVisible(true);
+					setLoading(false);
+					LoadingWidget.getInstance().hide();
+				}
 			});
 		}
 	}
@@ -1638,6 +1724,189 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		iStudentTableHint.setVisible(hasWaitList);
+	}
+	
+	public void populateChangeLog(List<SectioningAction> result) {
+		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		
+		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
+		header.add(hStudent);
+		hStudent.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+						if (cmp != 0) return cmp;
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colStudent());
+			}
+		});
+		
+		UniTimeTableHeader hOp = new UniTimeTableHeader(MESSAGES.colOperation());
+		header.add(hOp);
+		hOp.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						int cmp = e1.getOperation().compareTo(e2.getOperation());
+						if (cmp != 0) return cmp;
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colOperation());
+			}
+		});
+		
+		UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colTimeStamp());
+		header.add(hTimeStamp);
+		hTimeStamp.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colTimeStamp());
+			}
+		});
+		
+		UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
+		header.add(hResult);
+		hResult.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						int cmp = (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
+						if (cmp != 0) return cmp;
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colResult());
+			}
+		});
+		
+		UniTimeTableHeader hUser = new UniTimeTableHeader(MESSAGES.colUser());
+		header.add(hUser);
+		hUser.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						int cmp = (e1.getUser() == null ? "" : e1.getUser()).compareTo(e2.getUser() == null ? "" : e2.getUser());
+						if (cmp != 0) return cmp;
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colUser());
+			}
+		});
+		
+		UniTimeTableHeader hMessage = new UniTimeTableHeader(MESSAGES.colMessage());
+		header.add(hMessage);
+		hMessage.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(new Comparator<SectioningAction>() {
+					@Override
+					public int compare(SectioningAction e1, SectioningAction e2) {
+						int cmp = (e1.getMessage() == null ? "" : e1.getMessage()).compareTo(e2.getMessage() == null ? "" : e2.getMessage());
+						if (cmp != 0) return cmp;
+						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+					}
+				});
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(MESSAGES.colMessage());
+			}
+		});
+		
+		iLogTable.addRow(null, header);
+		
+		for (ClassAssignmentInterface.SectioningAction log: result) {
+			iLogTable.addRow(log,
+					new TopCell(log.getStudent().getName()),
+					new TopCell(log.getOperation()),
+					new TopCell(sTSF.format(log.getTimeStamp())),
+					new TopCell(log.getResult()),
+					new TopCell(log.getUser() == null ? "" : log.getUser()),
+					new HTML(log.getMessage() == null ? "" : log.getMessage())
+			);
+		}
 	}
 	
 	public static class SimpleSuggestion implements Suggestion {

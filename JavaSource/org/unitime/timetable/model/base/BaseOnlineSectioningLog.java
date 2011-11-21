@@ -33,6 +33,8 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	private String iStudent;
 	private String iOperation;
 	private byte[] iAction;
+	private Integer iResult;
+	private String iUser;
 
 	private Session iSession;
 
@@ -41,6 +43,8 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public static String PROP_STUDENT = "student";
 	public static String PROP_OPERATION = "operation";
 	public static String PROP_ACTION = "action";
+	public static String PROP_RESULT = "result";
+	public static String PROP_USER = "user";
 
 	public BaseOnlineSectioningLog() {
 		initialize();
@@ -68,6 +72,12 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public byte[] getAction() { return iAction; }
 	public void setAction(byte[] action) { iAction = action; }
 
+	public Integer getResult() { return iResult; }
+	public void setResult(Integer result) { iResult = result; }
+
+	public String getUser() { return iUser; }
+	public void setUser(String user) { iUser = user; }
+
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -90,10 +100,12 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 		return "OnlineSectioningLog[" +
 			"\n	Action: " + getAction() +
 			"\n	Operation: " + getOperation() +
+			"\n	Result: " + getResult() +
 			"\n	Session: " + getSession() +
 			"\n	Student: " + getStudent() +
 			"\n	TimeStamp: " + getTimeStamp() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	User: " + getUser() +
 			"]";
 	}
 }

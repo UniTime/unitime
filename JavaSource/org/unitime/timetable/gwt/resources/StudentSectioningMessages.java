@@ -823,6 +823,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>tudents")
 	String tabStudents();
 	
+	@DefaultMessage("Change <u>L</u>og")
+	String tabChangeLog();
+
 	@DefaultMessage("<sup><font color='#9CB0CE'>({0}p)</font></sup>")
 	String firstWaitListedPrioritySign(int priority);
 	

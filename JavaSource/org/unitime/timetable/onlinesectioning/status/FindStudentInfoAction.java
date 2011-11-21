@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
 import net.sf.cpsolver.studentsct.model.Course;
@@ -47,16 +49,23 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 
 public class FindStudentInfoAction implements OnlineSectioningAction<List<StudentInfo>> {
 	private Query iQuery;
+	private Integer iLimit = null;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
 	public FindStudentInfoAction(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
+		if (m.find()) {
+			iLimit = Integer.parseInt(m.group(1));
+		}
 	}
 	
 	public Query query() { return iQuery; }
 	
+	public Integer limit() { return iLimit; }
+
 	public boolean isConsentToDoCourse(CourseInfo course) {
 		return iCoursesIcanApprove != null && course.getConsent() != null && iCoursesIcanApprove.contains(course.getUniqueId());
 	}
@@ -207,6 +216,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				return new Long(s1.getStudent().getId()).compareTo(s2.getStudent().getId());
 			}
 		});
+		
+		if (limit() != null && ret.size() >= limit()) {
+			List<StudentInfo>  r = new ArrayList<StudentInfo>(limit());
+			for (StudentInfo i: ret) {
+				r.add(i);
+				if (r.size() == limit()) break;
+			}
+			ret = r;
+		}
 		
 		// if (students.size() > 0) {
 		StudentInfo t = new StudentInfo();
