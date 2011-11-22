@@ -253,7 +253,7 @@ public class EnrollmentTable extends Composite {
 							row = new WebTable.Row(
 									new WebTable.Cell(course.getSubject()),
 									new WebTable.Cell(course.getCourseNbr()),
-									new WebTable.Cell(unassignedMessage, 10, null));
+									new WebTable.Cell(unassignedMessage, 11, null));
 						}
 						for (WebTable.Cell cell: row.getCells())
 							cell.setStyleName(style);
