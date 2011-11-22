@@ -584,8 +584,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-								new WebTable.Cell(clazz.getParentSection()),
-								new WebTable.Cell(clazz.getNote()),
+								new WebTable.Cell(clazz.getParentSection(), true),
+								new WebTable.Cell(clazz.getNote(), true),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : 
 								 clazz.isFreeTime() || !result.isCanEnroll() ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null)),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
@@ -647,7 +647,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								new WebTable.Cell(unassignedMessage, 4, null),
-								new WebTable.Cell(clazz.getNote()),
+								new WebTable.Cell(clazz.getNote(), true),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
 						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
@@ -688,8 +688,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getDatePattern()),
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-									new WebTable.Cell(clazz.getParentSection()),
-									new WebTable.Cell(clazz.getNote()),
+									new WebTable.Cell(clazz.getParentSection(), true),
+									new WebTable.Cell(clazz.getNote(), true),
 									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
 									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 							rows.add(row);
@@ -722,8 +722,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-								new WebTable.Cell(clazz.getParentSection()),
-								new WebTable.Cell(clazz.getNote()),
+								new WebTable.Cell(clazz.getParentSection(), true),
+								new WebTable.Cell(clazz.getNote(), true),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
 								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 						rows.add(row);

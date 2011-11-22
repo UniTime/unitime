@@ -353,97 +353,81 @@ h1 {
 }
 
 .unitime-ClassRow {
-	white-space: nowrap;
 }
 
 .unitime-ClassRowFirst {
 	border-top: 1px dashed #9CB0CE;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowFirst2 {
 	border-top: 1px solid #9CB0CE;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowRed {
 	color: red;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowRedFirst {
 	border-top: 1px dashed #9CB0CE;
 	color: red;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowRedFirst2 {
 	border-top: 1px solid #9CB0CE;
 	color: red;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowBlue {
 	color: blue;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowBlueFirst {
 	border-top: 1px dashed #9CB0CE;
 	color: blue;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowBlueFirst2 {
 	border-top: 1px solid #9CB0CE;
 	color: blue;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowUnused {
 	color: gray;
 	font-style: italic;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowUnusedFirst {
 	color: gray;
 	font-style: italic;
 	border-top: 1px dashed #9CB0CE;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowUnavail {
 	color: #AAAAAA;
 	font-style: italic;;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowFirstUnavail {
 	color: #AAAAAA;
 	font-style: italic;;
 	border-top: 1px dashed #9CB0CE;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowProblem {
 	color: red;
 	text-align: center;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowProblemFirst {
 	color: red;
 	text-align: center;
 	border-top: 1px dashed #9CB0CE;
-	white-space: nowrap;
 }
 
 .unitime-ClassRowProblemFirst2 {
 	color: red;
 	text-align: center;
 	border-top: 1px solid #9CB0CE;
-	white-space: nowrap;
 }
 
 .gwt-TabPanelBottom {
