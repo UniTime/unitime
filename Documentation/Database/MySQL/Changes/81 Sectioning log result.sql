@@ -18,7 +18,7 @@
 */
 
 alter table sectioning_log add result bigint(10) null;
-alter table sectioning_log add user varchar(40) null;
+alter table sectioning_log add user_id varchar(40) null;
 
 /*
  * Update database version
