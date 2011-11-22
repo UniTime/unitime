@@ -72,7 +72,7 @@
 
         <property
             name="user"
-            column="user"
+            column="user_id"
             type="java.lang.String"
             not-null="false"
             length="40"/>
