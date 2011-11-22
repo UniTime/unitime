@@ -77,11 +77,11 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			NumberFormat nf = Localization.getNumberFormat("0.00");
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
-					"select distinct l, s.uniqueId from OnlineSectioningLog l, Student s " +
-					"left outer join s.academicAreaClassifications a " +
-					"left outer join s.posMajors m " + 
-					"left outer join s.posMinors n " + 
-					"left outer join s.groups g " + 
+					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
+					(getQuery().hasAttribute("area", "clasf", "classification") ? "left outer join s.academicAreaClassifications a " : "") +
+					(getQuery().hasAttribute("major") ? "left outer join s.posMajors m " : "") + 
+					(getQuery().hasAttribute("minor") ? "left outer join s.posMinors n " : "") + 
+					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc");
