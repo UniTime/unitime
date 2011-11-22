@@ -18,7 +18,7 @@
 */
 
 alter table sectioning_log add result number(10); 
-alter table sectioning_log add user varchar2(40); 
+alter table sectioning_log add user_id varchar2(40); 
 
 /*
  * Update database version
