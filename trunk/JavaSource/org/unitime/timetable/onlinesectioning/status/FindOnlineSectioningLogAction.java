@@ -84,7 +84,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
-					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc");
+					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
 
 			q.setLong("sessionId", server.getAcademicSession().getUniqueId());
 			if (getLimit() != null)
