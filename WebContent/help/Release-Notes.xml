@@ -272,6 +272,7 @@
 		<item>
 			<name>Other</name>
 			<description>
+				<line>Examination Student Conflicts PDF Report: format of student names changed to include full first and middle names (not just initials). </line>
 				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
 				<line>All pages: If a page requires a horizontal scroll bar, try to shrink all tables that are 100% wide to the size of the window.
 					<line>This means that tables like Filter will not get widen to fill up the whole space.</line>
