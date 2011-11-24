@@ -81,7 +81,7 @@ public class ExamEditAjax extends Action {
         } else if ("courseNbr".equals(request.getParameter("type"))) {
             coumputeSubparts(request.getParameter("id"),out);
         } else if ("itype".equals(request.getParameter("type"))) {
-            coumputeClasses(request.getParameter("id"),out);
+            coumputeClasses(request.getParameter("id"), request.getParameter("courseId"), out);
         }
     }
     
@@ -165,7 +165,7 @@ public class ExamEditAjax extends Action {
         }
     }
     
-    protected void coumputeClasses(String schedulingSubpartId, PrintWriter out) throws Exception {
+    protected void coumputeClasses(String schedulingSubpartId, String courseId, PrintWriter out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) {
             print(out, "-1", "N/A");
             return;
@@ -174,6 +174,10 @@ public class ExamEditAjax extends Action {
         if (subpart==null) {
             print(out, "-1", "N/A");
             return;
+        }
+        CourseOffering co = null;
+        if (courseId != null && !courseId.isEmpty()) {
+        	co = CourseOfferingDAO.getInstance().get(Long.valueOf(courseId));
         }
         TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         classes.addAll(new Class_DAO().
@@ -188,7 +192,8 @@ public class ExamEditAjax extends Action {
             print(out, "-1", "-");
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ c = (Class_)i.next();
-            print(out, c.getUniqueId().toString(), c.getSectionNumberString()); 
+            String extId = c.getClassSuffix(co);
+            print(out, c.getUniqueId().toString(), c.getSectionNumberString() + (extId == null || extId.isEmpty() || extId.equalsIgnoreCase(c.getSectionNumberString()) ? "" : " - " + extId)); 
         }
     }
    
