@@ -188,9 +188,9 @@
 				<table border='0'>
 				<tr>
 					<td width='100'><i>Subject</i></td>
-					<td width='410'><i>Course<br>Number</i></td>
+					<td width='350'><i>Course<br>Number</i></td>
 					<td width='160'><i>Config<br>Subpart</i></td>
-					<td width='90'><i>Class<br>Number</i></td>
+					<td width='150'><i>Class<br>Number</i></td>
 					<td></td>
 				</tr>
 				<logic:iterate name="<%=frmName%>" property="subjectAreaList" id="m" indexId="idx">
@@ -203,7 +203,7 @@
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:400;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
+					<html:select style="width:340;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
 						onfocus="setUp();"
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
@@ -215,7 +215,7 @@
 						<html:optionsCollection property='<%="itypes["+idx+"]"%>' label="value" value="id" filter="false"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:80;" property='<%="classNumber["+idx+"]"%>' styleId='<%="classNumber"+idx%>'>
+					<html:select style="width:140;" property='<%="classNumber["+idx+"]"%>' styleId='<%="classNumber"+idx%>'>
 						<html:optionsCollection property='<%="classNumbers["+idx+"]"%>' label="value" value="id"/>
 					</html:select>
 					</td><td>
@@ -247,6 +247,7 @@
 		var id = null;
 		var options = null;
 		var next = null;
+		var extra = "";
 		
 		if (type=='subjectArea') {
 			id = subjAreaObj.value;
@@ -272,6 +273,7 @@
 			options = classNumberObj.options;
 			classNumberObj.options.length=1;
 			if (id==-1) return;
+			extra = "&courseId=" + courseNbrObj.value;
 		}
 		
 		// Request initialization
@@ -305,7 +307,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type="+type;
+		var vars = "id="+id+"&type="+type+extra;
 		req.open( "POST", "examEditAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		req.setRequestHeader("Content-Length", vars.length);

@@ -858,6 +858,7 @@ public class EventAddForm extends ActionForm {
         Vector ret = new Vector();
         boolean contains = false;
         SchedulingSubpart subpart = (getItype(idx)>0?new SchedulingSubpartDAO().get(getItype(idx)):null);
+        CourseOffering co = (getItype(idx)>0?new CourseOfferingDAO().get(getCourseNbr(idx)):null);
         if (subpart!=null) {
             TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
             classes.addAll(new Class_DAO().
@@ -871,7 +872,9 @@ public class EventAddForm extends ActionForm {
             for (Iterator i=classes.iterator();i.hasNext();) {
                 Class_ c = (Class_)i.next();
                 if (c.getUniqueId().equals(getClassNumber(idx))) contains = true;
-                ret.add(new IdValue(c.getUniqueId(), c.getSectionNumberString())); 
+                String extId = c.getClassSuffix(co);
+                ret.add(new IdValue(c.getUniqueId(), c.getSectionNumberString() +
+                		(extId == null || extId.isEmpty() || extId.equalsIgnoreCase(c.getSectionNumberString()) ? "" : " - " + extId))); 
             }
         }
         if (ret.isEmpty()) ret.add(new IdValue(-1L,"N/A"));

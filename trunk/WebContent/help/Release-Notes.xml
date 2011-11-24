@@ -270,6 +270,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Add/Edit Examination, Add (Course Related) Event</name>
+			<description>
+				<line>Classes / Courses: Class Number column now also contains class suffix (if it is not empty and different from class number; format is class number - suffix).</line>
+			</description>
+		</item>
+		<item>
 			<name>Other</name>
 			<description>
 				<line>Examination Student Conflicts PDF Report: format of student names changed to include full first and middle names (not just initials). </line>
