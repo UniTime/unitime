@@ -280,7 +280,7 @@
 		-->
 		<java failonerror="true" fork="true" classname="com.google.sites.liberation.export.Main">
 			<classpath>
-				<pathelement location="${3rd_party.dir}/google-sites-liberation-1.0.3.jar"/>
+				<pathelement location="${3rd_party.dir}/google-sites-liberation-1.0.4.jar"/>
 			</classpath>
 			<arg value="-d"/>
 			<arg value="unitime.org"/>
