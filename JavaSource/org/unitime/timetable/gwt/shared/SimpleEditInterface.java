@@ -41,7 +41,7 @@ public class SimpleEditInterface implements IsSerializable {
 		creditType("Course Credit Types"),
 		creditUnit("Course Credit Units"),
 		position("Position Types"),
-		sectioning("Student Sectioning Status Types"),
+		sectioning("Student Scheduling Status Types"),
 		;
 	
 		private String iPageName;
