@@ -213,6 +213,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         			io = new InstructionalOffering();
 	            	io.setSession(session);
 	            	io.setExternalUniqueId(externalId);
+	            	io.setByReservationOnly(false);
         		} else if (possibleOfferings.size() == 1){
         			io = (InstructionalOffering) possibleOfferings.iterator().next();
         			existingIo = true;
@@ -249,6 +250,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         				io = new InstructionalOffering();
     	            	io.setSession(session);
     	            	io.setExternalUniqueId(externalId);
+    	            	io.setByReservationOnly(false);
     	            	for(Iterator<InstructionalOffering> ioIt = possibleOfferings.iterator(); ioIt.hasNext(); ){
             				InstructionalOffering oldIo = (InstructionalOffering)ioIt.next();
             				deleteInstructionalOffering(oldIo);
@@ -263,6 +265,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			io = new InstructionalOffering();
         	io.setSession(session);
         	io.setExternalUniqueId(externalId);
+        	io.setByReservationOnly(false);
 		}
 
         if (existingIo && action != null && action.equalsIgnoreCase("delete")){
