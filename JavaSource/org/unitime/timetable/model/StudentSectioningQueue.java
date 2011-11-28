@@ -164,6 +164,12 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
 	
+	@Deprecated
+	/** Use {@link StudentSectioningQueue#studentChanged(org.hibernate.Session, org.unitime.commons.User, Long, Collection<Long>)} */
+	public static void studentChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> studentIds) {
+		addItem(hibSession, null, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
+	}
+	
 	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... studentIds) {
 		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
