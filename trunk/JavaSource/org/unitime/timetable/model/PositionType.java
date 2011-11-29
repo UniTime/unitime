@@ -21,7 +21,6 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
