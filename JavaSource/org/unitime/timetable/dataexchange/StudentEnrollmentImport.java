@@ -38,7 +38,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
-import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.test.UpdateExamConflicts;
 
@@ -80,6 +79,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	    	HashMap<String, CourseOffering> cname2course = new HashMap<String, CourseOffering>();
 	    	HashMap<Long, Set<CourseOffering>> class2courses = new HashMap<Long, Set<CourseOffering>>();
 	    	
+	    	info("Loading classes...");
 	 		for (Object[] o: (List<Object[]>)getHibSession().createQuery(
 	 				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
     				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
@@ -104,17 +104,24 @@ public class StudentEnrollmentImport extends BaseImport {
 				}
 				courses.add(course);
 			}
-	        debug("classes loaded");
 	        
 	        if (created != null)
 				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_STUDENT_ENROLLMENTS, ChangeLog.Operation.UPDATE, null, null);
          
+	        info("Loading students...");
 	        Hashtable<String, Student> students = new Hashtable<String, Student>();
-	        for (Student student: StudentDAO.getInstance().findBySession(getHibSession(), session.getUniqueId())) {
-	        	if (student.getExternalUniqueId() != null)
-	        		students.put(student.getExternalUniqueId(), student);
+	        for (Student student: (List<Student>)getHibSession().createQuery(
+                    "select distinct s from Student s " +
+                    "left join fetch s.courseDemands as cd " +
+                    "left join fetch cd.courseRequests as cr " +
+                    "left join fetch s.classEnrollments as e " +
+                    "left join fetch cr.classEnrollments as cre "+
+                    "where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
+                    setLong("sessionId",session.getUniqueId()).list()) { 
+	        	students.put(student.getExternalUniqueId(), student);
 	        }
 	        
+	        info("Importing enrollments...");
  	        for (Iterator i = rootElement.elementIterator("student"); i.hasNext(); ) {
 	            Element studentElement = (Element) i.next();
 	            
@@ -250,12 +257,12 @@ public class StudentEnrollmentImport extends BaseImport {
         		getHibSession().update(student);
  	        }
  	        
+            info(updatedStudents.size() + " students changed");
+
  	        if (!updatedStudents.isEmpty())
  	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
             
             commitTransaction();
-            
-            debug(updatedStudents.size() + " students changed");
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);
 			rollbackTransaction();
