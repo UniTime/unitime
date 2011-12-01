@@ -142,6 +142,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		                    "left join fetch s.posMajors as mj " +
 		                    "left join fetch s.waitlists as w " +
 		                    "left join fetch cr.classEnrollments as cre "+
+		                    "left join fetch s.groups as g " +
 		                    "where s.session.uniqueId=:sessionId").
 		                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 		            for (org.unitime.timetable.model.Student student: students) {
