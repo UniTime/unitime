@@ -114,14 +114,23 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
         return enrollment.getRequest().getWeight() * weight;
     }
     
+    public Request getRequest(int index) {
+    	return (index < 0 || index >= iStudent.getRequests().size() ? null : iStudent.getRequests().get(index));
+    }
     
+    public boolean isFreeTime(int index) {
+    	Request r = getRequest(index);
+    	return r != null && r instanceof FreeTimeRequest;
+    }
 
 	@Override
 	public int compare(Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
 		
-		// 1. best priority & alternativity
+		// 0. best priority & alternativity ignoring free time requests
+		boolean ft = false;
 		for (int idx = 0; idx < current.length; idx++) {
+			if (isFreeTime(idx)) { ft = true; continue; }
 			if (best[idx] != null && best[idx].getAssignments() != null) {
 				if (current[idx] == null || current[idx].getSections() == null) return 1; // higher priority request assigned
 				if (best[idx].getPriority() < current[idx].getPriority()) return 1; // less alternative request assigned
@@ -130,7 +139,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			}
 		}
 		
-		// 2. minimize number of penalties
+		// 1. minimize number of penalties
 		int bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null) {
@@ -142,6 +151,18 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		}
 		if (currentPenalties < bestPenalties) return -1;
 		if (bestPenalties < currentPenalties) return 1;
+
+		// 2. best priority & alternativity including free time requests
+		if (ft) {
+			for (int idx = 0; idx < current.length; idx++) {
+				if (best[idx] != null && best[idx].getAssignments() != null) {
+					if (current[idx] == null || current[idx].getSections() == null) return 1; // higher priority request assigned
+					if (best[idx].getPriority() < current[idx].getPriority()) return 1; // less alternative request assigned
+				} else {
+					if (current[idx] != null && current[idx].getAssignments() != null) return -1; // higher priority request assigned
+				}
+			}			
+		}
 		
 		// 3. maximize selection
     	int bestSelected = 0, currentSelected = 0;
@@ -266,29 +287,31 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 
 	@Override
 	public boolean canImprove(int maxIdx, Enrollment[] current, Enrollment[] best) {
-		// 1. best priority & alternativity
+		// 0. best priority & alternativity ignoring free time requests
 		int alt = 0;
-		for (int idx = 0; idx < maxIdx; idx++) {
-			Request request = iStudent.getRequests().get(idx);
-			if (best[idx] != null) {
-				if (current[idx] == null) return false; // higher priority request assigned
-				if (best[idx].getPriority() < current[idx].getPriority()) return false; // less alternative request assigned
-				if (request.isAlternative()) alt--;
-			} else {
-				if (current[idx] != null) return true; // higher priority request assigned
-				if (!request.isAlternative()) alt++;
-			}
-		}
+		boolean ft = false;
 		for (int idx = maxIdx; idx < current.length; idx++) {
-			Request request = iStudent.getRequests().get(idx);
-			if (best[idx] != null) {
-				if (best[idx].getPriority() > 0) return true; // alternativity can be improved
+			if (isFreeTime(idx)) { ft = true; continue; }
+			Request request = getRequest(idx);
+			if (idx < maxIdx) {
+				if (best[idx] != null) {
+					if (current[idx] == null) return false; // higher priority request assigned
+					if (best[idx].getPriority() < current[idx].getPriority()) return false; // less alternative request assigned
+					if (request.isAlternative()) alt--;
+				} else {
+					if (current[idx] != null) return true; // higher priority request assigned
+					if (!request.isAlternative()) alt++;
+				}
 			} else {
-				if (!request.isAlternative() || alt > 0) return true; // priority can be improved
+				if (best[idx] != null) {
+					if (best[idx].getPriority() > 0) return true; // alternativity can be improved
+				} else {
+					if (!request.isAlternative() || alt > 0) return true; // priority can be improved
+				}
 			}
 		}
-
-		// 2. maximize number of penalties
+		
+		// 1. maximize number of penalties
 		int bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
@@ -303,6 +326,30 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		if (currentPenalties < bestPenalties) return true;
 		if (bestPenalties < currentPenalties) return false;
 		
+		// 2. best priority & alternativity including free times
+		if (ft) {
+			alt = 0;
+			for (int idx = 0; idx < maxIdx; idx++) {
+				Request request = iStudent.getRequests().get(idx);
+				if (idx < maxIdx) {
+					if (best[idx] != null) {
+						if (current[idx] == null) return false; // higher priority request assigned
+						if (best[idx].getPriority() < current[idx].getPriority()) return false; // less alternative request assigned
+						if (request.isAlternative()) alt--;
+					} else {
+						if (current[idx] != null) return true; // higher priority request assigned
+						if (!request.isAlternative()) alt++;
+					}
+				} else {
+					if (best[idx] != null) {
+						if (best[idx].getPriority() > 0) return true; // alternativity can be improved
+					} else {
+						if (!request.isAlternative() || alt > 0) return true; // priority can be improved
+					}
+				}
+			}			
+		}
+
 		// 3. maximize selection
     	int bestSelected = 0, currentSelected = 0;
 		for (int idx = 0; idx < current.length; idx++) {
