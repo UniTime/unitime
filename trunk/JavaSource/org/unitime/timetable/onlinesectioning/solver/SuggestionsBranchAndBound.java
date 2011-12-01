@@ -80,12 +80,14 @@ public class SuggestionsBranchAndBound {
 	private Date iFirstDate = null;
 	protected Comparator<Enrollment> iComparator = null;
 	protected int iMatched = 0;
+	protected int iMaxSectionsWithPenalty = 0;
+	private boolean iAvoidOverExpected = true;
 	
 	public SuggestionsBranchAndBound(DataProperties properties, Student student,
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
-			Request selectedRequest, Section selectedSection, String filter, Date firstDate) {
+			Request selectedRequest, Section selectedSection, String filter, Date firstDate, boolean avoidOverExpected) {
 		iRequiredSections = requiredSections;
 		iRequiredFreeTimes = requiredFreeTimes;
 		iPreferredSections = preferredSections;
@@ -96,6 +98,7 @@ public class SuggestionsBranchAndBound {
 		iMaxDepth = properties.getPropertyInt("Suggestions.MaxDepth", iMaxDepth);
 		iTimeout = properties.getPropertyLong("Suggestions.Timeout", iTimeout);
 		iMaxSuggestions = properties.getPropertyInt("Suggestions.MaxSuggestions", iMaxSuggestions);
+		iAvoidOverExpected = avoidOverExpected;
 		iFilter = (filter == null || filter.isEmpty() ? null : new Query(filter));
 		iFirstDate = firstDate;
 		iComparator = new Comparator<Enrollment>() {
@@ -153,6 +156,17 @@ public class SuggestionsBranchAndBound {
         for (Request request: iStudent.getRequests()) {
     		request.setInitialAssignment(request.getAssignment());
         }
+        
+        if (iAvoidOverExpected) {
+            iMaxSectionsWithPenalty = 0;
+            for (Request request: iStudent.getRequests()) {
+            	if (request.getAssignment() != null && request.getAssignment().isCourseRequest()) {
+            		for (Section section: request.getAssignment().getSections()) {
+            			if (section.getPenalty() >= 0.0) iMaxSectionsWithPenalty ++;
+            		}
+            	}
+            }
+        }
 		
         backtrack(requests2resolve, altRequests2resolve, 0, iMaxDepth, false);
         
@@ -167,7 +181,12 @@ public class SuggestionsBranchAndBound {
         int nrUnassigned = requests2resolve.size() - idx;
         if (nrUnassigned==0) {
         	List<FreeTimeRequest> okFreeTimes = new ArrayList<FreeTimeRequest>();
+        	int sectionsWithPenalty = 0;
         	for (Request r: iStudent.getRequests()) {
+        		if (iAvoidOverExpected && r.getAssignment() != null && r instanceof CourseRequest) {
+        			for (Section s: r.getAssignment().getSections())
+        				if (s.getPenalty() >= 0) sectionsWithPenalty ++;
+        		}
         		if (r.getAssignment() == null && r instanceof FreeTimeRequest) {
         			FreeTimeRequest ft = (FreeTimeRequest)r;
             		Enrollment enrollment = ft.createEnrollment();
@@ -177,6 +196,7 @@ public class SuggestionsBranchAndBound {
             		}
         		}
         	}
+        	if (iAvoidOverExpected && sectionsWithPenalty > iMaxSectionsWithPenalty) return;
     		Suggestion s = new Suggestion(requests2resolve);
     		if (iSuggestions.size() >= iMaxSuggestions && iSuggestions.last().compareTo(s) <= 0) return;
     		if (iMatched != 1) {
@@ -509,6 +529,19 @@ public class SuggestionsBranchAndBound {
         for (Enrollment conflict: conflicts) {
             int confIdx = requests2resolve.indexOf(conflict.variable());
             if (confIdx >= 0 && confIdx <= idx) return false;
+        }
+        if (iAvoidOverExpected) {
+        	int sectionsWithPenalty = 0;
+        	for (Request r: iStudent.getRequests()) {
+        		Enrollment e = r.getAssignment();
+        		if (r.equals(value.variable())) { e = value; }
+        		else if (conflicts.contains(e)) { e = null; }
+        		if (e != null && e.isCourseRequest()) {
+        			for (Section s: e.getSections())
+        				if (s.getPenalty() >= 0) sectionsWithPenalty ++;
+        		}
+        	}
+        	if (sectionsWithPenalty > iMaxSectionsWithPenalty) return false;
         }
         //TODO: Also check the bound
         return true;
