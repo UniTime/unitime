@@ -45,6 +45,7 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -211,17 +212,23 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		long t2 = System.currentTimeMillis();
         
 		SuggestionsBranchAndBound suggestionBaB = null;
+		
+		boolean avoidOverExpected = server.getAcademicSession().isSectioningEnabled();
+		if (avoidOverExpected && helper.getUser() != null && helper.getUser().hasType() && helper.getUser().getType() != OnlineSectioningLog.Entity.EntityType.STUDENT)
+			avoidOverExpected = false;
+		if (avoidOverExpected && "true".equals(ApplicationProperties.getProperty("unitime.sectioning.allowOverExpected")))
+			avoidOverExpected = false;
 		if (server.getConfig().getPropertyBoolean("Suggestions.MultiCriteria", true)) {
 			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
 					model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate());
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), avoidOverExpected);
 		} else {
 			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate());
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), avoidOverExpected);
 		}
 		
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
