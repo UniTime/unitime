@@ -363,7 +363,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
         		}
 			}
 			if (current[idx] != null && idx < maxIdx && current[idx].isCourseRequest()) {
-				Set<Section> preferred = iPreferredSections.get((CourseRequest)best[idx].getRequest());
+				Set<Section> preferred = iPreferredSections.get((CourseRequest)current[idx].getRequest());
         		if (preferred != null && !preferred.isEmpty()) {
         			for (Section section: current[idx].getSections())
         				if (preferred.contains(section)) currentSelected ++;
