@@ -40,8 +40,8 @@ public class MultiCriteriaBranchAndBoundSuggestions extends SuggestionsBranchAnd
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
-			Request selectedRequest, Section selectedSection, String filter, Date firstDate, boolean avoidOverExpected) {
-		super(properties, student, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, avoidOverExpected);
+			Request selectedRequest, Section selectedSection, String filter, Date firstDate, int maxSectionsWithPenalty) {
+		super(properties, student, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, maxSectionsWithPenalty);
 		iComparator = new OnlineSectioningCriterion(student, (StudentSectioningModel)selectedRequest.getModel(), preferredSections);
 	}
 	

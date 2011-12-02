@@ -34,6 +34,7 @@ import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -55,6 +56,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.solver.multicriteria.BestPenaltyCriterion;
+import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
 
 /**
@@ -153,6 +156,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 
 		Request selectedRequest = null;
 		Section selectedSection = null;
+		int selectedPenalty = 0, notAssigned = 0;
 		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 			Request r = (Request)e.next();
 			OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
@@ -175,6 +179,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
+						if (section.getPenalty() >= 0) selectedPenalty ++;
 						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
@@ -184,6 +189,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 								a.isPinned() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 					}
 				}
+				if (preferredSections.isEmpty()) notAssigned ++;
 				preferredSectionsForCourse.put(cr, preferredSections);
 				requiredSectionsForCourse.put(cr, requiredSections);
 			} else {
@@ -218,17 +224,45 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			avoidOverExpected = false;
 		if (avoidOverExpected && "true".equals(ApplicationProperties.getProperty("unitime.sectioning.allowOverExpected")))
 			avoidOverExpected = false;
+		
+		int maxOverExpected = -1;
+		if (avoidOverExpected) {
+			if (notAssigned == 0) {
+				maxOverExpected = selectedPenalty;
+			} else {
+				long x0 = System.currentTimeMillis();
+				MultiCriteriaBranchAndBoundSelection selection = new MultiCriteriaBranchAndBoundSelection(model.getProperties());
+				selection.setModel(model);
+				selection.setPreferredSections(preferredSectionsForCourse);
+				selection.setRequiredSections(requiredSectionsForCourse);
+				selection.setRequiredFreeTimes(requiredFreeTimes);
+				selection.setTimeout(100);
+				BranchBoundNeighbour neighbour = selection.select(student, new BestPenaltyCriterion(student));
+				long x1 = System.currentTimeMillis();
+				if (neighbour != null) {
+					maxOverExpected = 0;
+					for (Enrollment enrollment: neighbour.getAssignment()) {
+						if (enrollment != null && enrollment.isCourseRequest())
+							for (Section section: enrollment.getSections())
+								if (section.getPenalty() >= 0) maxOverExpected++;
+					}
+					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
+					helper.info("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");
+				}				
+			}
+		}
+		
 		if (server.getConfig().getPropertyBoolean("Suggestions.MultiCriteria", true)) {
 			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
 					model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), avoidOverExpected);
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
 		} else {
 			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), avoidOverExpected);
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
 		}
 		
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
