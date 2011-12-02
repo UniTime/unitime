@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -117,11 +118,11 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 			        roomIds, roomNames, roomPrefs);
 			var.values().add(val);
 			
-			Vector noGoods = (Vector)entry.getValue();
+			List noGoods = (List)entry.getValue();
 			
 			Hashtable constr2assignments = new Hashtable();
-			for (Enumeration e2=noGoods.elements();e2.hasMoreElements();) {
-				Assignment noGood = (Assignment)e2.nextElement();
+			for (Iterator e2=noGoods.iterator();e2.hasNext();) {
+				Assignment noGood = (Assignment)e2.next();
 				if (noGood.getConstraint()==null) continue;
 				Vector aaa = (Vector)constr2assignments.get(noGood.getConstraint());
 				if (aaa == null) {
