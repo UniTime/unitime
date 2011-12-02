@@ -83,6 +83,10 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
 	public void setPreferredSections(Hashtable<CourseRequest, Set<Section>> preferredSections) {
 		iPreferredSections = preferredSections;
 	}
+	
+	public void setTimeout(int timeout) {
+		iTimeout = timeout;
+	}
 
 	@Override
 	public void setRequiredSections(Hashtable<CourseRequest, Set<Section>> requiredSections) {
@@ -104,11 +108,15 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     	iRequiredFreeTimes = requiredFreeTimes;
 	}
 
+	public BranchBoundNeighbour select(Student student, SelectionCriterion comparator) {
+        iStudent = student;
+		iComparator = comparator;
+        return select();
+	}
+	
 	@Override
 	public BranchBoundNeighbour select(Student student) {
-        iStudent = student;
-		iComparator = new OnlineSectioningCriterion(student, iModel, iPreferredSections);
-        return select();
+		return select(student, new OnlineSectioningCriterion(student, iModel, iPreferredSections));
 	}
 
     /**
@@ -277,16 +285,14 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
             values = request.computeEnrollments();
         }
         
-        boolean hasNoConflictValue = false;
         for (Enrollment enrollment : values) {
             if (inConflict(idx, enrollment)) continue;
-            hasNoConflictValue = true;
             iAssignment[idx] = enrollment;
             backTrack(idx + 1);
             iAssignment[idx] = null;
         }
         
-        if (canLeaveUnassigned(request) && (!hasNoConflictValue || request instanceof CourseRequest))
+        if (canLeaveUnassigned(request))
             backTrack(idx + 1);
     }
     
