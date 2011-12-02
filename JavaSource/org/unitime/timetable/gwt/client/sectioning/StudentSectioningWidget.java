@@ -241,7 +241,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.Cell(MESSAGES.colDate(), 1, "50"),
 				new WebTable.Cell(MESSAGES.colRoom(), 1, "80"),
 				new WebTable.Cell(MESSAGES.colInstructor(), 1, "80"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "50"),
+				new WebTable.Cell(MESSAGES.colParent(), 1, "70"),
 				new WebTable.Cell(MESSAGES.colNote(), 1, "50"),
 				new WebTable.WidgetCell(iCalendar, MESSAGES.colSaved(), 1, "10"),
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
