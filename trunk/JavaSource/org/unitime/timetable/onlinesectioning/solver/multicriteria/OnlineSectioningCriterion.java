@@ -42,7 +42,7 @@ import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 public class OnlineSectioningCriterion implements SelectionCriterion {
 	private Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
-	private List<TimeToAvoid> iTimesToAvoid = new ArrayList<TimeToAvoid>();
+	private List<TimeToAvoid> iTimesToAvoid = null;
 	private StudentSectioningModel iModel;
 	private Student iStudent;
 	
@@ -50,19 +50,22 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		iStudent = student;
 		iModel = model;
     	iPreferredSections = preferredSections;
-    	for (Request r: iStudent.getRequests()) {
-    		if (r instanceof CourseRequest) {
-    			List<Enrollment> enrollments = ((CourseRequest)r).getAvaiableEnrollmentsSkipSameTime();
-    			if (enrollments.size() <= 5) {
-    				int penalty = (7 - enrollments.size()) * (r.isAlternative() ? 1 : 7 - enrollments.size());
-    				for (Enrollment enrollment: enrollments)
-        				for (Section section: enrollment.getSections())
-        					if (section.getTime() != null)
-        						iTimesToAvoid.add(new TimeToAvoid(section.getTime(), penalty, r.getPriority()));
-    			}
-    		} else if (r instanceof FreeTimeRequest) {
-    			iTimesToAvoid.add(new TimeToAvoid(((FreeTimeRequest)r).getTime(), 1, r.getPriority()));
-    		}
+    	if (model.getProperties().getPropertyBoolean("OnlineStudentSectioning.TimesToAvoidHeuristics", true)) {
+        	iTimesToAvoid = new ArrayList<TimeToAvoid>();
+        	for (Request r: iStudent.getRequests()) {
+        		if (r instanceof CourseRequest) {
+        			List<Enrollment> enrollments = ((CourseRequest)r).getAvaiableEnrollmentsSkipSameTime();
+        			if (enrollments.size() <= 5) {
+        				int penalty = (7 - enrollments.size()) * (r.isAlternative() ? 1 : 7 - enrollments.size());
+        				for (Enrollment enrollment: enrollments)
+            				for (Section section: enrollment.getSections())
+            					if (section.getTime() != null)
+            						iTimesToAvoid.add(new TimeToAvoid(section.getTime(), penalty, r.getPriority()));
+        			}
+        		} else if (r instanceof FreeTimeRequest) {
+        			iTimesToAvoid.add(new TimeToAvoid(((FreeTimeRequest)r).getTime(), 1, r.getPriority()));
+        		}
+        	}
     	}
 	}
 	
@@ -290,7 +293,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		// 0. best priority & alternativity ignoring free time requests
 		int alt = 0;
 		boolean ft = false;
-		for (int idx = maxIdx; idx < current.length; idx++) {
+		for (int idx = 0; idx < current.length; idx++) {
 			if (isFreeTime(idx)) { ft = true; continue; }
 			Request request = getRequest(idx);
 			if (idx < maxIdx) {
@@ -329,7 +332,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		// 2. best priority & alternativity including free times
 		if (ft) {
 			alt = 0;
-			for (int idx = 0; idx < maxIdx; idx++) {
+			for (int idx = 0; idx < current.length; idx++) {
 				Request request = iStudent.getRequests().get(idx);
 				if (idx < maxIdx) {
 					if (best[idx] != null) {
@@ -338,7 +341,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 						if (request.isAlternative()) alt--;
 					} else {
 						if (current[idx] != null) return true; // higher priority request assigned
-						if (!request.isAlternative()) alt++;
+						if (request instanceof CourseRequest && !request.isAlternative()) alt++;
 					}
 				} else {
 					if (best[idx] != null) {
@@ -530,24 +533,33 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		}
 		
 		// 4. avoid time overlaps
-		if (e1.getRequest().equals(e2.getRequest()) && e1.isCourseRequest()) {
-			double o1 = 0.0, o2 = 0.0;
-			for (Section s: e1.getSections()) {
-				if (s.getTime() != null)
-					for (TimeToAvoid avoid: iTimesToAvoid) {
-						if (avoid.priority() > e1.getPriority())
-							o1 += avoid.overlap(s.getTime());
-					}
+		if (iTimesToAvoid == null) {
+			if (iModel.getTimeOverlaps() != null) {
+				int o1 = iModel.getTimeOverlaps().nrFreeTimeConflicts(e1);
+				int o2 = iModel.getTimeOverlaps().nrFreeTimeConflicts(e2);
+				if (o1 < o2) return -1;
+				if (o2 < o1) return 1;
 			}
-			for (Section s: e2.getSections()) {
-				if (s.getTime() != null)
-					for (TimeToAvoid avoid: iTimesToAvoid) {
-						if (avoid.priority() > e2.getPriority())
-							o2 += avoid.overlap(s.getTime());
-					}
+		} else {
+			if (e1.getRequest().equals(e2.getRequest()) && e1.isCourseRequest()) {
+				double o1 = 0.0, o2 = 0.0;
+				for (Section s: e1.getSections()) {
+					if (s.getTime() != null)
+						for (TimeToAvoid avoid: iTimesToAvoid) {
+							if (avoid.priority() > e1.getPriority())
+								o1 += avoid.overlap(s.getTime());
+						}
+				}
+				for (Section s: e2.getSections()) {
+					if (s.getTime() != null)
+						for (TimeToAvoid avoid: iTimesToAvoid) {
+							if (avoid.priority() > e2.getPriority())
+								o2 += avoid.overlap(s.getTime());
+						}
+				}
+				if (o1 < o2) return -1;
+				if (o2 < o1) return 1;
 			}
-			if (o1 < o2) return -1;
-			if (o2 < o1) return 1;
 		}
 		
 		// 5. avoid distance conflicts
