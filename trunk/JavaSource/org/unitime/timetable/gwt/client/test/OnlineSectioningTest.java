@@ -355,7 +355,7 @@ public class OnlineSectioningTest extends Composite {
 			}
 			int idx = (int)(Random.nextDouble() * assignments.size());
 			debug("computeSuggestions(" + request + "," + assignments + "," + idx + ")");
-			iSectioningService.computeSuggestions(request, assignments, idx, null, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+			iSectioningService.computeSuggestions(true, request, assignments, idx, null, new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;computeSuggestions(" + request + ") failed: " + caught.getMessage());
@@ -375,7 +375,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		public void section(final CourseRequestInterface request, ArrayList<ClassAssignment> assignment, final Callback<ClassAssignmentInterface> callback) {
 			debug("section(" + request + "," + assignment + ")");
-			iSectioningService.section(request, assignment, new AsyncCallback<ClassAssignmentInterface>() {
+			iSectioningService.section(true, request, assignment, new AsyncCallback<ClassAssignmentInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listClasses(" + request + ") failed: " + caught.getMessage());
@@ -391,7 +391,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void checkCourses(final CourseRequestInterface request, final Callback<Collection<String>> callback) {
 			debug("checkCourses(" + request + ")");	
-			iSectioningService.checkCourses(request, new AsyncCallback<Collection<String>>() {
+			iSectioningService.checkCourses(true, request, new AsyncCallback<Collection<String>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;checkCourses(" + request + ") failed: " + caught.getMessage());

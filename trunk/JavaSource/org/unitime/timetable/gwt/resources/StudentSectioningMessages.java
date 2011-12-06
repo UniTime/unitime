@@ -643,6 +643,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Online student scheduling is not available for this academic session.")
 	String exceptionBadSession();
 	
+	@DefaultMessage("Student sectioning solver is not loaded in memory.")
+	String exceptionNoSolver();
+
+	
 	@DefaultMessage("Your are not authenticated, please log in first.")
 	String exceptionEnrollNotAuthenticated();
 	

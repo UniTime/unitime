@@ -36,6 +36,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class ExpireReservationsAction extends CheckOfferingAction {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	@Override
@@ -95,7 +96,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 				// Re-check offering
 				checkOffering(server, helper, offering);
 				// Update enrollment counters
-				updateEnrollmentCounters(server, helper, offering);
+				// updateEnrollmentCounters(server, helper, offering);
 			}
 			
 		} finally {

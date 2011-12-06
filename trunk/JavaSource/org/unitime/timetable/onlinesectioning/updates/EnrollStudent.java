@@ -58,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
  * @author Tomas Muller
  */
 public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInterface> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
@@ -92,7 +93,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 			}
 		
-		OnlineSectioningServer.Callback<Boolean> enrollmentsUpdated = new OnlineSectioningServer.Callback<Boolean>() {
+		/*
+		OnlineSectioningServer.ServerCallback<Boolean> enrollmentsUpdated = new OnlineSectioningServer.ServerCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable exception) {
 				helper.error("Update enrollment counts failed: " + exception.getMessage(), exception);
@@ -101,8 +103,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			public void onSuccess(Boolean result) {
 			}
 		};
+		*/
 
-		OnlineSectioningServer.Callback<Boolean> offeringChecked = new OnlineSectioningServer.Callback<Boolean>() {
+		OnlineSectioningServer.ServerCallback<Boolean> offeringChecked = new OnlineSectioningServer.ServerCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable exception) {
 				helper.error("Offering check failed: " + exception.getMessage(), exception);
@@ -262,7 +265,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									continue requests;
 						updateSpace(helper, newEnrollment, null);
 						server.persistExpectedSpaces(newEnrollment.getOffering().getId());
-						server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), helper.getUser(), enrollmentsUpdated);
+						// server.execute(new UpdateEnrollmentCountsAction(newEnrollment.getOffering().getId()), helper.getUser(), enrollmentsUpdated);
 					}
 					OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 					enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);

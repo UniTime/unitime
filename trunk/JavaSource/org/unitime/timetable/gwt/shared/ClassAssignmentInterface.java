@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class ClassAssignmentInterface implements IsSerializable {
+public class ClassAssignmentInterface implements IsSerializable, Serializable {
+	private static final long serialVersionUID = 1L;
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
 	private boolean iCanEnroll = true;
@@ -64,7 +66,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 	public boolean isCanEnroll() { return iCanEnroll; }
 	public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
 	
-	public static class CourseAssignment implements IsSerializable {
+	public static class CourseAssignment implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
 		private boolean iAssigned = true;
 		private String iSubject, iCourseNbr, iTitle, iNote;
@@ -163,7 +166,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		}
 	}
 	
-	public static class ClassAssignment implements IsSerializable {
+	public static class ClassAssignment implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private boolean iCourseAssigned = true;
 		private Long iCourseId, iClassId, iSubpartId;
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
@@ -399,7 +403,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		}
 	}
 	
-	public static class Student implements IsSerializable {
+	public static class Student implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private long iId;
 		private String iExternalId, iName;
 		private List<String> iArea, iClassification, iMajor, iGroup;
@@ -501,7 +506,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 			return ret;
 		}
 	}
-	public static class Enrollment implements IsSerializable {
+	public static class Enrollment implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Student iStudent;
 		private CourseAssignment iCourse = null;
 		private int iPriority = 0;
@@ -571,7 +577,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public void setReservation(String reservation) { iReservation = reservation; }
 	}
 	
-	public static class EnrollmentInfo implements IsSerializable {
+	public static class EnrollmentInfo implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private String iArea, iMajor, iClassification;
 		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
@@ -682,7 +689,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
 	}
 	
-	public static class StudentInfo implements IsSerializable {
+	public static class StudentInfo implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Student iStudent;
 		private Integer iEnrollment, iWaitlist, iReservation, iRequested;
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
@@ -752,7 +760,8 @@ public class ClassAssignmentInterface implements IsSerializable {
 		public void setStatus(String status) { iStatus = status; }
 	}
 
-	public static class SectioningAction implements IsSerializable {
+	public static class SectioningAction implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Student iStudent;
 		private Date iTimeStamp;
 		private String iOperation;

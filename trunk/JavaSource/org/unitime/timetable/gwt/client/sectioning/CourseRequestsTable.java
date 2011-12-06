@@ -68,8 +68,10 @@ public class CourseRequestsTable extends Composite {
 	private ArrayList<CourseSelectionBox[]> iCourses;
 	private ArrayList<CourseSelectionBox[]> iAlternatives;
 	private Label iTip;
+	private boolean iOnline;
 
-	public CourseRequestsTable(AcademicSessionProvider sessionProvider) {
+	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
+		iOnline = online;
 		iSessionProvider = sessionProvider;
 		
 		iGrid = new FlexTable();
@@ -474,7 +476,7 @@ public class CourseRequestsTable extends Composite {
 		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
 		fillInCourses(cr); fillInAlternatives(cr);
 		final boolean success = (failed == null);
-		iSectioningService.checkCourses(cr,
+		iSectioningService.checkCourses(iOnline, cr,
 				new AsyncCallback<Collection<String>>() {
 					public void onSuccess(Collection<String> result) {
 						for (String course: result)

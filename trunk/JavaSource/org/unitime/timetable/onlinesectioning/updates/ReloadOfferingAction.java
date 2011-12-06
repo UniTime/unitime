@@ -70,6 +70,7 @@ import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
  * @author Tomas Muller
  */
 public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private List<Long> iOfferingIds;
 	

@@ -30,7 +30,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Callback;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.ServerCallback;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ExpireReservationsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
@@ -158,7 +158,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			try {
 				List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
 				if (!offeringIds.isEmpty()) {
-					server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new Callback<Boolean>() {
+					server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new ServerCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean result) {}
 						@Override

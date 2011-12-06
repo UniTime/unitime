@@ -109,7 +109,7 @@ public class StudentSectioningPage extends Composite {
 		RootPanel.get("UniTimeGWT:Header").clear();
 		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
 
-		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication, mode, true);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(true, sessionSelector, userAuthentication, mode, true);
 		
 		initWidget(widget);
 

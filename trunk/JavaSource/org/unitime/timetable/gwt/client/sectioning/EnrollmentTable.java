@@ -77,7 +77,10 @@ public class EnrollmentTable extends Composite {
 	private UniTimeHeaderPanel iHeader;
 	private Operation iApprove, iReject;
 	
-	public EnrollmentTable(final boolean showHeader) {
+	private boolean iOnline;
+	
+	public EnrollmentTable(final boolean showHeader, boolean online) {
+		iOnline = online;
 		iEnrollmentPanel = new SimpleForm();
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");
@@ -159,7 +162,7 @@ public class EnrollmentTable extends Composite {
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
 	
 	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.getEnrollment(student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
+		iSectioningService.getEnrollment(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
@@ -292,24 +295,26 @@ public class EnrollmentTable extends Composite {
 					}
 				});
 				buttons.setEnabled("assistant", false);
-				buttons.addButton("log", MESSAGES.buttonChangeLog(), 'l', (Integer) null, new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						LoadingWidget.getInstance().show(MESSAGES.loadingChangeLog(student.getName()));
-						showChangeLog(student, new AsyncCallback<Boolean>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().fail(caught.getMessage());
-							}
-							@Override
-							public void onSuccess(Boolean result) {
-								LoadingWidget.getInstance().hide();
-								if (result)
-									dialog.hide();
-							}
-						});
-					}
-				});
+				if (iOnline) {
+					buttons.addButton("log", MESSAGES.buttonChangeLog(), 'l', (Integer) null, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							LoadingWidget.getInstance().show(MESSAGES.loadingChangeLog(student.getName()));
+							showChangeLog(student, new AsyncCallback<Boolean>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().fail(caught.getMessage());
+								}
+								@Override
+								public void onSuccess(Boolean result) {
+									LoadingWidget.getInstance().hide();
+									if (result)
+										dialog.hide();
+								}
+							});
+						}
+					});					
+				}
 				buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -323,25 +328,30 @@ public class EnrollmentTable extends Composite {
 					}
 				});
 				buttons.showLoading();
-				iSectioningService.canEnroll(student.getId(), new AsyncCallback<Long>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						buttons.clearMessage();
-					}
+				if (iOnline) {
+					iSectioningService.canEnroll(iOnline, student.getId(), new AsyncCallback<Long>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							buttons.clearMessage();
+						}
 
-					@Override
-					public void onSuccess(Long result) {
-						buttons.clearMessage();
-						buttons.setEnabled("assistant", result != null);
-					}
-				});
+						@Override
+						public void onSuccess(Long result) {
+							buttons.clearMessage();
+							buttons.setEnabled("assistant", result != null);
+						}
+					});					
+				} else {
+					buttons.setEnabled("assistant", true);
+					buttons.clearMessage();
+				}
 				dialog.center();
 			}
 		});
 	}
 	
 	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.canEnroll(student.getId(), new AsyncCallback<Long>() {
+		iSectioningService.canEnroll(iOnline, student.getId(), new AsyncCallback<Long>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
@@ -380,23 +390,23 @@ public class EnrollmentTable extends Composite {
 					}
 				};
 												
-				final StudentSectioningWidget widget = new StudentSectioningWidget(session, user, StudentSectioningPage.Mode.SECTIONING, false);
+				final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false);
 				
-				iSectioningService.logIn("LOOKUP", student.getExternalId(), new AsyncCallback<String>() {
+				iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), new AsyncCallback<String>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						callback.onFailure(caught);
 					}
 					@Override
 					public void onSuccess(String result) {
-						iSectioningService.savedRequest(student.getId(), new AsyncCallback<CourseRequestInterface>() {
+						iSectioningService.savedRequest(iOnline, student.getId(), new AsyncCallback<CourseRequestInterface>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								callback.onFailure(caught);
 							}
 							@Override
 							public void onSuccess(final CourseRequestInterface request) {
-								iSectioningService.savedResult(student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
+								iSectioningService.savedResult(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
 									@Override
 									public void onFailure(Throwable caught) {
 										callback.onFailure(caught);

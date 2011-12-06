@@ -64,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteria
  * @author Tomas Muller
  */
 public class ComputeSuggestionsAction extends FindAssignmentAction {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private ClassAssignmentInterface.ClassAssignment iSelection;
 	private double iValue = 0.0;

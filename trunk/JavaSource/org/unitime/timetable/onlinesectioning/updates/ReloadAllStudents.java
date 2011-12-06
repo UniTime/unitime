@@ -35,6 +35,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  * @author Tomas Muller
  */
 public class ReloadAllStudents extends ReloadAllData {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	@Override

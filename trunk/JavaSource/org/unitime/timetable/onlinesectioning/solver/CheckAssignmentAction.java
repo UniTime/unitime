@@ -48,6 +48,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import com.ibm.icu.text.SimpleDateFormat;
 
 public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config, List<Section>>>{
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;

@@ -83,9 +83,12 @@ public class SuggestionsBox extends DialogBox {
 	private CourseRequestInterface iRequest;
 	private HorizontalPanel iFilterPanel;
 	private Button iSearch;
+	private boolean iOnline;
 	
-	public SuggestionsBox() {
+	public SuggestionsBox(boolean online) {
 		super();
+		
+		iOnline = online;
 		
 		setText("Alternatives");
 		setAnimationEnabled(true);
@@ -397,7 +400,7 @@ public class SuggestionsBox extends DialogBox {
 						hide();
 					} else {
 						LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
-						iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+						iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 					}
 				}
 			}
@@ -407,7 +410,7 @@ public class SuggestionsBox extends DialogBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
-				iSectioningService.computeSuggestions(iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
+				iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
 			}
 		});
 		
@@ -447,7 +450,7 @@ public class SuggestionsBox extends DialogBox {
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
 		iMessages.setHTML("");
 		iFilter.setText("");
-		iSectioningService.computeSuggestions(request, rows, index, iFilter.getText(), iCallback);
+		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
 
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {

@@ -50,6 +50,7 @@ import org.unitime.timetable.util.Constants;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class FindOnlineSectioningLogAction implements OnlineSectioningAction<List<SectioningAction>> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	

@@ -57,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
  * @author Tomas Muller
  */
 public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
