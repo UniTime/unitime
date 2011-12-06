@@ -1910,7 +1910,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
-			return server.getAssignment(studentId);
+			ClassAssignmentInterface ret = server.getAssignment(studentId);
+			if (ret != null)
+				ret.setCanEnroll(false);
+			return ret;
 		}
 	}
 	
