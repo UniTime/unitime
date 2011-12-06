@@ -1402,8 +1402,12 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	                c.setMaxExpectedCapacity(new Integer(mxlpc));
 	                c.setRoomRatio(new Float(rr));
 	                c.setNbrRooms(new Integer(nr));
-	                c.setDisplayInstructor(new Boolean(true));
-	                c.setDisplayInScheduleBook(new Boolean(true));
+	                if (c.getDisplayInstructor() == null){
+	                	c.setDisplayInstructor(new Boolean(true));
+	                }
+	                if (c.getDisplayInScheduleBook() == null){
+	                	c.setDisplayInScheduleBook(new Boolean(true));
+	                }
 
 	                if (managerChanged) {
 	                    if (c.getManagingDept().getUniqueId().longValue()!=mdId) {
