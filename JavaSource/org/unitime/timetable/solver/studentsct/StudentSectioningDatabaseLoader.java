@@ -404,7 +404,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
         for (org.unitime.timetable.model.Reservation reservation: io.getReservations()) {
-        	if (reservation.isExpired()) continue;
         	Reservation r = null;
         	if (reservation instanceof org.unitime.timetable.model.IndividualReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
@@ -437,6 +436,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	if (r == null) {
         		iProgress.warn("Failed to load reservation " + reservation.getUniqueId() + "."); continue;
         	}
+        	r.setExpired(reservation.isExpired());
         	configs: for (InstrOfferingConfig ioc: reservation.getConfigurations()) {
         		for (Config config: offering.getConfigs()) {
         			if (ioc.getUniqueId().equals(config.getId())) {
