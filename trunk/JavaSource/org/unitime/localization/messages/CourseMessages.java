@@ -1739,6 +1739,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("You do not have any department to manage. ")
 	String exceptionNoDepartmentToManage();
 	
+	@DefaultMessage("Null Operation not supported.")
+	String exceptionNullOperationNotSupported();
+	
 	@DefaultMessage("Name")
 	String sortByName();
 	
