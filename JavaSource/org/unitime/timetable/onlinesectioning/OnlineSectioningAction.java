@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.Serializable;
+
 /**
  * @author Tomas Muller
  */
-public interface OnlineSectioningAction<T> {
+public interface OnlineSectioningAction<T> extends Serializable {
 	
 	public T execute(OnlineSectioningServer server, OnlineSectioningHelper helper);
 	

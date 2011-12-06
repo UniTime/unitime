@@ -67,7 +67,7 @@ public interface OnlineSectioningServer {
 	public Collection<String> checkCourses(CourseRequestInterface req);
 	
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
-	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, Callback<E> callback) throws SectioningException;
+	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;
 	
 	public void remove(Student student);
 	public void update(Student student);
@@ -113,7 +113,7 @@ public interface OnlineSectioningServer {
 		void release();
 	}
 	
-	public static interface Callback<E> {
+	public static interface ServerCallback<E> {
 		public void onFailure(Throwable exception);
 		public void onSuccess(E result);
 	}
@@ -123,6 +123,6 @@ public interface OnlineSectioningServer {
 	}
 
 	public static interface StudentMatcher {
-		public boolean match(Student course);
+		public boolean match(Student student);
 	}
 }

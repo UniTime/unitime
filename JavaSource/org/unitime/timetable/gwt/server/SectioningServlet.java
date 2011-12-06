@@ -114,6 +114,7 @@ import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
+import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -517,8 +518,19 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return c.getUniqueId();
 	}
 
-	public ClassAssignmentInterface section(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
+	public ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
 		try {
+			if (!online) {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				request.setStudentId(getStudentId(request.getAcademicSessionId()));
+				ClassAssignmentInterface ret = server.execute(new FindAssignmentAction(request, currentAssignment), currentUser()).get(0);
+				if (ret != null)
+					ret.setCanEnroll(false);
+				return ret;
+			}
+			
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
@@ -545,8 +557,16 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public Collection<String> checkCourses(CourseRequestInterface request) throws SectioningException, PageAccessException {
+	public Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException {
 		try {
+			if (!online) {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				request.setStudentId(getStudentId(request.getAcademicSessionId()));
+				return server.checkCourses(request);
+			}
+			
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -583,8 +603,25 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public 	Collection<ClassAssignmentInterface> computeSuggestions(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex, String filter) throws SectioningException, PageAccessException {
+	public 	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex, String filter) throws SectioningException, PageAccessException {
 		try {
+			if (!online) {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				
+				request.setStudentId(getStudentId(request.getAcademicSessionId()));
+				ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
+				
+				Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment, filter), currentUser());
+				
+				if (ret != null)
+					for (ClassAssignmentInterface ca: ret)
+						ca.setCanEnroll(false);
+				
+				return ret;
+			}
+			
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
@@ -636,6 +673,27 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			} finally {
 				hibSession.close();
 			}			
+		}
+		if ("BATCH".equals(userName)) {
+			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
+			try {
+				Student student = StudentDAO.getInstance().get(Long.valueOf(password), hibSession);
+				if (student == null)
+					throw new SectioningException(MSG.exceptionLoginFailed());
+				User user = Web.getUser(getThreadLocalRequest().getSession());
+				UniTimePrincipal principal = new UniTimePrincipal(user.getId(), user.getName());
+				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
+				principal.setName(student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+				getThreadLocalRequest().getSession().setAttribute("user", principal);
+				getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
+				getThreadLocalRequest().getSession().removeAttribute("request");
+				return principal.getName();
+			} finally {
+				hibSession.close();
+			}		
 		}
 		Integer nrAttempts = (Integer)getThreadLocalRequest().getSession().getAttribute("login.nrAttempts");
 		if (nrAttempts == null) nrAttempts = 1; else nrAttempts ++;
@@ -798,13 +856,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public CourseRequestInterface lastRequest(Long sessionId) throws SectioningException, PageAccessException {
+	public CourseRequestInterface lastRequest(boolean online, Long sessionId) throws SectioningException, PageAccessException {
 		CourseRequestInterface request = getLastRequest();
 		if (request != null && !request.getAcademicSessionId().equals(sessionId)) request = null;
 		if (request != null && request.getCourses().isEmpty() && request.getAlternatives().isEmpty()) request = null;
 		if (request == null) {
 			Long studentId = getStudentId(sessionId);
 			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+			
+			if (!online) {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				return server.getRequest(studentId);
+			}
+			
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 			if (server != null) {
 				CourseRequestInterface lastRequest = server.getRequest(studentId);
@@ -916,9 +982,20 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return request;
 	}
 	
-	public ClassAssignmentInterface lastResult(Long sessionId) throws SectioningException, PageAccessException {
+	public ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException {
 		Long studentId = getStudentId(sessionId);
 		if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		if (!online) {
+			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+
+			ClassAssignmentInterface ret = server.getAssignment(studentId);
+			ret.setCanEnroll(false);
+			return ret;
+		}
+		
 		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 		try {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
@@ -1017,7 +1094,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (sessionId == null) sessionId = getLastSessionId();
 			if (principal != null && sessionId !=null) request.setStudentId(principal.getStudentId(sessionId));
 		}
-		Long sessionId = canEnroll(request.getStudentId());
+		Long sessionId = canEnroll(true, request.getStudentId());
 		if (!request.getAcademicSessionId().equals(sessionId))
 			throw new SectioningException(MSG.exceptionBadSession());
 		
@@ -1302,140 +1379,148 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public ClassAssignmentInterface getEnrollment(Long studentId) throws SectioningException, PageAccessException {
+	public ClassAssignmentInterface getEnrollment(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
-			if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
-			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-			try {
-				Student student = StudentDAO.getInstance().get(studentId, hibSession);
-				if (student == null) 
-					throw new SectioningException(MSG.exceptionBadStudentId());
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
-				if (server == null) {
-					ClassAssignmentInterface ret = new ClassAssignmentInterface();
-					Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
-					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
-							"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
-							).setLong("studentId", studentId).list()) {
-						CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
-						if (course == null) {
-							course = new CourseAssignment();
-							courses.put(enrollment.getCourseOffering().getUniqueId(), course);
-							ret.add(course);
-							course.setAssigned(true);
-							course.setCourseId(enrollment.getCourseOffering().getUniqueId());
-							course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
-							course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
-							course.setTitle(enrollment.getCourseOffering().getTitle());
-						}
-						ClassAssignment clazz = course.addClassAssignment();
-						clazz.setClassId(enrollment.getClazz().getUniqueId());
-						clazz.setCourseId(enrollment.getCourseOffering().getUniqueId());
-						clazz.setCourseAssigned(true);
-						clazz.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
-						clazz.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
-						clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
-						if (clazz.getSection() == null)
-							clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
-						clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
-						clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
-						if (enrollment.getClazz().getParentClass() != null) {
-							clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
-							if (clazz.getParentSection() == null)
-								clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
-						}
-						if (enrollment.getClazz().getSchedulePrintNote() != null)
-							clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
-						Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
-						int minLimit = enrollment.getClazz().getExpectedCapacity();
-	                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
-	                	int limit = maxLimit;
-	                	if (minLimit < maxLimit && placement != null) {
-	                		int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
-	                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
-	                	}
-	                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-						clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
-						if (placement != null) {
-							if (placement.getTimeLocation() != null) {
-								for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
-									clazz.addDay(d.getIndex());
-								clazz.setStart(placement.getTimeLocation().getStartSlot());
-								clazz.setLength(placement.getTimeLocation().getLength());
-								clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
-								//clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
-								clazz.setDatePattern(ReloadAllData.datePatternName(placement.getTimeLocation(), new AcademicSessionInfo(student.getSession())));
+			if (online) { 
+				User user = Web.getUser(getThreadLocalRequest().getSession());
+				if (user == null) throw new PageAccessException(
+						getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+				if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+				org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+				try {
+					Student student = StudentDAO.getInstance().get(studentId, hibSession);
+					if (student == null) 
+						throw new SectioningException(MSG.exceptionBadStudentId());
+					OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
+					if (server == null) {
+						ClassAssignmentInterface ret = new ClassAssignmentInterface();
+						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
+						for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
+								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
+								).setLong("studentId", studentId).list()) {
+							CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
+							if (course == null) {
+								course = new CourseAssignment();
+								courses.put(enrollment.getCourseOffering().getUniqueId(), course);
+								ret.add(course);
+								course.setAssigned(true);
+								course.setCourseId(enrollment.getCourseOffering().getUniqueId());
+								course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+								course.setTitle(enrollment.getCourseOffering().getTitle());
 							}
-							if (placement.getNrRooms() == 1) {
-								clazz.addRoom(placement.getRoomLocation().getName());
-							} else if (placement.getNrRooms() > 1) {
-								for (RoomLocation rm: placement.getRoomLocations())
-									clazz.addRoom(rm.getName());
-							}
-						}
-						if (enrollment.getClazz().getDisplayInstructor())
-							for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
-								if (!ci.isLead()) continue;
-								clazz.addInstructor(ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
-								clazz.addInstructoEmailr(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
-							}
-					}
-					demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
-							"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
-							).setLong("studentId", studentId).list()) {
-						if (demand.getFreeTime() != null) {
-							CourseAssignment course = new CourseAssignment();
-							course.setAssigned(true);
 							ClassAssignment clazz = course.addClassAssignment();
-							clazz.setLength(demand.getFreeTime().getLength());
-							for (DayCode d: DayCode.toDayCodes(demand.getFreeTime().getDayCode()))
-								clazz.addDay(d.getIndex());
-							clazz.setStart(demand.getFreeTime().getStartSlot());
-							ca: for (CourseAssignment ca: ret.getCourseAssignments()) {
-								for (ClassAssignment c: ca.getClassAssignments()) {
-									if (!c.isAssigned()) continue;
-									for (int d: c.getDays())
-										if (clazz.getDays().contains(d)) {
-											if (c.getStart() + c.getLength() > clazz.getStart() && clazz.getStart() + clazz.getLength() > c.getStart()) {
-												course.setAssigned(false);
-												break ca;
-											}
-										}
+							clazz.setClassId(enrollment.getClazz().getUniqueId());
+							clazz.setCourseId(enrollment.getCourseOffering().getUniqueId());
+							clazz.setCourseAssigned(true);
+							clazz.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+							clazz.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+							clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
+							if (clazz.getSection() == null)
+								clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+							clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
+							clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
+							if (enrollment.getClazz().getParentClass() != null) {
+								clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
+								if (clazz.getParentSection() == null)
+									clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
+							}
+							if (enrollment.getClazz().getSchedulePrintNote() != null)
+								clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
+							Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
+							int minLimit = enrollment.getClazz().getExpectedCapacity();
+		                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
+		                	int limit = maxLimit;
+		                	if (minLimit < maxLimit && placement != null) {
+		                		int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+		                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+		                	}
+		                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+							clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
+							if (placement != null) {
+								if (placement.getTimeLocation() != null) {
+									for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
+										clazz.addDay(d.getIndex());
+									clazz.setStart(placement.getTimeLocation().getStartSlot());
+									clazz.setLength(placement.getTimeLocation().getLength());
+									clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
+									//clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
+									clazz.setDatePattern(ReloadAllData.datePatternName(placement.getTimeLocation(), new AcademicSessionInfo(student.getSession())));
+								}
+								if (placement.getNrRooms() == 1) {
+									clazz.addRoom(placement.getRoomLocation().getName());
+								} else if (placement.getNrRooms() > 1) {
+									for (RoomLocation rm: placement.getRoomLocations())
+										clazz.addRoom(rm.getName());
 								}
 							}
-							ret.add(course);
-						} else {
-							CourseRequest request = null;
-							for (CourseRequest r: demand.getCourseRequests()) {
-								if (courses.containsKey(r.getCourseOffering().getUniqueId())) continue demands;
-								if (request == null || r.getOrder().compareTo(request.getOrder()) < 0)
-									request = r;
-							}
-							if (request == null) continue;
-							CourseAssignment course = new CourseAssignment();
-							courses.put(request.getCourseOffering().getUniqueId(), course);
-							ret.add(course);
-							course.setAssigned(false);
-							course.setCourseId(request.getCourseOffering().getUniqueId());
-							course.setCourseNbr(request.getCourseOffering().getCourseNbr());
-							course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
-							course.setTitle(request.getCourseOffering().getTitle());
-							ClassAssignment clazz = course.addClassAssignment();
-							clazz.setCourseId(request.getCourseOffering().getUniqueId());
-							clazz.setCourseAssigned(false);
-							clazz.setCourseNbr(request.getCourseOffering().getCourseNbr());
-							clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+							if (enrollment.getClazz().getDisplayInstructor())
+								for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
+									if (!ci.isLead()) continue;
+									clazz.addInstructor(ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
+									clazz.addInstructoEmailr(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+								}
 						}
+						demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
+								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
+								).setLong("studentId", studentId).list()) {
+							if (demand.getFreeTime() != null) {
+								CourseAssignment course = new CourseAssignment();
+								course.setAssigned(true);
+								ClassAssignment clazz = course.addClassAssignment();
+								clazz.setLength(demand.getFreeTime().getLength());
+								for (DayCode d: DayCode.toDayCodes(demand.getFreeTime().getDayCode()))
+									clazz.addDay(d.getIndex());
+								clazz.setStart(demand.getFreeTime().getStartSlot());
+								ca: for (CourseAssignment ca: ret.getCourseAssignments()) {
+									for (ClassAssignment c: ca.getClassAssignments()) {
+										if (!c.isAssigned()) continue;
+										for (int d: c.getDays())
+											if (clazz.getDays().contains(d)) {
+												if (c.getStart() + c.getLength() > clazz.getStart() && clazz.getStart() + clazz.getLength() > c.getStart()) {
+													course.setAssigned(false);
+													break ca;
+												}
+											}
+									}
+								}
+								ret.add(course);
+							} else {
+								CourseRequest request = null;
+								for (CourseRequest r: demand.getCourseRequests()) {
+									if (courses.containsKey(r.getCourseOffering().getUniqueId())) continue demands;
+									if (request == null || r.getOrder().compareTo(request.getOrder()) < 0)
+										request = r;
+								}
+								if (request == null) continue;
+								CourseAssignment course = new CourseAssignment();
+								courses.put(request.getCourseOffering().getUniqueId(), course);
+								ret.add(course);
+								course.setAssigned(false);
+								course.setCourseId(request.getCourseOffering().getUniqueId());
+								course.setCourseNbr(request.getCourseOffering().getCourseNbr());
+								course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+								course.setTitle(request.getCourseOffering().getTitle());
+								ClassAssignment clazz = course.addClassAssignment();
+								clazz.setCourseId(request.getCourseOffering().getUniqueId());
+								clazz.setCourseAssigned(false);
+								clazz.setCourseNbr(request.getCourseOffering().getCourseNbr());
+								clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
+							}
+						}
+						return ret;
+					} else {
+						return server.getAssignment(studentId);
 					}
-					return ret;
-				} else {
-					return server.getAssignment(studentId);
-				}
-			} finally {
-				hibSession.close();
+				} finally {
+					hibSession.close();
+				}				
+			} else {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+
+				return server.getAssignment(studentId);
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1570,23 +1655,32 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		return courseIds;
 	}
 	
-	public List<EnrollmentInfo> findEnrollmentInfos(String query, Long courseId) throws SectioningException, PageAccessException {
+	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, Long courseId) throws SectioningException, PageAccessException {
 		try {
-			Long sessionId = getStatusPageSessionId();
-			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
-			if (server == null)
-				throw new SectioningException(MSG.exceptionBadSession());
-			
-			UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
-						
-			return server.execute(new FindEnrollmentInfoAction(
-					query,
-					courseId,
-					getCoordinatingCourses(sessionId),
-					query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
-			);
-			
+			if (online) {
+				Long sessionId = getStatusPageSessionId();
+				
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				if (server == null)
+					throw new SectioningException(MSG.exceptionBadSession());
+				
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+							
+				return server.execute(new FindEnrollmentInfoAction(
+						query,
+						courseId,
+						getCoordinatingCourses(sessionId),
+						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
+				);				
+			} else {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				
+				return server.execute(new FindEnrollmentInfoAction(query, courseId, null, null), currentUser());
+			}
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1597,22 +1691,31 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public List<ClassAssignmentInterface.StudentInfo> findStudentInfos(String query) throws SectioningException, PageAccessException {
+	public List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query) throws SectioningException, PageAccessException {
 		try {
-			Long sessionId = getStatusPageSessionId();
-			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
-			if (server == null)
-				throw new SectioningException(MSG.exceptionBadSession());
-			
-			UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
-						
-			return server.execute(new FindStudentInfoAction(
-					query,
-					getCoordinatingCourses(sessionId),
-					query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
-			);
-			
+			if (online) {
+				Long sessionId = getStatusPageSessionId();
+				
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				if (server == null)
+					throw new SectioningException(MSG.exceptionBadSession());
+				
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+							
+				return server.execute(new FindStudentInfoAction(
+						query,
+						getCoordinatingCourses(sessionId),
+						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
+				);
+			} else {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				
+				return server.execute(new FindStudentInfoAction(query, null, null), currentUser());
+			}
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1622,17 +1725,29 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
-	public List<String[]> querySuggestions(String query, int limit) throws SectioningException, PageAccessException {
+	public List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException {
 		try {
-			Long sessionId = getStatusPageSessionId();
-			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
-			if (server == null)
-				throw new SectioningException(MSG.exceptionBadSession());
-			
-			return server.execute(new StatusPageSuggestionsAction(
-					Web.getUser(getThreadLocalRequest().getSession()),
-					query, limit), currentUser());
+			if (online) {
+				Long sessionId = getStatusPageSessionId();
+				
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				if (server == null)
+					throw new SectioningException(MSG.exceptionBadSession());
+				
+				User user = Web.getUser(getThreadLocalRequest().getSession());
+				return server.execute(new StatusPageSuggestionsAction(
+						user.getId(), user.getName(),
+						query, limit), currentUser());				
+			} else {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+
+				User user = Web.getUser(getThreadLocalRequest().getSession());
+				return server.execute(new StatusPageSuggestionsAction(
+						user.getId(), user.getName(),
+						query, limit), currentUser());				
+			}
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1645,20 +1760,30 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 
 	@Override
 	public List<org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment> findEnrollments(
-			String query, Long courseId, Long classId)
+			boolean online, String query, Long courseId, Long classId)
 			throws SectioningException, PageAccessException {
 		try {
-			Long sessionId = getStatusPageSessionId();
-			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
-			if (server == null)
-				throw new SectioningException(MSG.exceptionBadSession());
-			
-			UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
-			
-			return server.execute(new FindEnrollmentAction(
-					query, courseId, classId, 
-					query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
+			if (online) {
+				Long sessionId = getStatusPageSessionId();
+				
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				if (server == null)
+					throw new SectioningException(MSG.exceptionBadSession());
+				
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				
+				return server.execute(new FindEnrollmentAction(
+						query, courseId, classId, 
+						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
+			} else {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				
+				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				
+				return server.execute(new FindEnrollmentAction(query, courseId, classId, false), currentUser());
+			}
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1700,8 +1825,20 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 
 	@Override
-	public Long canEnroll(Long studentId) throws SectioningException, PageAccessException {
+	public Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		try {
+			if (!online) {
+				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				if (server == null) 
+					throw new SectioningException(MSG.exceptionNoSolver());
+				
+				CourseRequestInterface request = server.getRequest(studentId);
+				if (request == null)
+					throw new SectioningException(MSG.exceptionBadStudentId());
+
+				return server.getAcademicSession().getUniqueId();
+			}
+			
 			Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
 			
 			if (student == null)
@@ -1752,13 +1889,29 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 
 	@Override
-	public CourseRequestInterface savedRequest(Long studentId) throws SectioningException, PageAccessException {
-		return OnlineSectioningService.getInstance(canEnroll(studentId)).getRequest(studentId);
+	public CourseRequestInterface savedRequest(boolean online, Long studentId) throws SectioningException, PageAccessException {
+		if (online) {
+			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).getRequest(studentId);
+		} else {
+			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+
+			return server.getRequest(studentId);
+		}
 	}
 
 	@Override
-	public ClassAssignmentInterface savedResult(Long studentId) throws SectioningException, PageAccessException {
-		return OnlineSectioningService.getInstance(canEnroll(studentId)).getAssignment(studentId);
+	public ClassAssignmentInterface savedResult(boolean online, Long studentId) throws SectioningException, PageAccessException {
+		if (online) {
+			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).getAssignment(studentId);
+		} else {
+			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+
+			return server.getAssignment(studentId);
+		}
 	}
 	
 	@Override
@@ -1862,4 +2015,5 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		return server.execute(new FindOnlineSectioningLogAction(query), currentUser());
 	}
+
 }

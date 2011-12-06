@@ -144,10 +144,12 @@ public class SectioningStatusPage extends Composite {
 	private UniTimeTextBox iSubject, iCC;
 	private TextArea iMessage;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
+	private boolean iOnline; 
 
-	public SectioningStatusPage() {
+	public SectioningStatusPage(boolean online) {
+		iOnline = online;
+
 		iPanel = new VerticalPanel();
-		
 		iSectioningPanel = new VerticalPanel();
 		
 		iFilterPanel = new HorizontalPanelWithHint(new HTML(MESSAGES.sectioningStatusFilterHint(), false));
@@ -165,7 +167,7 @@ public class SectioningStatusPage extends Composite {
 			
 			@Override
 			public void requestSuggestions(Request request, Callback callback) {
-				iSectioningService.querySuggestions(request.getQuery(), request.getLimit(), new SuggestCallback(request, callback));
+				iSectioningService.querySuggestions(iOnline, request.getQuery(), request.getLimit(), new SuggestCallback(request, callback));
 			}
 			
 			@Override
@@ -294,43 +296,69 @@ public class SectioningStatusPage extends Composite {
 					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 				else
 					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
-				iSectioningService.canApprove(id, new AsyncCallback<Boolean>() {
-					@Override
-					public void onSuccess(final Boolean canApprove) {
-						iSectioningService.findEnrollments(iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().fail(caught.getMessage());
-								setLoading(false);
-								iError.setHTML(caught.getMessage());
-								iError.setVisible(true);
-								ToolBox.checkAccess(caught);
-							}
-							@Override
-							public void onSuccess(List<Enrollment> result) {
-								LoadingWidget.getInstance().hide();
-								setLoading(false);
-								iEnrollmentTable.clear();
-								iEnrollmentTable.setId(id);
-								iEnrollmentTable.populate(result, canApprove);
-								if (event.getData().getConfigId() == null)
-									iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
-								else
-									iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
-								iEnrollmentDialog.center();
-							}
-						});
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().fail(caught.getMessage());
-						setLoading(false);
-						iError.setHTML(caught.getMessage());
-						iError.setVisible(true);
-						ToolBox.checkAccess(caught);
-					}
-				});
+				if (iOnline) {
+					iSectioningService.canApprove(id, new AsyncCallback<Boolean>() {
+						@Override
+						public void onSuccess(final Boolean canApprove) {
+							iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().fail(caught.getMessage());
+									setLoading(false);
+									iError.setHTML(caught.getMessage());
+									iError.setVisible(true);
+									ToolBox.checkAccess(caught);
+								}
+								@Override
+								public void onSuccess(List<Enrollment> result) {
+									LoadingWidget.getInstance().hide();
+									setLoading(false);
+									iEnrollmentTable.clear();
+									iEnrollmentTable.setId(id);
+									iEnrollmentTable.populate(result, canApprove);
+									if (event.getData().getConfigId() == null)
+										iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
+									else
+										iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
+									iEnrollmentDialog.center();
+								}
+							});
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().fail(caught.getMessage());
+							setLoading(false);
+							iError.setHTML(caught.getMessage());
+							iError.setVisible(true);
+							ToolBox.checkAccess(caught);
+						}
+					});					
+				} else {
+					iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().fail(caught.getMessage());
+							setLoading(false);
+							iError.setHTML(caught.getMessage());
+							iError.setVisible(true);
+							ToolBox.checkAccess(caught);
+						}
+						@Override
+						public void onSuccess(List<Enrollment> result) {
+							LoadingWidget.getInstance().hide();
+							setLoading(false);
+							iEnrollmentTable.clear();
+							iEnrollmentTable.setId(id);
+							iEnrollmentTable.populate(result, false);
+							if (event.getData().getConfigId() == null)
+								iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
+							else
+								iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
+							iEnrollmentDialog.center();
+						}
+					});
+				}
 			}
 		});
 		
@@ -338,7 +366,7 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onMouseClick(final TableEvent<StudentInfo> event) {
 				if (event.getData() == null || event.getData().getStudent() == null) return; // header or footer
-				if (event.getData().getRequested() == null) {
+				if (event.getData().getRequested() == null && iOnline) {
 					LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(event.getData().getStudent().getName()));
 					iError.setVisible(false);
 					iEnrollmentTable.showStudentAssistant(event.getData().getStudent(), new AsyncCallback<Boolean>() {
@@ -431,7 +459,7 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		iEnrollmentTable = new EnrollmentTable(false);
+		iEnrollmentTable = new EnrollmentTable(false, iOnline);
 		iEnrollmentScroll = new ScrollPanel(iEnrollmentTable);
 		iEnrollmentScroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 		iEnrollmentScroll.setStyleName("unitime-ScrollPanel");
@@ -463,50 +491,54 @@ public class SectioningStatusPage extends Composite {
 		});
 		
 		
-		iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+		if (iOnline) {
+			iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+				
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+
+				@Override
+				public void onSuccess(Boolean result) {
+					if (result)
+						iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
+				}
+			});
 			
-			@Override
-			public void onFailure(Throwable caught) {
-			}
+			iSectioningService.lastAcademicSession(true, new AsyncCallback<String[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
+					AcademicSessionSelector session = new AcademicSessionSelector(StudentSectioningPage.Mode.SECTIONING);
+					header.setSessionSelector(session);
+					session.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
+						@Override
+						public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+							iSectioningService.selectSession(event.getNewAcademicSessionId(), new AsyncCallback<Boolean>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iError.setHTML(caught.getMessage());
+									iError.setVisible(true);
+								}
 
-			@Override
-			public void onSuccess(Boolean result) {
-				if (result)
-					iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
-			}
-		});
-		
-		iSectioningService.lastAcademicSession(true, new AsyncCallback<String[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
-				AcademicSessionSelector session = new AcademicSessionSelector(StudentSectioningPage.Mode.SECTIONING);
-				header.setSessionSelector(session);
-				session.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
-					@Override
-					public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-						iSectioningService.selectSession(event.getNewAcademicSessionId(), new AsyncCallback<Boolean>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								iError.setHTML(caught.getMessage());
-								iError.setVisible(true);
-							}
+								@Override
+								public void onSuccess(Boolean result) {
+									checkLastQuery();								
+								}
+							});
+						}
+					});
+					session.selectSession();
+				}
 
-							@Override
-							public void onSuccess(Boolean result) {
-								checkLastQuery();								
-							}
-						});
-					}
-				});
-				session.selectSession();
-			}
-
-			@Override
-			public void onSuccess(String[] result) {
-				checkLastQuery();
-			}
-		});
+				@Override
+				public void onSuccess(String[] result) {
+					checkLastQuery();
+				}
+			});
+		} else {
+			checkLastQuery();
+		}
 		
 		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<Map<String,String>>() {
 
@@ -602,7 +634,7 @@ public class SectioningStatusPage extends Composite {
 		setLoading(true);
 		iError.setVisible(false);
 		if (iTabIndex == 0) {
-			iSectioningService.findEnrollmentInfos(iCourseFilter, null, new AsyncCallback<List<EnrollmentInfo>>() {
+			iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, null, new AsyncCallback<List<EnrollmentInfo>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					LoadingWidget.getInstance().hide();
@@ -628,47 +660,75 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 		} else if (iTabIndex == 1) {
-			iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					LoadingWidget.getInstance().hide();
-					setLoading(false);
-					iError.setHTML(caught.getMessage());
-					iError.setVisible(true);
-					iTabPanel.setVisible(false);
-					ToolBox.checkAccess(caught);
-				}
+			if (iOnline) {
+				iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						setLoading(false);
+						iError.setHTML(caught.getMessage());
+						iError.setVisible(true);
+						iTabPanel.setVisible(false);
+						ToolBox.checkAccess(caught);
+					}
 
-				@Override
-				public void onSuccess(final Boolean isAdmin) {
-					iSectioningService.findStudentInfos(iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							setLoading(false);
-							iError.setHTML(caught.getMessage());
-							iError.setVisible(true);
-							iTabPanel.setVisible(false);
-							ToolBox.checkAccess(caught);
-						}
-
-						@Override
-						public void onSuccess(List<StudentInfo> result) {
-							if (result.isEmpty()) {
-								iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
+					@Override
+					public void onSuccess(final Boolean isAdmin) {
+						iSectioningService.findStudentInfos(iOnline, iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								setLoading(false);
+								iError.setHTML(caught.getMessage());
 								iError.setVisible(true);
 								iTabPanel.setVisible(false);
-							} else {
-								populateStudentTable(result, isAdmin);
-								iTabPanel.setVisible(true);
+								ToolBox.checkAccess(caught);
 							}
-							setLoading(false);
-							LoadingWidget.getInstance().hide();
+
+							@Override
+							public void onSuccess(List<StudentInfo> result) {
+								if (result.isEmpty()) {
+									iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
+									iError.setVisible(true);
+									iTabPanel.setVisible(false);
+								} else {
+									populateStudentTable(result, isAdmin);
+									iTabPanel.setVisible(true);
+								}
+								setLoading(false);
+								LoadingWidget.getInstance().hide();
+							}
+						});
+					}
+				});				
+			} else {
+				iSectioningService.findStudentInfos(iOnline, iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						setLoading(false);
+						iError.setHTML(caught.getMessage());
+						iError.setVisible(true);
+						iTabPanel.setVisible(false);
+						ToolBox.checkAccess(caught);
+					}
+
+					@Override
+					public void onSuccess(List<StudentInfo> result) {
+						if (result.isEmpty()) {
+							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
+							iError.setVisible(true);
+							iTabPanel.setVisible(false);
+						} else {
+							populateStudentTable(result, false);
+							iTabPanel.setVisible(true);
 						}
-					});
-				}
-			});
-		} else {
+						setLoading(false);
+						LoadingWidget.getInstance().hide();
+					}
+				});
+			}
+		} else if (iOnline) {
 			iSectioningService.changeLog(iCourseFilter, new AsyncCallback<List<SectioningAction>>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -704,7 +764,7 @@ public class SectioningStatusPage extends Composite {
 							setLoading(true);
 							iError.setVisible(false);
 							showDetails.setResource(RESOURCES.treeOpen());
-							iSectioningService.findEnrollmentInfos(iCourseFilter, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
+							iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									setLoading(false);
@@ -1005,7 +1065,7 @@ public class SectioningStatusPage extends Composite {
 	public void populateStudentTable(List<StudentInfo> result, boolean isAdmin) {
 		List<Widget> header = new ArrayList<Widget>();
 		
-		if (isAdmin) {
+		if (isAdmin && iOnline) {
 			UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hSelect);
 			hSelect.setWidth("10px");
@@ -1599,38 +1659,40 @@ public class SectioningStatusPage extends Composite {
 			header.add(hTimeStamp);			
 		}
 		
-		UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
-		//hTimeStamp.setWidth("100px");
-		hTimeStamp.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
-					@Override
-					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-						if (e1.getStudent() == null) return 1;
-						if (e2.getStudent() == null) return -1;
-						int cmp = (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
-						if (cmp != 0) return cmp;
-						cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-						if (cmp != 0) return cmp;
-						return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colEmailTimeStamp());
-			}
-		});
-		header.add(hTimeStamp);
+		if (iOnline) {
+			UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
+			//hTimeStamp.setWidth("100px");
+			hTimeStamp.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+						@Override
+						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+							if (e1.getStudent() == null) return 1;
+							if (e2.getStudent() == null) return -1;
+							int cmp = (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colEmailTimeStamp());
+				}
+			});
+			header.add(hTimeStamp);
+		}
 		
 		iStudentTable.addRow(null, header);
 		
@@ -1638,7 +1700,7 @@ public class SectioningStatusPage extends Composite {
 		for (StudentInfo info: result) {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
-				if (isAdmin) {
+				if (isAdmin && iOnline) {
 					CheckBox ch = new CheckBox();
 					ch.addClickHandler(new ClickHandler() {
 						@Override
@@ -1679,7 +1741,7 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getStudent().getGroup("<br>"), false));
 				line.add(new HTML(info.getStatus(), false));
 			} else {
-				if (isAdmin) line.add(new HTML("&nbsp;", false));
+				if (isAdmin && iOnline) line.add(new HTML("&nbsp;", false));
 				line.add(new Label(MESSAGES.total()));
 				line.add(new NumberCell(null, result.size() - 1));
 				if (hasArea) {
@@ -1705,13 +1767,15 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
 				if (hasEnrolledDate)
 					line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
-				line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
+				if (iOnline)
+					line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
 			} else {
 				if (hasRequestedDate)
 					line.add(new HTML("&nbsp;", false));
 				if (hasEnrolledDate)
 					line.add(new HTML("&nbsp;", false));
-				line.add(new HTML("&nbsp;", false));
+				if (iOnline)
+					line.add(new HTML("&nbsp;", false));
 			}
 			iStudentTable.addRow(info, line);
 		}

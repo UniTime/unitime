@@ -50,7 +50,7 @@ public enum Components {
 	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } }),
 	offeringReservations("UniTimeGWT:OfferingReservations", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(true, true).insert(panel); } }),
 	offeringReservationsReadOnly("UniTimeGWT:OfferingReservationsRO", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(false, true).insert(panel); } }),
-	offeringEnrollments("UniTimeGWT:OfferingEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new EnrollmentTable(true).insert(panel); } });
+	offeringEnrollments("UniTimeGWT:OfferingEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new EnrollmentTable(true, true).insert(panel); } });
 	
 	private String iId;
 	private ComponentFactory iFactory;

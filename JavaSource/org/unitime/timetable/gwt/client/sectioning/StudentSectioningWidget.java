@@ -109,15 +109,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private int iAssignmentTab = 0;
 	private boolean iInRestore = false;
 	private boolean iTrackHistory = true;
+	private boolean iOnline;
 
-	public StudentSectioningWidget(AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
+	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
+		iOnline = online;
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		iTrackHistory = history;
 		
 		iPanel = new VerticalPanel();
 		
-		iCourseRequests = new CourseRequestsTable(iSessionSelector);
+		iCourseRequests = new CourseRequestsTable(iSessionSelector, iOnline);
 		
 		iPanel.add(iCourseRequests);
 		
@@ -290,7 +292,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				iErrorMessage.setHTML("");
 				LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-				iSectioningService.section(iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
+				iSectioningService.section(iOnline, iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onFailure(Throwable caught) {
 						iErrorMessage.setHTML(caught.getMessage());
 						iErrorMessage.setVisible(true);
@@ -313,20 +315,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					public void onSuccess(Boolean result) {
 						updateHistory();
 						if (result) {
-							iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
-								public void onSuccess(Boolean result) {
-									if (result) {
-										iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
+							if (iOnline) {
+								iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
+									public void onSuccess(Boolean result) {
+										if (result) {
+											iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
+											iErrorMessage.setVisible(true);
+										}
+									}
+									public void onFailure(Throwable caught) {
+										iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
 										iErrorMessage.setVisible(true);
 									}
-								}
-								public void onFailure(Throwable caught) {
-									iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
-									iErrorMessage.setVisible(true);
-								}
-							});
+								});
+							}
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-							iSectioningService.section(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+							iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 								public void onFailure(Throwable caught) {
 									iErrorMessage.setHTML(caught.getMessage());
 									iErrorMessage.setVisible(true);
@@ -337,7 +341,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									fillIn(result);
 									addHistory();
 								}
-							});
+							});								
 						} else {
 							iErrorMessage.setHTML(MESSAGES.validationFailed());
 							iErrorMessage.setVisible(true);
@@ -528,7 +532,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		if (iSuggestionsBox == null) {
-			iSuggestionsBox = new SuggestionsBox();
+			iSuggestionsBox = new SuggestionsBox(iOnline);
 
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -809,7 +813,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void lastRequest(Long sessionId) {
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
-		iSectioningService.lastRequest(sessionId, new AsyncCallback<CourseRequestInterface>() {
+		iSectioningService.lastRequest(iOnline, sessionId, new AsyncCallback<CourseRequestInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 			}
@@ -821,7 +825,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				clear();
 				iCourseRequests.setRequest(request);
 				if (iSchedule.isVisible()) {
-					iSectioningService.lastResult(request.getAcademicSessionId(), new AsyncCallback<ClassAssignmentInterface>() {
+					iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), new AsyncCallback<ClassAssignmentInterface>() {
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
 						}
@@ -843,7 +847,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											ArrayList<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 											for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments())
 												classes.addAll(course.getClassAssignments());
-											iSectioningService.section(request, classes, new AsyncCallback<ClassAssignmentInterface>() {
+											iSectioningService.section(iOnline, request, classes, new AsyncCallback<ClassAssignmentInterface>() {
 												public void onFailure(Throwable caught) {
 													LoadingWidget.getInstance().hide();
 												}

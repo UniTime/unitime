@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +27,8 @@ import java.util.List;
 /**
  * @author Tomas Muller
  */
-public class Query {
+public class Query implements Serializable {
+	private static final long serialVersionUID = 1L;
 	
 	private Term iQuery = null;
 	
@@ -135,13 +137,14 @@ public class Query {
 		}
 	}
 	
-	public static interface Term {
+	public static interface Term extends Serializable {
 		public boolean match(TermMatcher m);
 		public String toString(QueryFormatter f);
 		public boolean hasAttribute(String attribute);
 	}
 
 	public static abstract class CompositeTerm implements Term {
+		private static final long serialVersionUID = 1L;
 		private List<Term> iTerms = new ArrayList<Term>();
 
 		public CompositeTerm() {}
@@ -186,6 +189,7 @@ public class Query {
 	}
 	
 	public static class OrTerm extends CompositeTerm {
+		private static final long serialVersionUID = 1L;
 		public OrTerm() { super(); }
 		public OrTerm(Term... terms) { super(terms); }
 		public OrTerm(Collection<Term> terms) { super(terms); }
@@ -202,6 +206,7 @@ public class Query {
 	}
 	
 	public static class AndTerm extends CompositeTerm {
+		private static final long serialVersionUID = 1L;
 		public AndTerm() { super(); }
 		public AndTerm(Term... terms) { super(terms); }
 		public AndTerm(Collection<Term> terms) { super(terms); }
@@ -216,6 +221,7 @@ public class Query {
 	}
 	
 	public static class NotTerm implements Term {
+		private static final long serialVersionUID = 1L;
 		private Term iTerm;
 		
 		public NotTerm(Term t) {
@@ -236,6 +242,7 @@ public class Query {
 	}
 
 	public static class AtomTerm implements Term {
+		private static final long serialVersionUID = 1L;
 		private String iAttr, iBody;
 		
 		public AtomTerm(String attr, String body) {

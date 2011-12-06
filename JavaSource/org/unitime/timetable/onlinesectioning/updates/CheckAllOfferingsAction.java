@@ -32,6 +32,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class CheckAllOfferingsAction extends CheckOfferingAction{
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	public CheckAllOfferingsAction() {

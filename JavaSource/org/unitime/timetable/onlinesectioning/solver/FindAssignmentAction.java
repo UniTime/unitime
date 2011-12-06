@@ -75,6 +75,7 @@ import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteria
  * @author Tomas Muller
  */
 public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface>>{
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;

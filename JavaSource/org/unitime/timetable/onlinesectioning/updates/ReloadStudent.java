@@ -41,6 +41,7 @@ import net.sf.cpsolver.studentsct.model.Student;
  * @author Tomas Muller
  */
 public class ReloadStudent extends ReloadAllData {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iStudentIds = null;
 	

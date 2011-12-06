@@ -129,6 +129,7 @@
 		</condition>
 		<menu name="Batch Solver" page="studentSolver.do">
 			<item name="Solver Log" page="studentSolverLog.do"/>
+			<item name="Solver Dashboard" page="batchsctdash" type="gwt"/>
 		</menu>
 		<separator/>
 		<item name="Scheduling Assistant" page="sectioning" type="gwt">
@@ -136,7 +137,7 @@
 				<hasRight name="isSectioningEnabled"/>
 			</condition>
 		</item>
-		<item name="Online Scheduling Dashboard" page="sectioningstatus" type="gwt">
+		<item name="Online Scheduling Dashboard" page="onlinesctdash" type="gwt">
 			<condition>
 				<hasRight name="isSectioningEnabled"/>
 			</condition>
@@ -146,6 +147,7 @@
 				<hasRight name="isRegistrationEnabled"/>
 			</condition>
 		</item>
+		<separator/>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
 		<item name="Reports" page="hql&amp;appearance=sectioning" type="gwt">
 			<condition>

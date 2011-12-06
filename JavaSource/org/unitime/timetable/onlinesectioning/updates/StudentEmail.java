@@ -78,6 +78,7 @@ import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
 public class StudentEmail implements OnlineSectioningAction<Boolean> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static GwtMessages GWT = Localization.create(GwtMessages.class);

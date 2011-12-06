@@ -52,6 +52,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 
 public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<EnrollmentInfo>> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Query iQuery;
 	private Integer iLimit = null;

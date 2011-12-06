@@ -141,11 +141,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					}
 				}
 			} else {
-				execute(new ReloadAllData(), user, new Callback<Boolean>() {
+				execute(new ReloadAllData(), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (iAcademicSession.isSectioningEnabled())
-							execute(new CheckAllOfferingsAction(), user, new Callback<Boolean>() {
+							execute(new CheckAllOfferingsAction(), user, new ServerCallback<Boolean>() {
 								@Override
 								public void onSuccess(Boolean result) {}
 								@Override
@@ -1402,7 +1402,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			}
 			iLog.info(message);
 			if (getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
-				execute(new StudentEmail(studentId, oldRequests, newRequests), user, new Callback<Boolean>() {
+				execute(new StudentEmail(studentId, oldRequests, newRequests), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
 						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -1445,7 +1445,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				if (oldEnrollment == null) {
 					oldEnrollment = new Enrollment(request, 0, (request instanceof CourseRequest ? ((CourseRequest)request).getCourses().get(0) : null), null, null, null);
 				}
-				execute(new StudentEmail(studentId, oldEnrollment, student.getRequests()), user, new Callback<Boolean>() {
+				execute(new StudentEmail(studentId, oldEnrollment, student.getRequests()), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {
 						iLog.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -1506,7 +1506,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	}
 
 	@Override
-	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final Callback<E> callback) throws SectioningException {
+	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final ServerCallback<E> callback) throws SectioningException {
 		synchronized (iExecutorQueue) {
 			iExecutorQueue.offer(new Runnable() {
 				@Override
