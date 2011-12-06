@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Date;
 
@@ -28,7 +29,8 @@ import org.unitime.timetable.util.DateUtils;
 /**
  * @author Tomas Muller
  */
-public class AcademicSessionInfo implements Comparable<AcademicSessionInfo> {
+public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iYear, iTerm, iCampus;
 	private Long iDatePatternId = null;

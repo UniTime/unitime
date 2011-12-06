@@ -28,6 +28,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 @Deprecated
 public class UpdateEnrollmentCountsAction implements OnlineSectioningAction<Boolean>{
+	private static final long serialVersionUID = 1L;
 	private Collection<Long> iOfferingIds;
 	
 	public UpdateEnrollmentCountsAction(Long... offeringIds) {

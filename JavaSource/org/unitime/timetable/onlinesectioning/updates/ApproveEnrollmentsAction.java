@@ -38,6 +38,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iOfferingId;
 	private Collection<Long> iStudentIds;

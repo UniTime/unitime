@@ -23,12 +23,14 @@ import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller
  */
-public interface StudentSolverProxy {
+public interface StudentSolverProxy extends OnlineSectioningServer {
 
     public String getHost();
     public String getHostLabel();

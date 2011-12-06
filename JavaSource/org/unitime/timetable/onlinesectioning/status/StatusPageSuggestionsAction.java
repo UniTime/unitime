@@ -36,7 +36,6 @@ import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -71,14 +70,15 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.util.Constants;
 
 public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<String[]>> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private String iQuery;
 	private int iLimit;
-	private User iUser;
+	private String iUserId, iUserName;
 	
-	public StatusPageSuggestionsAction(User user, String query, int limit) {
-		iUser = user;
+	public StatusPageSuggestionsAction(String userId, String userName, String query, int limit) {
+		iUserId = userId; iUserName = userName;
 		iQuery = (query == null ? "" : query);
 		iLimit = limit;
 	}
@@ -354,8 +354,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 				} else {
 					ret.add(new String[] {
-							m.group(1) + iUser.getId(),
-							(iUser.getName().contains(",") ? iUser.getName().substring(0, iUser.getName().indexOf(',')).toLowerCase() : iUser.getName().toLowerCase()) + " - " + "Enrollments approved by " + iUser.getName()
+							m.group(1) + iUserId,
+							(iUserName.contains(",") ? iUserName.substring(0, iUserName.indexOf(',')).toLowerCase() : iUserName.toLowerCase()) + " - " + "Enrollments approved by " + iUserName
 					});
 				}
 			}
@@ -374,8 +374,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 				} else {
 					ret.add(new String[] {
-							m.group(1) + iUser.getId(),
-							(iUser.getName().contains(",") ? iUser.getName().substring(0, iUser.getName().indexOf(',')).toLowerCase() : iUser.getName().toLowerCase()) + " - " + "Enrollments approved by " + iUser.getName()
+							m.group(1) + iUserId,
+							(iUserName.contains(",") ? iUserName.substring(0, iUserName.indexOf(',')).toLowerCase() : iUserName.toLowerCase()) + " - " + "Enrollments approved by " + iUserName
 					});
 				}
 			}

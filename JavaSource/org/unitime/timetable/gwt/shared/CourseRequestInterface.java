@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -26,7 +27,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class CourseRequestInterface implements IsSerializable {
+public class CourseRequestInterface implements IsSerializable, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iSessionId, iStudentId;
 	private ArrayList<Request> iCourses = new ArrayList<Request>();
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
@@ -46,7 +48,8 @@ public class CourseRequestInterface implements IsSerializable {
 	public boolean isSaved() { return iSaved; }
 	public void setSaved(boolean saved) { iSaved = saved; }
 
-	public static class FreeTime implements IsSerializable {
+	public static class FreeTime implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
 		private int iStart;
 		private int iLength;
@@ -94,7 +97,8 @@ public class CourseRequestInterface implements IsSerializable {
 		}
 	}
 	
-	public static class Request implements IsSerializable {
+	public static class Request implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private ArrayList<FreeTime> iRequestedFreeTime = null;
 		private String iRequestedCourse = null;
 		private String iFirstAlternative = null;

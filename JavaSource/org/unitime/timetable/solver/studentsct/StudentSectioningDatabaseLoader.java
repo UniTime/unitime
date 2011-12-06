@@ -42,6 +42,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
@@ -67,6 +68,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -465,6 +467,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
 
         Student student = new Student(s.getUniqueId().longValue());
+        student.setExternalId(s.getExternalUniqueId());
+        student.setName(s.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+        student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
@@ -896,6 +901,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     
             }
         }
+        for (StudentGroup g: s.getGroups())
+        	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
     }
     
 	public static BitSet getFreeTimeBitSet(Session session) {
@@ -1121,7 +1128,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
                     "left join fetch cr.classEnrollments as cre "+
-                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj " : "") +
+                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj left join fetch s.groups as g " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();

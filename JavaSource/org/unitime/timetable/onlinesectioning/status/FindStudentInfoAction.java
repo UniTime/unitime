@@ -48,6 +48,7 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
 public class FindStudentInfoAction implements OnlineSectioningAction<List<StudentInfo>> {
+	private static final long serialVersionUID = 1L;
 	private Query iQuery;
 	private Integer iLimit = null;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;

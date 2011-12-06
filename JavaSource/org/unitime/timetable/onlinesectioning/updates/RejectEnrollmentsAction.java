@@ -40,6 +40,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iOfferingId;
 	private Collection<Long> iStudentIds;
@@ -123,7 +124,8 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 
 			helper.commitTransaction();
 			
-			server.execute(new UpdateEnrollmentCountsAction(getOfferingId()), helper.getUser(), new OnlineSectioningServer.Callback<Boolean>() {
+			/*
+			server.execute(new UpdateEnrollmentCountsAction(getOfferingId()), helper.getUser(), new OnlineSectioningServer.ServerCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable exception) {
 				}
@@ -131,6 +133,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 				public void onSuccess(Boolean result) {
 				}
 			});
+			*/
 			
 			return true;			
 		} catch (Exception e) {
