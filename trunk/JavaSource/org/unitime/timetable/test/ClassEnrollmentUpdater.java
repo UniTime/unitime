@@ -30,6 +30,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 
+@Deprecated
 public class ClassEnrollmentUpdater {
     protected static Logger sLog = Logger.getLogger(ClassEnrollmentUpdater.class);
 
