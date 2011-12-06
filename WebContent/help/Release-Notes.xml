@@ -53,11 +53,11 @@
 				<line>Individual reservations
 					<line>Relation: 1 or more students (entered by external ids or using People Lookup)</line>
 					<line>Students with an individual reservation have priority in the wait-list (for getting into the course).</line>
-					<line>Enrollment may also overlap with other enrollments of the student if no overlapping assignment is possible (overlapping time is minimized).</line>
+					<line>Enrollment may also overlap with other enrollments of the student if no not-overlapping assignment is possible (overlapping time is minimized).</line>
 				</line>
 				<line>Course reservations
 					<line>Relation: a course (of a cross-listed offering)</line>
-					<line>For a cross-listed offerings, individual limit can be set for each course.</line>
+					<line>For a cross-listed offering, individual limit can be set for each course.</line>
 					<line>A true reservation is only needed if there is a selection of classes or configurations.</line>
 				</line>
 			</description>
@@ -81,7 +81,7 @@
 			<description>
 				<line>Course and curriculum reservations are used to limit available classes for students.
 					<line>Note: course reservations were already somewhat implemented in UniTime 3.2, curriculum reservations are completely new.</line>
-					<line>If there is a student (including last-like or curriculum-based) meeting reservation set on a class, such a student is prohibited of taking other classes (of the subpart).</line>
+					<line>If there is a student (including last-like or curriculum-based) meeting a reservation set on a class, such a student is prohibited from taking other classes (of the subpart).</line>
 					<line>The rest is left on the sectioning engine (initial sectioning, student swaps).</line>
 				</line>
 			</description>
@@ -90,12 +90,12 @@
 			<name>Student scheduling solver</name>
 			<description>
 				<line>Always only one reservation is associated with an enrollment.
-					<line>This means, that at most one reservation will count towards each student course enrollment.</line>
+					<line>This means that at most one reservation will count towards each student course enrollment.</line>
 					<line>The reservation with highest priority is taken first, then more restrictive (if matching), then more available, then reservation id.</line>
 				</line>
 				<line>It is possible not to use reservation, if there is enough space in the course / configuration / sections
 					<line>Such assignments have lower weight than if a reservation is used (+1 on course alternativity).</line>
-					<line>Individual and group reservations must be used when present (and student matches the reservation).</line>
+					<line>Individual and group reservations must be used when present (and a student matches the reservation).</line>
 				</line>
 				<line>General strategy for course / section reservations:
 					<line>Do not allow students over the reserved available space into the course / section, i.e., do not block students with reservation from having a choice.</line>
@@ -108,7 +108,7 @@
 			<name>User interface changes</name>
 			<description>
 				<line>The old (and mostly disabled) interface is replaced by a new (GWT-based) one.</line>
-				<line>A new Reservations page created, and there is a Reservations table under the Instructional Offering Details page.</line>
+				<line>A new Reservations page created, and there is a Reservations table in the Instructional Offering Detail page.</line>
 			</description>
 		</item>
 	</category>
@@ -139,9 +139,9 @@
 			<description>
 				<line>Goals:
 					<line>First priority request has better weight than all the rest.</line>
-					<line>Total weight for a student should be between zero and one, one for a fully satisfied student should.</line>
+					<line>Total weight for a student should be between zero and one, one for a fully satisfied student.</line>
 				</line>
-				<line>Request weight: 1st priority 0.51, 2nd priority 0.25, 3rd priority 0.13, 4th priority 0.06, ... (1/2 for alternatives, e.g., 0.26 for the first alternative of a course).</line>
+				<line>Request weight: 1st priority 0.501, 2nd priority 0.250, 3rd priority 0.1248, 4th priority 0.0623, ... (1/2 for alternatives, e.g., 0.2505 for the first alternative of a course).</line>
 				<line>1/2 and 1/4 for the alternatives; but the difference will be distributed down-wards (student has more weight to get the n+1, n+2, ... priority courses).</line>
 				<line>Weights are rounded to four digits.</line>
 				<line>The rest to 1 -- put to the last request or split evenly between all of them.</line>
@@ -165,7 +165,7 @@
 			<name>Free times and some classes allow for overlap</name>
 				<description>
 					<line>For classes an allow-overlap flag can be set on a subpart.</line>
-					<line>If a non-conflicting schedule can be found, try to minimize overlapping times instead.</line>
+					<line>If a non-conflicting schedule cannot be found, try to minimize overlapping times instead.</line>
 					<line>Weighting: deduct 1/2 of the overlapping %.
 						<line>E.g., if an enrollment overlaps 50% with a free time request, deduct 25% of its weight.</line>
 						<line>I.e., time overlaps can cut up to 50% of the weight on both courses that overlap (when overlapping completely, see overlaps).</line>
@@ -289,7 +289,7 @@
 					<line>An attempt in enrolling into a course results in wait-listing of the student.</line>
 				</line>
 				<line>After an offering is unlocked, it is reloaded and all existing student enrollments are re-checked.
-					<line>First, student with a conflict or with an incomplete enrollment are un-enrolled.
+					<line>First, students with a conflict or with an incomplete enrollment are un-enrolled.
 						<line>Check for incomplete enrollment (when a class is deleted) or time conflicts (when a class is moved to an overlapping time).</line>
 						<line>Limits are ok (if a limit is decreased, students are kept in the class over the limit).</line>
 						<line>If there is a change detected in the student’s schedule, but there are no conflicts -- only an email about the change is sent to the student.</line>
@@ -331,7 +331,7 @@
 			<name>Student Scheduling Status</name>
 			<description>
 				<line>It is  possible to block a student (or some group of students) from being able to make class changes; or to receive email notifications.</line>
-				<line>Default scheduling status is set on an academic session, can be refined, can be refined on a student (using Student Scheduling Dashboard).</line>
+				<line>Default scheduling status is set on an academic session, can be refined on a student (using Student Scheduling Dashboard).</line>
 			</description>
 		</item>
 	</category>
@@ -394,7 +394,7 @@
 				<line>Each line in a report can be made clickable.
 					<line>When the appropriate class / offering / examination / room / instructor / event unique id is returned in the first column named __Class, __Offering, etc.</line>
 				</line>
-				<line>A few example course reports created (including one listing unassigned classes that have a time preference).</line>
+				<line>A few sample course reports created (including one listing unassigned classes that have a time preference).</line>
 			</description>
 		</item>
 	</category>
@@ -419,7 +419,7 @@
 				<line>
 					Instructional Offerings, Classes, Class Detail, Class Edit, Scheduling Subpart Edit, Scheduling Subpart Detail,
 					Instructional Offering Configuration Edit, Edit Course Offering, Student Scheduling Assistant, Multiple Class Setup,
-					Assign Instructors, Instructional Offering Detail, Instructors, Add/Edit Instructor
+					Assign Instructors, Instructional Offering Detail, Instructors, Add/Edit Instructor, Instructor Preferences
 				</line>
 			</description>
 		</item>
@@ -575,7 +575,7 @@
 		<item>
 			<name>Other</name>
 			<description>
-				<line>Most of GWT-based pages: When not authenticated (ant the authentication is required), open login page in a dialog.</line>
+				<line>Most of GWT-based pages: When not authenticated (and if the authentication is required), open login page in a dialog.</line>
 				<line>All pages: If a page requires a horizontal scroll bar, try to shrink all tables that are 100% wide to the size of the window.
 					<line>This means that tables like Filter will not get widen to fill up the whole space.</line>
 					<line>This is particularly useful on pages that can contain huge tables (like Timetable, Solution Reports, Examination Timetable, or Event Room Availability).</line>
