@@ -52,7 +52,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	 */
 	private static final long serialVersionUID = 7234507709430023477L;
 
-	/** deptCode prpoerty */
+	/** deptCode property */
 	private String deptCode;
 
 	/** instructorId property */

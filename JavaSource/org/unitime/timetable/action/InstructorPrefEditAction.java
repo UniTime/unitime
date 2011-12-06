@@ -36,6 +36,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
@@ -59,6 +61,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public class InstructorPrefEditAction extends PreferencesAction {
 
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -85,7 +89,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             HttpSession httpSession = request.getSession();
     		InstructorEditForm frm = (InstructorEditForm) form;       
             MessageResources rsc = getResources(request);
-            ActionMessages errors = new ActionMessages();
+    		ActionMessages errors = new ActionMessages();
             
             // Read parameters
             String instructorId = request.getParameter("instructorId");
@@ -95,36 +99,36 @@ public class InstructorPrefEditAction extends PreferencesAction {
             
             // Read subpart id from form
             if(op.equals(rsc.getMessage("button.reload"))
-            		|| op.equals(rsc.getMessage("button.addTimePattern"))
-                    || op.equals(rsc.getMessage("button.addRoomPref"))
-                    || op.equals(rsc.getMessage("button.addBldgPref"))
-                    || op.equals(rsc.getMessage("button.addRoomFeaturePref"))
-                    || op.equals(rsc.getMessage("button.addDistPref")) 
-                    || op.equals(rsc.getMessage("button.addRoomGroupPref"))
-                    || op.equals(rsc.getMessage("button.updatePrefs")) 
-                    || op.equals(rsc.getMessage("button.cancel")) 
-                    || op.equals(rsc.getMessage("button.clearInstrPrefs"))                 
-                    || op.equals(rsc.getMessage("button.delete"))
-                    || op.equals(rsc.getMessage("button.returnToDetail"))
-                    || op.equals(rsc.getMessage("button.nextInstructor"))
-                    || op.equals(rsc.getMessage("button.previousInstructor"))) {
+            		|| op.equals(MSG.actionAddTimePreference())
+                    || op.equals(MSG.actionAddRoomPreference())
+                    || op.equals(MSG.actionAddBuildingPreference())
+                    || op.equals(MSG.actionAddRoomFeaturePreference())
+                    || op.equals(MSG.actionAddDistributionPreference()) 
+                    || op.equals(MSG.actionAddRoomGroupPreference())
+                    || op.equals(MSG.actionUpdatePreferences()) 
+                  //  || op.equals(rsc.getMessage("button.cancel")) -- not used???
+                    || op.equals(MSG.actionClearInstructorPreferences())                 
+                  //  || op.equals(rsc.getMessage("button.delete")) -- not used???
+                    || op.equals(MSG.actionBackToDetail())
+                    || op.equals(MSG.actionNextInstructor())
+                    || op.equals(MSG.actionPreviousInstructor())) {
             	instructorId = frm.getInstructorId();
             }
             
             // Determine if initial load
             if(op==null || op.trim().length()==0 
-                    || ( op.equals(rsc.getMessage("button.reload")) 
-                    	 && (reloadCause==null || reloadCause.trim().length()==0) )) {
+                    || ( op.equals(rsc.getMessage("button.reload")) 						
+                    	 && (reloadCause==null || reloadCause.trim().length()==0) )) {     
                 op = "init";
             }
             
             // Check op exists
             if(op==null || op.trim()=="") 
-                throw new Exception ("Null Operation not supported.");
+                throw new Exception (MSG.exceptionNullOperationNotSupported());
             
             //Check instructor exists
             if(instructorId==null || instructorId.trim()=="") 
-                throw new Exception ("Instructor Info not supplied.");
+                throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
             
             // Set screen name
             frm.setScreenName("instructorPref");
@@ -134,7 +138,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             DepartmentalInstructor inst = idao.get(new Long(instructorId)); 
             
             // Cancel - Go back to Instructors Detail Screen
-            if(op.equals(rsc.getMessage("button.returnToDetail")) 
+            if(op.equals(MSG.actionBackToDetail()) 
                     && instructorId!=null && instructorId.trim()!="") {
                 request.setAttribute("instructorId", instructorId);
                 request.setAttribute("fromChildScreen", "true");
@@ -142,7 +146,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             }
             
             // Clear all preferences
-            if(op.equals(rsc.getMessage("button.clearInstrPrefs"))) { 
+            if(op.equals(MSG.actionClearInstructorPreferences())) { 
             	Set s = inst.getPreferences();
                 s.clear();
                 inst.setPreferences(s);            
@@ -172,10 +176,11 @@ public class InstructorPrefEditAction extends PreferencesAction {
             doLoad(request, frm, inst, instructorId);
             
             // Update Preferences for InstructorDept
-            if(op.equals(rsc.getMessage("button.update")) 
-            		 || op.equals(rsc.getMessage("button.nextInstructor")) || op.equals(rsc.getMessage("button.previousInstructor"))
-            		|| op.equals(rsc.getMessage("button.updatePrefs")) ) {	
-                // Validate input prefs
+            if(op.equals(MSG.actionUpdatePreferences()) 
+            		|| op.equals(MSG.actionNextInstructor()) 
+            		|| op.equals(MSG.actionPreviousInstructor())) {	
+
+            	// Validate input prefs
                 errors = frm.validate(mapping, request);
                 
                 // No errors - Add to instructorDept and update
@@ -201,10 +206,10 @@ public class InstructorPrefEditAction extends PreferencesAction {
                     request.setAttribute("fromChildScreen", "true");
                     request.setAttribute("showPrefs", "true");
                     
-    	        	if (op.equals(rsc.getMessage("button.nextInstructor")))
+    	        	if (op.equals(MSG.actionNextInstructor()))
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getNextId()));
     	            
-    	            if (op.equals(rsc.getMessage("button.previousInstructor")))
+    	            if (op.equals(MSG.actionPreviousInstructor()))
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getPreviousId()));
                     
                     return mapping.findForward("showDetail");
@@ -270,7 +275,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             BackTracker.markForBack(
             		request,
             		"instructorDetail.do?instructorId="+frm.getInstructorId(),
-            		"Instructor ("+ (frm.getName()==null?"null":frm.getName().trim()) +")",
+            		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
             		true, false);
 
             return mapping.findForward("showEdit");

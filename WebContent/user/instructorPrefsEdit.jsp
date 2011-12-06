@@ -26,12 +26,15 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <%
 	// Get Form 
 	String frmName = "instructorEditForm";	
 	InstructorEditForm frm = (InstructorEditForm) request.getAttribute(frmName);	
 %>	
+
+<loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -51,33 +54,46 @@
 					<tt:section-title>
 						<bean:write name='<%=frmName%>' property='name'/>
 					</tt:section-title>
+
 					<html:submit property="op" 
-						styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
-						<bean:message key="button.updatePrefs" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessUpdatePreferences() %>" 
+							title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
+						<loc:message name="actionUpdatePreferences" />
 					</html:submit> 
+					
 					&nbsp;
 					<html:submit property="op" 
-						styleClass="btn" accesskey="C" titleKey="title.clearInstrPrefs" >
-						<bean:message key="button.clearInstrPrefs" />
+						styleClass="btn" 
+						accesskey="<%=MSG.accessClearInstructorPreferences() %>" 
+						title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
+						<loc:message name="actionClearInstructorPreferences" />
 					</html:submit> 
+									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
-								styleClass="btn" accesskey="P" titleKey="title.previousInstructorWithUpdate">
-							<bean:message key="button.previousInstructor" />
+								styleClass="btn" 
+								accesskey='<%=MSG.accessPreviousInstructor() %>' 
+								title='<%=MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor())%>'>
+							<loc:message name="actionPreviousInstructor" />
 						</html:submit> 
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						&nbsp;
 						<html:submit property="op" 
-							styleClass="btn" accesskey="N" titleKey="title.nextInstructorWithUpdate">
-							<bean:message key="button.nextInstructor" />
+								styleClass="btn" 
+								accesskey='<%=MSG.accessNextInstructor() %>' 
+								title='<%=MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor()) %>'>
+							<loc:message name="actionNextInstructor" />						
 						</html:submit> 
 					</logic:notEmpty>
 					&nbsp;
 					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-						<bean:message key="button.returnToDetail" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessBackToDetail()%>" 
+							title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
+						<loc:message name="actionBackToDetail"/>
 					</html:submit>
 				</tt:section-header>
 			</TD>
@@ -118,4 +134,4 @@
   	}
 	
 </SCRIPT>
-	
+</loc:bundle>	
