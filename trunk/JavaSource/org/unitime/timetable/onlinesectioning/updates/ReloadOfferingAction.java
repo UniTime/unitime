@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.updates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -388,6 +389,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 						enrl.setChangedBy(helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
 						enrl.setStudent(student);
 						student.getClassEnrollments().add(enrl);
+						if (cr.getClassEnrollments() == null) cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
+						cr.getClassEnrollments().add(enrl);
 						helper.info("Adding " + enrl.getClazz().getClassLabel());
 					}
 				} else if (!r.getRequest().isAlternative()) { // wait-list

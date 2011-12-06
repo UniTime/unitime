@@ -81,14 +81,14 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 		
 		Lock lock = server.lockOffering(offering.getId(), null, true);
 		try {
-			// Remove reservation from the model
+			// Expire reservations
 			for (Reservation reservation: reservations) {
 				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 						.setUniqueId(reservation.getId())
 						.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION));
 				
 				helper.info("Expiring reservation " + reservation.getId() + "...");
-				offering.getReservations().remove(reservation);
+				reservation.setExpired(true);
 				offering.clearReservationCache();
 			}
 
