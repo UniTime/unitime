@@ -833,11 +833,13 @@ public class InstructionalOfferingModifyAction extends Action {
 					changed = true;
 					modifiedClass.setRoomRatio(roomRatio);
 				}
-				if (!modifiedClass.isDisplayInstructor().equals(displayInstructor)){
+		        Boolean displayInstructorFlags = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_display_instructor_flags", "false"));
+				if (displayInstructorFlags && !modifiedClass.isDisplayInstructor().equals(displayInstructor)){
 					changed = true;
 					modifiedClass.setDisplayInstructor(displayInstructor);
 				}
-				if (!modifiedClass.isDisplayInScheduleBook().equals(displayInScheduleBook)){
+				Boolean displayInScheduleFlags = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_display_in_schedule_flags", "false"));
+				if (displayInScheduleFlags && !modifiedClass.isDisplayInScheduleBook().equals(displayInScheduleBook)){
 					changed = true;
 					modifiedClass.setDisplayInScheduleBook(displayInScheduleBook);
 				}
