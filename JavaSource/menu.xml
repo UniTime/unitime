@@ -131,7 +131,14 @@
 			<item name="Solver Log" page="studentSolverLog.do"/>
 			<item name="Solver Dashboard" page="batchsctdash" type="gwt"/>
 		</menu>
-		<separator/>
+		<separator>
+			<condition>
+				<or>
+					<hasRight name="isSectioningEnabled"/>
+					<hasRight name="isRegistrationEnabled"/>
+				</or>
+			</condition>
+		</separator>
 		<item name="Scheduling Assistant" page="sectioning" type="gwt">
 			<condition>
 				<hasRight name="isSectioningEnabled"/>
