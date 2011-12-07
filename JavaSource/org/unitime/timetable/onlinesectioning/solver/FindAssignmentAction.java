@@ -34,7 +34,6 @@ import java.util.Vector;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -214,12 +213,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		OnlineSectioningSelection selection = null;
 		
-		try {
-			selection = (OnlineSectioningSelection)
-				Class.forName(server.getConfig().getProperty("OnlineStudentSectioning.Selection", MultiCriteriaBranchAndBoundSelection.class.getName()))
-				.getConstructor(DataProperties.class).newInstance(server.getConfig());
-		} catch (Exception e) {
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()));
+		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
+			selection = new MultiCriteriaBranchAndBoundSelection(server.getConfig());
+		} else {
+			selection = new SuggestionSelection(server.getConfig());
 		}
 		
 		selection.setModel(model);
@@ -229,6 +226,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		BranchBoundNeighbour neighbour = selection.select(student);
 		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
+
+		helper.info("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+				(server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
+				" with " + server.getConfig().getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);

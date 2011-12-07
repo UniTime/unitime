@@ -49,6 +49,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     protected int iTimeout = 1000;
     protected StudentSectioningModel iModel = null;
     protected SelectionCriterion iComparator = null;
+    private boolean iPriorityWeighting = true;
     
     /** Student */
     protected Student iStudent;
@@ -72,6 +73,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     
     public MultiCriteriaBranchAndBoundSelection(DataProperties config) {
         iTimeout = config.getPropertyInt("Neighbour.BranchAndBoundTimeout", iTimeout);
+        iPriorityWeighting = config.getPropertyBoolean("StudentWeights.PriorityWeighting", iPriorityWeighting);
     }
     
 	@Override
@@ -116,7 +118,12 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
 	
 	@Override
 	public BranchBoundNeighbour select(Student student) {
-		return select(student, new OnlineSectioningCriterion(student, iModel, iPreferredSections));
+		SelectionCriterion comparator = null;
+		if (iPriorityWeighting)
+			comparator = new OnlineSectioningCriterion(student, iModel, iPreferredSections);
+		else
+			comparator = new EqualWeightCriterion(student, iModel, iPreferredSections);
+		return select(student, comparator);
 	}
 
     /**

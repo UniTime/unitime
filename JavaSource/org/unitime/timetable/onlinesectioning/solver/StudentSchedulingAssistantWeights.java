@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.Hashtable;
 import java.util.Set;
 
+import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -29,14 +30,17 @@ import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.weights.EqualStudentWeights;
 import net.sf.cpsolver.studentsct.weights.PriorityStudentWeights;
+import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 /**
  * @author Tomas Muller
  */
-public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
+public class StudentSchedulingAssistantWeights implements StudentWeights {
 	/** deduction for section with no time assignment */
     private double iNoTimeFactor = 0.050;
     /** deduction for sections that are not preferred (different time & instructor) */
@@ -44,19 +48,27 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
     /** deduction for over expected sections */
     private double iPenaltyFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
-    private double iAvailabilityFactor;
+    private double iAvailabilityFactor = 0.050;
 	/** negative penalty means there is space available */
 	private double iAvgPenaltyFactor = 0.001;
 	
 	private Hashtable<CourseRequest, double[]> iCache = new Hashtable<CourseRequest, double[]>();
+	
+	private boolean iPriorityWeighting = true;
 
+	private StudentWeights iParent;
+	
 	public StudentSchedulingAssistantWeights(DataProperties properties) {
-		super(properties);
 		iNoTimeFactor = properties.getPropertyDouble("StudentWeights.NoTimeFactor", iNoTimeFactor);
 		iSelectionFactor = properties.getPropertyDouble("StudentWeights.SelectionFactor", iSelectionFactor);
 		iPenaltyFactor = properties.getPropertyDouble("StudentWeights.PenaltyFactor", iPenaltyFactor);
 		iAvgPenaltyFactor = properties.getPropertyDouble("StudentWeights.AvgPenaltyFactor", iAvgPenaltyFactor);
-		iAvailabilityFactor = iBalancingFactor; iBalancingFactor = 0.0;
+		iAvailabilityFactor = properties.getPropertyDouble("StudentWeights.AvailabilityFactor", iAvailabilityFactor);
+		iPriorityWeighting = properties.getPropertyBoolean("StudentWeights.PriorityWeighting", iPriorityWeighting);
+		if (iPriorityWeighting)
+			iParent = new PriorityStudentWeights(properties);
+		else
+			iParent = new EqualStudentWeights(properties);
 	}
 	
 	private double[] best(CourseRequest cr) {
@@ -102,12 +114,12 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 	}
 	
 	public double getBaseWeight(Enrollment enrollment) {
-		return super.getWeight(enrollment);
+		return iParent.getWeight(enrollment);
 	}
 	
 	@Override
 	public double getWeight(Enrollment enrollment) {
-		if (!enrollment.isCourseRequest()) return super.getWeight(enrollment);
+		if (!enrollment.isCourseRequest()) return getBaseWeight(enrollment);
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
 		double base = getBaseWeight(enrollment);
@@ -185,5 +197,29 @@ public class StudentSchedulingAssistantWeights extends PriorityStudentWeights {
 		
 		return weight;
 		
+	}
+	
+    protected double round(double value) {
+        return Math.ceil(10000.0 * value) / 10000.0;
+    }
+
+	@Override
+	public boolean isBetterThanBestSolution(Solution<Request, Enrollment> currentSolution) {
+		return iParent.isBetterThanBestSolution(currentSolution);
+	}
+
+	@Override
+	public double getBound(Request request) {
+		return iParent.getBound(request);
+	}
+
+	@Override
+	public double getDistanceConflictWeight(DistanceConflict.Conflict distanceConflict) {
+		return iParent.getDistanceConflictWeight(distanceConflict);
+	}
+
+	@Override
+	public double getTimeOverlapConflictWeight(Enrollment enrollment, TimeOverlapsCounter.Conflict timeOverlap) {
+		return iParent.getTimeOverlapConflictWeight(enrollment, timeOverlap);
 	}
 }
