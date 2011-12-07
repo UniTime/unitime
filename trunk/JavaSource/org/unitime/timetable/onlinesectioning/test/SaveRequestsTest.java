@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
