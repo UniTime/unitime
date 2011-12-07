@@ -43,6 +43,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.ifs.util.JProf;
+import net.sf.cpsolver.ifs.util.ToolBox;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -76,6 +77,10 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameter;
+import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
@@ -166,17 +171,9 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		} finally {
 			hibSession.close();
 		}
-		iDistanceMetric = new DistanceMetric(
-				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
-		iConfig = new DataProperties();
-		iConfig.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
-		iConfig.setProperty("Suggestions.Timeout", "1000");
-		iConfig.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-		iConfig.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
-		iConfig.setProperty("StudentWeights.LeftoverSpread", "true");
-		iConfig.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
-		iConfig.setProperty("Reservation.CanAssignOverTheLimit", "true");
-		iConfig.putAll(ApplicationProperties.getProperties());
+		iConfig = new ServerConfig();
+		iDistanceMetric = new DistanceMetric(iConfig);
+		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
 	}
 	
 	@Override
@@ -1693,6 +1690,63 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		
 		return week <= deadline + offset;
+	}
+	
+	private static class ServerConfig extends DataProperties {
+		private static final long serialVersionUID = 1L;
+
+		private ServerConfig() {
+			super();
+			setProperty("Neighbour.BranchAndBoundTimeout", "1000");
+			setProperty("Suggestions.Timeout", "1000");
+			setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
+			setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
+			setProperty("StudentWeights.PriorityWeighting", "true");
+			setProperty("StudentWeights.LeftoverSpread", "true");
+			setProperty("StudentWeights.BalancingFactor", "0.0");
+			setProperty("StudentWeights.MultiCriteria", "true");
+			setProperty("Reservation.CanAssignOverTheLimit", "true");
+			setProperty("General.SaveDefaultProperties", "false");
+			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+			try {
+				for (SolverParameterDef def: (List<SolverParameterDef>)hibSession.createQuery(
+						"from SolverParameterDef x where x.group.type = :type and x.default is not null")
+						.setInteger("type", SolverParameterGroup.sTypeStudent).list()) {
+					setProperty(def.getName(), def.getDefault());
+				}
+				SolverPredefinedSetting settings = (SolverPredefinedSetting)hibSession.createQuery(
+						"from SolverPredefinedSetting x where x.name = :reference")
+						.setString("reference", "StudentSct.Online").setMaxResults(1).uniqueResult();
+				if (settings != null) {
+					for (SolverParameter param: settings.getParameters()) {
+						if (!param.getDefinition().isVisible().booleanValue()) continue;
+						if (param.getDefinition().getGroup().getType() != SolverParameterGroup.sTypeStudent) continue;
+						setProperty(param.getDefinition().getName(), param.getValue());
+					}
+					setProperty("General.SettingsId", settings.getUniqueId().toString());
+				}
+				if (getProperty("Distances.Ellipsoid") == null || "DEFAULT".equals(getProperty("Distances.Ellipsoid")))
+					setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+				if ("Priority".equals(getProperty("StudentWeights.Mode")))
+					setProperty("StudentWeights.PriorityWeighting", "true");
+				else if ("Equal".equals(getProperty("StudentWeights.Mode")))
+					setProperty("StudentWeights.PriorityWeighting", "false");
+			} finally {
+				hibSession.close();
+			}
+		}
+		
+		@Override
+		public String getProperty(String key) {
+			String value = ApplicationProperties.getProperty("unitime.sectioning.config." + key);
+			return value == null ? super.getProperty(key) : value;
+		}
+		
+		@Override
+		public String getProperty(String key, String defaultValue) {
+			String value = ApplicationProperties.getProperty("unitime.sectioning.config." + key);
+			return value == null ? super.getProperty(key, defaultValue) : value;
+		}
 	}
 	
 }
