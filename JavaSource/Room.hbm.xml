@@ -83,7 +83,7 @@
             column="manager_ids"
             type="java.lang.String"
             not-null="false"
-            length="200"/>
+            length="3000"/>
 
         <property
             name="pattern"
