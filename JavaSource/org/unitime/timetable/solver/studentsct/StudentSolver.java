@@ -122,6 +122,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private String iPassivationPuid = null;
     private Thread iWorkThread = null;
 
+    private transient Map<Long, CourseInfo> iCourseInfoCache = null;
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
         super(properties);
@@ -197,6 +198,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             Progress.removeInstance(currentSolution().getModel());
         setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
         if (unregister && iDisposeListener!=null) iDisposeListener.onDispose();
+        clearCourseInfoTable();
     }
     
     public String getHost() {
@@ -1316,49 +1318,51 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 		return enrollments;
 	}
 
+	private Map<Long, CourseInfo> getCourseInfoTable() {
+		if (iCourseInfoCache == null) {
+			org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
+			try {
+				iCourseInfoCache = new Hashtable<Long, CourseInfo>();
+				for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
+						"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId"
+						).setLong("sessionId", getSessionId()).setCacheable(true).list()) {
+					iCourseInfoCache.put(course.getUniqueId(), new CourseInfo(course));
+				}
+			} finally {
+				hibSession.close();
+			}
+
+		}
+		return iCourseInfoCache;
+	}
+	private void clearCourseInfoTable() {
+		iCourseInfoCache = null;
+	}
+	
+	
 	@Override
 	public Collection<CourseInfo> findCourses(String query, Integer limit) {
-		org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
-		try {
-			List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
-			String queryInLowerCase = query.toLowerCase();
-			List<CourseOffering> courses = hibSession.createQuery(
-					"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId"
-					).setLong("sessionId", getSessionId()).setCacheable(true).list();
-			for (CourseOffering co: courses) {
-				CourseInfo c = new CourseInfo(co);
-				if (c.matchCourseName(queryInLowerCase)) ret.add(c);
+		List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
+		String queryInLowerCase = query.toLowerCase();
+		for (CourseInfo c : getCourseInfoTable().values()) {
+			if (c.matchCourseName(queryInLowerCase)) ret.add(c);
+			if (limit != null && ret.size() == limit) return ret;
+		}
+		if (queryInLowerCase.length() > 2) {
+			for (CourseInfo c : getCourseInfoTable().values()) {
+				if (c.matchTitle(queryInLowerCase)) ret.add(c);
 				if (limit != null && ret.size() == limit) return ret;
 			}
-			if (queryInLowerCase.length() > 2) {
-				for (CourseOffering co: courses) {
-					CourseInfo c = new CourseInfo(co);
-					if (c.matchTitle(queryInLowerCase)) ret.add(c);
-					if (limit != null && ret.size() == limit) return ret;
-				}
-			}
-			return ret;
-		} finally {
-			hibSession.close();
 		}
+		return ret;
 	}
 
 	@Override
 	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher) {
-		org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
-		try {
-			List<CourseInfo> ret = new ArrayList<CourseInfo>();
-			List<CourseOffering> courses = hibSession.createQuery(
-					"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId"
-					).setLong("sessionId", getSessionId()).setCacheable(true).list();
-			for (CourseOffering co: courses) {
-				CourseInfo c = new CourseInfo(co);
-				if (matcher.match(c)) ret.add(c);
-			}
-			return ret;
-		} finally {
-			hibSession.close();
-		}
+		List<CourseInfo> ret = new ArrayList<CourseInfo>();
+		for (CourseInfo c : getCourseInfoTable().values())
+			if (matcher.match(c)) ret.add(c);
+		return ret;
 	}
 
 	@Override
@@ -1390,12 +1394,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 
 	@Override
 	public CourseInfo getCourseInfo(Long courseId) {
-		org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
-		try {
-			return new CourseInfo(CourseOfferingDAO.getInstance().get(courseId, hibSession));
-		} finally {
-			hibSession.close();
-		}
+		return getCourseInfoTable().get(courseId);
 	}
 
 	@Override
