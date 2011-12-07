@@ -72,8 +72,8 @@ public class PatternServlet extends HttpServlet {
 			Exam exam = ExamDAO.getInstance().get(Long.valueOf(request.getParameter("x")));
 			if (exam != null) {
 				ExamPeriod p = null;
-				if (request.getParameter("p") != null)
-					p = ExamPeriodDAO.getInstance().get(Long.valueOf(request.getParameter("p")));
+				if (request.getParameter("ap") != null)
+					p = ExamPeriodDAO.getInstance().get(Long.valueOf(request.getParameter("ap")));
 				PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), p, exam.getExamType());
                 px.load(exam);
                 rtt = new RequiredTimeTable(px);
