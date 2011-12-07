@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.interactive;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -516,11 +515,9 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 						if (t.getStartSlot() == iStartSlot) { match = true; break; }
 					}
 					if (!match) continue;
-					try {
-						RequiredTimeTable m = p.getRequiredTimeTable(new TimeLocation(iDays, iStartSlot, iMin, 0, 0.0, iPatternId, iDatePatternName, null, 0));
-						iHint = m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");;
-						break;
-					} catch (IOException e) {}
+					RequiredTimeTable m = p.getRequiredTimeTable(new TimeLocation(iDays, iStartSlot, iMin, 0, 0.0, iPatternId, iDatePatternName, null, 0));
+					iHint = m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");;
+					break;
 				}
 			}
 			return iHint;

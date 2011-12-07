@@ -561,19 +561,10 @@ public class RoomListAction extends Action {
 	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            px.load(location);
 	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
-	                            String hint = null;
-	                            File imageFileName = null;
-	                            try {
-	                                imageFileName = rtt.createImage(timeVertical);
-	                				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-	                            } catch (IOException ex) {
-	                            	hint = "'" + rtt.getModel().toString() + "'";
-	                            	Debug.error(ex);
-	                            }
-	                            if (imageFileName!=null)
-	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
-	                            else
-	                                text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
+	                            String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+                                text[idx] = "<img border='0' src='" +
+                                	"pattern?v=" + (timeVertical ? 1 : 0) + "&loc=" + location.getUniqueId() + "&xt=" + examType + 
+                                	"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
 	                        }
 	                    }
 	                    comp[idx] = null;
@@ -618,29 +609,12 @@ public class RoomListAction extends Action {
 	                RequiredTimeTable rtt = location.getRoomSharingTable();
 	                rtt.getModel().setDefaultSelection(timeGridSize);
 	                if (gridAsText) {
-	                    String hint = null;
-	                    try {
-            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-	                    } catch (IOException ex) {
-                        	hint = "'" + rtt.getModel().toString() + "'";
-                        	Debug.error(ex);
-	                    }
+	                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
                         text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                } else {
-	                    File imageFileName = null;
-	                    String hint = null;
-	                    try {
-	                        imageFileName = rtt.createImage(timeVertical);
-            				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-	                    } catch (IOException ex) {
-                        	hint = "'" + rtt.getModel().toString() + "'";
-                        	Debug.error(ex);
-	                    }
-	                    if (imageFileName!=null){
-	                        text[idx] = ("<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='temp/"+(imageFileName.getName())+"'>&nbsp;");
-	                    } else {
-	                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
-	                    }
+	                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                    text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
+	                    		"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&loc=" + location.getUniqueId() + "'>&nbsp;";
 	                }
 	                comp[idx]=null;
 	                idx++;

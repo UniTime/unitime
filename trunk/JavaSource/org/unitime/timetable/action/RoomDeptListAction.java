@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +46,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /** 
@@ -106,8 +103,6 @@ public class RoomDeptListAction extends Action {
 				new String[] { "left", "left", "left", "right", "left" }, new boolean[] {true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap");
 		
-		String timeGridSize = RequiredTimeTable.getTimeGridSize(user);
-		
 		//get depts owned by user
 		Set depts = getDepts(user);
 		
@@ -136,16 +131,6 @@ public class RoomDeptListAction extends Action {
 					rmLabel += "<B>&nbsp;</B></TD></TR>";
 					rmCapacity += "<B>&nbsp;</B></TD></TR>";
 					
-				    // get pattern column
-				    RequiredTimeTable rtt = room.getRoomSharingTable();
-				    rtt.getModel().setDefaultSelection(timeGridSize);
-				    File imageFileName = null;
-				    try {
-				    	imageFileName = rtt.createImage(false);
-				    } catch (IOException ex) {
-				    	ex.printStackTrace();
-				    }
-				    
 					TreeSet sortedDepts = new TreeSet(new Comparator() {
 						public int compare(Object o1, Object o2) {
 							Department d1 = (Department)o1;
@@ -161,9 +146,7 @@ public class RoomDeptListAction extends Action {
 					
 					int deptRow =0;
 					rmDept += "<TR><TD nowrap valign='center' "+(firstRoom?"":"style='border-top:black 1px dashed' ")+"rowspan='"+Math.max(2,sortedDepts.size())+"'>";
-				    if (imageFileName!=null){
-				    	rmDept += "<img border='0' src='temp/"+(imageFileName.getName())+"'>&nbsp;&nbsp;";
-				    }
+				    rmDept += "<img border='0' src='pattern?loc="+room.getUniqueId()+"'>&nbsp;&nbsp;";
 					rmDept += "</TD>";
 					for (Iterator it = sortedDepts.iterator(); it.hasNext();) {
 						Department department = (Department) it.next();
