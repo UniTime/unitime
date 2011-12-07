@@ -222,7 +222,7 @@ public class ExamListAction extends Action {
                     px.load(exam);
                     String hint = "'" + px.toString() + (ea == null ? "" : ", assigned " + ea.getPeriodName()) + "'";
                     perPref = "<img border='0' src='" +
-                    	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&p=" + ea.getPeriodId()) +
+                    	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&ap=" + ea.getPeriodId()) +
             			"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
                 }
                 distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
