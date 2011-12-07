@@ -70,7 +70,7 @@ public class MultiLock {
 	public UnlockAll lockAll() {
 		iLock.lock();
 		try {
-			iLog.info("Locking all ...");
+			iLog.debug("Locking all ...");
 			while (iAllLocked != null)
 				iAllLocked.awaitUninterruptibly();
 			iAllLocked = iLock.newCondition();
@@ -78,7 +78,7 @@ public class MultiLock {
 				Condition otherCondition = iIndividualLocks.values().iterator().next();
 				otherCondition.awaitUninterruptibly();
 			}
-			iLog.info("Locked: all");
+			iLog.debug("Locked: all");
 			return new UnlockAll();
 		} finally {
 			iLock.unlock();
@@ -88,11 +88,11 @@ public class MultiLock {
 	public void unlockAll() {
 		iLock.lock();
 		try {
-			iLog.info("Unlocking all ...");
+			iLog.debug("Unlocking all ...");
 			Condition allLocked = iAllLocked;
 			iAllLocked = null;
 			allLocked.signalAll();
-			iLog.info("Unlocked: all");
+			iLog.debug("Unlocked: all");
 		} finally {
 			iLock.unlock();
 		}
@@ -102,7 +102,7 @@ public class MultiLock {
 		iLock.lock();
 		try {
 			if (ids == null || ids.isEmpty()) return new Unlock(ids);
-			iLog.info("Locking " + ids + " ...");
+			iLog.debug("Locking " + ids + " ...");
 			Condition otherCondition = null;
 			while ((otherCondition = hasLock(ids)) != null)
 				otherCondition.awaitUninterruptibly();
@@ -110,7 +110,7 @@ public class MultiLock {
 			for (Long id: ids)
 				iIndividualLocks.put(id, myCondition);
 			iCurrentLock.set(new TreeSet<Long>(ids));
-			iLog.info("Locked: " + ids);
+			iLog.debug("Locked: " + ids);
 			return new Unlock(ids);
 		} finally {
 			iLock.unlock();
@@ -137,13 +137,13 @@ public class MultiLock {
 		iLock.lock();
 		try {
 			if (ids == null || ids.isEmpty()) return;
-			iLog.info("Unlocking " + ids + " ...");
+			iLog.debug("Unlocking " + ids + " ...");
 			Condition myCondition = null;
 			for (Long id: ids)
 				myCondition = iIndividualLocks.remove(id);
 			if (myCondition != null)
 				myCondition.signalAll();
-			iLog.info("Unlocked: " + ids);
+			iLog.debug("Unlocked: " + ids);
 		} finally {
 			iLock.unlock();
 		}
