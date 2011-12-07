@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -36,7 +35,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -222,23 +220,10 @@ public class ExamListAction extends Action {
                 } else {
                     PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType());
                     px.load(exam);
-                    RequiredTimeTable rtt = new RequiredTimeTable(px);
-                    String hint = null;
-                    File imageFileName = null;
-                    try {
-                        imageFileName = rtt.createImage(timeVertical);
-                        hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-                    } catch (IOException ex) {
-            			hint = "'" + rtt.getModel().toString();
-            			if (ea!=null)
-            				hint += ", assigned "+ea.getPeriodName();
-            			hint += "'";
-        				Debug.error(ex);
-                    }
-                    if (imageFileName!=null)
-                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
-                    else
-                        perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                    String hint = "'" + px.toString() + (ea == null ? "" : ", assigned " + ea.getPeriodName()) + "'";
+                    perPref = "<img border='0' src='" +
+                    	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&p=" + ea.getPeriodId()) +
+            			"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
                 }
                 distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
             } else {

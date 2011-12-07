@@ -129,7 +129,7 @@ public class RequiredTimeTable {
     	return sb.toString();
     }
 
-    public String print(boolean editable, boolean timeVertical) throws java.io.IOException {
+    public String print(boolean editable, boolean timeVertical) {
     	return print(editable, timeVertical, true, false);
     }
     
@@ -283,7 +283,7 @@ public class RequiredTimeTable {
     	return sb.toString();
     }
 
-    public String print(boolean editable, boolean timeVertical, boolean showLegend, boolean showTexts) throws java.io.IOException {
+    public String print(boolean editable, boolean timeVertical, boolean showLegend, boolean showTexts) {
         if (getModel().isExactTime()) {
         	return exactTime(editable);
         } else {
@@ -442,6 +442,7 @@ public class RequiredTimeTable {
     
 
     /** create a table image -- returns appropriate file (table is not created when the file already exists -- cache) */
+    @Deprecated
     public File createImage(boolean timeVertical) throws java.io.IOException {
     	if (getModel().isExactTime()) return null;
 

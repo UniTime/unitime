@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -148,18 +147,7 @@ public class UnassignedExamsAction extends Action {
                         } else {
                             PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
                             px.load(exam.getExam());
-                            RequiredTimeTable rtt = new RequiredTimeTable(px);
-                            File imageFileName = null;
-                            try {
-                                imageFileName = rtt.createImage(timeVertical);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            String title = rtt.getModel().toString();
-                            if (imageFileName!=null)
-                                perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
-                            else
-                                perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                            perPref = "<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&x="+ exam.getExamId() +"' title='"+px.toString()+"'>";
                         }
                     }
                     distPref += exam.getExam().getEffectivePrefHtmlForPrefType(DistributionPref.class);
