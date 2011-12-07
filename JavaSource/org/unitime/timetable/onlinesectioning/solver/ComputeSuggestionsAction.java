@@ -253,12 +253,13 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			}
 		}
 		
-		if (server.getConfig().getPropertyBoolean("Suggestions.MultiCriteria", true)) {
+		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
 			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
 					model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
+					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected,
+					server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true));
 		} else {
 			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
@@ -266,6 +267,11 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
 		}
 		
+		helper.info("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+				(server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
+				" with " + server.getConfig().getPropertyInt("Suggestions.Timeout", 5000) +" ms time limit" +
+				" and maximal depth of " + server.getConfig().getPropertyInt("Suggestions.MaxDepth", 4) + ".");
+
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
 		iValue = (suggestions.isEmpty() ? 0.0 : - suggestions.first().getValue());
         

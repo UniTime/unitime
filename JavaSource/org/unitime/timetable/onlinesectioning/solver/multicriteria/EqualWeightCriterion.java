@@ -19,144 +19,54 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.multicriteria;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Set;
 
-import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
-
-import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
-public class OnlineSectioningCriterion implements SelectionCriterion {
-	private Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
-	private List<TimeToAvoid> iTimesToAvoid = null;
-	private StudentSectioningModel iModel;
-	private Student iStudent;
+public class EqualWeightCriterion extends OnlineSectioningCriterion {
 	
-	public OnlineSectioningCriterion(Student student, StudentSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
-		iStudent = student;
-		iModel = model;
-    	iPreferredSections = preferredSections;
-    	if (model.getProperties().getPropertyBoolean("OnlineStudentSectioning.TimesToAvoidHeuristics", true)) {
-        	iTimesToAvoid = new ArrayList<TimeToAvoid>();
-        	for (Request r: iStudent.getRequests()) {
-        		if (r instanceof CourseRequest) {
-        			List<Enrollment> enrollments = ((CourseRequest)r).getAvaiableEnrollmentsSkipSameTime();
-        			if (enrollments.size() <= 5) {
-        				int penalty = (7 - enrollments.size()) * (r.isAlternative() ? 1 : 7 - enrollments.size());
-        				for (Enrollment enrollment: enrollments)
-            				for (Section section: enrollment.getSections())
-            					if (section.getTime() != null)
-            						iTimesToAvoid.add(new TimeToAvoid(section.getTime(), penalty, r.getPriority()));
-        			}
-        		} else if (r instanceof FreeTimeRequest) {
-        			iTimesToAvoid.add(new TimeToAvoid(((FreeTimeRequest)r).getTime(), 1, r.getPriority()));
-        		}
-        	}
-    	}
+	public EqualWeightCriterion(Student student, StudentSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
+		super(student, model, preferredSections);
 	}
 	
-	protected StudentSectioningModel getModel() {
-		return iModel;
-	}
-	
-	protected Student getStudent() {
-		return iStudent;
-	}
-	
-	protected Set<Section> getPreferredSections(Request request) {
-		return iPreferredSections.get(request);
-	}
-	
-	protected List<TimeToAvoid> getTimesToAvoid() {
-		return iTimesToAvoid;
-	}
-	
-    /**
-     * Distance conflicts of idx-th assignment of the current
-     * schedule
-     */
-    public Set<DistanceConflict.Conflict> getDistanceConflicts(Enrollment[] assignment, int idx) {
-        if (getModel().getDistanceConflict() == null || assignment[idx] == null)
-            return null;
-        Set<DistanceConflict.Conflict> dist = getModel().getDistanceConflict().conflicts(assignment[idx]);
-        for (int x = 0; x < idx; x++)
-            if (assignment[x] != null)
-                dist.addAll(getModel().getDistanceConflict().conflicts(assignment[x], assignment[idx]));
-        return dist;
-    }
-    
-    /**
-     * Time overlapping conflicts of idx-th assignment of the current
-     * schedule
-     */
-    public Set<TimeOverlapsCounter.Conflict> getTimeOverlappingConflicts(Enrollment[] assignment, int idx) {
-        if (getModel().getTimeOverlaps() == null || assignment[idx] == null)
-            return null;
-        Set<TimeOverlapsCounter.Conflict> overlaps = new HashSet<TimeOverlapsCounter.Conflict>();
-        for (int x = 0; x < idx; x++)
-            if (assignment[x] != null)
-                overlaps.addAll(getModel().getTimeOverlaps().conflicts(assignment[x], assignment[idx]));
-            else if (getStudent().getRequests().get(x) instanceof FreeTimeRequest)
-                overlaps.addAll(getModel().getTimeOverlaps().conflicts(((FreeTimeRequest)getStudent().getRequests().get(x)).createEnrollment(), assignment[idx]));
-        return overlaps;
-    }
-    
-    /**
-     * Weight of an assignment. Unlike {@link StudentWeights#getWeight(Enrollment, Set, Set)}, only count this side of distance conflicts and time overlaps.
-     **/
-    protected double getWeight(Enrollment enrollment, Set<DistanceConflict.Conflict> distanceConflicts, Set<TimeOverlapsCounter.Conflict> timeOverlappingConflicts) {
-        double weight = - getModel().getStudentWeights().getWeight(enrollment);
-        if (distanceConflicts != null)
-            for (DistanceConflict.Conflict c: distanceConflicts) {
-                Enrollment other = (c.getE1().equals(enrollment) ? c.getE2() : c.getE1());
-                if (other.getRequest().getPriority() <= enrollment.getRequest().getPriority())
-                    weight += getModel().getStudentWeights().getDistanceConflictWeight(c);
-            }
-        if (timeOverlappingConflicts != null)
-            for (TimeOverlapsCounter.Conflict c: timeOverlappingConflicts) {
-                weight += getModel().getStudentWeights().getTimeOverlapConflictWeight(enrollment, c);
-            }
-        return enrollment.getRequest().getWeight() * weight;
-    }
-    
-    public Request getRequest(int index) {
-    	return (index < 0 || index >= getStudent().getRequests().size() ? null : getStudent().getRequests().get(index));
-    }
-    
-    public boolean isFreeTime(int index) {
-    	Request r = getRequest(index);
-    	return r != null && r instanceof FreeTimeRequest;
-    }
-
-	@Override
+    	@Override
 	public int compare(Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
 		
-		// 0. best priority & alternativity ignoring free time requests
-		boolean ft = false;
+		// 0. best number of assigned course requests (including alternativity & priority)
+		int currentAssignedCourseReq = 0, bestAssignedCourseReq = 0;
+		int currentAssignedRequests = 0, bestAssignedRequests = 0;
+		int currentAssignedPriority = 0, bestAssignedPriority = 0;
+		int currentAssignedAlternativity = 0, bestAssignedAlternativity = 0;
 		for (int idx = 0; idx < current.length; idx++) {
-			if (isFreeTime(idx)) { ft = true; continue; }
+			if (current[idx] != null && current[idx].getAssignments() != null) {
+				currentAssignedRequests ++;
+				if (current[idx].isCourseRequest())
+					currentAssignedCourseReq ++;
+				currentAssignedPriority += current[idx].getPriority() * current[idx].getPriority();
+				currentAssignedAlternativity += (current[idx].getRequest().isAlternative() ? 1 : 0);
+			}
 			if (best[idx] != null && best[idx].getAssignments() != null) {
-				if (current[idx] == null || current[idx].getSections() == null) return 1; // higher priority request assigned
-				if (best[idx].getPriority() < current[idx].getPriority()) return 1; // less alternative request assigned
-			} else {
-				if (current[idx] != null && current[idx].getAssignments() != null) return -1; // higher priority request assigned
+				bestAssignedRequests ++;
+				if (best[idx].isCourseRequest())
+					bestAssignedCourseReq ++;
+				bestAssignedPriority += best[idx].getPriority() * best[idx].getPriority();
+				bestAssignedAlternativity += (best[idx].getRequest().isAlternative() ? 1 : 0);
 			}
 		}
+		if (currentAssignedCourseReq > bestAssignedCourseReq) return -1;
+		if (bestAssignedCourseReq > currentAssignedCourseReq) return 1;
+		if (currentAssignedPriority < bestAssignedPriority) return -1;
+		if (bestAssignedPriority < currentAssignedPriority) return 1;
+		if (currentAssignedAlternativity < bestAssignedAlternativity) return -1;
+		if (bestAssignedAlternativity < currentAssignedAlternativity) return 1;
 		
 		// 1. minimize number of penalties
 		int bestPenalties = 0, currentPenalties = 0;
@@ -164,33 +74,29 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
 		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+			}
+			if (current[idx] != null && current[idx].getAssignments() != null && current[idx].isCourseRequest()) {
 				for (Section section: current[idx].getSections())
 		    		if (section.getPenalty() >= 0.0) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
 		if (bestPenalties < currentPenalties) return 1;
-
-		// 2. best priority & alternativity including free time requests
-		if (ft) {
-			for (int idx = 0; idx < current.length; idx++) {
-				if (best[idx] != null && best[idx].getAssignments() != null) {
-					if (current[idx] == null || current[idx].getSections() == null) return 1; // higher priority request assigned
-					if (best[idx].getPriority() < current[idx].getPriority()) return 1; // less alternative request assigned
-				} else {
-					if (current[idx] != null && current[idx].getAssignments() != null) return -1; // higher priority request assigned
-				}
-			}			
-		}
+		
+		// 2. best number of assigned requests (including free time requests)
+		if (currentAssignedRequests > bestAssignedRequests) return -1;
+		if (bestAssignedRequests > currentAssignedRequests) return 1;
 		
 		// 3. maximize selection
     	int bestSelected = 0, currentSelected = 0;
 		for (int idx = 0; idx < current.length; idx++) {
-			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
-				Set<Section> preferred = getPreferredSections(best[idx].getRequest());
-        		if (preferred != null && !preferred.isEmpty()) {
+			Set<Section> preferred = getPreferredSections(getRequest(idx));
+    		if (preferred != null && !preferred.isEmpty()) {
+    			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
         			for (Section section: best[idx].getSections())
         				if (preferred.contains(section)) bestSelected ++;
+    			}
+    			if (current[idx] != null && current[idx].getAssignments() != null && current[idx].isCourseRequest()) {
         			for (Section section: current[idx].getSections())
         				if (preferred.contains(section)) currentSelected ++;
         		}
@@ -210,6 +116,8 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			        	else if (getStudent().getRequests().get(x) instanceof FreeTimeRequest)
 			        		bestTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(((FreeTimeRequest)getStudent().getRequests().get(x)).createEnrollment(), best[idx]);
 			        }
+				}
+				if (current[idx] != null && current[idx].getAssignments() != null) {
 			        for (int x = 0; x < idx; x++) {
 			        	if (current[x] != null && current[x].getAssignments() != null)
 			        		currentTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(current[x], current[idx]);
@@ -231,6 +139,8 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			        	if (best[x] != null && best[x].getAssignments() != null)
 			        		bestDistanceConf += getModel().getDistanceConflict().nrConflicts(best[x], best[idx]);
 			        }
+				}
+				if (current[idx] != null && current[idx].getAssignments() != null) {
 			        for (int x = 0; x < idx; x++) {
 			        	if (current[x] != null && current[x].getAssignments() != null)
 			        		currentDistanceConf += getModel().getDistanceConflict().nrConflicts(current[x], current[idx]);
@@ -247,6 +157,8 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			if (best[idx] != null && best[idx].getAssignments() != null) {
     			for (Section section: best[idx].getSections())
     				if (section.getTime() == null) bestNoTime++;
+			}
+			if (current[idx] != null && current[idx].getAssignments() != null) {
     			for (Section section: current[idx].getSections())
     				if (section.getTime() == null) currentNoTime++;
 			}
@@ -270,6 +182,8 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		            	bestUnavailableSize += (averageSize - section.getLimit()) / averageSize;
 		            bestAltSectionsWithLimit ++;
 				}
+			}
+			if (current[idx] != null && current[idx].getAssignments() != null) {
 				for (Section section: current[idx].getSections()) {
 		            Subpart subpart = section.getSubpart();
 		            // skip unlimited and single section subparts
@@ -294,6 +208,8 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 			if (best[idx] != null && best[idx].getAssignments() != null) {
 				for (Section section: best[idx].getSections())
 					bestPenalty += section.getPenalty();
+			}
+			if (current[idx] != null && current[idx].getAssignments() != null) {
 				for (Section section: current[idx].getSections())
 					currentPenalty += section.getPenalty();
 			}
@@ -306,29 +222,48 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 
 	@Override
 	public boolean canImprove(int maxIdx, Enrollment[] current, Enrollment[] best) {
-		// 0. best priority & alternativity ignoring free time requests
+		// 0. best number of assigned course requests (including alternativity & priority)
+		int currentAssignedCourseReq = 0, bestAssignedCourseReq = 0;
+		int currentAssignedRequests = 0, bestAssignedRequests = 0;
+		int currentAssignedPriority = 0, bestAssignedPriority = 0;
+		int currentAssignedAlternativity = 0, bestAssignedAlternativity = 0;
 		int alt = 0;
-		boolean ft = false;
 		for (int idx = 0; idx < current.length; idx++) {
-			if (isFreeTime(idx)) { ft = true; continue; }
-			Request request = getRequest(idx);
 			if (idx < maxIdx) {
-				if (best[idx] != null) {
-					if (current[idx] == null) return false; // higher priority request assigned
-					if (best[idx].getPriority() < current[idx].getPriority()) return false; // less alternative request assigned
-					if (request.isAlternative()) alt--;
-				} else {
-					if (current[idx] != null) return true; // higher priority request assigned
-					if (!request.isAlternative()) alt++;
+				if (current[idx] != null && current[idx].getAssignments() != null) {
+					currentAssignedRequests ++;
+					if (current[idx].isCourseRequest())
+						currentAssignedCourseReq ++;
+					currentAssignedPriority += current[idx].getPriority() * current[idx].getPriority();
+					currentAssignedAlternativity += (current[idx].getRequest().isAlternative() ? 1 : 0);
+				} else if (!isFreeTime(idx) && !getRequest(idx).isAlternative()) {
+					alt ++;
 				}
 			} else {
-				if (best[idx] != null) {
-					if (best[idx].getPriority() > 0) return true; // alternativity can be improved
-				} else {
-					if (!request.isAlternative() || alt > 0) return true; // priority can be improved
+				if (!getRequest(idx).isAlternative()) {
+					currentAssignedRequests ++;
+					if (!isFreeTime(idx))
+						currentAssignedCourseReq ++;
+				} else if (alt > 0) {
+					currentAssignedRequests ++;
+					currentAssignedCourseReq ++;
+					alt --; currentAssignedAlternativity ++;
 				}
 			}
+			if (best[idx] != null && best[idx].getAssignments() != null) {
+				bestAssignedRequests ++;
+				if (best[idx].isCourseRequest())
+					bestAssignedCourseReq ++;
+				bestAssignedPriority += best[idx].getPriority() * best[idx].getPriority();
+				bestAssignedAlternativity += (best[idx].getRequest().isAlternative() ? 1 : 0);
+			}
 		}
+		if (currentAssignedCourseReq > bestAssignedCourseReq) return true;
+		if (bestAssignedCourseReq > currentAssignedCourseReq) return false;
+		if (currentAssignedPriority < bestAssignedPriority) return true;
+		if (bestAssignedPriority < currentAssignedPriority) return false;
+		if (currentAssignedAlternativity < bestAssignedAlternativity) return true;
+		if (bestAssignedAlternativity < currentAssignedAlternativity) return false;
 		
 		// 1. maximize number of penalties
 		int bestPenalties = 0, currentPenalties = 0;
@@ -345,29 +280,9 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		if (currentPenalties < bestPenalties) return true;
 		if (bestPenalties < currentPenalties) return false;
 		
-		// 2. best priority & alternativity including free times
-		if (ft) {
-			alt = 0;
-			for (int idx = 0; idx < current.length; idx++) {
-				Request request = getStudent().getRequests().get(idx);
-				if (idx < maxIdx) {
-					if (best[idx] != null) {
-						if (current[idx] == null) return false; // higher priority request assigned
-						if (best[idx].getPriority() < current[idx].getPriority()) return false; // less alternative request assigned
-						if (request.isAlternative()) alt--;
-					} else {
-						if (current[idx] != null) return true; // higher priority request assigned
-						if (request instanceof CourseRequest && !request.isAlternative()) alt++;
-					}
-				} else {
-					if (best[idx] != null) {
-						if (best[idx].getPriority() > 0) return true; // alternativity can be improved
-					} else {
-						if (!request.isAlternative() || alt > 0) return true; // priority can be improved
-					}
-				}
-			}			
-		}
+		// 2. best number of assigned requests (including free time requests)
+		if (currentAssignedRequests > bestAssignedRequests) return true;
+		if (bestAssignedRequests > currentAssignedRequests) return false;
 
 		// 3. maximize selection
     	int bestSelected = 0, currentSelected = 0;
@@ -507,157 +422,5 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		if (bestPenalty < currentPenalty) return false;
 		
 		return true;
-	}
-
-	@Override
-	public double getTotalWeight(Enrollment[] assignment) {
-		if (assignment == null) return 0.0;
-		double value = 0.0;
-		for (int idx = 0; idx < assignment.length; idx++) {
-			if (assignment[idx] != null)
-				value += getWeight(assignment[idx], getDistanceConflicts(assignment, idx), getTimeOverlappingConflicts(assignment, idx));
-		}
-		return value;
-	}
-	
-	public int compare(Enrollment e1, Enrollment e2) {
-		// 1. alternativity
-		if (e1.getPriority() < e2.getPriority()) return -1;
-		if (e1.getPriority() > e2.getPriority()) return 1;
-		
-		// 2. maximize number of penalties
-		int p1 = 0, p2 = 0;
-		for (Section section: e1.getSections())
-    		if (section.getPenalty() >= 0.0) p1++;
-		for (Section section: e2.getSections())
-    		if (section.getPenalty() >= 0.0) p2++;
-		if (p1 < p2) return -1;
-		if (p2 < p1) return 1;
-
-		// 3. maximize selection
-		if (e1.isCourseRequest()) {
-			Set<Section> preferred = getPreferredSections(e1.getRequest());
-			if (preferred != null && !preferred.isEmpty()) {
-				int s1 = 0, s2 = 0;
-				for (Section section: e1.getSections())
-    				if (preferred.contains(section)) s1++;
-				for (Section section: e2.getSections())
-    				if (preferred.contains(section)) s2++;
-				if (s2 > s1) return -1;
-				if (s1 > s2) return 1;
-			}
-		}
-		
-		// 4. avoid time overlaps
-		if (getTimesToAvoid() == null) {
-			if (getModel().getTimeOverlaps() != null) {
-				int o1 = getModel().getTimeOverlaps().nrFreeTimeConflicts(e1);
-				int o2 = getModel().getTimeOverlaps().nrFreeTimeConflicts(e2);
-				if (o1 < o2) return -1;
-				if (o2 < o1) return 1;
-			}
-		} else {
-			if (e1.getRequest().equals(e2.getRequest()) && e1.isCourseRequest()) {
-				double o1 = 0.0, o2 = 0.0;
-				for (Section s: e1.getSections()) {
-					if (s.getTime() != null)
-						for (TimeToAvoid avoid: getTimesToAvoid()) {
-							if (avoid.priority() > e1.getPriority())
-								o1 += avoid.overlap(s.getTime());
-						}
-				}
-				for (Section s: e2.getSections()) {
-					if (s.getTime() != null)
-						for (TimeToAvoid avoid: getTimesToAvoid()) {
-							if (avoid.priority() > e2.getPriority())
-								o2 += avoid.overlap(s.getTime());
-						}
-				}
-				if (o1 < o2) return -1;
-				if (o2 < o1) return 1;
-			}
-		}
-		
-		// 5. avoid distance conflicts
-		if (getModel().getDistanceConflict() != null) {
-			int c1 = getModel().getDistanceConflict().nrConflicts(e1);
-			int c2 = getModel().getDistanceConflict().nrConflicts(e2);
-			if (c1 < c2) return -1;
-			if (c2 < c1) return 1;
-		}
-		
-		// 6. avoid no-time sections
-    	int n1 = 0, n2 = 0;
-		for (Section section: e1.getSections())
-			if (section.getTime() == null) n1++;
-		for (Section section: e2.getSections())
-			if (section.getTime() == null) n2++;
-		if (n1 < n2) return -1;
-		if (n2 < n1) return 1;
-		
-		// 7. balance sections
-		double u1 = 0.0, u2 = 0.0;
-		int a1 = 0, a2 = 0;
-		for (Section section: e1.getSections()) {
-            Subpart subpart = section.getSubpart();
-            // skip unlimited and single section subparts
-            if (subpart.getSections().size() <= 1 || subpart.getLimit() <= 0) continue;
-            // average size
-            double averageSize = ((double)subpart.getLimit()) / subpart.getSections().size();
-            // section is below average
-            if (section.getLimit() < averageSize)
-            	u1 += (averageSize - section.getLimit()) / averageSize;
-            a1 ++;
-		}
-		for (Section section: e2.getSections()) {
-            Subpart subpart = section.getSubpart();
-            // skip unlimited and single section subparts
-            if (subpart.getSections().size() <= 1 || subpart.getLimit() <= 0) continue;
-            // average size
-            double averageSize = ((double)subpart.getLimit()) / subpart.getSections().size();
-            // section is below average
-            if (section.getLimit() < averageSize)
-            	u2 += (averageSize - section.getLimit()) / averageSize;
-            a2 ++;
-		}
-		double f1 = (u1 > 0 ? u1 / a1 : 0.0);
-		double f2 = (u2 > 0 ? u2 / a2 : 0.0);
-		if (f1 < f2) return -1;
-		if (f2 < f1) return 1;
-		
-		// 8. average penalty sections
-		double x1 = 0.0, x2 = 0.0;
-		for (Section section: e1.getSections())
-    		x1 += section.getPenalty();
-		for (Section section: e2.getSections())
-			x2 += section.getPenalty();
-		if (x1 < x2) return -1;
-		if (x2 < x1) return 1;
-
-		return 0;
-	}
-	
-	protected static class TimeToAvoid {
-		private TimeLocation iTime;
-		private double iPenalty;
-		private int iPriority;
-		
-		public TimeToAvoid(TimeLocation time, int penalty, int priority) {
-			iTime = time; iPenalty = penalty; iPriority = priority;
-		}
-		
-		public int priority() { return iPriority; }
-		
-		public double overlap(TimeLocation time) {
-			if (time.hasIntersection(iTime)) {
-				return iPenalty * (time.nrSharedDays(iTime) * time.nrSharedDays(iTime)) / (iTime.getNrMeetings() * iTime.getLength()); 
-			} else {
-				return 0.0;
-			}
-		}
-		
-		public String toString() {
-			return iTime.getLongName() + " (" + iPriority + "/" + iPenalty + ")";
-		}
 	}
 }
