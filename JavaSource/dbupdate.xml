@@ -4022,4 +4022,12 @@
 		<mysql>alter table %SCHEMA%.sectioning_log add user_id varchar(40) null</mysql>
 		<plsql>alter table %SCHEMA%.sectioning_log add user_id varchar2(40)</plsql> 
 	</update>
+	<update version="82" date="7-Dec-2011" comment="Room sharing departments">
+		<sql>update %SCHEMA%.room set pattern = replace(replace(pattern, 'F', '*'), 'X', '#') where pattern is not null</sql>
+		<sql>update %SCHEMA%.non_university_location set pattern = replace(replace(pattern, 'F', '*'), 'X', '#') where pattern is not null</sql>
+		<mysql>alter table %SCHEMA%.room modify manager_ids varchar(3000) null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify manager_ids varchar(3000) null</mysql>
+		<plsql>alter table %SCHEMA%.room modify manager_ids varchar2(3000)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify manager_ids varchar2(3000)</plsql>
+	</update>
 </dbupdate>
