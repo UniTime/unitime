@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -202,36 +200,16 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	for (Iterator i=timePrefList.iterator();i.hasNext();) {
     		TimePref tp = (TimePref)i.next();
     		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
-        	if (gridAsText) {
-    			String hint = null;
-    			try {
-    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-    			} catch (IOException ex) {
-        			hint = "'" + tp.getTimePattern().getName();
-        			if (assignment!=null)
-        				hint += ", assigned "+assignment.getPlacement().getName();
-        			hint += "'";
-    				Debug.error(ex);
-    			}
+        	if (gridAsText || rtt.getModel().isExactTime()) {
+    			String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
-    			File imageFileName = null;
-    			String hint = null;
-    			try {
-    				imageFileName = rtt.createImage(timeVertical);
-    				hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-    			} catch (IOException ex) {
-        			hint = "'" + rtt.getModel().toString();
-        			if (assignment!=null)
-        				hint += ", assigned "+assignment.getPlacement().getName();
-        			hint += "'";
-    				Debug.error(ex);
-    			}
-    			if (imageFileName!=null)
-    				sb.append("<img border='0' src='temp/"+(imageFileName.getName())+"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
-    			else
-    				sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString()+"</span>");
+    			String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+    			sb.append("<img border='0' src='" +
+    					"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
+    					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
+    					"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
         	}
 			if (i.hasNext()) sb.append("<br>");
     	}

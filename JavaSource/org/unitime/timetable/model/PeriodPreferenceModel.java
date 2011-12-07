@@ -51,11 +51,15 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public static SimpleDateFormat[] sDF = new SimpleDateFormat[]{new SimpleDateFormat("EEE"),new SimpleDateFormat("MM/dd")};
     
     public PeriodPreferenceModel(Session session, Integer examType) {
-        this(session, null, examType);
+        this(session, (ExamPeriod) null, examType);
+    }
+    
+    public PeriodPreferenceModel(Session session, ExamAssignment assignment, Integer examType) {
+    	this(session, assignment == null ? null : assignment.getPeriod(), examType);
     }
 
-    public PeriodPreferenceModel(Session session, ExamAssignment assignment, Integer examType) {
-        iPeriod = (assignment==null?null:assignment.getPeriod());
+    public PeriodPreferenceModel(Session session, ExamPeriod assignedPeriod, Integer examType) {
+        iPeriod = assignedPeriod;
         iFirstDate = session.getExamBeginDate();
         iPeriods = ExamPeriod.findAll(session.getUniqueId(), examType);
         iExamType = examType;

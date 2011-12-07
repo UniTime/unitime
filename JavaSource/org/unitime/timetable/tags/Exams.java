@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.tags;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -225,20 +224,9 @@ public class Exams extends BodyTagSupport {
                                     perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                                 }
                             } else {
-                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), null, exam.getExamType());
+                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), exam.getExamType());
                                 px.load(exam);
-                                RequiredTimeTable rtt = new RequiredTimeTable(px);
-                                File imageFileName = null;
-                                try {
-                                    imageFileName = rtt.createImage(timeVertical);
-                                } catch (IOException ex) {
-                                    ex.printStackTrace();
-                                }
-                                String rttTitle = rtt.getModel().toString();
-                                if (imageFileName!=null)
-                                    perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+rttTitle+"'>";
-                                else
-                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                                perPref = "<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId()+"' title='"+px.toString()+"'>";
                             }
                             if (!hasSolution)
                                 distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);

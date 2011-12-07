@@ -21,7 +21,6 @@ package org.unitime.timetable.webutil;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -215,21 +214,9 @@ public class InstructorListBuilder {
 							timePref.append(rtt.getModel().toString().replaceAll(", ","<br>"));
 						} else {
 							rtt.getModel().setDefaultSelection(timeGridSize);
-							File imageFileName = null;
-							try {
-								imageFileName = rtt.createImage(timeVertical);
-							} catch (IOException ex) {
-								ex.printStackTrace();
-							}
-							if (imageFileName != null)
-								timePref.append("<img border='0' src='temp/"+(imageFileName.getName()) + "' title='"+rtt.getModel().toString()+"' >&nbsp;");
-							else
-								timePref.append(rtt.getModel().toString().replaceAll(", ","<br>"));
-							if (imageFileName == null && i.hasNext())
-								timePref.append("<br>");
+							timePref.append("<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;");
 						}
 					}
-					
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

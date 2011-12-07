@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.exam.ui;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -233,13 +232,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getGwtHint() {
     	if (iHint == null) {
-            try {
-            	PeriodPreferenceModel px = new PeriodPreferenceModel(getExam().getSession(), this, getExamType());
-                px.load(getExam());
-                RequiredTimeTable rtt = new RequiredTimeTable(px);
-            	iHint = rtt.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-            } catch (IOException ex) {
-            }
+        	PeriodPreferenceModel px = new PeriodPreferenceModel(getExam().getSession(), this, getExamType());
+            px.load(getExam());
+            RequiredTimeTable rtt = new RequiredTimeTable(px);
+        	iHint = rtt.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
     	}
     	return iHint;
     }
