@@ -47,8 +47,13 @@ public class InMemorySectioningTest {
 	
 	private Map<String, Counter> iCounters = new HashMap<String, Counter>();
 	
-	public InMemorySectioningTest(StudentSectioningModel model) {
-		iModel = model;
+	public InMemorySectioningTest(DataProperties config) {
+		iModel = new TestModel(config);
+		iModel.setDistanceConflict(new DistanceConflict(null, iModel.getProperties()));
+		iModel.setTimeOverlaps(new TimeOverlapsCounter(null, iModel.getProperties()));
+		sLog.info("Using " + (config.getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+				(config.getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
+				" with " + config.getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 	}
 	
 	public StudentSectioningModel model() { return iModel; }
@@ -79,7 +84,7 @@ public class InMemorySectioningTest {
 					for (Config config: course.getOffering().getConfigs()) {
 						for (Subpart subpart: config.getSubparts()) {
 							for (Section section: subpart.getSections()) {
-								if (section.getLimit() < 0) {
+								if (section.getLimit() <= 0) {
 									section.setPenalty(0);
 								} else {
 									int limit = section.getLimit();
@@ -102,6 +107,8 @@ public class InMemorySectioningTest {
 		} else {
 			selection = new SuggestionSelection(model().getProperties());
 		}
+		
+		model().setStudentWeights(new StudentSchedulingAssistantWeights(model().getProperties()));
 		
 		selection.setModel(model());
 		selection.setPreferredSections(preferredSectionsForCourse);
@@ -146,13 +153,6 @@ public class InMemorySectioningTest {
 		inc("[T5] Time >=1s", time >= 1000 ? 1 : 0);
 	}
 	
-	public Map<String, String> info() {
-		Map<String, String> ret = model().getExtendedInfo();
-		for (Map.Entry<String, Counter> e: iCounters.entrySet())
-			ret.put(e.getKey(), e.getValue().toString());
-		return ret;
-	}
-	
 	public static void updateSpace(Enrollment enrollment, boolean increment) {
     	if (enrollment == null || !enrollment.isCourseRequest()) return;
         for (Section section : enrollment.getSections())
@@ -182,7 +182,7 @@ public class InMemorySectioningTest {
     }
 	
 	public void run() {
-        sLog.info("Input: " + ToolBox.dict2string(info(), 2));
+        sLog.info("Input: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
 
         List<Student> students = new ArrayList<Student>(model().getStudents());
         Collections.shuffle(students);
@@ -194,11 +194,30 @@ public class InMemorySectioningTest {
         	long time = System.currentTimeMillis() - t0;
         	if (time > 60000 * i) {
         		i++;
-        		sLog.info("Progress [" + (time / 60000) + "m]: " + ToolBox.dict2string(info(), 2));
+        		sLog.info("Progress [" + (time / 60000) + "m]: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
         	}
         }
         
-        sLog.info("Output: " + ToolBox.dict2string(info(), 2));
+        sLog.info("Output: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
+	}
+	
+	
+	public class TestModel extends StudentSectioningModel {
+		public TestModel(DataProperties config) {
+			super(config);
+		}
+
+		@Override
+		public Map<String,String> getExtendedInfo() {
+			Map<String, String> ret = super.getExtendedInfo();
+			for (Map.Entry<String, Counter> e: iCounters.entrySet())
+				ret.put(e.getKey(), e.getValue().toString());
+			ret.put("Weighting model",
+					(model().getProperties().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+					(model().getProperties().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal"));
+			ret.put("B&B time limit", model().getProperties().getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms");
+			return ret;
+		}
 	}
 	
 	public static void main(String[] args) {
@@ -210,14 +229,13 @@ public class InMemorySectioningTest {
 			cfg.setProperty("Neighbour.BranchAndBoundTimeout", "1000");
 			cfg.setProperty("Suggestions.Timeout", "1000");
 			cfg.setProperty("Extensions.Classes", DistanceConflict.class.getName() + ";" + TimeOverlapsCounter.class.getName());
-			cfg.setProperty("StudentWeights.Class", StudentSchedulingAssistantWeights.class.getName());
+			cfg.setProperty("StudentWeights.Class",  StudentSchedulingAssistantWeights.class.getName());
 			cfg.setProperty("StudentWeights.PriorityWeighting", "true");
 			cfg.setProperty("StudentWeights.LeftoverSpread", "true");
 			cfg.setProperty("StudentWeights.BalancingFactor", "0.0");
 			cfg.setProperty("Reservation.CanAssignOverTheLimit", "true");
 			cfg.setProperty("Distances.Ellipsoid", DistanceMetric.Ellipsoid.WGS84.name());
 			cfg.setProperty("StudentWeights.MultiCriteria", "true");
-			cfg.setProperty("StudentWeights.PriorityWeighting", "true");
 			
             cfg.setProperty("log4j.rootLogger", "INFO, A1");
             cfg.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
@@ -239,15 +257,16 @@ public class InMemorySectioningTest {
             
             PropertyConfigurator.configure(cfg);
             
-            StudentSectioningModel model = new StudentSectioningModel(cfg);
-            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(model);
+            InMemorySectioningTest test = new InMemorySectioningTest(cfg);
+            
+            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(test.model());
             loader.setInputFile(input);
             loader.load();
             
-            new InMemorySectioningTest(model).run();
+            test.run();
             
             Solver<Request, Enrollment> s = new Solver<Request, Enrollment>(cfg);
-            s.setInitalSolution(model);
+            s.setInitalSolution(test.model());
             StudentSectioningXMLSaver saver = new StudentSectioningXMLSaver(s);
             File output = new File(input.getParentFile(), input.getName().substring(0, input.getName().lastIndexOf('.')) + "-" + run + ".xml");
             saver.save(output);
