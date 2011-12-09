@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
+import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 
@@ -46,13 +47,13 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().getRequest(studentId);
+			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
 			
 			operations.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.getRequest(studentId);
+					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
 					if (request != null && !request.getCourses().isEmpty()) {
 						FindAssignmentAction action = null;
 						for (int i = 1; i <= 5; i++) {

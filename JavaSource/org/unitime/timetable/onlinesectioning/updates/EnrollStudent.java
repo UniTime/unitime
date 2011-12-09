@@ -52,6 +52,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 
 /**
@@ -290,17 +291,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			lock.release();
 		}
 		
-		return server.getAssignment(getStudentId());
+		return server.execute(new GetAssignment(getStudentId()), helper.getUser());
 	}
 	
     public static void updateSpace(OnlineSectioningHelper helper, Enrollment newEnrollment, Enrollment oldEnrollment) {
     	if (newEnrollment == null && oldEnrollment == null) return;
-    	Map<Long, Section> sections = new Hashtable<Long, Section>();
     	if (oldEnrollment != null) {
-            for (Section section : oldEnrollment.getSections()) {
+            for (Section section : oldEnrollment.getSections())
                 section.setSpaceHeld(section.getSpaceHeld() + 1.0);
-                sections.put(section.getId(), section);
-            }
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
             for (Enrollment enrl : oldEnrollment.getRequest().values()) {
             	if (!enrl.getCourse().equals(oldEnrollment.getCourse())) continue;
@@ -320,18 +318,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                     feasibleEnrollments.add(enrl);
             }
             double increment = 1.0 / feasibleEnrollments.size();
-            for (Enrollment feasibleEnrollment : feasibleEnrollments) {
-                for (Section section : feasibleEnrollment.getSections()) {
+            for (Enrollment feasibleEnrollment : feasibleEnrollments)
+                for (Section section : feasibleEnrollment.getSections())
                     section.setSpaceExpected(section.getSpaceExpected() + increment);
-                    sections.put(section.getId(), section);
-                }
-            }
     	}
     	if (newEnrollment != null) {
-            for (Section section : newEnrollment.getSections()) {
+            for (Section section : newEnrollment.getSections())
                 section.setSpaceHeld(section.getSpaceHeld() - 1.0);
-                sections.put(section.getId(), section);
-            }
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
             for (Enrollment enrl : newEnrollment.getRequest().values()) {
             	if (!enrl.getCourse().equals(newEnrollment.getCourse())) continue;
@@ -351,12 +344,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                     feasibleEnrollments.add(enrl);
             }
             double decrement = 1.0 / feasibleEnrollments.size();
-            for (Enrollment feasibleEnrollment : feasibleEnrollments) {
-                for (Section section : feasibleEnrollment.getSections()) {
+            for (Enrollment feasibleEnrollment : feasibleEnrollments)
+                for (Section section : feasibleEnrollment.getSections())
                     section.setSpaceExpected(section.getSpaceExpected() - decrement);
-                    sections.put(section.getId(), section);
-                }
-            }
     	}
     }
 	
