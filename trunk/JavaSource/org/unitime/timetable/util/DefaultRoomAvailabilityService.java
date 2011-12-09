@@ -100,7 +100,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             CacheElement cache = get(time, excludeType);
             if (cache==null) {
                 cache = new CacheElement(time, excludeType);
-                iCache.add(cache);
+                iCache.insertElementAt(cache, 0);
             }
             cache.update();
         }
