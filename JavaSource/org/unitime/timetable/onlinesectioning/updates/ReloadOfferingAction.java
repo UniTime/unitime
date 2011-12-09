@@ -124,6 +124,10 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 	}
 		
 	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
+		// Persist expected spaces if needed
+		if (server.needPersistExpectedSpaces(offeringId))
+			PersistExpectedSpacesAction.persistExpectedSpaces(offeringId, false, server, helper);
+		
 		// Load course request options
 		Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
 		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
