@@ -63,59 +63,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
 			try {
 				helper.beginTransaction();
 				
-				Map<Long, Section> sections = new HashMap<Long, Section>();
-				Lock lock = server.lockOffering(offeringId, null, false);
-				try {
-					Offering offering = server.getOffering(offeringId);
-					if (offering == null) continue;
-					helper.info("Persisting expected spaces for " + offering.getName());
-					for (Config config: offering.getConfigs())
-						for (Subpart subpart: config.getSubparts())
-							for (Section section: subpart.getSections())
-								sections.put(section.getId(), section);
-				} finally {
-					lock.release();
-				}
-				
-		    	for (SectioningInfo info: (List<SectioningInfo>)helper.getHibSession().createQuery(
-		    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
-		    			setLong("offeringId", offeringId).
-		    			setCacheable(true).list()) {
-		    		Section section = sections.remove(info.getClazz().getUniqueId());
-		    		if (section == null) continue;
-		    		if (info.getNbrExpectedStudents() == section.getSpaceExpected() && info.getNbrHoldingStudents() == section.getSpaceHeld()) continue;
-		    		
-		    		helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected() - info.getNbrExpectedStudents()) +
-		    				", held " + sDF.format(section.getSpaceHeld() - info.getNbrHoldingStudents()));
-		    		if (section.getLimit() >= 0 && section.getLimit() >= info.getNbrExpectedStudents() && section.getLimit() < section.getSpaceExpected())
-		    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
-		    		if (section.getLimit() >= 0 && section.getLimit() < info.getNbrExpectedStudents() && section.getLimit() >= section.getSpaceExpected())
-		    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
-		    		
-		    		info.setNbrExpectedStudents(section.getSpaceExpected());
-		    		info.setNbrHoldingStudents(section.getSpaceHeld());
-		    		helper.getHibSession().saveOrUpdate(info);
-		    	}
-		    	
-		    	if (!sections.isEmpty())
-		        	for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
-		        			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
-		        			setLong("offeringId", offeringId).
-		        			setCacheable(true).list()) {
-		        		Section section = sections.remove(clazz.getUniqueId());
-		        		if (section == null) continue;
-		                SectioningInfo info = new SectioningInfo();
-		                
-		        		helper.debug(clazz.getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected()) +
-		        				", held " + sDF.format(section.getSpaceHeld()) + " (new)");
-		        		if (section.getLimit() >= 0 && section.getLimit() < section.getSpaceExpected())
-		        			helper.info(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
-		        		
-		                info.setClazz(clazz);
-		                info.setNbrExpectedStudents(section.getSpaceExpected());
-		                info.setNbrHoldingStudents(section.getSpaceHeld());
-		                helper.getHibSession().saveOrUpdate(info);
-		    		}
+				persistExpectedSpaces(offeringId, true, server, helper);
 		    	
 		    	helper.commitTransaction();
 			} catch (Exception e) {
@@ -125,6 +73,62 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
 		}
 		
 		return true;
+	}
+	
+	public static void persistExpectedSpaces(Long offeringId, boolean needLock, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Map<Long, Section> sections = new HashMap<Long, Section>();
+		Lock lock = (needLock ? server.lockOffering(offeringId, null, false) : null);
+		try {
+			Offering offering = server.getOffering(offeringId);
+			if (offering == null) return;
+			helper.info("Persisting expected spaces for " + offering.getName());
+			for (Config config: offering.getConfigs())
+				for (Subpart subpart: config.getSubparts())
+					for (Section section: subpart.getSections())
+						sections.put(section.getId(), section);
+		} finally {
+			if (lock != null) lock.release();
+		}
+		
+    	for (SectioningInfo info: (List<SectioningInfo>)helper.getHibSession().createQuery(
+    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
+    			setLong("offeringId", offeringId).
+    			setCacheable(true).list()) {
+    		Section section = sections.remove(info.getClazz().getUniqueId());
+    		if (section == null) continue;
+    		if (info.getNbrExpectedStudents() == section.getSpaceExpected() && info.getNbrHoldingStudents() == section.getSpaceHeld()) continue;
+    		
+    		helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected() - info.getNbrExpectedStudents()) +
+    				", held " + sDF.format(section.getSpaceHeld() - info.getNbrHoldingStudents()));
+    		if (section.getLimit() >= 0 && section.getLimit() >= info.getNbrExpectedStudents() && section.getLimit() < section.getSpaceExpected())
+    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
+    		if (section.getLimit() >= 0 && section.getLimit() < info.getNbrExpectedStudents() && section.getLimit() >= section.getSpaceExpected())
+    			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
+    		
+    		info.setNbrExpectedStudents(section.getSpaceExpected());
+    		info.setNbrHoldingStudents(section.getSpaceHeld());
+    		helper.getHibSession().saveOrUpdate(info);
+    	}
+    	
+    	if (!sections.isEmpty())
+        	for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
+        			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
+        			setLong("offeringId", offeringId).
+        			setCacheable(true).list()) {
+        		Section section = sections.remove(clazz.getUniqueId());
+        		if (section == null) continue;
+                SectioningInfo info = new SectioningInfo();
+                
+        		helper.debug(clazz.getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(section.getSpaceExpected()) +
+        				", held " + sDF.format(section.getSpaceHeld()) + " (new)");
+        		if (section.getLimit() >= 0 && section.getLimit() < section.getSpaceExpected())
+        			helper.info(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
+        		
+                info.setClazz(clazz);
+                info.setNbrExpectedStudents(section.getSpaceExpected());
+                info.setNbrHoldingStudents(section.getSpaceHeld());
+                helper.getHibSession().saveOrUpdate(info);
+    		}
 	}
 	
 	@Override
