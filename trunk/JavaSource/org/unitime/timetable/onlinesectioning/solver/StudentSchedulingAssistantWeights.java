@@ -91,6 +91,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 					Double sectionPenalty = null;
 					boolean hasSelection = false;
 					for (Section section: subpart.getSections()) {
+						if (section.getLimit() == 0) continue;
 						if (section.getTime() != null) hasTime = true;
 						if (section.getPenalty() < 0.0) noPenalty = true;
 						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
