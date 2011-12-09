@@ -583,7 +583,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         if (examType==Exam.sExamTypeMidterm) {
             MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
             epx.load(this);
-            return epx.toString(true).replaceAll(", ", "\n");
+            return epx.toString(false).replaceAll(", ", "\n");
         }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
