@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
@@ -45,10 +44,6 @@ public interface OnlineSectioningServer {
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
 	
-	public ClassAssignmentInterface getAssignment(Long studentId);
-	public CourseRequestInterface getRequest(Long studentId);
-	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId);
-	
 	public Collection<CourseInfo> findCourses(String query, Integer limit);
 	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
 	public List<Section> getSections(CourseInfo courseInfo);
@@ -63,8 +58,6 @@ public interface OnlineSectioningServer {
 	public Offering getOffering(Long offeringId);
 	
 	public URL getSectionUrl(Long courseId, Section section);
-	
-	public Collection<String> checkCourses(CourseRequestInterface req);
 	
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
 	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;
@@ -102,6 +95,7 @@ public interface OnlineSectioningServer {
 	
 	public void persistExpectedSpaces(Long offeringId);
 	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge);
+	public boolean needPersistExpectedSpaces(Long offeringId);
 	
 	public static enum Deadline { NEW, CHANGE, DROP };
 	

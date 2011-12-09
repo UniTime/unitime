@@ -29,6 +29,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 
 public class SuggestionsTest extends OnlineSectioningTestFwk {
@@ -42,17 +44,17 @@ public class SuggestionsTest extends OnlineSectioningTestFwk {
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().getRequest(studentId);
+			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
-			ClassAssignmentInterface assignment = getServer().getAssignment(studentId);
+			ClassAssignmentInterface assignment = getServer().execute(new GetAssignment(studentId), user());
 			if (assignment == null) continue;
 						
 			operations.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.getRequest(studentId);
+					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
 					if (request == null || request.getCourses().isEmpty()) return 1.0;
-					ClassAssignmentInterface assignment = getServer().getAssignment(studentId);
+					ClassAssignmentInterface assignment = getServer().execute(new GetAssignment(studentId), user());
 					if (assignment == null) return 1.0;
 					List<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 					for (ClassAssignmentInterface.CourseAssignment course: assignment.getCourseAssignments())
