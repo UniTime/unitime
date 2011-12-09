@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseUserData;
@@ -51,19 +52,23 @@ public class UserData extends BaseUserData {
 	}
 
 	public static void setProperty(String externalUniqueId, String name, String value) {
-		UserDataDAO dao = new UserDataDAO();
-		UserData userData = dao.get(new UserData(externalUniqueId, name));
-		if (value!=null && value.length()==0) value=null;
-		if (userData==null && value==null) return;
-		if (userData!=null && value!=null && value.equals(userData.getValue())) return;
-		if (userData==null) {
-			userData = new UserData(externalUniqueId, name);
+		try {
+			UserDataDAO dao = new UserDataDAO();
+			UserData userData = dao.get(new UserData(externalUniqueId, name));
+			if (value!=null && value.length()==0) value=null;
+			if (userData==null && value==null) return;
+			if (userData!=null && value!=null && value.equals(userData.getValue())) return;
+			if (userData==null) {
+				userData = new UserData(externalUniqueId, name);
+			}
+			userData.setValue(value);
+			if (value==null)
+				dao.delete(userData);
+			else
+				dao.saveOrUpdate(userData);
+		} catch (Exception e) {
+			Debug.warning("Failed to set user property " + name + ":=" + value + " (" + e.getMessage() + ")");
 		}
-		userData.setValue(value);
-		if (value==null)
-			dao.delete(userData);
-		else
-			dao.saveOrUpdate(userData);
 	}
 	
 	public static String getProperty(String externalUniqueId, String name) {
