@@ -42,8 +42,8 @@ import net.sf.cpsolver.studentsct.model.Subpart;
  */
 public class SuggestionSelection extends BranchBoundSelection implements OnlineSectioningSelection {
 	protected Set<FreeTimeRequest> iRequiredFreeTimes;
-	protected Hashtable<CourseRequest, Config> iRequiredConfig = new Hashtable<CourseRequest, Config>();
-	protected Hashtable<CourseRequest, Hashtable<Subpart, Section>> iRequiredSection = new Hashtable<CourseRequest, Hashtable<Subpart,Section>>();
+	protected Hashtable<CourseRequest, Config> iRequiredConfig = null;
+	protected Hashtable<CourseRequest, Hashtable<Subpart, Section>> iRequiredSection = null;
 	protected Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
 	/** add up to 50% for preferred sections */
 	private double iPreferenceFactor = 0.500;
@@ -60,6 +60,8 @@ public class SuggestionSelection extends BranchBoundSelection implements OnlineS
 
 	@Override
 	public void setRequiredSections(Hashtable<CourseRequest, Set<Section>> requiredSections) {
+		iRequiredConfig = new Hashtable<CourseRequest, Config>();
+		iRequiredSection = new Hashtable<CourseRequest, Hashtable<Subpart,Section>>();
     	if (requiredSections != null) {
     		for (Map.Entry<CourseRequest, Set<Section>> entry: requiredSections.entrySet()) {
     			Hashtable<Subpart, Section> subSection = new Hashtable<Subpart, Section>();

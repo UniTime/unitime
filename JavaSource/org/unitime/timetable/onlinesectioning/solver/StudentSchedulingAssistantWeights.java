@@ -71,6 +71,10 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 			iParent = new EqualStudentWeights(properties);
 	}
 	
+	public void clearBestCache() {
+		iCache.clear();
+	}
+	
 	private double[] best(CourseRequest cr) {
 		double[] cached = iCache.get(cr);
 		if (cached != null) return cached;
