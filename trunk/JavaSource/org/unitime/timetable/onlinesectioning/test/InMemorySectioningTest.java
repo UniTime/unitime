@@ -44,16 +44,32 @@ public class InMemorySectioningTest {
 	public static Logger sLog = Logger.getLogger(InMemorySectioningTest.class);
 	
 	private StudentSectioningModel iModel;
+	private OnlineSectioningSelection iSelection;
+	private StudentSchedulingAssistantWeights iWeights;
 	
 	private Map<String, Counter> iCounters = new HashMap<String, Counter>();
 	
 	public InMemorySectioningTest(DataProperties config) {
 		iModel = new TestModel(config);
 		iModel.setDistanceConflict(new DistanceConflict(null, iModel.getProperties()));
+		iModel.addModelListener(iModel.getDistanceConflict());
 		iModel.setTimeOverlaps(new TimeOverlapsCounter(null, iModel.getProperties()));
+		iModel.addModelListener(iModel.getTimeOverlaps());
+
+		if (config.getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
+			iSelection = new MultiCriteriaBranchAndBoundSelection(config);
+		} else {
+			iSelection = new SuggestionSelection(config);
+		}
+		iSelection.setModel(model());
+		
+		iWeights = new StudentSchedulingAssistantWeights(model().getProperties());
+		model().setStudentWeights(iWeights);
+		
 		sLog.info("Using " + (config.getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
 				(config.getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
 				" with " + config.getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
+
 	}
 	
 	public StudentSectioningModel model() { return iModel; }
@@ -99,24 +115,14 @@ public class InMemorySectioningTest {
 				}
 			}
 		}
-		
-		OnlineSectioningSelection selection = null;
-		
-		if (model().getProperties().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
-			selection = new MultiCriteriaBranchAndBoundSelection(model().getProperties());
-		} else {
-			selection = new SuggestionSelection(model().getProperties());
-		}
-		
-		model().setStudentWeights(new StudentSchedulingAssistantWeights(model().getProperties()));
-		
-		selection.setModel(model());
-		selection.setPreferredSections(preferredSectionsForCourse);
-		selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
-		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
+				
+		iSelection.setPreferredSections(preferredSectionsForCourse);
+		iSelection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+		iSelection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
+		iModel.clearBest();
 		
 		long t0 = JProf.currentTimeMillis();
-		BranchBoundNeighbour neighbour = selection.select(student);
+		BranchBoundNeighbour neighbour = iSelection.select(student);
 		long time = JProf.currentTimeMillis() - t0;
 		inc("[C] CPU Time", time);
 		inc("[S] Student");
