@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +39,10 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import net.sf.cpsolver.ifs.util.CSVFile;
+import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
+import net.sf.cpsolver.ifs.util.CSVFile.CSVLine;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -223,6 +228,10 @@ public class RoomListAction extends Action {
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
+		}
+		
+		if ("Export CSV".equals(request.getParameter("op"))) {
+			buildCsvWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
 		}
 		
 		// build web table for university locations
@@ -898,7 +907,7 @@ public class RoomListAction extends Action {
                                                      { "Groups", "left", "true" } }));                   
 	
 			String heading1[] = new String[fixedHeading1.length
-					+ globalRoomFeatures.size() + deptRoomFeatures.size()];
+			                               + (featuresOneColumn ? 0 : (globalRoomFeatures.size() + deptRoomFeatures.size()))];
 			String alignment1[] = new String[heading1.length];
 			boolean sorted1[] = new boolean[heading1.length];
 			
@@ -970,7 +979,7 @@ public class RoomListAction extends Action {
 			    );
 			
 			String heading2[] = new String[fixedHeading2.length
-			        + globalRoomFeatures.size() + deptRoomFeatures.size()];
+			                               + (featuresOneColumn ? 0 : (globalRoomFeatures.size() + deptRoomFeatures.size()))];
 			String alignment2[] = new String[heading2.length];
 			boolean sorted2[] = new boolean[heading2.length];
 			
@@ -1290,5 +1299,429 @@ public class RoomListAction extends Action {
     		} catch (IOException e) {}
     	}
 	}
+
+	public static void buildCsvWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
+    	PrintWriter out = null;
+    	try {
+    		File file = ApplicationProperties.getTempFile("rooms", "csv");
+    		
+    		out = new PrintWriter(file);
+    		HttpSession httpSession = request.getSession();
+		
+    		Collection rooms = roomListForm.getRooms();
+			User user = Web.getUser(httpSession);
+			Session session = Session.getCurrentAcadSession(user);
+			Long sessionId = session.getSessionId();
+			ArrayList globalRoomFeatures = new ArrayList();
+			Set deptRoomFeatures = new TreeSet();
+			
+			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
+			TimetableManagerDAO tdao = new TimetableManagerDAO();
+	        TimetableManager owner = tdao.get(new Long(mgrId));
+	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
+			Set ownerDepts = owner.departmentsForSession(sessionId);
+			Set depts = null;
+			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+				if (isAdmin) {
+					depts = Department.findAll(sessionId);
+				} else {
+					depts = Department.findAllOwned(sessionId, owner, false);
+				}
+			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			    depts = new HashSet();
+            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+                depts = new HashSet();
+			} else {
+				depts = new HashSet(1);
+				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(),sessionId));
+			}
+			
+			org.hibernate.Session hibSession = null;
+			try {
+				
+				RoomFeatureDAO d = new RoomFeatureDAO();
+				hibSession = d.getSession();
+				
+				List list = hibSession
+							.createCriteria(GlobalRoomFeature.class)
+							.addOrder(Order.asc("label"))
+							.list();
+				
+				for (Iterator iter = list.iterator();iter.hasNext();) {
+					GlobalRoomFeature rf = (GlobalRoomFeature) iter.next();
+					globalRoomFeatures.add(rf);
+				}
+				
+				if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+					String[] deptCodes = Department.getDeptCodesForUser(user, false);
+					if (deptCodes!=null)
+						deptRoomFeatures.addAll(hibSession.createQuery(
+								"select distinct f from DepartmentRoomFeature f inner join f.department d " +
+								"where d.session.uniqueId=:sessionId and d.deptCode in ("+
+								Constants.arrayToStr(deptCodes, "'", ", ")+") order by f.label").
+								setLong("sessionId",sessionId.longValue()).
+								list());
+					else
+						deptRoomFeatures.addAll(hibSession.createQuery(
+								"select distinct f from DepartmentRoomFeature f inner join f.department d where " +
+								"d.session.uniqueId=:sessionId order by f.label").
+								setLong("sessionId",sessionId.longValue()).
+								list());
+				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+                } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+				} else {
+					deptRoomFeatures.addAll(hibSession.
+						createQuery(
+								"select distinct f from DepartmentRoomFeature f inner join f.department d " +
+								"where d.session.uniqueId=:sessionId and d.deptCode = :deptCode order by f.label").
+						setLong("sessionId",sessionId.longValue()).
+						setString("deptCode",roomListForm.getDeptCodeX()).list());
+				}
+				
+			} catch (Exception e) {
+				Debug.error(e);
+			}
 	
+			//build headings for university rooms
+			String fixedHeading1[][] =
+			    (examType>=0?
+			            (featuresOneColumn? new String[][]
+			                                             { { "Bldg", "left", "true" },
+			                                             { "Room", "left", "true" },
+			                                             { "Capacity", "right", "false" },
+			                                             { "Exam Capacity", "right", "false" },
+			                                             { "Period Preferences", "center", "true" },
+			                                             { "Groups", "left", "true" },
+			                                             { "Features", "left", "true" } } 
+			                                         : new String[][]
+			                                             { { "Bldg", "left", "true" },
+			                                             { "Room", "left", "true" },
+			                                             { "Capacity", "right", "false" },
+			                                             { "Exam Capacity", "right", "false" },
+			                                             { "Period Preferences", "center", "true" },
+			                                             { "Groups", "left", "true" } })			    
+                :
+                    (featuresOneColumn? new String[][]
+                                                     { { "Bldg", "left", "true" },
+                                                     { "Room", "left", "true" },
+                                                     { "Capacity", "right", "false" },
+                                                     { "Availability", "left", "true" },
+                                                     { "Departments", "left", "true" },
+                                                     { "Control", "left", "true" },
+                                                     { "Groups", "left", "true" },
+                                                     { "Features", "left", "true" } } 
+                                                 : new String[][]
+                                                     { { "Bldg", "left", "true" },
+                                                     { "Room", "left", "true" },
+                                                     { "Capacity", "right", "false" },
+                                                     { "Availability", "left", "true" },
+                                                     { "Departments", "left", "true" },
+                                                     { "Control", "left", "true" },
+                                                     { "Groups", "left", "true" } }));                   
+	
+			String heading1[] = new String[fixedHeading1.length
+					+ + (featuresOneColumn ? 0 : (globalRoomFeatures.size() + deptRoomFeatures.size()))];
+			
+			for (int i = 0; i < fixedHeading1.length; i++) {
+				heading1[i] = fixedHeading1[i][0];
+			}
+			
+			if (!featuresOneColumn) {
+				int i = fixedHeading1.length;
+				for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
+					heading1[i] = ((GlobalRoomFeature) it.next()).getLabel();
+					heading1[i] = heading1[i].replaceFirst(" ", "\n");
+					i++;
+				}
+				for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
+					DepartmentRoomFeature drf = (DepartmentRoomFeature)it.next();
+					heading1[i] = drf.getLabel();
+					heading1[i] = heading1[i].replaceFirst(" ", "\n");
+					if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+						Department dept = drf.getDepartment();
+						heading1[i]+=" ("+dept.getShortLabel()+")";
+					}
+					i++;
+				}
+			}			
+			
+			//build headings for non-univ locations
+			String fixedHeading2[][] = 
+			    (examType>=0 ?
+		                ( featuresOneColumn ? new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Exam Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "true" },
+		                                                   { "Groups", "left", "true" },
+		                                                   { "Features", "left", "true" }}
+		                                           : new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "true" },
+		                                                   { "Groups", "left", "true" } })
+			    :
+	                ( featuresOneColumn ? new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" },
+	                                                   { "Features", "left", "true" }}
+	                                           : new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "Exam Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" } })
+			    );
+			
+			String heading2[] = new String[fixedHeading2.length
+			                               + (featuresOneColumn ? 0 : (globalRoomFeatures.size() + deptRoomFeatures.size()))];
+			
+			for (int i = 0; i < fixedHeading2.length; i++) {
+				heading2[i] = fixedHeading2[i][0];
+			}
+
+			if (!featuresOneColumn) {
+				int i = fixedHeading2.length;
+				for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
+					heading2[i] = ((GlobalRoomFeature) it.next()).getLabel();
+					heading2[i] = heading2[i].replaceFirst(" ", "\n");
+					i++;
+				}
+				for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
+					DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next(); 
+					heading2[i] = drf.getLabel();
+					heading2[i] = heading2[i].replaceFirst(" ", "\n");
+					if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+						Department dept = Department.findByDeptCode(drf.getDeptCode(),sessionId);
+						heading2[i]+=" ("+dept.getShortLabel()+")";
+					}
+					i++;
+				}
+			}
+			
+            TreeSet<RoomType> roomTypes = new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
+            Hashtable<RoomType, CSVFile> tables = new Hashtable();
+            for (RoomType t:roomTypes) {
+            	CSVFile table = new CSVFile();
+            	List<CSVField> header = new ArrayList<CSVFile.CSVField>();
+            	for (String h: (t.isRoom() ? heading1 : heading2)) {
+            		header.add(new CSVField(h));
+            	}
+            	table.setHeader(header);
+            	tables.put(t,table);
+            }
+			
+			Department dept = new Department();
+			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+				dept = Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionId);
+			} else {
+				dept = null;
+			}
+			
+			for (Iterator iter = rooms.iterator(); iter.hasNext();) {
+				Location location = (Location) iter.next();
+				
+				boolean editable = false;
+				for (Iterator x=location.getRoomDepts().iterator();!editable && x.hasNext();) {
+					RoomDept rd = (RoomDept)x.next();
+					if (ownerDepts.contains(rd.getDepartment())) {
+						editable = true;
+						break;
+					}
+				}
+				if (isAdmin) editable = true;
+
+				Room room = (location instanceof Room ? (Room)location : null);
+				Building bldg = (room==null?null:room.getBuilding());
+				
+				CSVFile table = tables.get(location.getRoomType());
+				
+				DecimalFormat df5 = new DecimalFormat("####0");
+                CSVField text[] = new CSVField[location instanceof Room ? heading1.length : heading2.length];
+				int idx = 0;
+				if (bldg!=null) {
+					text[idx] =  new CSVField(bldg.getAbbreviation());
+					idx++;
+				}
+				
+				text[idx] = new CSVField(room == null ? location.getLabel() : room.getRoomNumber());
+				idx++;
+				
+				text[idx] = new CSVField(df5.format(location.getCapacity()));
+				idx++;
+				
+				if (examType>=0) {
+	                if (location.isExamEnabled(examType)) {
+	                    text[idx] = new CSVField(df5.format(location.getExamCapacity()));
+	                } else {
+	                    text[idx] = new CSVField("");
+	                }
+	                idx++;
+
+	                if (location.isExamEnabled(examType)) {
+	                    text[idx] = new CSVField(location.getExamPreferencesAbbreviation(examType));
+	                } else {
+	                    text[idx] = new CSVField("");
+	                }
+	                idx++;
+				} else {
+	                PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
+	                if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
+	                    if (room==null) {
+	                        text[0] = new CSVField(location.getLabel()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")");
+	                    } else {
+	                        text[0] = new CSVField(bldg==null?"":bldg.getAbbreviation());
+	                        text[1] = new CSVField(room.getRoomNumber()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")");
+	                    }
+	                }
+	                
+	                //ignore too far
+	                if (location instanceof NonUniversityLocation) {
+	                    boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
+	                    text[idx] = new CSVField(itf?"Yes":"No");
+	                    idx++;
+	                    boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
+	                    text[idx] = new CSVField(con?"YES":"No");
+	                    idx++;
+	                }
+	    
+	                // get pattern column
+	                RequiredTimeTable rtt = location.getRoomSharingTable();
+                    text[idx] = new CSVField(rtt.getModel().toString().replaceAll(", ","\n"));
+	                idx++;
+	    
+	                // get departments column
+	                Department controlDept = null;
+	                text[idx] = new CSVField("");
+	                Set rds = location.getRoomDepts();
+	                Set departments = new HashSet();
+	                for (Iterator iterRds = rds.iterator(); iterRds.hasNext();) {
+	                    RoomDept rd = (RoomDept) iterRds.next();
+	                    Department d = rd.getDepartment();
+	                    if (rd.isControl().booleanValue()) controlDept = d;
+	                    departments.add(d);
+	                }
+	                TreeSet ts = new TreeSet(new DepartmentNameComparator());
+	                ts.addAll(departments);
+	                if (ts.size() == session.getDepartments().size()) {
+	                	text[idx] = new CSVField("");
+	                } else {
+	                	int cnt = 0;
+		                for (Iterator it = ts.iterator(); it.hasNext(); cnt++) {
+		                    Department d = (Department) it.next();
+		                    text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") + d.getShortLabel()); 
+		                }
+	                }
+	                idx++;
+	                
+	                //control column
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
+	                        text[idx] = new CSVField("Yes");
+	                    } else {
+	                        text[idx] = new CSVField("No");
+	                    }
+	                } else {
+	                    if (controlDept!=null) {
+	                        text[idx] = new CSVField(controlDept.getShortLabel());
+	                    } else {
+	                        text[idx] = new CSVField("");
+	                    }
+	                }
+	                idx++;
+				}
+				
+				// get groups column
+				text[idx] = new CSVField("");
+				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
+					RoomGroup rg = (RoomGroup) it.next();
+					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
+                    if (!rg.isGlobal().booleanValue()) {
+                        boolean skip = true;
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
+                    }
+					text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") +rg.getName()); 
+				}
+				idx++;
+				
+				if (featuresOneColumn) {
+					// get features column
+					text[idx] = new CSVField("");
+					for (Iterator it = new TreeSet(location.getGlobalRoomFeatures()).iterator(); it.hasNext();) {
+						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
+                        if (text[idx].toString().length()>0) text[idx] = new CSVField(text[idx].toString() + "\n");
+						text[idx] = new CSVField(text[idx].toString() + " " +rf.getLabel());
+					}
+					if (examType<0)
+	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
+	                        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+							if (!depts.contains(drf.getDepartment())) continue;
+	                        boolean skip = true;
+	                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+	                            RoomDept rd = (RoomDept)j.next();
+	                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+	                        }
+	                        if (skip) continue;
+	                        text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") +drf.getLabel());
+	                    }
+					idx++;
+				} else {
+					// get features columns
+					for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
+					    GlobalRoomFeature grf = (GlobalRoomFeature) it.next();
+						boolean b = location.hasFeature(grf);
+						text[idx] = new CSVField(b ? "Yes" : "No");
+						idx++;
+					}
+					for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
+					    DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+                        boolean b = location.hasFeature(drf);
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (drf.getDepartment().equals(rd.getDepartment())) { b=false; break; }
+                        }
+						text[idx] = new CSVField(b ? "Yes" : "No");
+						idx++;
+					}
+				}
+				
+				// build rows
+                table.addLine(text);
+			}
+	
+			// set request attributes
+			for (RoomType t : roomTypes) {
+			    CSVFile table = tables.get(t);
+			    if (table.getLines() == null || table.getLines().isEmpty()) continue;
+			    out.println(t.getLabel());
+			    out.println(table.getHeader().toString());
+			    for (CSVLine l: table.getLines())
+			    	out.println(l.toString());
+			    out.println();
+			}
+
+    		out.flush();
+
+    		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	} finally {
+			if (out!=null) out.close();
+    	}
+	}
+
 }

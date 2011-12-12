@@ -67,6 +67,10 @@
 				<html:submit property="op" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 					<bean:message key="button.exportPDF" />
 				</html:submit>
+				&nbsp;&nbsp;
+				<html:submit property="op" onclick="displayLoading();" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
+					<bean:message key="button.exportCSV" />
+				</html:submit>
 			</TD>
 		</TR>
 		<%}%>
