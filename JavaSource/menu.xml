@@ -311,7 +311,7 @@
 			</and>
 		</condition>
 	</item>
-	<item name="Scheduling Dashboard" page="sectioningstatus" type="gwt">
+	<item name="Scheduling Dashboard" page="onlinesctdash" type="gwt">
 		<condition>
 			<or>
 				<hasRight name="isInstructor"/>
