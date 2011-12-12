@@ -449,6 +449,13 @@
 				<line>Course coordinators can be set on an instructional offering (Course Edit page for the controlling course), visible on Instructional Offering Detail page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Export PDF: fixed page size.</line>
+				<line>Export CSV: added ability to export rooms to a CSV file.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
