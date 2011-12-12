@@ -168,10 +168,12 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		if (canDoTimetable(session, user)) return true;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {
 			Department department = (Department)i.next();
+			if (!department.getSession().equals(session)) continue;
 			if (department.getSolverGroup()!=null && !department.getSolverGroup().getSolutions().isEmpty()) return true;
 		}
 		for (Iterator i=Department.findAllExternal(session.getUniqueId()).iterator();i.hasNext();) {
 			Department department = (Department)i.next();
+			if (!department.getSession().equals(session)) continue;
 			if (department.getSolverGroup()!=null && department.getSolverGroup().getCommittedSolution()!=null) return true;
 		}
 		return false;
