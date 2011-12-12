@@ -524,6 +524,7 @@
 				<line>Subject Timetable: allow to enter course name (shows a timetable of a single course).</line>
 				<line>Resource selection: show suggestions when there is nothing entered (on focus).</line>
 				<line>Week selection: allow selection of multiple weeks (interval of weeks).</line>
+				<line>Personal Timetable: schedule deputies and student advisors can lookup student and instructor schedules.</line>
 			</description>
 		</item>
 		<item>

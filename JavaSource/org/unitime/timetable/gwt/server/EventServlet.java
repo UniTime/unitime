@@ -353,7 +353,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					if (userInfo.getUser() == null)
 						throw new EventException(type.getPageTitle().substring(0, 1).toUpperCase() +
 								type.getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
-					if (!Roles.ADMIN_ROLE.equals(userInfo.getUser().getRole())) {
+					if (!canLookupPeople()) {
 						if (name != null && !name.isEmpty() && !name.equals(userInfo.getUser().getId()))
 							throw new EventException("It is not allowed to access a timetable of someone else.");
 						name = userInfo.getUser().getId();
@@ -1318,7 +1318,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	public Boolean canLookupPeople() throws EventException, PageAccessException {
 		try {
 			User user = Web.getUser(getThreadLocalRequest().getSession());
-			return user != null && Roles.ADMIN_ROLE.equals(user.getRole());
+			return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.STUDENT_ADVISOR.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (EventException e) {
