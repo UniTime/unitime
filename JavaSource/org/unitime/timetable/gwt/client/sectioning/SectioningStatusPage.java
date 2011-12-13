@@ -430,6 +430,7 @@ public class SectioningStatusPage extends Composite {
 						@Override
 						public void onClose(CloseEvent<PopupPanel> event) {
 							iLogTable.clearHover();
+							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 						}
 					});
 					dialog.center();
@@ -805,8 +806,8 @@ public class SectioningStatusPage extends Composite {
 			line.add(new Label(e.getConsent() == null ? "" : e.getConsent(), false));
 		} else {
 			line.add(new Label());
-			line.add(new HTML("&nbsp;&nbsp;" + (e.getSubpart() == null ? "" : e.getSubpart()), false));
-			line.add(new HTML(e.getClazz() == null ? "" : e.getClazz(), false));
+			line.add(new HTML("&nbsp;&nbsp;" + (e.getSubpart() == null ? "" : e.getIndent() + e.getSubpart()), false));
+			line.add(new HTML(e.getClazz() == null ? "" : e.getIndent() + e.getClazz(), false));
 			line.add(new Label(e.getAssignment().getDays().isEmpty()  ? "" : e.getAssignment().getDaysString(CONSTANTS.shortDays()) + " " + e.getAssignment().getStartString(CONSTANTS.useAmPm()) + " - " + e.getAssignment().getEndString(CONSTANTS.useAmPm()), false));
 			line.add(new Label(!e.getAssignment().hasDatePattern()  ? "" : e.getAssignment().getDatePattern(), false));
 			line.add(new Label(!e.getAssignment().hasRoom() ? "" : e.getAssignment().getRooms(","), false));

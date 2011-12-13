@@ -494,6 +494,7 @@ public class EnrollmentTable extends Composite {
 								@Override
 								public void onClose(CloseEvent<PopupPanel> event) {
 									table.clearHover();
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 								}
 							});
 							dialog.center();
@@ -515,6 +516,13 @@ public class EnrollmentTable extends Composite {
 						dialog.setPopupPosition(
 								Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
 								Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+					}
+				});
+				dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+					@Override
+					public void onClose(CloseEvent<PopupPanel> event) {
+						table.clearHover();
+						RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 					}
 				});
 				callback.onSuccess(true);
