@@ -327,8 +327,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setClazzId(section.getId());
 				Section parent = section.getParent();
 				while (parent != null) {
-					e.setSubpart("&nbsp;&nbsp;" + e.getSubpart());
-					e.setClazz("&nbsp;&nbsp;" + e.getClazz());
+					e.incLevel();
 					parent = parent.getParent();
 				}
 				
