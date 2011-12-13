@@ -119,7 +119,15 @@ public class RoomTypeEditForm extends ActionForm {
 	public void delete(org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().intValue()<0) return;
         RoomType t = RoomTypeDAO.getInstance().get(getUniqueId());
-        if (t!=null) hibSession.delete(t);
+        if (t!=null) {
+            for (RoomType other: RoomTypeDAO.getInstance().findAll(hibSession)) {
+            	if (other.getOrd() > t.getOrd()) {
+            		other.setOrd(other.getOrd() - 1);
+                	hibSession.saveOrUpdate(other);
+            	}
+            }
+        	hibSession.delete(t);
+        }
 	}
 }
 

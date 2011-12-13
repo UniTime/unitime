@@ -213,7 +213,7 @@ public class RoomTypeEditAction extends Action {
 		WebTable.setOrder(request.getSession(),"roomTypes.ord",request.getParameter("ord"),2);
 		// Create web table instance 
         WebTable webTable = new WebTable( 5,
-			    null, "deptStatusTypeEdit.do?ord=%%",
+			    null, "roomTypeEdit.do?ord=%%",
 			    new String[] {
                 "","Reference", "Label", "Type", "Rooms"},
 			    new String[] {"left","left", "left","left", "left"},
