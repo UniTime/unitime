@@ -215,11 +215,11 @@ public class UnassignedAction extends Action {
 				new String[] {"left", "left", "left", "left"},
 				null );
 		if (noSubject) {
-			webTable.addLine(null, new String[] {"@@ITALICNo subject area is selected.@@END_ITALIC"}, null, null );
+			webTable.addLine(null, new String[] {"@@ITALIC No subject area is selected.", "", "", ""}, null, null );
 		} else if (model==null) {
-			webTable.addLine(null, new String[] {"@@ITALICNeither a solver is started nor solution is selected.@@END_ITALIC"}, null, null );
+			webTable.addLine(null, new String[] {"@@ITALIC Neither a solver is started nor solution is selected.", "", "", ""}, null, null );
 		} else if (model.getNrRows()==0) {
-			webTable.addLine(null, new String[] {"@@ITALICAll variables are assigned.@@END_ITALIC"}, null, null );
+			webTable.addLine(null, new String[] {"@@ITALIC All variables are assigned.", "", "", ""}, null, null );
 		} else {
 			for (int i=0;i<model.getNrRows();i++) {
 				UnassignedClassRow row = model.getRow(i);
