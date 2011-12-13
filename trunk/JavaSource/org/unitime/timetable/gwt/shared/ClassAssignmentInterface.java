@@ -586,6 +586,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private ClassAssignment iAssignment;
+		private int iLevel = 0;
 		
 		public EnrollmentInfo() {}
 		
@@ -687,6 +688,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
 		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
 		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
+		
+		public int getLevel() { return iLevel; }
+		public void setLevel(int level) { iLevel = level; }
+		public void incLevel() { iLevel ++; }
+		public String getIndent() {
+			String indent = "";
+			for (int i = 0; i < iLevel; i++) indent += "&nbsp;&nbsp;";
+			return indent;
+		}
 	}
 	
 	public static class StudentInfo implements IsSerializable, Serializable {
