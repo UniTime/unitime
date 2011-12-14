@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.util.MessageResources;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -47,6 +48,7 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedA
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
@@ -54,6 +56,7 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -222,6 +225,18 @@ public class InstructionalOfferingDetailAction extends Action {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 	        io.getSession().unlockOffering(io.getUniqueId(), Web.getUser(request.getSession()));
+	        try {
+		        SessionFactory hibSessionFactory = idao.getSession().getSessionFactory();
+		        hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, io.getUniqueId());
+		        for (CourseOffering course: io.getCourseOfferings())
+		        	hibSessionFactory.getCache().evictEntity(CourseOffering.class, course.getUniqueId());
+		        for (InstrOfferingConfig config: io.getInstrOfferingConfigs())
+		        	for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+		        		for (Class_ clazz: subpart.getClasses())
+		        			hibSessionFactory.getCache().evictEntity(Class_.class, clazz.getUniqueId());
+	        } catch (Exception e) {
+	        	Debug.error("Failed to evict cache: " + e.getMessage());
+	        }
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
         	return null;
         }
