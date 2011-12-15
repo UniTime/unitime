@@ -262,6 +262,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                     			datePatternName(p.getTimeLocation(), server.getAcademicSession()),
                     			p.getTimeLocation().getWeekCode());
                     }
+                    if (p != null)
+                    	p.setAssignment(null);
                     int minLimit = c.getExpectedCapacity();
                 	int maxLimit = c.getMaxExpectedCapacity();
                 	int limit = maxLimit;
