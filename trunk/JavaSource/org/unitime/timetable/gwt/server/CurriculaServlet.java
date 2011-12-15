@@ -103,8 +103,16 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	private static final long serialVersionUID = 4873723219428043859L;
 	private static Logger sLog = Logger.getLogger(CurriculaServlet.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
-
+	private CourseDetailsProvider iCourseDetailsProvider;
+	
 	public void init() throws ServletException {
+		try {
+			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
+			if (providerClass != null)
+				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
+		} catch (Exception e) {
+			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
+		}
 	}
 	
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
@@ -1766,13 +1774,9 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			try {
 				CourseOffering courseOffering = getCourse(hibSession, course);
 				if (courseOffering == null) throw new CurriculaException("course " + course + " does not exist");
-				CourseDetailsProvider provider = null;
-				try {
-					provider = (CourseDetailsProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider")).newInstance();
-				} catch (Exception e) {
+				if (iCourseDetailsProvider == null)
 					throw new CurriculaException("course detail interface not provided");
-				}
-				String details = provider.getDetails(
+				String details = iCourseDetailsProvider.getDetails(
 						new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 						courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 				sLog.debug("Details of length " + details.length() + " retrieved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");

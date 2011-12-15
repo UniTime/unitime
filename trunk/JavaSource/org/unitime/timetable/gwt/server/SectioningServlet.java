@@ -131,6 +131,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 	private OnlineSectioningServerUpdater iUpdater;
+	private CourseDetailsProvider iCourseDetailsProvider;
 
 	public void init() throws ServletException {
 		sLog.info("Student Sectioning Service is starting up ...");
@@ -181,6 +182,13 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
 		} finally {
 			hibSession.close();
+		}
+		try {
+			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
+			if (providerClass != null)
+				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
+		} catch (Exception e) {
+			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
 		}
 	}
 	
@@ -495,23 +503,19 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException {
 		setLastSessionId(sessionId);
-		if (OnlineSectioningService.getInstance(sessionId) == null) {
+		if (iCourseDetailsProvider == null)
+			throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId); 
+		if (server == null) {
 			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-			CourseDetailsProvider provider = null;
-			try {
-				provider = (CourseDetailsProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider")).newInstance();
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
-			}
-			String details = provider.getDetails(
+			return iCourseDetailsProvider.getDetails(
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
-			return details;
 		} else {
 			CourseInfo c = OnlineSectioningService.getInstance(sessionId).getCourseInfo(course);
 			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-			return c.getDetails();
+			return c.getDetails(server.getAcademicSession(), iCourseDetailsProvider);
 		}
 	}
 	
