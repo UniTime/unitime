@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -30,9 +27,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
  * @author Tomas Muller
  */
 public class CourseInfo implements Comparable<CourseInfo> {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iUniqueId;
-	private Long iAcademicSessionId;
 	private String iSubjectArea;
 	private String iDepartment;
 	private String iCourseNbr;
@@ -48,7 +43,6 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	
 	public CourseInfo(CourseOffering course)  throws SectioningException {
 		iUniqueId = course.getUniqueId();
-		iAcademicSessionId = course.getSubjectArea().getSession().getUniqueId();
 		iSubjectArea = course.getSubjectArea().getSubjectAreaAbbreviation();
 		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
 		iCourseNbr = course.getCourseNbr().trim();
@@ -72,7 +66,6 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	}
 	
 	public Long getUniqueId() { return iUniqueId; }
-	public Long getAcademicSessionId() { return iAcademicSessionId; }
 	public String getSubjectArea() { return iSubjectArea; }
 	public String getCourseNbr() { return iCourseNbr; }
 	public String getDepartment() { return iDepartment; }
@@ -107,16 +100,9 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		return false;
 	}
 
-	public String getDetails() throws SectioningException {
-		if (iDetails == null) {
-			CourseDetailsProvider provider = null;
-			try {
-				provider = (CourseDetailsProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider")).newInstance();
-			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
-			}
-			iDetails = provider.getDetails(OnlineSectioningService.getInstance(iAcademicSessionId).getAcademicSession(), iSubjectArea, iCourseNbr);
-		}
+	public String getDetails(AcademicSessionInfo session, CourseDetailsProvider provider) throws SectioningException {
+		if (iDetails == null)
+			iDetails = provider.getDetails(session, iSubjectArea, iCourseNbr);
 		return iDetails;
 	}
 	
