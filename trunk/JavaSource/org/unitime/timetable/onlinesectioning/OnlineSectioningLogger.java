@@ -147,7 +147,7 @@ public class OnlineSectioningLogger extends Thread {
 								Long sessionId = q.getSession().getUniqueId();
 								Session session = sessions.get(sessionId);
 								if (session == null) {
-									session = SessionDAO.getInstance().get(sessionId);
+									session = SessionDAO.getInstance().get(sessionId, hibSession);
 									sessions.put(sessionId, session);
 								}
 								log.setSession(session);

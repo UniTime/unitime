@@ -378,7 +378,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 							if (x.getUniqueId().equals(r.getRequest().getAssignment().getCourse().getId()))
 								co = x;
 					for (Section section: r.getRequest().getAssignment().getSections()) {
-						Class_ clazz = Class_DAO.getInstance().get(section.getId());
+						Class_ clazz = Class_DAO.getInstance().get(section.getId(), helper.getHibSession());
 						if (cd != null && cr == null) {
 							for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
 								if (x.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {

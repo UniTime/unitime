@@ -70,6 +70,7 @@ import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
@@ -884,6 +885,11 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 						callback.onFailure(t);
 					}
 				}
+				
+				@Override
+				public String toString() {
+					return action.name();
+				}
 			});
 			iExecutorQueue.notify();
 		}
@@ -911,6 +917,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 					}		
 				}
 				job.run();
+				if (_RootDAO.closeCurrentThreadSessions())
+					iLog.warn("Job " + job + " did not close current-thread hibernate session.");
 			}
 			iLog.info("Executor stopped.");
 		}
