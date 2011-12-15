@@ -199,11 +199,13 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	/**
 	 * Close all sessions for the current thread
 	 */
-	public static void closeCurrentThreadSessions() {
+	public static boolean closeCurrentThreadSessions() {
+		boolean ret = false;
 		if (sSessions != null) {
 			Session session = sSessions.get();
 			if (session != null && session.isOpen()) {
 				session.close();
+				ret = true;
 			}
 		}
 		if (sMappedSessions != null) {
@@ -212,8 +214,10 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				HibernateException thrownException = null;
 				for (Session session: map.values()) {
 					try {
-						if (null != session && session.isOpen())
+						if (null != session && session.isOpen()) {
 							session.close();
+							ret = true;
+						}
 					} catch (HibernateException e) {
 						thrownException = e;
 					}
@@ -222,6 +226,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				if (null != thrownException) throw thrownException;
 			}
 		}
+		return ret;
 	}
 
 

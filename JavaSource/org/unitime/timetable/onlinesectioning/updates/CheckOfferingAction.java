@@ -224,7 +224,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 						if (co == null) 
 							co = CourseOfferingDAO.getInstance().get(r.getRequest().getAssignment().getCourse().getId(), helper.getHibSession());
 						for (Section section: r.getRequest().getAssignment().getSections()) {
-							Class_ clazz = Class_DAO.getInstance().get(section.getId());
+							Class_ clazz = Class_DAO.getInstance().get(section.getId(), helper.getHibSession());
 							if (cd != null && cr == null) {
 								for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
 									if (x.getCourseOffering().getUniqueId().equals(co.getUniqueId())) {
