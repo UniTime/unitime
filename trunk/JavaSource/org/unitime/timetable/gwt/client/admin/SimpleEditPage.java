@@ -27,9 +27,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
@@ -52,7 +54,9 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -65,13 +69,19 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -91,6 +101,7 @@ public class SimpleEditPage extends Composite {
 	private SimplePanel iSimple;
 	
 	private boolean iEditable = false;
+	private static TextArea sStudentsText = null;
 	
 	public SimpleEditPage() throws SimpleEditException {
 		String typeString = Window.Location.getParameter("type");
@@ -197,6 +208,8 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 		
+		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
+		Lookup.getInstance().setCallback(createLookupCallback());
 		
 		load();
 	}
@@ -287,7 +300,7 @@ public class SimpleEditPage extends Composite {
 		detail.addHeaderRow(header);
 		int idx = 0;
 		for (Field field: iData.getFields()) {
-			detail.addRow(field.getName() + ":", new MyCell(record.isEditable(idx), field, record, idx));
+			detail.addRow(field.getName() + ":", new MyCell(record.isEditable(idx), field, record, idx, true));
 			idx ++;
 		}
 		UniTimeHeaderPanel bottom = header.clonePanel();
@@ -420,7 +433,7 @@ public class SimpleEditPage extends Composite {
 		List<Widget> line = new ArrayList<Widget>();
 		int col = 0;
 		for (Field field: iData.getFields()) {
-			MyCell cell = new MyCell(iData.isEditable() && iEditable && record.isEditable(col), field, record, col);
+			MyCell cell = new MyCell(iData.isEditable() && iEditable && record.isEditable(col), field, record, col, false);
 			line.add(cell);
 			col++;
 		}
@@ -463,7 +476,7 @@ public class SimpleEditPage extends Composite {
 		private Record iRecord;
 		private int iIndex;
 		
-		public MyCell(boolean editable, Field field, final Record record, final int index) {
+		public MyCell(boolean editable, Field field, final Record record, final int index, boolean detail) {
 			iField = field; iRecord = record; iIndex = index;
 			if (editable) {
 				if (field.getType() == FieldType.text) {
@@ -567,11 +580,95 @@ public class SimpleEditPage extends Composite {
 							}
 						});
 					}
+				} else if (field.getType() == FieldType.students) {
+					if (detail) {
+						final TextArea text = new TextArea();
+						text.setValue(getValue());
+						text.setStyleName("unitime-TextArea");
+						text.setVisibleLines(10);
+						text.setCharacterWidth(80);
+						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<String> event) {
+								record.setField(index, text.getText());
+							}
+						});
+						VerticalPanel students = new VerticalPanel();
+						students.add(text);
+						Button lookup = new Button("<u>L</u>ookup");
+						lookup.setAccessKey('l');
+						lookup.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								sStudentsText = text;
+								Lookup.getInstance().center();
+							}
+						});
+						students.add(lookup);
+						students.setCellHorizontalAlignment(lookup, HasHorizontalAlignment.ALIGN_RIGHT);
+						initWidget(students);
+					} else {
+						HorizontalPanel hp = new HorizontalPanel();
+						final Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
+						hp.add(label);
+						Image change = new Image(RESOURCES.edit());
+						hp.add(change);
+						hp.setCellVerticalAlignment(change, HasVerticalAlignment.ALIGN_MIDDLE);
+						label.getElement().getStyle().setPaddingRight(5, Unit.PX);
+						change.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+								SimpleForm form = new SimpleForm();
+								final TextArea text = new TextArea();
+								text.setValue(getValue());
+								text.setStyleName("unitime-TextArea");
+								text.setVisibleLines(10);
+								text.setCharacterWidth(80);
+								text.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										record.setField(index, event.getValue());
+										label.setText(String.valueOf(event.getValue().isEmpty() ? 0 : event.getValue().split("\\n").length));
+									}
+								});
+								form.addRow(text);
+								UniTimeHeaderPanel header = new UniTimeHeaderPanel();
+								header.addButton("lookup", "<u>L</u>ookup", 'l', 75, new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										sStudentsText = text;
+										Lookup.getInstance().center();
+									}
+								});
+								header.addButton("close", "<u>C</u>lose", 'c', 75, new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										dialog.hide();
+									}
+								});
+								form.addBottomRow(header);
+								dialog.setText("Group Students");
+								dialog.setWidget(form);
+								dialog.setEscapeToHide(true);
+								dialog.center();
+							}
+						});
+						initWidget(hp);
+					}
 				}
 			} else {
 				if (field.getType() == FieldType.toggle) {
 					Image image = new Image(record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index)) ? RESOURCES.on() : RESOURCES.off());
 					initWidget(image);
+				} else if (field.getType() == FieldType.students) {
+					if (detail) {
+						HTML html = new HTML(getValue().replaceAll("\\n", "<br>"));
+						initWidget(html);
+					} else {
+						Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
+						initWidget(label);
+					}
 				} else {
 					Label label = new Label(getValue());
 					initWidget(label);
@@ -615,7 +712,14 @@ public class SimpleEditPage extends Composite {
 
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
-			return (iField.getType() == FieldType.toggle ? HasHorizontalAlignment.ALIGN_CENTER : HasHorizontalAlignment.ALIGN_LEFT);
+			switch (iField.getType()) {
+			case toggle:
+				return HasHorizontalAlignment.ALIGN_CENTER;
+			case students:
+				return HasHorizontalAlignment.ALIGN_RIGHT;
+			default:
+				return HasHorizontalAlignment.ALIGN_LEFT;
+			}
 		}
 	}
 
@@ -642,4 +746,16 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 	}
+	
+	public static void personFound(String externalUniqueId, String name) {
+		sStudentsText.setValue(sStudentsText.getValue() + (sStudentsText.getValue().isEmpty() ? "" : "\n") + externalUniqueId + " " + name, true);
+	}
+	
+	private native JavaScriptObject createLookupCallback() /*-{
+		return function(person) {
+			@org.unitime.timetable.gwt.client.admin.SimpleEditPage::personFound(Ljava/lang/String;Ljava/lang/String;)(person[0],
+				person[3] + ", " + person[1] + (person[2] == null ? "" : " " + person[2]));
+		};
+	}-*/;
+
 }
