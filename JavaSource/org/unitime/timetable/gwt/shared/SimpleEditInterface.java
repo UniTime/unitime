@@ -60,7 +60,7 @@ public class SimpleEditInterface implements IsSerializable {
 	}
 	
 	public static enum FieldType implements IsSerializable {
-		text, toggle, list, multi;
+		text, toggle, list, multi, students;
 	}
 	
 	private Type iType = null;
@@ -82,6 +82,8 @@ public class SimpleEditInterface implements IsSerializable {
 	public List<Record> getRecords() { return iRecords; }
 	public Record addRecord(Long uniqueId, boolean deletable) {
 		Record r = new Record(uniqueId, iFields.length, deletable);
+		for (int i = 0; i < iFields.length; i++)
+			if (!iFields[i].isEditable()) r.setField(i, null, false);
 		iRecords.add(r);
 		return r;
 	}
@@ -192,7 +194,7 @@ public class SimpleEditInterface implements IsSerializable {
 		}
 		
 		public void setField(int index, String value) {
-			setField(index, value, true);
+			iValues[index] = value;
 		}
 		
 		public String getField(int index) {
@@ -272,23 +274,37 @@ public class SimpleEditInterface implements IsSerializable {
 		private FieldType iType = null;
 		private int iLength = 0, iWidth = 0;
 		private List<ListItem> iValues = null;
+		private boolean iEditable = true;
 		
 		public Field() {}
 		
-		public Field(String name, FieldType type, int width) {
+		public Field(String name, FieldType type, int width, int length, boolean editable) {
 			iName = name;
 			iType = type;
 			iWidth = width;
+			iLength = length;
+			iEditable = editable;
+		}
+		
+		public Field(String name, FieldType type, int width, boolean editable) {
+			this(name, type, width, 0, editable);
+		}
+		
+		public Field(String name, FieldType type, int width) {
+			this(name, type, width, 0, true);
 		}
 		
 		public Field(String name, FieldType type, int width, int length) {
-			this(name, type, width);
-			iLength = length;
+			this(name, type, width, length, true);
+		}
+		
+		public Field(String name, FieldType type, int width, List<ListItem> values, boolean editable) {
+			this(name, type, width, 0, editable);
+			iValues = values;
 		}
 		
 		public Field(String name, FieldType type, int width, List<ListItem> values) {
-			this(name, type, width);
-			iValues = values;
+			this(name, type, width, values, true);
 		}
 
 		public String getName() { return iName; }
@@ -300,6 +316,7 @@ public class SimpleEditInterface implements IsSerializable {
 			if (iValues == null) iValues = new ArrayList<ListItem>();
 			iValues.add(item);
 		}
+		public boolean isEditable() { return iEditable; }
 		
 		public int hashCode() {
 			return getName().hashCode();

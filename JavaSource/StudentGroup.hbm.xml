@@ -22,8 +22,7 @@
 <hibernate-mapping package="org.unitime.timetable.model">
     <class
         name="StudentGroup"
-        table="student_group"
-        mutable="false">
+        table="student_group">
         <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="uniqueId"
