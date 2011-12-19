@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
@@ -49,11 +50,13 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
@@ -96,7 +99,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 			switch (type) {
 			case area:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40),
+						new Field("External Id", FieldType.text, 120, 40, false),
 						new Field("Abbreviation", FieldType.text, 80, 10),
 						new Field("Short Title", FieldType.text, 200, 50),
 						new Field("Long Title", FieldType.text, 500, 100)
@@ -108,11 +111,12 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(1, area.getAcademicAreaAbbreviation());
 					r.setField(2, area.getShortTitle());
 					r.setField(3, area.getLongTitle());
+					r.setDeletable(area.getExternalUniqueId() == null);
 				}
 				break;
 			case classification:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40),
+						new Field("External Id", FieldType.text, 120, 40, false),
 						new Field("Code", FieldType.text, 80, 10),
 						new Field("Name", FieldType.text, 500, 50));
 				data.setSortBy(1,2);
@@ -121,6 +125,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(0, clasf.getExternalUniqueId());
 					r.setField(1, clasf.getCode());
 					r.setField(2, clasf.getName());
+					r.setDeletable(clasf.getExternalUniqueId() == null);
 				}
 				break;
 			case major:
@@ -129,7 +134,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					areas.add(new ListItem(area.getUniqueId().toString(), area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())));
 				}
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40),
+						new Field("External Id", FieldType.text, 120, 40, false),
 						new Field("Code", FieldType.text, 80, 10),
 						new Field("Name", FieldType.text, 300, 50),
 						new Field("Academic Area", FieldType.list, 300, areas));
@@ -139,6 +144,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(0, major.getExternalUniqueId());
 					r.setField(1, major.getCode());
 					r.setField(2, major.getName());
+					r.setDeletable(major.getExternalUniqueId() == null);
 					for (AcademicArea area: major.getAcademicAreas())
 						r.setField(3, area.getUniqueId().toString());
 				}
@@ -149,7 +155,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					areas.add(new ListItem(area.getUniqueId().toString(), area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())));
 				}
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40),
+						new Field("External Id", FieldType.text, 120, 40, false),
 						new Field("Code", FieldType.text, 80, 10),
 						new Field("Name", FieldType.text, 300, 50),
 						new Field("Academic Area", FieldType.list, 300, areas));
@@ -161,19 +167,28 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					r.setField(2, minor.getName());
 					for (AcademicArea area: minor.getAcademicAreas())
 						r.setField(3, area.getUniqueId().toString());
+					r.setDeletable(minor.getExternalUniqueId() == null);
 				}
 				break;
 			case group:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40),
+						new Field("External Id", FieldType.text, 120, 40, false),
 						new Field("Code", FieldType.text, 80, 10),
-						new Field("Name", FieldType.text, 300, 50));
+						new Field("Name", FieldType.text, 300, 50),
+						new Field("Students", FieldType.students, 200, true));
 				data.setSortBy(1,2);
 				for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, sessionId)) {
 					Record r = data.addRecord(group.getUniqueId());
 					r.setField(0, group.getExternalUniqueId());
 					r.setField(1, group.getGroupAbbreviation());
 					r.setField(2, group.getGroupName());
+					String students = "";
+					for (Student student: new TreeSet<Student>(group.getStudents())) {
+						if (!students.isEmpty()) students += "\n";
+						students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					}
+					r.setField(3, students, group.getExternalUniqueId() == null);
+					r.setDeletable(group.getExternalUniqueId() == null);
 				}
 				break;
 			case consent:
@@ -572,6 +587,17 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							group.setExternalUniqueId(r.getField(0));
 							group.setGroupAbbreviation(r.getField(1));
 							group.setGroupName(r.getField(2));
+							if (group.getExternalUniqueId() == null && r.getField(3) != null) {
+								group.getStudents().clear();
+								for (String s: r.getField(3).split("\\n")) {
+									if (s.indexOf(' ') >= 0) s = s.substring(0, s.indexOf(' '));
+									if (s.trim().isEmpty()) continue;
+									Student student = Student.findByExternalId(sessionId, s.trim());
+									if (student != null)
+										group.getStudents().add(student);
+								}
+								changed = true;
+							}
 							hibSession.saveOrUpdate(group);
 							if (changed)
 								ChangeLog.addChange(hibSession,
@@ -590,6 +616,16 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						group.setGroupAbbreviation(r.getField(1));
 						group.setGroupName(r.getField(2));
 						group.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
+						group.setStudents(new HashSet<Student>());
+						if (r.getField(3) != null) {
+							for (String s: r.getField(3).split("\\n")) {
+								if (s.indexOf(' ') >= 0) s = s.substring(0, s.indexOf(' '));
+								if (s.trim().isEmpty()) continue;
+								Student student = Student.findByExternalId(sessionId, s.trim());
+								if (student != null)
+									group.getStudents().add(student);
+							}
+						}
 						r.setUniqueId((Long)hibSession.save(group));
 						ChangeLog.addChange(hibSession,
 								getThreadLocalRequest(),

@@ -68,4 +68,7 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 
 	@Source("org/unitime/timetable/gwt/resources/icons/cross.png")
 	ImageResource off();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/application_edit.png")
+	ImageResource edit();
 }
