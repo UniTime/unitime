@@ -203,7 +203,8 @@ public class UniTimeHeaderPanel extends Composite {
 	}
 	
 	public void setEnabled(int button, boolean enabled) {
-		((Button)iButtons.getWidget(button)).setVisible(enabled);
+		Button b = (Button)iButtons.getWidget(button);
+		b.setVisible(enabled); b.setEnabled(enabled);
 		for (UniTimeHeaderPanel clone: iClones)
 			clone.setEnabled(button, enabled);
 	}

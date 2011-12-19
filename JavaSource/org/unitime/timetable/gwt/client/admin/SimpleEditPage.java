@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
@@ -55,6 +57,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -66,6 +70,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -83,6 +88,7 @@ public class SimpleEditPage extends Composite {
 	private UniTimeTable<Record> iTable;
 	
 	private SimpleEditInterface iData;
+	private SimplePanel iSimple;
 	
 	private boolean iEditable = false;
 	
@@ -131,21 +137,33 @@ public class SimpleEditPage extends Composite {
 				load();
 			}
 		};
+		
+		ClickHandler add = new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				detail(iData.addRecord(null));
+			}
+		};
 
 		iPanel = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("add", "<u>A</u>dd", 'a', 75, add);
 		iHeader.addButton("edit", "<u>E</u>dit", 'e', 75, edit);
 		iHeader.addButton("save", "<u>S</u>ave", 's', 75, save);
 		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, back);
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
+		iTable.setAllowSelection(true);
 		iPanel.addRow(iTable);
 		
 		iBottom = iHeader.clonePanel();
 		iPanel.addNotPrintableBottomRow(iBottom);
 		
-		initWidget(iPanel);
+		iSimple = new SimplePanel(iPanel);
+		
+		initWidget(iSimple);
 		
 		final Timer timer = new Timer() {
 			@Override
@@ -171,12 +189,116 @@ public class SimpleEditPage extends Composite {
 			public void onDataSorted(List<DataChangedEvent<Record>> event) {
 			}
 		});
+		iTable.addMouseClickListener(new MouseClickListener<SimpleEditInterface.Record>() {
+			@Override
+			public void onMouseClick(TableEvent<Record> event) {
+				if (iEditable || event.getData() == null || !event.getData().isEditable()) return;
+				detail(event.getData());
+			}
+		});
+		
 		
 		load();
 	}
 	
+	private void detail(final Record record) {
+		SimpleForm detail = new SimpleForm();
+		UniTimePageLabel.getInstance().setPageName((record.getUniqueId() == null ? "Add " : "Edit ") + iData.getType().getTitleSingular());
+		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
+		
+		header.addButton("save", "<u>S</u>ave", 's', 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final Set<Long> old = new HashSet<Long>();
+				if (record.getUniqueId() == null) {
+					for (Record r: iData.getRecords())
+						old.add(r.getUniqueId());
+				}
+				iData.getRecords().clear();
+				iData.getRecords().addAll(iTable.getData());
+				if (record.getUniqueId() == null)
+					iData.getRecords().add(record);
+				header.setMessage("Saving data...");
+				iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+					}
+					@Override
+					public void onSuccess(SimpleEditInterface result) {
+						iData = result;
+						iEditable = false;
+						iSimple.setWidget(iPanel);
+						refreshTable();
+						saveOrder();
+						for (int r = 0; r < iTable.getRowCount(); r++) {
+							if (iTable.getData(r) == null) continue;
+							if (record.getUniqueId() == null) {
+								if (!old.contains(iTable.getData(r).getUniqueId())) {
+									iTable.setSelected(r, true);
+									break;
+								}
+							} else {
+								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
+									iTable.setSelected(r, true);
+									break;
+								}
+							}
+						}
+					}
+				});
+			}
+		});
+		
+		if (record.getUniqueId() != null && record.isDeletable()) {
+			header.addButton("delete", "<u>D</u>elete", 'd', 75, new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					iData.getRecords().clear();
+					iData.getRecords().addAll(iTable.getData());
+					iData.getRecords().remove(record);
+					header.setMessage("Saving data...");
+					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+						}
+						@Override
+						public void onSuccess(SimpleEditInterface result) {
+							iData = result;
+							iEditable = false;
+							iSimple.setWidget(iPanel);
+							refreshTable();
+							saveOrder();
+						}
+					});
+				}
+			});
+		}
+		
+		header.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iSimple.setWidget(iPanel);
+				load();
+			}
+		});
+		
+		detail.addHeaderRow(header);
+		int idx = 0;
+		for (Field field: iData.getFields()) {
+			detail.addRow(field.getName() + ":", new MyCell(record.isEditable(idx), field, record, idx));
+			idx ++;
+		}
+		UniTimeHeaderPanel bottom = header.clonePanel();
+		detail.addNotPrintableBottomRow(bottom);
+		
+		iSimple.setWidget(detail);
+	}
+	
 	public void load() {
 		iBottom.setVisible(false);
+		iHeader.setEnabled("add", false);
 		iHeader.setEnabled("save", false);
 		iHeader.setEnabled("edit", false);
 		iHeader.setEnabled("back", false);
@@ -227,6 +349,7 @@ public class SimpleEditPage extends Composite {
 	}
 	
 	private void refreshTable() {
+		UniTimePageLabel.getInstance().setPageName((iEditable ? "Edit " : "") + iData.getType().getTitlePlural());
 		iTable.clearTable();
 
 		List<Widget> header = new ArrayList<Widget>();
@@ -288,6 +411,7 @@ public class SimpleEditPage extends Composite {
 			iHeader.setEnabled("back", iEditable);
 			iHeader.setEnabled("save", iEditable);
 			iHeader.setEnabled("edit", !iEditable);
+			iHeader.setEnabled("add", !iEditable && iData.isAddable());
 		}
 		iHeader.clearMessage();
 	}
@@ -355,6 +479,15 @@ public class SimpleEditPage extends Composite {
 						}
 					});
 					initWidget(text);
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						text.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
 				} else if (field.getType() == FieldType.list) {
 					final ListBox list = new ListBox(false);
 					list.setStyleName("unitime-TextBox");
@@ -373,6 +506,15 @@ public class SimpleEditPage extends Composite {
 						}
 					});
 					initWidget(list);
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						list.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
 				} else if (field.getType() == FieldType.multi) {
 					final ListBox list = new ListBox(true);
 					list.setStyleName("unitime-TextBox");
@@ -397,6 +539,15 @@ public class SimpleEditPage extends Composite {
 						}
 					});
 					initWidget(list);
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						list.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
 				} else if (field.getType() == FieldType.toggle) {
 					final CheckBox check = new CheckBox();
 					check.setValue(record.getField(index) == null ? null : "true".equalsIgnoreCase(record.getField(index)));
@@ -407,6 +558,15 @@ public class SimpleEditPage extends Composite {
 						}
 					});
 					initWidget(check);
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						check.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Boolean> event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
 				}
 			} else {
 				if (field.getType() == FieldType.toggle) {

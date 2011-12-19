@@ -31,26 +31,32 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SimpleEditInterface implements IsSerializable {
 	
 	public static enum Type implements IsSerializable {
-		area("Academic Areas"),
-		classification("Academic Classifications"),
-		major("Majors"),
-		minor("Minors"),
-		group("Student Groups"),
-		consent("Offering Consent Types"),
-		creditFormat("Course Credit Formats"),
-		creditType("Course Credit Types"),
-		creditUnit("Course Credit Units"),
-		position("Position Types"),
-		sectioning("Student Scheduling Status Types"),
+		area("Academic Area"),
+		classification("Academic Classification"),
+		major("Major"),
+		minor("Minor"),
+		group("Student Group"),
+		consent("Offering Consent Type"),
+		creditFormat("Course Credit Format"),
+		creditType("Course Credit Type"),
+		creditUnit("Course Credit Unit"),
+		position("Position Type"),
+		sectioning("Student Scheduling Status Type"),
 		;
 	
-		private String iPageName;
+		private String iSingular, iPlural;
 		
-		Type(String pageName) {
-			iPageName = pageName;
+		Type(String singular, String plural) {
+			iSingular = singular; iPlural = plural;
 		}
 		
-		public String getTitle() { return iPageName; }
+		Type(String singular) {
+			this(singular, singular + "s");
+		}
+		
+		public String getTitle() { return iPlural; }
+		public String getTitlePlural() { return iPlural; }
+		public String getTitleSingular() { return iSingular; }
 	}
 	
 	public static enum FieldType implements IsSerializable {
@@ -195,6 +201,12 @@ public class SimpleEditInterface implements IsSerializable {
 		
 		public boolean isEditable(int index) {
 			return iEditable[index];
+		}
+		
+		public boolean isEditable() {
+			for (boolean editable: iEditable)
+				if (editable) return true;
+			return false;
 		}
 
 		public void addToField(int index, String value) {
