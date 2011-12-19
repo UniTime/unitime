@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.server;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -915,6 +916,8 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 					}
 				} catch (Exception e) {}
 			}
+			for (Iterator<Record> i = data.getRecords().iterator(); i.hasNext(); )
+				if (i.next().getUniqueId() == null) i.remove();
 			return data;
 		} catch (PageAccessException e) {
 			throw e;
