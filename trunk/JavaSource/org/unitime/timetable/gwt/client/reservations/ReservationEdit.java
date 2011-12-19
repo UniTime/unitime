@@ -56,6 +56,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -156,7 +158,7 @@ public class ReservationEdit extends Composite {
 				iTitleAndButtons.clearMessage();
 				ReservationInterface r = validate();
 				if (r == null) {
-					iTitleAndButtons.setErrorMessage("Validation failed, plaease check the form for warnings.");
+					iTitleAndButtons.setErrorMessage("Validation failed, please check the form for warnings.");
 				} else {
 					LoadingWidget.getInstance().show("Saving reservation...");
 					iReservationService.save(r, new AsyncCallback<Long>() {
@@ -217,10 +219,10 @@ public class ReservationEdit extends Composite {
 		iPanel.addRow("Instructional Offering:", iCourseBox);
 
 		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
-		iLimit.getWidget().addChangeHandler(new ChangeHandler() {
+		iLimit.getWidget().addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
-			public void onChange(ChangeEvent event) {
-				iLimit.clearHint();
+			public void onValueChange(ValueChangeEvent<String> event) {
+				computeLimit();
 			}
 		});
 		iPanel.addRow("Reserved Space:", iLimit);
@@ -265,7 +267,7 @@ public class ReservationEdit extends Composite {
 			@Override
 			public void onChange(ChangeEvent event) {
 				iStudents.clearHint();
-				iLimit.getWidget().setText(String.valueOf(iStudents.getWidget().getText().split("\n").length));
+				iLimit.getWidget().setValue(String.valueOf(iStudents.getWidget().getText().split("\n").length), true);
 			}
 		});
 		sLastStudents = iStudents.getWidget();
@@ -314,7 +316,7 @@ public class ReservationEdit extends Composite {
 				String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
 				for (Course course: iOffering.getCourses()) {
 					if (course.getId().toString().equals(cid))
-						iLimit.getWidget().setText(course.getLimit() == null ? "" : course.getLimit().toString());
+						iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
 				}
 			}
 		});
@@ -380,7 +382,7 @@ public class ReservationEdit extends Composite {
 						}
 					}
 					if (noneSelected) limit = c.getLimit();
-					iLimit.getWidget().setText(limit == 0 ? "" : String.valueOf(limit));
+					iLimit.getWidget().setValue(limit == 0 ? "" : String.valueOf(limit), true);
 				}
 			}
 		});
@@ -543,6 +545,8 @@ public class ReservationEdit extends Composite {
 		iReservation = r;
 		UniTimePageLabel.getInstance().setPageName(iReservation == null ? "Add Reservation" : "Edit Reservation");
 		iTitleAndButtons.setEnabled("delete", iReservation != null);
+		iTitleAndButtons.clearMessage();
+		iLimit.clearHint();
 		
 		Long offeringId = (iReservation == null ? null : iReservation.getOffering().getId());
 		if (offeringId == null) {
@@ -554,7 +558,7 @@ public class ReservationEdit extends Composite {
 			iOffering = null;
 			iCourseBox.setEnabled(true);
 			iCourseBox.setCourse("", false);
-			iLimit.getWidget().setText("");
+			iLimit.getWidget().setValue("", true);
 			iExpirationDate.getWidget().setText("");
 			iStructure.clear(); iClasses.clear(); iConfigs.clear();
 			iType.getWidget().setSelectedIndex(0);
@@ -653,6 +657,7 @@ public class ReservationEdit extends Composite {
 				iPanel.getRowFormatter().setVisible(iCurriculumLine, "curriculum".equals(val) && iCurriculum.getWidget().getItemCount() > 1);
 			}
 		});
+		computeLimit();
 	}
 	
 	private List<TreeItem> addClasses(Subpart subpart, Long parent) {
@@ -681,15 +686,15 @@ public class ReservationEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val));
 		if ("course".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
-			iLimit.getWidget().setText("");
+			iLimit.getWidget().setValue("", true);
 			String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
 			for (Course course: iOffering.getCourses()) {
 				if (course.getId().toString().equals(cid))
-					iLimit.getWidget().setText(course.getLimit() == null ? "" : course.getLimit().toString());
+					iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
 			}
 		} else if ("individual".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
-			iLimit.getWidget().setText(String.valueOf(iStudents.getWidget().getText().split("\n").length));
+			iLimit.getWidget().setValue(String.valueOf(iStudents.getWidget().getText().split("\n").length), true);
 		} else {
 			iLimit.getWidget().setReadOnly(false);
 		}
@@ -742,13 +747,13 @@ public class ReservationEdit extends Composite {
 					if (m.getId().toString().equals(clasfId)) { hasClasf = true; break; }
 				iClassifications.setItemSelected(i, hasClasf);
 			}
-			iLimit.getWidget().setText(c.getLimit() == null ? "" : c.getLimit().toString());
+			iLimit.getWidget().setValue(c.getLimit() == null ? "" : c.getLimit().toString(), true);
 		}
 	}
 	
 	public void populate() {
 		if (iReservation == null) return;
-		iLimit.getWidget().setText(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
+		iLimit.getWidget().setValue(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
 		if (iReservation.getExpirationDate() == null) {
 			iExpirationDate.getWidget().setText("");
 		} else {
@@ -806,6 +811,7 @@ public class ReservationEdit extends Composite {
 		typeChanged();
 		iType.setReadOnly(true);
 		iType.setText(iType.getWidget().getItemText(iType.getWidget().getSelectedIndex()));
+		computeLimit();
 	}
 	
 	private void openNodes(TreeItem item) {
@@ -976,7 +982,7 @@ public class ReservationEdit extends Composite {
 	
 	public static void personFound(String externalUniqueId, String name) {
 		sLastStudents.setText(sLastStudents.getText() + (sLastStudents.getText().isEmpty() ? "" : "\n") + externalUniqueId + " " + name);
-		sLastLimit.setText(String.valueOf(sLastStudents.getText().split("\n").length));
+		sLastLimit.setValue(String.valueOf(sLastStudents.getText().split("\n").length), true);
 	}
 
 	private class ClassSelection extends CheckBox implements ClickHandler {
@@ -1076,41 +1082,56 @@ public class ReservationEdit extends Composite {
 	}
 	
 	private void computeLimit() {
-		if (iLimit.isReadOnly()) return;
-		int total = 0;
-		int limit = 0;
-		boolean totalUnlimited = false;
-		boolean unlimited = false;
-		boolean selected = false;
+		if (iOffering == null) {
+			iLimit.clearHint();
+			return;
+		}
+		// if (iLimit.isReadOnly()) return;
+		int total = 0, limit = -1;
+		boolean totalUnlimited = false, unlimited = false;
 		for (Config config: iOffering.getConfigs()) {
 			for (Subpart subpart: config.getSubparts()) {
+				int lim = 0; boolean selected = false;
 				for (Clazz clazz: subpart.getClasses()) {
 					ClassSelection child = iClasses.get(clazz.getId());
-					if (child.getValue() && child.isEnabled()) {
-						limit += clazz.getLimit();
+					if (child.getValue()) {
+						lim += clazz.getLimit();
 						selected = true;
 					}
 				}
+				if (selected && (limit < 0 || limit > lim)) { limit = lim; }
 			}
+		}
+		int lim = 0; boolean selected = false;
+		for (Config config: iOffering.getConfigs()) {
 			if (config.getLimit() == null)
 				totalUnlimited = true;
 			else
 				total += config.getLimit();
 			ConfigSelection cfg = iConfigs.get(config.getId());
-			if (cfg != null) {
-				if (cfg.getValue() && cfg.isEnabled()) {
-					selected = true;
-					if (cfg.getConfig().getLimit() == null)
-						unlimited = true;
-					else
-						limit += cfg.getConfig().getLimit();
-				}
+			if (cfg != null && cfg.getValue()) {
+				selected = true;
+				if (cfg.getConfig().getLimit() == null)
+					unlimited = true;
+				else
+					lim += cfg.getConfig().getLimit();
 			}
 		}
-		if (selected) {
-			iLimit.getWidget().setText(unlimited ? "" : String.valueOf(limit));
+		if (selected && (limit < 0 || limit > lim)) { limit = lim; }
+		int entered = Integer.MAX_VALUE;
+		try {
+			entered = Integer.parseInt(iLimit.getWidget().getValue());
+		} catch (NumberFormatException e) {}
+		if (limit >= 0 || unlimited) {
+			if (unlimited || limit >= entered)
+				iLimit.clearHint();
+			else
+				iLimit.setHint((limit == 0 ? "No" : limit == 1 ? "Only 1 space" : "Only " + limit + " spaces") + " selected");
 		} else {
-			iLimit.getWidget().setText(totalUnlimited ? "" : String.valueOf(total));
+			if (totalUnlimited || total >= entered)
+				iLimit.clearHint();
+			else
+				iLimit.setHint((total == 0 ? "No" : total == 1 ? "Only 1 space" : "Only " + total + " spaces") + " in " + iOffering.getAbbv());
 		}
 	}
 	
