@@ -150,6 +150,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	}
 
 	private void loadCourses(Element studentEl, Student student, Session session) throws Exception {
+		int row = 0;
 		for (Iterator it = studentEl.elementIterator(); it.hasNext();) {
 			Element el = (Element) it.next();
 			String subject = getOptionalStringAttribute(el, "subject");
@@ -186,7 +187,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 			demand.setCourseNbr(courseNumber);
 	        demand.setStudent(student);
 	        demand.setSubjectArea(area);
-	        demand.setPriority(Integer.decode(el.attributeValue("priority")));
+	        demand.setPriority(Integer.decode(el.attributeValue("priority", String.valueOf(row++))));
 	        getHibSession().save(demand);
 		}
 	}
