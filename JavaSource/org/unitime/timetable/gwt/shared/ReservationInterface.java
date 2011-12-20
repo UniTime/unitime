@@ -218,6 +218,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 
 	public static class Offering extends IdName {
+		private boolean iOffered = true;
 		private List<Course> iCourses = new ArrayList<Course>();
 		private List<Config> iConfigs = new ArrayList<Config>();
 		
@@ -225,6 +226,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public List<Course> getCourses() { return iCourses; }
 		public List<Config> getConfigs() { return iConfigs; }
+		
+		public boolean isOffered() { return iOffered; }
+		public void setOffered(boolean offered) { iOffered = offered; }
 	}
 	
 	public static class Area extends IdName {

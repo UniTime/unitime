@@ -1126,12 +1126,14 @@ public class ReservationEdit extends Composite {
 			if (unlimited || limit >= entered)
 				iLimit.clearHint();
 			else
-				iLimit.setHint((limit == 0 ? "No" : limit == 1 ? "Only 1 space" : "Only " + limit + " spaces") + " selected");
+				iLimit.setHint((limit == 0 ? "No space" : limit == 1 ? "Only 1 space" : "Only " + limit + " spaces") + " selected");
 		} else {
-			if (totalUnlimited || total >= entered)
+			if (!iOffering.isOffered())
+				iLimit.setHint(iOffering.getAbbv() + " is not offered");
+			else if (totalUnlimited || total >= entered || entered == Integer.MAX_VALUE)
 				iLimit.clearHint();
 			else
-				iLimit.setHint((total == 0 ? "No" : total == 1 ? "Only 1 space" : "Only " + total + " spaces") + " in " + iOffering.getAbbv());
+				iLimit.setHint((total == 0 ? "No space" : total == 1 ? "Only 1 space" : "Only " + total + " spaces") + " in " + iOffering.getAbbv());
 		}
 	}
 	
