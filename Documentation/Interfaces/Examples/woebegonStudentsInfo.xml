@@ -2,8 +2,8 @@
 <!DOCTYPE students PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Student.dtd">
 
 <!-- 
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  -->
-	<!-- student                 ==> Required:  externalId, firstName, lastName
-	                                 Optional:  middleName, email
-	       studentAcadAreaClass  ==> [1 ==> N entries]
-	         acadAreaClass       ==> Required:  academicArea, academicClass
-	       studentMajors         ==> [1 ==> N entries]  
-	         major               ==> Required:  academicArea, code
-	       studentMinors         ==> [0 ==> N entries]  
-	         minor               ==> Required:  academicArea, code
-	       studentGroups         ==> [0 ==> N entries]  
-	         studentGroup        ==> Required:  group
-	       studentAccomodations  ==> [0 ==> N entries]  
-	         studentAccomodation ==> Required:  accomodation
-	-->
+
 <students campus="woebegon" year="2010" term="Fal">
   <student externalId="1001" firstName="Andrew" lastName="Student" middleName='Frank' email="demo@unitime.org">
     <studentAcadAreaClass>

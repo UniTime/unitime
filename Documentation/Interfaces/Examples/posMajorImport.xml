@@ -23,7 +23,9 @@
 	<!-- posMajor ==> Required:  code, name, academicArea
 	                  Optional:  externalId
 	-->
-<posMajors campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<posMajor externalId="0WE00FT4HEJ0" code="097" name="CERT-PLANT AGRICULTURE" academicArea="A"/>
-	<posMajor externalId="0WE00FDBHEJ0" code="K45" name="COMPUTER INFO SYSTEMS"  academicArea="CPT"/>
+<posMajors campus="woebegon" term="Fal" year="2010">
+	<posMajor externalId="M1" code="M1" name="Major 1" academicArea="A"/>
+	<posMajor externalId="M2" code="M2" name="Major 2" academicArea="A"/>
+	<posMajor externalId="M3" code="M3" name="Major 3" academicArea="A"/>
+	<posMajor code="T" name="Test Major" academicArea="TEST"/>
 </posMajors>

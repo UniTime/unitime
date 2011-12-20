@@ -2,8 +2,8 @@
 <!DOCTYPE studentAccomodations PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentAccomodation.dtd">
 
 <!-- 
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2008 - 2011, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 	<!-- studentAccomodation ==> Required:  abbreviation, name
 	                             Optional:  externalId
 	-->
-<studentAccomodations campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<studentAccomodation externalId="0WE00FT4HEJ0" abbreviation="Visual" name="Visually Impaired"/>
-	<studentAccomodation externalId="0WE00FDBHEJ0" abbreviation="WChair" name="Uses Wheel Chair"/>
+<studentAccomodations campus="woebegon" term="Fal" year="2010">
+	<studentAccomodation externalId="Vis" abbreviation="Visual" name="Visually Impaired"/>
+	<studentAccomodation externalId="WCh" abbreviation="WChair" name="Uses Wheel Chair"/>
+	<studentAccomodation abbreviation="TEST" name="Test Accomodation"/>
 </studentAccomodations>

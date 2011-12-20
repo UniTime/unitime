@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.AcademicClassification;
@@ -36,7 +39,7 @@ public class AcademicClassificationImport extends BaseImport {
 
     public void loadXml(Element root) throws Exception{
         if (!root.getName().equalsIgnoreCase("academicClassifications")) {
-            throw new Exception("Given XML file is not a AcademicClassification load file.");
+            throw new Exception("Given XML file is not academic classifications load file.");
         }
         try {
             beginTransaction();
@@ -46,31 +49,48 @@ public class AcademicClassificationImport extends BaseImport {
             String term   = root.attributeValue("term");
 
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
-            if(session == null) {
+            if (session == null)
                 throw new Exception("No session found for the given campus, year, and term.");
+            
+            Map<String, AcademicClassification> id2clasf = new Hashtable<String, AcademicClassification>();
+            Map<String, AcademicClassification> code2clasf = new Hashtable<String, AcademicClassification>();
+            for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
+            		"from AcademicClassification where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	if (clasf.getExternalUniqueId() != null)
+            		id2clasf.put(clasf.getExternalUniqueId(), clasf);
+            	code2clasf.put(clasf.getCode(), clasf);
             }
             
-            for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
+            for (Iterator it = root.elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
+                
                 String externalId = element.attributeValue("externalId");
-                AcademicClassification academicClassification = null;
-                if(externalId != null && externalId.length() > 0) {
-                    academicClassification = findByExternalId(externalId, session.getSessionId());
+                String code = element.attributeValue("code");
+                
+                AcademicClassification clasf = null;
+                if (externalId != null)
+                	clasf = id2clasf.remove(externalId);
+                if (clasf == null)
+                	clasf = code2clasf.get(code);
+                
+                if (clasf == null) {
+                	clasf = new AcademicClassification();
+                	clasf.setSession(session);
+                	info("Academic classification " + code + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                } else {
+                	info("Academic classification " + code + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
                 }
-                if(academicClassification == null) {
-                    academicClassification = new AcademicClassification();
-                    academicClassification.setSession(session);
-                }
-                else if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                    getHibSession().delete(academicClassification);
-                    continue;
-                }
-                academicClassification.setCode(element.attributeValue("code"));
-                academicClassification.setExternalUniqueId(element.attributeValue("externalId"));
-                academicClassification.setName(element.attributeValue("name"));
-
-                getHibSession().saveOrUpdate(academicClassification);
-                flushIfNeeded(false);
+                
+                clasf.setExternalUniqueId(externalId);
+                clasf.setCode(code);
+                clasf.setName(element.attributeValue("name"));
+                
+                getHibSession().saveOrUpdate(clasf);
+            }
+            
+            for (AcademicClassification clasf: id2clasf.values()) {
+            	info("Academic classification " + clasf.getCode() + " (" + clasf.getExternalUniqueId() + ") deleted.");
+            	getHibSession().delete(clasf);
             }
             
             commitTransaction();
@@ -79,14 +99,5 @@ public class AcademicClassificationImport extends BaseImport {
             rollbackTransaction();
             throw e;
         }
-	}
-
-	private AcademicClassification findByExternalId(String externalId, Long sessionId) {
-		return (AcademicClassification) getHibSession().
-			createQuery("select distinct a from AcademicClassification as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("externalId", externalId).
-			setCacheable(true).
-			uniqueResult();
 	}
 }

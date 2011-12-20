@@ -20,7 +20,10 @@
 package org.unitime.timetable.dataexchange;
 
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.AcademicArea;
@@ -37,7 +40,7 @@ public class PosMinorImport extends BaseImport {
 
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("posMinors")) {
-        	throw new Exception("Given XML file is not a PosMinor load file.");
+        	throw new Exception("Given XML file is not pos minors load file.");
         }
         try {
             beginTransaction();
@@ -47,51 +50,71 @@ public class PosMinorImport extends BaseImport {
             String term   = root.attributeValue("term");
 
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
-            if(session == null) {
+            if(session == null)
                 throw new Exception("No session found for the given campus, year, and term.");
+            
+            Map<String, PosMinor> id2minor = new Hashtable<String, PosMinor>();
+            Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
+            for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
+            		"from PosMinor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	if (minor.getExternalUniqueId() != null)
+            		id2minor.put(minor.getExternalUniqueId(), minor);
+            	for (AcademicArea area: minor.getAcademicAreas())
+            		code2minor.put(area.getAcademicAreaAbbreviation() + ":" + minor.getCode(), minor);
             }
-
-            for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
+            
+            Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
+            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
+            }
+            
+            for (Iterator it = root.elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
-                String externalId = element.attributeValue("externalId");
-                PosMinor posMinor = null;
-                if(externalId != null && externalId.length() > 0) {
-                    posMinor = findByExternalId(externalId, session.getSessionId());
-                }
-                if(posMinor == null) {
-                    posMinor = new PosMinor();
-                    posMinor.setSession(session);
-                    posMinor.setAcademicAreas(new HashSet());
-                }
-                else {
-                    if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                        getHibSession().delete(posMinor);
-                        continue;
-                    }
-                }
-                posMinor.setName(element.attributeValue("name"));
-                posMinor.setCode(element.attributeValue("code"));
-                posMinor.setExternalUniqueId(externalId);
-
-                AcademicArea acadArea = AcademicArea.findByAbbv(session.getSessionId(), element.attributeValue("academicArea"));
-                if(acadArea == null) {
-                    error("Unable to find academic area "+element.attributeValue("academicArea"));
-                    continue;
-                }
-                boolean found = false;
-                for (Iterator iter = posMinor.getAcademicAreas().iterator(); iter.hasNext();) {
-                    AcademicArea area = (AcademicArea) iter.next();
-                    if(area.getAcademicAreaAbbreviation().equals(element.attributeValue("academicArea"))) {
-                        found = true;
-                    }
-                }
-                if(!found) {
-                    posMinor.getAcademicAreas().add(acadArea);
-                    acadArea.getPosMinors().add(posMinor);
-                }
-                getHibSession().saveOrUpdate(posMinor);
                 
-                flushIfNeeded(false);
+                String externalId = element.attributeValue("externalId");
+                String code = element.attributeValue("code");
+                AcademicArea area = abbv2area.get(element.attributeValue("academicArea"));
+                
+                if (area == null) {
+                	warn("Unknown academic area " + element.attributeValue("academicArea"));
+                	continue;
+                }
+                
+                PosMinor minor = null;
+                if (externalId != null)
+                	minor = id2minor.remove(externalId);
+                if (minor == null)
+                	minor = code2minor.get(area.getAcademicAreaAbbreviation() + ":" + code);
+                
+                if (minor == null) {
+                	minor = new PosMinor();
+                	minor.setSession(session);
+                	minor.setAcademicAreas(new HashSet<AcademicArea>());
+                	info("Minor " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                } else {
+                	info("Minor " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
+                }
+                
+                minor.setExternalUniqueId(externalId);
+                minor.setCode(code);
+                minor.setName(element.attributeValue("name"));
+                
+                minor.getAcademicAreas().clear();
+                minor.getAcademicAreas().add(area);
+                area.getPosMinors().add(minor);
+                
+                getHibSession().saveOrUpdate(minor);
+            }
+            
+            for (PosMinor minor: id2minor.values()) {
+            	String abbv = null;
+            	for (AcademicArea area: minor.getAcademicAreas()) {
+            		area.getPosMinors().remove(minor);
+            		abbv = area.getAcademicAreaAbbreviation();
+            	}
+            	info("Minor " + abbv + " " + minor.getCode() + " (" + minor.getExternalUniqueId() + ") deleted.");
+            	getHibSession().delete(minor);
             }
             
             commitTransaction();
@@ -100,14 +123,5 @@ public class PosMinorImport extends BaseImport {
             rollbackTransaction();
             throw e;
         }
-	}
-
-	private PosMinor findByExternalId(String externalId, Long sessionId) {
-		return (PosMinor) getHibSession().
-			createQuery("select distinct a from PosMinor as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("externalId", externalId).
-			setCacheable(true).
-			uniqueResult();
 	}
 }

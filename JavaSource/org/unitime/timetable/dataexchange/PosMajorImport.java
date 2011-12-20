@@ -20,7 +20,10 @@
 package org.unitime.timetable.dataexchange;
 
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.AcademicArea;
@@ -36,7 +39,7 @@ public class PosMajorImport extends BaseImport {
 
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("posMajors")) {
-        	throw new Exception("Given XML file is not a PosMajor load file.");
+        	throw new Exception("Given XML file is not pos majors load file.");
         }
         try {
             beginTransaction();
@@ -46,53 +49,71 @@ public class PosMajorImport extends BaseImport {
             String term   = root.attributeValue("term");
 
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
-            if(session == null) {
+            if (session == null)
                 throw new Exception("No session found for the given campus, year, and term.");
+            
+            Map<String, PosMajor> id2major = new Hashtable<String, PosMajor>();
+            Map<String, PosMajor> code2major = new Hashtable<String, PosMajor>();
+            for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
+            		"from PosMajor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	if (major.getExternalUniqueId() != null)
+            		id2major.put(major.getExternalUniqueId(), major);
+            	for (AcademicArea area: major.getAcademicAreas())
+            		code2major.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
             }
             
-            for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
+            Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
+            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
+            }
+            
+            for (Iterator it = root.elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
+                
                 String externalId = element.attributeValue("externalId");
-                PosMajor posMajor = null;
-                if(externalId != null && externalId.length() > 0) {
-                    posMajor = findByExternalId(externalId, session.getSessionId());
+                String code = element.attributeValue("code");
+                AcademicArea area = abbv2area.get(element.attributeValue("academicArea"));
+                
+                if (area == null) {
+                	warn("Unknown academic area " + element.attributeValue("academicArea"));
+                	continue;
                 }
-                if(posMajor == null) {
-                    posMajor = new PosMajor();
-                    posMajor.setSession(session);
-                    posMajor.setAcademicAreas(new HashSet());
+                
+                PosMajor major = null;
+                if (externalId != null)
+                	major = id2major.remove(externalId);
+                if (major == null)
+                	major = code2major.get(area.getAcademicAreaAbbreviation() + ":" + code);
+                
+                if (major == null) {
+                	major = new PosMajor();
+                	major.setSession(session);
+                	major.setAcademicAreas(new HashSet<AcademicArea>());
+                	info("Major " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                } else {
+                	info("Major " + area.getAcademicAreaAbbreviation() + " " + code + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
                 }
-                else {
-                    if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                        getHibSession().delete(posMajor);
-                        continue;
-                    }
-                }
-                posMajor.setName(element.attributeValue("name"));
-                posMajor.setCode(element.attributeValue("code"));
-                posMajor.setExternalUniqueId(externalId);
-
-                AcademicArea acadArea = AcademicArea.findByAbbv(session.getSessionId(), element.attributeValue("academicArea"));
-                if(acadArea == null) {
-                    error("Unable to find academic area "+element.attributeValue("academicArea"));
-                    continue;
-                }
-                boolean found = false;
-                if(posMajor.getAcademicAreas() == null) {
-                    posMajor.setAcademicAreas(new HashSet());
-                }
-                for (Iterator iter = posMajor.getAcademicAreas().iterator(); iter.hasNext();) {
-                    AcademicArea area = (AcademicArea) iter.next();
-                    if(area.getAcademicAreaAbbreviation().equals(element.attributeValue("academicArea"))) {
-                        found = true;
-                    }
-                }
-                if(!found) {
-                    posMajor.getAcademicAreas().add(acadArea);
-                    acadArea.getPosMajors().add(posMajor);
-                }
-                getHibSession().saveOrUpdate(posMajor);
-                flushIfNeeded(false);
+                
+                major.setExternalUniqueId(externalId);
+                major.setCode(code);
+                major.setName(element.attributeValue("name"));
+                
+                major.getAcademicAreas().clear();
+                major.getAcademicAreas().add(area);
+                area.getPosMajors().add(major);
+                
+                getHibSession().saveOrUpdate(major);
+            }
+            
+            for (PosMajor major: id2major.values()) {
+            	String abbv = null;
+            	for (AcademicArea area: major.getAcademicAreas()) {
+            		area.getPosMajors().remove(major);
+            		abbv = area.getAcademicAreaAbbreviation();
+            	}
+            	info("Major " + abbv + " " + major.getCode() + " (" + major.getExternalUniqueId() + ") deleted.");
+            	getHibSession().delete(major);
             }
             
             commitTransaction();
@@ -101,14 +122,5 @@ public class PosMajorImport extends BaseImport {
             rollbackTransaction();
             throw e;
         }
-	}
-
-	private PosMajor findByExternalId(String externalId, Long sessionId) {
-		return (PosMajor) getHibSession().
-			createQuery("select distinct a from PosMajor as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("externalId", externalId).
-			setCacheable(true).
-			uniqueResult();
 	}
 }
