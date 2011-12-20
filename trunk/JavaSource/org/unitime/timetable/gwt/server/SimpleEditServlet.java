@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.server;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -588,15 +589,22 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							group.setGroupAbbreviation(r.getField(1));
 							group.setGroupName(r.getField(2));
 							if (group.getExternalUniqueId() == null && r.getField(3) != null) {
-								group.getStudents().clear();
-								for (String s: r.getField(3).split("\\n")) {
-									if (s.indexOf(' ') >= 0) s = s.substring(0, s.indexOf(' '));
-									if (s.trim().isEmpty()) continue;
-									Student student = Student.findByExternalId(sessionId, s.trim());
-									if (student != null)
+								Hashtable<String, Student> students = new Hashtable<String, Student>();
+								for (Student s: group.getStudents())
+									students.put(s.getExternalUniqueId(), s);
+								for (String line: r.getField(3).split("\\n")) {
+									String extId = (line.indexOf(' ') >= 0 ? line.substring(0, line.indexOf(' ')) : line).trim();
+									if (extId.isEmpty() || students.remove(extId) != null) continue;
+									Student student = Student.findByExternalId(sessionId, extId);
+									if (student != null) {
 										group.getStudents().add(student);
+										changed = true;
+									}
 								}
-								changed = true;
+								if (!students.isEmpty()) {
+									group.getStudents().removeAll(students.values());
+									changed = true;
+								}
 							}
 							hibSession.saveOrUpdate(group);
 							if (changed)

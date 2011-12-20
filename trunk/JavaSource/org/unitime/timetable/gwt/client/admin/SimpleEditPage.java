@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -375,6 +376,7 @@ public class SimpleEditPage extends Composite {
 				@Override
 				public void execute() {
 					iTable.sort(new Comparator<Record>() {
+						RecordComparator iComparator = iData.getComparator();
 						public int compare(Record a, Record b) {
 							String f = a.getField(index);
 							String g = b.getField(index);
@@ -382,7 +384,7 @@ public class SimpleEditPage extends Composite {
 								if (g != null) return 1;
 							} else {
 								if (g == null) return -1;
-								int cmp = f.compareTo(g);
+								int cmp = iComparator.compare(index, a, b);
 								if (cmp != 0) return cmp;
 							}
 							return (a.getUniqueId() == null ? b.getUniqueId() == null ? 0 : 1 : b.getUniqueId() == null ? -1 : a.getUniqueId().compareTo(b.getUniqueId()));
