@@ -23,7 +23,8 @@
 	<!-- academicClassification ==> Required:  code, name
 	                                Optional:  externalId
 	-->
-<academicClassifications campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<academicClassification externalId="1818XP1F1PI1V1GBTLR6" code="01" name="First Semester Freshman"/>
-	<academicClassification externalId="1818XK1F1P7B11GBTLR6" code="M" name="Masters Student"/>
+<academicClassifications campus="woebegon" term="Fal" year="2010">
+	<academicClassification externalId="01" code="01" name="Junior Year"/>
+	<academicClassification externalId="02" code="02" name="Senior Year"/>
+	<academicClassification code="T" name="Test Semester"/>
 </academicClassifications>

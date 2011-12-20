@@ -19,18 +19,27 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.dom4j.Element;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.dao.AcademicClassificationDAO;
+import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentSectioningQueue;
 
 public class StudentImport extends BaseImport {
 
@@ -41,50 +50,271 @@ public class StudentImport extends BaseImport {
 	@Override
 	public void loadXml(Element rootElement) throws Exception {
 		try {
+			boolean trimLeadingZerosFromExternalId = "true".equals(ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false"));
+			
 	        String campus = rootElement.attributeValue("campus");
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
 
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
-	        if(session == null) {
+	        if(session == null)
 	           	throw new Exception("No session found for the given campus, year, and term.");
-	        }
 
 			beginTransaction();
             
-            /* 
-             * If some records of a table related to students need to be explicitly deleted, 
-             * hibernate can also be used to delete them. For instance, the following query 
-             * deletes all last-like course demands for given academic session:
-             *   
-             * delete LastLikeCourseDemand ll where ll.student.uniqueId in
-             *      (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)
-             */
-            
-            getHibSession().createQuery("delete Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
-            
-            flush(true);
-            
-	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
-	            Element element = (Element) it.next();
-            	Student student = new Student();
-                student.setSession(session);
-	            student.setFirstName(element.attributeValue("firstName"));
-	            student.setMiddleName(element.attributeValue("middleName"));
-	            student.setLastName(element.attributeValue("lastName"));
-	            student.setEmail(element.attributeValue("email"));
-	            student.setExternalUniqueId(element.attributeValue("externalId"));
-	            student.setFreeTimeCategory(new Integer(0));
-	            student.setSchedulePreference(new Integer(0));
-	            
-	            loadAcadAreaClassifications(element, student, session);
-	            loadMajors(element, student, session);
-	            loadMinors(element, student, session);
-                
-                getHibSession().save(student);
-
-	            flushIfNeeded(true);
+	        Hashtable<String, Student> students = new Hashtable<String, Student>();
+	        for (Student student: (List<Student>)getHibSession().createQuery(
+	        		"from Student s where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
+                    setLong("sessionId",session.getUniqueId()).list()) { 
+	        	students.put(student.getExternalUniqueId(), student);
 	        }
+	        
+            Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
+            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
+            }
+
+            Map<String, AcademicClassification> code2clasf = new Hashtable<String, AcademicClassification>();
+            for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
+            		"from AcademicClassification where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2clasf.put(clasf.getCode(), clasf);
+            }
+            
+            Map<String, PosMajor> code2major = new Hashtable<String, PosMajor>();
+            for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
+            		"from PosMajor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	for (AcademicArea area: major.getAcademicAreas())
+            		code2major.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
+            }
+            
+            Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
+            for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
+            		"from PosMinor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	for (AcademicArea area: minor.getAcademicAreas())
+            		code2minor.put(area.getAcademicAreaAbbreviation() + ":" + minor.getCode(), minor);
+            }
+
+            Map<String, StudentGroup> code2group = new Hashtable<String, StudentGroup>();
+            for (StudentGroup group: (List<StudentGroup>)getHibSession().createQuery(
+            		"from StudentGroup where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2group.put(group.getGroupAbbreviation(), group);
+            }
+            
+            Map<String, StudentAccomodation> code2accomodation = new Hashtable<String, StudentAccomodation>();
+            for (StudentAccomodation accomodation: (List<StudentAccomodation>)getHibSession().createQuery(
+            		"from StudentAccomodation where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	code2accomodation.put(accomodation.getAbbreviation(), accomodation);
+            }
+	        
+	        Set<Long> updatedStudents = new HashSet<Long>(); 
+	        
+	        for (Iterator i1 = rootElement.elementIterator(); i1.hasNext(); ) {
+	            Element element = (Element) i1.next();
+	            
+	            String externalId = element.attributeValue("externalId");
+	            if (externalId == null) continue;
+	            while (trimLeadingZerosFromExternalId && externalId.startsWith("0")) externalId = externalId.substring(1);
+	            
+            	String fName = element.attributeValue("firstName", "Name");
+            	String mName = element.attributeValue("middleName");
+            	String lName = element.attributeValue("lastName", "Unknown");
+            	String email = element.attributeValue("email");
+
+            	Student student = students.remove(externalId);
+            	if (student == null) {
+            		student = new Student();
+	                student.setSession(session);
+		            student.setExternalUniqueId(externalId);
+		            student.setFreeTimeCategory(0);
+		            student.setSchedulePreference(0);
+		            student.setClassEnrollments(new HashSet<StudentClassEnrollment>());
+		            student.setCourseDemands(new HashSet<CourseDemand>());
+		            student.setFirstName(fName);
+		            student.setMiddleName(mName);
+		            student.setLastName(lName);
+		            student.setEmail(email);
+		            student.setAcademicAreaClassifications(new HashSet<AcademicAreaClassification>());
+		            student.setPosMajors(new HashSet<PosMajor>());
+		            student.setPosMinors(new HashSet<PosMinor>());
+		            student.setGroups(new HashSet<StudentGroup>());
+		            student.setAccomodations(new HashSet<StudentAccomodation>());
+            	} else {
+                	if (!eq(fName, student.getFirstName())) {
+                		student.setFirstName(fName);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+                	if (!eq(mName, student.getMiddleName())) {
+                		student.setMiddleName(mName);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+                	if (!eq(lName, student.getLastName())) {
+                		student.setLastName(lName);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+                	if (!eq(email, student.getEmail())) {
+                		student.setEmail(email);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+            	}
+            	
+            	if (element.element("studentAcadAreaClass") != null) {
+                	Map<String, AcademicAreaClassification> sAreaClasf = new Hashtable<String, AcademicAreaClassification>();
+                	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications())
+                		sAreaClasf.put(aac.getAcademicArea().getAcademicAreaAbbreviation() + ":" + aac.getAcademicClassification().getCode(), aac);
+                	for (Iterator i2 = element.element("studentAcadAreaClass").elementIterator("acadAreaClass"); i2.hasNext();) {
+    	    			Element e = (Element) i2.next();
+    	    			String area = e.attributeValue("academicArea");
+    	    			String clasf = e.attributeValue("academicClass");
+    	    			if (sAreaClasf.remove(area + ":" + clasf) == null) {
+    	    				AcademicAreaClassification aac = new AcademicAreaClassification();
+    	    				if (abbv2area.get(area) == null) {
+    	    					warn("Academic area " + area + " not known.");
+    	    					continue;
+    	    				}
+    	    				aac.setAcademicArea(abbv2area.get(area));
+    	    				if (code2clasf.get(clasf) == null) {
+    	    					warn("Academic classification " + clasf + " not known.");
+    	    					continue;
+    	    				}
+    	    				aac.setAcademicClassification(code2clasf.get(clasf));
+    	    				aac.setStudent(student);
+    	    				student.getAcademicAreaClassifications().add(aac);
+    	    				updatedStudents.add(student.getUniqueId());
+    	    			}
+    	            }
+                	for (AcademicAreaClassification aac: sAreaClasf.values()) {
+                		student.getAcademicAreaClassifications().remove(aac);
+                		getHibSession().delete(aac);
+                		updatedStudents.add(student.getUniqueId());
+                	}            		
+            	}
+            	
+            	if (element.element("studentMajors") != null) {
+                	Map<String, PosMajor> sMajors = new Hashtable<String, PosMajor>();
+                	for (PosMajor major: student.getPosMajors())
+                		for (AcademicArea area: major.getAcademicAreas())
+                			sMajors.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
+                	for (Iterator i2 = element.element("studentMajors").elementIterator("major"); i2.hasNext();) {
+    	    			Element e = (Element) i2.next();
+    	    			String area = e.attributeValue("academicArea");
+    	    			String code = e.attributeValue("code");
+    	    			if (sMajors.remove(area + ":" + code) == null) {
+    	    				PosMajor major = code2major.get(area + ":" + code);
+    	    				if (major == null) {
+    	    					warn("Major" + area + " " + code + " not known.");
+    	    					continue;
+    	    				}
+    	    				student.getPosMajors().add(major);
+    	    				updatedStudents.add(student.getUniqueId());
+    	    			}
+                	}
+                	for (PosMajor major: sMajors.values()) {
+                		student.getPosMajors().remove(major);
+                		updatedStudents.add(student.getUniqueId());
+                	}            		
+            	}
+            	
+            	if (element.element("studentMinors") != null) {
+                	Map<String, PosMinor> sMinors = new Hashtable<String, PosMinor>();
+                	for (PosMinor minor: student.getPosMinors())
+                		for (AcademicArea area: minor.getAcademicAreas())
+                			sMinors.put(area.getAcademicAreaAbbreviation() + ":" + minor.getCode(), minor);
+                	for (Iterator i2 = element.element("studentMinors").elementIterator("minor"); i2.hasNext();) {
+    	    			Element e = (Element) i2.next();
+    	    			String area = e.attributeValue("academicArea");
+    	    			String code = e.attributeValue("code");
+    	    			if (sMinors.remove(area + ":" + code) == null) {
+    	    				PosMinor minor = code2minor.get(area + ":" + code);
+    	    				if (minor == null) {
+    	    					warn("Minor" + area + " " + code + " not known.");
+    	    					continue;
+    	    				}
+    	    				student.getPosMinors().add(minor);
+    	    				updatedStudents.add(student.getUniqueId());
+    	    			}
+                	}
+                	for (PosMinor minor: sMinors.values()) {
+                		student.getPosMinors().remove(minor);
+                		updatedStudents.add(student.getUniqueId());
+                	}            		
+            	}
+            	
+            	if (element.element("studentGroups") != null) {
+            		Map<String, StudentGroup> sGroups = new Hashtable<String, StudentGroup>();
+            		for (StudentGroup group: student.getGroups())
+            			sGroups.put(group.getGroupAbbreviation(), group);
+            		for (Iterator i2 = element.element("studentGroups").elementIterator("studentGroup"); i2.hasNext();) {
+    	    			Element e = (Element) i2.next();
+    	    			String code = e.attributeValue("group");
+    	    			if (sGroups.remove(code) == null) {
+    	    				StudentGroup group = code2group.get(code);
+    	    				if (group == null) {
+    	    					warn("Student group " + code + " not known.");
+    	    					continue;
+    	    				}
+    	    				student.getGroups().add(group);
+    	    				group.getStudents().add(student);
+    	    				getHibSession().saveOrUpdate(group);
+    	    				updatedStudents.add(student.getUniqueId());
+    	    			}
+            		}
+                	for (StudentGroup group: sGroups.values()) {
+                		if (group.getExternalUniqueId() == null) continue;
+                		student.getGroups().remove(group);
+                		group.getStudents().remove(student);
+                		getHibSession().saveOrUpdate(group);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+            	}
+            	
+            	if (element.element("studentAccomodations") != null) {
+            		Map<String, StudentAccomodation> sAccomodations = new Hashtable<String, StudentAccomodation>();
+            		for (StudentAccomodation accomodation: student.getAccomodations())
+            			sAccomodations.put(accomodation.getAbbreviation(), accomodation);
+            		for (Iterator i2 = element.element("studentAccomodations").elementIterator("studentAccomodation"); i2.hasNext();) {
+    	    			Element e = (Element) i2.next();
+    	    			String code = e.attributeValue("accomodation");
+    	    			if (sAccomodations.remove(code) == null) {
+    	    				StudentAccomodation accomodation = code2accomodation.get(code);
+    	    				if (accomodation == null) {
+    	    					warn("Student accomodation " + code + " not known.");
+    	    					continue;
+    	    				}
+    	    				student.getAccomodations().add(accomodation);
+    	    				updatedStudents.add(student.getUniqueId());
+    	    			}
+            		}
+                	for (StudentAccomodation accomodation: sAccomodations.values()) {
+                		student.getAccomodations().remove(accomodation);
+                		updatedStudents.add(student.getUniqueId());
+                	}
+            	}
+                
+            	if (student.getUniqueId() == null) {
+            		updatedStudents.add((Long)getHibSession().save(student));
+            	} else {
+            		getHibSession().update(student);
+            	}
+	        }
+	            
+	            
+ 	        for (Student student: students.values()) {
+        		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
+        			StudentClassEnrollment enrollment = i.next();
+        			if (enrollment.getCourseRequest() != null)
+        				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
+        			getHibSession().delete(enrollment);
+        			i.remove();
+     	        	updatedStudents.add(student.getUniqueId());
+        		}
+        		getHibSession().update(student);
+ 	        }
+	        
+            info(updatedStudents.size() + " students changed");
+
+ 	        if (!updatedStudents.isEmpty())
+ 	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
             
             commitTransaction();
 		} catch (Exception e) {
@@ -93,85 +323,8 @@ public class StudentImport extends BaseImport {
 			throw e;
 		}
 	}
-	private void loadMajors(Element element, Student student, Session session) throws Exception {
-		if (element.element("studentMajors") == null) return;
-		for (Iterator it = element.element("studentMajors").elementIterator("major"); it.hasNext();) {
-			Element el = (Element) it.next();
-			String code = el.attributeValue("code");
-			if (code == null) continue;
-			String academicArea = el.attributeValue("academicArea");
-			PosMajor major = null;
-			if (academicArea != null)
-				major = PosMajor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
-			else
-				major = PosMajor.findByCode(session.getSessionId(), code);
-			if (major == null)
-				warn("Major " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
-			else
-				student.addToPosMajors(major);
-		}
+	
+	private boolean eq(String a, String b) {
+		return (a == null ? b == null : a.equals(b));
 	}
-
-	private void loadMinors(Element element, Student student, Session session) throws Exception {
-		if (element.element("studentMinors") == null) return;
-		for (Iterator it = element.element("studentMinors").elementIterator("minor"); it.hasNext();) {
-			Element el = (Element) it.next();
-			String code = el.attributeValue("code");
-			if (code == null) continue;
-			String academicArea = el.attributeValue("academicArea");
-			PosMinor minor = null;
-			if(academicArea != null)
-				minor = PosMinor.findByCodeAcadAreaAbbv(session.getSessionId(), code, academicArea);
-			else
-				minor = PosMinor.findByCode(session.getSessionId(), code);
-			if (minor == null)
-				warn("Minor " +  (academicArea == null ? "" : academicArea + " ") + code + " was not found.");
-			else
-				student.addToPosMinors(minor);
-		}
-	}
-
-	private void loadAcadAreaClassifications(Element element, Student student, Session session) throws Exception {
-		if (element.element("studentAcadAreaClass") == null) return;
-		AcademicClassificationDAO acadClassDAO = new AcademicClassificationDAO();
-		for (Iterator it = element.element("studentAcadAreaClass").elementIterator("acadAreaClass"); it.hasNext();) {
-			Element el = (Element) it.next();
-			String abbv = el.attributeValue("academicArea");
-			AcademicArea acadArea = null;
-			if (abbv != null) {
-				acadArea = AcademicArea.findByAbbv(session.getSessionId(), abbv);
-				if (acadArea == null)
-					warn("Academic Area " + abbv + " was not found.");
-			}
-			AcademicClassification acadClass = null;
-			String code = el.attributeValue("academicClass");
-			if (code != null) {
-				acadClass = findAcadClass(acadClassDAO, code, session.getSessionId());
-				if (acadClass == null)
-					warn("Academic Classification " + code + " was not found.");
-			}
-			if (acadArea != null && acadClass != null) {
-				AcademicAreaClassification acadAreaClass = new AcademicAreaClassification();
-				acadAreaClass.setStudent(student);
-				acadAreaClass.setAcademicArea(acadArea);
-				acadAreaClass.setAcademicClassification(acadClass);
-				student.addToacademicAreaClassifications(acadAreaClass);
-			}
-		}
-	}
-
-	private AcademicClassification findAcadClass(AcademicClassificationDAO acadClassDAO, String code, Long sessionId) {
-		List results = acadClassDAO.
-			getSession().
-			createQuery("select distinct a from AcademicClassification as a where a.code=:code and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("code", code).
-			setCacheable(true).list();
-		if(results.size() > 0 ) {
-			return (AcademicClassification) results.get(0);
-		} else {
-			return null;
-		}
-	}
-
 }
