@@ -136,24 +136,38 @@ public class SimpleEditInterface implements IsSerializable {
 	
 	public int[] getSortBy() { return iSort; }
 	public void setSortBy(int... columns) { iSort = columns; }
-	public Comparator<Record> getComparator() {
+	public RecordComparator getComparator() {
 		return new RecordComparator();
 	}
 	
 	public class RecordComparator implements Comparator<Record> {
+		public int compare(int index, Record r1, Record r2) {
+			Field field = getFields()[index]; 
+			String s1 = r1.getText(field, index);
+			String s2 = r2.getText(field, index);
+			switch (field.getType()) {
+			case students:
+				return new Integer(s1.split("\\n").length).compareTo(s2.split("\\n").length);
+			default:
+				try {
+					Double d1 = Double.parseDouble(s1.isEmpty() ? "0": s1);
+					Double d2 = Double.parseDouble(s2.isEmpty() ? "0": s2);
+					return d1.compareTo(d2);
+				} catch (NumberFormatException e) {
+					return s1.compareTo(s2);
+				}
+			}
+		}
+		
 		public int compare(Record r1, Record r2) {
 			if (getSortBy() != null) {
 				for (int i: getSortBy()) {
-					String s1 = r1.getText(getFields()[i], i);
-					String s2 = r2.getText(getFields()[i], i);
-					int cmp = s1.compareTo(s2);
+					int cmp = compare(i, r1, r2);
 					if (cmp != 0) return cmp;
 				}
 			} else {
 				for (int i = 0; i < r1.getValues().length; i++) {
-					String s1 = r1.getText(getFields()[i], i);
-					String s2 = r2.getText(getFields()[i], i);
-					int cmp = s1.compareTo(s2);
+					int cmp = compare(i, r1, r2);
 					if (cmp != 0) return cmp;
 				}
 			}
