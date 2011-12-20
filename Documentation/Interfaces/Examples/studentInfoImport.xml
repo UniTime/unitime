@@ -202,4 +202,12 @@
       <major academicArea="A" code="M2"/>
     </studentMajors>
   </student>
+  <student externalId="1020" firstName="Urshula" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+    </studentMajors>
+  </student>
 </students>

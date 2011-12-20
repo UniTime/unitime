@@ -180,13 +180,15 @@ public class StudentImport extends BaseImport {
     	    				aac.setAcademicClassification(code2clasf.get(clasf));
     	    				aac.setStudent(student);
     	    				student.getAcademicAreaClassifications().add(aac);
-    	    				updatedStudents.add(student.getUniqueId());
+                    		if (student.getUniqueId() != null)
+                    			updatedStudents.add(student.getUniqueId());
     	    			}
     	            }
                 	for (AcademicAreaClassification aac: sAreaClasf.values()) {
                 		student.getAcademicAreaClassifications().remove(aac);
                 		getHibSession().delete(aac);
-                		updatedStudents.add(student.getUniqueId());
+                		if (student.getUniqueId() != null)
+                			updatedStudents.add(student.getUniqueId());
                 	}            		
             	}
             	
@@ -206,12 +208,14 @@ public class StudentImport extends BaseImport {
     	    					continue;
     	    				}
     	    				student.getPosMajors().add(major);
-    	    				updatedStudents.add(student.getUniqueId());
+                    		if (student.getUniqueId() != null)
+                    			updatedStudents.add(student.getUniqueId());
     	    			}
                 	}
                 	for (PosMajor major: sMajors.values()) {
                 		student.getPosMajors().remove(major);
-                		updatedStudents.add(student.getUniqueId());
+                		if (student.getUniqueId() != null)
+                			updatedStudents.add(student.getUniqueId());
                 	}            		
             	}
             	
@@ -231,12 +235,14 @@ public class StudentImport extends BaseImport {
     	    					continue;
     	    				}
     	    				student.getPosMinors().add(minor);
-    	    				updatedStudents.add(student.getUniqueId());
+                    		if (student.getUniqueId() != null)
+                    			updatedStudents.add(student.getUniqueId());
     	    			}
                 	}
                 	for (PosMinor minor: sMinors.values()) {
                 		student.getPosMinors().remove(minor);
-                		updatedStudents.add(student.getUniqueId());
+                		if (student.getUniqueId() != null)
+                			updatedStudents.add(student.getUniqueId());
                 	}            		
             	}
             	
@@ -256,7 +262,8 @@ public class StudentImport extends BaseImport {
     	    				student.getGroups().add(group);
     	    				group.getStudents().add(student);
     	    				getHibSession().saveOrUpdate(group);
-    	    				updatedStudents.add(student.getUniqueId());
+                    		if (student.getUniqueId() != null)
+                    			updatedStudents.add(student.getUniqueId());
     	    			}
             		}
                 	for (StudentGroup group: sGroups.values()) {
@@ -264,7 +271,8 @@ public class StudentImport extends BaseImport {
                 		student.getGroups().remove(group);
                 		group.getStudents().remove(student);
                 		getHibSession().saveOrUpdate(group);
-                		updatedStudents.add(student.getUniqueId());
+                		if (student.getUniqueId() != null)
+                			updatedStudents.add(student.getUniqueId());
                 	}
             	}
             	
@@ -282,12 +290,14 @@ public class StudentImport extends BaseImport {
     	    					continue;
     	    				}
     	    				student.getAccomodations().add(accomodation);
-    	    				updatedStudents.add(student.getUniqueId());
+                    		if (student.getUniqueId() != null)
+                    			updatedStudents.add(student.getUniqueId());
     	    			}
             		}
                 	for (StudentAccomodation accomodation: sAccomodations.values()) {
                 		student.getAccomodations().remove(accomodation);
-                		updatedStudents.add(student.getUniqueId());
+                		if (student.getUniqueId() != null)
+                			updatedStudents.add(student.getUniqueId());
                 	}
             	}
                 
