@@ -150,6 +150,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 		offering.setAbbv(io.getCourseName());
 		offering.setName(io.getControllingCourseOffering().getTitle());
 		offering.setId(io.getUniqueId());
+		offering.setOffered(!io.isNotOffered());
 		for (CourseOffering co: io.getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
 			course.setId(co.getUniqueId());
@@ -159,7 +160,9 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 			course.setLimit(co.getReservation());
 			offering.getCourses().add(course);
 		}
-		for (InstrOfferingConfig ioc: io.getInstrOfferingConfigs()) {
+		List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(io.getInstrOfferingConfigs());
+		Collections.sort(configs, new InstrOfferingConfigComparator(null));
+		for (InstrOfferingConfig ioc: configs) {
 			ReservationInterface.Config config = new ReservationInterface.Config();
 			config.setId(ioc.getUniqueId());
 			config.setName(ioc.getName());
@@ -449,6 +452,7 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 		offering.setAbbv(reservation.getInstructionalOffering().getCourseName());
 		offering.setName(reservation.getInstructionalOffering().getControllingCourseOffering().getTitle());
 		offering.setId(reservation.getInstructionalOffering().getUniqueId());
+		offering.setOffered(!reservation.getInstructionalOffering().isNotOffered());
 		r.setOffering(offering);
 		for (CourseOffering co: reservation.getInstructionalOffering().getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
