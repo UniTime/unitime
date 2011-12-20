@@ -147,7 +147,7 @@ public class SimpleEditInterface implements IsSerializable {
 			String s2 = r2.getText(field, index);
 			switch (field.getType()) {
 			case students:
-				return new Integer(s1.split("\\n").length).compareTo(s2.split("\\n").length);
+				return new Integer(s1.isEmpty() ? 0 : s1.split("\\n").length).compareTo(s2.isEmpty() ? 0 : s2.split("\\n").length);
 			default:
 				try {
 					Double d1 = Double.parseDouble(s1.isEmpty() ? "0": s1);
