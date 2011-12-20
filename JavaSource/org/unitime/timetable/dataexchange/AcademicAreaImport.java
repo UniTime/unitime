@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.AcademicArea;
@@ -35,7 +38,7 @@ public class AcademicAreaImport extends BaseImport {
 
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("academicAreas")) {
-        	throw new Exception("Given XML file is not an AcademicArea load file.");
+        	throw new Exception("Given XML file is not acedemic areas load file.");
         }
         try {
             beginTransaction();
@@ -45,46 +48,55 @@ public class AcademicAreaImport extends BaseImport {
             String term   = root.attributeValue("term");
 
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
-            if(session == null) {
+            if (session == null)
                 throw new Exception("No session found for the given campus, year, and term.");
+            
+            Map<String, AcademicArea> id2area = new Hashtable<String, AcademicArea>();
+            Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
+            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            	if (area.getExternalUniqueId() != null)
+            		id2area.put(area.getExternalUniqueId(), area);
+            	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
+            }
+
+            for (Iterator it = root.elementIterator(); it.hasNext(); ) {
+                Element element = (Element) it.next();
+                
+                String externalId = element.attributeValue("externalId");
+                String abbv = element.attributeValue("abbreviation");
+                
+                AcademicArea area = null;
+                if (externalId != null)
+                	area = id2area.remove(externalId);
+                if (area == null)
+                	area = abbv2area.get(abbv);
+                
+                if (area == null) {
+                	area = new AcademicArea();
+                	area.setSession(session);
+                	info("Academic area " + abbv + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                } else {
+                	info("Academic area " + abbv + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
+                }
+                area.setExternalUniqueId(externalId);
+                area.setAcademicAreaAbbreviation(abbv);
+                area.setLongTitle(element.attributeValue("longTitle"));
+                area.setShortTitle(element.attributeValue("shortTitle"));
+
+                getHibSession().saveOrUpdate(area);
             }
             
-            for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
-                Element element = (Element) it.next();
-                String externalId = element.attributeValue("externalId");
-                AcademicArea acadArea = null;
-                if(externalId != null && externalId.length() > 0) {
-                    acadArea = findByExternalId(externalId, session.getSessionId());
-                }
-                if(acadArea == null) {
-                    acadArea = new AcademicArea();
-                    acadArea.setSession(session);
-                }
-                else if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                    getHibSession().delete(acadArea);
-                    continue;
-                }
-                acadArea.setAcademicAreaAbbreviation(element.attributeValue("abbreviation"));
-                acadArea.setLongTitle(element.attributeValue("longTitle"));
-                acadArea.setShortTitle(element.attributeValue("shortTitle"));
-                acadArea.setExternalUniqueId(externalId);
-                getHibSession().saveOrUpdate(acadArea);
-                flushIfNeeded(false);
+            for (AcademicArea area: id2area.values()) {
+            	info("Academic area " + area.getAcademicAreaAbbreviation() + " (" + area.getExternalUniqueId() + ") deleted.");
+            	getHibSession().delete(area);
             }
+            
             commitTransaction();
         } catch (Exception e) {
             fatal("Exception: " + e.getMessage(), e);
             rollbackTransaction();
             throw e;
         }
-	}
-
-	private AcademicArea findByExternalId(String externalId, Long sessionId) {
-		return (AcademicArea) getHibSession().
-			createQuery("select distinct a from AcademicArea as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("externalId", externalId).
-			setCacheable(true).
-			uniqueResult();
 	}
 }

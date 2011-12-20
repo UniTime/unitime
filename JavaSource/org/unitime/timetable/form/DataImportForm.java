@@ -73,6 +73,7 @@ public class DataImportForm extends ActionForm {
     			"tmtbl.export.exam.type", "midterm"),
     	CURRICULA("curricula", "Curricula"),
     	STUDENT_ENRL("studentEnrollments", "Student class enrollments"),
+    	STUDENTS("students", "Students"),
     	SESSION("session", "Academic Session"),
     	;
     	

@@ -2,8 +2,8 @@
 <!DOCTYPE academicAreas PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/AcademicArea.dtd">
 
 <!-- 
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2008 - 2011, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,7 @@
 	<!-- academicArea ==> Required:  abbreviation, shortTitle, longTitle
 	                      Optional:  externalId
 	-->
-<academicAreas campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<academicArea externalId="1BL0021BZ5R7P1GWREH4" abbreviation="-" shortTitle="Temporary" longTitle="Temporary"/>
-	<academicArea externalId="1BL0031BZ58GF1GWREH4" abbreviation="A" shortTitle="Agriculture" longTitle="Agriculture"/>
-	<academicArea externalId="1BL0041BZ52IV1GWREH4" abbreviation="E" shortTitle="First Yr Engineering" longTitle="First Yr Engineering"/>
-	<academicArea externalId="1BL0051BZ58OK1GWREH4" abbreviation="F" shortTitle="Forestry" longTitle="Forestry"/>
+<academicAreas campus="woebegon" term="Fal" year="2010">
+	<academicArea externalId="A" abbreviation="A" shortTitle="Woebegon" longTitle="The Woebegon's Only Academic Area"/>
+	<academicArea abbreviation="TEST" shortTitle="Test" longTitle="Test Area"/>
 </academicAreas>

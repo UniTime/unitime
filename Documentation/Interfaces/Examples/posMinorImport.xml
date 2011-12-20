@@ -23,7 +23,9 @@
 	<!-- posMinor ==> Required:  code, name, academicArea
 	                  Optional:  externalId
 	-->
-<posMinors campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<posMinor externalId="0WF00FY5EEJ0" code="051" name="MATH JR HI/MID SCH TEACH" academicArea="EDU"/>
-	<posMinor externalId="0WF00FX7HEJ0" code="970" name="PRE-COMPUTER SCIENCES"  academicArea="S"/>
+<posMinors campus="woebegon" term="Fal" year="2010">
+	<posMinor externalId="M1" code="M1" name="Minor 1" academicArea="A"/>
+	<posMinor externalId="M2" code="M2" name="Minor 2" academicArea="A"/>
+	<posMinor externalId="M3" code="M3" name="Minor 3" academicArea="A"/>
+	<posMinor code="T" name="Test Minor" academicArea="TEST"/>
 </posMinors>
