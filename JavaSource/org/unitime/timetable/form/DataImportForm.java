@@ -74,6 +74,7 @@ public class DataImportForm extends ActionForm {
     	CURRICULA("curricula", "Curricula"),
     	STUDENT_ENRL("studentEnrollments", "Student class enrollments"),
     	STUDENTS("students", "Students"),
+    	RESERVATIONS("reservations", "Reservations"),
     	SESSION("session", "Academic Session"),
     	;
     	

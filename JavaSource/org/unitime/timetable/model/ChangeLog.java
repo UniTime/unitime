@@ -121,7 +121,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         CUR_CLASF_EDIT("Curriculum Requested Enrollments"),
         CUR_PROJ_RULES("Course Projection Rules"),
         CURRICULA("Curricula"),
-        SIMPLE_EDIT("Configuration");
+        SIMPLE_EDIT("Configuration"),
+        DATA_IMPORT_RESERVATIONS("Data Import: Reservations"),;
         
         private String iTitle;
         Source(String title) { iTitle = title; }
