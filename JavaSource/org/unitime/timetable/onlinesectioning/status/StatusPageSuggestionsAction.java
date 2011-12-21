@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
@@ -60,6 +61,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
@@ -421,6 +423,24 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					});
 				}
 			}
+			m = Pattern.compile("^(.*\\W?status:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				if ("default".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							m.group(1) + "Default",
+							"Default - Academic session default (" + (server.getAcademicSession().getDefaultSectioningStatus() == null ? "No Restrictions" : server.getAcademicSession().getDefaultSectioningStatus()) + ")"
+					});
+				for (StudentSectioningStatus status: (List<StudentSectioningStatus>)StudentSectioningStatusDAO.getInstance().getSession().createQuery(
+						"select a from StudentSectioningStatus a where " +
+						" (lower(a.reference) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.label) like '%' || :q || '%'") + ")" +
+						" order by a.reference"
+						).setString("q", m.group(2).toLowerCase()).setMaxResults(iLimit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (status.getReference().indexOf(' ') >= 0 ? "\"" + status.getReference() + "\"" : status.getReference()),
+							status.getReference() + " - " + status.getLabel()
+					});
+				}
+			}
 			
 			m = Pattern.compile("^(.*[^: ][ ]+)?(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
 			if (m.matches()) {
@@ -463,6 +483,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					ret.add(new String[] {
 							(m.group(1) == null ? "" : m.group(1)) + "reservation:",
 							"reservation: Enrollments with a reservation"
+					});
+				if ("status".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "status:",
+							"status: Student Scheduling Status"
 					});
 				if ("student".startsWith(m.group(2).toLowerCase()))
 					ret.add(new String[] {
@@ -549,16 +574,19 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	public static class CourseRequestMatcher extends CourseInfoMatcher {
 		private CourseRequest iRequest;
 		private Date iFirstDate;
+		private String iDefaultStatus;
 		
 		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, CourseRequest request, boolean isConsentToDoCourse) {
 			super(helper, info, isConsentToDoCourse);
 			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
 			iRequest = request;
+			iDefaultStatus = server.getAcademicSession().getDefaultSectioningStatus();
 		}
 		
 		public CourseRequest request() { return iRequest; }
 		public Enrollment enrollment() { return iRequest.getAssignment(); }
 		public Student student() { return iRequest.getStudent(); }
+		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
 		public Course course() {
 			if (enrollment() != null) return enrollment().getCourse();
 			for (Course course: request().getCourses())
@@ -633,6 +661,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else {
 					return info().getConsent() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().split(":")[2], term) || eq(enrollment().getApproval().split(":")[1], term))) || eq(info().getConsentAbbv(), term));
 				}
+			}
+			
+			if ("status".equals(attr)) {
+				if ("default".equalsIgnoreCase(term))
+					return student().getStatus() == null;
+				return term.equalsIgnoreCase(status());
 			}
 			
 			if (enrollment() != null) {
@@ -830,12 +864,15 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	
 	public static class StudentMatcher implements TermMatcher {
 		private Student iStudent;
+		private String iDefaultStatus;
 		
-		public StudentMatcher(Student student) {
+		public StudentMatcher(Student student, String defaultStatus) {
 			iStudent = student;
+			iDefaultStatus = defaultStatus;
 		}
 
 		public Student student() { return iStudent; }
+		public String status() {  return (iStudent.getStatus() == null ? iDefaultStatus : iStudent.getStatus()); }
 		
 		@Override
 		public boolean match(String attr, String term) {
@@ -860,6 +897,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return false;
 				else
 					return true;
+			} else if ("status".equals(attr)) {
+				if ("default".equalsIgnoreCase(term))
+					return student().getStatus() == null;
+				return term.equalsIgnoreCase(status());
 			}
 			return false;
 		}
