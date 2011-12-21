@@ -799,6 +799,7 @@ public interface StudentSectioningMessages extends Messages {
 			"<li><i>student:</i> student name or external id" +
 			"<li><i>subject:</i> subject area abbreviation" +
 			"<li><i>waitlist:</i> wait-listed course requests" +
+			"<li><i>status:</i> student scheduling status" +
 			"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
 			"<br><br>Example: subject:AAE and (waitlist:true or consent:waiting)")
 	String sectioningStatusFilterHint();

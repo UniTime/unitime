@@ -76,7 +76,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	}
 	
 	@Override
-	public List<StudentInfo> execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
 		int gEnrl = 0, gWait = 0, gRes = 0;
@@ -191,7 +191,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		for (Student student: server.findStudents(new OnlineSectioningServer.StudentMatcher() {
 			@Override
 			public boolean match(Student student) {
-				return student.getRequests().isEmpty() && query().match(new StudentMatcher(student));
+				return student.getRequests().isEmpty() && query().match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus()));
 			}
 		})) {
 			StudentInfo s = new StudentInfo();
@@ -206,6 +206,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			for (AcademicAreaCode ac: student.getMajors()) {
 				st.addMajor(ac.getCode());
 			}
+			s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
 			ret.add(s);
 		}
 		
