@@ -547,6 +547,14 @@
 			<description>
 				<line>Added ability to backup &amp; restore academic session (using Data Exchange page).</line>
 				<line>Department Import: When the import is using external ids to match departments, put out a warning rather than failing when a manually created department exists without an external id but does have a department code that matches the department code of the department that is being imported.</line>
+				<line>Student information XML interfaces:
+					<line>Imports are now incremental (relations with other data are kept).</line>
+					<line>Records with external id that are not present in the XML file are deleted during the import (records without external ids are kept).</line>				
+					<line>Added students export.</line>
+					<line>Added student groups and student accommodations imports.</line>
+					<line>Examples changed to reflect Woebegon College example (online demo).</line>
+				</line>
+				<line>Reservations: Added reservations export and import.</line>
 			</description>
 		</item>
 		<item>
