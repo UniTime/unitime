@@ -83,6 +83,41 @@ public class Student extends BaseStudent implements Comparable<Student> {
             uniqueResult();
     }
     
+    public static Student findByExternalIdBringBackEnrollments(org.hibernate.Session hibSession, Long sessionId, String externalId) {
+        return (Student)hibSession.
+            createQuery("select s from Student s " +
+            		"left join fetch s.courseDemands as cd " +
+                    "left join fetch cd.courseRequests as cr " +
+                    "left join fetch s.classEnrollments as e " +
+                    "left join fetch cr.classEnrollments as cre "+
+                    "left join fetch s.academicAreaClassifications " +
+                    "left join fetch s.posMajors " +
+                    "left join fetch s.posMinors " +
+            		"where "+
+                    "s.session.uniqueId=:sessionId and "+
+                    "s.externalUniqueId=:externalId").
+            setLong("sessionId", sessionId.longValue()).
+            setString("externalId",externalId).
+            setCacheable(true).
+            uniqueResult();
+    }
+    
+    public void removeAllEnrollments(org.hibernate.Session hibSession){
+		HashSet<StudentClassEnrollment> enrollments = new HashSet<StudentClassEnrollment>();
+    	if (getClassEnrollments() != null){
+    		enrollments.addAll(getClassEnrollments());
+    	}
+       	if (!enrollments.isEmpty()) {
+    		for (StudentClassEnrollment enrollment: enrollments) {
+    			getClassEnrollments().remove(enrollment);
+    			if (enrollment.getCourseRequest() != null)
+    				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
+    			hibSession.delete(enrollment);
+    		}
+    	}
+
+    }
+
     public Set<Exam> getExams(Integer examType) {
         HashSet exams = new HashSet();
         exams.addAll(new StudentDAO().getSession().createQuery(
