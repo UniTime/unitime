@@ -78,5 +78,19 @@ public class StudentGroup extends BaseStudentGroup {
              setCacheable(true).
              uniqueResult(); 
     }
+    
+    public static StudentGroup findByExternalId(Session hibSession, String externalId, Long acadSessionId) {
+    	 
+        return (StudentGroup)hibSession.
+            createQuery(
+                    "select a from StudentGroup a where "+
+                    "a.session.uniqueId = :acadSessionId and "+
+                    "externalUniqueId=:eId ").
+             setLong("acadSessionId", acadSessionId.longValue()).
+             setString("eId", externalId).
+             setCacheable(true).
+             uniqueResult(); 
+    }
+
 
 }
