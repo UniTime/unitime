@@ -94,8 +94,11 @@ public class PosMajor extends BasePosMajor {
     }
 
     public static PosMajor findByExternalIdAcadAreaExternalId(Long sessionId, String externalId, String academicArea) {
-        return (PosMajor)new PosMajorDAO().
-        getSession().
+    	return(findByExternalIdAcadAreaExternalId(new PosMajorDAO().getSession(), sessionId, externalId, academicArea));
+    }
+
+    public static PosMajor findByExternalIdAcadAreaExternalId(Session hibSession, Long sessionId, String externalId, String academicArea) {
+        return (PosMajor)hibSession.
         createQuery(
                 "select a from PosMajor a inner join a.academicAreas as areas where "+
                 "a.session.uniqueId=:sessionId and "+
@@ -107,7 +110,6 @@ public class PosMajor extends BasePosMajor {
          setCacheable(true).
          uniqueResult(); 
     }
-
     public static PosMajor findByCodeAcadAreaId(Long sessionId, String code, Long areaId) {
         if (areaId==null) return findByCode(sessionId, code);
         return (PosMajor)new PosMajorDAO().
@@ -124,9 +126,12 @@ public class PosMajor extends BasePosMajor {
     }
 
     public static PosMajor findByCodeAcadAreaAbbv(Long sessionId, String code, String areaAbbv) {
+    	return(findByCodeAcadAreaAbbv(new PosMajorDAO().getSession(), sessionId, code, areaAbbv));
+    }
+    
+    public static PosMajor findByCodeAcadAreaAbbv(Session hibSession, Long sessionId, String code, String areaAbbv) {
         if (areaAbbv==null || areaAbbv.trim().length()==0) return findByCode(sessionId, code);
-        return (PosMajor)new PosMajorDAO().
-        getSession().
+        return (PosMajor)hibSession.
         createQuery(
                 "select p from PosMajor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
@@ -137,7 +142,7 @@ public class PosMajor extends BasePosMajor {
          setCacheable(true).
          uniqueResult(); 
     }
-    
+
     public Object clone() {
     	PosMajor m = new PosMajor();
     	m.setExternalUniqueId(getExternalUniqueId());

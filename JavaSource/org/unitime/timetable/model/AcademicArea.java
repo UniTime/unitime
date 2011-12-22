@@ -100,8 +100,11 @@ public class AcademicArea extends BaseAcademicArea {
 	}
     
     public static AcademicArea findByAbbv(Long sessionId, String abbv) {
-        return (AcademicArea)new AcademicAreaDAO().
-            getSession().
+    	return(findByAbbv(new AcademicAreaDAO().getSession(), sessionId, abbv));
+    }
+    
+    public static AcademicArea findByAbbv(Session hibSession, Long sessionId, String abbv) {
+        return (AcademicArea)hibSession.
             createQuery(
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
@@ -113,8 +116,11 @@ public class AcademicArea extends BaseAcademicArea {
     }
     
     public static AcademicArea findByExternalId(Long sessionId, String externalId) {
-        return (AcademicArea)new AcademicAreaDAO().
-            getSession().
+    	return(findByExternalId(new AcademicAreaDAO().getSession(), sessionId, externalId));
+    }
+
+    public static AcademicArea findByExternalId(Session hibSession, Long sessionId, String externalId) {
+        return (AcademicArea)hibSession.
             createQuery(
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+

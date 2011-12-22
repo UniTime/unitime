@@ -121,8 +121,11 @@ public class AcademicClassification extends BaseAcademicClassification {
 	}
     
     public static AcademicClassification findByCode(Long sessionId, String code) {
-        return (AcademicClassification)new AcademicClassificationDAO().
-        getSession().
+    	return (findByCode(new AcademicClassificationDAO().getSession(), sessionId, code));
+    }
+    
+    public static AcademicClassification findByCode(Session hibSession, Long sessionId, String code) {
+        return (AcademicClassification)hibSession.
         createQuery(
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
@@ -132,10 +135,13 @@ public class AcademicClassification extends BaseAcademicClassification {
          setCacheable(true).
          uniqueResult(); 
     }
-    
+
     public static AcademicClassification findByExternalId(Long sessionId, String externalId) {
-        return (AcademicClassification)new AcademicClassificationDAO().
-        getSession().
+    	return(findByExternalId(new AcademicClassificationDAO().getSession(), sessionId, externalId));
+    }
+
+    public static AcademicClassification findByExternalId(Session hibSession, Long sessionId, String externalId) {
+        return (AcademicClassification)hibSession.
         createQuery(
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
