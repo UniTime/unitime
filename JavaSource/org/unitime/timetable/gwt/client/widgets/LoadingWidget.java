@@ -86,7 +86,7 @@ public class LoadingWidget extends Composite {
 	}
 	
 	public void show(String message) {
-		show(message, 30000);
+		show(message, 120000);
 	}
 
 	public void show(String message, int warningDelayInMillis) {
