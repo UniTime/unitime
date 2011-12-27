@@ -316,6 +316,7 @@ public class CourseSelectionBox extends Composite {
 					new WebTable.Row(
 							new WebTable.Cell(MESSAGES.colSubject(), 1, "80"),
 							new WebTable.Cell(MESSAGES.colCourse(), 1, "80"),
+							new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
 							new WebTable.Cell(MESSAGES.colTitle(), 1, "300"),
 							new WebTable.Cell(MESSAGES.colNote(), 1, "300")
 							));
@@ -795,6 +796,7 @@ public class CourseSelectionBox extends Composite {
 						records[idx] = new WebTable.Row(
 								record.getSubject(),
 								record.getCourseNbr(),
+								(record.getLimit() == null || record.getLimit() == 0 || record.getEnrollment() == null ? "" : record.getLimit() < 0 ? "&infin;" : (record.getLimit() - record.getEnrollment()) + " / " + record.getLimit()),
 								(record.getTitle() == null ? "" : record.getTitle()),
 								(record.getNote() == null ? "" : record.getNote()));
 						records[idx].setId(record.hasUniqueName() ? "true" : "false");

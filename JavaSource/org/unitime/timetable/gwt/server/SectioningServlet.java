@@ -41,6 +41,7 @@ import javax.servlet.ServletException;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.studentsct.model.Config;
+import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
@@ -245,7 +246,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		} else {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			try {
-				for (CourseInfo c: OnlineSectioningService.getInstance(sessionId).findCourses(query, limit)) {
+				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId); 
+				for (CourseInfo c: server.findCourses(query, limit)) {
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());
 					course.setSubject(c.getSubjectArea());
@@ -253,6 +255,11 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					course.setNote(c.getNote());
 					course.setTitle(c.getTitle());
 					course.setHasUniqueName(c.hasUniqueName());
+					Course crs = server.getCourse(c.getUniqueId());
+					if (crs != null) {
+						course.setEnrollment(crs.getEnrollments().size());
+						course.setLimit(crs.getLimit());
+					}
 					ret.add(course);
 				}
 			} catch (Exception e) {
