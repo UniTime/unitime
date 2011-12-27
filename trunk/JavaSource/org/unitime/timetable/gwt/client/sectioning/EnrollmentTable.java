@@ -272,7 +272,7 @@ public class EnrollmentTable extends Composite {
 				form.addRow(assignments);
 				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
 				form.addBottomRow(buttons);
-				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 				dialog.setWidget(form);
 				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
 				dialog.setEscapeToHide(true);
@@ -415,7 +415,7 @@ public class EnrollmentTable extends Composite {
 									@Override
 									public void onSuccess(ClassAssignmentInterface result) {
 										widget.setData(request, result);
-										final UniTimeDialogBox d = new UniTimeDialogBox(true, true);
+										final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
 										d.setWidget(widget);
 										d.setText(MESSAGES.dialogAssistant(student.getName()));
 										d.setEscapeToHide(true);
@@ -476,7 +476,7 @@ public class EnrollmentTable extends Composite {
 							final ScrollPanel scroll = new ScrollPanel(widget);
 							scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 							scroll.setStyleName("unitime-ScrollPanel");
-							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 							dialog.setWidget(scroll);
 							dialog.setText(MESSAGES.dialogChangeMessage(student.getName()));
 							dialog.setEscapeToHide(true);
@@ -501,7 +501,7 @@ public class EnrollmentTable extends Composite {
 						}
 					}
 				});
-				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 				final ScrollPanel scroll = new ScrollPanel(table);
 				scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 				scroll.setStyleName("unitime-ScrollPanel");
