@@ -1981,4 +1981,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Student are allowed to drop to this course up to {0}. week of classes.")
 	String textLastWeekDrop(String wkDrop);
+	
+	@DefaultMessage("showGwtLoading('Locking {0}...'); return true;")
+	String jsSubmitLockIO(String instrOfferingName);
+
+	@DefaultMessage("showGwtLoading('Unlocking {0}...'); return true;")
+	String jsSubmitUnlockIO(String instrOfferingName);
 }

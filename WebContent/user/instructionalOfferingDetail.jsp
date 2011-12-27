@@ -86,6 +86,7 @@
 	// -->
 </SCRIPT>
 
+	<bean:define name="instructionalOfferingDetailForm" property="instrOfferingName" id="instrOfferingName"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -181,14 +182,16 @@
 					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
 						<html:submit property="op" styleClass="btn" 
 								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>">
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
 							<loc:message name="actionLockIO"/>
 						</html:submit> 
 					</logic:equal>
 					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
 						<html:submit property="op" styleClass="btn" 
 								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>">
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
 							<loc:message name="actionUnlockIO"/>
 						</html:submit> 
 					</logic:equal>
@@ -614,14 +617,16 @@
 				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
 					<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessLockIO() %>" 
-							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>">
+							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+							onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
 						<loc:message name="actionLockIO"/>
 					</html:submit> 
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
 					<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessUnlockIO() %>" 
-							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>">
+							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+							onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
 						<loc:message name="actionUnlockIO"/>
 					</html:submit> 
 				</logic:equal>
