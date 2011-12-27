@@ -412,7 +412,7 @@ public class SectioningStatusPage extends Composite {
 					final ScrollPanel scroll = new ScrollPanel(widget);
 					scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 					scroll.setStyleName("unitime-ScrollPanel");
-					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 					dialog.setWidget(scroll);
 					dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));
 					dialog.setEscapeToHide(true);
@@ -464,7 +464,7 @@ public class SectioningStatusPage extends Composite {
 		iEnrollmentScroll = new ScrollPanel(iEnrollmentTable);
 		iEnrollmentScroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 		iEnrollmentScroll.setStyleName("unitime-ScrollPanel");
-		iEnrollmentDialog = new UniTimeDialogBox(true, true);
+		iEnrollmentDialog = new UniTimeDialogBox(true, false);
 		iEnrollmentDialog.setEscapeToHide(true);
 		iEnrollmentDialog.setWidget(iEnrollmentScroll);
 		iEnrollmentDialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
@@ -830,7 +830,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
 		header.add(hOperations);
 
-		UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>" + MESSAGES.colSubpart());
+		UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>&nbsp;&nbsp;" + MESSAGES.colSubpart());
 		header.add(hSubject);
 		hSubject.addOperation(new Operation() {
 			@Override
@@ -1141,7 +1141,7 @@ public class SectioningStatusPage extends Composite {
 					sf.addRow(MESSAGES.emailCC(), iCC);
 					sf.addRow(MESSAGES.emailBody(), iMessage);
 					sf.addBottomRow(buttons);
-					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 					dialog.setWidget(sf);
 					dialog.setText(MESSAGES.sendStudentEmail());
 					dialog.setEscapeToHide(true);
