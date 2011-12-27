@@ -96,7 +96,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						Collection<Enrollment> avEnrls = r.getAvaiableEnrollmentsSkipSameTime();
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
-							overlaps: for (Request q: student.getRequests()) {
+							for (Request q: student.getRequests()) {
 								if (q.equals(request)) continue;
 								Enrollment x = q.getAssignment();
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -110,7 +110,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 											if (ss == null) { ss = new TreeSet<Section>(); overlapingSections.put(cr, ss); }
 											ss.add((Section)a);
 										}
-										break overlaps;
 									}
 						        }
 							}
@@ -254,21 +253,16 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					ca.setAssigned(r.getAssignment() != null);
 					ca.setCourseId(null);
 					if (r.getAssignment() == null) {
-						overlaps: for (Request q: student.getRequests()) {
+						for (Request q: student.getRequests()) {
 							if (q.equals(request)) continue;
 							Enrollment x = q.getAssignment();
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 					        for (Iterator<Assignment> i = x.getAssignments().iterator(); i.hasNext();) {
 					        	Assignment a = i.next();
-								if (r.isOverlapping(a)) {
-									if (x.getRequest() instanceof FreeTimeRequest) {
-										OnlineSectioningHelper.toString((FreeTimeRequest)x.getRequest());
-									} else {
-										Course o = x.getCourse();
-										Section s = (Section)a;
-										ca.addOverlap(o.getSubjectArea() + " " + o.getCourseNumber() + " " + s.getSubpart().getName());
-									}
-									break overlaps;
+								if (r.isOverlapping(a) && x.getRequest() instanceof CourseRequest) {
+									Course o = x.getCourse();
+									Section s = (Section)a;
+									ca.addOverlap(o.getSubjectArea() + " " + o.getCourseNumber() + " " + s.getSubpart().getName());
 								}
 					        }
 						}

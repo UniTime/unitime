@@ -481,7 +481,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						Collection<Enrollment> avEnrls = r.getAvaiableEnrollmentsSkipSameTime();
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
-							overlaps: for (Enrollment x: enrollments) {
+							for (Enrollment x: enrollments) {
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 								if (x == enrollment) continue;
 						        for (Iterator<Assignment> i = x.getAssignments().iterator(); i.hasNext();) {
@@ -494,7 +494,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											if (ss == null) { ss = new TreeSet<Section>(); overlapingSections.put(cr, ss); }
 											ss.add((Section)a);
 										}
-										break overlaps;
 									}
 						        }
 							}
@@ -536,24 +535,20 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setAssigned(false);
 					ca.setCourseId(null);
 					if (computeOverlaps) {
-						overlaps: for (Enrollment x: enrollments) {
+						for (Enrollment x: enrollments) {
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 							if (x == enrollment) continue;
 					        for (Iterator<Assignment> i = x.getAssignments().iterator(); i.hasNext();) {
 					        	Assignment a = i.next();
-								if (r.isOverlapping(a)) {
-									if (x.getRequest() instanceof FreeTimeRequest) {
-										ca.addOverlap(OnlineSectioningHelper.toString((FreeTimeRequest)x.getRequest()));
-									} else {
-										Course o = x.getCourse();
-										Section s = (Section)a;
-										ca.addOverlap(o.getSubjectArea() + " " + o.getCourseNumber() + " " + s.getSubpart().getName());
-									}
-									break overlaps;
+								if (r.isOverlapping(a) && x.getRequest() instanceof CourseRequest) {
+									Course o = x.getCourse();
+									Section s = (Section)a;
+									ca.addOverlap(o.getSubjectArea() + " " + o.getCourseNumber() + " " + s.getSubpart().getName());
 								}
 					        }
 						}
 					}
+					if (ca.getOverlaps() == null) ca.setAssigned(true);
 					ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
 					a.setAlternative(r.isAlternative());
 					for (DayCode d : DayCode.toDayCodes(r.getTime().getDayCode()))
