@@ -425,7 +425,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage(", {0}")
 	String conflictWithMiddle(String course);
 
-	@DefaultMessage(" or {0}")
+	@DefaultMessage(" and/or {0}")
 	String conflictWithLast(String course);
 	
 	@DefaultMessage(", assigned {0} instead")
