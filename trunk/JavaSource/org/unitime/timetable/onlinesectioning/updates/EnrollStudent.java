@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -164,6 +165,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					classes.put(clazz.getUniqueId(), clazz);
 				}
 				
+				Map<Long, StudentClassEnrollment> oldEnrollments = new HashMap<Long, StudentClassEnrollment>();
+				Map<Long, Object[]> oldApprovals = new HashMap<Long, Object[]>();
+				for (StudentClassEnrollment e: student.getClassEnrollments()) {
+					oldEnrollments.put(e.getClazz().getUniqueId(), e);
+					if (e.getApprovedBy() != null && !oldApprovals.containsKey(e.getCourseOffering().getUniqueId())) {
+						oldApprovals.put(e.getCourseOffering().getUniqueId(), new Object[] {e.getApprovedBy(), e.getApprovedDate()});
+					}
+				}
 				Map<Long, org.unitime.timetable.model.CourseRequest> req = SaveStudentRequests.saveRequest(server, helper, student, getRequest(), false);
 				
 				// save requested enrollment
@@ -200,15 +209,21 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						continue;
 					}
 					StudentClassEnrollment enrl = new StudentClassEnrollment();
+					StudentClassEnrollment old = oldEnrollments.get(ca.getClassId());
 					enrl.setClazz(clazz);
 					clazz.getStudentEnrollments().add(enrl);
 					enrl.setCourseOffering(cr.getCourseOffering());
 					enrl.setCourseRequest(cr);
 					if (cr.getClassEnrollments() != null)
 						cr.getClassEnrollments().add(enrl);
-					enrl.setTimestamp(ts);
+					enrl.setTimestamp(old != null ? old.getTimestamp() : ts);
 					enrl.setStudent(student);
-					enrl.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+					enrl.setChangedBy(old != null ? old.getChangedBy() : helper.getUser() == null ? null : helper.getUser().getExternalId());
+					Object[] approval = oldApprovals.get(ca.getCourseId());
+					if (approval != null) {
+						enrl.setApprovedBy((String)approval[0]);
+						enrl.setApprovedDate((Date)approval[1]);
+					}
 					student.getClassEnrollments().add(enrl);
 				}
 				
