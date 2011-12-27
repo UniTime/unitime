@@ -22,10 +22,12 @@ package org.unitime.timetable.onlinesectioning.updates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -350,11 +352,18 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				
 				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudent().getId(), helper.getHibSession());
+				Map<Long, StudentClassEnrollment> oldEnrollments = new HashMap<Long, StudentClassEnrollment>();
+				String approvedBy = null; Date approvedDate = null;
 				for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
 					StudentClassEnrollment enrl = i.next();
 					if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getId())) ||
 						(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId))) {
 						helper.info("Deleting " + enrl.getClazz().getClassLabel());
+						oldEnrollments.put(enrl.getClazz().getUniqueId(), enrl);
+						if (approvedBy == null && enrl.getApprovedBy() != null) {
+							approvedBy = enrl.getApprovedBy();
+							approvedDate = enrl.getApprovedDate();
+						}
 						enrl.getClazz().getStudentEnrollments().remove(enrl);
 						if (enrl.getCourseRequest() != null)
 							enrl.getCourseRequest().getClassEnrollments().remove(enrl);
@@ -392,9 +401,12 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 						clazz.getStudentEnrollments().add(enrl);
 						enrl.setCourseOffering(co);
 						enrl.setCourseRequest(cr);
-						enrl.setTimestamp(ts);
-						enrl.setChangedBy(helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
+						StudentClassEnrollment old = oldEnrollments.get(section.getId());
+						enrl.setTimestamp(old != null ? old.getTimestamp() : ts);
+						enrl.setChangedBy(old != null ? old.getChangedBy() : helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
 						enrl.setStudent(student);
+						enrl.setApprovedBy(approvedBy);
+						enrl.setApprovedDate(approvedDate);
 						student.getClassEnrollments().add(enrl);
 						if (cr.getClassEnrollments() == null) cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 						cr.getClassEnrollments().add(enrl);
