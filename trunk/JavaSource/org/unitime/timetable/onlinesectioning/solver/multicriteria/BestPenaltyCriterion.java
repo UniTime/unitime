@@ -61,7 +61,7 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		// 1. minimize number of penalties
 		int bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
-			if (best[idx] != null && best[idx].getAssignments() != null) {
+			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
 		    		if (section.getPenalty() >= 0.0) bestPenalties++;
 				for (Section section: current[idx].getSections())
