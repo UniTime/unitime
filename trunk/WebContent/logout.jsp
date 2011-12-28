@@ -36,7 +36,7 @@
 		<TITLE>UniTime <%=Constants.VERSION%>| Logging out ...</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
-				window.close();				
+				// window.close();				
 				location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
