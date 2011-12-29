@@ -207,6 +207,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				st.addMajor(ac.getCode());
 			}
 			s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
+			s.setEmailDate(student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
 			ret.add(s);
 		}
 		
