@@ -1976,10 +1976,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Drop Deadline:")
 	String propertyLastWeekDrop();
 	
-	@DefaultMessage("Number of weeks during which students are allowed to drop to this course, defaults to {0} when left blank.")
+	@DefaultMessage("Number of weeks during which students are allowed to drop from this course, defaults to {0} when left blank.")
 	String descriptionLastWeekDrop(String wkDropDefault);
 	
-	@DefaultMessage("Student are allowed to drop to this course up to {0}. week of classes.")
+	@DefaultMessage("Student are allowed to drop from this course up to {0}. week of classes.")
 	String textLastWeekDrop(String wkDrop);
 	
 	@DefaultMessage("showGwtLoading('Locking {0}...'); return true;")
@@ -1987,4 +1987,10 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("showGwtLoading('Unlocking {0}...'); return true;")
 	String jsSubmitUnlockIO(String instrOfferingName);
+	
+	@DefaultMessage("Course {0} is locked (students are not able to enroll to this course).")
+	String lockedCourse(String course);
+	
+	@DefaultMessage("Courses {0} and {1} are locked.")
+	String lockedCourses(String course1, String course2);
 }
