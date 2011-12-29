@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
@@ -91,6 +92,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -142,6 +144,7 @@ public class SectioningStatusPage extends Composite {
 	private Map<String, String> iStates = null;
 	private int iStatusColumn = 0;
 	private UniTimeTextBox iSubject, iCC;
+	private UniTimeWidget<ListBox> iStatus;
 	private TextArea iMessage;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private boolean iOnline; 
@@ -541,6 +544,10 @@ public class SectioningStatusPage extends Composite {
 			checkLastQuery();
 		}
 		
+		iStatus = new UniTimeWidget<ListBox>(new ListBox());
+		iStatus.getWidget().addItem("");
+		iStatus.getWidget().setSelectedIndex(0);
+		
 		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<Map<String,String>>() {
 
 			@Override
@@ -550,10 +557,20 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onSuccess(Map<String, String> result) {
 				iStates = result;
+				for (final String ref: new TreeSet<String>(iStates.keySet())) {
+					iStatus.getWidget().addItem(iStates.get(ref), ref);
+				}
+				for (int i = 0; i < iStatus.getWidget().getItemCount(); i++) {
+					if ("Cancelled".equalsIgnoreCase(iStatus.getWidget().getValue(i))) {
+						iStatus.getWidget().setSelectedIndex(i);
+						break;
+					}
+				}
 			}
 		});
 		
 		iSubject = new UniTimeTextBox(512, 473);
+		iSubject.setText(MESSAGES.defaulSubject());
 		iCC = new UniTimeTextBox(512, 473);
 		iMessage = new TextArea();
 		iMessage.setStyleName("unitime-TextArea");
@@ -1138,6 +1155,8 @@ public class SectioningStatusPage extends Composite {
 					final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
 					sf.removeStyleName("unitime-NotPrintableBottomLine");
 					sf.addRow(MESSAGES.emailSubject(), iSubject);
+					if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubjectMassCancel()))
+						iSubject.setText(MESSAGES.defaulSubject());
 					sf.addRow(MESSAGES.emailCC(), iCC);
 					sf.addRow(MESSAGES.emailBody(), iMessage);
 					sf.addBottomRow(buttons);
@@ -1158,6 +1177,88 @@ public class SectioningStatusPage extends Composite {
 							}
 							dialog.hide();
 							sendEmail(studentIds.iterator(), iSubject.getText(), iMessage.getText(), iCC.getText(), 0);
+						}
+					});
+					buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+						}
+					});
+					dialog.center();
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.massCancel();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0;
+				}
+				@Override
+				public void execute() {
+					SimpleForm sf = new SimpleForm();
+					final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+					sf.removeStyleName("unitime-NotPrintableBottomLine");
+					if (iSubject.getText().isEmpty() || iSubject.getText().equals(MESSAGES.defaulSubject()))
+						iSubject.setText(MESSAGES.defaulSubjectMassCancel());
+					sf.addRow(MESSAGES.emailSubject(), iSubject);
+					sf.addRow(MESSAGES.emailCC(), iCC);
+					sf.addRow(MESSAGES.emailBody(), iMessage);
+					sf.addRow(MESSAGES.newStatus(), iStatus);
+					sf.addBottomRow(buttons);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+					dialog.setWidget(sf);
+					dialog.setText(MESSAGES.massCancel());
+					dialog.setEscapeToHide(true);
+					buttons.addButton("cancel", MESSAGES.buttonMassCancel(), null, (Integer)null, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							if (!Window.confirm(MESSAGES.massCancelConfirmation())) {
+								dialog.hide();
+								return;
+							}
+							
+							final List<Long> studentIds = new ArrayList<Long>();
+							for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+								StudentInfo i = iStudentTable.getData(row);
+								if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) { 
+									studentIds.add(i.getStudent().getId());
+									iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, new Image(RESOURCES.loading_small()));
+								}
+							}
+							dialog.hide();
+							
+							LoadingWidget.getInstance().show(MESSAGES.massCanceling());
+							iSectioningService.massCancel(studentIds, iStatus.getWidget().getValue(iStatus.getWidget().getSelectedIndex()),
+									iSubject.getText(), iMessage.getText(), iCC.getText(), new AsyncCallback<Boolean>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().fail(caught.getMessage());
+									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+										StudentInfo i = iStudentTable.getData(row);
+										if (i != null && i.getStudent() != null && studentIds.contains(i.getStudent().getId())) {
+											HTML error = new HTML(caught.getMessage());
+											error.setStyleName("unitime-ErrorMessage");
+											iStudentTable.setWidget(row, iStudentTable.getCellCount(row) - 1, error);
+											i.setEmailDate(null);
+										}
+									}
+								}
+
+								@Override
+								public void onSuccess(Boolean result) {
+									LoadingWidget.getInstance().hide();
+									loadData();
+								}
+							});
 						}
 					});
 					buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
@@ -2230,8 +2331,6 @@ public class SectioningStatusPage extends Composite {
 			return 0;
 		}
 
-
-		
 	}
 	
 	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails) {
@@ -2269,7 +2368,6 @@ public class SectioningStatusPage extends Composite {
 
 			@Override
 			public void onSuccess(Boolean result) {
-				LoadingWidget.getInstance().hide();
 				for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 					StudentInfo i = iStudentTable.getData(row);
 					if (i != null && i.getStudent() != null && studentId.equals(i.getStudent().getId())) {
