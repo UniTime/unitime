@@ -115,6 +115,7 @@ import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogActi
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
+import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
@@ -1961,7 +1962,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				throw new SectioningException(MSG.exceptionBadStudentId());
 			StudentEmail email = new StudentEmail(studentId, (Enrollment)null, student.getRequests());
 			email.setCC(cc);
-			email.setEmailSubject(subject == null || subject.isEmpty() ? "Class schedule for %session%" : subject);
+			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
 			email.setMessage(message);
 			return server.execute(email, currentUser());
 		} catch (PageAccessException e) {
@@ -2032,6 +2033,32 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		return server.execute(new FindOnlineSectioningLogAction(query), currentUser());
+	}
+
+	@Override
+	public Boolean massCancel(List<Long> studentIds, String statusRef, String subject, String message, String cc) throws SectioningException, PageAccessException {
+		try {
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
+			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null || !user.isAdmin()) {
+				throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+			}
+			
+			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
+			StudentSectioningStatus status = (statusRef == null || statusRef.isEmpty() ? null : (StudentSectioningStatus)hibSession.createQuery(
+					"from StudentSectioningStatus where reference = :ref").setString("ref", statusRef).uniqueResult());
+
+			return server.execute(new MassCancelAction(studentIds, status, subject, message, cc), currentUser());
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
 	}
 
 }
