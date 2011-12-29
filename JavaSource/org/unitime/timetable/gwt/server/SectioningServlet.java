@@ -1870,7 +1870,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					if (status.getMessage() == null)
 						throw new SectioningException(MSG.exceptionEnrollmentDisabled());
 					else
-						throw new SectioningException(MSG.exceptionEnrollmentDisabledWithMessage(status.getMessage()));
+						throw new SectioningException(status.getMessage());
 				}
 			}
 			
