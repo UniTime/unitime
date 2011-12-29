@@ -28,6 +28,8 @@ import javax.servlet.jsp.tagext.TagSupport;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -39,6 +41,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
  * @author Tomas Muller
  */
 public class OfferingLocks extends TagSupport {
+	private static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 7947787141769725429L;
 
 	public String getOfferingLocksWarning(User user, Session session) {
@@ -52,19 +55,17 @@ public class OfferingLocks extends TagSupport {
 		}
 		if (lockedOfferings.isEmpty()) return null;
 		Collections.sort(lockedOfferings, new InstructionalOfferingComparator(null));
-		String ret = "Course" + (lockedOfferings.size() == 1 ? "" : "s") + " ";
-		int idx = 0;
+		String course1 = null;
+		String course2 = null;
 		for (InstructionalOffering io: lockedOfferings) {
-			if (idx > 0) {
-				ret += ", ";
-				if (idx > 1 && idx + 1 == lockedOfferings.size())
-					ret += "and ";
+			if (course1 == null) {
+				course1 = "<a href='instructionalOfferingDetail.do?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
+			} else {
+				if (course2 != null) course1 += ", " + course2;
+				course2 = "<a href='instructionalOfferingDetail.do?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
 			}
-			ret += "<a href='instructionalOfferingDetail.do?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
-			idx++;
 		}
-		ret += (lockedOfferings.size() == 1 ? " is" : " are") + " locked.";
-		return ret;
+		return (course2 == null ? MSG.lockedCourse(course1) : MSG.lockedCourses(course1, course2));
 	}
 
 	public int doStartTag() {
