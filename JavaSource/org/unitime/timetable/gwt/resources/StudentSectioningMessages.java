@@ -863,7 +863,6 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Changing status to {0}...")
 	String changingStatusTo(String newStatus);
-
 	
 	@DefaultMessage("Subject:")
 	String emailSubject();
@@ -871,7 +870,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("CC:")
 	String emailCC();
 
-	@DefaultMessage("Body:")
+	@DefaultMessage("Message:")
 	String emailBody();
 
 	@DefaultMessage("Send")
@@ -988,4 +987,25 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Arrange Hours")
 	String emailArrangeHours();
+	
+	@DefaultMessage("Mass cancel...")
+	String massCancel();
+	
+	@DefaultMessage("Status:")
+	String newStatus();
+	
+	@DefaultMessage("Cancel Students")
+	String buttonMassCancel();
+	
+	@DefaultMessage("Cancelling selected students...")
+	String massCanceling();
+	
+	@DefaultMessage("Schedule cancelation for %session%")
+	String defaulSubjectMassCancel();
+	
+	@DefaultMessage("Class schedule for %session%")
+	String defaulSubject();
+	
+	@DefaultMessage("Mass cancellation is an irreversible operation that will delete all class enrollments and course requests for the selected student(s). Are you sure to do that?")
+	String massCancelConfirmation();
 }
