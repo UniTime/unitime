@@ -29,7 +29,9 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
@@ -53,7 +55,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
         org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
         try {
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
-            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name")
+            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name order by dp.offset desc")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
             		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended)
             		.setString("name", "T%den %")
@@ -68,7 +70,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             	patterns.add(new DatePattern(dp.getUniqueId(), dp.getName(), weekCode));
             }
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
-            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.name like :name")
+            		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.name like :name order by dp.offset desc")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
             		.setString("name", "T%den %")
             		.list()) {
@@ -86,6 +88,24 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
         }
     }
     
+    private Class_ parent(Class_ clazz) {
+    	Class_ parent = (clazz == null ? null : clazz.getParentClass());
+    	if (parent != null && 
+    		parent.getSchedulingSubpart().getItype().equals(clazz.getSchedulingSubpart().getItype()) &&
+    		clazz.effectiveDatePattern().equals(parent.effectiveDatePattern()))
+    		return parent;
+    	return null;
+    }
+    
+    private Class_ child(Class_ clazz) {
+    	if (clazz == null) return null;
+    	for (Class_ child: clazz.getChildClasses()) {
+    		if (child.getSchedulingSubpart().getItype().equals(clazz.getSchedulingSubpart().getItype()) && child.effectiveDatePattern().equals(clazz.effectiveDatePattern()))
+    			return child;
+    	}
+    	return null;
+    }
+    
     @Override
     public void variableAdded(Lecture lecture) {
         if (lecture.timeLocations().isEmpty()) return;
@@ -101,12 +121,28 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
         	}
         
         if (times.get(0).getDatePatternName().matches("[1-6]x")) {
-            int n = Integer.parseInt(times.get(0).getDatePatternName().substring(0, 1));
+        	Class_ clazz = Class_DAO.getInstance().get(lecture.getClassId());
+            int parents = 0;
+            Class_ parent = parent(clazz);
+            while (parent != null) {
+            	parents++;
+            	parent = parent(parent);
+            }
+            int children = 0;
+            Class_ child = child(clazz);
+            while (child != null) {
+            	children++;
+            	child = child(child);
+            }	
+        	
+        	int n = Integer.parseInt(times.get(0).getDatePatternName().substring(0, 1));
             lecture.timeLocations().clear();
+            
             for  (TimeLocation t: times) {
             	List<DatePattern> datePatterns = (sp ? iDatePatternsAll : iDatePatternsExt).get(n);
-                for (DatePattern dp: datePatterns) {
-                	
+            	for (int i = parents; i < datePatterns.size() - children; i++) {
+            		DatePattern dp = datePatterns.get(i);
+            		
                 	// Only Týden 0 allows for Thursday
                 	if (!dp.getName().endsWith("den 0") && (t.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0)
                 		continue;
