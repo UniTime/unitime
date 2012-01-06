@@ -157,7 +157,8 @@ public class SolutionChangesAction extends Action {
     	    	ClassAssignmentDetails classSort = (after==null?before:after);
     	    	String time = ClassAssignmentDetails.dispTime2((before==null?null:before.getTime()),(after==null?null:after.getTime()));
         		String rooms = "";
-        		String link = (before==null?null:"id="+before.getClazz().getClassId()+"&days="+before.getTime().getDays()+"&slot="+before.getTime().getStartSlot()+"&pattern="+before.getTime().getPatternId());
+        		String link = (before==null?null:"id="+before.getClazz().getClassId()+"&days="+before.getTime().getDays()+"&slot="+before.getTime().getStartSlot()
+        				+"&pattern="+before.getTime().getPatternId()+"&dates="+before.getTime().getDatePatternId()+"&reset=1");
         		int nrRooms = Math.max(before == null || before.getRoom() == null ? 0 : before.getRoom().length, after == null || after.getRoom() == null ? 0 : after.getRoom().length);
         		for (int i=0;i<nrRooms;i++) {
     	        	if (i>0) rooms += ", ";
