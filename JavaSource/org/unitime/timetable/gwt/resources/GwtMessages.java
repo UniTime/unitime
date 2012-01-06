@@ -29,6 +29,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Version {0} built on {1}")
 	String pageVersion(String version, String buildDate);
 	
-	@DefaultMessage("&copy; 2008 - 2011 UniTime LLC,<br>distributed under GNU General Public License.")
+	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
 }
