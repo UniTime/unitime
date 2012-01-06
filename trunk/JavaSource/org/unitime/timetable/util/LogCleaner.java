@@ -90,7 +90,7 @@ public class LogCleaner {
 	}
 	
 	public static void cleanupLogs() {
-		cleanupChangeLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.changeLog", "183")));
+		cleanupChangeLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.changeLog", "366")));
 		cleanupQueryLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.queryLog", "92")));
 		cleanupChangeLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.sectioningLog", "366")));
 	}
