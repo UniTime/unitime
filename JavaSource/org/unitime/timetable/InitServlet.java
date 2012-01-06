@@ -29,6 +29,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
@@ -74,6 +75,9 @@ public class InitServlet extends HttpServlet implements Servlet {
 			    Debug.info(" - Initializing Room Availability Service ... ");
 			    RoomAvailability.getInstance().startService();
 			}
+			
+			Debug.info(" - Cleaning Logs ...");
+			LogCleaner.cleanupLogs();
 			
 			Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
 					" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " initialized successfully *******");
