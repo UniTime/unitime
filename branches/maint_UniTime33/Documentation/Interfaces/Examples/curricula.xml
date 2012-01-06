@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE curricula PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Curricula_3_2.dtd">
+<!--
+ 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010 - 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ 
+-->
+
+<curricula campus="woebegon" year="2010" term="Fal" created="Tue Dec 20 21:53:35 CET 2011">
+  <curriculum abbreviation="A/M1" name="The Woebegon's Only Academic Area / Major 1">
+    <!-- one academic area is required -->
+    <!-- academic area usually corresponds to a school, faculty, etc. -->
+    <academicArea abbreviation="A"/>
+    
+    <!-- department is optional -->
+    <!-- only curriculum or scheduling managers of this department are able to edit this curriculum -->
+    <!-- if none is provided, one is computed based on the courses of the curriculum (controlling department with highest enrollment within the curriculum) -->
+    <department code="0101"/>
+    
+    <!-- there can be more than one major, but all of them have to be of the same academic area -->
+    <!-- no major means all majors of the academic area -->
+    <!-- major usually corresponds to a particular field of study, e.g., Agricultural Economics and Agricultural Finance -->
+    <major code="M1"/>
+    
+    <!-- name is optional (defaults to the academic classification code), enrollment is required -->
+    <classification name="01" enrollment="5">
+      <!-- exactly one academic classification -->
+      <!-- academic classification usually corresponds to a year / semester of study (e.g., First Semester Sophmore) -->
+      <academicClassification externalId="01" code="01"/>
+      
+      <!-- list of courses -->
+      <!-- fields subject and courseNbr are required, share defaults to 1.0 -->
+      <!--
+        share is a percentage of the students of this classification (within this curriculum)
+        that are expected to attend the course
+        (1.0 ~ all students of the classification, 0.0 ~ none)
+      -->
+      <course subject="BIOL" courseNbr="101" share="1.0000"/>
+      <course subject="ENGL" courseNbr="101" share="1.0000"/>
+      <course subject="CHM" courseNbr="101" share="1.0000"/>
+      <course subject="CALC" courseNbr="101" share="0.6000">
+        <!-- groups are optional, and there to be able to express some relations between these courses -->
+        <!-- only id is required (group id needs to be unique only within the curriculum, type defaults to OPT) -->
+        <!--
+          type == OPT .. group is optional (e.g., students should attend one of these courses)
+            this means there there are no student conflicts between courses of this group within this curriculum
+          type == REQ .. group is required (e.g., students taking one course of this group are required to take at least some other one of this group)
+            this means that there are always conflicts between courses of this group within this curriculum
+        -->
+        <group id="1" name="Opt 1" type="OPT"/>
+      </course>
+      <course subject="PHAR" courseNbr="101" share="0.6000"/>
+      <course subject="HIST" courseNbr="101" share="0.2000">
+      	<group id="1" name="Opt 1" type="OPT"/>
+      </course>
+      <course subject="GER" courseNbr="101" share="0.2000">
+      	<group id="1" name="Opt 1" type="OPT"/>
+      </course>
+      <course subject="POL" courseNbr="101" share="0.2000"/>
+      <course subject="SPAN" courseNbr="101" share="0.2000"/>
+    </classification>
+    <classification name="02" enrollment="4">
+      <academicClassification externalId="02" code="02"/>
+      <course subject="BIOL" courseNbr="101" share="0.5000"/>
+      <course subject="ENGL" courseNbr="101" share="0.5000"/>
+      <course subject="CHM" courseNbr="101" share="0.2500"/>
+      <course subject="CALC" courseNbr="101" share="0.2500"/>
+      <course subject="HIST" courseNbr="101" share="0.5000"/>
+      <course subject="GER" courseNbr="101" share="0.2500"/>
+      <course subject="POL" courseNbr="101" share="0.2500"/>
+      <course subject="SPAN" courseNbr="101" share="0.2500"/>
+      <course subject="COM" courseNbr="101" share="0.5000"/>
+      <course subject="PHIL" courseNbr="101" share="0.5000"/>
+      <course subject="BAND" courseNbr="101" share="0.2500"/>
+      <course subject="LING" courseNbr="101" share="0.2500"/>
+      <course subject="MBIO" courseNbr="101" share="0.2500"/>
+      <course subject="PHYS" courseNbr="101" share="0.2500"/>
+      <course subject="PSY" courseNbr="101" share="0.2500"/>
+      <course subject="SOC" courseNbr="101" share="0.2500"/>
+    </classification>
+  </curriculum>
+  <!-- external ids may be also provided -->
+  <curriculum abbreviation="A/M2" name="The Woebegon's Only Academic Area / Major 2">
+    <academicArea externalId="A" abbreviation="A"/>
+    <department externalId="Woebegon Dept 0101" code="0101"/>
+    <major externalId="M2" code="M2"/>
+    <classification name="01" enrollment="4">
+      <academicClassification externalId="01" code="01"/>
+      <course subject="CALC" courseNbr="101" share="1.0000"/>
+      <course subject="CHM" courseNbr="101" share="1.0000"/>
+      <course subject="PHYS" courseNbr="101" share="0.7500"/>
+      <course subject="ENGR" courseNbr="101" share="0.7500"/>
+      <course subject="COM" courseNbr="101" share="0.5000"/>
+      <course subject="ENGL" courseNbr="101" share="0.5000"/>
+      <course subject="C S" courseNbr="101" share="0.2500"/>
+      <course subject="BAND" courseNbr="101" share="0.2500"/>
+      <course subject="BIOL" courseNbr="101" share="0.2500"/>
+    </classification>
+    <classification name="02" enrollment="2">
+      <academicClassification externalId="02" code="02"/>
+      <course subject="CALC" courseNbr="101" share="1.0000"/>
+      <course subject="PHYS" courseNbr="101" share="0.5000"/>
+      <course subject="COM" courseNbr="101" share="0.5000"/>
+      <course subject="ENGL" courseNbr="101" share="0.5000"/>
+      <course subject="C S" courseNbr="101" share="1.0000"/>
+      <course subject="ECON" courseNbr="101" share="0.5000"/>
+      <course subject="POL" courseNbr="101" share="0.5000"/>
+      <course subject="PSY" courseNbr="101" share="0.5000"/>
+    </classification>
+  </curriculum>
+  <!-- an example with only required fields -->
+  <curriculum>
+    <academicArea abbreviation="A"/>
+    <department code="0101"/>
+    <major code="M3"/>
+    <classification enrollment="2">
+      <academicClassification code="01"/>
+      <course subject="BIOL" courseNbr="101"/>
+      <course subject="CALC" courseNbr="101"/>
+      <course subject="CHM" courseNbr="101"/>
+      <course subject="MBIO" courseNbr="101"/>
+      <course subject="GER" courseNbr="101" share="0.5"/>
+      <course subject="SPAN" courseNbr="101" share="0.5"/>
+    </classification>
+    <classification enrollment="2">
+      <academicClassification code="02"/>
+      <course subject="GER" courseNbr="101" share="0.5"/>
+      <course subject="ALG" courseNbr="101"/>
+      <course subject="COM" courseNbr="101"/>
+      <course subject="ECON" courseNbr="101"/>
+      <course subject="PSY" courseNbr="101"/>
+      <course subject="SOC" courseNbr="101" share="0.5"/>
+    </classification>
+  </curriculum>	
+</curricula>
