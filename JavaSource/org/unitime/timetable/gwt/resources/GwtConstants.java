@@ -26,6 +26,6 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("3.3")
 	String version();
 
-	@DefaultStringValue("&copy; 2008 - 2011 UniTime LLC")
+	@DefaultStringValue("&copy; 2008 - 2012 UniTime LLC")
 	String copyright();
 }
