@@ -2,8 +2,8 @@
 <!DOCTYPE project>
 
 <!-- 
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2008 - 2011, UniTime LLC
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2008 - 2012, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
 				<attribute name="Class-Path" value="antlr-2.7.6.jar backport-util-concurrent.jar commons-collections-3.2.1.jar commons-dbcp-1.4.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-all-1.2.jar dom4j-1.6.1.jar ehcache-1.5.0.jar hibernate3.jar javassist-3.9.0.GA.jar jta-1.1.jar log4j-1.2.16.jar mysql-connector-java-5.1.14-bin.jar ojdbc6.jar ojdbc5.jar ojdbc14.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar jsp-api.jar servlet-api.jar protobuf-java-2.4.1.jar gwt-servlet.jar" />
-				<attribute name="Timetabling-Version" value="3.3_bld${build.number}"/>
+				<attribute name="Timetabling-Version" value="3.4_bld${build.number}"/>
 			</manifest>
 		</jar>
 	</target>
@@ -146,7 +146,7 @@
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.StartupMinimal" />
 				<attribute name="Class-Path" value="tray-win32.jar" />
-				<attribute name="Timetabling-Version" value="3.3_bld${build.number}"/>
+				<attribute name="Timetabling-Version" value="3.4_bld${build.number}"/>
 			</manifest>
 		</jar>
 		<signjar jar="${dist.dir}/solver.jar" alias="solver" storepass="Fh3g1H03e95kf54xZ" keystore="${src.dir}/solver.key"/>
@@ -211,7 +211,7 @@
 				<include name="**/*.*" />
 			</fileset>
 			<manifest>
-				<attribute name="Timetabling-Version" value="3.3_bld${build.number}"/>
+				<attribute name="Timetabling-Version" value="3.4_bld${build.number}"/>
 			</manifest>
 		</jar>
 	</target>
@@ -232,8 +232,8 @@
     	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="1.5" linksource="false" breakiterator="true" useexternalfile="yes">
     		<doctitle><![CDATA[
     		<table border='0' style='font-size: 11pt;font-weight: normal;'><tr><td align='left'>
-    			UniTime 3.3 (University Timetabling Application)<br>
-    			Copyright (C) 2008 - 2011, UniTime LLC
+    			UniTime 3.4 (University Timetabling Application)<br>
+    			Copyright (C) 2008 - 2012, UniTime LLC
         		<br><br>
     			This program is free software; you can redistribute it and/or modify
     			it under the terms of the GNU General Public License as published by
@@ -292,7 +292,7 @@
 	</target>
 
 	<target name="build-dist" depends="compile-war,help">
-		<tar destfile="${dist.dir}/unitime-3.3_bld${build.number}.tar">
+		<tar destfile="${dist.dir}/unitime-3.4_bld${build.number}.tar">
 			<tarfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
 			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
 			<tarfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
@@ -331,9 +331,9 @@
 			<tarfileset dir="${dist.dir}/doc" prefix="doc/api"/>
 			-->
 		</tar>
-		<gzip zipfile="${dist.dir}/unitime-3.3_bld${build.number}.tar.gz" src="${dist.dir}/unitime-3.3_bld${build.number}.tar"/>
-		<delete file="${dist.dir}/unitime-3.3_bld${build.number}.tar"/>
-		<zip destfile="${dist.dir}/unitime-3.3_bld${build.number}.zip">
+		<gzip zipfile="${dist.dir}/unitime-3.4_bld${build.number}.tar.gz" src="${dist.dir}/unitime-3.4_bld${build.number}.tar"/>
+		<delete file="${dist.dir}/unitime-3.4_bld${build.number}.tar"/>
+		<zip destfile="${dist.dir}/unitime-3.4_bld${build.number}.zip">
 			<zipfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
 			<zipfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
 			<zipfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
