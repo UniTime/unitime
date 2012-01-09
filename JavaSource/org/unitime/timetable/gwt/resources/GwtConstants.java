@@ -23,7 +23,7 @@ import com.google.gwt.i18n.client.Constants;
 
 public interface GwtConstants extends Constants {
 	
-	@DefaultStringValue("3.3")
+	@DefaultStringValue("3.4")
 	String version();
 
 	@DefaultStringValue("&copy; 2008 - 2012 UniTime LLC")
