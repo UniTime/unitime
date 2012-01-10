@@ -3,7 +3,7 @@
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
 <!-- 
  * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2008 - 2011, UniTime LLC
+ * Copyright (C) 2008 - 2012, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,23 @@
 <release>
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Event Timetable</name>
+			<description>
+				<line>
+					Personal Timetable: Administrators and schedule deputies can see instructor / student  class / examination schedules even when
+					the session does not allow instructors / students to see their schedules (session status does not have the no-role reports flag(s) enabled).
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.165</version>
+	<release-date>January 6, 2012</release-date>
 	<category>
 		<title>Reservations</title>
 		<item>
