@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
@@ -77,18 +77,24 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Constants;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 /**
  * @author Tomas Muller
  */
-public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEditService {
+@Singleton
+public class SimpleEditServlet implements SimpleEditService {
 	private static final long serialVersionUID = 8338135183971720592L;
 	private static Logger sLog = Logger.getLogger(SimpleEditServlet.class);
 
-
-	public void init() throws ServletException {
+	public SimpleEditServlet() {
 	}
+	
+	/* Inject dependencies */
+	@Inject Provider<HttpServletRequest> iRequest;
+	private HttpServletRequest getThreadLocalRequest() { return iRequest.get(); }
 
 	@Override
 	public SimpleEditInterface load(Type type) throws SimpleEditException, PageAccessException {

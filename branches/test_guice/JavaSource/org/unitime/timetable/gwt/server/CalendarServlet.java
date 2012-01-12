@@ -60,7 +60,9 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -90,6 +92,11 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
+import com.google.inject.ImplementedBy;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -100,9 +107,12 @@ import net.sf.cpsolver.studentsct.model.Section;
 /**
  * @author Tomas Muller
  */
+@Singleton
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
+	
+	@Inject Provider<CalendarService> iCalendarService;
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String q = request.getParameter("q");
@@ -295,7 +305,7 @@ public class CalendarServlet extends HttpServlet {
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
             	if (r.getType() == ResourceType.ROOM)
             		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
-        		for (EventInterface e: new EventServlet().findEvents(r, false))
+        		for (EventInterface e: iCalendarService.get().findEventsNoAuthenticationCheck(r))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
@@ -1060,6 +1070,9 @@ public class CalendarServlet extends HttpServlet {
 			}
 		}
 	}
-
-
+	
+	@ImplementedBy(EventServlet.class)
+	public static interface CalendarService {
+		public List<EventInterface> findEventsNoAuthenticationCheck(ResourceInterface resource) throws EventException, PageAccessException;
+	}
 }

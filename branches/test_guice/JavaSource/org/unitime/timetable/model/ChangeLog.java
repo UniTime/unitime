@@ -32,6 +32,7 @@ import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.guice.context.SessionContext;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 
@@ -464,5 +465,45 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             Debug.error(e);
         }
         return null;
+    }
+    
+    public static void addChange(
+            org.hibernate.Session hibSession,
+            SessionContext context,
+            Object object,
+            String objectTitle,
+            Source source,
+            Operation operation,
+            SubjectArea subjArea,
+            Department dept) {
+        try {
+            String userId = (String)context.getAttribute("authUserExtId");
+            User user = context.getUser();
+            if (userId==null) {
+                if (user!=null) {
+                    Debug.warning("No authenticated user defined, using "+user.getName());
+                    userId = user.getId();
+                }
+            }
+            if (userId==null) {
+                Debug.warning("Unable to add change log -- no user.");
+                return;
+            }
+            Session session = Session.getCurrentAcadSession(user);
+            if (session==null) {
+                Debug.warning("Unable to add change log -- no academic session.");
+                return;
+            }
+            TimetableManager manager = TimetableManager.findByExternalId(userId);
+            if (manager==null)
+                manager = TimetableManager.getManager(user);
+            if (manager==null) {
+                Debug.warning("Unable to add change log -- no timetabling manager.");
+                return;
+            }
+            addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
+        } catch (Exception e) {
+            Debug.error(e);
+        }
     }
 }

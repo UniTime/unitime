@@ -1,15 +1,12 @@
 package org.unitime.timetable.gwt.server;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.hibernate.EntityMode;
@@ -21,7 +18,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.guice.context.SessionContext;
 import org.unitime.timetable.gwt.services.SavedHQLService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
@@ -33,17 +30,27 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
-public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLService {
+@Singleton
+public class SavedHQLServlet implements SavedHQLService {
 	private static final long serialVersionUID = -5724832564531363833L;
 	private static Logger sLog = Logger.getLogger(SavedHQLServlet.class);
+	
+	public SavedHQLServlet() {
+	}
+	
+	private Provider<SessionContext> iSessionContextProvider;
+	@Inject void setSessionContext(Provider<SessionContext> sessionContextProvider) { iSessionContextProvider = sessionContextProvider; }
+	public SessionContext getSessionContext() { return iSessionContextProvider.get(); }
 
 	@Override
 	public List<SavedHQLInterface.Flag> getFlags() throws SavedHQLException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		List<SavedHQLInterface.Flag> ret = new ArrayList<SavedHQLInterface.Flag>();
 		for (SavedHQL.Flag f: SavedHQL.Flag.values()) {
@@ -57,9 +64,9 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 
 	@Override
 	public List<SavedHQLInterface.Option> getOptions() throws SavedHQLException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		List<SavedHQLInterface.Option> ret  = new ArrayList<SavedHQLInterface.Option>();
 		for (SavedHQL.Option o: SavedHQL.Option.values()) {
@@ -84,15 +91,15 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 
 	@Override
 	public Boolean editable() throws SavedHQLException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		return (user != null && user.isAdmin());
 	}
 
 	@Override
 	public List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		SavedHQL.Flag ap = SavedHQL.Flag.valueOf("APPEARANCE_" + (appearance == null ? "ADMINISTRATION" : appearance.toUpperCase()));
 		List<SavedHQLInterface.Query> ret = new ArrayList<SavedHQLInterface.Query>(); 
@@ -111,9 +118,9 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	@Override
 	public List<String[]> execute(SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			User user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+					getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 			if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 			String hql = query.getQuery();
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
@@ -323,9 +330,9 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 
 	@Override
 	public Long store(Query query) throws SavedHQLException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		if (!user.isAdmin()) throw new PageAccessException("Only administrator can save a query.");
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
@@ -349,9 +356,9 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	@Override
 	public Boolean delete(Long id) throws SavedHQLException, PageAccessException {
 		if (id == null) throw new SavedHQLException("No report provided.");
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		User user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		if (!user.isAdmin()) throw new PageAccessException("Only administrator can delete a query.");
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
@@ -363,61 +370,9 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 		return hql != null;
 	}
 	
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if ("1".equals(request.getParameter("csv")) && request.getParameter("report") != null) {
-			SavedHQL hql = SavedHQLDAO.getInstance().get(Long.valueOf(request.getParameter("report")));
-			if (hql == null) throw new SavedHQLException("No report provided.");
-			SavedHQLInterface.Query q = new SavedHQLInterface.Query();
-			q.setName(hql.getName());
-			q.setId(hql.getUniqueId());
-			q.setQuery(hql.getQuery());
-			q.setFlags(hql.getType());
-			q.setDescription(hql.getDescription());
-			List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();
-			if (request.getParameter("params") != null) {
-				String[] p = request.getParameter("params").split(":");
-				int i = 0;
-				for (SavedHQL.Option o: SavedHQL.Option.values()) {
-					if (!o.allowSingleSelection() && !o.allowMultiSelection()) continue;
-					SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
-					v.setValue(o.name());
-					v.setText(i < p.length ? p[i] : "");
-					params.add(v);
-					i++;
-				}
-			}
-			perThreadRequest.set(request);
-			perThreadResponse.set(response);
-			List<String[]> report = execute(q, params, 0, -1);
-			
-			response.setContentType("application/csv; charset=UTF-8");
-			response.setCharacterEncoding("UTF-8");
-			response.setHeader( "Content-Disposition", "attachment; filename=\"" + q.getName() + ".csv\"" );
-	        
-			PrintWriter out = response.getWriter();
-			try {
-				boolean skipFirstColumn = false;
-				for (int i = 0; i < report.size(); i++) {
-					String[] line = report.get(i);
-					for (int j = 0; j < line.length; j++) {
-						String field = (line[j] == null ? "" : line[j]);
-						if (i == 0 && j == 0 && field.startsWith("__")) skipFirstColumn = true;
-						if (skipFirstColumn && j == 0) continue;
-						if (i == 0) field = field.replace('_', ' ').trim();
-						out.print((j > (skipFirstColumn ? 1 : 0) ? "," : "") + "\"" + field.replace("\"", "\"\"") + "\"");
-					}
-					out.println();
-				}
-				out.flush();
-			} finally {
-				out.close();
-			}
-		} else {
-			super.doGet(request, response);
-		}
-	}
-
+	@Inject Provider<HttpServletRequest> iHttpRequest;
+	@Inject Provider<HttpSession> iHttpSession;
+	
 	@Override
 	public Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException, PageAccessException {
 		String title = "Reports";
@@ -433,21 +388,21 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 		case APPEARANCE_ADMINISTRATION:
 			title = "Administration Reports"; break;
 		}
-		BackTracker.markForBack(getThreadLocalRequest(), "gwt.jsp?page=hql&appearance=" + appearance + "#" + history, title, true, true);
+		BackTracker.markForBack(iHttpRequest.get(), "gwt.jsp?page=hql&appearance=" + appearance + "#" + history, title, true, true);
 		if ("__Class".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sClassLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sClassLevel, ids);
 		else if ("__Offering".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sInstructionalOfferingLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sInstructionalOfferingLevel, ids);
 		else if ("__Subpart".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sSchedulingSubpartLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sSchedulingSubpartLevel, ids);
 		else if ("__Room".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sInstructionalOfferingLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sInstructionalOfferingLevel, ids);
 		else if ("__Instructor".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sInstructionalOfferingLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sInstructionalOfferingLevel, ids);
 		else if ("__Exam".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sInstructionalOfferingLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sInstructionalOfferingLevel, ids);
 		else if ("__Event".equals(type))
-			Navigation.set(getThreadLocalRequest().getSession(), Navigation.sInstructionalOfferingLevel, ids);
+			Navigation.set(iHttpSession.get(), Navigation.sInstructionalOfferingLevel, ids);
 		return true;
 	}
 

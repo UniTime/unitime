@@ -41,6 +41,9 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
+import com.google.inject.Singleton;
+
+@Singleton
 public class PatternServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
