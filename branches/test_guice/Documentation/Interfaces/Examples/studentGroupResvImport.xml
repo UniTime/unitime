@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentGroupReservations PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentGroupReservation.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+	<!-- groupReservation ==> Required:  subject, courseNumber  {Instructional Offering identification}
+	                                     group, reservationType, level, priority 
+	                                     request, reserved
+	                    				   (One of request | reserved must be non-null.  
+	                    				    If one is null it defaults to the non-null value.)
+	                                     configuration
+	                                       (Configuration is only required to be non-null if 
+	                                        level = "configuration".)
+	                          Optional:  priorEnrollment, projectedEnrollment
+	     
+	     reservationType = info, temp or perm
+	     level = instrOffering, configuration
+	-->
+<studentGroupReservations campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<groupReservation subject="MSE" courseNumber="597F" group="AgEd" reservationType="info" level="instrOffering" configuration="" priority="1" reserved="20" request="30" priorEnrollment="2" projectedEnrollment="11"/>
+	<groupReservation subject="A&amp;AE" courseNumber="590F" group="SciHonor" reservationType="info" level="instrOffering" configuration="" priority="2" reserved="24" request="30" priorEnrollment="7" projectedEnrollment="6"/>
+	<groupReservation subject="M E" courseNumber="615" group="SciHonor" reservationType="info" level="instrOffering" configuration="" priority="3" reserved="20" request="30" priorEnrollment="2" projectedEnrollment="0"/>
+	<groupReservation subject="A&amp;AE" courseNumber="615" group="AgEd" reservationType="info" level="configuration" configuration="2" priority="1" reserved="22" request="30" priorEnrollment="10" projectedEnrollment="0"/>
+</studentGroupReservations>
