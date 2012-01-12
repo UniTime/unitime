@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE students PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Student.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+	<!-- student                 ==> Required:  externalId, firstName, lastName
+	                                 Optional:  middleName, email
+	       studentAcadAreaClass  ==> [1 ==> N entries]
+	         acadAreaClass       ==> Required:  academicArea, academicClass
+	       studentMajors         ==> [1 ==> N entries]  
+	         major               ==> Required:  academicArea, code
+	       studentMinors         ==> [0 ==> N entries]  
+	         minor               ==> Required:  academicArea, code
+	       studentGroups         ==> [0 ==> N entries]  
+	         studentGroup        ==> Required:  group
+	       studentAccomodations  ==> [0 ==> N entries]  
+	         studentAccomodation ==> Required:  accomodation
+	-->
+<students campus="woebegon" year="2010" term="Fal">
+  <student externalId="1001" firstName="Andrew" lastName="Student" middleName='Frank' email="demo@unitime.org">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+      <major academicArea="TEST" code="T"/>
+    </studentMajors>
+    <studentMinors>
+      <minor academicArea="TEST" code="T"/>
+    </studentMinors>
+    <studentGroups>
+      <studentGroup group="YEx"/> 
+    </studentGroups>
+  </student>
+  <student externalId="1002" firstName="Brian" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+    </studentMajors>
+    <studentGroups>
+      <studentGroup group="YEx"/> 
+    </studentGroups>
+  </student>
+  <student externalId="1003" firstName="Charles" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+    <studentGroups>
+      <studentGroup group="YEx"/> 
+      <studentGroup group="T"/> 
+    </studentGroups>
+  </student>
+  <student externalId="1004" firstName="David" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+    <studentGroups>
+      <studentGroup group="T"/> 
+    </studentGroups>
+  </student>
+  <student externalId="1005" firstName="Edward" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1006" firstName="Frank" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1007" firstName="George" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+  </student>
+  <student externalId="1008" firstName="Henry" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+  </student>
+  <student externalId="1009" firstName="Ivan" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+  </student>
+  <student externalId="1010" firstName="James" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+  </student>
+  <student externalId="1011" firstName="Kevin" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1012" firstName="Larry" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1013" firstName="Michael" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1014" firstName="Norman" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1015" firstName="Oscar" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+    </studentMajors>
+  </student>
+  <student externalId="1016" firstName="Peter" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+    </studentMajors>
+  </student>
+  <student externalId="1017" firstName="Richard" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1018" firstName="Steve" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="01"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M1"/>
+    </studentMajors>
+  </student>
+  <student externalId="1019" firstName="Thomas" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M2"/>
+    </studentMajors>
+  </student>
+  <student externalId="1020" firstName="Urshula" lastName="Student">
+    <studentAcadAreaClass>
+      <acadAreaClass academicArea="A" academicClass="02"/>
+    </studentAcadAreaClass>
+    <studentMajors>
+      <major academicArea="A" code="M3"/>
+    </studentMajors>
+  </student>
+</students>

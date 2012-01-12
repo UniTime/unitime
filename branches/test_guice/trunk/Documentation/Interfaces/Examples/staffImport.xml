@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE staff PUBLIC "-//UniTime//UniTime Staff Import DTD/EN" "http://www.unitime.org/interface/Staff.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- staffMember ==> Required:  externamId, firstName, lastName, positionType, department
+	                     Optional:  middleName, email
+	-->
+<staff campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<!--
+		Since UniTime 3.3.165 positionCode attribute (that has to be translated through position_code_to_type table) was replaced by positionType attribute
+		that refers directly to position_type table.
+	-->
+	<staffMember externalId="9999911110" firstName="CAROL" middleName="F" lastName="CZAJA" positionType="PROF" department="1267"/>
+	<staffMember externalId="9999911111" firstName="JOANN" middleName="L" lastName="MILLER" positionType="INSTRUCTOR" department="1365" email="jlmiller@aol.com"/>
+  	<staffMember externalId="9999911112" firstName="DONALD" middleName="" lastName="COLLER" positionType="POST_DOC" department="1790"/>
+  	<staffMember externalId="9999911113" firstName="JACOB" middleName="P" lastName="MILLSPAW" positionType="ADMIN_STAFF" department="1396"/>
+</staff>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Curriculum" table="curriculum">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="abbv"
+            column="abbv"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="60"/>
+
+        <many-to-one
+            name="academicArea"
+            class="AcademicArea"
+            column="acad_area_id"
+            not-null="true"
+            foreign-key="fk_curriculum_acad_area"/>
+
+        <set
+            name="majors"
+            table="curriculum_major"
+            inverse="false"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="curriculum_id"/>
+            <many-to-many class="org.unitime.timetable.model.PosMajor" column="major_id"/>
+        </set>
+
+        <many-to-one
+            name="department"
+            class="Department"
+            column="dept_id"
+            not-null="true"
+            foreign-key="fk_curriculum_dept"/>
+
+        <set
+            name="classifications"
+            lazy="true"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="curriculum_id" foreign-key="fk_curriculum_clasf_curriculum"/>
+            <one-to-many class="CurriculumClassification"/>
+        </set>
+
+    </class>
+    <class name="CurriculumClassification" table="curriculum_clasf">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="curriculum"
+            class="Curriculum"
+            column="curriculum_id"
+            not-null="true"
+            foreign-key="fk_curriculum_clasf_curriculum"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
+
+        <many-to-one
+            name="academicClassification"
+            class="AcademicClassification"
+            column="acad_clasf_id"
+            not-null="true"
+            foreign-key="fk_curriculum_clasf_acad_clasf"/>
+
+        <property
+            name="nrStudents"
+            column="nr_students"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="ord"
+            column="ord"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            lazy="true"
+            name="students"
+            column="students"
+            type="org.unitime.commons.hibernate.blob.XmlClobType"
+            not-null="false"/>
+
+        <set
+            name="courses"
+            lazy="true"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="cur_clasf_id" foreign-key="fk_curriculum_course_clasf"/>
+            <one-to-many class="CurriculumCourse"/>
+        </set>
+
+    </class>
+    <class name="CurriculumCourse" table="curriculum_course">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="classification"
+            class="CurriculumClassification"
+            column="cur_clasf_id"
+            not-null="true"
+            foreign-key="fk_curriculum_course_clasf"/>
+
+        <many-to-one
+            name="course"
+            class="CourseOffering"
+            column="course_id"
+            not-null="true"
+            foreign-key="fk_curriculum_course_course"/>
+
+        <property
+            name="percShare"
+            column="pr_share"
+            type="java.lang.Float"
+            not-null="true"/>
+
+        <property
+            name="ord"
+            column="ord"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <set
+            name="groups"
+            table="curriculum_course_group"
+            lazy="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="cur_course_id"/>
+            <many-to-many
+                class="org.unitime.timetable.model.CurriculumCourseGroup"
+                column="group_id"
+                foreign-key="fk_cur_course_group_group"/>
+
+        </set>
+
+    </class>
+    <class name="CurriculumCourseGroup" table="curriculum_group">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="name"
+            column="name"
+            length="20"
+            type="java.lang.String"
+            not-null="true"/>
+
+        <property
+            name="color"
+            column="color"
+            length="20"
+            type="java.lang.String"
+            not-null="false"/>
+
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <many-to-one
+            name="curriculum"
+            class="Curriculum"
+            column="curriculum_id"
+            not-null="true"
+            foreign-key="fk_curriculum_group_curriculum"/>
+
+    </class>
+    <class name="CurriculumProjectionRule" table="curriculum_rule">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="academicArea"
+            class="AcademicArea"
+            column="acad_area_id"
+            not-null="true"
+            foreign-key="fk_cur_rule_acad_area"/>
+
+        <many-to-one
+            name="major"
+            class="PosMajor"
+            column="major_id"
+            not-null="false"
+            foreign-key="fk_cur_rule_major"/>
+
+        <many-to-one
+            name="academicClassification"
+            class="AcademicClassification"
+            column="acad_clasf_id"
+            not-null="true"
+            foreign-key="fk_cur_rule_acad_clasf"/>
+
+        <property
+            name="projection"
+            column="projection"
+            type="java.lang.Float"
+            not-null="true"/>
+
+    </class>
+</hibernate-mapping>
