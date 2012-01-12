@@ -168,3 +168,25 @@ protobuf-java-2.4.1.jar
 	URL: http://code.google.com/p/protobuf/
 	Copyright: 2011 Google
 	License: BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
+
+guice-3.0.jar guice-servlet-3.0.jar
+	Google Guice (lightweight dependency injection framework)
+	URL: http://code.google.com/p/google-guice/
+	Copyright: 2011 Google
+	License: The Apache Software License, Version 2.0
+
+aopalliance.jar
+	AOP Alliance Java/J2EE AOP implementation
+	URL: https://sourceforge.net/projects/aopalliance/
+	Copyright: 2011 AOP Allience
+	License: Public Domain
+
+jsr305-1.3.9.jar
+	 Annotations for Software Defect Detection in Java (JSR-305, Guice dependency)
+	 URL: http://code.google.com/p/jsr-305/
+	 Copyright: BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
+
+javax.inject.jar
+	Dependency Injection for Java (JSR-330, Guice dependency)
+	URL: http://code.google.com/p/atinject/
+	License: The Apache Software License, Version 2.0
