@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2010 - 2012, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -676,6 +675,11 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					}
 					break;
 				case PERSON:
+					User user = Web.getUser(getThreadLocalRequest().getSession());
+					boolean overrideStatus = user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
+					boolean canViewFinalExams = overrideStatus || session.getStatusType().canNoRoleReportExamFinal();
+					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
+					boolean canViewClasses = overrideStatus || session.getStatusType().canNoRoleReportClass();
 					curriculumCourses = new HashSet<Long>();
 					curriculumConfigs = new HashSet<Long>();
 					curriculumClasses = new HashSet<Long>();
@@ -683,8 +687,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery("select i from DepartmentalInstructor i " +
 							"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId").
 							setLong("sessionId", resource.getSessionId()).setString("externalId", resource.getExternalId()).list()) {
-	                	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
-	                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
+	                    if (canViewFinalExams)
 		                	for (Exam exam: instructor.getExams(Exam.sExamTypeFinal)) {
 		                		if (exam.getEvent() != null)
 		                			meetings.addAll(exam.getEvent().getMeetings());
@@ -694,7 +697,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) curriculumConfigs.add(owner.getOwnerId());
 		                		}
 		                	}
-	                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
+	                    if (canViewMidtermExams)
 		                	for (Exam exam: instructor.getExams(Exam.sExamTypeMidterm)) {
 		                		if (exam.getEvent() != null)
 		                			meetings.addAll(exam.getEvent().getMeetings());
@@ -704,37 +707,39 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) curriculumConfigs.add(owner.getOwnerId());
 		                		}
 		                	}
-                        for (ClassInstructor ci: instructor.getClasses()) {
-                        	if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass() && ci.getClassInstructing().getEvent() != null) {
-                        		meetings.addAll(ci.getClassInstructing().getEvent().getMeetings());
-                        	}
-                        	for (CourseOffering course: ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
-                        		curriculumCourses.add(course.getUniqueId());
-                        	}
-                        }
+	                    if (canViewClasses) {
+	                        for (ClassInstructor ci: instructor.getClasses()) {
+	                        	if (ci.getClassInstructing().getEvent() != null) {
+	                        		meetings.addAll(ci.getClassInstructing().getEvent().getMeetings());
+	                        	}
+	                        	for (CourseOffering course: ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+	                        		curriculumCourses.add(course.getUniqueId());
+	                        	}
+	                        }
+	                    }
 					}
                     for (Student student: (List<Student>)hibSession.createQuery("select s from Student s where " +
                     		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId").
                     		setLong("sessionId", resource.getSessionId()).setString("externalId", resource.getExternalId()).list()) {
-                    	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
-                    	if (student.getSession().getStatusType().canNoRoleReportExamFinal()) {
+                    	if (canViewFinalExams) {
                     		for (Exam exam: student.getExams(Exam.sExamTypeFinal))
                     			if (exam.getEvent() != null)
                         			meetings.addAll(exam.getEvent().getMeetings());
                     	}
-                    	if (student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
+                    	if (canViewMidtermExams) {
                     		for (Exam exam: student.getExams(Exam.sExamTypeMidterm))
                     			if (exam.getEvent() != null)
                         			meetings.addAll(exam.getEvent().getMeetings());
                     	}
-                        for (StudentClassEnrollment sce: student.getClassEnrollments()) {
-                        	if (student.getSession().getStatusType().canNoRoleReportClass() && sce.getClazz().getEvent() != null) {
-                    			meetings.addAll(sce.getClazz().getEvent().getMeetings());
-                        	}
-                    		curriculumConfigs.add(sce.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
-                    		curriculumClasses.add(sce.getClazz().getUniqueId());
-                			curriculumCourses.add(sce.getCourseOffering().getUniqueId());
-                        }
+                    	if (canViewClasses) {
+                            for (StudentClassEnrollment sce: student.getClassEnrollments()) {
+                            	if (sce.getClazz().getEvent() != null)
+                        			meetings.addAll(sce.getClazz().getEvent().getMeetings());
+                        		curriculumConfigs.add(sce.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getUniqueId());
+                        		curriculumClasses.add(sce.getClazz().getUniqueId());
+                    			curriculumCourses.add(sce.getCourseOffering().getUniqueId());
+                            }
+                    	}
     					meetings.addAll(
     							(List<Meeting>)hibSession.createQuery("select m from CourseEvent e inner join e.meetings m inner join e.relatedCourses o, " +
     							"Student s inner join s.classEnrollments e where " +
