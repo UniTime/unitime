@@ -37,7 +37,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from QueryLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setInteger("days", days).executeUpdate();
+					).setInteger("days", - days).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the query log (" + rows + " records).");
 			tx.commit();
@@ -57,7 +57,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from ChangeLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setInteger("days", days).executeUpdate();
+					).setInteger("days", - days).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the change log (" + rows + " records).");
 			tx.commit();
@@ -77,7 +77,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from OnlineSectioningLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setInteger("days", days).executeUpdate();
+					).setInteger("days", - days).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the online sectioning log (" + rows + " records).");
 			tx.commit();
