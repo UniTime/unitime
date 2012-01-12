@@ -17,25 +17,22 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.guice;
+package org.unitime.timetable.guice.modules;
 
-import org.unitime.timetable.guice.modules.GwtModule;
-import org.unitime.timetable.guice.modules.UniTimeSecurityModule;
+import org.unitime.timetable.security.customization.CurriculumEditAlwaysDenyPermission;
+import org.unitime.timetable.security.customization.CurriculumMgrRoleNoAddDelete;
+import org.unitime.timetable.security.permissions.CurriculumPermissions;
+import org.unitime.timetable.security.roles.CurriculumMgrRole;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.AbstractModule;
 
-public class GuiceBootstrap  extends GuiceServletContextListener {
+public class CustomizationsModule extends AbstractModule {
 
 	@Override
-	protected Injector getInjector() {
-		// To enable customizations from the CustomizationsModule, just add new CustomizationsModule() in the list 
-		return Guice.createInjector(
-				new GwtModule(),
-				new UniTimeSecurityModule()
-				//, new CustomizationsModule()
-				);
+	protected void configure() {
+		// This can be done using a config file or database
+		// or in an institution-specific module
+		bind(CurriculumPermissions.CanEdit.class).to(CurriculumEditAlwaysDenyPermission.class);
+		bind(CurriculumMgrRole.class).to(CurriculumMgrRoleNoAddDelete.class);
 	}
-
 }

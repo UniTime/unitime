@@ -89,6 +89,16 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.security.annotations.CheckDepartment;
+import org.unitime.timetable.security.annotations.CheckForPermission;
+import org.unitime.timetable.security.annotations.CheckForRight;
+import org.unitime.timetable.security.annotations.CheckForRole;
+import org.unitime.timetable.security.annotations.CheckHasRole;
+import org.unitime.timetable.security.annotations.CheckSession;
+import org.unitime.timetable.security.permissions.ClassEditPermission;
+import org.unitime.timetable.security.permissions.CurriculumPermissions;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.security.roles.AdminRole;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 
@@ -121,6 +131,7 @@ public class CurriculaServlet implements CurriculaService {
 	@Inject void setSessionContext(Provider<SessionContext> sessionContextProvider) { iSessionContextProvider = sessionContextProvider; }
 	public SessionContext getSessionContext() { return iSessionContextProvider.get(); }
 	
+	@CheckForPermission(permission = {CurriculumPermissions.CanView.class})
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
@@ -176,6 +187,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckForPermission(permission = {CurriculumPermissions.CanView.class})
 	public List<CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadClassifications(curriculumIds=" + curriculumIds + ")");
@@ -267,6 +279,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckForPermission(permission = {CurriculumPermissions.CanView.class})
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
@@ -447,10 +460,14 @@ public class CurriculaServlet implements CurriculaService {
 			return secureSaveCurriculum(curriculum.getId(), curriculum);
 	}
 	
+	@CheckForPermission(permission = {CurriculumPermissions.CanEdit.class})
 	protected Long secureSaveCurriculum(Long curriculumId, CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		return saveCurriculumImpl(curriculum);
 	}
 	
+	@CheckDepartment(right = {Right.CurriculumAdd})
+	// OR
+	@CheckForPermission(permission = {CurriculumPermissions.CanAdd.class})
 	protected Long secureAddCurriculum(Long departmentId, CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		return saveCurriculumImpl(curriculum);
 	}
@@ -774,6 +791,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	
+	@CheckForPermission(permission = {CurriculumPermissions.CanDelete.class})
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
@@ -825,6 +843,8 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+    @Inject Provider<CurriculumPermissions.CanDelete> iCurriculumDeletePermission;
+
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
@@ -842,7 +862,9 @@ public class CurriculaServlet implements CurriculaService {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
 					
-					if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
+					if (!iCurriculumDeletePermission.get().check(c))
+						throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
+					// if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
 					
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
@@ -1583,6 +1605,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckHasRole
 	public TreeSet<AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicAreas()");
@@ -1616,6 +1639,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckHasRole
 	public TreeSet<MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadMajors(academicAreaId=" + academicAreaId + ")");
@@ -1661,6 +1685,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckHasRole
 	public TreeSet<DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadDepartments()");
@@ -1711,6 +1736,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 
 	
+	@CheckHasRole
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
@@ -1730,6 +1756,7 @@ public class CurriculaServlet implements CurriculaService {
 		return filter;
 	}
 	
+	@CheckHasRole
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
@@ -1787,6 +1814,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckHasRole
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("retrieveCourseDetails(course='" + course + "')");
@@ -1815,6 +1843,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckHasRole
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listClasses(course='" + course + "')");
@@ -1937,6 +1966,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckForRole(role = {AdminRole.class})
 	public Boolean isAdmin() throws CurriculaException, PageAccessException {
 		try {
 			User user = getSessionContext().getUser();
@@ -2145,6 +2175,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@CheckForRole(role = {AdminRole.class})
 	public Boolean canEditProjectionRules() throws CurriculaException, PageAccessException {
 		User user = getSessionContext().getUser();
 		if (user == null)
@@ -2156,6 +2187,7 @@ public class CurriculaServlet implements CurriculaService {
 		return true;
 	}
 	
+	@CheckForRole(role = {AdminRole.class})
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException, PageAccessException {
 		sLog.debug("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
 		long s0 = System.currentTimeMillis();
@@ -2510,6 +2542,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	// @CheckForPermission(permission = {OfferingEdit.class})
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
 		long s0 = System.currentTimeMillis();

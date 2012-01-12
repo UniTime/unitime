@@ -17,25 +17,27 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.guice;
+package org.unitime.timetable.security.interceptors;
 
-import org.unitime.timetable.guice.modules.GwtModule;
-import org.unitime.timetable.guice.modules.UniTimeSecurityModule;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.unitime.timetable.guice.context.UserContext;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
-import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
 
-public class GuiceBootstrap  extends GuiceServletContextListener {
-
-	@Override
-	protected Injector getInjector() {
-		// To enable customizations from the CustomizationsModule, just add new CustomizationsModule() in the list 
-		return Guice.createInjector(
-				new GwtModule(),
-				new UniTimeSecurityModule()
-				//, new CustomizationsModule()
-				);
+public class IsAuthenticatedInterceptor implements MethodInterceptor {
+	@Inject Injector iInjector;
+	
+	public IsAuthenticatedInterceptor() {
 	}
 
+	@Override
+	public Object invoke(MethodInvocation invocation) throws Throwable {
+		UserContext context = iInjector.getInstance(UserContext.class);
+		if (!context.isAuthenticated())
+			throw new PageAccessException("Authentication check failed for method " + invocation.getMethod().getName());
+		return invocation.proceed();
+	}
 }

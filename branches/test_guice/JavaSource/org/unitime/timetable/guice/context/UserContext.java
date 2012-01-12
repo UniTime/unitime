@@ -17,25 +17,23 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.guice;
+package org.unitime.timetable.guice.context;
 
-import org.unitime.timetable.guice.modules.GwtModule;
-import org.unitime.timetable.guice.modules.UniTimeSecurityModule;
+import org.unitime.timetable.security.roles.Role;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.ImplementedBy;
 
-public class GuiceBootstrap  extends GuiceServletContextListener {
-
-	@Override
-	protected Injector getInjector() {
-		// To enable customizations from the CustomizationsModule, just add new CustomizationsModule() in the list 
-		return Guice.createInjector(
-				new GwtModule(),
-				new UniTimeSecurityModule()
-				//, new CustomizationsModule()
-				);
-	}
-
+@ImplementedBy(UniTimeUserContext.class)
+public interface UserContext {
+	public boolean isAuthenticated();
+	
+	public String getId();
+	
+	public String getName();
+	
+	public Role getRole();
+	
+	public Long getAcademicSessionId();
+	
+	public boolean hasDepartment(Long uniqueId);
 }

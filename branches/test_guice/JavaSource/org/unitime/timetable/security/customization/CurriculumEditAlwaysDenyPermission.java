@@ -17,25 +17,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.guice;
+package org.unitime.timetable.security.customization;
 
-import org.unitime.timetable.guice.modules.GwtModule;
-import org.unitime.timetable.guice.modules.UniTimeSecurityModule;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.security.permissions.CurriculumPermissions;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
-
-public class GuiceBootstrap  extends GuiceServletContextListener {
+public class CurriculumEditAlwaysDenyPermission extends CurriculumPermissions.CanEdit {
 
 	@Override
-	protected Injector getInjector() {
-		// To enable customizations from the CustomizationsModule, just add new CustomizationsModule() in the list 
-		return Guice.createInjector(
-				new GwtModule(),
-				new UniTimeSecurityModule()
-				//, new CustomizationsModule()
-				);
+	public boolean check(Curriculum curriculum) {
+		return false;
 	}
 
 }
