@@ -194,6 +194,11 @@
 
 	<!-- Filter Mappings -->
 	<filter-mapping>
+		<filter-name>Guice Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
 		<filter-name>Page Access Filter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
@@ -253,11 +258,6 @@
 		<url-pattern>*.gwt</url-pattern>
 	</filter-mapping>
 	
-	<filter-mapping>
-		<filter-name>Guice Filter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 	<jsp-config>
 		<jsp-property-group>
 			<url-pattern>*.jspf</url-pattern>

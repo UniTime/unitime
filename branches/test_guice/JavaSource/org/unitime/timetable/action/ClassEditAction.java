@@ -58,6 +58,8 @@ import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.annotations.CheckForPermission;
+import org.unitime.timetable.security.permissions.ClassEditPermission;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -428,7 +430,8 @@ public class ClassEditAction extends PreferencesAction {
      * @param request
      * @param frm
      */
-    private void doUpdate(
+    @CheckForPermission(permission = {ClassEditPermission.class})
+    protected void doUpdate(
             HttpServletRequest request,
             ClassEditForm frm,
             Class_ c,

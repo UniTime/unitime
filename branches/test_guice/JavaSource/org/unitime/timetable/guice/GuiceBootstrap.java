@@ -20,6 +20,7 @@
 package org.unitime.timetable.guice;
 
 import org.unitime.timetable.guice.modules.GwtModule;
+import org.unitime.timetable.guice.modules.StrutsModule;
 import org.unitime.timetable.guice.modules.UniTimeSecurityModule;
 
 import com.google.inject.Guice;
@@ -33,7 +34,8 @@ public class GuiceBootstrap  extends GuiceServletContextListener {
 		// To enable customizations from the CustomizationsModule, just add new CustomizationsModule() in the list 
 		return Guice.createInjector(
 				new GwtModule(),
-				new UniTimeSecurityModule()
+				new UniTimeSecurityModule(),
+				new StrutsModule()
 				//, new CustomizationsModule()
 				);
 	}

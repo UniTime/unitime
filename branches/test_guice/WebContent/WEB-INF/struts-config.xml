@@ -2424,8 +2424,8 @@
     </action-mappings>
 
 	<!-- Struts Layout Controller -->
-	<controller 
-		processorClass = "fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor" />
+	<!-- fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor -->
+	<controller processorClass="org.unitime.timetable.guice.struts.GuiceRequestProcessor"/>
 
 	<!-- Message Resource Keys -->
     <message-resources 
