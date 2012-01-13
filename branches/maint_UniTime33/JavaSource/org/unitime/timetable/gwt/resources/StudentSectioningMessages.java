@@ -792,7 +792,7 @@ public interface StudentSectioningMessages extends Messages {
 			"<li><i>classification:</i> academic classification code" +
 			"<li><i>consent:</i> offering consent" +
 			"<li><i>course:</i> course offering name" +
-			"<li><i>department:</i> course controling department code or abbreviation" +
+			"<li><i>department:</i> course controlling department code or abbreviation" +
 			"<li><i>group:</i> student group abbreviation" +
 			"<li><i>major:</i> academic major code" +
 			"<li><i>reserved:</i> enrollments with a reservation" +
