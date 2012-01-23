@@ -255,6 +255,10 @@ public class WeekSelector extends Composite {
 			return iFirstWeek != null && iLastWeek == null;
 		}
 		
+		public int getNrWeeks() {
+			return (isAllWeeks() ? iWeeks.size() : isOneWeek() ? 1 : iWeeks.indexOf(iLastWeek) - iWeeks.indexOf(iFirstWeek) + 1);
+		}
+		
 		@Override
 		public String getDisplayString() {
 			if (getFirstWeek() == null)

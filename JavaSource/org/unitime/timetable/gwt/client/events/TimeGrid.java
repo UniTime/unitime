@@ -87,7 +87,8 @@ public class TimeGrid extends Composite {
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private HashMap<Long, String> iColors = new HashMap<Long, String>();
 	
-	private boolean iOneWeek = false, iRoomResource = false;
+	private boolean iRoomResource = false;
+	private int iNrWeeks = 0;
 	
 	public TimeGrid() {
 		this(new HashMap<Long, String>(), 5, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
@@ -194,8 +195,8 @@ public class TimeGrid extends Composite {
         initWidget(iContainer);
 	}
 	
-	public boolean isOneWeek() { return iOneWeek; }
-	public void setOneWeek(boolean oneWeek) { iOneWeek = oneWeek; }
+	public int getNrWeeks() { return iNrWeeks; }
+	public void setNrWeeks(int nrWeeks) { iNrWeeks = nrWeeks; }
 	public boolean isRoomResource() { return iRoomResource; }
 	public void setRoomResource(boolean roomResource) { iRoomResource = roomResource; }
 	
@@ -212,7 +213,7 @@ public class TimeGrid extends Composite {
 		int firstHour = firstSlot() / 12;
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
-		tg.setOneWeek(isOneWeek());
+		tg.setNrWeeks(getNrWeeks());
 		tg.setRoomResource(isRoomResource());
 		return tg;
 	}
@@ -442,7 +443,7 @@ public class TimeGrid extends Composite {
 			}
 			ArrayList<String> notes = new ArrayList<String>();
 			notes.add(meeting.getMeetingTime());
-			if (!iOneWeek)
+			if (dates.size() != getNrWeeks())
 				notes.add(dateString);
 			String roomString = "";
 			for (String room: rooms) {

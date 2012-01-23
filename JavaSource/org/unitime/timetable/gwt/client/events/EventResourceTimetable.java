@@ -258,14 +258,14 @@ public class EventResourceTimetable extends Composite {
 								iResourceTypes.getValue(iResourceTypes.getSelectedIndex()), iResource.getAbbreviation(), null);
 					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
 					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
-					iTimeGrid.setOneWeek(false);
+					iTimeGrid.setNrWeeks(e.getSelection().getNrWeeks());
 					for (EventInterface event: iData) {
 						iTimeGrid.addEvent(event);
 					}
 				} else {
 					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + e.getSelection().getReplacementString().toLowerCase());
 					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + e.getSelection().getReplacementString().toLowerCase());
-					iTimeGrid.setOneWeek(true);
+					iTimeGrid.setNrWeeks(e.getSelection().getNrWeeks());
 					if (iResource.getType() != ResourceType.PERSON)
 						changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(),
 								iResourceTypes.getValue(iResourceTypes.getSelectedIndex()),
@@ -443,7 +443,7 @@ public class EventResourceTimetable extends Composite {
 					HashMap<Long, String> colors = new HashMap<Long, String>();
 					iTimeGrid = new TimeGrid(colors, nrDays, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					String eventIds = "";
-					iTimeGrid.setOneWeek(false);
+					iTimeGrid.setNrWeeks(-1);
 					iTimeGrid.setRoomResource(iResource.getType() == ResourceType.ROOM);
 					for (EventInterface event: iData) {
 						iTimeGrid.addEvent(event);
