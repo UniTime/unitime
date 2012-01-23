@@ -36,6 +36,10 @@
 					Personal Timetable: Administrators and schedule deputies can see instructor / student  class / examination schedules even when
 					the session does not allow instructors / students to see their schedules (session status does not have the no-role reports flag(s) enabled).
 				</line>
+				<line>
+					Event grid (all resources): When a range of two or more weeks is selected (but not All Weeks), display dates for events that do not meet every
+					week in the range. This fixes the issue of not showing dates at all when there is a range of two or more weeks selected.
+				</line>
 			</description>
 		</item>
 	</category>
