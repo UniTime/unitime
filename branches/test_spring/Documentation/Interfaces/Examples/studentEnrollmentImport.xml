@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentEnrollments PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentEnrollment.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<studentEnrollments campus="woebegon" year="2010" term="Fal">
+  <!-- when a student with the given external id does not exist, it is created -->
+  <!-- for such a case, it is helpful if student name and email is provided (these are only used when a new student is created) -->
+  <student externalId="1000" firstName="Jacob" middleName="Lucas" lastName="Simth" email="smith@university.edu">
+    <class externalId="123124"/>
+    <class externalId="123412"/>
+    <!-- course (external) id is optional, and only useful for cross-listed courses to import enrollments to a non-controlling course -->
+    <!-- since UniTime 3.3.24 -->
+    <class externalId="129854" courseId="12432"/>
+  </student>
+  
+  <!-- otherwise, providing just an external id for a student is enough -->
+  <student externalId="1001">
+    <!-- if there is no external id on the class, class name can be used instead -->
+    <!-- only in UniTime 3.1.283 or later -->
+    <class externalId="PSY 101 Lec 1"/>
+    <!-- if external ids are not available, subject, courseNbr, type and suffix can be used instead -->
+    <!-- since UniTime 3.3.24 -->
+    <class subject="PSY" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ECON" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="SOC" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="ALG" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="1"/>
+  </student>
+  
+  <student externalId="1002">
+    <class subject="GER" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="GER" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="ECON" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PSY" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="ALG" courseNbr="101" type="Lec" suffix="1"/>
+  </student>
+  <student externalId="1003">
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="1"/>
+    <class subject="C S" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="C S" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="ECON" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PSY" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="1"/>
+  </student>
+  <student externalId="1004">
+    <class subject="PHAR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="6"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="7"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="7"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="6"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="5"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="6"/>
+  </student>
+  <student externalId="1005">
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="3"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="5"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PHAR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="4"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="5"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="5"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="4"/>
+  </student>
+  <student externalId="1006">
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="6"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="6"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="8"/>
+    <class subject="PHAR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="1"/>
+  </student>
+  <student externalId="1007">
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="6"/>
+    <class subject="ENGR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="6"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BAND" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="11"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="11"/>
+    <class subject="PHYS" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="PHYS" courseNbr="101" type="Lab" suffix="4"/>
+    <class subject="ENGR" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="PHYS" courseNbr="101" type="Rec" suffix="4"/>
+  </student>
+  <student externalId="1008">
+    <class subject="COM" courseNbr="101" type="Lec" suffix="5"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="9"/>
+    <class subject="ENGR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGR" courseNbr="101" type="Lab" suffix="1"/>
+  </student>
+  <student externalId="1009">
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="12"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="12"/>
+    <class subject="PHYS" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="ENGR" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="PHYS" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="PHYS" courseNbr="101" type="Rec" suffix="3"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="4"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="3"/>
+    <class subject="ENGR" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="4"/>
+  </student>
+  <student externalId="1010">
+    <class subject="C S" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="PHYS" courseNbr="101" type="Rec" suffix="5"/>
+    <class subject="PHYS" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="PHYS" courseNbr="101" type="Lab" suffix="5"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="4"/>
+    <class subject="C S" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="4"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="4"/>
+  </student>
+  <student externalId="1011">
+    <class subject="SPAN" courseNbr="101" type="Lab" suffix="4"/>
+    <class subject="SPAN" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="7"/>
+    <class subject="POL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="PSY" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="1"/>
+  </student>
+  <student externalId="1012">
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="7"/>
+    <class subject="GER" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="GER" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PHIL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="7"/>
+    <class subject="BAND" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="HIST" courseNbr="101" type="Lec" suffix="2"/>
+  </student>
+  <student externalId="1013">
+    <class subject="PHYS" courseNbr="101" type="Rec" suffix="1"/>
+    <class subject="PHIL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="LING" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PHYS" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="PHYS" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="HIST" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="SOC" courseNbr="101" type="Lec" suffix="1"/>
+  </student>
+  <student externalId="1014">
+    <class subject="MBIO" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="11"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="MBIO" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="10"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="9"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="9"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="10"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="1"/>
+  </student>
+  <student externalId="1015">
+    <class subject="GER" courseNbr="101" type="Lab" suffix="4"/>
+    <class subject="GER" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="7"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="5"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="5"/>
+    <class subject="MBIO" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="MBIO" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="7"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="7"/>
+  </student>
+  <student externalId="1016">
+    <class subject="SPAN" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="SPAN" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="11"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="8"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="8"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="MBIO" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="MBIO" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="8"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="6"/>
+  </student>
+  <student externalId="1017">
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="9"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="POL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="10"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="10"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="11"/>
+    <class subject="SPAN" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="SPAN" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="8"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="8"/>
+  </student>
+  <student externalId="1018">
+    <class subject="CHM" courseNbr="101" type="Rec" suffix="9"/>
+    <class subject="CHM" courseNbr="101" type="Lec" suffix="3"/>
+    <class subject="BIOL" courseNbr="101" type="Rec" suffix="5"/>
+    <class subject="CHM" courseNbr="101" type="Lab" suffix="9"/>
+    <class subject="GER" courseNbr="101" type="Lab" suffix="1"/>
+    <class subject="GER" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="ENGL" courseNbr="101" type="Lec" suffix="10"/>
+    <class subject="ENGL" courseNbr="101" type="Lab" suffix="10"/>
+    <class subject="BIOL" courseNbr="101" type="Lab" suffix="8"/>
+    <class subject="BIOL" courseNbr="101" type="Lec" suffix="2"/>
+    <class subject="BIOL" courseNbr="101" type="Pso" suffix="2"/>
+    <class subject="HIST" courseNbr="101" type="Lec" suffix="2"/>
+  </student>
+  <student externalId="1019">
+    <class subject="POL" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="PHYS" courseNbr="101" type="Rec" suffix="2"/>
+    <class subject="PHYS" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="C S" courseNbr="101" type="Lab" suffix="3"/>
+    <class subject="C S" courseNbr="101" type="Lec" suffix="1"/>
+    <class subject="CALC" courseNbr="101" type="Rec" suffix="12"/>
+    <class subject="COM" courseNbr="101" type="Lec" suffix="9"/>
+    <class subject="PHYS" courseNbr="101" type="Lab" suffix="2"/>
+    <class subject="CALC" courseNbr="101" type="Lec" suffix="3"/>
+  </student>
+</studentEnrollments>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE lastLikeCourseDemand PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentCourse.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- student ==>         Required:  externalId
+	       studentCourse ==> [1 ==> N entries]
+	                         Required:  subject, courseNumber
+	                         Optional:  externalId, priority
+	-->
+<lastLikeCourseDemand campus="woebegon" term="Fal" year="2010" created="2011/12/20">
+  <student externalId="1001">
+    <studentCourse subject="PSY" courseNumber="101" externalId="PSY101" priority="1"/>
+    <studentCourse subject="ECON" courseNumber="101" priority="2"/>
+    <studentCourse subject="SOC" courseNumber="101" priority="3"/>
+    <studentCourse subject="ALG" courseNumber="101" priority="4"/>
+    <studentCourse subject="COM" courseNumber="101" priority="5"/>
+  </student>
+  <student externalId="1002">
+    <studentCourse subject="GER" courseNumber="101"/>
+    <studentCourse subject="ECON" courseNumber="101"/>
+    <studentCourse subject="PSY" courseNumber="101"/>
+    <studentCourse subject="COM" courseNumber="101"/>
+    <studentCourse subject="ALG" courseNumber="101"/>
+  </student>
+  <student externalId="1003">
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="C S" courseNumber="101"/>
+    <studentCourse subject="ECON" courseNumber="101"/>
+    <studentCourse subject="PSY" courseNumber="101"/>
+  </student>
+  <student externalId="1004">
+    <studentCourse subject="PHAR" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+  </student>
+  <student externalId="1005">
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="PHAR" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+  </student>
+  <student externalId="1006">
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="PHAR" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+  </student>
+  <student externalId="1007">
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="ENGR" courseNumber="101"/>
+    <studentCourse subject="COM" courseNumber="101"/>
+    <studentCourse subject="BAND" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="PHYS" courseNumber="101"/>
+  </student>
+  <student externalId="1008">
+    <studentCourse subject="COM" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="ENGR" courseNumber="101"/>
+  </student>
+  <student externalId="1009">
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="PHYS" courseNumber="101"/>
+    <studentCourse subject="ENGR" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+  </student>
+  <student externalId="1010">
+    <studentCourse subject="C S" courseNumber="101"/>
+    <studentCourse subject="PHYS" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+  </student>
+  <student externalId="1011">
+    <studentCourse subject="SPAN" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="COM" courseNumber="101"/>
+    <studentCourse subject="POL" courseNumber="101"/>
+    <studentCourse subject="PSY" courseNumber="101"/>
+  </student>
+  <student externalId="1012">
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="GER" courseNumber="101"/>
+    <studentCourse subject="PHIL" courseNumber="101"/>
+    <studentCourse subject="COM" courseNumber="101"/>
+    <studentCourse subject="BAND" courseNumber="101"/>
+    <studentCourse subject="HIST" courseNumber="101"/>
+  </student>
+  <student externalId="1013">
+    <studentCourse subject="PHYS" courseNumber="101"/>
+    <studentCourse subject="PHIL" courseNumber="101"/>
+    <studentCourse subject="LING" courseNumber="101"/>
+    <studentCourse subject="HIST" courseNumber="101"/>
+    <studentCourse subject="SOC" courseNumber="101"/>
+  </student>
+  <student externalId="1014">
+    <studentCourse subject="MBIO" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+  </student>
+  <student externalId="1015">
+    <studentCourse subject="GER" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="MBIO" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+  </student>
+  <student externalId="1016">
+    <studentCourse subject="SPAN" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="MBIO" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+  </student>
+  <student externalId="1017">
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="POL" courseNumber="101"/>
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="SPAN" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+  </student>
+  <student externalId="1018">
+    <studentCourse subject="CHM" courseNumber="101"/>
+    <studentCourse subject="BIOL" courseNumber="101"/>
+    <studentCourse subject="GER" courseNumber="101"/>
+    <studentCourse subject="ENGL" courseNumber="101"/>
+    <studentCourse subject="HIST" courseNumber="101"/>
+  </student>
+  <student externalId="1019">
+    <studentCourse subject="POL" courseNumber="101"/>
+    <studentCourse subject="PHYS" courseNumber="101"/>
+    <studentCourse subject="C S" courseNumber="101"/>
+    <studentCourse subject="CALC" courseNumber="101"/>
+    <studentCourse subject="COM" courseNumber="101"/>
+  </student>	
+</lastLikeCourseDemand>
