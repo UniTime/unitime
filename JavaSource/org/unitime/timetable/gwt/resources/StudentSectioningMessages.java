@@ -767,7 +767,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unlimited, reservation not needed")
 	String availableUnlimited();
 	
-	@DefaultMessage("No space available, limit of {0} was spaces reached")
+	@DefaultMessage("No space available, limit of {0} spaces has been reached")
 	String availableNot(int limit);
 	
 	@DefaultMessage("Available {0} out of {1} spaces, reservation not needed")
