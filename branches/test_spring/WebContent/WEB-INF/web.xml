@@ -77,108 +77,48 @@
 		</init-param>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
+	
+	<!-- Spring Servlets -->
+	<servlet>
+		<servlet-name>gwt-dispatcher</servlet-name>
+		<servlet-class>org.unitime.timetable.gwt.server.GwtDispatcherServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
 
 	<!--  GWT Servlets -->
-	<servlet>
-    	<servlet-name>sectioningServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.SectioningServlet</servlet-class>
-		<load-on-startup>3</load-on-startup>
-    </servlet>
-  
 	<servlet>
     	<servlet-name>calendarServlet</servlet-name>
     	<servlet-class>org.unitime.timetable.gwt.server.CalendarServlet</servlet-class>
     </servlet>
 
-	<servlet>
-    	<servlet-name>curriculaServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.CurriculaServlet</servlet-class>
-    	<load-on-startup>2</load-on-startup>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>menuServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.MenuServlet</servlet-class>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>simpleEditServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.SimpleEditServlet</servlet-class>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>lookupServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.LookupServlet</servlet-class>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>eventServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.EventServlet</servlet-class>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>savedHQLServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.SavedHQLServlet</servlet-class>
-    </servlet>
-
-	<servlet>
-    	<servlet-name>reservationServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.ReservationServlet</servlet-class>
-    </servlet>
-    
     <servlet>
     	<servlet-name>patternServlet</servlet-name>
     	<servlet-class>org.unitime.timetable.gwt.server.PatternServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>savedHQLExportServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.SavedHQLExportCSVServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
-        <servlet-name>sectioningServiceServlet</servlet-name>
-        <url-pattern>/unitime/sectioning.gwt</url-pattern>
+    	<servlet-name>gwt-dispatcher</servlet-name>
+    	<url-pattern>*.gwt</url-pattern>
     </servlet-mapping>
-  
+    
     <servlet-mapping>
       <servlet-name>calendarServlet</servlet-name>
       <url-pattern>/calendar</url-pattern>
-    </servlet-mapping>
-	
-    <servlet-mapping>
-        <servlet-name>curriculaServiceServlet</servlet-name>
-        <url-pattern>/unitime/curricula.gwt</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>menuServiceServlet</servlet-name>
-        <url-pattern>/unitime/menu.gwt</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>simpleEditServiceServlet</servlet-name>
-        <url-pattern>/unitime/simpleEdit.gwt</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>lookupServiceServlet</servlet-name>
-        <url-pattern>/unitime/lookup.gwt</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>eventServiceServlet</servlet-name>
-        <url-pattern>/unitime/event.gwt</url-pattern>
-    </servlet-mapping>
-
-	<servlet-mapping>
-        <servlet-name>reservationServiceServlet</servlet-name>
-        <url-pattern>/unitime/reservation.gwt</url-pattern>
-    </servlet-mapping>
-    
-	<servlet-mapping>
-        <servlet-name>savedHQLServiceServlet</servlet-name>
-        <url-pattern>/unitime/hql.gwt</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
       <servlet-name>patternServlet</servlet-name>
       <url-pattern>/pattern</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>savedHQLExportServlet</servlet-name>
+    	<url-pattern>/unitime/hql.csv</url-pattern>
     </servlet-mapping>
     
 	<!-- Servlet Mappings -->
@@ -356,4 +296,16 @@
 			<url-pattern>*.jspf</url-pattern>
 		</jsp-property-group>
 	</jsp-config>
+	
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/applicationContext.xml </param-value>
+	</context-param>
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
 </web-app>

@@ -35,11 +35,11 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.services.LookupService;
 import org.unitime.timetable.gwt.shared.LookupException;
@@ -57,19 +57,20 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.Constants;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
  * @author Tomas Muller
  */
-public class LookupServlet extends RemoteServiceServlet implements LookupService {
+@Service("lookup.gwt")
+public class LookupServlet implements LookupService {
 	private static final long serialVersionUID = -7266424119672666037L;
 	private static Logger sLog = Logger.getLogger(LookupServlet.class);
 	private static ExternalUidTranslation iTranslation;
-    
-	public void init() throws ServletException {
+	private @Autowired(required = false) SessionContext sessionContext;
+	
+	public LookupServlet() {
         if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
             try {
                 iTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
@@ -79,9 +80,11 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
         }
 	}
 
+	private SessionContext getSessionContext() { return sessionContext; }
+    
 	private Long getAcademicSessionId() {
-		if (getThreadLocalRequest() == null) return null;
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		if (getSessionContext() == null) return null;
+		User user = getSessionContext().getUser();
 		if (user == null) throw new LookupException("not authenticated");
 		if (user.getRole() == null) throw new LookupException("insufficient rights");
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);

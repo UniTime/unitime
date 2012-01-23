@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -40,6 +39,8 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -68,23 +69,24 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
 /**
  * @author Tomas Muller
  */
-public class MenuServlet extends RemoteServiceServlet implements MenuService {
+@Service("menu.gwt")
+public class MenuServlet implements MenuService {
 	private static final long serialVersionUID = 9021169012914612488L;
 	private static Logger sLog = Logger.getLogger(MenuServlet.class);
     private static Element iRoot = null;
     private static PageNames sPageNames = Localization.create(PageNames.class);
-
-	public void init() throws ServletException {
+	private @Autowired SessionContext sessionContext;
+	
+	public MenuServlet() {
 		try {
 			String menu = ApplicationProperties.getProperty("unitime.menu","menu.xml");
 			Document document = null;
@@ -126,11 +128,13 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	        }
 	        
 		} catch (Exception e) {
-			if (e instanceof ServletException) throw (ServletException)e;
-			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
+			if (e instanceof RuntimeException) throw (RuntimeException)e;
+			throw new RuntimeException("Unable to initialize, reason: "+e.getMessage(), e);
 		}
 	}
 	
+	private SessionContext getSessionContext() { return sessionContext; }
+
 	private void merge(Element menu, Element custom) {
 		if ("remove".equals(custom.getName())) {
 			menu.getParent().remove(menu);
@@ -197,7 +201,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				List<MenuInterface> menu = new ArrayList<MenuInterface>();
 				if (iRoot == null) throw new MenuException("menu is not configured properly");
 				
-				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
+				UserInfo user = new UserInfo(getSessionContext().getUser());
 				
 				for (Iterator<Element> i = iRoot.elementIterator(); i.hasNext(); ) {
 					Element element = i.next();
@@ -294,7 +298,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			} else if ("hasPersonalReport".equals(right)) {
 				return userInfo.getUser() != null && PersonalizedExamReportAction.hasPersonalReport(userInfo.getUser());
 			} else if ("isChameleon".equals(right)) {
-				return getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1");
+				return getSessionContext().getAttribute("hdnAdminAlias")!=null && getSessionContext().getAttribute("hdnAdminAlias").toString().equals("1");
 			} else if ("isSectioningEnabled".equals(right)) {
 				return OnlineSectioningService.isEnabled();
 			} else if ("isStudent".equals(right)) {
@@ -348,8 +352,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		Session iSession = null;
 		TimetableManager iManager = null;
 
-		public UserInfo(HttpSession session) {
-			iUser = Web.getUser(session);
+		public UserInfo(User user) {
+			iUser = user;
 			if (iUser != null) {
 				Long sessionId = (Long) iUser.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 				if (sessionId != null) {
@@ -383,7 +387,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
+				UserInfo user = new UserInfo(getSessionContext().getUser());
 				if (user.getUser() == null) 
 					return null;
 				
@@ -415,7 +419,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		 		ret.put("2Role", role);
 		 		
 		 		if (user.getUser() != null && Roles.ADMIN_ROLE.equals(user.getUser().getRole()) || 
-		 			(getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias")!=null && getThreadLocalRequest().getSession().getAttribute("hdnAdminAlias").toString().equals("1")))
+		 			(getSessionContext().getAttribute("hdnAdminAlias")!=null && getSessionContext().getAttribute("hdnAdminAlias").toString().equals("1")))
 		 			ret.put("Chameleon", "");
 		 		
 			} finally {
@@ -434,7 +438,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				UserInfo user = new UserInfo(getThreadLocalRequest().getSession());
+				UserInfo user = new UserInfo(getSessionContext().getUser());
 		 		if (user.getSession() == null)
 		 			return null;
 		 		
@@ -477,9 +481,9 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				SolverProxy solver = WebSolver.getSolver(getThreadLocalRequest().getSession());
-				ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(getThreadLocalRequest().getSession()):null);
-				StudentSolverProxy studentSolver = (solver==null && examSolver==null?WebSolver.getStudentSolverNoSessionCheck(getThreadLocalRequest().getSession()):null); 
+				SolverProxy solver = WebSolver.getSolver(getSessionContext().getHttpSession());
+				ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(getSessionContext().getHttpSession()):null);
+				StudentSolverProxy studentSolver = (solver==null && examSolver==null?WebSolver.getStudentSolverNoSessionCheck(getSessionContext().getHttpSession()):null); 
 				
 				
 				Map progress = (studentSolver!=null?studentSolver.getProgress():examSolver!=null?examSolver.getProgress():solver!=null?solver.getProgress():null);
@@ -572,9 +576,11 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	
 	public String getUserData(String property) throws MenuException {
 		try {
+			User user = getSessionContext().getUser();
+			if (user == null) return null;
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				return UserData.getProperty(getThreadLocalRequest().getSession(), property);
+				return UserData.getProperty(user.getId(), property);
 			} finally {
 				hibSession.close();
 			}
@@ -586,9 +592,11 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	
 	public Boolean setUserData(String property, String value) throws MenuException {
 		try {
+			User user = getSessionContext().getUser();
+			if (user == null) return null;
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				UserData.setProperty(getThreadLocalRequest().getSession(), property, value);
+				UserData.setProperty(user.getId(), property, value);
 				return null;
 			} finally {
 				hibSession.close();
@@ -601,9 +609,11 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	
 	public HashMap<String, String> getUserData(Collection<String> property) throws MenuException {
 		try {
+			User user = getSessionContext().getUser();
+			if (user == null) return null;
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				return UserData.getProperties(getThreadLocalRequest().getSession(), property);
+				return UserData.getProperties(user.getId(), property);
 			} finally {
 				hibSession.close();
 			}
@@ -615,10 +625,12 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	
 	public Boolean setUserData(List<String[]> property2value) throws MenuException {
 		try {
+			User user = getSessionContext().getUser();
+			if (user == null) return null;
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				for (String[] p: property2value)
-					UserData.setProperty(getThreadLocalRequest().getSession(), p[0], p[1]);
+					UserData.setProperty(user.getId(), p[0], p[1]);
 				return null;
 			} finally {
 				hibSession.close();
@@ -628,6 +640,4 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			throw new MenuException(e.getMessage());
 		}
 	}
-
-
 }

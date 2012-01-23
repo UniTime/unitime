@@ -56,11 +56,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -103,6 +106,10 @@ import net.sf.cpsolver.studentsct.model.Section;
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
+	
+	private CalendarService getCalendarService() {
+		return (CalendarService)WebApplicationContextUtils.getWebApplicationContext(getServletContext()).getBean("event.gwt");
+	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String q = request.getParameter("q");
@@ -295,7 +302,7 @@ public class CalendarServlet extends HttpServlet {
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
             	if (r.getType() == ResourceType.ROOM)
             		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
-        		for (EventInterface e: new EventServlet().findEvents(r, false))
+        		for (EventInterface e: getCalendarService().findEventsNoAuthenticationCheck(r))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
@@ -1061,5 +1068,8 @@ public class CalendarServlet extends HttpServlet {
 		}
 	}
 
+	public static interface CalendarService {
+		public List<EventInterface> findEventsNoAuthenticationCheck(ResourceInterface resource) throws EventException, PageAccessException;
+	}
 
 }

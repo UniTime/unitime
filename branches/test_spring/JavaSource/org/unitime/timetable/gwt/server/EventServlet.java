@@ -33,12 +33,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
-import javax.servlet.ServletException;
-
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.CalendarServlet.CalendarService;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -74,19 +74,19 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.Constants;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
  * @author Tomas Muller
  */
-public class EventServlet extends RemoteServiceServlet implements EventService {
+@Service("event.gwt")
+public class EventServlet implements EventService, CalendarService {
 	private static final long serialVersionUID = 7949018510304934636L;
 	private static Logger sLog = Logger.getLogger(EventServlet.class);
-
-	public void init() throws ServletException {
-	}
+	private @Autowired SessionContext sessionContext;
+	
+	private SessionContext getSessionContext() { return sessionContext; }
 	
 	public Session findSession(org.hibernate.Session hibSession, String session) throws EventException, PageAccessException {
 		try {
@@ -162,7 +162,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				Session academicSession = null;
-				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getSessionContext().getUser());
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
 					userInfo.getUser() == null)
 						throw new PageAccessException(type.getPageTitle().substring(0, 1).toUpperCase() +
@@ -425,6 +425,11 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException, PageAccessException {
 		return findEvents(resource, true);
 	}	
+	
+	@Override
+	public List<EventInterface> findEventsNoAuthenticationCheck(ResourceInterface resource) throws EventException, PageAccessException {
+		return findEvents(resource, false);
+	}
 
 	public List<EventInterface> findEvents(ResourceInterface resource, boolean checkAuthentication) throws EventException, PageAccessException {
 		try {
@@ -432,7 +437,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
 			try {
 				if (checkAuthentication) {
-					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getSessionContext().getUser());
 					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) && userInfo.getUser() == null)
 						throw new PageAccessException(resource.getType().getPageTitle().substring(0, 1).toUpperCase() +
 								resource.getType().getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
@@ -675,7 +680,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					}
 					break;
 				case PERSON:
-					User user = Web.getUser(getThreadLocalRequest().getSession());
+					User user = getSessionContext().getUser();
 					boolean overrideStatus = user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 					boolean canViewFinalExams = overrideStatus || session.getStatusType().canNoRoleReportExamFinal();
 					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
@@ -992,9 +997,9 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
-					User user = Web.getUser(getThreadLocalRequest().getSession());
+					User user = getSessionContext().getUser();
 					if (user == null) throw new PageAccessException(
-							getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+							getSessionContext().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 				}
 				Session selected = null;
 				if (term != null) {
@@ -1002,7 +1007,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 						selected = findSession(hibSession, term);
 					} catch (EventException e) {}
 				} else {
-					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+					MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getSessionContext().getUser());
 					if (userInfo.getSession() != null)
 						selected = userInfo.getSession();
 				}
@@ -1043,7 +1048,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				
-				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getThreadLocalRequest().getSession());
+				MenuServlet.UserInfo userInfo = new MenuServlet.UserInfo(getSessionContext().getUser());
 				if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")) &&
 					userInfo.getUser() == null)
 						throw new PageAccessException(type.getPageTitle().substring(0, 1).toUpperCase() +
@@ -1322,7 +1327,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 	@Override
 	public Boolean canLookupPeople() throws EventException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			User user = getSessionContext().getUser();
 			return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.STUDENT_ADVISOR.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 		} catch (PageAccessException e) {
 			throw e;
