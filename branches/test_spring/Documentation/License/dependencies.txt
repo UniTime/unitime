@@ -168,3 +168,33 @@ protobuf-java-2.4.1.jar
 	URL: http://code.google.com/p/protobuf/
 	Copyright: 2011 Google
 	License: BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
+
+org.springframework.*-3.1.0.RELEASE.jar
+	Spring Framework
+	URL: http://www.springsource.org/
+	Copyright: (C) 2012 SpringSource, a division of VMware
+	License: The Apache Software License, Version 2.0
+
+asm-3.3.1.jar
+	ASM (Java bytecode manipulation framework, Spring dependency)
+	URL: http://forge.ow2.org/projects/asm
+	Copyright: BSD License
+	License: 1999-2008, OW2 Consortium
+	
+cglib-2.2.2.jar
+	Code Generation Library (Spring dependency)
+	URL: http://cglib.sourceforge.net/
+	Copyright: (C) 2002-2004, cglib
+	License: The Apache Software License, Version 2.0
+
+aspectj-1.6.12.jar
+	AspectJ (A seamless aspect-oriented extension to the Java programming language, Spring dependency)
+	URL: http://www.eclipse.org/aspectj/
+	Copyright: (c) 1997-2001 Xerox Corporation, 2002 Palo Alto Research Center, Incorporated, 2003-2006 Contributors.
+	License: Eclispe Public License, Version 1.0 (see http://eclipse.org/legal/epl-v10.html)
+
+aopalliance.jar
+	AOP Alliance Java/J2EE AOP implementation (Spring dependency)
+	URL: https://sourceforge.net/projects/aopalliance/
+	Copyright: 2011 AOP Allience
+	License: Public Domain
