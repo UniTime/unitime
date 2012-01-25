@@ -23,10 +23,19 @@ package org.unitime.commons.web;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.commons.User;
+import org.unitime.timetable.security.roles.AdminRole;
+import org.unitime.timetable.security.roles.HasManagerId;
+import org.unitime.timetable.security.roles.LegacyRole;
+import org.unitime.timetable.security.roles.Role;
+import org.unitime.timetable.security.spring.UniTimeUser;
+import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -50,25 +59,55 @@ public class Web {
     /** Is someone logged
      * @return true, if a user of the given session is logged in.
      */
+    @Deprecated
     public static boolean isLoggedIn(HttpSession session) {
-        return (session.getAttribute(Web.USER_ATTR_NAME) != null
-                && session.getAttribute(Web.USER_ATTR_NAME) instanceof User);
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	return auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UniTimeUser;
+        // return (session.getAttribute(Web.USER_ATTR_NAME) != null && session.getAttribute(Web.USER_ATTR_NAME) instanceof User);
     }
 
     /** Get logged-in user for the given session. */
+    @Deprecated
     public static User getUser(HttpSession session) {
-        if (!isLoggedIn(session)) {
-            return null;
-        }
-        return (User) session.getAttribute(Web.USER_ATTR_NAME);
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof UniTimeUser)) return null;
+    	if (auth.getPrincipal() == null || auth.getPrincipal() == null || !(auth.getPrincipal() instanceof UniTimeUser)) return null;
+    	UniTimeUser user = (UniTimeUser)auth.getPrincipal();
+    	User legacy =  new User();
+    	legacy.setId(user.getExternalUniqueId());
+    	legacy.setName(user.getName());
+    	legacy.setLogin(user.getUsername());
+    	Vector<String> roles = new Vector<String>();
+    	if (user.getSessionId() != null) {
+    		for (Role role: user.getRoles(user.getSessionId())) {
+    			LegacyRole reference = role.getClass().getAnnotation(LegacyRole.class);
+    			if (reference != null) roles.add(reference.value());
+    		}
+    	}
+    	if (user.getRole() != null) {
+			LegacyRole reference = user.getRole().getClass().getAnnotation(LegacyRole.class);
+			if (reference != null) legacy.setRole(reference.value());
+			if (user.getRole() instanceof AdminRole) {
+				legacy.setAdmin(true);
+			}
+			if (user.getRole() instanceof HasManagerId && ((HasManagerId)user.getRole()).getManagerId() != null) {
+				legacy.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, ((HasManagerId)user.getRole()).getManagerId().toString());
+			}
+    	}
+    	session.setAttribute(Web.USER_ATTR_NAME, legacy);
+    	if (user.getSessionId() != null)
+    		legacy.setAttribute(Constants.SESSION_ID_ATTR_NAME, user.getSessionId());
+    	return legacy;
     }
 
     /** Set logged-in user object for the given session. */
+    @Deprecated
     public static void setUser(HttpSession session, User user) {
         session.setAttribute(Web.USER_ATTR_NAME, user);
     }
 
     /** Is the logged-in user administrator? */
+    @Deprecated
     public static boolean isAdmin( HttpSession session ) {
     	
         User user = getUser(session);
@@ -80,6 +119,7 @@ public class Web {
      * @param session
      * @param roles String[]
      */
+    @Deprecated
     public static boolean hasRole(HttpSession session, String[] roles) {
     	
     	boolean result = false;

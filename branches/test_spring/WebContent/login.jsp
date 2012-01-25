@@ -21,6 +21,7 @@
 <%@page import="net.sf.cpsolver.ifs.util.JProf"%>
 <%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib prefix='c' uri='http://java.sun.com/jstl/core_rt' %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
@@ -59,7 +60,7 @@
  %>		
 		<BR>
 		
-		<FORM method="post" action="login.do">
+		<FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
 			<INPUT type="hidden" name="cs" value="login">
 			<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 
@@ -72,6 +73,11 @@
 							<%= errorMsg %>
 							</div>
 						<% } %>
+						<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
+							<div style="color: red; margin-bottom: 10px;">
+								Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.
+							</div>
+						</c:if>
 					</TD>
 				</TR>
 
@@ -89,7 +95,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<INPUT type="text" id="loginId" name="username" class="" value="">
+									<input type='text' name='j_username' value='<c:if test="${not empty param.login_error}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>'/>
 								</DIV>
 								<DIV class="H20px"></DIV>
 								<DIV>
@@ -98,8 +104,19 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<INPUT type="password" id="pwd" class="" name="password" value="">
+									<input type='password' name='j_password'>
 								</DIV>
+								<!-- 
+								<DIV>
+									<LABEL>
+										Remember me:
+									</LABEL>
+								</DIV>
+								<DIV class="txtField">
+									<input type="checkbox" name="_spring_security_remember_me">
+								</DIV>
+								 -->
+								<DIV class="H20px"></DIV>
 							</DIV>
 						</DIV>
 					</TD>

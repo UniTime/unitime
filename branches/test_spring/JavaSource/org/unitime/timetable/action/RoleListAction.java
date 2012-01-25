@@ -32,13 +32,13 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoleListForm;
+import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Roles;
@@ -47,6 +47,9 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.ManagerRoleDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.roles.LegacyRole;
+import org.unitime.timetable.security.roles.Role;
+import org.unitime.timetable.security.spring.UniTimeUser;
 import org.unitime.timetable.util.Constants;
 
 
@@ -74,9 +77,11 @@ public class RoleListAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-
-        HttpSession webSession = request.getSession();
-        User user = Web.getUser(webSession);
+    	
+    	UniTimeUser user = null;
+    	try {
+    		user = (UniTimeUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    	} catch (Exception e) {}
         RoleListForm roleListForm = (RoleListForm) form;
 
         // Check user is logged in
@@ -84,15 +89,15 @@ public class RoleListAction extends Action {
             return(mapping.findForward("loginRequired"));
 
         // Get manager object
-        TimetableManager tm = TimetableManager.getManager(user);        
+        TimetableManager tm = TimetableManager.findByExternalId(user.getExternalUniqueId());        
         if(tm==null) {
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false")))
-                return mapping.findForward(TimetableManager.canSeeEvents(user)?"success":"norole");
+                return mapping.findForward(TimetableManager.canSeeEvents(null)?"success":"norole");
             return(mapping.findForward("loginRequired"));
         }
  
         // Check App Access Level
-    	String appAccessLevel = (String) webSession.getAttribute(Constants.CFG_APP_ACCESS_LEVEL);
+    	String appAccessLevel = (String) ApplicationConfig.getConfigValue(Constants.CFG_APP_ACCESS_LEVEL, Constants.APP_ACL_ALL);
     	if (appAccessLevel==null || appAccessLevel.trim().length()==0) {
             return(mapping.findForward("loginRequired"));
     	}
@@ -102,7 +107,7 @@ public class RoleListAction extends Action {
     	Set departments = tm.getDepartments();
 
     	if (appAccessLevel.equalsIgnoreCase(Constants.APP_ACL_ALL)) {
-    	    webSession.setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
+    	    request.getSession().setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
     	    aclSet = true;
     	}        	
 
@@ -116,7 +121,7 @@ public class RoleListAction extends Action {
         	    
         	    // If user possesses admin role (may not be default) - allow user
             	if (mr.getRole().getReference().equals(Roles.ADMIN_ROLE)) {
-            	    webSession.setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
+            		request.getSession().setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
             	    aclSet = true;
             	}
             	
@@ -129,7 +134,7 @@ public class RoleListAction extends Action {
             	            for (Iterator deptIter=departments.iterator(); deptIter.hasNext(); ) {
             	                Department dept = (Department) deptIter.next();
             	                if (elem.trim().equalsIgnoreCase(dept.getDeptCode())) {
-            	            	    webSession.setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
+            	                	request.getSession().setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "true");
             	                    aclSet = true;
             	                    break outerLoop;
             	                }
@@ -141,7 +146,7 @@ public class RoleListAction extends Action {
         }
         
     	if (!aclSet) {
-    	    webSession.setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "false");
+    		request.getSession().setAttribute(Constants.SESSION_APP_ACCESS_LEVEL, "false");
     	}
         
         // Lookup acad sessions for the roles
@@ -160,13 +165,13 @@ public class RoleListAction extends Action {
         if (roleListForm.getRoleId()!=null && roleListForm.getSessionId()!=null) {
             ManagerRole role = new ManagerRoleDAO().get(roleListForm.getRoleId());
             Session session = new SessionDAO().get(roleListForm.getSessionId());
-            if (setPrimaryRole(webSession, user, role, session))
+            if (setPrimaryRole(request.getSession(), user, role, session))
                 return mapping.findForward("success");
         }
         
         // Role/session list not requested -- try assign default role/session first 
         if (!"Y".equals(request.getParameter("list"))) {
-            if (setPrimaryRole(webSession, user, defaultRole, null))
+            if (setPrimaryRole(request.getSession(), user, defaultRole, null))
                 return mapping.findForward("success");
         }
         
@@ -181,12 +186,12 @@ public class RoleListAction extends Action {
      * @param request HttpServletRequest object
      * @param user User object
      */
-    private ManagerRole setUpRoles (HttpServletRequest request, User user) throws Exception {
+    private ManagerRole setUpRoles (HttpServletRequest request, UniTimeUser user) throws Exception {
 		WebTable.setOrder(request.getSession(),"roleLists.ord",request.getParameter("ord"), -2);
         
         ManagerRole defaultRole = null;
  	    
- 	    TimetableManager tm = TimetableManager.getManager(user);
+ 	    TimetableManager tm = TimetableManager.findByExternalId(user.getExternalUniqueId());
  	    
         WebTable table = new WebTable(4,"Select "+(tm.getManagerRoles().size()>1?"User Role &amp; ":"")+"Academic Session",
         		"selectPrimaryRole.do?list=Y&ord=%%",
@@ -194,7 +199,7 @@ public class RoleListAction extends Action {
                 new String[] { "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true});
         
-        Object currentSessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+        Long currentSessionId = user.getSessionId();
 
         int nrLines = 0;
         
@@ -203,7 +208,8 @@ public class RoleListAction extends Action {
  	        
             if (mr.isPrimary().booleanValue()) defaultRole = mr;
 
-            boolean currentRole = mr.getRole().getReference().equals(user.getCurrentRole());
+            LegacyRole legacy = (user.getRole() == null ? null : user.getRole().getClass().getAnnotation(LegacyRole.class));
+            boolean currentRole = (legacy == null ? false : mr.getRole().getReference().equals(legacy.value()));
  	        
             Set sessions = Session.availableSessions(mr);
             
@@ -245,7 +251,7 @@ public class RoleListAction extends Action {
  	    
  	    request.setAttribute(Roles.USER_ROLES_ATTR_NAME, table.printTable(WebTable.getOrder(request.getSession(),"roleLists.ord")));
  	    
- 	    Web.setUser(request.getSession(), user);
+ 	    // Web.setUser(request.getSession(), user);
  	    
 		return defaultRole;
     }
@@ -254,57 +260,70 @@ public class RoleListAction extends Action {
      * Parse the role token to set the role and academic year
      * @param webSession Http Session object of the user
      * @param user User object
-     * @param role Manager role
+     * @param legacyRole Manager role
      * @param session Academic session (default session will be taken if null)
      * @return true if primary role was set
      */
-    private boolean setPrimaryRole(HttpSession webSession, User user, ManagerRole role, Session session) throws Exception {
+    private boolean setPrimaryRole(HttpSession webSession, UniTimeUser user, ManagerRole legacyRole, Session session) throws Exception {
         
-        if (role==null) return false;
+        if (legacyRole==null) return false;
+        
         if (session==null) {
             try {
                 if ("true".equals(ApplicationProperties.getProperty("tmtbl.keeplastused.session"))) {
                     String sessionId = UserData.getProperty(webSession, "LastUsed.acadSessionId");
                     if (sessionId!=null) {
                         session = new SessionDAO().get(Long.valueOf(sessionId));
-                        if (session!=null && !Session.availableSessions(role).contains(session)) session = null;
+                        if (session!=null && !Session.availableSessions(legacyRole).contains(session)) session = null;
                     }
                 }
             } catch (Exception e) {}
             if (session==null)
-                session = Session.defaultSession(role);
+                session = Session.defaultSession(legacyRole);
         }
         
         if (session==null) return false;
         
-        TimetableManager tm = TimetableManager.getManager(user);
+        Role role = null;
+        for (Role r: user.getRoles(session.getUniqueId())) {
+        	LegacyRole reference = r.getClass().getAnnotation(LegacyRole.class);
+        	if (reference != null && legacyRole.getRole().getReference().equals(reference.value())) { role = r; break; }
+        }
+        if (role == null) return false;
+        
+        /*
+        TimetableManager tm = TimetableManager.findByExternalId(user.getExternalUniqueId());
         if(tm == null)
-            throw new Exception("Timetable manager could not be loaded for user "+user.getLogin()+".");
+            throw new Exception("Timetable manager could not be loaded for user "+user.getUsername()+".");
         
-        if (!tm.getManagerRoles().contains(role)) 
-            throw new Exception("Timetable manager "+tm.getName()+" does not have requested role "+role.getRole().getReference()+".");
+        if (!tm.getManagerRoles().contains(legacyRole)) 
+            throw new Exception("Timetable manager "+tm.getName()+" does not have requested role "+legacyRole.getRole().getReference()+".");
+        */
         
-        if (!Session.availableSessions(role).contains(session))
-            throw new Exception("Timetable manager "+tm.getName()+" cannot manage requested academic session "+session.getAcademicYear()+" "+session.getAcademicTerm()+" "+session.getAcademicInitiative()+".");
+        if (!Session.availableSessions(legacyRole).contains(session))
+            throw new Exception("Timetable manager "+user.getName()+" cannot manage requested academic session "+session.getAcademicYear()+" "+session.getAcademicTerm()+" "+session.getAcademicInitiative()+".");
         
         Constants.resetSessionAttributes(webSession);
         
         UserData.setProperty(webSession, "LastUsed.acadSessionId", session.getUniqueId().toString());
+        
+        user.setRole(role);
 
-        user.setAdmin(Roles.ADMIN_ROLE.equals(role.getRole().getReference()));
-        user.setRole(role.getRole().getReference());
-        user.setAttribute(Constants.SESSION_ID_ATTR_NAME, session.getUniqueId());
-        user.setAttribute(Constants.ACAD_YRTERM_ATTR_NAME, session.getAcademicYearTerm());
-        user.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, tm.getUniqueId().toString());
-        user.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, session.getLabel());
+        // user.setAdmin(Roles.ADMIN_ROLE.equals(legacyRole.getRole().getReference()));
+        // user.setRole(legacyRole.getRole().getReference());
+        user.setSessionId(session.getUniqueId());
+        // user.setAttribute(Constants.SESSION_ID_ATTR_NAME, session.getUniqueId());
+        // user.setAttribute(Constants.ACAD_YRTERM_ATTR_NAME, session.getAcademicYearTerm());
+        // user.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, tm.getUniqueId().toString());
+        // user.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, session.getLabel());
 
         Debug.debug("Current Role: " + user.getRole());
-		Debug.debug("Acad Session Id: " + user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-		Debug.debug("Acad Year Term: " + user.getAttribute(Constants.ACAD_YRTERM_ATTR_NAME));
-		Debug.debug("Acad Year Term Label: " + user.getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME));
-		Debug.debug("Timetable Manager Id: " + user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME));
+		// Debug.debug("Acad Session Id: " + user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+		// Debug.debug("Acad Year Term: " + user.getAttribute(Constants.ACAD_YRTERM_ATTR_NAME));
+		// Debug.debug("Acad Year Term Label: " + user.getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME));
+		// Debug.debug("Timetable Manager Id: " + user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME));
 
-        Web.setUser(webSession, user);
+        // Web.setUser(webSession, user);
         
         return true;
     }

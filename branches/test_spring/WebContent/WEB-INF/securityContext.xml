@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<http use-expressions="true">
+		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
+		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
+		<intercept-url pattern="/classes.do" access="permitAll" />
+		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
+		<intercept-url pattern="/**" access="permitAll" />
+		<form-login login-page="/login.jsp" default-target-url="/selectPrimaryRole.do" always-use-default-target="true"/>
+		<!-- authentication-success-handler-ref="unitimeAuthenticationSuccessHandler" -->
+		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
+	</http>
+	
+	<ldap-server url="ldaps://localhost:1636/dc=purdue,dc=edu"/>
+	
+	<!-- LDAP Authentication -->
+	<!-- 
+	<authentication-manager>
+		<ldap-authentication-provider
+			user-dn-pattern="uid={0},ou=authenticate"
+			group-search-base="ou=authorize"
+			group-role-attribute="puid"
+			group-search-filter="uid={1}"
+			user-context-mapper-ref="unitimeUserContextMapper"
+		/>
+	</authentication-manager>
+	 -->
+	 
+	<!-- Database Authentication --> 
+	<beans:bean id="databaseAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
+	</beans:bean>
+
+	<beans:bean id="authenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<beans:property name="providers">
+			<beans:list>
+				<beans:ref local="databaseAuthenticationProvider" />
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+
+	<authentication-manager>
+		<authentication-provider user-service-ref="unitimeUserDetailsService">
+			<password-encoder hash="md5" base64="true"/>
+		</authentication-provider>
+	</authentication-manager>
+
+</beans:beans>
