@@ -62,7 +62,8 @@ bsf-2.3.0.jar
 
 commons-beanutils-1.8.0.jar, commons-chain-1.2.jar, commons-configuration-1.6.jar,
 commons-dbcp-1.4.jar, commons-digester-1.8.jar, commons-fileupload-1.1.1.jar,
-commons-io-1.1.jar, commons-logging-1.1.1.jar, commons-pool-1.5.4.jar, commons-validator-1.3.1.jar
+commons-io-1.1.jar, commons-logging-1.1.1.jar, commons-pool-1.5.4.jar, commons-validator-1.3.1.jar,
+commons-lang-2.5.jar
 	Appache Commons (Hibernate, Struts dependencies)
 	URL: http://commons.apache.org/
 	Copyright: (C) 2000-2010 The Apache Software Foundation
@@ -172,6 +173,18 @@ protobuf-java-2.4.1.jar
 org.springframework.*-3.1.0.RELEASE.jar
 	Spring Framework
 	URL: http://www.springsource.org/
+	Copyright: (C) 2012 SpringSource, a division of VMware
+	License: The Apache Software License, Version 2.0
+	
+spring-security-*-3.1.0.RELEASE.jar
+	Spring Security
+	URL: http://www.springsource.org/spring-security
+	Copyright: (C) 2012 SpringSource, a division of VMware
+	License: The Apache Software License, Version 2.0
+
+spring-ldap-core-1.3.1.RELEASE.jar
+	Spring LDAP
+	URL: http://www.springsource.org/ldap
 	Copyright: (C) 2012 SpringSource, a division of VMware
 	License: The Apache Software License, Version 2.0
 
