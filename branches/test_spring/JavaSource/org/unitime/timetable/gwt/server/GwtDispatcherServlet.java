@@ -21,14 +21,17 @@ package org.unitime.timetable.gwt.server;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.server.rpc.RPC;
 import com.google.gwt.user.server.rpc.RPCRequest;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.gwt.user.server.rpc.UnexpectedException;
 
 public class GwtDispatcherServlet extends RemoteServiceServlet {
 	private static final long serialVersionUID = 1L;
@@ -39,7 +42,13 @@ public class GwtDispatcherServlet extends RemoteServiceServlet {
 			Object handler = getBean(getThreadLocalRequest());
 			RPCRequest rpcRequest = RPC.decodeRequest(payload, handler.getClass(), this);
 			onAfterRequestDeserialized(rpcRequest);
-			return RPC.invokeAndEncodeResponse(handler, rpcRequest.getMethod(), rpcRequest.getParameters(), rpcRequest.getSerializationPolicy());
+			try {
+				return RPC.invokeAndEncodeResponse(handler, rpcRequest.getMethod(), rpcRequest.getParameters(), rpcRequest.getSerializationPolicy());
+			} catch (UnexpectedException ex) {
+				if (ex.getCause() != null && ex.getCause() instanceof AccessDeniedException)
+					return RPC.encodeResponseForFailure(null, new PageAccessException(ex.getCause().getMessage(), ex.getCause()));
+				throw ex;
+			}
 		} catch (IncompatibleRemoteServiceException ex) {
 			return RPC.encodeResponseForFailure(null, ex);
 		}

@@ -22,6 +22,8 @@ package org.unitime.timetable.security.spring;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +33,6 @@ import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.security.roles.Authority;
 import org.unitime.timetable.security.roles.HasDepartmentIds;
 import org.unitime.timetable.security.roles.HasInstructorIds;
 import org.unitime.timetable.security.roles.HasManagerId;
@@ -50,7 +51,6 @@ public class UniTimeUser implements UserDetails {
 	private String iEmail;
 	private Long iSessionId = null;
 	private Role iRole = null;
-	private List<GrantedAuthority> iAuthorities = new ArrayList<GrantedAuthority>();
 	
 	public UniTimeUser(String username, String password, String id) {
 		iUserName = username;
@@ -59,38 +59,55 @@ public class UniTimeUser implements UserDetails {
 	}
 	
 	public Long getSessionId() { return iSessionId; }
-	public void setSessionId(Long sessionId) { iSessionId = sessionId; iAuthorities = null; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 	public boolean hasSessionId() { return iSessionId != null; }
 	
 	public Role getRole() { return iRole; }
-	public void setRole(Role role) { iRole = role; iAuthorities = null; }
+	public void setRole(Role role) { iRole = role; }
 	public boolean hasRole() { return iRole != null; }
 	
 	public String getName() { return (iName == null ? iUserName : iName); }
 	public String getEmail() { return iEmail; }
 	
-	protected void computeAuthorities() {
-		iAuthorities.clear();
-	}
-
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		if (iAuthorities == null) {
-			iAuthorities = new ArrayList<GrantedAuthority>();
-			if (hasSessionId() && hasRole()) {
-				gatherAuthorities(getRole().getClass(), iAuthorities);
+		Set<SimpleAuthority> authorities = new TreeSet<SimpleAuthority>();
+		org.hibernate.Session hibSession = null;
+		try {
+			hibSession = TimetableManagerDAO.getInstance().createNewSession();
+			
+			TimetableManager mgr = (TimetableManager)hibSession.createQuery(
+					"from TimetableManager where externalUniqueId = :externalUniqueId")
+					.setMaxResults(1)
+					.setString("externalUniqueId", getExternalUniqueId())
+					.uniqueResult();
+			if (mgr != null) {
+				iName = mgr.getName();
+				iEmail = mgr.getEmailAddress();
+				for (Department dept: mgr.getDepartments()) {
+					authorities.add(new SimpleAuthority("DEPT_" + dept.getUniqueId()));
+					authorities.add(new SimpleAuthority("SESN_" + dept.getSessionId()));
+				}
+				for (ManagerRole role: mgr.getManagerRoles()) {
+					authorities.add(new SimpleAuthority("ROLE_" + role.getRole().getReference().toUpperCase().replace(' ', '_')));
+				}
 			}
+			if (((Number)hibSession.createQuery(
+					"select count(s) from Student s where s.externalUniqueId = :externalUniqueId")
+					.setString("externalUniqueId", getExternalUniqueId())
+					.uniqueResult()).intValue() > 0) {
+				authorities.add(new SimpleAuthority("ROLE_STUDENT"));
+			}
+			if (((Number)hibSession.createQuery(
+					"select count(i) from DepartmentalInstructor i where i.externalUniqueId = :externalUniqueId")
+					.setString("externalUniqueId", getExternalUniqueId())
+					.uniqueResult()).intValue() > 0) {
+				authorities.add(new SimpleAuthority("ROLE_INSTRUCTOR"));
+			}
+		} finally {
+			hibSession.close();
 		}
-		return iAuthorities;
-	}
-	
-	private void gatherAuthorities(Class<?> role, List<GrantedAuthority> authorities) {
-		if (role == null) return;
-		Authority a = role.getAnnotation(Authority.class);
-		if (a != null) authorities.add(new SimpleAuthority(a));
-		gatherAuthorities(role.getSuperclass(), authorities);
-		for (Class<?> i: role.getInterfaces())
-			gatherAuthorities(i, authorities);
+		return authorities;
 	}
 
 	@Override
@@ -217,21 +234,26 @@ public class UniTimeUser implements UserDetails {
 		return roles;
 	}
 	
-	private static class SimpleAuthority implements GrantedAuthority {
+	private static class SimpleAuthority implements GrantedAuthority, Comparable<SimpleAuthority> {
 		private static final long serialVersionUID = 1L;
-		private String iRole;
+		private String iAuthority;
 		
-		private SimpleAuthority(Authority authority) {
-			iRole = authority.value();
+		private SimpleAuthority(String authority) {
+			iAuthority = authority;
 		}
 
 		@Override
 		public String getAuthority() {
-			return iRole;
+			return iAuthority;
 		}
 		
 		public String toString() {
-			return iRole;
+			return iAuthority;
+		}
+
+		@Override
+		public int compareTo(SimpleAuthority other) {
+			return getAuthority().compareTo(other.getAuthority());
 		}
 	}
 

@@ -19,38 +19,17 @@
 */
 package org.unitime.timetable.security.rights;
 
-import org.springframework.security.core.GrantedAuthority;
-
 public enum Right {
 	IsSystemAdmin,
 	IsAdmin,
 	
 	ClassEdit,
 	
-	CurriculumAdd,
 	CurriculumView,
+	CurriculumDetail,
+	CurriculumAdd,
 	CurriculumEdit,
 	CurriculumDelete,
 
 	;
-	
-	GrantedAuthority iAuthority = null;
-	private Right() { iAuthority = new Permission(this); }
-	
-	GrantedAuthority toAuthority() { return iAuthority; }
-	
-	private static class Permission implements GrantedAuthority {
-		private static final long serialVersionUID = 1L;
-		private String iPerm = null;
-		
-		public Permission(Right right) {
-			iPerm = "PERM" + right.name().replaceAll("(\\p{Lu})", "_$1").toUpperCase();
-		}
-		
-		@Override
-		public String getAuthority() {
-			return iPerm;
-		}
-	}
-
 }

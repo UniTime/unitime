@@ -40,6 +40,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
@@ -116,7 +117,8 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	private SessionContext getSessionContext() { return sessionContext; }
-	
+
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
@@ -172,6 +174,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public List<CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadClassifications(curriculumIds=" + curriculumIds + ")");
@@ -263,6 +266,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDetail')")
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
@@ -436,6 +440,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit') or hasPermission(#curriculum.department.id, 'Department', 'CurriculumAdd')")
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");
@@ -675,6 +680,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curricula, 'Curriculum', 'CurriculumEdit')")
 	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveClassifications()");
@@ -754,6 +760,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
@@ -805,6 +812,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
@@ -859,6 +867,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
+	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumMerge')")
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
@@ -1055,6 +1064,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicClassifications()");
@@ -1088,6 +1098,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public HashMap<String, CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("computeEnrollmentsAndLastLikes(acadAreaId=" + acadAreaId + ", majors=" + majors + ")");
@@ -1178,6 +1189,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView') and hasPermission(courseOffering, 'CourseView')")
 	private TreeSet<CurriculumInterface> loadCurriculaForACourse(org.hibernate.Session hibSession, TreeSet<AcademicClassificationInterface> academicClassifications, TreeSet<AcademicAreaInterface> academicAreas, CourseOffering courseOffering) throws CurriculaException, PageAccessException {
 		TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 		
@@ -1485,6 +1497,7 @@ public class CurriculaServlet implements CurriculaService {
 		return results;
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("getCurriculaForACourse(courseName='" + courseName + "')");
@@ -1516,6 +1529,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView') and hasPermission(#offeringId, 'InstructionalOffering', 'OfferingView')")
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
@@ -1563,6 +1577,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicAreas()");
@@ -1596,6 +1611,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadMajors(academicAreaId=" + academicAreaId + ")");
@@ -1641,6 +1657,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public TreeSet<DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadDepartments()");
@@ -1691,6 +1708,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
@@ -1711,6 +1729,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
@@ -1768,6 +1787,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("retrieveCourseDetails(course='" + course + "')");
@@ -1796,6 +1816,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listClasses(course='" + course + "')");
@@ -1892,6 +1913,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public String[] getApplicationProperty(String[] name) throws CurriculaException, PageAccessException {
 		String[] ret = new String[name.length];
 		for (int i = 0; i < name.length; i++)
@@ -1899,6 +1921,7 @@ public class CurriculaServlet implements CurriculaService {
 		return ret;
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CURRICULUM_MGR') or hasRole('ROLE_DEPT_SCHED_MGR')")
 	public Boolean canAddCurriculum() throws CurriculaException, PageAccessException {
 		try {
 			User user = getSessionContext().getUser();
@@ -1918,6 +1941,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public Boolean isAdmin() throws CurriculaException, PageAccessException {
 		try {
 			User user = getSessionContext().getUser();
@@ -1932,6 +1956,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView')")
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException, PageAccessException {
 		sLog.debug("loadProjectionRules()");
 		Long s0 = System.currentTimeMillis();
@@ -2042,6 +2067,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException, PageAccessException {
 		sLog.debug("saveProjectionRules()");
 		long s0 = System.currentTimeMillis();
@@ -2126,6 +2152,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public Boolean canEditProjectionRules() throws CurriculaException, PageAccessException {
 		User user = getSessionContext().getUser();
 		if (user == null)
@@ -2137,6 +2164,7 @@ public class CurriculaServlet implements CurriculaService {
 		return true;
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException, PageAccessException {
 		sLog.debug("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
 		long s0 = System.currentTimeMillis();
@@ -2199,6 +2227,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumEdit')")
 	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException, PageAccessException {
 		sLog.debug("updateCurriculaByProjections(curricula=" + curriculumIds + ", updateCurriculumCourses=" + updateCurriculumCourses + ")");
 		long s0 = System.currentTimeMillis();
@@ -2371,6 +2400,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CURRICULUM_MGR')")
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ")");
 		long s0 = System.currentTimeMillis();
@@ -2491,6 +2521,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CURRICULUM_MGR') or hasPermission(#offeringId, 'InstructionalOffering', 'OfferingEdit')")
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
 		long s0 = System.currentTimeMillis();

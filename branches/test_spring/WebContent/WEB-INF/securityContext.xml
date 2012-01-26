@@ -38,6 +38,14 @@
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
 	</http>
 	
+	<global-method-security pre-post-annotations="enabled">
+		<expression-handler ref="expressionHandler"/>
+	</global-method-security>
+	
+	<beans:bean id="expressionHandler" class="org.unitime.timetable.security.spring.UniTimeSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
+	</beans:bean>
+	
 	<ldap-server url="ldaps://localhost:1636/dc=purdue,dc=edu"/>
 	
 	<!-- LDAP Authentication -->
@@ -53,23 +61,18 @@
 	</authentication-manager>
 	 -->
 	 
-	<!-- Database Authentication --> 
+	<!-- Database Authentication -->
+	<beans:bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder">
+		<beans:property name="encodeHashAsBase64" value="true"/>
+	</beans:bean>
+	
 	<beans:bean id="databaseAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
 		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
+		<beans:property name="passwordEncoder" ref="passwordEncoder"/>
 	</beans:bean>
-
-	<beans:bean id="authenticationManager" class="org.springframework.security.authentication.ProviderManager">
-		<beans:property name="providers">
-			<beans:list>
-				<beans:ref local="databaseAuthenticationProvider" />
-			</beans:list>
-		</beans:property>
-	</beans:bean>
-
-	<authentication-manager>
-		<authentication-provider user-service-ref="unitimeUserDetailsService">
-			<password-encoder hash="md5" base64="true"/>
-		</authentication-provider>
-	</authentication-manager>
+	
+	 <authentication-manager>
+	 	<authentication-provider ref="databaseAuthenticationProvider"/>
+	 </authentication-manager>
 
 </beans:beans>

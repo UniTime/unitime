@@ -17,12 +17,11 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.security.roles;
+package org.unitime.timetable.security.permissions;
 
-import java.io.Serializable;
+import org.unitime.timetable.security.spring.UniTimeUser;
 
-import org.unitime.timetable.security.rights.Right;
-
-public interface Role extends Serializable {
-	public boolean hasRight(Right right);
+public interface Permission<T> {
+	public boolean check(UniTimeUser user, T source);
+	public Class<T> type();
 }

@@ -30,6 +30,7 @@ public class CurriculumMgrRole extends SessionDependentRole {
 	public boolean hasRight(Right right) {
 		switch (right) {
 		case CurriculumView:
+		case CurriculumDetail:
 		case CurriculumAdd:
 		case CurriculumEdit:
 		case CurriculumDelete:
