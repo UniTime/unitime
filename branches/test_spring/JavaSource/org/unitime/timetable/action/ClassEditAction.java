@@ -37,6 +37,8 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -44,6 +46,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassEditForm;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
@@ -58,6 +61,8 @@ import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.permissions.Permission;
+import org.unitime.timetable.security.spring.UniTimeUser;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -70,9 +75,16 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * XDoclet definition:
  * @struts:action path="/classEdit" name="classEditForm" input="/user/classEdit.jsp" scope="request" validate="true"
  */
+@Service("/classEdit")
 public class ClassEditAction extends PreferencesAction {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired
+	Permission<Class_> permissionClassEdit;
+	
+	@Autowired
+	UniTimeUser unitimeUser;
 
     // --------------------------------------------------------- Class Constants
 
@@ -181,6 +193,9 @@ public class ClassEditAction extends PreferencesAction {
         // If class id is not null - load class info
         Class_DAO cdao = new Class_DAO();
         Class_ c = cdao.get(new Long(classId));
+        
+        if (!permissionClassEdit.check(unitimeUser, c))
+        	throw new PageAccessException("Access denied.");
 
 		// Add Distribution Preference - Redirect to dist prefs screen
 	    if(op.equals(MSG.actionAddDistributionPreference())) {

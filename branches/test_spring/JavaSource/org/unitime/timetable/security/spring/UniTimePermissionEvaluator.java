@@ -132,6 +132,11 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 				sLog.info("  ... no id");
 				return false;
 			}
+			if (targetId instanceof String) {
+				try {
+					targetId = Long.valueOf((String)targetId);
+				} catch (NumberFormatException e) {}
+			}
 			if (!(targetId instanceof Long)) {
 				try {
 					targetId = (Serializable)targetId.getClass().getMethod("getUniqueId").invoke(targetId);

@@ -23,6 +23,7 @@ public enum Right {
 	IsSystemAdmin,
 	IsAdmin,
 	
+	ClassDetail,
 	ClassEdit,
 	
 	CurriculumView,

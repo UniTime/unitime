@@ -1189,7 +1189,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView') and hasPermission(courseOffering, 'CourseView')")
+	@PreAuthorize("hasPermission(principal.sessionId, 'Session', 'CurriculumView') and hasPermission(#courseOffering, 'CourseView')")
 	private TreeSet<CurriculumInterface> loadCurriculaForACourse(org.hibernate.Session hibSession, TreeSet<AcademicClassificationInterface> academicClassifications, TreeSet<AcademicAreaInterface> academicAreas, CourseOffering courseOffering) throws CurriculaException, PageAccessException {
 		TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 		

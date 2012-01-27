@@ -52,6 +52,8 @@ public class UniTimeUser implements UserDetails {
 	private Long iSessionId = null;
 	private Role iRole = null;
 	
+	public UniTimeUser() {}
+	
 	public UniTimeUser(String username, String password, String id) {
 		iUserName = username;
 		iUserId = id;

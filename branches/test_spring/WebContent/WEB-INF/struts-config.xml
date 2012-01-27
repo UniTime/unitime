@@ -822,7 +822,7 @@
   
     <action
          path="/classEdit"
-         type="org.unitime.timetable.action.ClassEditAction"
+         type="org.springframework.web.struts.DelegatingActionProxy"
          attribute="ClassEditForm"
          input="classEditTile"
          name="classEditForm"
@@ -1140,7 +1140,7 @@
       name="classEditForm"
       path="/classDetail"
       scope="request"
-      type="org.unitime.timetable.action.ClassDetailAction"
+      type="org.springframework.web.struts.DelegatingActionProxy"
       validate="false">
       <forward 
        	name="displayClass" 
@@ -2426,7 +2426,7 @@
 	<!-- Struts Layout Controller -->
 	<controller 
 		processorClass = "fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor" />
-
+		
 	<!-- Message Resource Keys -->
     <message-resources 
    		parameter="messages" 
@@ -2457,5 +2457,7 @@
 	  		property="definitions-parser-validate"
 	  		value="true" />
 	</plug-in>
+
+	<plug-in className="org.springframework.web.struts.ContextLoaderPlugIn"/>
 
 </struts-config>
