@@ -545,7 +545,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             return new ExamDAO().getSession().createQuery(
                     "select distinct x from Exam x inner join x.instructors xi, DepartmentalInstructor i where "+
                     "i.uniqueId=:instructorId and (xi.uniqueId=i.uniqueId or ("+
-                    "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId))").
+                    "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId " +
+                    "and xi.department.session = i.department.session))").
                     setLong("instructorId", id).setCacheable(true).list();
         } else if ("ExamEvent".equals(type)) {
             List ret = new ArrayList();

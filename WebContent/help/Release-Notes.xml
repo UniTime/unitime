@@ -43,6 +43,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<description>
+			<line>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible
+				<line>In the list instructors, all exams of the instructor are visible including exams of previous academic sessions.
+				Only exams of the current academic session should be displayed.</line>
+			</line>
+		</description>
+	</category>
 </release>
 
 <release>
