@@ -54,7 +54,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 				Reservation reservation = null;
 				for (Reservation r: offering.getReservations())
 					if (r.getId() == expiredReservation.getUniqueId()) { reservation = r; break; }
-				if (reservation == null) continue; // already expired
+				if (reservation == null || reservation.isExpired()) continue; // already expired
 				List<Reservation> reservations = reservations2expire.get(offering);
 				if (reservations == null) {
 					reservations = new ArrayList<Reservation>();
