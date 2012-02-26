@@ -120,6 +120,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCours
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -2118,6 +2119,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		getModel().getProperties().setProperty("Data.Term",iSession.getAcademicYearTerm());
 		getModel().getProperties().setProperty("Data.Initiative",iSession.getAcademicInitiative());
 		getModel().setYear(iSession.getSessionStartYear());
+		getModel().getProperties().setProperty("DatePattern.DayOfWeekOffset", String.valueOf(
+				Constants.getDayOfWeek(DateUtils.getDate(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear()))));
 		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 		for (int i=0;i<iSolverGroup.length;i++) {
