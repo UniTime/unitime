@@ -44,13 +44,30 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Precedence Constraint</name>
+			<description>
+				<line>Precedence constraint now considers date patterns.
+					I.e., if two classes (with a precedence constraint) have different date patterns, it also checks on what dates the first meetings occur.
+				<line>This means that the first meeting of the first class must happen before the first meeting of the second class.</line>
+				<line>Example: If the first class has date pattern Week 1 and the second class has Week 2, first class will always precede the second class.</line>
+				<line>Former behavior (date patterns are ignored) can be enabled by setting the solver property Precedence.ConsiderDatePatterns to false (defaults to true).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
+		<item>
+			<name>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible</name>
 		<description>
-			<line>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible
-				<line>In the list instructors, all exams of the instructor are visible including exams of previous academic sessions.
-				Only exams of the current academic session should be displayed.</line>
+			<line>
+				In the list instructors, all exams of the instructor are visible including exams of previous academic sessions.
+				Only exams of the current academic session should be displayed.
 			</line>
 		</description>
+		</item>
 	</category>
 </release>
 </release-history>
