@@ -436,7 +436,10 @@ public class SolutionGridModel extends TimetableGridModel {
 					(roomPref-assignmentInfo.getBestRoomPreference());
 			
 			title = "Time preference: " + (int)assignmentInfo.getNormalizedTimePreference()+"<br>"+
-					"Student conflicts: "+assignmentInfo.getNrStudentConflicts()+"<br>"+
+					"Student conflicts: "+assignmentInfo.getNrStudentConflicts()+
+						" [committed:" + assignmentInfo.getNrCommitedStudentConflicts() +
+						", distance:" + assignmentInfo.getNrDistanceStudentConflicts() +
+						", hard:" + assignmentInfo.getNrHardStudentConflicts() + "]<br>"+
 					"Room preference: "+roomPref+"<br>"+
 					"Back-to-back instructor pref.: "+assignmentInfo.getBtbInstructorPreference()+"<br>"+
 					(assignmentInfo.getInitialAssignment()!=null?"Initial assignment: "+(assignmentInfo.getIsInitial()?"<i>current assignment</i>":assignmentInfo.getInitialAssignment())+"<br>":"")+

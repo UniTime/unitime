@@ -396,9 +396,12 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 	       		btbInstrPref += ic.getPreferenceCombination(placement);
 	       	}
-
+	       	
 	       	title = "Time preference: "+(int)placement.getTimeLocation().getNormalizedPreference() +"<br>"+
-				"Student conflicts: "+lecture.countStudentConflicts(placement)+"<br>"+
+				"Student conflicts: " + (lecture.countStudentConflicts(placement) + lecture.getCommitedConflicts(placement)) +
+					" [committed:" + (lecture.countCommittedStudentConflicts(placement) + lecture.getCommitedConflicts(placement)) +
+					", distance:" + lecture.countDistanceStudentConflicts(placement) +
+					", hard:" + lecture.countHardStudentConflicts(placement) + "]<br>"+
 				"Room preference: "+roomPref+
 				(lecture.getInstructorConstraints().isEmpty()?"":"<br>Back-to-back instructor pref.: "+btbInstrPref)+
 				(lecture.getInitialAssignment()!=null?"<br>Initial assignment: "+(lecture.getInitialAssignment().equals(placement)?"<i>current assignment</i>":lecture.getInitialAssignment().getName()):"")+
