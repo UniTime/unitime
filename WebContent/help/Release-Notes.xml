@@ -46,6 +46,18 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Data Load</name>
+			<description>
+				<line>Fixed NullPointerException that may occur under the following circumstances:
+					<line>last-like course demands are used,</line>
+					<line>student class enrollments are to be loaded from a committed or previous (selected) solution,</line>
+					<line>a class that was a part of the problem changed owner (managing department) since the committed/previous solution was saved and
+						there is no other class of the problem that is to be loaded left in the offering.</line>
+				</line>
+				<line>Initial Sectioning: consider class limits of committed classes</line>
+			</description>
+		</item>
 	</category>
 </release>
 
