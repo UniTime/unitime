@@ -35,6 +35,8 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import net.sf.cpsolver.ifs.util.DistanceMetric;
+
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
@@ -58,6 +60,7 @@ import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
@@ -67,6 +70,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -920,16 +924,28 @@ public class EventAddForm extends ActionForm {
             	
             }
         }
+        
+        
+        Filter<Location> f = null;
         if (iLookAtNearLocations && iBuildingId!=null && iBuildingId>=0) {
-            int d = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.events.nearByDistance","67"));
             query = "select r from Room r " +
-                    "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
-                    "Building b"+a+" where b.uniqueId = :buildingId and " +
-                    "rd.control=true and mr.role.reference=:eventMgr and "+
-                    " 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId) and " +
-                    "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
-                    "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-                    "< "+(d*d)+"))";
+                    "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr" + a + 
+                    " where rd.control=true and mr.role.reference=:eventMgr and "+
+                    " 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId)";
+            
+        	final double d = Double.parseDouble(ApplicationProperties.getProperty("tmtbl.events.nearByDistance","670"));
+        	final DistanceMetric dm = new DistanceMetric(
+        			DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+        	final Building building = BuildingDAO.getInstance().get(iBuildingId);
+    		f = new Filter<Location>() {
+    			@Override
+    			public boolean check(Location location) {
+    				if (building == null) return false;
+    				if (location instanceof Room && building.equals(((Room)location).getBuilding()))
+    					return true;
+    				return dm.getDistanceInMeters(building.getCoordinateX(), building.getCoordinateY(), location.getCoordinateX(), location.getCoordinateY()) <= d;
+    			}
+    		};
         } else {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
@@ -946,7 +962,7 @@ public class EventAddForm extends ActionForm {
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
-		if (iBuildingId!=null && iBuildingId>=0) hibQuery.setLong("buildingId", iBuildingId);
+		if (iBuildingId!=null && iBuildingId>=0 && !iLookAtNearLocations) hibQuery.setLong("buildingId", iBuildingId);
 		hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
@@ -957,7 +973,7 @@ public class EventAddForm extends ActionForm {
 		
 		for (Iterator i=hibQuery.setCacheable(true).list().iterator();i.hasNext();) {
 			Location location = (Location)i.next();
-			if (location.getPermanentId()!=null)
+			if (location.getPermanentId() != null && (f == null || f.check(location)))
 				locations.put(location.getPermanentId(), location);
 		}
 		
@@ -1011,5 +1027,9 @@ public class EventAddForm extends ActionForm {
 	}
 	public Set<Department> getManagingDepartments() {
 	    return iManagingDepts;
+	}
+	
+	public static interface Filter<E> {
+		public boolean check(E e);
 	}
 }
