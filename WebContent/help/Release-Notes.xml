@@ -66,6 +66,12 @@
 				<line>Initial Sectioning: consider class limits of committed classes</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Include close by locations</name>
+			<description>
+				<line>Computation of distances between rooms changed to allow for non-euclidian coordinates (e.g., GPS coordinates).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
