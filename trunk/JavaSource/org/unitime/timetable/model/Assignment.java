@@ -246,7 +246,8 @@ public class Assignment extends BaseAssignment {
 		TimeLocation timeLocation = getTimeLocation();
 		Vector timeLocations = new Vector(1); timeLocations.addElement(timeLocation);
 		Vector roomLocations = getRoomLocations();
-		Lecture lecture = new Lecture(getClassId(), (getSolution()==null || getSolution().getOwner()==null?null:getSolution().getOwner().getUniqueId()), (getClazz()==null?null:getClazz().getSchedulingSubpart().getUniqueId()), getClassName(), timeLocations, roomLocations, roomLocations.size(), new Placement(null,timeLocation,roomLocations), 0, 0, 1.0);
+    	Lecture lecture = new Lecture(getClassId(), (getSolution()==null || getSolution().getOwner()==null?null:getSolution().getOwner().getUniqueId()), (getClazz()==null?null:getClazz().getSchedulingSubpart().getUniqueId()), getClassName(), timeLocations, roomLocations, roomLocations.size(), new Placement(null,timeLocation,roomLocations),
+    			(getClazz() == null ? 0 : getClazz().getExpectedCapacity()), (getClazz() == null ? 0 : getClazz().getMaxExpectedCapacity()), (getClazz() == null ? 1.0f : getClazz().getRoomRatio()));
 		if (getClazz()!=null)
 			lecture.setNote(getClazz().getNotes());
 		iPlacement = (Placement)lecture.getInitialAssignment();
