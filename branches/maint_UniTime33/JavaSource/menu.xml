@@ -382,7 +382,7 @@
 			<item name="Course Credit Types" page="admin&amp;type=creditType" type="gwt"/>
 			<item name="Course Credit Units" page="admin&amp;type=creditUnit" type="gwt"/>
 			<item name="Position Types" page="admin&amp;type=position" type="gwt"/>
-			<item name="Student Scheduling States" page="admin&amp;type=sectioning" type="gwt"/>
+			<item name="Student Scheduling Status Types" page="admin&amp;type=sectioning" type="gwt"/>
 		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do"/>
