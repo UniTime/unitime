@@ -238,13 +238,6 @@
 
 		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 			<TR>
-				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
-				<TD>
-					<html:checkbox name="courseOfferingEditForm" property="byReservationOnly" />
-					<i><loc:message name="descriptionByReservationOnly"/></i>
-				</TD>
-			</TR>
-			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD>
 				<table border='0'>
@@ -275,6 +268,13 @@
 					</html:submit> 			
 				</td></tr>
 				</table>
+				</TD>
+			</TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
+				<TD>
+					<html:checkbox name="courseOfferingEditForm" property="byReservationOnly" />
+					<i><loc:message name="descriptionByReservationOnly"/></i>
 				</TD>
 			</TR>
 			<TR>
