@@ -20,6 +20,8 @@
 package org.unitime.commons.hibernate.util;
 
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -429,5 +431,12 @@ public class HibernateUtil {
     		return "to_char(" + field + ",'D')";
     	else
     		return "dayofweek(" + field + ")";
+    }
+    
+    public static String date(Date date) {
+    	if (isOracle())
+    		return "to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', 'YYYY-MM-DD')";
+    	else
+    		return "str_to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', '%Y-%m-%d')";
     }
 }

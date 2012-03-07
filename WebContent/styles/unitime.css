@@ -1284,3 +1284,455 @@ h1 {
 	background: #fcdd89;
 	border-bottom: 1px black solid;	
 }
+
+.unitime-FilterBox {
+	border-radius: 1px;
+	-webkit-border-radius: 1px;
+	-moz-border-radius: 1px;
+	border: 1px solid #9CB0CE;
+	padding: 1px;
+	width: 480px;
+	/* height: 20px; */
+}
+
+.unitime-FilterBoxFocus {
+	-moz-box-shadow: 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: 0 0 3px 2px #7ba7d4;
+	box-shadow: 0 0 3px 2px #7ba7d4;
+	border: 1px solid #9CB0CE;
+	/*
+	outline: 1px solid #DCE6F4;
+	*/
+}
+
+.unitime-FilterBox .filter {
+	border: none;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 1px;
+	padding: 0px;
+	min-width: 100px;
+	height: 20px;
+}
+
+.unitime-FilterBox .filter:focus {
+	outline: none;
+}
+
+.unitime-FilterBox .button {
+	color: #d0d0d0;
+	cursor: pointer;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 1px;
+	float: right;
+}
+
+.unitime-FilterBox .button:hover {
+	color: #909090;
+}
+
+.unitime-FilterBox .chip {
+	margin: 1px;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	padding: 2px;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .text {
+	font-size: x-small;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .button {
+	font-size: x-small;
+	cursor: pointer;
+	padding-left: 2px;
+	color: black;
+	filter: alpha(opacity = 25);
+	opacity: .25;
+    -moz-opacity: .25;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .button:hover {
+	cursor: pointer;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+}
+
+.unitime-FilterBoxPopup {
+	position: absolute;
+	font-size: small;
+	overflow: hidden;
+	/*
+	filter: alpha(opacity = 95);
+	opacity: .95;
+    -moz-opacity: .95;
+    */
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	width: 480px;
+	margin-top: -2px;
+}
+
+.unitime-FilterBoxPopup .suggestPopupMiddleCenter {
+	width: 476px;
+}
+
+.unitime-FilterBoxPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 1%;
+}
+
+.unitime-FilterBoxPopup .item-selected {
+	background-color: #92c1f0;
+}
+
+.unitime-FilterBoxPopup .panel {
+}
+
+.unitime-FilterBoxPopup .command {
+	padding-left: 5px;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	display: block;	
+}
+
+.unitime-FilterBoxPopup .item-command {
+	padding-left: 5px;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
+.unitime-FilterBoxPopup .item-hint {
+	padding-left: 5px;
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
+.unitime-FilterBoxPopup .value {
+	padding: 1px;
+	margin: 0px 3px 0px 10px;
+	cursor: pointer;
+	display: -moz-inline-box;
+	display: inline-block;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 30%;
+	overflow: hidden;
+}
+
+.unitime-FilterBoxPopup .value:hover {
+	background-color: #92c1f0;
+}
+
+.unitime-FilterBoxPopup .other {
+	margin: 1px 3px 1px 10px;
+	display: block;	
+}
+
+.unitime-FilterBoxPopup .inline {
+	display: inline;
+	padding: 1px 3px 1px 3px;
+}
+
+.unitime-FilterBoxPopup .inline:focus {
+	outline: none;
+}
+
+.unitime-FilterBoxPopup .error {
+	color: red;
+	font-style: italic;
+	padding: 1px 3px 1px 13px;
+	display: block;
+}
+
+.unitime-DateSelector {
+}
+
+.unitime-DateSelector .box .command {
+	display: table-cell;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	width: 200px;
+	margin-bottom: -2px;
+}
+
+.unitime-DateSelector .month {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: top;
+}
+
+.unitime-DateSelector .label {
+	text-align: center;
+	font-size: small;
+}
+
+.unitime-DateSelector .box {
+	display: table;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .box .row {
+	display: table-row;
+}
+
+.unitime-DateSelector .box .cell {
+	display: table-cell;
+	width: 25px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .corner {
+	border: 1px solid black;
+	background-color: #E0E0E0;
+}
+
+.unitime-DateSelector .box .middle {
+	text-align: center;
+	font-size: small;
+	width: 101px;
+	border-left: 2px solid transparent;
+	border-right: 2px solid transparent;
+}
+
+.unitime-DateSelector .box .left {
+	border-left: 1px solid transparent;
+	font-size: small;
+}
+
+.unitime-DateSelector .box .right {
+	border-right: 1px solid transparent;
+	font-size: small;
+}
+
+.unitime-DateSelector .clickable:hover {
+	cursor: pointer;
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-DateSelector .box .disabled {
+	background-color: #E0E0E0;
+	font-style: italic;
+	color: #202020;
+}
+
+.unitime-DateSelector .dow {
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	font-size: xx-small;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .week {
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .blank {
+	border-bottom: 1px solid black;
+}
+
+.unitime-DateSelector .last-blank {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+.unitime-DateSelector .day {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #FAFAFA;
+}
+
+.unitime-DateSelector .weekend {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #EEEEEE;
+}
+
+.unitime-DateSelector .selected {
+	background-color: yellow;
+}
+
+.unitime-DateSelector .start {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	color: blue;
+}
+
+.unitime-DateSelector .holiday {
+	-moz-box-shadow: inset 0 0 6px red;
+	-webkit-box-shadow: inset 0 0 6px red;
+	box-shadow: inset 0 0 6px red;
+	color: red;
+}
+
+.unitime-DateSelector .exam {
+	-moz-box-shadow: inset 0 0 6px green;
+	-webkit-box-shadow: inset 0 0 6px green;
+	box-shadow: inset 0 0 6px green;
+	color: green;
+}
+
+.unitime-DateSelector .break {
+	-moz-box-shadow: inset 0 0 6px purple;
+	-webkit-box-shadow: inset 0 0 6px purple;
+	box-shadow: inset 0 0 6px purple;
+	color: purple;
+}
+
+.unitime-DateSelector .today {
+	-moz-box-shadow: inset 0 0 6px black;
+	-webkit-box-shadow: inset 0 0 6px black;
+	box-shadow: inset 0 0 6px black;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .legend {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: middle;
+}
+
+.unitime-DateSelector .legend .box {
+	display: table;
+	overflow: hidden;
+		
+}
+
+.unitime-DateSelector .legend .cell {
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	display: table-cell;
+	width: 25px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .legend .first {
+	border-top: 1px solid black;
+}
+
+.unitime-DateSelector .legend .title {
+	display: table-cell;
+	font-weight: bold;
+	vertical-align: bottom;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.unitime-DateSelector .legend .row {
+	display: table-row;
+}
+
+.unitime-DateSelectionBox {
+	width: 100px;
+}
+
+.unitime-DateSelectionBoxPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+}
+
+.unitime-TimeSelector {
+	width: 70px;
+}
+
+.unitime-TimeSelectorPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+}
+
+.unitime-TimeSelectorPopup .scroll {
+	height: 200px;
+}
+
+.unitime-TimeSelectorPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 1%;
+}
+
+.unitime-TimeSelectorPopup .item-selected {
+	background-color: #92c1f0;
+}

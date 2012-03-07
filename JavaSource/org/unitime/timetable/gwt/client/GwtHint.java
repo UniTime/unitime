@@ -60,9 +60,11 @@ public class GwtHint extends PopupPanel {
 		};
 	}-*/;
 	
-	
 	public static void showHint(JavaScriptObject source, String content) {
-		final Element relativeObject = source.cast();
+		showHint(source.cast(), content);
+	}
+	
+	public static void showHint(final Element relativeObject, String content) {
 		getInstance().setContent(content);
 		getInstance().setPopupPositionAndShow(new PositionCallback() {
 			@Override
