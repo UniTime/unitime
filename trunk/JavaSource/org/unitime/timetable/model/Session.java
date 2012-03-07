@@ -56,11 +56,11 @@ import org.unitime.timetable.util.ReferenceList;
  */
 public class Session extends BaseSession implements Comparable {
 
-	public static int sHolidayTypeNone = 0;
+	public static final int sHolidayTypeNone = 0;
 
-	public static int sHolidayTypeHoliday = 1;
+	public static final int sHolidayTypeHoliday = 1;
 
-	public static int sHolidayTypeBreak = 2;
+	public static final int sHolidayTypeBreak = 2;
 
 	public static String[] sHolidayTypeNames = new String[] { "No Holiday",
 			"Holiday", "(Spring/October/Thanksgiving) Break" };

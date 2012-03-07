@@ -89,10 +89,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			}
 			if (t instanceof IsSerializable) {
 				sLog.warn("Seen server exception: " + t.getMessage());
-				if (t instanceof RuntimeException)
-					throw (RuntimeException)t;
-				else
-					throw new GwtRpcException(t.getMessage(), t);
+				throw new GwtRpcException(t.getMessage(), t);
 			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
 			throw new GwtRpcException(t.getMessage());
