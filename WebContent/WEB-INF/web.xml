@@ -131,6 +131,12 @@
     	<servlet-class>org.unitime.timetable.gwt.server.PatternServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>gwtRpcServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.command.server.GwtRpcServlet</servlet-class>
+    </servlet>
+    
+    
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
         <url-pattern>/unitime/sectioning.gwt</url-pattern>
@@ -174,6 +180,11 @@
 	<servlet-mapping>
         <servlet-name>savedHQLServiceServlet</servlet-name>
         <url-pattern>/unitime/hql.gwt</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>gwtRpcServlet</servlet-name>
+    	<url-pattern>/unitime/gwt.rpc</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
@@ -349,6 +360,11 @@
 	<filter-mapping>
 		<filter-name>Locale Filter</filter-name>
 		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.rpc</url-pattern>
 	</filter-mapping>
 
 	<jsp-config>
