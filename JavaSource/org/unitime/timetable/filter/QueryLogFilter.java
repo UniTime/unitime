@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2010 - 2012, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -54,14 +54,11 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
 
 public class QueryLogFilter implements Filter {
 	private static Log sLog = LogFactory.getLog(QueryLogFilter.class);
-	private List<QueryLog> iQueries = new Vector<QueryLog>();
-	private boolean iActive = false;
 	private Saver iSaver;
 	private HashSet<String> iExclude = new HashSet<String>();
 
 	public void init(FilterConfig cfg) throws ServletException {
-		iActive = true;
-		Saver iSaver = new Saver();
+		iSaver = new Saver();
 		iSaver.start();
 		String exclude = cfg.getInitParameter("exclude");
 		if (exclude != null) {
@@ -164,7 +161,7 @@ public class QueryLogFilter implements Filter {
 					q.setException(ex);
 			}
 			if (!iExclude.contains(q.getUri()) || q.getException() != null) {
-				synchronized (iQueries) { iQueries.add(q); }
+				if (iSaver != null) iSaver.add(q);
 			}
 		}
 		
@@ -180,15 +177,28 @@ public class QueryLogFilter implements Filter {
 	}
 
 	public void destroy() {
-		iActive = false;
 		if (iSaver != null)
 			iSaver.interrupt();
 	}
 	
-	private class Saver extends Thread {
+	public static class Saver extends Thread {
+		private List<QueryLog> iQueries = new Vector<QueryLog>();
+		private boolean iActive = true;
+		
 		public Saver() {
 			super("QueryLogSaver");
 			setDaemon(true);
+		}
+		
+		@Override
+		public void interrupt() {
+			iActive = false;
+			super.interrupt();
+		}
+		
+		public void add(QueryLog q) {
+			if (!iActive) return;
+			synchronized (iQueries) { iQueries.add(q); }
 		}
 		
 		public void run() {

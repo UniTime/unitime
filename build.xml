@@ -395,6 +395,10 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
+		<javac source="1.5" target="1.5" includes="org/unitime/timetable/gwt/command/client/GwtRpcImplementedBy.java" debug="true" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+		</javac>
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
@@ -415,6 +419,10 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
+		<javac source="1.5" target="1.5" includes="org/unitime/timetable/gwt/command/client/GwtRpcImplementedBy.java" debug="true" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+		</javac>
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>

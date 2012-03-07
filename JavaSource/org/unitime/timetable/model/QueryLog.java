@@ -40,7 +40,7 @@ public class QueryLog extends BaseQueryLog {
 	}
 	
 	public static enum Type {
-		STRUCTS, GWT, OTHER
+		STRUCTS, GWT, OTHER, RPC
 	}
 	
 	public static int getNrSessions(int days) {
