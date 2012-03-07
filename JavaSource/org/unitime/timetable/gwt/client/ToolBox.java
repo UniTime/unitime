@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client;
 import java.util.Date;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
@@ -172,7 +173,8 @@ public class ToolBox {
 		$wnd.location = url;
 	}-*/;
 	
-	public static void checkAccess(final Throwable t) {
+	public static void checkAccess(Throwable t) {
+		if (t != null && t instanceof GwtRpcException && t.getCause() != null) t = t.getCause();
 		if (t != null && t instanceof PageAccessException) {
 			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + t.getMessage(), "700px", "420px");
 		}

@@ -28,4 +28,25 @@ public interface GwtConstants extends Constants {
 
 	@DefaultStringValue("&copy; 2008 - 2012 UniTime LLC")
 	String copyright();
+	
+	@DefaultBooleanValue(true)
+	boolean useAmPm();
+
+	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
+	String[] days();
+
+	@DefaultStringValue("MM/dd/yyyy")
+	String eventDateFormat();
+	
+	@DefaultIntValue(3)
+	int eventSlotIncrement();
+	
+	@DefaultIntValue(90)
+	int eventStartDefault();
+	
+	@DefaultIntValue(210)
+	int eventStopDefault();
+	
+	@DefaultIntValue(12)
+	int eventLengthDefault();
 }

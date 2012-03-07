@@ -31,4 +31,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
+	
+	@DefaultMessage("Authentication is required to access this page.")
+	String authenticationRequired();
 }
