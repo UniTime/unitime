@@ -468,7 +468,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 		
 		public double distance(Coordinates c) {
-			return (hasCoordinates() && c.hasCoordinates() ? getDistanceMetric().getDistanceInMeters(id(), x(), y(), c.id(), c.x(), c.y()) : Double.POSITIVE_INFINITY); 
+			return (hasCoordinates() && c.hasCoordinates() ? getDistanceMetric().getDistanceInMeters(x(), y(), c.x(), c.y()) : Double.POSITIVE_INFINITY); 
 		}
 		
 		public double distance(Location location) {
