@@ -943,7 +943,7 @@ public class EventAddForm extends ActionForm {
     				if (building == null) return false;
     				if (location instanceof Room && building.equals(((Room)location).getBuilding()))
     					return true;
-    				return dm.getDistanceInMeters(building.getCoordinateX(), building.getCoordinateY(), location.getCoordinateX(), location.getCoordinateY()) <= d;
+    				return dm.getDistanceInMeters(-building.getUniqueId(), building.getCoordinateX(), building.getCoordinateY(), location.getUniqueId(), location.getCoordinateX(), location.getCoordinateY()) <= d;
     			}
     		};
         } else {

@@ -125,7 +125,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     		sDistanceMetric = new DistanceMetric(
     				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
     	}
-    	return sDistanceMetric.getDistanceInMeters(getCoordX(), getCoordY(), other.getCoordX(), other.getCoordY());
+    	return sDistanceMetric.getDistanceInMeters(getLocationId(), getCoordX(), getCoordY(), other.getLocationId(), other.getCoordX(), other.getCoordY());
     }
     
     public String getNameHtml() {

@@ -68,6 +68,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -125,6 +126,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
+            TravelTime.populateTravelTimes(getModel().getDistanceMetric(), iSessionId, hibSession);
             loadPeriods();
             loadRooms();
             if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
