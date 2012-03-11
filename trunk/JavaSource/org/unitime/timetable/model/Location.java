@@ -464,7 +464,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (other instanceof Location && other.isIgnoreTooFar()!=null && other.isIgnoreTooFar().booleanValue()) return 0.0;
     	DistanceMetric m = new DistanceMetric(
 				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
-    	return m.getDistanceInMeters(getCoordinateX(), getCoordinateY(), other.getCoordinateX(), other.getCoordinateY());
+    	return m.getDistanceInMeters(getUniqueId(), getCoordinateX(), getCoordinateY(), other.getUniqueId(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	
 	public Department getControllingDepartment() {

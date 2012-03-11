@@ -107,6 +107,7 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -2049,6 +2050,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		hibSession = dao.getSession();
 		
 		hibSession.setFlushMode(FlushMode.COMMIT);
+		
+		TravelTime.populateTravelTimes(getModel().getDistanceMetric(), iSessionId, hibSession);
 
 		iSolverGroup = null;
 		iSession = null;

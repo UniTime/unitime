@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.sf.cpsolver.coursett.Constants;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -69,6 +70,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
@@ -160,6 +162,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
+		TravelTime.populateTravelTimes(iDistanceMetric, sessionId);
 		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
 	}
 	
@@ -230,8 +233,15 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
         TimeLocation t2 = s2.getTime();
         if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
         int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
-        if (a1+t1.getNrSlotsPerMeeting()==a2) {
-            return Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
+        if (getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
+        	if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
+        		int dist = Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
+        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getStartSlot()))
+        			return dist;
+        	}
+        } else {
+        	if (a1+t1.getNrSlotsPerMeeting()==a2)
+        		return Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
         }
         /*
         else if (a2+t2.getNrSlotsPerMeeting()==a1) {

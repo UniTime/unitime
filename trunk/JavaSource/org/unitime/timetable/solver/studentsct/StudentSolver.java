@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -712,8 +713,10 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	private DistanceMetric iDistanceMetric = null;
 	@Override
 	public DistanceMetric getDistanceMetric() {
-		if (iDistanceMetric == null)
+		if (iDistanceMetric == null) {
 			iDistanceMetric = new DistanceMetric(getProperties());
+			TravelTime.populateTravelTimes(iDistanceMetric);
+		}
 		return iDistanceMetric;
 	}
 
@@ -1022,8 +1025,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         TimeLocation t2 = s2.getTime();
         if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
         int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
-        if (a1+t1.getNrSlotsPerMeeting()==a2) {
-            return Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
+        if (getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
+        	if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
+        		int dist = Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
+        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getStartSlot()))
+        			return dist;
+        	}
+        } else {
+        	if (a1+t1.getNrSlotsPerMeeting()==a2)
+        		return Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
         }
         return 0;
 	}

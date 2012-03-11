@@ -72,6 +72,7 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -203,6 +204,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
             
             iProgress.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
+            
+            if (getModel().getDistanceConflict() != null)
+            	TravelTime.populateTravelTimes(getModel().getDistanceConflict().getDistanceMetric(), iSessionId, hibSession);
             
             load(session, hibSession);
             

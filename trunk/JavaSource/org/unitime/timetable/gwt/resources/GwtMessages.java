@@ -32,6 +32,16 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
 	
-	@DefaultMessage("Authentication is required to access this page.")
+	@DefaultMessage("Login is required to access this page.")
 	String authenticationRequired();
+	
+	@DefaultMessage("Your timetabling session has expired. Please log in again.")
+	String authenticationExpired();
+
+	@DefaultMessage("Insufficient user privileges.")
+	String authenticationInsufficient();
+	
+	@DefaultMessage("No academic session selected.")
+	String authenticationNoSession();
+
 }
