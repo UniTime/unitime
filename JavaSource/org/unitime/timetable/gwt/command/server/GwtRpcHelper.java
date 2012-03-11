@@ -23,6 +23,7 @@ import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.util.Constants;
 
 public class GwtRpcHelper {
 	private HttpSession iHttpSession;
@@ -33,6 +34,15 @@ public class GwtRpcHelper {
 	
 	public User getUser() {
 		return Web.getUser(iHttpSession);
+	}
+	
+	public Long getAcademicSessionId() {
+		User user = getUser();
+		return (user == null ? null : (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+	}
+	
+	public boolean isHttpSessionNew() {
+		return iHttpSession.isNew();
 	}
 
 }

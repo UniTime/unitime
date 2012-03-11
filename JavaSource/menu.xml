@@ -44,6 +44,11 @@
 			<menu name="Rooms" page="roomSearch.do">
 				<item name="Room Features" page="roomFeatureSearch.do"/>
 				<item name="Room Groups" page="roomGroupSearch.do"/>
+				<item name="Travel Times" page="traveltimes" type="gwt">
+					<condition>
+						<hasRole name="Administrator"/>
+					</condition>
+				</item>
 			</menu>
 			<separator/>
 			<item name="Distribution Preferences" page="distributionPrefs.do"/>

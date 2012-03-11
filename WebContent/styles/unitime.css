@@ -1736,3 +1736,39 @@ h1 {
 .unitime-TimeSelectorPopup .item-selected {
 	background-color: #92c1f0;
 }
+
+.unitime-TravelTimes {
+}
+
+.unitime-TravelTimes .cell {
+	width: 30px;
+	height: 20px;
+	text-align: right;
+}
+
+.unitime-TravelTimes .mark {
+	background-color: #F3F3F3;
+}
+
+.unitime-TravelTimes .disabled {
+	background-color: #E0E0E0;
+	border: 1px solid #808080;
+}
+
+.unitime-TravelTimes .default {
+	color: gray;
+}
+
+.unitime-TravelTimes .horizontal-header {
+	width: 30px;
+	font-size: x-small;
+	vertical-align: bottom;
+}
+
+.unitime-TravelTimes .vertical-header {
+	max-width: 100px;
+	padding-right: 2px;
+	font-size: small;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

@@ -52,6 +52,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 
@@ -444,6 +445,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			DataProperties config = new DataProperties();
 			config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
 			iMetrics = new DistanceMetric(new DataProperties(config));
+			TravelTime.populateTravelTimes(iMetrics);
 		}
 		return iMetrics;
 	}
@@ -468,7 +470,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 		
 		public double distance(Coordinates c) {
-			return (hasCoordinates() && c.hasCoordinates() ? getDistanceMetric().getDistanceInMeters(x(), y(), c.x(), c.y()) : Double.POSITIVE_INFINITY); 
+			return (hasCoordinates() && c.hasCoordinates() ? getDistanceMetric().getDistanceInMeters(id(), x(), y(), c.id(), c.x(), c.y()) : Double.POSITIVE_INFINITY); 
 		}
 		
 		public double distance(Location location) {

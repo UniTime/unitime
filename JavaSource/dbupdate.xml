@@ -4082,4 +4082,29 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+	<update version="84" date="9-Mar-2012" comment="Travel times">
+		<plsql>
+			create table %SCHEMA%.travel_time (
+				uniqueid number(20,0) constraint nn_trvltime_id not null,
+				session_id number(20,0) constraint nn_trvltime_session not null,
+				loc1_id number(20,0) constraint nn_trvltime_loc1 not null,
+				loc2_id number(20,0) constraint nn_trvltime_loc2 not null,
+				distance number(10,0)  constraint nn_trvltime_distance not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.travel_time add constraint pk_travel_time primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.travel_time (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				loc1_id decimal(20,0) not null,
+				loc2_id decimal(20,0) not null,
+				distance decimal(10,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.travel_time add constraint fk_trvltime_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
