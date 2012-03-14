@@ -20,6 +20,7 @@
 package org.unitime.timetable.events;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcRequest;
 import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
@@ -64,8 +65,10 @@ public abstract class FilterBoxBackend implements GwtRpcImplementation<FilterRpc
 	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response);
 	
 	protected void checkAuthorization(FilterRpcRequest request, GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null)
-			throw new PageAccessException(MESSAGES.authenticationRequired());
+		if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
+			if (helper.getUser() == null)
+				throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
+		}
 	}
 	
 

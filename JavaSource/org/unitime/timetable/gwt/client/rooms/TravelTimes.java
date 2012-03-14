@@ -150,7 +150,7 @@ public class TravelTimes extends Composite {
 				iFooter.setVisible(false);
 				iMatrix.clear();
 				LoadingWidget.showLoading("Loading travel times...");
-				iRoomFilter.getRooms(new AsyncCallback<List<UniTimeFilterBox.FilterRpcResponse.Entity>>() {
+				iRoomFilter.getElements(new AsyncCallback<List<UniTimeFilterBox.FilterRpcResponse.Entity>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.hideLoading();
