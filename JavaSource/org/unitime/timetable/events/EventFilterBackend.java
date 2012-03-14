@@ -21,7 +21,13 @@ package org.unitime.timetable.events;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -47,117 +53,11 @@ public class EventFilterBackend extends FilterBoxBackend {
 
 	@Override
 	public void load(FilterRpcRequest request, FilterRpcResponse response) {
-		String timeFilter = "";
-		Integer after = null;
-		if (request.hasOption("after")) {
-			after = TimeSelector.TimeUtils.parseTime(request.getOption("after"), null);
-			timeFilter += " and m.stopPeriod > " + after;
-		}
-		if (request.hasOption("before")) {
-			timeFilter += " and m.startPeriod > " + TimeSelector.TimeUtils.parseTime(request.getOption("before"), after);
-		}
-		if (request.hasOption("from")) {
-			try {
-				timeFilter += " and m.meetingDate >= " + HibernateUtil.date(new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from")));
-			} catch (ParseException e) {}
-		}
-		if (request.hasOption("to")) {
-			try {
-				timeFilter += " and m.meetingDate <= " + HibernateUtil.date(new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to")));
-			} catch (ParseException e) {}
-		}
-		
-		String dayFilter = "";
-		if (request.hasOptions("day")) {
-			String dow = "";
-			for (String day: request.getOptions("day")) {
-				if (!dow.isEmpty()) dow += ",";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_MON].equals(day))
-					dow += "2";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_TUE].equals(day))
-					dow += "3";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_WED].equals(day))
-					dow += "4";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_THU].equals(day))
-					dow += "5";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_FRI].equals(day))
-					dow += "6";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_SAT].equals(day))
-					dow += "7";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_SUN].equals(day))
-					dow += "1";
-			}
-        	if (dow.indexOf(',') >= 0)
-        		dayFilter += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")";
-        	else
-        		dayFilter += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow;
-		}
+		EventQuery query = getQuery(request);
 
-		String typeFilter = "";
-		if (request.hasOptions("type")) {
-			String type = "";
-			for (String t: request.getOptions("type")) {
-				if (!type.isEmpty()) type += ",";
-				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeClass]))
-					type += ClassEvent.class.getName();
-				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeCourse]))
-					type += CourseEvent.class.getName();
-				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeSpecial]))
-					type += SpecialEvent.class.getName();
-				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeFinalExam]))
-					type += FinalExamEvent.class.getName();
-				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeMidtermExam]))
-					type += MidtermExamEvent.class.getName();
-			}
-			typeFilter = " and e.class in (" + type + ")";
-		}
-		
-		String modeFilter = "";
-		String modeWhere = "";
-		if (request.hasOption("mode")) {
-			String mode = request.getOption("mode");
-			if ("My Events".equals(mode)) {
-				modeFilter = " and e.mainContact.externalUniqueId = '" + request.getOption("user") + "'";
-			} else if ("Approved Events".equals(mode)) {
-				modeFilter = " and e not in (select distinct x.event from Meeting x where x.approvedDate is null)";
-			} else if ("Awaiting Events".equals(mode)) {
-				modeFilter = " and m.approvedDate is null";
-			} else if ("Awaiting My Approval".equals(mode)) {
-				modeWhere = ", Location l inner join l.roomDepts rd inner join rd.department.timetableManagers g";
-				modeFilter = " and m.approvedDate is null" +
-						" and l.session.uniqueId = :sessionId and l.permanentId = m.locationPermanentId and rd.control=true and g.externalUniqueId = '" + request.getOption("user") + "'";
-			} else if ("Conflicting Events".equals(mode)) {
-				modeWhere = ", Meeting mx";
-				modeFilter = " and mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId";
-			}
-		}
-		
-		String requestedFilter = "";
-		if (request.hasOption("requested")) {
-			for (StringTokenizer s=new StringTokenizer(request.getOption("requested").trim(),", ");s.hasMoreTokens();) {
-                String token = s.nextToken().toUpperCase();
-                requestedFilter += " and (upper(e.mainContact.firstName) like '%"+token+"%' or upper(e.mainContact.middleName) like '%"+token+"%' or upper(e.mainContact.lastName) like '%"+token+"%')";
-            }
-		}
-		
-		String sponsorFilter = "";
-		if (request.hasOptions("sponsor")) {
-			String sponsor = "";
-			for (String s: request.getOptions("sponsor"))
-				sponsor += (sponsor.isEmpty() ? "" : ",") + "'" + s.replace("'", "\\'") + "'";
-			sponsorFilter = " and e.sponsoringOrganization.name in (" + sponsor + ")";
-		}
-		
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		int total = 0;
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
-				"select e.class, count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " + modeWhere +
-				" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-				timeFilter + dayFilter + modeFilter + requestedFilter + sponsorFilter +
-				" group by e.class order by e.class")
-				.setLong("sessionId", request.getSessionId())
-				.setCacheable(true)
-				.list()) {
+		for (Object[] o: (List<Object[]>)query.select("e.class, count(distinct e)").group("e.class").order("e.class").exclude("query").exclude("type").query(hibSession).list()) {
 			int type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
 			Entity e = new Entity(new Long(type), Event.sEventTypesAbbv[type], Event.sEventTypesAbbv[type]);
@@ -166,14 +66,9 @@ public class EventFilterBackend extends FilterBoxBackend {
 			total += count;
 		}
 		
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
-				"select " + HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " + modeWhere +
-				" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-				timeFilter + modeFilter + requestedFilter + sponsorFilter + typeFilter + 
-				" group by " + HibernateUtil.dayOfWeek("m.meetingDate") + " order by " + HibernateUtil.dayOfWeek("m.meetingDate"))
-				.setLong("sessionId", request.getSessionId())
-				.setCacheable(true)
-				.list()) {
+		for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
+				.order(HibernateUtil.dayOfWeek("m.meetingDate")).group(HibernateUtil.dayOfWeek("m.meetingDate"))
+				.exclude("query").exclude("day").query(hibSession).list()) {
 			int type = Integer.parseInt(o[0].toString());
 			String day = null;
 			switch (type) {
@@ -193,61 +88,43 @@ public class EventFilterBackend extends FilterBoxBackend {
 		}
 		
 		Entity all = new Entity(0l, "All", "All Events");
-		all.setCount(((Number)hibSession.createQuery(
-				"select count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " +
-				"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-				timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue());
+		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		if (request.hasOption("user")) {
-			int myCnt = ((Number)hibSession.createQuery(
-					"select count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " +
-					"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-					"and e.mainContact.externalUniqueId = '" + request.getOption("user") + "'" +
-					timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue();
+			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user").set("user", request.getOption("user"))
+					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 			if (myCnt > 0) {
 				Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
 				response.add("mode", my);
 			}
 			String role = request.getOption("role");
 			if (role != null) {
-				int approvedCnt = ((Number)hibSession.createQuery(
-						"select count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " +
-						"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-						"and e not in (select distinct x.event from Meeting x where x.approvedDate is null) " +
-						timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue();
+				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is not null")
+						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
 				if (approvedCnt > 0) {
 					Entity approved = new Entity(2l, "Approved", "Approved Events"); approved.setCount(approvedCnt);
 					response.add("mode", approved);
 				}
 				
-				int awaitingCnt = ((Number)hibSession.createQuery(
-						"select count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s " +
-						"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-						"and m.approvedDate is null " +
-						timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue();
+				int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null")
+						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				if (awaitingCnt > 0) {
 					Entity awaiting = new Entity(2l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
 					response.add("mode", awaiting);
 				}
 				
-				int conflictingCnt = ((Number)hibSession.createQuery(
-						"select count(distinct e) from Event e inner join e.meetings m, Meeting mx, Location l inner join l.session s " +
-						"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-						"and mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and " +
-						"m.locationPermanentId = mx.locationPermanentId " +
-						timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue();
+				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx")
+						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId")
+						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				if (conflictingCnt > 0) {
 					Entity conflicting = new Entity(2l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
 					response.add("mode", conflicting);
 				}
 				
 				if (Roles.EVENT_MGR_ROLE.equals(role)) {
-					int myApprovalCnt = ((Number)hibSession.createQuery(
-							"select count(distinct e) from Event e inner join e.meetings m, Location l inner join l.session s inner join l.roomDepts rd inner join rd.department.timetableManagers g " +
-							"where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-							"and m.approvedDate is null " +
-							"and rd.control=true and g.externalUniqueId = '" + request.getOption("user") + "' " +
-							timeFilter + dayFilter + typeFilter + sponsorFilter +requestedFilter).setLong("sessionId", request.getSessionId()).setCacheable(true).uniqueResult()).intValue();
+					int myApprovalCnt = ((Number)query.select("count(distinct e)").from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
+							.where("m.approvedDate is null rd.control=true and g.externalUniqueId = :user").set("user", request.getOption("user"))
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					if (myApprovalCnt > 0) {
 						Entity awaiting = new Entity(2l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
 						response.add("mode", awaiting);
@@ -256,13 +133,8 @@ public class EventFilterBackend extends FilterBoxBackend {
 			}
 		}
 
-		for (Object[] org: (List<Object[]>)hibSession.createQuery(
-				"select o.uniqueId, o.name, count(distinct e) from Event e inner join e.sponsoringOrganization o inner join e.meetings m, Location l inner join l.session s " + modeWhere +
-				" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-				timeFilter + dayFilter + typeFilter + requestedFilter + modeFilter +
-				" group by o.uniqueId, o.name order by o.name")
-				.setLong("sessionId", request.getSessionId())
-				.setCacheable(true).list()) {
+		for (Object[] org: (List<Object[]>)query.select("o.uniqueId, o.name, count(distinct e)").from("inner join e.sponsoringOrganization o")
+				.group("o.uniqueId, o.name").order("o.name").exclude("query").exclude("sponsor").query(hibSession).list()) {
 			Long id = (Long)org[0];
 			String name = (String)org[1];
 			int count = ((Number)org[2]).intValue();
@@ -271,19 +143,16 @@ public class EventFilterBackend extends FilterBoxBackend {
 		}
 		
 		response.add("other", new Entity(0l, "Conflicts", "Display Conflicts"));
-		
-		/*
-		for (int i = 0; i < Constants.DAY_NAMES_FULL.length; i++)
-			response.add("day", new Entity((long)i, Constants.DAY_NAMES_FULL[i], Constants.DAY_NAMES_FULL[i]));
-			*/
 	}
-
-	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response) {
-		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+	
+	public static EventQuery getQuery(FilterRpcRequest request) {
+		EventQuery query = new EventQuery(request.getSessionId());
 		
-		String restrictions = "";
-		String restrictionsWhere = "";
+		if (request.getText() != null && !request.getText().isEmpty()) {
+			query.addWhere("query", "lower(e.eventName) like lower(:Xquery) || '%'");
+			query.addParameter("query", "Xquery", request.getText());
+		}
+		
 		if (request.hasOptions("type")) {
 			String type = "";
 			for (String t: request.getOptions("type")) {
@@ -299,17 +168,18 @@ public class EventFilterBackend extends FilterBoxBackend {
 				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeMidtermExam]))
 					type += MidtermExamEvent.class.getName();
 			}
-			
-			restrictions += " and e.class in (" + type + ")";
+			query.addWhere("type", "e.class in (" + type + ")");
 		}
 		
 		Integer after = null;
 		if (request.hasOption("after")) {
 			after = TimeSelector.TimeUtils.parseTime(request.getOption("after"), null);
-			restrictions += " and m.stopPeriod > " + after;
+			query.addWhere("after", "m.stopPeriod > :Xafter");
+			query.addParameter("after", "Xafter", after);
 		}
 		if (request.hasOption("before")) {
-			restrictions += " and m.startPeriod > " + TimeSelector.TimeUtils.parseTime(request.getOption("before"), after);
+			query.addWhere("before", "m.startPeriod < :Xbefore");
+			query.addParameter("before", "Xbefore", TimeSelector.TimeUtils.parseTime(request.getOption("before"), after));
 		}
 		if (request.hasOptions("day")) {
 			String dow = "";
@@ -331,85 +201,87 @@ public class EventFilterBackend extends FilterBoxBackend {
 					dow += "1";
 			}
         	if (dow.indexOf(',') >= 0)
-        		restrictions += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")";
+        		query.addWhere("day", HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")");
         	else
-        		restrictions += " and " + HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow;
+        		query.addWhere("day", HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow);
 		}
 		if (request.hasOption("from")) {
 			try {
-				restrictions += " and m.meetingDate >= " + HibernateUtil.date(new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from")));
+				query.addParameter("from", "Xfrom", new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from")));
+				query.addWhere("from", "m.meetingDate >= :Xfrom");
 			} catch (ParseException e) {}
 		}
 		if (request.hasOption("to")) {
 			try {
-				restrictions += " and m.meetingDate <= " + HibernateUtil.date(new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to")));
+				query.addParameter("to", "Xto", new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to")));
+				query.addWhere("to", "m.meetingDate <= :Xto");
 			} catch (ParseException e) {}
 		}
 		
 		if (request.hasOptions("sponsor")) {
 			String sponsor = "";
-			for (String s: request.getOptions("sponsor"))
-				sponsor += (sponsor.isEmpty() ? "" : ",") + "'" + s.replace("'", "\\'") + "'";
-			restrictions += " and e.sponsoringOrganization.name in (" + sponsor + ")";
+			int id = 0;
+			for (String s: request.getOptions("sponsor")) {
+				sponsor += (sponsor.isEmpty() ? "" : ",") + ":Xsp" + id;
+				query.addParameter("sponsor", "Xsp" + id, s);
+				id++;
+			}
+			query.addWhere("sponsor", "e.sponsoringOrganization.name in (" + sponsor + ")");
 		}
 		
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
 			if ("My Events".equals(mode)) {
-				restrictions += " and e.mainContact.externalUniqueId = '" + request.getOption("user") + "'";
+				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + request.getOption("user") + "'");
 			} else if ("Approved Events".equals(mode)) {
-				restrictions += " and e not in (select distinct x.event from Meeting x where x.approvedDate is null)";;
+				query.addWhere("mode", "m.approvedDate is not null");
 			} else if ("Awaiting Events".equals(mode)) {
-				restrictions += " and m.approvedDate is null";
+				query.addWhere("mode", "m.approvedDate is null");
 			} else if ("Awaiting My Approval".equals(mode)) {
-				restrictionsWhere += ", Location l inner join l.roomDepts rd inner join rd.department.timetableManagers g";
-				restrictions = " and m.approvedDate is null" +
-						" and l.session.uniqueId = :sessionId and l.permanentId = m.locationPermanentId and rd.control=true and g.externalUniqueId = '" + request.getOption("user") + "'";
+				query.addFrom("mode", "Location Xl inner join Xl.roomDepts Xrd inner join Xrd.department.timetableManagers Xg");
+				query.addWhere("mode", "m.approvedDate is null and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser");
+				query.addParameter("mode", "Xuser", request.getOption("user"));
 			} else if ("Conflicting Events".equals(mode)) {
-				restrictionsWhere += ", Meeting mx";
-				restrictions += " and mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId";
+				query.addFrom("mode", "Meeting Xm");
+				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId");
 			}
 		}
 		
-		String requested = "";
 		if (request.hasOption("requested")) {
+			String requested = "";
+			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getOption("requested").trim(),", ");s.hasMoreTokens();) {
                 String token = s.nextToken().toUpperCase();
-                requested += " and (upper(e.mainContact.firstName) like '%"+token+"%' or upper(e.mainContact.middleName) like '%"+token+"%' or upper(e.mainContact.lastName) like '%"+token+"%')";
+                requested += (requested.isEmpty() ? "" : " and ") + "(upper(e.mainContact.firstName) like '%' || :Xreq" + id + " || '%' or " +
+                		"upper(e.mainContact.middleName) like '%' || :Xreq" + id + " || '%' or upper(e.mainContact.lastName) like '%' || :Xreq" + id + " || '%')";
+                query.addParameter("requested", "Xreq" + id, token);
+                id++;
             }
+			query.addWhere("requested", requested);
 		}
 		
-		List<Event> events = (List<Event>)hibSession.createQuery(
-				"select distinct e from Event e inner join e.meetings m, Location l inner join l.session s " + restrictionsWhere +
-				" where lower(e.eventName) like lower(:query) || '%' " +
-				"and s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-				restrictions + requested +
-				" order by e.eventName")
-				.setLong("sessionId", request.getSessionId())
-				.setString("query", request.getText())
-				.setCacheable(true)
-				.setMaxResults(20)
-				.list();
+		return query;
+	}
+
+	@Override
+	public void suggestions(FilterRpcRequest request, FilterRpcResponse response) {
+		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
-		for (Event event: events)
+		EventQuery query = getQuery(request);
+		
+		for (Event event: (List<Event>)query.select("distinct e").query(hibSession).setMaxResults(20).list())
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
 		if (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			String contactFilter = "";
+			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("query");
+			
+			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getText().trim(),", ");s.hasMoreTokens();) {
                 String token = s.nextToken().toUpperCase();
-                contactFilter += " and (upper(c.firstName) like '%"+token+"%' or upper(c.middleName) like '%"+token+"%' or upper(c.lastName) like '%"+token+"%')";
+                instance.where("upper(c.firstName) like '%' || :cn" + id + " || '%' or upper(c.middleName) like '%' || :cn" + id + " || '%' or upper(c.lastName) like '%' || :cn" + id + " || '%'").set("cn" + id, token);
             }
-			List<EventContact> contacts = (List<EventContact>)hibSession.createQuery(
-					"select distinct c from Event e inner join e.meetings m inner join e.mainContact c, Location l inner join l.session s " + restrictionsWhere +
-					" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
-					restrictions + contactFilter +
-					" order by c.lastName, c.firstName, c.middleName")
-					.setLong("sessionId", request.getSessionId())
-					.setCacheable(true)
-					.setMaxResults(20)
-					.list();
-			for (EventContact contact: contacts)
+			
+			for (EventContact contact: (List<EventContact>)instance.query(hibSession).setMaxResults(20).list())
 				response.addSuggestion(contact.getName(), contact.getName(), "Requested By");
 
 		}
@@ -417,7 +289,132 @@ public class EventFilterBackend extends FilterBoxBackend {
 
 	@Override
 	public void enumarate(FilterRpcRequest request, FilterRpcResponse response) {
+		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
+		EventQuery query = getQuery(request);
+		
+		for (Event event: (List<Event>)query.select("distinct e").query(hibSession).list()) {
+			Entity entity = new Entity(event.getUniqueId(), event.getEventTypeAbbv(), event.getEventName());
+			response.addResult(entity);
+		}
+	}
+	
+	public static class EventQuery {
+		private Long iSessionId;
+		private Map<String, String> iFrom = new HashMap<String, String>();
+		private Map<String, String> iWhere = new HashMap<String, String>();
+		private Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
+		
+		public EventQuery(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
+		public void addFrom(String option, String from) { iFrom.put(option, from); }
+		public void addWhere(String option, String where) { iWhere.put(option, where); }
+
+		private void addParameter(String option, String name, Object value) {
+			Map<String, Object> params = iParams.get(option);
+			if (params == null) { params = new HashMap<String, Object>(); iParams.put(option, params); }
+			params.put(name, value);
+		}
+		
+		public String getFrom(Collection<String> excludeOption) {
+			String from = "";
+			for (Map.Entry<String, String> entry: iFrom.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				from += ", " + entry.getValue();
+			}
+			return from;
+		}
+		
+		public String getWhere(Collection<String> excludeOption) {
+			String where = "";
+			for (Map.Entry<String, String> entry: iWhere.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				where += " and (" + entry.getValue() + ")";
+			}
+			return where;
+		}
+		
+		public org.hibernate.Query setParams(org.hibernate.Query query, Collection<String> excludeOption) {
+			for (Map.Entry<String, Map<String, Object>> entry: iParams.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
+					if (param.getValue() instanceof Integer) {
+						query.setInteger(param.getKey(), (Integer)param.getValue());
+					} else if (param.getValue() instanceof Long) {
+						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof String) {
+						query.setString(param.getKey(), (String)param.getValue());
+					} else if (param.getValue() instanceof Boolean) {
+						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+					} else if (param.getValue() instanceof Date) {
+						query.setDate(param.getKey(), (Date)param.getValue());
+					} else {
+						query.setString(param.getKey(), param.getValue().toString());
+					}
+				}
+			}
+			return query;
+		}
+		
+		public EventInstance select(String select) {
+			return new EventInstance(select);
+		}
+		
+		
+		public class EventInstance {
+			private String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Event";
+			private Set<String> iExclude = new HashSet<String>();
+			private Map<String, Object> iParams = new HashMap<String, Object>();
+			
+			private EventInstance(String select) { iSelect = select; }
+			
+			public EventInstance from(String from) { iFrom = from; return this; }
+			public EventInstance where(String where) { 
+				if (iWhere == null)
+					iWhere = "(" + where + ")";
+				else
+					iWhere += " and (" + where + ")";
+				return this;
+			}
+			public EventInstance type(String type) { iType = type; return this; }
+			public EventInstance order(String orderBy) { iOrderBy = orderBy; return this; }
+			public EventInstance group(String groupBy) { iGroupBy = groupBy; return this; }
+			public EventInstance exclude(String excludeOption) { iExclude.add(excludeOption); return this; }
+			public EventInstance set(String param, Object value) { iParams.put(param, value); return this; }
+			
+			public String query() {
+				return
+					"select " + (iSelect == null ? "distinct e" : iSelect) +
+					" from " + iType + " e inner join e.meetings m, Location l inner join l.session s " + 
+					(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+					" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
+					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+					(iGroupBy == null ? "" : " group by " + iGroupBy) +
+					(iOrderBy == null ? "" : " order by " + iOrderBy);
+			}
+			
+			public org.hibernate.Query query(org.hibernate.Session hibSession) {
+				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
+				for (Map.Entry<String, Object> param: iParams.entrySet()) {
+					if (param.getValue() instanceof Integer) {
+						query.setInteger(param.getKey(), (Integer)param.getValue());
+					} else if (param.getValue() instanceof Long) {
+						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof String) {
+						query.setString(param.getKey(), (String)param.getValue());
+					} else if (param.getValue() instanceof Boolean) {
+						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+					} else if (param.getValue() instanceof Date) {
+						query.setDate(param.getKey(), (Date)param.getValue());
+					} else {
+						query.setString(param.getKey(), param.getValue().toString());
+					}
+				}
+				return query;
+			}
+		}
 	}
 
 }

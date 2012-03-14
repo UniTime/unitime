@@ -19,24 +19,57 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventException;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	@Override
 	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, GwtRpcHelper helper) {
+		// Check authentication if needed
+		if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
+			if (helper.getUser() == null) throw new PageAccessException(
+					helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
+		}
+		
+		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+		
+		Session selected = null;
+		if (command.hasTerm()) {
+			try {
+				selected = findSession(hibSession, command.getTerm());
+			} catch (EventException e) {}
+		} else {
+			Long sessionId = helper.getAcademicSessionId();
+			if (sessionId != null)
+				selected = SessionDAO.getInstance().get(sessionId, hibSession);
+		}
+		if (selected == null)
+			try {
+				selected = findSession(hibSession, "current");
+			} catch (EventException e) {}
 		GwtRpcResponseList<AcademicSession> ret = new GwtRpcResponseList<AcademicSession>();
-		Session selected = (helper.getUser() == null ? null : Session.getCurrentAcadSession(helper.getUser()));
-		if (selected == null) selected = Session.defaultSession();
-		Set<Session> sessions = Session.getAllSessions();
+		Set<Session> sessions = new TreeSet<Session>(hibSession.createQuery(
+				"select distinct s from Session s, RoomTypeOption o where o.session = s and o.status = 1"
+		).list());
 		for (Session session: sessions) {
+			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.equals(selected));
 			Session prev = null, next = null;
 			for (Session s: sessions) {
@@ -57,6 +90,35 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			ret.add(acadSession);
 		}
 		return ret;
+	}
+	
+	public static Session findSession(org.hibernate.Session hibSession, String term) throws EventException, PageAccessException {
+		try {
+			Session ret = SessionDAO.getInstance().get(Long.parseLong(term), hibSession);
+			if (ret != null) return ret;
+		} catch (NumberFormatException e) {}
+		List<Session> sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and o.status = 1 and (" +
+				"s.academicTerm || s.academicYear = :term or " +
+				"s.academicTerm || s.academicYear || s.academicInitiative = :term)").
+				setString("term", term).list();
+		if (!sessions.isEmpty()) {
+			for (Session session: sessions) {
+				if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
+				return session;
+			}
+		}
+		if ("current".equalsIgnoreCase(term)) {
+			sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and o.status = 1 and " +
+					"s.eventBeginDate <= :today and s.eventEndDate >= :today").
+					setDate("today",new Date()).list();
+			if (!sessions.isEmpty()) {
+				for (Session session: sessions) {
+					if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
+					return session;
+				}
+			}
+		}
+		throw new EventException("Academic session " + term + " not found.");
 	}
 
 }

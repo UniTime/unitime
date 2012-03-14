@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -247,7 +248,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iDayOfWeek;
 		private int iDayOfYear;
 		private boolean iPast;
-		private String iApprovalDate = null;
+		private Date iApprovalDate = null;
 		private Long iStartTime, iStopTime;
 		
 		public MeetingInterface() {}
@@ -275,8 +276,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
 		public boolean isApproved() { return iApprovalDate != null; }
-		public String getApprovalDate() { return iApprovalDate; }
-		public void setApprovalDate(String date) {  iApprovalDate = date; }
+		public Date getApprovalDate() { return iApprovalDate; }
+		public void setApprovalDate(Date date) {  iApprovalDate = date; }
 		
 		public Long getStopTime() { return iStopTime; }
 		public void setStopTime(Long stopTime) { iStopTime = stopTime; }
@@ -360,7 +361,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationNameWithHint() {
 	    	return iMeetings.first().getLocationNameWithHint();
 	    }
-}
+	    
+	    public Date getApprovalDate() {
+	    	return iMeetings.first().getApprovalDate();
+	    }
+	    
+	    public boolean isApproved() {
+	    	return iMeetings.first().isApproved();
+	    }
+	}
 	
     public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkApproval, boolean checkPast) {
         TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();
@@ -377,7 +386,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             	if (m.getMeetingTime().equals(meeting.getMeetingTime()) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
-            		(!checkApproval || m.isApproved() == meeting.isApproved())) {
+            		(!checkApproval ||( m.isApproved() == meeting.isApproved() && (!m.isApproved() || m.getApprovalDate().equals(meeting.getApprovalDate()))))) {
                     dow.add(m.getDayOfWeek());
                     similar.put(m.getDayOfYear(),m);
                 }

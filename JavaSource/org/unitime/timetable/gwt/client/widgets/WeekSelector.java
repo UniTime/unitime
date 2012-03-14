@@ -259,6 +259,21 @@ public class WeekSelector extends Composite {
 			return (isAllWeeks() ? iWeeks.size() : isOneWeek() ? 1 : iWeeks.indexOf(iLastWeek) - iWeeks.indexOf(iFirstWeek) + 1);
 		}
 		
+		public List<Integer> getSelectedWeeks() {
+			List<Integer> ret = new ArrayList<Integer>();
+			if (isAllWeeks()) {
+				for (WeekInterface week: iWeeks)
+					ret.add(week.getDayOfYear());
+			} else if (isOneWeek()) {
+				ret.add(getFirstWeek().getDayOfYear());
+			} else {
+				for (WeekInterface week: iWeeks)
+					if (week.getDayOfYear() >= getFirstDayOfYear() && week.getDayOfYear() <= getLastDayOfYear())
+						ret.add(week.getDayOfYear());
+			}
+			return ret;
+		}
+		
 		@Override
 		public String getDisplayString() {
 			if (getFirstWeek() == null)
@@ -301,12 +316,12 @@ public class WeekSelector extends Composite {
 		}
 		
 		public int getFirstDayOfYear() {
-			return (iFirstWeek == null ? 0 : iFirstWeek.getDayOfYear());
+			return (iFirstWeek == null ? iWeeks.get(0).getDayOfYear() : iFirstWeek.getDayOfYear());
 		}
 		
 		public int getLastDayOfYear() {
-			WeekInterface last = (iLastWeek == null ? iFirstWeek : iLastWeek);
-			return (last == null ? null : last.getDayOfYear() + last.getDayNames().size() - 1);
+			WeekInterface last = (iLastWeek != null ? iLastWeek : iFirstWeek != null ? iFirstWeek : iWeeks.get(iWeeks.size() - 1));
+			return last.getDayOfYear() + last.getDayNames().size() - 1;
 		}
 	}
 	

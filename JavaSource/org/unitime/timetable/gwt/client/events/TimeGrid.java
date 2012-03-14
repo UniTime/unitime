@@ -83,12 +83,21 @@ public class TimeGrid extends Composite {
 	private int iStart = 0;
 	private int iEnd = 24;
 	private boolean iScroll = false;
+	private int iTotalNrColumns = 0;
 	
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private HashMap<Long, String> iColors = new HashMap<Long, String>();
 	
 	private boolean iRoomResource = false;
-	private int iNrWeeks = 0;
+	private List<Integer> iSelectedWeeks = null;
+	
+	public static enum Mode {
+		FILLSPACE,
+		PROPORTIONAL,
+		OVERLAP
+	}
+	
+	private Mode iMode = Mode.FILLSPACE;
 	
 	public TimeGrid() {
 		this(new HashMap<Long, String>(), 5, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
@@ -195,10 +204,12 @@ public class TimeGrid extends Composite {
         initWidget(iContainer);
 	}
 	
-	public int getNrWeeks() { return iNrWeeks; }
-	public void setNrWeeks(int nrWeeks) { iNrWeeks = nrWeeks; }
+	public List<Integer> getSelectedWeeks() { return iSelectedWeeks; }
+	public void setSelectedWeeks(List<Integer> weeks) { iSelectedWeeks = weeks; }
 	public boolean isRoomResource() { return iRoomResource; }
 	public void setRoomResource(boolean roomResource) { iRoomResource = roomResource; }
+	public void setMode(Mode mode) { iMode = mode; }
+	public Mode getMode() { return iMode; }
 	
 	public void setCalendarUrl(String url) {
 		iCalendar.setUrl(url);
@@ -213,7 +224,7 @@ public class TimeGrid extends Composite {
 		int firstHour = firstSlot() / 12;
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
-		tg.setNrWeeks(getNrWeeks());
+		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResource(isRoomResource());
 		return tg;
 	}
@@ -335,6 +346,7 @@ public class TimeGrid extends Composite {
 		for (int i = 0; i < iMeetingTable.length; i++)
 			for (int j = 0 ; j < iMeetingTable[i].length; j++)
 				if (iMeetingTable[i][j] != null) iMeetingTable[i][j].clear();
+		iTotalNrColumns = 0;
 	}
 	
 	public String getColor(EventInterface event) {
@@ -346,46 +358,134 @@ public class TimeGrid extends Composite {
 		return color;
 	}
 	
-	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, ArrayList<Meeting> meetings) {
-		int col = -1;
-		for (int i = 0; i < length; i++) {
-			if (iMeetingTable[day][startSlot + i] != null) {
-				for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
-					Meeting m = j.next();
-					if (m.getColumn() > col) col = m.getColumn();
-				}
-			}
-		}
-		col += 1;
-		int cols = col + 1;
-		if (col > 0) {
-			boolean used[] = new boolean[cols - 1];
-			for (int i = 0; i < cols - 1; i++) used[i] = false;
+	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings) {
+		switch (iMode) {
+		case PROPORTIONAL: {
+			boolean used[] = new boolean[iTotalNrColumns + nrMeetings];
+			for (int i = 0; i < used.length; i++) used[i] = false;
 			for (int i = 0; i < length; i++) {
 				if (iMeetingTable[day][startSlot + i] != null) {
 					for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
 						Meeting m = j.next();
-						used[m.getColumn()] = true;
+						for (int k = 0; k < m.getNrMeetings(); k++)
+							used[m.getColumn() + k] = true;
 					}
 				}
 			}
-			for (int i = 0; i < cols - 1; i++)
-				if (!used[i]) {col = i; cols--; break; }
-		}
-        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, meetings);
-        meeting.addStyleName(color);
-
-        meeting.setTitle(title);
-        iPanel.add(meeting);
-		for (int i = 0; i < length; i++) {
-			if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
-			for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
-				Meeting m = j.next();
-				m.setNrColumns(cols);
+			int col = 0;
+			i: for (int i = 0; i <= iTotalNrColumns; i ++) {
+				for (int j = 0; j < nrMeetings; j++)
+					if (used[i + j]) continue i;
+				col = i;
+				break;
 			}
-			iMeetingTable[day][startSlot + i].add(meeting);
+			if (iTotalNrColumns < col + nrMeetings) {
+				iTotalNrColumns = col + nrMeetings;
+				for (int i = 0; i < iPanel.getWidgetCount(); i++) {
+					Widget w = iPanel.getWidget(i);
+					if (w instanceof Meeting) ((Meeting)w).move();
+				}
+			}
+			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, 1, nrMeetings, meetings);
+	        meeting.addStyleName(color);
+	        meeting.setTitle(title);
+	        iPanel.add(meeting);
+			for (int i = 0; i < length; i++) {
+				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
+				iMeetingTable[day][startSlot + i].add(meeting);
+			}
+	        return meeting;
 		}
-        return meeting;
+		case FILLSPACE: {
+			int col = -1;
+			for (int i = 0; i < length; i++) {
+				if (iMeetingTable[day][startSlot + i] != null) {
+					for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
+						Meeting m = j.next();
+						if (m.getColumn() > col) col = m.getColumn();
+					}
+				}
+			}
+			col += 1;
+			int cols = col + 1;
+			if (col > 0) {
+				boolean used[] = new boolean[cols - 1];
+				for (int i = 0; i < cols - 1; i++) used[i] = false;
+				for (int i = 0; i < length; i++) {
+					if (iMeetingTable[day][startSlot + i] != null) {
+						for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
+							Meeting m = j.next();
+							used[m.getColumn()] = true;
+						}
+					}
+				}
+				for (int i = 0; i < cols - 1; i++)
+					if (!used[i]) {col = i; cols--; break; }
+			}
+	        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, 1, meetings);
+	        meeting.addStyleName(color);
+
+	        meeting.setTitle(title);
+	        iPanel.add(meeting);
+			for (int i = 0; i < length; i++) {
+				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
+				for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
+					Meeting m = j.next();
+					m.setNrColumns(cols);
+				}
+				iMeetingTable[day][startSlot + i].add(meeting);
+			}
+	        return meeting;
+		}
+		case OVERLAP: {
+			int overlap = -1;
+			for (int i = 0; i < length; i++) {
+				if (iMeetingTable[day][startSlot + i] != null) {
+					for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
+						Meeting m = j.next();
+						if (m.getColumn() == firstWeekIndex && m.getNrColumns() > overlap) overlap = m.getNrColumns();
+					}
+				}
+			}
+			overlap += 1;
+			int overlaps = overlap + 1;
+			if (overlap > 0) {
+				boolean used[] = new boolean[overlaps - 1];
+				for (int i = 0; i < overlaps - 1; i++) used[i] = false;
+				for (int i = 0; i < length; i++) {
+					if (iMeetingTable[day][startSlot + i] != null) {
+						for (Iterator<Meeting> j = iMeetingTable[day][startSlot + i].iterator(); j.hasNext(); ) {
+							Meeting m = j.next();
+							if (m.getColumn() == firstWeekIndex)
+								used[m.getNrColumns()] = true;
+						}
+					}
+				}
+				for (int i = 0; i < overlaps - 1; i++)
+					if (!used[i]) {overlap = i; overlaps--; break; }
+			}
+			
+			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, firstWeekIndex, overlap, nrMeetings, meetings);
+	        meeting.addStyleName(color);
+	        meeting.setTitle(title);
+	        iPanel.add(meeting);
+			for (int i = 0; i < length; i++) {
+				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
+				iMeetingTable[day][startSlot + i].add(meeting);
+			}
+	        return meeting;
+		}
+		default:
+			return null;
+		}
+	}
+	
+	private int weekIndex(MeetingInterface m) {
+		for (int i = 0; i < iSelectedWeeks.size(); i++) {
+			if (iSelectedWeeks.get(i) <= m.getDayOfYear() && m.getDayOfYear() <= iSelectedWeeks.get(i) + 6)
+				return i;
+		}
+		return -1;
 	}
 	
 	public ArrayList<Meeting> addEvent(EventInterface event) {
@@ -405,15 +505,19 @@ public class TimeGrid extends Composite {
 					return m1.getId().compareTo(m2.getId());
 				}
 			});
+			MeetingInterface prev = null;
 			for (Iterator<MeetingInterface> i = meetings.iterator(); i.hasNext(); ) {
 				MeetingInterface m = i.next();
 				if (meeting == null) {
 					meeting = m;
+					prev = m;
 					dates.add(m);
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
 						meeting.getDayOfWeek() == m.getDayOfWeek()) {
+					if (iMode == Mode.OVERLAP && weekIndex(prev) + 1 != weekIndex(m)) continue;
 					dates.add(m);
+					prev = m;
 					i.remove();
 				}
 			}
@@ -443,7 +547,7 @@ public class TimeGrid extends Composite {
 			}
 			ArrayList<String> notes = new ArrayList<String>();
 			notes.add(meeting.getMeetingTime());
-			if (dates.size() != getNrWeeks())
+			if (dates.size() != getSelectedWeeks().size())
 				notes.add(dateString);
 			String roomString = "";
 			for (String room: rooms) {
@@ -460,9 +564,10 @@ public class TimeGrid extends Composite {
 					event,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
-					event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")", 
+					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
-					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, done));
+					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, 
+					weekIndex(meeting), dates.size(), done));
 		}
 		iMeetings.add(done);
 		return done;
@@ -491,17 +596,19 @@ public class TimeGrid extends Composite {
 		private ArrayList<Meeting> iMeetings;
 		private HorizontalPanel iHeaderPanel;
 		private boolean iDummy = false;
+		private int iNrMeetings;
 		
-		private Meeting(EventInterface event, String name, ArrayList<String> note, int day, int start, int length, int column, int nrColumns, ArrayList<Meeting> meetings) {
+		private Meeting(EventInterface event, String name, ArrayList<String> note, int day, int start, int length, int column, int nrColumns, int nrMeetings, ArrayList<Meeting> meetings) {
 			super();
 			iEvent = event;
 			iMeetings = meetings;
 			iDay = day;
 			iColumn = column;
+			iNrMeetings = nrMeetings;
 			iNrColumns = nrColumns;
 	    	iHeaderPanel = new HorizontalPanel();
 	        iHeaderPanel.setStylePrimaryName("header");
-	        Label nameLabel = new Label(name);
+	        HTML nameLabel = new HTML(name);
 	        nameLabel.setStyleName("label");
 	        iHeaderPanel.add(nameLabel);
 	        SimplePanel mbot = new SimplePanel();
@@ -519,10 +626,21 @@ public class TimeGrid extends Composite {
 	        setStylePrimaryName("meeting");
 	        add(iHeaderPanel);
 	        add(mbot);
-	        iWidth = (iCellWidth - 6) / nrColumns + (column + 1 != nrColumns && nrColumns > 1 ? -3 : 0);
+	        switch (iMode) {
+	        case PROPORTIONAL:
+		        iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
+		        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iTotalNrColumns;
+		        break;
+	        case FILLSPACE:
+		        iWidth = (iCellWidth - 6) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
+		        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
+		        break;
+	        case OVERLAP:
+	        	iWidth = iNrMeetings * (iCellWidth - 6) / iSelectedWeeks.size() + (iColumn + iNrMeetings != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
+	        }
 	        setSize(String.valueOf(iWidth), String.valueOf(iCellHeight * length / 12 - 3));
 	        DOM.setStyleAttribute(getElement(), "position", "absolute");
-	        iLeft = 4 + iCellWidth * day + column * (iCellWidth - 6) / nrColumns;
 			DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
 			DOM.setStyleAttribute(getElement(), "top", String.valueOf(1 + iCellHeight * start / 12 - iCellHeight * iStart));
 
@@ -604,8 +722,20 @@ public class TimeGrid extends Composite {
 		}
 		
 		public void move() {
-	        iWidth = (iCellWidth - 6) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
-	        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
+	        switch (iMode) {
+	        case PROPORTIONAL:
+	        	iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
+	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iTotalNrColumns;
+	        	break;
+	        case FILLSPACE:
+		        iWidth = (iCellWidth - 6) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
+		        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
+		        break;
+	        case OVERLAP:
+	        	iWidth = iNrMeetings * (iCellWidth - 6) / iSelectedWeeks.size() + (iColumn + iNrMeetings != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
+	        	break;
+	        }
 			setWidth(String.valueOf(iWidth));
 			DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
 		}
@@ -632,6 +762,10 @@ public class TimeGrid extends Composite {
 		
 		public void setDummy() {
 			iDummy = true;
+		}
+		
+		public int getNrMeetings() {
+			return iNrMeetings;
 		}
 	}
 }

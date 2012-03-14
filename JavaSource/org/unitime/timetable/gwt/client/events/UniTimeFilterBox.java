@@ -97,12 +97,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		iAcademicSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
 			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-				if (event.isChanged()) init(true, event.getNewAcademicSessionId(), new Command() {
-					@Override
-					public void execute() {
-						setValue(getValue());
-					}
-				});
+				if (event.isChanged()) init(true, event.getNewAcademicSessionId(), null);
 			}
 		});
 		
@@ -116,6 +111,10 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	
 	protected void addSuggestion(List<FilterBox.Suggestion> suggestions, FilterRpcResponse.Entity entity) {
 		suggestions.add(new FilterBox.Suggestion(entity.getName(), entity.getAbbreviation(), entity.getProperty("hint", null)));
+	}
+	
+	protected void initAsync() {
+		setValue(getValue());
 	}
 
 	protected void init(final boolean init, Long academicSessionId, final Command onSuccess) {
@@ -137,6 +136,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 					for (FilterBox.Filter filter: iFilter.getWidget().getFilters())
 						populateFilter(filter, result.getEntities(filter.getCommand()));
 					if (onSuccess != null) onSuccess.execute();
+					if (init) initAsync();
 				}
 			});
 		}
@@ -210,8 +210,8 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		return request;
 	}
 	
-	public void getRooms(final AsyncCallback<List<FilterRpcResponse.Entity>> callback) {
-		RPC.execute(createRpcRequest(FilterRpcRequest.Command.ENUMERATE, iAcademicSession.getAcademicSessionId(), iFilter.getWidget().getChips(null), iFilter.getWidget().getText()), new AsyncCallback<FilterRpcResponse>() {
+	public void getElements(final AsyncCallback<List<FilterRpcResponse.Entity>> callback) {
+		RPC.execute(getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -223,6 +223,10 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 				callback.onSuccess(result.getResults());
 			}
 		});
+	}
+	
+	public FilterRpcRequest getElementsRequest() {
+		return createRpcRequest(FilterRpcRequest.Command.ENUMERATE, iAcademicSession.getAcademicSessionId(), iFilter.getWidget().getChips(null), iFilter.getWidget().getText());
 	}
 	
 	public static abstract class FilterRpcRequest implements GwtRpcRequest<FilterRpcResponse> {

@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.events.UniTimeFilterBox;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.IdValueInterface;
@@ -37,7 +38,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("event.gwt")
 public interface EventService extends RemoteService {
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException, PageAccessException;
-	public List<EventInterface> findEvents(ResourceInterface resource) throws EventException, PageAccessException;
+	public List<EventInterface> findEvents(ResourceInterface resource, UniTimeFilterBox.FilterRpcRequest events) throws EventException, PageAccessException;
 	public List<IdValueInterface> findSessions(String session)  throws EventException, PageAccessException;
 	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException, PageAccessException;
 	public Boolean canLookupPeople() throws EventException, PageAccessException;
