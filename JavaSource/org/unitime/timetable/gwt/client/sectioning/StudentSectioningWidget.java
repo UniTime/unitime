@@ -755,7 +755,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			int idx = 0;
 			for (WebTable.Row row: rows) rowArray[idx++] = row;
 			iAssignmentGrid.shrink();
-			iAssignmentPanel.setWidth(iAssignmentGrid.getWidth());
+			iAssignmentPanel.setWidth(String.valueOf(iAssignmentGrid.getWidth()));
 			iAssignments.setData(rowArray);
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();

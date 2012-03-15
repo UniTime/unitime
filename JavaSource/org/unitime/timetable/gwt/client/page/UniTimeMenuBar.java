@@ -34,10 +34,11 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
@@ -69,7 +70,7 @@ public class UniTimeMenuBar extends Composite {
 		initWidget(iMenu);
 		
 		if (absolute) {
-			DOM.setStyleAttribute(iMenu.getElement(), "position", "absolute");
+			iMenu.getElement().getStyle().setPosition(Position.ABSOLUTE);
 			move(false);
 			iMoveTimer = new Timer() {
 				@Override
@@ -96,7 +97,7 @@ public class UniTimeMenuBar extends Composite {
 				}
 			});
 			iSimple = new SimplePanel();
-			iSimple.setHeight("23px");
+			iSimple.getElement().getStyle().setHeight(23, Unit.PX);
 			new Timer() {
 				@Override
 				public void run() {
@@ -128,9 +129,9 @@ public class UniTimeMenuBar extends Composite {
 		iLastClientWidth = Window.getClientWidth();
 		iLastScrollLeft = Window.getScrollLeft();
 		iLastScrollTop = Window.getScrollTop();
-		iMenu.setWidth(String.valueOf(iLastClientWidth - 2));
-		DOM.setStyleAttribute(iMenu.getElement(), "left", String.valueOf(iLastScrollLeft));
-		DOM.setStyleAttribute(iMenu.getElement(), "top", String.valueOf(iLastScrollTop));
+		iMenu.getElement().getStyle().setWidth(iLastClientWidth - 2, Unit.PX);
+		iMenu.getElement().getStyle().setLeft(iLastScrollLeft, Unit.PX);
+		iMenu.getElement().getStyle().setTop(iLastScrollTop, Unit.PX);
 		iMenu.setVisible(true);
 	}
 	
@@ -189,7 +190,7 @@ public class UniTimeMenuBar extends Composite {
 		}
 		if (level == 0 && lastSeparator != null) {
 			lastSeparator.setStyleName("unitime-BlankSeparator");
-			lastSeparator.setWidth("100%");
+			lastSeparator.getElement().getStyle().setWidth(100, Unit.PCT);
 		}
 	}
 	

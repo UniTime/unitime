@@ -37,6 +37,8 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -164,8 +166,8 @@ public class UniTimeSideBar extends Composite {
 		iDisclosurePanel.add(simple);
 		
 		iPanel.setWidget(iDisclosurePanel);
-		iPanel.setHeight("100%");
-		DOM.setStyleAttribute(iDisclosurePanel.getElement(), "position", "relative");
+		iPanel.getElement().getStyle().setWidth(100, Unit.PCT);
+		iDisclosurePanel.getElement().getStyle().setPosition(Position.RELATIVE);
 			
 		initWidget(iPanel);
 
@@ -173,7 +175,7 @@ public class UniTimeSideBar extends Composite {
 			iScrollTimer = new Timer() {
 				@Override
 				public void run() {
-					DOM.setStyleAttribute(iDisclosurePanel.getElement(), "top", String.valueOf(iTop));
+					iDisclosurePanel.getElement().getStyle().setTop(iTop, Unit.PX);
 				}
 			};
 			
@@ -225,7 +227,7 @@ public class UniTimeSideBar extends Composite {
 			public void onSuccess(List<MenuInterface> result) {
 				initMenu(result);
 				rootPanel.add(UniTimeSideBar.this);
-				DOM.setStyleAttribute(rootPanel.getElement(), "width", "");
+				rootPanel.getElement().getStyle().clearWidth();
 				saveState();
 			}
 			@Override

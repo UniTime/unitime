@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%--
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
@@ -22,16 +23,16 @@
 <%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta charset="UTF-8"/>
  	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
  	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
  	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime <%=Constants.VERSION%>| Log In</TITLE>
-    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 	

@@ -69,7 +69,6 @@ public class EventFilterBox extends UniTimeFilterBox {
 		
 		iSponsors = new ListBox(true);
 		iSponsors.setWidth("100%"); iSponsors.setVisibleItemCount(3);
-		iSponsors.getElement().getStyle().setBorderColor("#9CB0CE");
 		
 		addFilter(new FilterBox.CustomFilter("sponsor", iSponsors) {
 			@Override

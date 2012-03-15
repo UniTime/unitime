@@ -43,6 +43,7 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -65,7 +66,6 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -302,14 +302,12 @@ public class CourseSelectionBox extends Composite {
 	
 	private void openDialog() {
 		if (iDialog == null) {
-			boolean ie = "Microsoft Internet Explorer".equals(Window.Navigator.getAppName());
-			
-			iDialog = new UniTimeDialogBox(true, true);
+			iDialog = new UniTimeDialogBox(true, false);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
 			iFilter = new TextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
-			iFilter.setWidth("600");
+			iFilter.getElement().getStyle().setWidth(600, Unit.PX);
 			
 			iCourses = new WebTable();
 			iCourses.setHeader(
@@ -338,12 +336,15 @@ public class CourseSelectionBox extends Composite {
 			});
 					
 			iCoursesPanel = new ScrollPanel(iCourses);
-			iCoursesPanel.setSize("780px", "200px");
+			iCoursesPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iCoursesPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
 			
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
 			iCourseDetailsPanel.setStyleName("unitime-ScrollPanel-inner");
+			iCourseDetailsPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iCourseDetailsPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
@@ -363,6 +364,8 @@ public class CourseSelectionBox extends Composite {
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
+			iClassesPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iClassesPanel.getElement().getStyle().setHeight(200, Unit.PX);
 
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
@@ -377,32 +380,22 @@ public class CourseSelectionBox extends Composite {
 			});
 			
 			iTabPanel = new UniTimeTabPanel();	
-			if (ie) {
-				iCoursesPanel.setSize("780px", "400px");
-				iCoursesPanel.setStyleName("unitime-ScrollPanel-inner");
-				iTabPanel.add(iCoursesPanel, MESSAGES.courseSelectionCourses(), true);
-				iCourseDetailsPanel.setSize("780px", "400px");
-				iTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
-				iClassesPanel.setSize("780px", "400px");
-				iTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
-			} else {
-				iCourseDetailsTabPanel = new UniTimeTabPanel();
-				iCourseDetailsTabPanel.setDeckSize("780", "200");
-				iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
-				iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
-				iCourseDetailsTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
-				iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
-					public void onSelection(SelectionEvent<Integer> event) {
-						sLastSelectedCourseDetailsTab = event.getSelectedItem();
-					}
-				});
-				iCoursesTab = new VerticalPanel();
-				iCoursesTab.setSpacing(10);
-				iCoursesTab.add(iCoursesPanel);
-				iCoursesTab.add(iCourseDetailsTabPanel);
-				iCoursesTab.add(iCoursesTip);
-				iTabPanel.add(iCoursesTab, MESSAGES.courseSelectionCourses(), true);
-			}
+			
+			iCourseDetailsTabPanel = new UniTimeTabPanel();
+			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+			iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
+			iCourseDetailsTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
+			iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+				public void onSelection(SelectionEvent<Integer> event) {
+					sLastSelectedCourseDetailsTab = event.getSelectedItem();
+				}
+			});
+			iCoursesTab = new VerticalPanel();
+			iCoursesTab.setSpacing(10);
+			iCoursesTab.add(iCoursesPanel);
+			iCoursesTab.add(iCourseDetailsTabPanel);
+			iCoursesTab.add(iCoursesTip);
+			iTabPanel.add(iCoursesTab, MESSAGES.courseSelectionCourses(), true);
 			
 			iFreeTimeTab = new VerticalPanel();
 			iFreeTimeTab.setSpacing(10);
@@ -434,13 +427,8 @@ public class CourseSelectionBox extends Composite {
 			iFreeTimeError.setVisible(false);
 			iFreeTimeTab.add(iFreeTimeError);
 			
-			if (iAllowFreeTime)
+			if (iAllowFreeTime) {
 				iTabPanel.add(iFreeTimeTab, MESSAGES.courseSelectionFreeTime(), true);
-
-			if (ie) {
-				iDialogPanel.add(iTabPanel);
-				iDialogPanel.add(iCoursesTip);
-			} else if (iAllowFreeTime) {
 				iDialogPanel.add(iTabPanel);
 			} else {
 				iDialogPanel.add(iCoursesPanel);

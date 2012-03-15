@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -108,8 +109,8 @@ public class SuggestionsBox extends DialogBox {
 		
 		iFilter = new TextBox();
 		iFilter.setStyleName("gwt-SuggestBox");
-		iFilter.setWidth("600");
-		iFilter.setHeight("26");
+		iFilter.getElement().getStyle().setWidth(600, Unit.PX);
+		iFilter.getElement().getStyle().setHeight(26, Unit.PX);
 		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
@@ -140,7 +141,7 @@ public class SuggestionsBox extends DialogBox {
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
 		iSuggestionsScroll = new ScrollPanel(iSuggestions);
-		iSuggestionsScroll.setHeight("400");
+		iSuggestionsScroll.getElement().getStyle().setHeight(400, Unit.PX);
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
 		suggestionPanel.add(iSuggestionsScroll);
 
