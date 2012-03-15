@@ -78,6 +78,10 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 		iPanel = new AbsolutePanel();
 		iPanel.setStyleName("unitime-AcademicSessionSelector");
 		
+		AbsolutePanel row = new AbsolutePanel();
+		row.addStyleName("row");
+		iPanel.add(row);
+		
 		iPrev = new Button("&laquo;");
 		iPrev.setEnabled(false);
 		iPrev.setTitle("Previous academic session");
@@ -238,9 +242,9 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 		iPopup.setStyleName("unitime-AcademicSessionSelectorPopup");
 		iPopup.setWidget(iSessionScroll);
 		
-		iPanel.add(iPrev);
-		iPanel.add(iFilter);
-		iPanel.add(iNext);
+		row.add(iPrev);
+		row.add(iFilter);
+		row.add(iNext);
 		
 		iWidget = new UniTimeWidget<AbsolutePanel>(iPanel);
 		iWidget.setHint("Loading academic sessions...");

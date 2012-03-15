@@ -63,7 +63,6 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -248,15 +247,14 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	}
 	
 	private void openDialog() {
-		final boolean ie = "Microsoft Internet Explorer".equals(Window.Navigator.getAppName());
 		if (iDialog == null) {
 
-			iDialog = new UniTimeDialogBox(true, true);
+			iDialog = new UniTimeDialogBox(true, false);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
 			iFilter = new TextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
-			iFilter.setWidth("600");
+			iFilter.getElement().getStyle().setWidth(600, Unit.PX);
 			
 			iCourses = new WebTable();
 			iCourses.setHeader(
@@ -299,7 +297,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			});
 					
 			iCoursesPanel = new ScrollPanel(iCourses);
-			iCoursesPanel.setSize("780px", "200px");
+			iCoursesPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iCoursesPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCoursesPanel.setStyleName("unitime-ScrollPanel");
 			
 			iCourseDetailsTabPanel = new UniTimeTabPanel();
@@ -307,6 +306,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCourseDetails = new HTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iCourseDetailsPanel = new ScrollPanel(iCourseDetails);
 			iCourseDetailsPanel.setStyleName("unitime-ScrollPanel-inner");
+			iCourseDetailsPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iCourseDetailsPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
 			
 			iClasses = new WebTable();
@@ -327,13 +328,17 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
+			iClassesPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iClassesPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCourseDetailsTabPanel.add(iClassesPanel, "C<u>l</u>asses", true);
 			
 			iCurricula = new CourseCurriculaTable(false, false);
 			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iCurriculaPanel = new ScrollPanel(iCurricula);
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
-			iCourseDetailsTabPanel.add(iCurriculaPanel, (ie ? "Cu<u>r</u>ricula" : "<u>C</u>urricula"), true);
+			iCurriculaPanel.getElement().getStyle().setWidth(780, Unit.PX);
+			iCurriculaPanel.getElement().getStyle().setHeight(200, Unit.PX);
+			iCourseDetailsTabPanel.add(iCurriculaPanel, "<u>C</u>urricula", true);
 						
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
@@ -347,18 +352,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 				}
 			});
 			
-			if (ie) {
-				iCoursesPanel.setSize("780px", "400px");
-				iCourseDetailsPanel.setSize("780px", "400px");
-				iClassesPanel.setSize("780px", "400px");
-				iCurriculaPanel.setSize("780px", "400px");
-				iCoursesPanel.setStyleName("unitime-ScrollPanel-inner");
-				iCourseDetailsTabPanel.insert(iCoursesPanel, MESSAGES.courseSelectionCourses(), true, 0);
-			} else {
-				iCourseDetailsTabPanel.setDeckSize("780", "200");
-				iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
-				iDialogPanel.add(iCoursesPanel);
-			}
+			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+			iDialogPanel.add(iCoursesPanel);
 			iDialogPanel.add(iCourseDetailsTabPanel);
 			iDialogPanel.add(iCoursesTip);
 			
@@ -405,19 +400,15 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 						updateCourseDetails();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C')) {
-						iCourseDetailsTabPanel.selectTab(ie ? 0 : 2);
+						iCourseDetailsTabPanel.selectTab(2);
 						event.preventDefault();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
-						iCourseDetailsTabPanel.selectTab(ie ? 1 : 0);
+						iCourseDetailsTabPanel.selectTab(0);
 						event.preventDefault();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
-						iCourseDetailsTabPanel.selectTab(ie ? 2 : 1);
-						event.preventDefault();
-					}
-					if (ie && event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='r' || event.getNativeKeyCode()=='R')) {
-						iCourseDetailsTabPanel.selectTab(3);
+						iCourseDetailsTabPanel.selectTab(1);
 						event.preventDefault();
 					}
 				}

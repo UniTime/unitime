@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%--
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
@@ -30,9 +31,10 @@
 	}	
 	session.invalidate(); 	
 %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	    <meta charset="UTF-8"/>
 		<TITLE>UniTime <%=Constants.VERSION%>| Logging out ...</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
@@ -40,7 +42,6 @@
 				location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
-	    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 	</HEAD>
 	<BODY onload="closeWin();">
 		<BLOCKQUOTE>

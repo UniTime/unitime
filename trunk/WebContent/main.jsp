@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%--
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
@@ -24,6 +25,8 @@
 
 <HTML>
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta charset="UTF-8"/>
 	<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
 	<link rel="shortcut icon" href="images/timetabling.ico" />
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
@@ -34,7 +37,6 @@
     </tt:hasProperty>
     <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </head>
 <BODY class="unitime-Body">
 

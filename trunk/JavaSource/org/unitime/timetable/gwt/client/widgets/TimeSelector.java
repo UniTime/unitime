@@ -226,7 +226,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 				iTimes.addItem(item);
 				iSuggestions.add(t);
 			}
-			iTimeScroll.setWidth("67px");
+			iTimeScroll.setWidth("77px");
 		} else {
 			Integer prev = iStart.getValue();
 			for (int t = CONSTANTS.eventSlotIncrement() + (prev == null ? 0 : prev); t <= 288; t += CONSTANTS.eventSlotIncrement()) {
@@ -246,7 +246,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 				iSuggestions.add(t);
 			}
 			
-			iTimeScroll.setWidth(prev == null ? "67px" : "137px");
+			iTimeScroll.setWidth(prev == null ? "77px" : "137px");
 		}
 		selectASuggestion();
 	}

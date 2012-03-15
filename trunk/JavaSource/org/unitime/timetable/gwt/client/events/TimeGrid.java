@@ -27,8 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -37,23 +37,20 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -64,13 +61,14 @@ public class TimeGrid extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
-	private VerticalPanel iContainer;
-	private SimplePanel iScrollPanel;
-	private AbsolutePanel iPanel;
-	private AbsolutePanel iGrid;
-	private HorizontalPanel iHeader, iDock;
-	private SimplePanel[] iSeparators = new SimplePanel[8];
-	private SimplePanel iWorkingHours;
+	private P iContainer;
+	private ScrollPanel iScrollPanel;
+	private P iPanel;
+	private P iGrid;
+	private P iHeader, iDock;
+	private P[] iSeparators = new P[7];
+	private P iWorkingHours;
+	private P iTimes;
 	private ImageLink iCalendar;
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
@@ -103,7 +101,7 @@ public class TimeGrid extends Composite {
 		this(new HashMap<Long, String>(), 5, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
 	}
 	
-	private List<Label> iDayLabels = new ArrayList<Label>();
+	private List<P> iDayLabels = new ArrayList<P>();
 	
 	public TimeGrid(HashMap<Long, String> colors, int nrDays, int cellWidth, boolean print, boolean scroll, int start, int end) {
 		iColors = colors;
@@ -113,93 +111,83 @@ public class TimeGrid extends Composite {
 		iEnd = end;
 		iScroll = scroll;
 		
-		iContainer = new VerticalPanel();
-		iContainer.setStyleName("unitime-TimeGrid");
-		iHeader = new HorizontalPanel();
+		iContainer = new P("unitime-TimeGrid");
+		iContainer.setSize(40 + iNrDays * iCellWidth, scroll ? 575 : 25 + iCellHeight * (iEnd - iStart));
+		
+		iHeader = new P("calendar-header");
+		iHeader.setWidth(iNrDays * iCellWidth);
 
-		iDock = new HorizontalPanel();
+		iDock = new P("calendar-dock");
+		iDock.setHeight(iCellHeight * (iEnd - iStart) + 5);
 		
-		iPanel = new AbsolutePanel();
-		AbsolutePanel times = new AbsolutePanel();
+		iPanel = new P("calendar-panel");
+		iPanel.setSize(iNrDays * iCellWidth + 5, iCellHeight * (iEnd - iStart));
+		iTimes = new P("calendar-times");
+		iTimes.setHeight(iCellHeight * (iEnd - iStart));
+
+		iCalendar = new ImageLink();
+		iCalendar.setImage(new Image(RESOURCES.calendar()));
+		iCalendar.setTarget(null);
+		iCalendar.setTitle(MESSAGES.exportICalendar());
+		iCalendar.addStyleName("calendar");
+		if (!print)
+			iContainer.add(iCalendar);
 		
-		for (int i = -1; i < iNrDays; i++) {
-			SimplePanel sp = new SimplePanel();
-			sp.setStyleName("header-time-interval");
-			if (i < 0) {
-				sp.setWidth("30px");
-				iCalendar = new ImageLink();
-				iCalendar.setImage(new Image(RESOURCES.calendar()));
-				iCalendar.setTarget(null);
-				iCalendar.setTitle("Export in iCalendar format.");
-				iCalendar.setVisible(false);
-				if (!print)
-					sp.setWidget(iCalendar);
-			} else {
-				sp.setWidth(String.valueOf(iCellWidth));
-				Label l = new Label(CONSTANTS.longDays()[i]);
-				iDayLabels.add(l);
-				sp.setWidget(l);
-			}
-			iHeader.add(sp);
+		for (int i = 0; i < iNrDays; i++) {
+			P sp = new P("header-time-interval");
+			sp.setWidth(iCellWidth);
+			sp.setText(CONSTANTS.longDays()[i]);
+			iHeader.add(sp, i * iCellWidth, 0);
+			iDayLabels.add(sp);
 		}
 		
-		iPanel.setSize(String.valueOf(iNrDays * iCellWidth + (scroll ? 0 : 5)), String.valueOf(iCellHeight * (iEnd - iStart)));
-		times.setSize("30", String.valueOf(iCellHeight * (iEnd - iStart)));
-		iGrid = new AbsolutePanel();
-		iGrid.setSize("100%", "100%");
-        
-		iPanel.setStyleName("bottom-line");
+		iGrid = new P("calendar-grid");
 		
-		iWorkingHours = new SimplePanel();
-		iWorkingHours.setStyleName("working-hours");
-		iWorkingHours.setSize(String.valueOf(2 + iCellWidth * 5), String.valueOf(iCellHeight * 10));
+		iWorkingHours = new P("working-hours");
+		iWorkingHours.setSize(iCellWidth * 5, iCellHeight * 10);
 		iGrid.add(iWorkingHours, 0, 15 * iCellHeight / 2 - (iCellHeight * iStart));
 		
 		for (int i = iStart; i < iEnd; i++) {
 			
 			//create major interval
-			SimplePanel sp1 = new SimplePanel();
-			sp1.setStyleName("major-time-interval");
+			P sp1 = new P("major-time-interval");
 			iGrid.add(sp1, 0, iCellHeight * (i - iStart));
 
-			SimplePanel sp3 = new SimplePanel();
-			sp3.setStyleName("dummy-time-interval");
-			Label title = new Label(i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm");
-			sp3.setWidget(title);
-			times.add(sp3, 0, iCellHeight * (i - iStart));
+			P sp3 = new P("dummy-time-interval");
+			sp3.setText(CONSTANTS.useAmPm() ? (i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm") : String.valueOf(i));
+			iTimes.add(sp3, 0, iCellHeight * (i - iStart));
 
-			SimplePanel sp2 = new SimplePanel();
-			sp2.setStyleName("minor-time-interval");
-			iGrid.add(sp2, 0, iCellHeight * (i - iStart) + iCellHeight / 2);
+			P sp2 = new P("minor-time-interval");
+			iGrid.add(sp2, 0, iCellHeight * (i - iStart) + 25);
 			
-			SimplePanel sp4 = new SimplePanel();
-			sp4.setStyleName("dummy-time-interval");
-			times.add(sp4, 0, iCellHeight * (i - iStart) + iCellHeight / 2);			
+			P sp4 = new P("dummy-time-interval");
+			iTimes.add(sp4, 0, iCellHeight * (i - iStart) + 25);			
 		}
 
-		for (int day = 0; day < iNrDays + (scroll ? 0 : 1); day++) {
-			iSeparators[day] = new SimplePanel();
-			iSeparators[day].setStyleName("day-separator");
+		for (int day = 0; day < iNrDays; day++) {
+			iSeparators[day] = new P("day-separator");
 			iGrid.add(iSeparators[day], iCellWidth * day, 0);
 		}
+		P lastSeparator = new P("day-separator");
+		lastSeparator.getElement().getStyle().setRight(0, Unit.PX);
+		lastSeparator.getElement().getStyle().setTop(0, Unit.PX);
+		lastSeparator.getElement().getStyle().setPosition(Position.ABSOLUTE);
+		iGrid.add(lastSeparator);
 		
-        iPanel.add(iGrid);
+        iPanel.add(iGrid, 0, 0);
         
-        iDock.add(times);
-        iDock.add(iPanel);
-        iContainer.add(iHeader);
-        iHeader.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        iDock.add(iTimes, 0, 0);
+        iDock.add(iPanel, 30, 0);
         
+        iContainer.add(iHeader, 30, 0);
+
         if (scroll) {
-    		iScrollPanel = new ScrollPanel();
+    		iScrollPanel = new ScrollPanel(iDock);
         	iScrollPanel.setStyleName("calendar-scroll");
+        	iContainer.add(iScrollPanel, 0, 20);
         } else {
-        	iScrollPanel = new SimplePanel();
+        	iContainer.add(iDock, 0, 20);
         }
-        
-    	iScrollPanel.add(iDock);
-    	iContainer.add(iScrollPanel);
-    	iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + (scroll ? ToolBox.getScrollBarWidth() : 5)));
 
         initWidget(iContainer);
 	}
@@ -252,17 +240,16 @@ public class TimeGrid extends Composite {
 		if (iNrDays == days) return;
 		iNrDays = days;
 		iCellWidth = (int)(0.9 * Window.getClientWidth() / days);
-		iPanel.setWidth(String.valueOf(iNrDays * iCellWidth + (iScroll ? 0 : 5)));
-		iWorkingHours.setWidth(String.valueOf(2 + iCellWidth * (iNrDays < 5 ? iNrDays : 5)));
-        iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + (iScroll ? ToolBox.getScrollBarWidth() : 5)));
+		iContainer.setWidth(40 + iNrDays * iCellWidth);
+		iHeader.setWidth(iNrDays * iCellWidth);
+		iPanel.setWidth(iNrDays * iCellWidth);
 		for (int day = 0; day < 7 + (iScroll ? 0 : 1); day++) {
 			if (day < days + (iScroll ? 0 : 1)) {
 				if (iSeparators[day] == null) {
-					iSeparators[day] = new SimplePanel();
-					iSeparators[day].setStyleName("day-separator");
+					iSeparators[day] = new P("day-separator");
 					iGrid.add(iSeparators[day], iCellWidth * day, 0);
 				} else {
-					DOM.setStyleAttribute(iSeparators[day].getElement(), "left", String.valueOf(iCellWidth * day));
+					iSeparators[day].getElement().getStyle().setLeft(iCellWidth * day, Unit.PX);
 					iSeparators[day].setVisible(true);
 				}
 			} else {
@@ -272,20 +259,12 @@ public class TimeGrid extends Composite {
 		}
 		iHeader.clear();
 		iDayLabels.clear();
-		for (int i = -1; i < iNrDays; i++) {
-			SimplePanel sp = new SimplePanel();
-			sp.setStyleName("header-time-interval");
-			if (i < 0) {
-				if (iCalendar != null) 
-					sp.setWidget(iCalendar);
-				sp.setWidth("30px");
-			} else {
-				sp.setWidth(String.valueOf(iCellWidth));
-				Label l = new Label(CONSTANTS.longDays()[i]);
-				iDayLabels.add(l);
-				sp.setWidget(l);
-			}
-			iHeader.add(sp);
+		for (int i = 0; i < iNrDays; i++) {
+			P sp = new P("header-time-interval");
+			sp.setWidth(iCellWidth);
+			sp.setText(CONSTANTS.longDays()[i]);
+			iHeader.add(sp, i * iCellWidth, 0);
+			iDayLabels.add(sp);
 		}
 		for (ArrayList<Meeting> meetings: iMeetings)
 			for (Meeting meeting: meetings) 
@@ -321,21 +300,6 @@ public class TimeGrid extends Composite {
 		if (!hasSat && !hasSun) setNrDays(5);
 		else if (!hasSun) setNrDays(6);
 		else setNrDays(7);
-	}
-	
-	public String getWidth() {
-		return String.valueOf(iNrDays * iCellWidth + 30 + ToolBox.getScrollBarWidth());
-	}
-	
-	public void scrollDown() {
-        iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + ToolBox.getScrollBarWidth()));
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				if (iScrollPanel instanceof ScrollPanel)
-					((ScrollPanel)iScrollPanel).setVerticalScrollPosition(350);
-			}
-		});
 	}
 	
 	public void clear() {
@@ -639,10 +603,11 @@ public class TimeGrid extends Composite {
 	        	iWidth = iNrMeetings * (iCellWidth - 6) / iSelectedWeeks.size() + (iColumn + iNrMeetings != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? -3 : 0) - 5 * iNrColumns;
 	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
 	        }
-	        setSize(String.valueOf(iWidth), String.valueOf(iCellHeight * length / 12 - 3));
-	        DOM.setStyleAttribute(getElement(), "position", "absolute");
-			DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
-			DOM.setStyleAttribute(getElement(), "top", String.valueOf(1 + iCellHeight * start / 12 - iCellHeight * iStart));
+	        getElement().getStyle().setWidth(iWidth, Unit.PX);
+	        getElement().getStyle().setHeight(iCellHeight * length / 12 - 3, Unit.PX);
+	        getElement().getStyle().setPosition(Position.ABSOLUTE);
+			getElement().getStyle().setLeft(iLeft, Unit.PX);
+			getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart, Unit.PX);
 
 			sinkEvents(Event.ONCLICK);
 			sinkEvents(Event.ONMOUSEOVER);
@@ -674,9 +639,9 @@ public class TimeGrid extends Composite {
 			EventTarget related = event.getRelatedEventTarget();
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONCLICK:
-				setWidth(String.valueOf(iWidth));
-				DOM.setStyleAttribute(getElement(), "zIndex", "");
-				DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
+				getElement().getStyle().setWidth(iWidth, Unit.PX);
+				getElement().getStyle().clearZIndex();
+				getElement().getStyle().setLeft(iLeft, Unit.PX);
 				for (Meeting meeting: iMeetings)
 					meeting.removeStyleName("meeting-selected");
 				if (!anchor) {
@@ -687,18 +652,18 @@ public class TimeGrid extends Composite {
 				break;
 			case Event.ONMOUSEOVER:
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
-					setWidth(String.valueOf(iCellWidth - 6));
+					getElement().getStyle().setWidth(iCellWidth - 6, Unit.PX);
 					getElement().getStyle().setZIndex(1000);
-					DOM.setStyleAttribute(getElement(), "left", String.valueOf(4 + iCellWidth * iDay));
+					getElement().getStyle().setLeft(4 + iCellWidth * iDay, Unit.PX);
 					for (Meeting meeting: iMeetings)
 						meeting.addStyleName("meeting-selected");
 		        }
 				break;
 			case Event.ONMOUSEOUT:
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
-					setWidth(String.valueOf(iWidth));
-					DOM.setStyleAttribute(getElement(), "zIndex", "");
-					DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
+					getElement().getStyle().setWidth(iWidth, Unit.PX);
+					getElement().getStyle().clearZIndex();
+					getElement().getStyle().setLeft(iLeft, Unit.PX);
 					for (Meeting meeting: iMeetings)
 						meeting.removeStyleName("meeting-selected");
 		        }
@@ -706,9 +671,9 @@ public class TimeGrid extends Composite {
 			case Event.ONMOUSEMOVE:
 				int relativeX = event.getClientX() - getElement().getAbsoluteLeft() + getElement().getScrollLeft() + getElement().getOwnerDocument().getScrollLeft();
 				if (relativeX < iLeft - 6 - iDay * iCellWidth || relativeX > iLeft - 2 - iDay * iCellWidth + iWidth) {
-					setWidth(String.valueOf(iWidth));
-					DOM.setStyleAttribute(getElement(), "zIndex", "");
-					DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
+					getElement().getStyle().setWidth(iWidth, Unit.PX);
+					getElement().getStyle().clearZIndex();
+					getElement().getStyle().setLeft(iLeft, Unit.PX);
 				}
 				break;
 			}
@@ -736,8 +701,8 @@ public class TimeGrid extends Composite {
 	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
 	        	break;
 	        }
-			setWidth(String.valueOf(iWidth));
-			DOM.setStyleAttribute(getElement(), "left", String.valueOf(iLeft));
+			getElement().getStyle().setWidth(iWidth, Unit.PX);
+			getElement().getStyle().setLeft(iLeft, Unit.PX);
 		}
 		
 		public void setTitle(String title) {
