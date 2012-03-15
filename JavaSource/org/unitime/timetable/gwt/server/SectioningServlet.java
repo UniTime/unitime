@@ -141,6 +141,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
 		try {
 			iUpdater = new OnlineSectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
 			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
@@ -148,6 +149,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
+				if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
 				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 

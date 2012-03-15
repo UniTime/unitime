@@ -227,6 +227,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
 		try {
 			final Session session = SessionDAO.getInstance().get(academicSessionId, hibSession);
 			
@@ -244,6 +245,7 @@ public class OnlineSectioningServerUpdater extends Thread {
 			boolean load = true;
 			if (year != null && !year.equals(session.getAcademicYear())) load = false;
 			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
+			if (campus != null && !campus.equals(session.getAcademicInitiative())) load = false;
 			if (session.getStatusType().isTestSession()) load = false;
 			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) load = false;
 

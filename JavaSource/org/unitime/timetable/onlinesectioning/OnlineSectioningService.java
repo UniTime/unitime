@@ -76,11 +76,13 @@ public class OnlineSectioningService {
 		// otherwise, look for a session that has sectioning enabled
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
 		for (Iterator<Session> i = SessionDAO.getInstance().findAll().iterator(); i.hasNext(); ) {
 			final Session session = i.next();
 			
 			if (year != null && !year.equals(session.getAcademicYear())) continue;
 			if (term != null && !term.equals(session.getAcademicTerm())) continue;
+			if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
 			if (session.getStatusType().isTestSession()) continue;
 
 			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;

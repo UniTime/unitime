@@ -51,8 +51,7 @@ public class RoomFilterBox extends UniTimeFilterBox {
 		
 		iDepartments = new ListBox(false);
 		iDepartments.setWidth("100%");
-		iDepartments.getElement().getStyle().setBorderColor("#9CB0CE");
-
+		
 		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
@@ -103,7 +102,6 @@ public class RoomFilterBox extends UniTimeFilterBox {
 		
 		iBuildings = new ListBox(true);
 		iBuildings.setWidth("100%"); iBuildings.setVisibleItemCount(3);
-		iBuildings.getElement().getStyle().setBorderColor("#9CB0CE");
 		
 		addFilter(new FilterBox.CustomFilter("building", iBuildings) {
 			@Override

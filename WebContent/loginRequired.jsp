@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%--
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
@@ -18,16 +19,16 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 <HEAD>
-	<TITLE>Session Expired</TITLE>
 	<META http-equiv="pragma" content="no-cache">
 	<META http-equiv="cache-control" content="no-cache">
 	<META http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta charset="UTF-8"/>
+	<TITLE>Session Expired</TITLE>
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 	<link rel="shortcut icon" href="images/timetabling.ico" />
-    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 </HEAD>
 
 <BODY class="bodyMain">

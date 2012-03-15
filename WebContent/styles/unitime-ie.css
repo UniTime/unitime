@@ -29,3 +29,82 @@
 	font-size: 9pt;
 	line-height: 12px;
 }
+
+.unitime-DateSelector .box {
+	border-spacing: 0px;
+}
+
+.gwt-SuggestBox {
+	height: 20px;
+}
+
+.unitime-FilterBoxPopup .other {
+	padding: 1px;
+}
+
+.unitime-FilterBox {
+	border-radius: 0px;
+}
+
+/*
+.unitime-AcademicSessionSelector .selection {
+	display: inline;
+}
+
+.unitime-AcademicSessionSelector .disabled {
+	display: inline;
+}
+
+.unitime-AcademicSessionSelector .enabled {
+	display: inline;
+}
+
+.unitime-DateSelector .box .cell {
+	display: inline;
+}
+
+.unitime-DateSelector .month {
+	display: inline;
+}
+
+.unitime-DateSelector .legend {
+	display: inline;
+}
+
+.unitime-DateSelector .legend .title {
+	display: inline;
+	vertical-align: middle;
+}
+
+.unitime-DateSelector .box .dow {
+	font: xx-small;
+}
+
+.unitime-DateSelector .clickable {
+	cursor: pointer;
+}
+
+.unitime-FilterBox .filter {
+	display: inline;
+}
+
+.unitime-FilterBox .button {
+	display: inline;
+}
+
+.unitime-FilterBox .chip {
+	display: inline;
+}
+
+.unitime-FilterBox .chip .text {
+	display: inline;
+}
+
+.unitime-FilterBox .chip .button {
+	display: inline;
+}
+
+.unitime-FilterBoxPopup .value {
+	display: inline;
+}
+*/

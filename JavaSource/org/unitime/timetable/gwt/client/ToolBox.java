@@ -149,7 +149,7 @@ public class ToolBox {
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime.css\">" +
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
     	    "<title>UniTime " + CONSTANTS.version() + "| University Timetabling Application</title>" +
-    		"</header><body>" + 
+    		"</header><body class='unitime-Body'>" + 
     		"<table align=\"center\"><tr><td>" +
     		"<table class=\"unitime-Page\"><tr><td>" +
     		"<table id=\"header\" class=\"unitime-MainTable\" cellpadding=\"2\" cellspacing=\"0\" width=\"100%\">" +

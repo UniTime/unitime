@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC
@@ -20,9 +21,11 @@
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
+    <meta charset="UTF-8"/>
 	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
@@ -34,8 +37,6 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
-    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
 	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar-setup.js"></script>

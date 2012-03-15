@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%-- 
  * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2008 - 2010, UniTime LLC
@@ -50,14 +51,14 @@
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 String serverPath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+"/";
 %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html:html>
 <head>
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
+    <meta charset="UTF-8"/>
 	<style type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime.css">
