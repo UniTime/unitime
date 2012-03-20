@@ -623,6 +623,22 @@ h1 {
 	width: 2px;
 }
 
+.unitime-TimeGrid .week-separator {
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	border-left: 1px dashed #DDDDDD;
+	width: 1px;
+}
+
+.unitime-TimeGrid .week-title {
+	height: 30px;
+	vertical-align: top;
+	text-align: center;
+	font-size: xx-small;
+	color: #6991CE;
+}
+
 .unitime-TinyLabel {
 	font-size: x-small;
 	font-family: arial;
@@ -1864,33 +1880,32 @@ h1 {
 	text-overflow: ellipsis;
 }
 
-.unitime-AcademicSessionSelector {
-	display: block;
-	padding: 2px;
+.unitime-IntervalSelector {
+	display: table;
 }
 
-.unitime-AcademicSessionSelector .row {
+.unitime-IntervalSelector .row {
 	display: table-row;
 }
 
-.unitime-AcademicSessionSelector .disabled {
+.unitime-IntervalSelector .disabled {
 	color: #E0E0E0;
 	vertical-align: middle;
 	display: table-cell;
 }
 
-.unitime-AcademicSessionSelector .enabled {
+.unitime-IntervalSelector .enabled {
 	color: #9CB0CE;
 	cursor: pointer;
 	vertical-align: middle;
 	display: table-cell;
 }
 
-.unitime-AcademicSessionSelector .enabled:hover {
+.unitime-IntervalSelector .enabled:hover {
 	color: #909090;
 }
 
-.unitime-AcademicSessionSelector .selection {
+.unitime-IntervalSelector .selection {
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;
 	font-weight: 400;
@@ -1902,24 +1917,26 @@ h1 {
 	height: 20px;
 	border: 1px solid #9CB0CE;
 	padding: 0px 2px 0px 2px;
+	margin: 1px 2px 1px 2px;
 	display: table-cell;
+	width: 150px;
 }
 
 @media print {
-	.unitime-AcademicSessionSelector .enabled {
+	.unitime-IntervalSelector .enabled {
 		display: none;
 	}
-	.unitime-AcademicSessionSelector .disabled {
+	.unitime-IntervalSelector .disabled {
 		display: none;
 	}
-	.unitime-AcademicSessionSelector .selection {
+	.unitime-IntervalSelector .selection {
 		color: black;
 		background: transparent;
 		border: none;
 	}
 }
 
-.unitime-AcademicSessionSelectorPopup {
+.unitime-IntervalSelectorPopup {
 	position: absolute;
 	overflow: hidden;
 	-webkit-border-bottom-left-radius: 3px;
@@ -1934,13 +1951,14 @@ h1 {
 	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
 	box-shadow: 1px 2px 4px #9CB0CE;
 	margin-top: -1px;
+	width: 150px;
 }
 
-.unitime-AcademicSessionSelectorPopup .scroll {
+.unitime-IntervalSelectorPopup .scroll {
 	max-height: 200px;
 }
 
-.unitime-AcademicSessionSelectorPopup .item {
+.unitime-IntervalSelectorPopup .item {
 	padding: 1px 3px 1px 3px;
 	cursor: pointer;
 	-webkit-border-radius: 2px;
@@ -1952,6 +1970,6 @@ h1 {
 	color: #333333;
 }
 
-.unitime-AcademicSessionSelectorPopup .item-selected {
+.unitime-IntervalSelectorPopup .item-selected {
 	background-color: #92c1f0;
 }

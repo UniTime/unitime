@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -32,297 +32,52 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.HasMouseDownHandlers;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
-public class AcademicSessionSelectionBox extends Composite implements AcademicSessionProvider {
+public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessionSelectionBox.AcademicSession> implements AcademicSessionProvider {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private TextBox iFilter;
-	private PopupPanel iPopup;
-	private SessionMenu iSessionMenu;
-	private ScrollPanel iSessionScroll;
-	private AbsolutePanel iPanel;
-	private Button iPrev, iNext;
+
 	private List<AcademicSessionChangeHandler> iChangeHandlers = new ArrayList<AcademicSessionChangeHandler>();
-	private List<AcademicSession> iSessions = new ArrayList<AcademicSession>();
-	private AcademicSession iSession = null;
-	private Long iLastSessionId = null;
-	private UniTimeWidget<AbsolutePanel> iWidget;
 	
 	public AcademicSessionSelectionBox() {
-		iPanel = new AbsolutePanel();
-		iPanel.setStyleName("unitime-AcademicSessionSelector");
+		super(false);
 		
-		AbsolutePanel row = new AbsolutePanel();
-		row.addStyleName("row");
-		iPanel.add(row);
-		
-		iPrev = new Button("&laquo;");
-		iPrev.setEnabled(false);
-		iPrev.setTitle("Previous academic session");
-		iPrev.addMouseDownHandler(new MouseDownHandler() {
-			@Override
-			public void onMouseDown(MouseDownEvent event) {
-				if (iSession != null && iSession.getPreviousId() != null)
-					selectSession(iSession.getPreviousId(), null);
-			}
-		});
-		
-		iNext = new Button("&raquo;");
-		iNext.setEnabled(false);
-		iNext.setTitle("Next academic session");
-		iNext.addMouseDownHandler(new MouseDownHandler() {
-			@Override
-			public void onMouseDown(MouseDownEvent event) {
-				if (iSession != null && iSession.getNextId() != null)
-					selectSession(iSession.getNextId(), null);
-			}
-		});
-		
-		iFilter = new TextBox();
-		/*(new SuggestOracle() {
-			@Override
-			public void requestDefaultSuggestions(Request request, Callback callback) {
-				requestSuggestions(request, callback);
-			}
-			@Override
-			public void requestSuggestions(final Request request, final Callback callback) {
-				String query = request.getQuery();
-				ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
-				iFilter.setAutoSelectEnabled(true);
-				if (iSessions == null || iSessions.isEmpty()) {
-					suggestions.add(new Suggestion() {
-						@Override
-						public String getDisplayString() {
-							return "<font color='red'>No academic sessions.</font>";
-						}
-						@Override
-						public String getReplacementString() {
-							return "";
-						}
-						
-					});
-				} else {
-					sessions: for (final AcademicSession session: iSessions) {
-						for (String c: query.split("[ \\(\\),]"))
-							if (!session.getName().toLowerCase().contains(c.trim().toLowerCase())) continue sessions;
-						suggestions.add(session);
-					}
-					Collections.reverse(suggestions);
-				}
-				if (suggestions.isEmpty() && iSessions != null) {
-					for (final AcademicSession session: iSessions) {
-						suggestions.add(session);
-					}
-					Collections.reverse(suggestions);
-				}
-				callback.onSuggestionsReady(request, new Response(suggestions));
-			}
-			@Override
-			public boolean isDisplayStringHTML() { return true; }
-			});
-		iFilter.getTextBox().addFocusHandler(new FocusHandler() {
-			@Override
-			public void onFocus(FocusEvent event) {
-				iFilter.showSuggestionList();
-			}
-		});
-		iFilter.addStyleName("selection");
-		iFilter.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
-			@Override
-			public void onSelection(SelectionEvent<Suggestion> event) {
-				if (event.getSelectedItem() instanceof AcademicSession)
-					selectSession(((AcademicSession)event.getSelectedItem()).getUniqueId(), null);
-			}
-		});*/
-		iFilter.addStyleName("selection");
-		
-		iFilter.addKeyDownHandler(new KeyDownHandler() {
-			@Override
-			public void onKeyDown(KeyDownEvent event) {
-				if (isSuggestionsShowing()) {
-					switch (event.getNativeEvent().getKeyCode()) {
-					case KeyCodes.KEY_DOWN:
-						iSessionMenu.selectItem(iSessionMenu.getSelectedItemIndex() + 1);
-						break;
-					case KeyCodes.KEY_UP:
-						if (iSessionMenu.getSelectedItemIndex() == -1) {
-							iSessionMenu.selectItem(iSessionMenu.getNumItems() - 1);
-						} else {
-							iSessionMenu.selectItem(iSessionMenu.getSelectedItemIndex() - 1);
-						}
-						break;
-					case KeyCodes.KEY_TAB:
-					case KeyCodes.KEY_ENTER:
-						iSessionMenu.executeSelected();
-						hideSuggestions();
-						break;
-					case KeyCodes.KEY_ESCAPE:
-						hideSuggestions();
-						break;
-					}
-					switch (event.getNativeEvent().getKeyCode()) {
-					case KeyCodes.KEY_DOWN:
-					case KeyCodes.KEY_UP:
-					case KeyCodes.KEY_ENTER:
-					case KeyCodes.KEY_ESCAPE:
-						event.preventDefault();
-						event.stopPropagation();
-					}
-				} else {
-					if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && (event.getNativeEvent().getAltKey() || iFilter.getCursorPos() == iFilter.getText().length())) {
-						showSuggestions();
-						event.preventDefault();
-						event.stopPropagation();
-					}
-				}
-			}
-		});
-		
-		iFilter.addKeyUpHandler(new KeyUpHandler() {
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				if (selectASuggestion() && !isSuggestionsShowing())
-					showSuggestions();
-			}
-		});
-        
-		iFilter.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (iSessions != null)
-					for (AcademicSession session: iSessions) {
-						if (session.getName().equals(event.getValue())) {
-							selectSession(session.getUniqueId(), null);
-							break;
-						}
-					}
-			}
-		});
-        
-		iFilter.addFocusHandler(new FocusHandler() {
-			@Override
-			public void onFocus(FocusEvent event) {
-				showSuggestions();
-			}
-		});
-		
-		iSessionMenu = new SessionMenu();
-		
-		iSessionScroll = new ScrollPanel(iSessionMenu);
-		iSessionScroll.addStyleName("scroll");
-		
-		iPopup = new PopupPanel(true, false);
-		iPopup.setPreviewingAllNativeEvents(true);
-		iPopup.setStyleName("unitime-AcademicSessionSelectorPopup");
-		iPopup.setWidget(iSessionScroll);
-		
-		row.add(iPrev);
-		row.add(iFilter);
-		row.add(iNext);
-		
-		iWidget = new UniTimeWidget<AbsolutePanel>(iPanel);
-		iWidget.setHint("Loading academic sessions...");
+		setHint("Loading academic sessions...");
 		RPC.execute(new ListAcademicSessions(Window.Location.getParameter("term")), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				iWidget.setErrorHint(caught.getMessage());
+				setErrorHint(caught.getMessage());
 				ToolBox.checkAccess(caught);
 				onInitializationFailure(caught);
 			}
 
 			@Override
 			public void onSuccess(GwtRpcResponseList<AcademicSession> result) {
-				iWidget.clearHint();
-				iSessions.clear(); iSessions.addAll(result);
-				iSession = null;
-				iPrev.setEnabled(false); iNext.setEnabled(false);
+				clearHint();
+				setValues(result);
 				for (final AcademicSession session: result) {
 					if (session.isSelected()) {
-						iSession = session;
-						iPrev.setEnabled(session.getPreviousId() != null);
-						iNext.setEnabled(session.getNextId() != null);
+						setDefaultValue(new Interval(session));
+						break;
 					}
-					Command command = new Command() {
-						@Override
-						public void execute() {
-							hideSuggestions();
-							selectSession(session.getUniqueId(), null);
-						}
-					};
-					MenuItem item = new MenuItem(session.getName(), true, command);
-					item.setStyleName("item");
-					DOM.setStyleAttribute(item.getElement(), "whiteSpace", "nowrap");
-					iSessionMenu.addItem(item);
 				}
+				if (getDefaultValue() != null)
+					setValue(getDefaultValue(), true);
 				onInitializationSuccess(result);
-				if (iSession != null) {
-					iFilter.setText(iSession.getName());
-					fireAcademicSessionChanged();
-				}
-				selectASuggestion();
 			}
 		});
 		
-		initWidget(iWidget);
-	}
-	
-	private void hideSuggestions() {
-		if (iPopup.isShowing()) iPopup.hide();
-	}
-	
-	private void showSuggestions() {
-		iPopup.showRelativeTo(iFilter);
-		iSessionMenu.scrollToView();
-	}
-	
-	private boolean isSuggestionsShowing() {
-		return iPopup.isShowing();
-	}
-	
-	private String iLastSelected = null;
-	private boolean selectASuggestion() {
-		if (iFilter.getText().equals(iLastSelected)) return false;
-		iLastSelected = iFilter.getText();
-		int selected = -1;
-		if (iSessions != null) {
-			sessions: for (int i = 0; i < iSessions.size(); i++) {
-				AcademicSession session = iSessions.get(i);
-				if (selected < 0 && session.isSelected()) { selected = i; }
-				for (String c: iLastSelected.split("[ \\(\\),]"))
-					if (!session.getName().toLowerCase().contains(c.trim().toLowerCase())) continue sessions;
-				selected = i;
-				break;
+		addValueChangeHandler(new ValueChangeHandler<Interval>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Interval> event) {
+				fireAcademicSessionChanged();
 			}
-		}
-		if (selected >= 0) iSessionMenu.selectItem(selected);
-		return true;
+		});
 	}
 	
 	protected void onInitializationSuccess(List<AcademicSession> sessions) {
@@ -331,54 +86,15 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 	protected void onInitializationFailure(Throwable caught) {
 	}
 	
-	public static class Button extends AbsolutePanel implements HasMouseDownHandlers {
-		private boolean iEnabled = true;
-		
-		private Button(String caption) {
-			getElement().setInnerHTML(caption);
-			addStyleName("enabled");
-			sinkEvents(Event.ONMOUSEDOWN);
-		}
-		
-		public boolean isEnabled() { return iEnabled; }
-		public void setEnabled(boolean enabled) {
-			if (iEnabled == enabled) return;
-			iEnabled = enabled;
-			if (iEnabled) {
-				addStyleName("enabled");
-				removeStyleName("disabled");
-			} else {
-				addStyleName("disabled");
-				removeStyleName("enabled");
-			}
-		}
-		
-		@Override
-		public void onBrowserEvent(Event event) {
-			switch (DOM.eventGetType(event)) {
-		    case Event.ONMOUSEDOWN:
-		    	MouseDownEvent.fireNativeEvent(event, this);
-		    	event.stopPropagation();
-		    	event.preventDefault();
-		    	break;
-			}
-		}
-		
-		@Override
-		public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-			return addHandler(handler, MouseDownEvent.getType());
-		}
-	}
-
 
 	@Override
 	public Long getAcademicSessionId() {
-		return (iSession == null ? null : iSession.getUniqueId());
+		return (getValue() == null ? null : getValue().getFirst().getUniqueId());
 	}
 
 	@Override
 	public String getAcademicSessionName() {
-		return (iSession == null ? null : iSession.getName());
+		return (getValue() == null ? null : getValue().getFirst().getName());
 	}
 
 	@Override
@@ -388,42 +104,38 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 
 	@Override
 	public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
-		if (iSession != null && iSession.getUniqueId().equals(sessionId)) {
+		if (sessionId != null && sessionId.equals(getAcademicSessionId())) {
 			if (callback != null) callback.onSuccess(true);
 			return;
 		}
-		if (iSession == null && sessionId == null) {
+		if (sessionId == null && getAcademicSessionId() == null) {
 			if (callback != null) callback.onSuccess(true);
 			return;
 		}
 		if (sessionId == null) {
-			iSession = null;
-			iFilter.setText("");
+			setValue(null);
 			if (callback != null) callback.onSuccess(true);
-			iPrev.setEnabled(false);
-			iNext.setEnabled(false);
 		} else {
-			iSession = null;
-			if (iSessions != null)
-				for (AcademicSession session: iSessions) {
-					if (sessionId.equals(session.getUniqueId())) { iSession = session; break; }
+			boolean found = false;
+			if (getValues() != null) {
+				for (AcademicSession session: getValues()) {
+					if (session.getUniqueId().equals(sessionId)) {
+						setValue(new Interval(session));
+						if (callback != null) callback.onSuccess(true);
+						found = true;
+						break;
+					}
 				}
-			if (iSession != null) {
-				iFilter.setText(iSession.getName());
-				iPrev.setEnabled(iSession.getPreviousId() != null);
-				iNext.setEnabled(iSession.getNextId() != null);
-				if (callback != null)  callback.onSuccess(true);
-			} else {
-				iFilter.setText("");
-				iPrev.setEnabled(false);
-				iNext.setEnabled(false);
+			}
+			if (!found) {
+				setValue(null);
 				if (callback != null) callback.onSuccess(false);
 			}
 		}
-		selectASuggestion();
 		fireAcademicSessionChanged();
 	}
 	
+	private Long iLastSessionId = null;
 	public void fireAcademicSessionChanged() {
 		final Long oldSession = iLastSessionId;
 		iLastSessionId = getAcademicSessionId();
@@ -448,48 +160,7 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 			handler.onAcademicSessionChange(event);
 	}
 	
-	private class SessionMenu extends MenuBar {
-		SessionMenu() {
-			super(true);
-			setStyleName("");
-			setFocusOnHoverEnabled(false);
-		}
-		
-		public int getNumItems() {
-			return getItems().size();
-		}
-		
-		public int getSelectedItemIndex() {
-			MenuItem selectedItem = getSelectedItem();
-			if (selectedItem != null)
-				return getItems().indexOf(selectedItem);
-			return -1;
-		}
-		
-		public void selectItem(int index) {
-			List<MenuItem> items = getItems();
-			if (index > -1 && index < items.size()) {
-				selectItem(items.get(index));
-				iSessionScroll.ensureVisible(items.get(index));
-			}
-		}
-		
-		public void scrollToView() {
-			List<MenuItem> items = getItems();
-			int index = getSelectedItemIndex();
-			if (index > -1 && index < items.size()) {
-				iSessionScroll.ensureVisible(items.get(index));
-			}
-		}
-		
-		public void executeSelected() {
-			MenuItem selected = getSelectedItem();
-			if (selected != null)
-				selected.getCommand().execute();
-		}
-	}
-
-	public static class AcademicSession implements IsSerializable, Suggestion {
+	public static class AcademicSession implements IsSerializable {
 		private Long iUniqueId;
 		private String iName;
 		private boolean iSelected;
@@ -512,12 +183,7 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 		public void setNextId(Long id) { iNextId = id; }
 
 		@Override
-		public String getDisplayString() {
-			return getName();
-		}
-
-		@Override
-		public String getReplacementString() {
+		public String toString() {
 			return getName();
 		}
 	}
@@ -536,5 +202,41 @@ public class AcademicSessionSelectionBox extends Composite implements AcademicSe
 		public String toString() {
 			return (hasTerm() ? getTerm() : "");
 		}
+	}
+	
+	@Override
+	public void setValue(Interval value, boolean fire) {
+		if (value == null && getValues() != null) {
+			for (AcademicSession session: getValues())
+				if (session.isSelected()) {
+					value = new Interval(session); break;
+				}
+		}
+		super.setValue(value, fire);
+	}
+	
+	protected AcademicSession session(Long id) {
+		if (getValues() != null && id != null)
+			for (AcademicSession session: getValues())
+				if (session.getUniqueId().equals(id)) return session;
+		return null;
+	}
+	
+	@Override
+	protected Interval previous(Interval interval) {
+		if (interval.isOne()) {
+			AcademicSession prev = session(interval.getFirst().getPreviousId());
+			if (prev != null) return new Interval(prev);
+		}
+		return null;
+	}
+
+	@Override
+	protected Interval next(Interval interval) {
+		if (interval.isOne()) {
+			AcademicSession next = session(interval.getFirst().getNextId());
+			if (next != null) return new Interval(next);
+		}
+		return null;
 	}
 }
