@@ -36,10 +36,10 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
-import org.unitime.timetable.gwt.client.widgets.WeekSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.client.widgets.WeekSelector;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.services.EventService;
 import org.unitime.timetable.gwt.services.EventServiceAsync;
@@ -265,13 +265,14 @@ public class EventResourceTimetable extends Composite {
 		iPanel.addRow(iFilter);
 		iHeader = new UniTimeHeaderPanel();
 		iPanel.addHeaderRow(iHeader);
-		iWeekPanel = new WeekSelector();
-		iWeekPanel.addWeekChangedHandler(new WeekSelector.WeekChangedHandler() {
+		iWeekPanel = new WeekSelector(iSession);
+		iWeekPanel.addValueChangeHandler(new ValueChangeHandler<WeekSelector.Interval>() {
+
 			@Override
-			public void onWeekChanged(WeekSelector.WeekChangedEvent e) {
+			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
 				iTimeGrid.clear();
 				populateEventTable(iTable);
-				if (e.getSelection().isAllWeeks()) {
+				if (e.getValue().isAll()) {
 					if (iResource.getType() != ResourceType.PERSON)
 						changeUrl(Window.Location.getParameter("page"),
 								iResource.getSessionAbbv(),
@@ -279,24 +280,26 @@ public class EventResourceTimetable extends Composite {
 								URL.encodeQueryString(iEvents.getValue().trim()));
 					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
 					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
-					iTimeGrid.setSelectedWeeks(e.getSelection().getSelectedWeeks());
+					iTimeGrid.setSelectedWeeks(e.getValue().getSelected());
 					for (EventInterface event: sortedEvents()) {
 						iTimeGrid.addEvent(event);
 					}
 				} else {
-					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + e.getSelection().getReplacementString().toLowerCase());
-					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + e.getSelection().getReplacementString().toLowerCase());
-					iTimeGrid.setSelectedWeeks(e.getSelection().getSelectedWeeks());
+					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + e.getValue().toString().toLowerCase());
+					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + e.getValue().toString().toLowerCase());
+					iTimeGrid.setSelectedWeeks(e.getValue().getSelected());
+					int firstDayOfYear = e.getValue().getFirst().getDayOfYear();
+					int lastDayOfYear = (e.getValue().isOne() ? e.getValue().getFirst() : e.getValue().getLast()).getDayOfYear() + 6;
 					if (iResource.getType() != ResourceType.PERSON)
 						changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(),
 								iResourceTypes.getValue(iResourceTypes.getSelectedIndex()),
 								iResource.getAbbreviation(),
-								e.getSelection().getFirstDay() + (e.getSelection().isOneWeek() ? "": "-" + e.getSelection().getLastDay()),
+								e.getValue().getFirst().getDayNames().get(0) + (e.getValue().isOne() ? "": "-" + e.getValue().getLast().getDayNames().get(6)),
 								URL.encodeQueryString(iEvents.getValue().trim()));
 					for (EventInterface event: sortedEvents()) {
 						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 						for (MeetingInterface meeting: event.getMeetings()) {
-							if (meeting.getDayOfYear() >= e.getSelection().getFirstDayOfYear() && meeting.getDayOfYear() <= e.getSelection().getLastDayOfYear()) {
+							if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear) {
 								meetings.add(meeting);
 							}
 						}
@@ -305,7 +308,7 @@ public class EventResourceTimetable extends Composite {
 					}
 				}
 				iTimeGrid.shrink();
-				iTimeGrid.labelDays(e.getSelection().getFirstWeek(), e.getSelection().getLastWeek());
+				iTimeGrid.labelDays(e.getValue().getFirst(), e.getValue().getLast());
 			}
 		});
 		iWeekRow = iPanel.addRow(iWeekPanel);
@@ -332,20 +335,22 @@ public class EventResourceTimetable extends Composite {
 				populateEventTable(table);
 				// table.getElement().getStyle().setProperty("page-break-before", "always");
 				TimeGrid tg = iTimeGrid.getPrintWidget();
-				if (iWeekPanel.getSelection().isAllWeeks()) {
+				if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll()) {
 					for (EventInterface event: iData)
 						tg.addPrintEvent(event);
 				} else {
+					int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
+					int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
 					for (EventInterface event: iData) {
 						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 						for (MeetingInterface meeting: event.getMeetings())
-							if (meeting.getDayOfYear() >= iWeekPanel.getSelection().getFirstDayOfYear() && meeting.getDayOfYear() <= iWeekPanel.getSelection().getLastDayOfYear())
+							if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear)
 								meetings.add(meeting);
 						if (!meetings.isEmpty())
 							tg.addPrintEvent(event, meetings);
 					}
 				}
-				tg.labelDays(iWeekPanel.getSelection().getFirstWeek(), iWeekPanel.getSelection().getLastWeek());
+				tg.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
 				ToolBox.print(iHeader.getHeaderTitle(),
 						"", "", 
 						tg,
@@ -470,7 +475,7 @@ public class EventResourceTimetable extends Composite {
 					HashMap<Long, String> colors = new HashMap<Long, String>();
 					iTimeGrid = new TimeGrid(colors, nrDays, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					String eventIds = "";
-					iTimeGrid.setSelectedWeeks(iWeekPanel.getSelection().getSelectedWeeks());
+					iTimeGrid.setSelectedWeeks(iWeekPanel.getValue() == null ? null : iWeekPanel.getValue().getSelected());
 					iTimeGrid.setRoomResource(iResource.getType() == ResourceType.ROOM);
 					iTimeGrid.setMode("0".equals(Window.Location.getParameter("eq")) ? TimeGrid.Mode.FILLSPACE :
 						iResource.getType() == ResourceType.ROOM || iResource.getType() == ResourceType.PERSON ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
@@ -493,7 +498,7 @@ public class EventResourceTimetable extends Composite {
 					iTablePanel.setWidget(iTable);
 					
 					if (iResource.hasWeeks()) {
-						iWeekPanel.clearWeeks();
+						List<WeekInterface> weeks = new ArrayList<WeekInterface>();
 						for (WeekInterface week: iResource.getWeeks()) {
 							boolean hasEvents = false;
 							events: for (EventInterface event: iData) {
@@ -504,11 +509,11 @@ public class EventResourceTimetable extends Composite {
 									}
 								}
 							}
-							if (!hasEvents) continue;
-							iWeekPanel.addWeek(week);
+							if (hasEvents) weeks.add(week);
 						}						
-						iWeekPanel.select(Window.Location.getParameter("date"));
+						iWeekPanel.setValues(weeks);
 					}
+					iWeekPanel.setValue(iWeekPanel.parse(Window.Location.getParameter("date")), true);
 					
 					iHeader.setEnabled("print", true);
 					for (int i = 1; i < iPanel.getRowCount(); i++)
@@ -840,12 +845,14 @@ public class EventResourceTimetable extends Composite {
 			}
 			String date = "", time = "", room = "", approved = "";
 			TreeSet<MeetingInterface> meetings = null;
-			if (iWeekPanel.getSelection().isAllWeeks()) {
+			if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll()) {
 				meetings = event.getMeetings();
 			} else {
+				int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
+				int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
 				meetings = new TreeSet<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings())
-					if (meeting.getDayOfYear() >= iWeekPanel.getSelection().getFirstDayOfYear() && meeting.getDayOfYear() <= iWeekPanel.getSelection().getLastDayOfYear())
+					if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear)
 						meetings.add(meeting);
 			}
 			if (meetings.isEmpty()) continue;
@@ -884,7 +891,7 @@ public class EventResourceTimetable extends Composite {
 			table.getRowFormatter().setVerticalAlign(row, HasVerticalAlignment.ALIGN_TOP);
 		}
 		table.getElement().getStyle().setWidth(100, Unit.PCT);
-		setColumnVisible(table, 3, !iWeekPanel.getSelection().isOneWeek());
+		setColumnVisible(table, 3, iWeekPanel.getValue() == null || !iWeekPanel.getValue().isOne());
 		setColumnVisible(table, 5, iResource.getType() != ResourceType.ROOM);
 	}
 	

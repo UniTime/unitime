@@ -66,6 +66,7 @@ public class TimeGrid extends Composite {
 	private P iPanel;
 	private P iGrid;
 	private P iHeader, iDock;
+	private P iVLines;
 	private P[] iSeparators = new P[7];
 	private P iWorkingHours;
 	private P iTimes;
@@ -87,7 +88,7 @@ public class TimeGrid extends Composite {
 	private HashMap<Long, String> iColors = new HashMap<Long, String>();
 	
 	private boolean iRoomResource = false;
-	private List<Integer> iSelectedWeeks = null;
+	private List<WeekInterface> iSelectedWeeks = null;
 	
 	public static enum Mode {
 		FILLSPACE,
@@ -180,6 +181,9 @@ public class TimeGrid extends Composite {
         iDock.add(iPanel, 30, 0);
         
         iContainer.add(iHeader, 30, 0);
+        
+        iVLines = new P("calendar-grid");
+        iPanel.add(iVLines, 0, 0);
 
         if (scroll) {
     		iScrollPanel = new ScrollPanel(iDock);
@@ -192,8 +196,10 @@ public class TimeGrid extends Composite {
         initWidget(iContainer);
 	}
 	
-	public List<Integer> getSelectedWeeks() { return iSelectedWeeks; }
-	public void setSelectedWeeks(List<Integer> weeks) { iSelectedWeeks = weeks; }
+	public List<WeekInterface> getSelectedWeeks() { return iSelectedWeeks; }
+	public void setSelectedWeeks(List<WeekInterface> weeks) {
+		iSelectedWeeks = weeks;
+	}
 	public boolean isRoomResource() { return iRoomResource; }
 	public void setRoomResource(boolean roomResource) { iRoomResource = roomResource; }
 	public void setMode(Mode mode) { iMode = mode; }
@@ -300,6 +306,19 @@ public class TimeGrid extends Composite {
 		if (!hasSat && !hasSun) setNrDays(5);
 		else if (!hasSun) setNrDays(6);
 		else setNrDays(7);
+		
+		iVLines.clear();
+		if (iMode == Mode.OVERLAP && iSelectedWeeks != null && iSelectedWeeks.size() > 1) {
+			for (int d = 0; d < iNrDays; d++) {
+				for (int w = 0; w < iSelectedWeeks.size(); w++) {
+					if (w > 0)
+						iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
+					P p = new P("week-title"); p.setHTML(iSelectedWeeks.get(w).getDayNames().get(d).replaceAll("/", "<br>"));
+					p.setWidth((iCellWidth - 6) / iSelectedWeeks.size());
+					iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
+				}
+			}
+		}
 	}
 	
 	public void clear() {
@@ -446,7 +465,7 @@ public class TimeGrid extends Composite {
 	
 	private int weekIndex(MeetingInterface m) {
 		for (int i = 0; i < iSelectedWeeks.size(); i++) {
-			if (iSelectedWeeks.get(i) <= m.getDayOfYear() && m.getDayOfYear() <= iSelectedWeeks.get(i) + 6)
+			if (iSelectedWeeks.get(i).getDayOfYear() <= m.getDayOfYear() && m.getDayOfYear() <= iSelectedWeeks.get(i).getDayOfYear() + 6)
 				return i;
 		}
 		return -1;
@@ -479,7 +498,7 @@ public class TimeGrid extends Composite {
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
 						meeting.getDayOfWeek() == m.getDayOfWeek()) {
-					if (iMode == Mode.OVERLAP && weekIndex(prev) + 1 != weekIndex(m)) continue;
+					if (iMode == Mode.OVERLAP && (weekIndex(prev) != weekIndex(m) && weekIndex(prev) + 1 != weekIndex(m))) continue;
 					dates.add(m);
 					prev = m;
 					i.remove();
@@ -489,7 +508,9 @@ public class TimeGrid extends Composite {
 			TreeSet<String> rooms = new TreeSet<String>();
 			int lastDay = 0;
 			String endDate = null;
+			TreeSet<Integer> days = new TreeSet<Integer>();
 			for (MeetingInterface m: dates) {
+				days.add(m.getDayOfYear());
 				if (m.getLocation() != null) rooms.add(m.getLocation().getName());
 				if (dateString == null) {
 					dateString = m.getMeetingDate();
@@ -531,7 +552,7 @@ public class TimeGrid extends Composite {
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
 					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, 
-					weekIndex(meeting), dates.size(), done));
+					weekIndex(meeting), days.size(), done));
 		}
 		iMeetings.add(done);
 		return done;

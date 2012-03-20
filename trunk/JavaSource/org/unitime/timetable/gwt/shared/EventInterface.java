@@ -236,6 +236,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public List<String> getDayNames() { return iDayNames; }
 		
 		public String getName() { return getDayNames().get(0) + " - " + getDayNames().get(getDayNames().size() - 1); }
+		
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof WeekInterface)) return false;
+			return getDayOfYear() == ((WeekInterface)o).getDayOfYear();
+		}
 	}
 	
 	public static class MeetingInterface implements Comparable<MeetingInterface>, IsSerializable {
