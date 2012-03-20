@@ -299,6 +299,11 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 	}
 	
 	@SuppressWarnings("deprecation")
+	static Date toDate(int year, int month, int day) {
+		return new Date(year - 1900, month, 1 + day);
+	}
+	
+	@SuppressWarnings("deprecation")
 	static int firstDayOfWeek(int year, int month) {
 		return (6 + new Date(year - 1900, month - 1, 1).getDay()) % 7;
 	}
