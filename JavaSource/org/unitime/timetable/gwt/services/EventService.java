@@ -38,8 +38,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("event.gwt")
 public interface EventService extends RemoteService {
 	public ResourceInterface findResource(String session, ResourceType type, String name) throws EventException, PageAccessException;
-	public List<EventInterface> findEvents(ResourceInterface resource, UniTimeFilterBox.FilterRpcRequest events) throws EventException, PageAccessException;
+	public List<EventInterface> findEvents(ResourceInterface resource, UniTimeFilterBox.FilterRpcRequest events, UniTimeFilterBox.FilterRpcRequest rooms, int limit) throws EventException, PageAccessException;
 	public List<IdValueInterface> findSessions(String session)  throws EventException, PageAccessException;
 	public List<ResourceInterface> findResources(String session, ResourceType type, String query, int limit) throws EventException, PageAccessException;
 	public Boolean canLookupPeople() throws EventException, PageAccessException;
+	public String encode(String query) throws EventException, PageAccessException;
 }

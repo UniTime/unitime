@@ -201,6 +201,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		Set<String> size = (options == null || "size".equals(ignoreCommand) ? null : options.get("size"));
 		Set<String> flag = (options == null || "flag".equals(ignoreCommand) ? null : options.get("flag"));
 		Set<String> user = (options == null || "user".equals(ignoreCommand) ? null : options.get("user"));
+		Set<String> ids = (options == null || "id".equals(ignoreCommand) ? null : options.get("id"));
 		
 		int min = 0, max = Integer.MAX_VALUE;
 		boolean nearby = (flag != null && flag.contains("nearby"));
@@ -275,6 +276,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		
 		List<Location> ret = new ArrayList<Location>();
 		locations: for (Location location: locations) {
+			if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
 			if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
 			if (query != null && !query.match(new LocationMatcher(location))) continue;
 			if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
@@ -336,6 +338,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			
 			if (!coord.isEmpty()) {
 				locations: for (Location location: locations) {
+					if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
 					if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
 					if (query != null && !query.match(new LocationMatcher(location))) continue;
 					if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;

@@ -97,6 +97,10 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		return (getValue() == null ? null : getValue().getFirst().getName());
 	}
 
+	public String getAcademicSessionAbbreviation() {
+		return (getValue() == null ? null : getValue().getFirst().getAbbv());
+	}
+
 	@Override
 	public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
 		iChangeHandlers.add(handler);
@@ -162,18 +166,19 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	
 	public static class AcademicSession implements IsSerializable {
 		private Long iUniqueId;
-		private String iName;
+		private String iName, iAbbv;
 		private boolean iSelected;
 		private Long iPreviousId, iNextId;
 		
 		public AcademicSession() {}
 		
-		public AcademicSession(Long uniqueId, String name, boolean selected) {
-			iUniqueId = uniqueId; iName = name; iSelected = selected;
+		public AcademicSession(Long uniqueId, String name, String abbv, boolean selected) {
+			iUniqueId = uniqueId; iName = name; iAbbv = abbv; iSelected = selected;
 		}
 		
 		public Long getUniqueId() { return iUniqueId; }
 		public String getName() { return iName; }
+		public String getAbbv() { return iAbbv; }
 		public boolean isSelected() { return iSelected; }
 		
 		public Long getPreviousId() { return iPreviousId; }

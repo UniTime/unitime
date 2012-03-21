@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -426,9 +427,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (width < 100)
 				width = getElement().getClientWidth()
 					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4;
-			iFilter.setWidth(String.valueOf(width));
+			iFilter.getElement().getStyle().setWidth(width, Unit.PX);
 		} else {
-			iFilter.setWidth(String.valueOf(getElement().getClientWidth() - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4));
+			iFilter.getElement().getStyle().setWidth(getElement().getClientWidth() - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4, Unit.PX);
 		}
 		if (isSuggestionsShowing())
 			iSuggestionsPopup.showRelativeTo(this);

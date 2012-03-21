@@ -206,12 +206,16 @@ public class TimeGrid extends Composite {
 	public Mode getMode() { return iMode; }
 	
 	public void setCalendarUrl(String url) {
-		iCalendar.setUrl(url);
-		iCalendar.setVisible(true);
+		if (url == null) {
+			iCalendar.setVisible(false);
+		} else {
+			iCalendar.setUrl(url);
+			iCalendar.setVisible(true);
+		}
 	}
 	
 	public String getCalendarUrl() {
-		return iCalendar.getUrl();
+		return (iCalendar.isVisible() ? iCalendar.getUrl() : null);
 	}
 	
 	public TimeGrid getPrintWidget() {
@@ -249,6 +253,7 @@ public class TimeGrid extends Composite {
 		iContainer.setWidth(40 + iNrDays * iCellWidth);
 		iHeader.setWidth(iNrDays * iCellWidth);
 		iPanel.setWidth(iNrDays * iCellWidth);
+		iWorkingHours.setWidth(iCellWidth * 5);
 		for (int day = 0; day < 7 + (iScroll ? 0 : 1); day++) {
 			if (day < days + (iScroll ? 0 : 1)) {
 				if (iSeparators[day] == null) {

@@ -33,7 +33,7 @@ public class Query implements Serializable {
 	private Term iQuery = null;
 	
 	public Query(String query) {
-		iQuery = parse(query.trim());
+		iQuery = parse(query == null ? "" : query.trim());
 	}
 	
 	public boolean match(TermMatcher m) {

@@ -70,7 +70,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		).list());
 		for (Session session: sessions) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
-			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.equals(selected));
+			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() , session.equals(selected));
 			Session prev = null, next = null;
 			for (Session s: sessions) {
 				if (s.getUniqueId().equals(session.getUniqueId()) || !s.getAcademicInitiative().equals(session.getAcademicInitiative())) continue;
