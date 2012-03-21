@@ -26,11 +26,14 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -67,6 +70,10 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.IsSerializable;
+import com.google.gwt.user.client.rpc.SerializationException;
+import com.google.gwt.user.client.rpc.SerializationStreamFactory;
+import com.google.gwt.user.client.rpc.SerializationStreamWriter;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -94,12 +101,15 @@ public class EventResourceTimetable extends Composite {
 	private ResourceInterface iResource;
 	private List<EventInterface> iData;
 	private WeekSelector iWeekPanel;
+	private RoomSelector iRoomPanel;
 	private AcademicSessionSelectionBox iSession;
 	private ListBox iResourceTypes;
 	private SuggestBox iResources;
 	private boolean iCanLookupPeople = false;
 	private int iResourcesRow = -1, iWeekRow = -1, iLastRow = -1;
 	private EventFilterBox iEvents = null;
+	private RoomFilterBox iRooms = null;
+	private String iLocDate = null, iLocRoom = null;
 	
 	private static EventResourceTimetable sInstance = null;
 	
@@ -107,6 +117,9 @@ public class EventResourceTimetable extends Composite {
 	
 	public EventResourceTimetable(String type) {
 		sInstance = this; 
+		
+		iLocDate = Window.Location.getParameter("date");
+		iLocRoom = Window.Location.getParameter("room");
 		
 		iFilter = new SimpleForm(2);
 		iFilter.removeStyleName("unitime-NotPrintableBottomLine");
@@ -134,6 +147,8 @@ public class EventResourceTimetable extends Composite {
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
+				if (iSession.getAcademicSessionId() != null)
+					Lookup.getInstance().setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
 			}
 			
 			@Override
@@ -142,13 +157,7 @@ public class EventResourceTimetable extends Composite {
 			}
 		};
 		iFilter.addRow("Academic Session:", iSession);
-		/* iSession.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
-			@Override
-			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
-				sessionChanged();
-			}
-		});*/
-		
+
 		iEvents = new EventFilterBox(iSession) {
 			@Override
 			protected void initAsync() {
@@ -156,19 +165,21 @@ public class EventResourceTimetable extends Composite {
 				resourceTypeChanged(true);
 			}
 		};
+		
 		iFilter.addRow("Event Filter:", iEvents);
 		if (Window.Location.getParameter("events") != null)
 			iEvents.setValue(Window.Location.getParameter("events"));
-		iEvents.addValueChangeHandler(new ValueChangeHandler<String>() {
+		
+		iRooms = new RoomFilterBox(iSession) {
 			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (iResource.getType() != ResourceType.PERSON)
-					changeUrl(Window.Location.getParameter("page"),
-							iResource.getSessionAbbv(),
-							iResourceTypes.getValue(iResourceTypes.getSelectedIndex()), iResource.getAbbreviation(), null,
-							URL.encodeQueryString(event.getValue().trim()));
+			protected void initAsync() {
+				super.initAsync();
+				resourceTypeChanged(true);
 			}
-		});
+		};
+		iFilter.addRow("Room Filter:", iRooms);
+		if (Window.Location.getParameter("rooms") != null)
+			iRooms.setValue(Window.Location.getParameter("rooms"));
 		
 		iResourceTypes = new ListBox();
 		for (ResourceType resource: ResourceType.values()) {
@@ -267,52 +278,17 @@ public class EventResourceTimetable extends Composite {
 		iPanel.addHeaderRow(iHeader);
 		iWeekPanel = new WeekSelector(iSession);
 		iWeekPanel.addValueChangeHandler(new ValueChangeHandler<WeekSelector.Interval>() {
-
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
-				iTimeGrid.clear();
 				populateEventTable(iTable);
-				if (e.getValue().isAll()) {
-					if (iResource.getType() != ResourceType.PERSON)
-						changeUrl(Window.Location.getParameter("page"),
-								iResource.getSessionAbbv(),
-								iResourceTypes.getValue(iResourceTypes.getSelectedIndex()), iResource.getAbbreviation(), null,
-								URL.encodeQueryString(iEvents.getValue().trim()));
-					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
-					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
-					iTimeGrid.setSelectedWeeks(e.getValue().getSelected());
-					for (EventInterface event: sortedEvents()) {
-						iTimeGrid.addEvent(event);
-					}
-				} else {
-					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + e.getValue().toString().toLowerCase());
-					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + e.getValue().toString().toLowerCase());
-					iTimeGrid.setSelectedWeeks(e.getValue().getSelected());
-					int firstDayOfYear = e.getValue().getFirst().getDayOfYear();
-					int lastDayOfYear = (e.getValue().isOne() ? e.getValue().getFirst() : e.getValue().getLast()).getDayOfYear() + 6;
-					if (iResource.getType() != ResourceType.PERSON)
-						changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(),
-								iResourceTypes.getValue(iResourceTypes.getSelectedIndex()),
-								iResource.getAbbreviation(),
-								e.getValue().getFirst().getDayNames().get(0) + (e.getValue().isOne() ? "": "-" + e.getValue().getLast().getDayNames().get(6)),
-								URL.encodeQueryString(iEvents.getValue().trim()));
-					for (EventInterface event: sortedEvents()) {
-						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-						for (MeetingInterface meeting: event.getMeetings()) {
-							if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear) {
-								meetings.add(meeting);
-							}
-						}
-						if (!meetings.isEmpty())
-							iTimeGrid.addEvent(event, meetings);
-					}
-				}
-				iTimeGrid.shrink();
-				iTimeGrid.labelDays(e.getValue().getFirst(), e.getValue().getLast());
+				changeGrid();
+				changeUrl();
 			}
 		});
-		iWeekRow = iPanel.addRow(iWeekPanel);
-		iPanel.getCellFormatter().setHorizontalAlignment(iWeekRow, 0,  HasHorizontalAlignment.ALIGN_RIGHT);
+		iRoomPanel = new RoomSelector();
+		iWeekRow = iPanel.addRow(iRoomPanel, iWeekPanel);
+		iPanel.getCellFormatter().setHorizontalAlignment(iWeekRow, 0,  HasHorizontalAlignment.ALIGN_LEFT);
+		iPanel.getCellFormatter().setHorizontalAlignment(iWeekRow, 1,  HasHorizontalAlignment.ALIGN_RIGHT);
 		iGridPanel = new SimplePanel();
 		iPanel.addRow(iGridPanel);
 		iTableHeader = new UniTimeHeaderPanel();
@@ -322,6 +298,15 @@ public class EventResourceTimetable extends Composite {
 		iFooter = iHeader.clonePanel();
 		iLastRow = iPanel.addBottomRow(iFooter);
 		initWidget(iPanel);
+		
+		iRoomPanel.addValueChangeHandler(new ValueChangeHandler<IntervalSelector<ResourceInterface>.Interval>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<IntervalSelector<ResourceInterface>.Interval> e) {
+				populateEventTable(iTable);
+				changeGrid();
+				changeUrl();
+			}
+		});
 
 		for (int i = 1; i < iPanel.getRowCount(); i++)
 			iPanel.getRowFormatter().setVisible(i, false);
@@ -335,22 +320,16 @@ public class EventResourceTimetable extends Composite {
 				populateEventTable(table);
 				// table.getElement().getStyle().setProperty("page-break-before", "always");
 				TimeGrid tg = iTimeGrid.getPrintWidget();
-				if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll()) {
-					for (EventInterface event: iData)
-						tg.addPrintEvent(event);
-				} else {
-					int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
-					int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
-					for (EventInterface event: iData) {
-						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-						for (MeetingInterface meeting: event.getMeetings())
-							if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear)
-								meetings.add(meeting);
-						if (!meetings.isEmpty())
-							tg.addPrintEvent(event, meetings);
-					}
+				for (EventInterface event: iData) {
+					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+					for (MeetingInterface meeting: event.getMeetings())
+						if (!filter(meeting))
+							meetings.add(meeting);
+					if (!meetings.isEmpty())
+						tg.addPrintEvent(event, meetings);
 				}
-				tg.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
+				if (iWeekPanel.getValue() != null)
+					tg.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
 				ToolBox.print(iHeader.getHeaderTitle(),
 						"", "", 
 						tg,
@@ -361,7 +340,8 @@ public class EventResourceTimetable extends Composite {
 		iHeader.addButton("export", "E<u>x</u>port", 'x', 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
-				ToolBox.open(iTimeGrid.getCalendarUrl());
+				if (iTimeGrid.getCalendarUrl() != null)
+					ToolBox.open(iTimeGrid.getCalendarUrl());
 			}
 		});
 		iHeader.setTitle("Export timetable in iCalendar format.");
@@ -407,47 +387,64 @@ public class EventResourceTimetable extends Composite {
 	}
 	
 	private void resourceTypeChanged(boolean allowEmptyResource) {
+		if (iSession.getAcademicSessionId() != null)
+			Lookup.getInstance().setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
 		ResourceType type = getResourceType();
 		if (type != null) {
-			iFilter.getRowFormatter().setVisible(iResourcesRow, type != ResourceType.PERSON);
-			((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getLabel().substring(0,1).toUpperCase() + type.getLabel().substring(1) + ":");
-			iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
-			if (iSession.getAcademicSessionId() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
-				iFilterHeader.clearMessage();
-				LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
-				iEventService.findResource(iSession.getAcademicSessionId().toString(), type, getResourceName(), new AsyncCallback<ResourceInterface>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						iFilterHeader.setErrorMessage(caught.getMessage());
-						for (int i = 1; i < iPanel.getRowCount(); i++)
-							iPanel.getRowFormatter().setVisible(i, i == iLastRow);
-						iGridPanel.setVisible(false);
-						iHeader.setEnabled("print", false);
-						iHeader.setEnabled("export", false);
-					}
-					@Override
-					public void onSuccess(ResourceInterface result) {
-						LoadingWidget.getInstance().hide();
-						resourceChanged(result);
-					}
-				});
+			if (type == ResourceType.ROOM) {
+				iFilter.getRowFormatter().setVisible(iResourcesRow, false);
+				iFilterHeader.setEnabled("lookup", false);
+				if (iSession.getAcademicSessionId() != null && (!iRooms.getValue().isEmpty() || !iEvents.getValue().isEmpty())) {
+					ResourceInterface resource = new ResourceInterface();
+					resource.setType(ResourceType.ROOM);
+					resource.setSessionAbbv(iSession.getAcademicSessionAbbreviation());
+					resource.setSessionId(iSession.getAcademicSessionId());
+					resource.setSessionName(iSession.getAcademicSessionName());
+					resource.setName(iRooms.getValue());
+					if (allowEmptyResource)
+						resourceChanged(resource);
+				}
+			} else {
+				iFilter.getRowFormatter().setVisible(iResourcesRow, type != ResourceType.PERSON);
+				((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getLabel().substring(0,1).toUpperCase() + type.getLabel().substring(1) + ":");
+				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
+				if (iSession.getAcademicSessionId() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
+					iFilterHeader.clearMessage();
+					LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
+					iEventService.findResource(iSession.getAcademicSessionId().toString(), type, getResourceName(), new AsyncCallback<ResourceInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iFilterHeader.setErrorMessage(caught.getMessage());
+							for (int i = 1; i < iPanel.getRowCount(); i++)
+								iPanel.getRowFormatter().setVisible(i, i == iLastRow);
+							iGridPanel.setVisible(false);
+							iHeader.setEnabled("print", false);
+							iHeader.setEnabled("export", false);
+						}
+						@Override
+						public void onSuccess(ResourceInterface result) {
+							LoadingWidget.getInstance().hide();
+							resourceChanged(result);
+						}
+					});
+				}				
 			}
 		}
 	}
 	
 	private void resourceChanged(ResourceInterface resource) {
-		LoadingWidget.getInstance().show("Loading " + resource.getName() + " timetable for " + resource.getSessionName() + " ...");
+		final String locDate = iLocDate;
+		final String locRoom = iLocRoom;
+		LoadingWidget.getInstance().show("Loading " + (resource.getType() == ResourceType.ROOM ? "room" : resource.getName()) + " timetable for " + resource.getSessionName() + " ...");
 		iResource = resource;
 		iFilterHeader.clearMessage();
-		iEventService.findEvents(iResource, iEvents.getElementsRequest(), new AsyncCallback<List<EventInterface>>() {
-			
+		iEventService.findEvents(iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings(), new AsyncCallback<List<EventInterface>>() {
 			@Override
 			public void onSuccess(List<EventInterface> result) {
 				iData = result;
-				if (iResource.getType() != ResourceType.PERSON)
-					changeUrl(Window.Location.getParameter("page"), iResource.getSessionAbbv(), iResourceTypes.getValue(iResourceTypes.getSelectedIndex()), iResource.getAbbreviation(), null, URL.encodeQueryString(iEvents.getValue().trim()));
 				LoadingWidget.getInstance().hide();
+				changeUrl();
 				if (iData.isEmpty()) {
 					iFilterHeader.setErrorMessage("No events found for " + (iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel() + " ") + iResource.getName() + " in " + iResource.getSessionName() + "."); 
 					for (int i = 1; i < iPanel.getRowCount(); i++)
@@ -457,9 +454,10 @@ public class EventResourceTimetable extends Composite {
 					iHeader.setEnabled("export", false);
 				} else {
 					Collections.sort(iData);
-
-					iHeader.setHeaderTitle(iResource.getNameWithHint() + " timetable for " + iResource.getSessionName());
+					iHeader.setHeaderTitle(name(true));
 					iHeader.setMessage(null);
+					if (iData.size() > CONSTANTS.maxMeetings())
+						iHeader.setErrorMessage("There are more than " + CONSTANTS.maxMeetings() + " meetings matching the filter. Only " + CONSTANTS.maxMeetings() + " meetings are loaded.");
 					int nrDays = 4;
 					int firstSlot = -1, lastSlot = -1;
 					for (EventInterface event: iData) {
@@ -476,23 +474,24 @@ public class EventResourceTimetable extends Composite {
 					iTimeGrid = new TimeGrid(colors, nrDays, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					String eventIds = "";
 					iTimeGrid.setSelectedWeeks(iWeekPanel.getValue() == null ? null : iWeekPanel.getValue().getSelected());
-					iTimeGrid.setRoomResource(iResource.getType() == ResourceType.ROOM);
-					iTimeGrid.setMode("0".equals(Window.Location.getParameter("eq")) ? TimeGrid.Mode.FILLSPACE :
-						iResource.getType() == ResourceType.ROOM || iResource.getType() == ResourceType.PERSON ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
+					iTimeGrid.setRoomResource(isSingleRoom());
+					iTimeGrid.setMode(gridMode());
 					for (EventInterface event: sortedEvents()) {
 						iTimeGrid.addEvent(event);
 						if (!eventIds.isEmpty()) eventIds += ",";
 						eventIds += event.getId();
 					}
+					/*
 					if (iResource.hasCalendar()) {
 						iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + iResource.getCalendar());
 						iHeader.setEnabled("export", true);
 					} else {
 						iHeader.setEnabled("export", false);
 					}
+					*/
 					iGridPanel.setWidget(iTimeGrid);
 					
-					iTableHeader.setHeaderTitle(iResource.getNameWithHint() + " events for " + iResource.getSessionName());
+					iTableHeader.setHeaderTitle(name(false));
 					iTable = createEventTable();
 					populateEventTable(iTable);
 					iTablePanel.setWidget(iTable);
@@ -512,12 +511,34 @@ public class EventResourceTimetable extends Composite {
 							if (hasEvents) weeks.add(week);
 						}						
 						iWeekPanel.setValues(weeks);
+					} else if (iWeekPanel.getAllWeeks() != null) {
+						List<WeekInterface> weeks = new ArrayList<WeekInterface>();
+						for (WeekInterface week: iWeekPanel.getAllWeeks()) {
+							boolean hasEvents = false;
+							events: for (EventInterface event: iData) {
+								for (MeetingInterface meeting: event.getMeetings()) {
+									if (meeting.getDayOfYear() >= week.getDayOfYear() && meeting.getDayOfYear() < week.getDayOfYear() + 7) {
+										hasEvents = true;
+										break events;
+									}
+								}
+							}
+							if (hasEvents) weeks.add(week);
+						}						
+						iWeekPanel.setValues(weeks);
 					}
-					iWeekPanel.setValue(iWeekPanel.parse(Window.Location.getParameter("date")), true);
+					iWeekPanel.setValue(iWeekPanel.parse(locDate), true);
+					
+					TreeSet<ResourceInterface> rooms = new TreeSet<ResourceInterface>();
+					for (EventInterface event: iData)
+						for (MeetingInterface meeting: event.getMeetings())
+							if (meeting.getLocation() != null) rooms.add(meeting.getLocation());
+					iRoomPanel.setValues(new ArrayList<ResourceInterface>(rooms));
+					iRoomPanel.setValue(iRoomPanel.parse(locRoom), true);
 					
 					iHeader.setEnabled("print", true);
 					for (int i = 1; i < iPanel.getRowCount(); i++)
-						iPanel.getRowFormatter().setVisible(i, i != iWeekRow || iResource.hasWeeks());
+						iPanel.getRowFormatter().setVisible(i, i != iWeekRow || iResource.hasWeeks() || iWeekPanel.getAllWeeks() != null);
 					iGridPanel.setVisible(true);
 				}
 			}
@@ -533,6 +554,90 @@ public class EventResourceTimetable extends Composite {
 				iHeader.setEnabled("export", false);
 			}
 		});
+	}
+	
+	private void changeGrid() {
+		iTimeGrid.clear();
+		iHeader.setHeaderTitle(name(true));
+		iTableHeader.setHeaderTitle(name(false));
+		iTimeGrid.setSelectedWeeks(iWeekPanel.getValue() == null ? null : iWeekPanel.getValue().getSelected());
+		iTimeGrid.setRoomResource(isSingleRoom());
+		iTimeGrid.setMode(gridMode());
+		for (EventInterface event: sortedEvents()) {
+			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+			for (MeetingInterface meeting: event.getMeetings()) {
+				if (!filter(meeting))
+					meetings.add(meeting);
+			}
+			if (!meetings.isEmpty())
+				iTimeGrid.addEvent(event, meetings);
+		}
+		iTimeGrid.shrink();
+		if (iWeekPanel.getValue() != null)
+			iTimeGrid.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
+	}
+	
+	private String name(boolean timetable) {
+		String ret;
+		if (iResource.getType() == ResourceType.ROOM) {
+			if (iRoomPanel.getValue() != null && iRoomPanel.getValue().isOne()) {
+				ret = iRoomPanel.getValue().getFirst().getName();
+			} else if (iRoomPanel.getValues() != null && iRoomPanel.getValues().size() == 1) {
+				ret = iRoomPanel.getValues().get(0).getName();
+			} else {
+				ret = "Room";
+			}
+		} else {
+			ret = iResource.getNameWithHint();
+		}
+		ret += (timetable ? " timetable for " : " events for ");
+		if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll())
+			ret += iResource.getSessionName();
+		else
+			ret += iWeekPanel.getValue().toString().toLowerCase();
+		return ret;
+	}
+	
+	private boolean filter(MeetingInterface meeting) {
+		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
+			int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
+			int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
+			if (meeting.getDayOfYear() < firstDayOfYear || meeting.getDayOfYear() > lastDayOfYear)
+				return true;
+		}
+		if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
+			if (iRoomPanel.getValue().isOne()) {
+				if (!iRoomPanel.getValue().getFirst().getName().equals(meeting.getLocationName())) return true;
+			} else {
+				if (iRoomPanel.getValue().getFirst().getName().compareTo(meeting.getLocationName()) > 0) return true;
+				if (iRoomPanel.getValue().getLast().getName().compareTo(meeting.getLocationName()) < 0) return true;
+			}
+		}
+		
+		return false;
+
+	}
+	
+	private boolean isSingleRoom() {
+		if (iResource.getType() == ResourceType.ROOM) {
+			if (iRoomPanel.getValue() != null && iRoomPanel.getValue().isOne()) return true;
+			if (iRoomPanel.getValues() != null && iRoomPanel.getValues().size() == 1) return true;
+			return false;
+		} else {
+			return false;
+		}
+	}
+	
+	private TimeGrid.Mode gridMode() {
+		if ("0".equals(Window.Location.getParameter("eq"))) return TimeGrid.Mode.FILLSPACE;
+		switch (iResource.getType()) {
+		case ROOM:
+			return (isSingleRoom() ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
+		case PERSON:
+			return TimeGrid.Mode.OVERLAP;
+		default:
+			return TimeGrid.Mode.PROPORTIONAL;
+		}
 	}
 	
 	private UniTimeTable<EventInterface> createEventTable() {
@@ -844,23 +949,16 @@ public class EventResourceTimetable extends Composite {
 				line.add(new Label(event.getType(), false));
 			}
 			String date = "", time = "", room = "", approved = "";
-			TreeSet<MeetingInterface> meetings = null;
-			if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll()) {
-				meetings = event.getMeetings();
-			} else {
-				int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
-				int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
-				meetings = new TreeSet<MeetingInterface>();
-				for (MeetingInterface meeting: event.getMeetings())
-					if (meeting.getDayOfYear() >= firstDayOfYear && meeting.getDayOfYear() <= lastDayOfYear)
-						meetings.add(meeting);
-			}
+			TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
+			for (MeetingInterface meeting: event.getMeetings())
+				if (!filter(meeting))
+					meetings.add(meeting);
 			if (meetings.isEmpty()) continue;
 
 			String prevDate = "", prevTime = "", prevRoom = "", prevApproved = "";
 			boolean prevPast = false;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, true, true)) {
-				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; }
+				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; approved += "<br>"; }
 				if (prevPast != m.isPast() || !prevDate.equals(m.getMeetingDates()))
 					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingDates() + (m.isPast() ? "</span>" : "");
 				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime()))
@@ -868,14 +966,14 @@ public class EventResourceTimetable extends Composite {
 				if (prevPast != m.isPast() || !prevRoom.equals(m.getApprovalDate())) {
 					room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationNameWithHint() + (m.isPast() ? "</span>" : "");
 				}
-				if (!prevApproved.equals(m.isApproved() ? m.getApprovalDate().toString() : "-")) {
+				if (!prevApproved.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "-")) {
 					if (!m.isApproved()) {
 						approved += "<span style='font-style:italic;color:red;'>not approved</span>";
 					} else {
 						approved += sDateFormat.format(m.getApprovalDate());
 					}
 				}
-				prevPast = m.isPast(); prevApproved = (m.isApproved() ? m.getApprovalDate().toString() : "-");
+				prevPast = m.isPast(); prevApproved = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "-");
 				prevDate = m.getMeetingDates(); prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
 			}
 			line.add(new HTML(date, false));
@@ -892,7 +990,7 @@ public class EventResourceTimetable extends Composite {
 		}
 		table.getElement().getStyle().setWidth(100, Unit.PCT);
 		setColumnVisible(table, 3, iWeekPanel.getValue() == null || !iWeekPanel.getValue().isOne());
-		setColumnVisible(table, 5, iResource.getType() != ResourceType.ROOM);
+		setColumnVisible(table, 5, !isSingleRoom());
 	}
 	
 	public void setColumnVisible(UniTimeTable<EventInterface> table, int col, boolean visible) {
@@ -954,18 +1052,135 @@ public class EventResourceTimetable extends Composite {
 		sInstance.resourceTypeChanged(false);
 	}
 	
+	private String serialize(IsSerializable object) throws SerializationException {
+		SerializationStreamFactory factory = (SerializationStreamFactory)iEventService;
+		SerializationStreamWriter writer = factory.createStreamWriter();
+		writer.writeObject(object);
+		return URL.encodeQueryString(writer.toString());
+	}
+	
+	
+	
+	protected void changeUrl() {
+		UniTimeFilterBox.FilterRpcRequest events = iEvents.getElementsRequest();
+		UniTimeFilterBox.FilterRpcRequest rooms = iRooms.getElementsRequest();
+		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
+			events.setOption("from", String.valueOf(iWeekPanel.getValue().getFirst().getDayOfYear()));
+			events.setOption("to", String.valueOf((iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6));
+		}
+		if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
+			for (ResourceInterface resource: iRoomPanel.getValue().getSelected())
+				events.addOption("room", resource.getId().toString());
+		}
+		String query = "sid=" + (iResource == null || iResource.getSessionId() == null ? iSession.getAcademicSessionId() : iResource.getSessionId()) +
+			(iResource == null || iResource.getType() == null ? "" : "&type=" + iResource.getType().toString().toLowerCase()) +
+			(iResource == null || iResource.getId() == null ? "" : "&id=" + iResource.getId()) +
+			(iResource == null || iResource.getExternalId() == null ? "" : "&ext=" + iResource.getExternalId());
+		
+		if (events.getOptions() != null) {
+			for (Map.Entry<String, Set<String>> option: events.getOptions().entrySet()) {
+				for (String value: option.getValue()) {
+					query += "&e:" + option.getKey() + "=" + URL.encodeQueryString(value);
+				}
+			}
+		}
+		if (events.getText() != null && !events.getText().isEmpty()) {
+			query += "&e:text=" + URL.encodeQueryString(events.getText());
+		}
+		if (rooms.getOptions() != null && (iRoomPanel.getValue() == null || iRoomPanel.getValue().isAll())) {
+			for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
+				for (String value: option.getValue()) {
+					query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
+				}
+			}
+			if (rooms.getText() != null && !rooms.getText().isEmpty()) {
+				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
+			}
+		}
+		iEventService.encode(query, new AsyncCallback<String>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						iHeader.setEnabled("export", false);
+						iTimeGrid.setCalendarUrl(null);
+					}
+					@Override
+					public void onSuccess(String result) {
+						iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + result);
+						iHeader.setEnabled("export", true);
+					}
+		});
+		
+		iLocDate = iWeekPanel.getSelection();
+		iLocRoom = iRoomPanel.getSelection();
+		changeUrl(Window.Location.getParameter("page"),
+				"term=" + URL.encodeQueryString(iResource == null || iResource.getSessionAbbv() == null ? iSession.getAcademicSessionAbbreviation() : iResource.getSessionAbbv()) +
+				"&type=" + iResourceTypes.getValue(iResourceTypes.getSelectedIndex()).toLowerCase() +
+				(iResource == null || iResource.getAbbreviation() == null || iResource.getType() == ResourceType.PERSON ? "" : "&name=" + URL.encodeQueryString(iResource.getAbbreviation())) +
+				(iLocDate.isEmpty() ? "" : "&date=" + URL.encodeQueryString(iLocDate)) +
+				(iEvents.getValue().isEmpty() ? "" : "&events=" + URL.encodeQueryString(iEvents.getValue().trim())) +
+				(iRooms.getValue().isEmpty() ? "" : "&rooms=" + URL.encodeQueryString(iRooms.getValue().trim())) +
+				(iLocRoom.isEmpty() ? "" : "&room=" + URL.encodeQueryString(iLocRoom)));
+	}
+	
 	private native JavaScriptObject createLookupCallback() /*-{
 		return function(person) {
 			@org.unitime.timetable.gwt.client.events.EventResourceTimetable::personFound(Ljava/lang/String;)(person[0]);
 	    };
 	 }-*/;
 	
-	private native static void changeUrl(String page, String term, String type, String name, String date, String events) /*-{
+	private native static void changeUrl(String page, String query) /*-{
 		try {
-			var state = "term=" + term + "&type=" + type.toLowerCase() + "&name=" + name.replace(' ', '+') + (date == null ? "" : "&date=" + date) +
-				(events == null ? "" : "&events=" + events);
-			$wnd.history.pushState(state, "", "gwt.jsp?page=" + page + "&" + state);
+			$wnd.history.pushState(query, "", "gwt.jsp?page=" + page + "&" + query);
 		} catch (err) {
 		}
 	}-*/;
+	
+	private class RoomSelector extends IntervalSelector<ResourceInterface> {
+		public RoomSelector() {
+			super(true);
+		}
+		
+		@Override
+		public Interval parse(String query) {
+			if (query == null || getValues() == null) return new Interval();
+
+			ResourceInterface first = null, last = null;
+			for (ResourceInterface e: getValues()) {
+				if (e.getName().toLowerCase().startsWith(query.toLowerCase())) {
+					if (first == null) first = e;
+					last = e;
+				} else {
+					if (first != null) return new Interval(first, last);
+				}
+			}
+			
+			Interval ret = super.parse(query);
+			return (ret == null ? new Interval() : ret);
+		}
+		
+		@Override
+		protected String getDisplayString(Interval interval) {
+			if (interval == null || interval.isAll()) return "All Rooms";
+			if (interval.isOne()) {
+				String hint = interval.getFirst().getRoomType() +
+					(interval.getFirst().hasSize() ? ", " + interval.getFirst().getSize() + " seats" : "") +
+					(interval.getFirst().hasDistance() ? ", " + Math.round(interval.getFirst().getDistance()) + " m" : "");
+				return interval.getFirst().getName() + " <span class='item-hint'>" + hint + "</span>";
+			} else {
+				return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().getName() + " - " + interval.getLast().getName();
+			}
+		}
+		
+		@Override
+		protected String getReplaceString(Interval interval) {
+			if (interval == null || interval.isAll()) return "All Rooms";
+			return interval.isOne() ? interval.getFirst().getName() : interval.getFirst().getName() + " - " + interval.getLast().getName();			
+
+		}
+		
+		public String getSelection() {
+			if (getValue() == null || getValue().isAll()) return "";
+			return getValue().isOne() ? getValue().getFirst().getName() : getValue().getFirst().getName() + "-" + getValue().getLast().getName();			
+		}
+	}
 }

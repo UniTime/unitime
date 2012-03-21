@@ -152,13 +152,13 @@ public class RoomFilterBox extends UniTimeFilterBox {
 
 		final TextBox min = new TextBox();
 		min.setStyleName("gwt-SuggestBox");
-		min.setMaxLength(10); min.setWidth("50");
+		min.setMaxLength(10); min.getElement().getStyle().setWidth(50, Unit.PX);
 		
 		Label l2 = new Label("Max:");
 		l2.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
 		final TextBox max = new TextBox();
-		max.setMaxLength(10); max.setWidth("50");
+		max.setMaxLength(10); max.getElement().getStyle().setWidth(50, Unit.PX);
 		max.setStyleName("gwt-SuggestBox");
 		
 		final CheckBox nearby = new CheckBox("Include close by locations");
