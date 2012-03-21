@@ -36,8 +36,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface EventServiceAsync {
 	public void findResource(String session, ResourceType type, String name, AsyncCallback<ResourceInterface> callback) throws EventException, PageAccessException;
-	public void findEvents(ResourceInterface resource, UniTimeFilterBox.FilterRpcRequest events, AsyncCallback<List<EventInterface>> callback) throws EventException, PageAccessException;
+	public void findEvents(ResourceInterface resource, UniTimeFilterBox.FilterRpcRequest events, UniTimeFilterBox.FilterRpcRequest rooms, int limit, AsyncCallback<List<EventInterface>> callback) throws EventException, PageAccessException;
 	public void findSessions(String session, AsyncCallback<List<IdValueInterface>> callback)  throws EventException, PageAccessException;
 	public void findResources(String session, ResourceType type, String query, int limit, AsyncCallback<List<ResourceInterface>> callback) throws EventException, PageAccessException;
 	public void canLookupPeople(AsyncCallback<Boolean> callback) throws EventException, PageAccessException;
+	public void encode(String query, AsyncCallback<String> callback) throws EventException, PageAccessException;
 }

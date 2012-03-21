@@ -1951,8 +1951,9 @@ h1 {
 	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
 	box-shadow: 1px 2px 4px #9CB0CE;
 	margin-top: -1px;
-	width: 150px;
+	min-width: 150px;
 }
+
 
 .unitime-IntervalSelectorPopup .scroll {
 	max-height: 200px;
@@ -1968,6 +1969,13 @@ h1 {
 	font-weight: 400;
 	font-style: normal;
 	color: #333333;
+}
+
+.unitime-IntervalSelectorPopup .item-hint {
+	padding-left: 5px;
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
 }
 
 .unitime-IntervalSelectorPopup .item-selected {

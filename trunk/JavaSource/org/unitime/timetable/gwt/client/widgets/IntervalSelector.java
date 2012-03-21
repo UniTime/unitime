@@ -194,7 +194,6 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		row.add(iNext);
 		
 		iWidget = new UniTimeWidget<AbsolutePanel>(iPanel);
-		iWidget.setHint("Loading academic sessions...");
 		
 		initWidget(iWidget);
 		
@@ -291,15 +290,37 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		return false;
 	}
 	
-	protected Interval parse(String name) { return null; }
+	public Interval parse(String name) { 
+		if (iValues == null) return null;
+		if (name == null || name.isEmpty()) return (iAllowMultiSelection ? new Interval() : null);
+		for (int i = 0; i < iValues.size(); i++) {
+			if (iValues.get(i).toString().toLowerCase().startsWith(name.toLowerCase()))
+				return new Interval(iValues.get(i));
+			if (iAllowMultiSelection)
+				for (int j = i + 1; j < iValues.size(); j++) {
+					if ((iValues.get(i) + " - " + iValues.get(j)).toLowerCase().startsWith(name.toLowerCase()))
+						return new Interval(iValues.get(i), iValues.get(j));
+					if ((iValues.get(i) + "-" + iValues.get(j)).toLowerCase().startsWith(name.toLowerCase()))
+						return new Interval(iValues.get(i), iValues.get(j));
+				}
+		}
+		return null;
+	}
 	
 	public boolean isAllowMultiSelection() { return iAllowMultiSelection; }
 	public void setAllowMultiSelection(boolean allowMultiSelection) { iAllowMultiSelection = false; }
 	
 	public void setValues(List<T> values) {
 		iValues = values;
-		if (iValue != null && !iValues.contains(iValue))
-			setValue(iDefaultValue, true);
+		if (iValue != null && !iValue.isAll()) {
+			if (iValue.isOne()) {
+				if (!iValues.contains(iValue.getFirst()))
+					setValue(iDefaultValue, true);
+			} else {
+				if (!iValues.contains(iValue.getFirst()) || !iValues.contains(iValue.getLast()))
+					setValue(iDefaultValue, true);
+			}
+		}
 		createSuggestions();
 	}
 	public List<T> getValues() { return iValues; }
@@ -384,7 +405,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 
 	protected String getDisplayString(Interval interval) {
 		if (interval.isAll())
-			return "";
+			return "All";
 		if (interval.isOne())
 			return interval.getFirst().toString();
 		return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().toString() + " - " + interval.getLast().toString();

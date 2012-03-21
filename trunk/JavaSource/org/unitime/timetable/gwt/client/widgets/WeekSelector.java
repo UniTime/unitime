@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.List;
+
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -40,6 +42,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class WeekSelector extends IntervalSelector<WeekInterface>{
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private RegExp iRegExp = RegExp.compile("[^0-9]*([0-9]+)[/ ]*([0-9]*)[ -]*([0-9]*)[/ ]*([0-9]*)");
+	private List<WeekInterface> iAllWeeks = null;
 
 	private AcademicSessionProvider iAcademicSession;
 	
@@ -76,6 +79,7 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 				}
 				@Override
 				public void onSuccess(GwtRpcResponseList<WeekInterface> result) {
+					iAllWeeks = result;
 					clearHint();
 					setValues(result);
 					setDefaultValue(new Interval());
@@ -149,5 +153,14 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		if (interval.isOne())
 			return "Week " + interval.getFirst().getDayNames().get(0) + " - " + interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1);
 		return "Weeks " + interval.getFirst().getDayNames().get(0) + " - " + interval.getLast().getDayNames().get(6);
+	}
+	
+	public List<WeekInterface> getAllWeeks() { 
+		return iAllWeeks;
+	}
+	
+	public String getSelection() {
+		if (getValue() == null || getValue().isAll()) return "";
+		return (getValue().isOne() ? getValue().getFirst().getDayNames().get(0) : getValue().getFirst().getDayNames().get(0) + "-" + getValue().getLast().getDayNames().get(6));
 	}
 }

@@ -49,4 +49,7 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultIntValue(12)
 	int eventLengthDefault();
+	
+	@DefaultIntValue(1000)
+	int maxMeetings();
 }

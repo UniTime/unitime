@@ -90,4 +90,11 @@ public class SimpleForm extends FlexTable {
 		return row;
 	}
 	
+	public int addRow(Widget header, Widget widget) {
+		int row = getRowCount();
+		setWidget(row, 0, header);
+		setWidget(row, 1, widget);
+		return row;
+	}
+	
 }

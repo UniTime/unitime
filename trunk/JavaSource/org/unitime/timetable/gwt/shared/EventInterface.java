@@ -156,6 +156,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private List<WeekInterface> iWeeks = null;
 		private String iCalendar;
 		private String iHint = null;
+		private Integer iSize = null;
+		private Double iDistance = null;
+		private String iRoomType = null;
 
 		public ResourceInterface() {}
 		
@@ -182,6 +185,16 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
+		
+		public void setSize(Integer size) { iSize = size; }
+		public boolean hasSize() { return iSize != null; }
+		public Integer getSize() { return iSize; }
+		public void setDistance(Double distance) { iDistance = distance; }
+		public boolean hasDistance() { return iDistance != null; }
+		public Double getDistance() { return iDistance; }
+		public void setRoomType(String type) { iRoomType = type; }
+		public boolean hasRoomType() { return iRoomType != null; }
+		public String getRoomType() { return iRoomType; }
 		
 		public String getHint() { return iHint; }
 		public boolean hasHint() { return iHint != null && !iHint.isEmpty(); }

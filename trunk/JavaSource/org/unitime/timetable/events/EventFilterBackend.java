@@ -46,7 +46,9 @@ import org.unitime.timetable.model.MidtermExamEvent;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 public class EventFilterBackend extends FilterBoxBackend {
 	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
@@ -149,7 +151,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		EventQuery query = new EventQuery(request.getSessionId());
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
-			query.addWhere("query", "lower(e.eventName) like lower(:Xquery) || '%'");
+			query.addWhere("query", "lower(e.eventName) like lower(:Xquery) || '%'" + (request.getText().length() >= 2 ? " or lower(e.eventName) like '% ' || lower(:Xquery) || '%'" : ""));
 			query.addParameter("query", "Xquery", request.getText());
 		}
 		
@@ -206,16 +208,42 @@ public class EventFilterBackend extends FilterBoxBackend {
         		query.addWhere("day", HibernateUtil.dayOfWeek("m.meetingDate") + " = " + dow);
 		}
 		if (request.hasOption("from")) {
+			Date date = null;
 			try {
-				query.addParameter("from", "Xfrom", new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from")));
+				int dayOfYear = Integer.parseInt(request.getOption("from"));
+				date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
+			} catch (NumberFormatException f) {
+				try {
+					date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from"));
+				} catch (ParseException p) {}
+			}
+			if (date != null) {
+				query.addParameter("from", "Xfrom", date);
 				query.addWhere("from", "m.meetingDate >= :Xfrom");
-			} catch (ParseException e) {}
+			}
 		}
 		if (request.hasOption("to")) {
+			Date last = null;
 			try {
-				query.addParameter("to", "Xto", new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to")));
+				int dayOfYear = Integer.parseInt(request.getOption("to"));
+				last = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
+			} catch (NumberFormatException f) {
+				try {
+					last = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to"));
+				} catch (ParseException p) {}
+				
+			}
+			if (last != null) {
+				query.addParameter("to", "Xto", last);
 				query.addWhere("to", "m.meetingDate <= :Xto");
-			} catch (ParseException e) {}
+			}
+		}
+		if (request.hasOptions("room")) {
+			String ids = "";
+			for (String id: request.getOptions("room")) {
+				ids += (ids.isEmpty() ? "" : ",") + id;
+			}
+			query.addWhere("room", "l.uniqueId in (" + ids + ")");
 		}
 		
 		if (request.hasOptions("sponsor")) {
@@ -269,7 +297,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		
 		EventQuery query = getQuery(request);
 		
-		for (Event event: (List<Event>)query.select("distinct e").query(hibSession).setMaxResults(20).list())
+		for (Event event: (List<Event>)query.select("distinct e").limit(20).query(hibSession).list())
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
 		if (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
@@ -281,7 +309,7 @@ public class EventFilterBackend extends FilterBoxBackend {
                 instance.where("upper(c.firstName) like '%' || :cn" + id + " || '%' or upper(c.middleName) like '%' || :cn" + id + " || '%' or upper(c.lastName) like '%' || :cn" + id + " || '%'").set("cn" + id, token);
             }
 			
-			for (EventContact contact: (List<EventContact>)instance.query(hibSession).setMaxResults(20).list())
+			for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
 				response.addSuggestion(contact.getName(), contact.getName(), "Requested By");
 
 		}
@@ -365,6 +393,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		
 		public class EventInstance {
 			private String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Event";
+			private Integer iLimit = null;
 			private Set<String> iExclude = new HashSet<String>();
 			private Map<String, Object> iParams = new HashMap<String, Object>();
 			
@@ -383,6 +412,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 			public EventInstance group(String groupBy) { iGroupBy = groupBy; return this; }
 			public EventInstance exclude(String excludeOption) { iExclude.add(excludeOption); return this; }
 			public EventInstance set(String param, Object value) { iParams.put(param, value); return this; }
+			public EventInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
 			
 			public String query() {
 				return
@@ -412,6 +442,8 @@ public class EventFilterBackend extends FilterBoxBackend {
 						query.setString(param.getKey(), param.getValue().toString());
 					}
 				}
+				if (iLimit != null)
+					query.setMaxResults(iLimit);
 				return query;
 			}
 		}

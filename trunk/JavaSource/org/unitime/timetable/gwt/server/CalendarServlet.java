@@ -42,6 +42,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
@@ -60,6 +61,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.gwt.client.events.EventFilterBox;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -81,7 +83,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
@@ -105,22 +106,16 @@ public class CalendarServlet extends HttpServlet {
 	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		Params params = null;
 		String q = request.getParameter("q");
-		HashMap<String, String> params = new HashMap<String, String>();
 		if (q != null) {
-			sLog.info(decode(q));
-			for (String p: decode(q).split("&")) {
-				params.put(p.substring(0, p.indexOf('=')), p.substring(p.indexOf('=') + 1));
-			}
+			params = new QParams(q);
 		} else {
-			for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
-				String name = e.nextElement();
-				params.put(name, request.getParameter(name));
-			}
+			params = new HttpParams(request);
 		}
 		Long sessionId = null;
-		if (params.get("sid") != null) {
-			sessionId = Long.valueOf(params.get("sid"));
+		if (params.getParameter("sid") != null) {
+			sessionId = Long.valueOf(params.getParameter("sid"));
 		} else {
 			User user = Web.getUser(request.getSession());
 			if (user != null)
@@ -128,13 +123,13 @@ public class CalendarServlet extends HttpServlet {
 			else
 				sessionId = (Long)request.getSession().getAttribute("sessionId");
 		}
-		if (params.get("term") != null) {
+		if (params.getParameter("term") != null) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
-						setString("term", params.get("term")).list();
+						setString("term", params.getParameter("term")).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
 			} finally {
@@ -144,15 +139,14 @@ public class CalendarServlet extends HttpServlet {
 		if (sessionId == null)
 			throw new ServletException("No academic session provided.");
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
-    	String classIds = params.get("cid");
-    	String fts = params.get("ft");
-    	String examIds = params.get("xid");
-    	String eventIds = params.get("eid");
-    	String meetingIds = params.get("mid");
-    	String userId = params.get("uid");
+    	String classIds = params.getParameter("cid");
+    	String fts = params.getParameter("ft");
+    	String examIds = params.getParameter("xid");
+    	String eventIds = params.getParameter("eid");
+    	String meetingIds = params.getParameter("mid");
+    	String userId = params.getParameter("uid");
     	if (q == null) userId = decode(userId);
-    	String type = params.get("type");
-    	String id = params.get("id");
+    	String type = params.getParameter("type");
    
 		response.setContentType("text/calendar; charset=UTF-8");
 		response.setCharacterEncoding("UTF-8");
@@ -285,17 +279,47 @@ public class CalendarServlet extends HttpServlet {
                     }
                 }
             }
-            if (type != null && id != null) {
+            if (type != null) {
             	ResourceInterface r = new ResourceInterface();
             	r.setSessionId(sessionId);
-            	r.setId(Long.valueOf(id));
-            	String ext = params.get("ext");
+            	String id = params.getParameter("id");
+            	if (id != null) r.setId(Long.valueOf(id));
+            	String ext = params.getParameter("ext");
             	if (ext != null)
             		r.setExternalId(ext);
             	r.setType(ResourceType.valueOf(type.toUpperCase()));
-            	if (r.getType() == ResourceType.ROOM)
-            		r.setName(LocationDAO.getInstance().get(r.getId(), hibSession).getLabel());
-        		for (EventInterface e: new EventServlet().findEvents(r, null, false))
+            	EventFilterBox.EventFilterRpcRequest eventFilter = new EventFilterBox.EventFilterRpcRequest();
+            	eventFilter.setSessionId(sessionId);
+            	EventFilterBox.EventFilterRpcRequest roomFilter = new EventFilterBox.EventFilterRpcRequest();
+            	roomFilter.setSessionId(sessionId);
+            	boolean hasRoomFilter = false;
+            	for (Enumeration<String> e = params.getParameterNames(); e.hasMoreElements(); ) {
+            		String command = e.nextElement();
+            		if (command.equals("e:text")) {
+            			eventFilter.setText(params.getParameter("e:text"));
+            	} else if (command.startsWith("e:")) {
+            			for (String value: params.getParameterValues(command))
+            				eventFilter.addOption(command.substring(2), value);
+            		} else if (command.equals("r:text")) {
+            			hasRoomFilter = true;
+            			roomFilter.setText(params.getParameter("r:text"));
+            		} else if (command.startsWith("r:")) {
+            			hasRoomFilter = true;
+            			for (String value: params.getParameterValues(command))
+            				roomFilter.addOption(command.substring(2), value);
+            		}
+            	}
+            	String user = params.getParameter("user");
+            	if (user != null) {
+            		eventFilter.setOption("user", user);
+            		roomFilter.setOption("user", user);
+            		String role = params.getParameter("role");
+            		if (role != null) {
+            			eventFilter.setOption("role", role);
+            			roomFilter.setOption("role", role);
+            		}
+            	}
+            	for (EventInterface e: new EventServlet().findEvents(r, eventFilter, (hasRoomFilter ? roomFilter : null), false, -1))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
@@ -1061,5 +1085,76 @@ public class CalendarServlet extends HttpServlet {
 		}
 	}
 
+	private static interface Params {
+		public String getParameter(String name);
+		public String[] getParameterValues(String name);
+		public Enumeration<String> getParameterNames();
+	}
+	
+	public static class HttpParams implements Params {
+		HttpServletRequest iRequest;
+		
+		HttpParams(HttpServletRequest request) { iRequest = request; }
+
+		@Override
+		public String getParameter(String name) {
+			return iRequest.getParameter(name);
+		}
+
+		@Override
+		public String[] getParameterValues(String name) {
+			return iRequest.getParameterValues(name);
+		}
+		
+		@Override
+		public Enumeration<String> getParameterNames() {
+			return iRequest.getParameterNames();
+		}
+	}
+	
+	public static class QParams implements Params {
+		private Map<String, List<String>> iParams = new HashMap<String, List<String>>();
+		
+		QParams(String q) throws UnsupportedEncodingException {
+			for (String p: decode(q).split("&")) {
+				String name = p.substring(0, p.indexOf('='));
+				String value = URLDecoder.decode(p.substring(p.indexOf('=') + 1), "UTF-8");
+				List<String> values = iParams.get(name);
+				if (values == null) {
+					values = new ArrayList<String>();
+					iParams.put(name, values);
+				}
+				values.add(value);
+			}
+		}
+		@Override
+		public String getParameter(String name) {
+			List<String> values = iParams.get(name);
+			return (values == null || values.isEmpty() ? null : values.get(0));
+		}
+		@Override
+		public String[] getParameterValues(String name) {
+			List<String> values = iParams.get(name);
+			if (values == null) return null;
+			String[] ret = new String[values.size()];
+			values.toArray(ret);
+			return ret;
+		}
+		@Override
+		public Enumeration<String> getParameterNames() {
+			final Iterator<String> iterator = iParams.keySet().iterator();
+			return new Enumeration<String>() {
+				@Override
+				public boolean hasMoreElements() {
+					return iterator.hasNext();
+				}
+				@Override
+				public String nextElement() {
+					return iterator.next();
+				}
+			};
+		}
+		
+	}
 
 }

@@ -277,8 +277,20 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 			options.add(value);
 		}
 		
+		public void setOption(String command, String value) {
+			if (iOptions == null) iOptions = new HashMap<String, Set<String>>();
+			Set<String> options = iOptions.get(command);
+			if (options == null) {
+				options = new HashSet<String>();
+				iOptions.put(command, options);
+			} else {
+				options.clear();
+			}
+			options.add(value);
+		}
+		
 		@Override
-		public String toString() { return getCommand().name() + "(" + getSessionId() + "," + iOptions + "," + getText() + ")"; }
+		public String toString() { return (getCommand() == null ? "NULL" : getCommand().name()) + "(" + getSessionId() + "," + iOptions + "," + getText() + ")"; }
 	}
 	
 	public static class FilterRpcResponse implements GwtRpcResponse {
