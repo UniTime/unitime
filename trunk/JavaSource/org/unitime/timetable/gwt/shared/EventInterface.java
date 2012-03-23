@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -428,5 +429,24 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
         }
         return ret;
     }
-
+    
+	public static class SelectionInterface implements IsSerializable {
+		private Set<Integer> iDays = new TreeSet<Integer>();
+		private int iStartSlot, iLength;
+		private ResourceInterface iLocation;
+		
+		public SelectionInterface() {}
+		
+		public Set<Integer> getDays() { return iDays; }
+		public void addDay(int day) { iDays.add(day); }
+		
+		public int getStartSlot() { return iStartSlot; }
+		public void setStartSlot(int startSlot) { iStartSlot = startSlot; }
+		
+		public int getLength() { return iLength; }
+		public void setLength(int length) { iLength = length; }
+		
+		public ResourceInterface getLocation() { return iLocation; }
+		public void setLocation(ResourceInterface location) { iLocation = location; }
+	}
 }
