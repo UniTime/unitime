@@ -34,13 +34,21 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -49,6 +57,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -67,10 +77,13 @@ public class TimeGrid extends Composite {
 	private P iGrid;
 	private P iHeader, iDock;
 	private P iVLines;
+	private P iSelections;
 	private P[] iSeparators = new P[7];
 	private P iWorkingHours;
 	private P iTimes;
 	private ImageLink iCalendar;
+	private SelectionLayer iSelectionLayer;
+	private List<SelectionInterface> iAllSelections = new ArrayList<SelectionInterface>();
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -87,8 +100,10 @@ public class TimeGrid extends Composite {
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private HashMap<Long, String> iColors = new HashMap<Long, String>();
 	
-	private boolean iRoomResource = false;
+	private ResourceInterface iRoomResource = null;
 	private List<WeekInterface> iSelectedWeeks = null;
+	
+	private List<HandlerRegistration> iHandlerRegistrations = new ArrayList<HandlerRegistration>();
 	
 	public static enum Mode {
 		FILLSPACE,
@@ -146,9 +161,9 @@ public class TimeGrid extends Composite {
 		
 		iWorkingHours = new P("working-hours");
 		iWorkingHours.setSize(iCellWidth * 5, iCellHeight * 10);
-		iGrid.add(iWorkingHours, 0, 15 * iCellHeight / 2 - (iCellHeight * iStart));
+		iPanel.add(iWorkingHours, 0, 15 * iCellHeight / 2 - (iCellHeight * iStart));
 		
-		for (int i = iStart; i < iEnd; i++) {
+        for (int i = iStart; i < iEnd; i++) {
 			
 			//create major interval
 			P sp1 = new P("major-time-interval");
@@ -159,10 +174,10 @@ public class TimeGrid extends Composite {
 			iTimes.add(sp3, 0, iCellHeight * (i - iStart));
 
 			P sp2 = new P("minor-time-interval");
-			iGrid.add(sp2, 0, iCellHeight * (i - iStart) + 25);
+			iGrid.add(sp2, 0, iCellHeight * (i - iStart) + iCellHeight / 2);
 			
 			P sp4 = new P("dummy-time-interval");
-			iTimes.add(sp4, 0, iCellHeight * (i - iStart) + 25);			
+			iTimes.add(sp4, 0, iCellHeight * (i - iStart) + iCellHeight / 2);			
 		}
 
 		for (int day = 0; day < iNrDays; day++) {
@@ -184,7 +199,14 @@ public class TimeGrid extends Composite {
         
         iVLines = new P("calendar-grid");
         iPanel.add(iVLines, 0, 0);
-
+        
+        iSelections = new P("calendar-grid");
+        iPanel.add(iSelections, 0, 0);
+        
+        iSelectionLayer = new SelectionLayer();
+        iSelectionLayer.setVisible(false);
+        iPanel.add(iSelectionLayer, 0, 0);
+        
         if (scroll) {
     		iScrollPanel = new ScrollPanel(iDock);
         	iScrollPanel.setStyleName("calendar-scroll");
@@ -194,15 +216,38 @@ public class TimeGrid extends Composite {
         }
 
         initWidget(iContainer);
+        
+        if (!print) {
+            iHandlerRegistrations.add(RootPanel.get().addDomHandler(new MouseUpHandler() {
+    			@Override
+    			public void onMouseUp(MouseUpEvent event) {
+    				if (iSelectionLayer.isVisible())
+    					iSelectionLayer.onMouseUp();
+    			}
+    		}, MouseUpEvent.getType()));
+        }
+	}
+	
+	public void destroy() {
+		for (HandlerRegistration reg: iHandlerRegistrations)
+			reg.removeHandler();
 	}
 	
 	public List<WeekInterface> getSelectedWeeks() { return iSelectedWeeks; }
 	public void setSelectedWeeks(List<WeekInterface> weeks) {
 		iSelectedWeeks = weeks;
+		showSelections();
 	}
-	public boolean isRoomResource() { return iRoomResource; }
-	public void setRoomResource(boolean roomResource) { iRoomResource = roomResource; }
-	public void setMode(Mode mode) { iMode = mode; }
+	public boolean isRoomResource() { return iRoomResource != null; }
+	public void setRoomResource(ResourceInterface roomResource) {
+		iRoomResource = roomResource;
+		iSelectionLayer.setVisible(getMode() == Mode.OVERLAP && isRoomResource());
+		showSelections();
+	}
+	public void setMode(Mode mode) {
+		iMode = mode;
+		iSelectionLayer.setVisible(getMode() == Mode.OVERLAP && isRoomResource());
+	}
 	public Mode getMode() { return iMode; }
 	
 	public void setCalendarUrl(String url) {
@@ -223,7 +268,7 @@ public class TimeGrid extends Composite {
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		tg.setSelectedWeeks(getSelectedWeeks());
-		tg.setRoomResource(isRoomResource());
+		tg.setRoomResource(iRoomResource);
 		return tg;
 	}
 	
@@ -280,6 +325,11 @@ public class TimeGrid extends Composite {
 		for (ArrayList<Meeting> meetings: iMeetings)
 			for (Meeting meeting: meetings) 
 				meeting.move();
+		for (int i = 0; i < iSelections.getWidgetCount(); i++) {
+			Widget w = iSelections.getWidget(i);
+			if (w instanceof SelectionPanel)
+				((SelectionPanel)w).move();
+		}
 	}
 	
 	public int firstSlot() {
@@ -308,6 +358,14 @@ public class TimeGrid extends Composite {
 			if (iMeetingTable[5][slot] !=null && !iMeetingTable[5][slot].isEmpty()) hasSat = true;
 			if (iMeetingTable[6][slot] !=null && !iMeetingTable[6][slot].isEmpty()) hasSun = true;
 		}
+		for (int i = 0; i < iSelections.getWidgetCount(); i++) {
+			Widget w = iSelections.getWidget(i);
+			if (w instanceof SelectionPanel) {
+				if (((SelectionPanel)w).getDay() == 5) hasSat = true;
+				if (((SelectionPanel)w).getDay() == 6) hasSun = true;
+			}
+				
+		}
 		if (!hasSat && !hasSun) setNrDays(5);
 		else if (!hasSun) setNrDays(6);
 		else setNrDays(7);
@@ -335,6 +393,17 @@ public class TimeGrid extends Composite {
 			for (int j = 0 ; j < iMeetingTable[i].length; j++)
 				if (iMeetingTable[i][j] != null) iMeetingTable[i][j].clear();
 		iTotalNrColumns = 0;
+		iSelections.clear();
+	}
+	
+	public void showSelections() {
+		iSelections.clear();
+		if (iRoomResource == null || !iSelectionLayer.isVisible()) return;
+		for (SelectionInterface selection: iAllSelections) {
+			if (!iRoomResource.equals(selection.getLocation())) continue;
+			SelectionPanel panel = new SelectionPanel(selection);
+			if (panel.isVisible()) iSelections.add(panel, panel.getLeft(), panel.getTop());
+		}
 	}
 	
 	public String getColor(EventInterface event) {
@@ -544,7 +613,7 @@ public class TimeGrid extends Composite {
 				if (!roomString.isEmpty()) roomString += ", ";
 				roomString += room;
 			}
-			if (!iRoomResource)
+			if (!isRoomResource())
 				notes.add(roomString);
 			if (event.hasInstructor())
 				notes.add(event.getInstructor().replace("|", "<br>"));
@@ -759,4 +828,420 @@ public class TimeGrid extends Composite {
 			return iNrMeetings;
 		}
 	}
+	
+	class SelectionLayer extends AbsolutePanel {
+		private SelectionPanel iSelection;
+		private P iHint;
+		private PopupPanel iPopup;
+		private SelectionPanel iMoving = null;
+		
+		public SelectionLayer() {
+			setStyleName("selection-layer");
+			
+			iPopup = new PopupPanel();
+			iPopup.setStyleName("unitime-TimeGridSelectionPopup");
+			iHint = new P("content");
+			iPopup.setWidget(iHint);
+			
+			iSelection = new SelectionPanel();
+			iSelection.setVisible(false);
+			add(iSelection, 0, 0);
+			
+			sinkEvents(Event.ONMOUSEDOWN);
+			sinkEvents(Event.ONMOUSEUP);
+			sinkEvents(Event.ONMOUSEMOVE);
+			sinkEvents(Event.ONMOUSEOVER);
+			sinkEvents(Event.ONMOUSEOUT);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			if (Event.ONMOUSEMOVE == DOM.eventGetType(event) && !iSelection.isActive() && iMoving != null) {
+				iMoving.onBrowserEvent(event);
+				if (iMoving.iCursor != null)
+					getElement().getStyle().setCursor(iMoving.iCursor);
+				return;
+			}
+
+			double x = event.getClientX() - getAbsoluteLeft() + Window.getScrollLeft();
+			double y = event.getClientY() - getAbsoluteTop() + Window.getScrollTop();
+
+			int slot = 3 * Math.min(Math.max(0, (int)Math.round(4 * (y - 1 + iStart * iCellHeight) / iCellHeight)), 96);
+			int day = Math.min(Math.max(0, (int)Math.floor((x - 2) / iCellWidth)), iNrDays - 1);
+			int week = Math.min(Math.max(0, (int)Math.floor(iSelectedWeeks.size() * (x - 2 - iCellWidth * day) / (iCellWidth - 6))), iSelectedWeeks.size() - 1);
+			int h = slot / 12;
+			int m = 5 * (slot % 12);
+			String time = (CONSTANTS.useAmPm() ? (h == 0 ? "12": h <= 12 ? h : h-12) : h) + ":" + (m < 10 ? "0" : "") + m + (CONSTANTS.useAmPm() ? (h <= 11 ? "a" : "p") : "");
+			
+			String text = CONSTANTS.longDays()[day] + " " + iSelectedWeeks.get(week).getDayNames().get(day) + " " + time;
+			iPopup.setPopupPosition(event.getClientX() + Window.getScrollLeft(), event.getClientY() + Window.getScrollTop());
+			
+			getElement().getStyle().setCursor(Cursor.CROSSHAIR);
+			
+			switch (DOM.eventGetType(event)) {
+			case Event.ONMOUSEDOWN:
+				iSelection.setStart(day, slot, week);
+				iSelection.setEnd(day, slot, week);
+				iSelection.setVisible(true);
+				iSelection.setActive(true);
+				break;
+			case Event.ONMOUSEMOVE:
+				iSelection.setEnd(day, slot, week);
+				if (!iPopup.isShowing()) iPopup.show();
+				break;
+			case Event.ONMOUSEUP:
+				onMouseUp();
+				break;
+			case Event.ONMOUSEOVER:
+				if (!iPopup.isShowing() && (iSelection.isActive() || iMoving == null)) iPopup.show();
+				if (iSelection.isActive() && !iSelection.isVisible()) {
+					iSelection.setVisible(true);					
+				}	
+				break;
+			case Event.ONMOUSEOUT:
+				if (!DOM.isOrHasChild(getElement(), DOM.eventGetToElement(event))) {
+					if (iPopup.isShowing()) iPopup.hide();
+					iSelection.setVisible(false);
+				}
+				/*
+				if (iSelection.isActive() && !DOM.isOrHasChild(TimeGrid.this.getElement(), DOM.eventGetToElement(event))) {
+					iSelection.setActive(false);
+				}
+				*/
+				break;
+			}
+			
+			iHint.setText((iSelection.isVisible() && iSelection.isActive() ? iSelection.toString() : text));
+			
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		
+		public void onMouseUp() {
+			if (iSelection.isVisible() && iSelection.isActive()) {
+				SelectionPanel s = new SelectionPanel(iSelection.getDay(), iSelection.getStartSlot(), iSelection.getLength(), iSelection.getStartWeek(), iSelection.getNrWeeks());
+				iSelections.add(s, s.getLeft(), s.getTop());
+			}
+			iSelection.setVisible(false);
+			iSelection.setActive(false);
+			for (int i = 0; i < iSelections.getWidgetCount(); i++) {
+				Widget w = iSelections.getWidget(i);
+				if (w instanceof SelectionPanel)
+					((SelectionPanel)w).onMouseUp();
+			}
+		}
+		
+		@Override
+		public void clear() {
+			super.clear();
+			iSelection.setVisible(false); iSelection.setActive(false);
+			add(iSelection, 0, 0);
+		}
+	}
+	
+	public class SelectionPanel extends AbsolutePanel {
+		private int iDay = -1, iStartSlot, iEndSlot, iStartWeek, iEndWeek;
+		private boolean iActive = false;
+		private P iRemove = null, iText = null;
+		private SelectionInterface iSelection = null;
+		
+		public SelectionPanel(boolean fixed) {
+			setStyleName(fixed ? "selection" : "active-selection");
+			if (fixed) {
+				iRemove = new P("x"); iRemove.setHTML("&times;");
+				iRemove.addMouseDownHandler(new MouseDownHandler() {
+					@Override
+					public void onMouseDown(MouseDownEvent event) {
+						iSelections.remove(SelectionPanel.this);
+						if (iSelection != null)
+							iAllSelections.remove(iSelection);
+					}
+				});
+				iRemove.getElement().getStyle().setRight(2, Unit.PX);
+				iRemove.getElement().getStyle().setTop(2, Unit.PX);
+				iRemove.getElement().getStyle().setPosition(Position.ABSOLUTE);
+				add(iRemove);
+				iText = new P("text");
+				add(iText, 0, 0);
+			}
+			
+			sinkEvents(Event.ONMOUSEDOWN);
+			sinkEvents(Event.ONMOUSEUP);
+			sinkEvents(Event.ONMOUSEMOVE);
+		}
+		
+		private Cursor iCursor = null;
+		private double iX, iY;
+		private int iSS, iES, iSW, iEW;
+		
+		private Cursor cursor(double x, double y) {
+			if (x <= 6) {
+				if (y <= 6)
+					return Cursor.NW_RESIZE;
+				else if (y >= getHeight() - 6)
+					return Cursor.SW_RESIZE;
+				else
+					return Cursor.W_RESIZE;
+			} else if (x >= getWidth() - 6) {
+				if (y <= 6)
+					return Cursor.NE_RESIZE;
+				else if (y >= getHeight() - 6)
+					return Cursor.SE_RESIZE;
+				else
+					return Cursor.E_RESIZE;
+			} else if (y <= 6) {
+				return Cursor.N_RESIZE;
+			} else if (y >= getHeight() - 6) {
+				return Cursor.S_RESIZE;
+			} else {
+				return Cursor.MOVE;
+			}
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			if (iText == null) return;
+			
+			double dx = event.getClientX() - getAbsoluteLeft() + Window.getScrollLeft();
+			double dy = event.getClientY() - getAbsoluteTop() + Window.getScrollTop();
+			
+			double x = event.getClientX() - iSelectionLayer.getAbsoluteLeft() + Window.getScrollLeft();
+			double y = event.getClientY() - iSelectionLayer.getAbsoluteTop() + Window.getScrollTop();
+			
+			switch (DOM.eventGetType(event)) {
+			case Event.ONMOUSEMOVE:
+				if (iCursor == null)
+					getElement().getStyle().setCursor(cursor(dx, dy));
+				else {
+					getElement().getStyle().setCursor(iCursor);
+					
+					int dSlot = 3 * (int)Math.round(4 * (y - iY) / iCellHeight);
+					int dWeek = (int)Math.round(iSelectedWeeks.size() * (x - iX) / (iCellWidth - 6));
+					
+					switch (iCursor) {
+					case MOVE:
+						dSlot = Math.min(Math.max(dSlot, iStart * 12 - iSS), 12 * iEnd - iES);
+						dWeek = Math.min(Math.max(dWeek, -iSW), iSelectedWeeks.size() - iEW - 1);
+						iStartSlot = iSS + dSlot; iEndSlot = iES + dSlot;
+						iStartWeek = iSW + dWeek; iEndWeek = iEW + dWeek;
+						break;
+					case N_RESIZE:
+						dSlot = Math.max(dSlot, iStart * 12 - iSS);
+						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
+						break;
+					case NW_RESIZE:
+						dSlot = Math.max(dSlot, iStart * 12 - iSS);
+						dWeek = Math.max(dWeek, -iSW);
+						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
+						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
+						break;
+					case NE_RESIZE:
+						dSlot = Math.max(dSlot, iStart * 12 - iSS);
+						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
+						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
+						break;
+					case E_RESIZE:
+						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
+						break;
+					case SE_RESIZE:
+						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						dSlot = Math.min(dSlot, 12 * iEnd - iES);
+						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
+						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
+						break;
+					case S_RESIZE:
+						dSlot = Math.min(dSlot, 12 * iEnd - iES);
+						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
+						break;
+					case SW_RESIZE:
+						dSlot = Math.min(dSlot, 12 * iEnd - iES);
+						dWeek = Math.max(dWeek, -iSW);
+						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
+						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
+						break;
+					case W_RESIZE:
+						dWeek = Math.max(dWeek, -iSW);
+						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
+						break;
+					}
+					move();
+					if (iSS != iStartSlot || iES != iEndSlot) {
+						iSelection.setStartSlot(iStartSlot);
+						iSelection.setLength(getLength());
+					}
+					if (iSW != iStartWeek || iEW != iEndWeek) {
+						iSelection.getDays().clear();
+						for (int i = getStartWeek(); i <= getEndWeek(); i++)
+							iSelection.getDays().add(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+					}
+				}
+				break;
+			case Event.ONMOUSEDOWN:
+				iCursor = cursor(dx, dy); iX = x; iY = y;
+				iSelectionLayer.iMoving = this;
+				iSS = iStartSlot; iES = iEndSlot;
+				iSW = iStartWeek; iEW = iEndWeek;
+				break;
+			case Event.ONMOUSEUP:
+				onMouseUp();
+				break;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+		}
+		
+		public SelectionPanel() {
+			this(false);
+		}
+		
+		public SelectionPanel(int day, int start, int length, int week, int nrWeeks) {
+			this(true);
+			setStart(day, start, week);
+			setEnd(day, start + length, week + nrWeeks - 1);
+			iSelection = new SelectionInterface();
+			iSelection.setStartSlot(getStartSlot());
+			iSelection.setLength(getLength());
+			for (int i = getStartWeek(); i <= getEndWeek(); i++) {
+				iSelection.addDay(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+			}
+			iSelection.setLocation(iRoomResource);
+			iAllSelections.add(iSelection);
+		}
+		
+		public SelectionPanel(SelectionInterface selection) {
+			this(true);
+			iSelection = selection;
+			int day = -1;
+			int startWeek = iSelectedWeeks.size(), endWeek = -1;
+			for (int d: selection.getDays()) {
+				for (int i = 0; i < iSelectedWeeks.size(); i++) {
+					WeekInterface w = iSelectedWeeks.get(i);
+					if (w.getDayOfYear() <= d && d < w.getDayOfYear() + 7) {
+						startWeek = Math.min(startWeek, i);
+						endWeek = Math.max(endWeek, i);
+						day = d - w.getDayOfYear();
+					}
+				}
+			}
+			if (day >= 0) {
+				setStart(day, selection.getStartSlot(), startWeek);
+				setEnd(day, selection.getStartSlot() + selection.getLength(), endWeek);
+			} else {
+				setVisible(false);
+			}
+		}
+		
+		public void setStart(int day, int slot, int week) {
+			iDay = day; iStartSlot = slot; iStartWeek = week;
+		}
+		
+		public void setEnd(int day, int slot, int week) {
+			iEndSlot = slot;
+			if (iDay == day) {
+				iEndWeek = week;
+			} else if (day < iDay) {
+				iEndWeek = 0;
+			} else {
+				iEndWeek = iSelectedWeeks.size() - 1;
+			}
+			move();
+		}
+				
+		public void setActive(boolean active) {
+			iActive = active;
+		}
+		
+		public boolean isActive() { return iActive; }
+		
+		private void move() {
+	        getElement().getStyle().setWidth(getWidth(), Unit.PX);
+	        getElement().getStyle().setLeft(getLeft(), Unit.PX);
+	        getElement().getStyle().setTop(getTop(), Unit.PX);
+	        getElement().getStyle().setHeight(getHeight(), Unit.PX);
+	        if (iText != null)
+	        	iText.setHTML(
+	        		CONSTANTS.days()[getDay()] + " " +
+	        		iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + (getNrWeeks() <= 1 ? "" : "&nbsp;&#8209;&nbsp;" + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) + " " +
+	        		getStartTime() + "&nbsp;&#8209;&nbsp;" + getEndTime() + " (" + (5 * getLength()) + "&nbsp;mins)");
+		}
+		
+		public int getLeft() {
+			return 4 + iCellWidth * getDay() + getStartWeek() * (iCellWidth - 6) / iSelectedWeeks.size();
+		}
+		
+		public int getTop() {
+			return 1 + iCellHeight * getStartSlot() / 12 - iCellHeight * iStart;
+		}
+		
+		public int getHeight() {
+			return iCellHeight * getLength() / 12;
+		}
+		
+		public int getWidth() {
+			return getNrWeeks() * (iCellWidth - 6) / iSelectedWeeks.size() + (getStartWeek() + getNrWeeks() != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? 0 : 3);
+		}
+		
+		public int getDay() { return iDay; }
+		public int getStartSlot() {
+			return (iStartSlot <= iEndSlot ? iStartSlot : iEndSlot);
+		}
+		
+		public int getEndSlot() {
+			return getStartSlot() + getLength();
+		}
+		
+		public int getLength() {
+			return Math.max(3, iStartSlot < iEndSlot ? iEndSlot - iStartSlot : iStartSlot - iEndSlot);
+		}
+		
+		public int getStartWeek() {
+			return (iStartWeek <= iEndWeek ? iStartWeek : iEndWeek);
+		}
+		
+		public int getEndWeek() {
+			return (iStartWeek <= iEndWeek ? iEndWeek : iStartWeek);
+		}
+		
+		public int getNrWeeks() {
+			return iStartWeek < iEndWeek ? 1 + iEndWeek - iStartWeek : 1 + iStartWeek - iEndWeek;
+		}
+		
+		public String getStartTime() {
+			int h = getStartSlot() / 12;
+			int m = 5 * (getStartSlot() % 12);
+			return (CONSTANTS.useAmPm() ? (h == 0 ? "12": h <= 12 ? h : h-12) : h) + ":" + (m < 10 ? "0" : "") + m + (CONSTANTS.useAmPm() ? (h <= 11 ? "a" : "p") : "");
+		}
+		
+		public String getEndTime() {
+			int h = (getStartSlot() + getLength()) / 12;
+			int m = 5 * ((getStartSlot() + getLength()) % 12);
+			return (CONSTANTS.useAmPm() ? (h == 0 ? "12": h <= 12 ? h : h-12) : h) + ":" + (m < 10 ? "0" : "") + m + (CONSTANTS.useAmPm() ? (h <= 11 ? "a" : "p") : "");
+		}
+		
+		public String toString() {
+			return CONSTANTS.longDays()[getDay()] + " " + iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + 
+				(getNrWeeks() <= 1 ? "" : " - " + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) +
+				" " + getStartTime() + " - " + getEndTime() + " (" + (5 * getLength()) + " mins)";
+		}
+		
+		public SelectionInterface getSelection() {
+			return iSelection;
+		}
+		
+		private void onMouseUp() {
+			if (iSelectionLayer.iMoving != null) {
+				iSelectionLayer.iMoving.iCursor = null;
+				iSelectionLayer.iMoving = null;
+			}
+			iCursor = null;
+		}
+	}
+	
+	public List<SelectionInterface> getSelections() {
+		return iAllSelections;
+	}
+
 }

@@ -456,7 +456,11 @@ public class EventResourceTimetable extends Composite {
 					Collections.sort(iData);
 					iHeader.setHeaderTitle(name(true));
 					iHeader.setMessage(null);
-					if (iData.size() > CONSTANTS.maxMeetings())
+					int nrMeetings = 0;
+					for (EventInterface e: iData) {
+						nrMeetings += e.getMeetings().size();
+					}
+					if (nrMeetings > CONSTANTS.maxMeetings())
 						iHeader.setErrorMessage("There are more than " + CONSTANTS.maxMeetings() + " meetings matching the filter. Only " + CONSTANTS.maxMeetings() + " meetings are loaded.");
 					int nrDays = 4;
 					int firstSlot = -1, lastSlot = -1;
@@ -471,6 +475,7 @@ public class EventResourceTimetable extends Composite {
 					int firstHour = firstSlot / 12;
 					int lastHour = 1 + (lastSlot - 1) / 12;
 					HashMap<Long, String> colors = new HashMap<Long, String>();
+					if (iTimeGrid != null) iTimeGrid.destroy();
 					iTimeGrid = new TimeGrid(colors, nrDays, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					String eventIds = "";
 					iTimeGrid.setSelectedWeeks(iWeekPanel.getValue() == null ? null : iWeekPanel.getValue().getSelected());
@@ -618,13 +623,13 @@ public class EventResourceTimetable extends Composite {
 
 	}
 	
-	private boolean isSingleRoom() {
+	private ResourceInterface isSingleRoom() {
 		if (iResource.getType() == ResourceType.ROOM) {
-			if (iRoomPanel.getValue() != null && iRoomPanel.getValue().isOne()) return true;
-			if (iRoomPanel.getValues() != null && iRoomPanel.getValues().size() == 1) return true;
-			return false;
+			if (iRoomPanel.getValue() != null && iRoomPanel.getValue().isOne()) return iRoomPanel.getValue().getFirst();
+			if (iRoomPanel.getValues() != null && iRoomPanel.getValues().size() == 1) return iRoomPanel.getValues().get(0);
+			return null;
 		} else {
-			return false;
+			return null;
 		}
 	}
 	
@@ -632,7 +637,7 @@ public class EventResourceTimetable extends Composite {
 		if ("0".equals(Window.Location.getParameter("eq"))) return TimeGrid.Mode.FILLSPACE;
 		switch (iResource.getType()) {
 		case ROOM:
-			return (isSingleRoom() ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
+			return (isSingleRoom() != null ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
 		case PERSON:
 			return TimeGrid.Mode.OVERLAP;
 		default:
@@ -990,7 +995,7 @@ public class EventResourceTimetable extends Composite {
 		}
 		table.getElement().getStyle().setWidth(100, Unit.PCT);
 		setColumnVisible(table, 3, iWeekPanel.getValue() == null || !iWeekPanel.getValue().isOne());
-		setColumnVisible(table, 5, !isSingleRoom());
+		setColumnVisible(table, 5, isSingleRoom() == null);
 	}
 	
 	public void setColumnVisible(UniTimeTable<EventInterface> table, int col, boolean visible) {
