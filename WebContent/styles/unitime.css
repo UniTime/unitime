@@ -572,7 +572,6 @@ h1 {
 
 .unitime-TimeGrid .major-time-interval {
 	display: block;
-	background-color: yellow;
 	border-top: 1px solid #DDDDDD;
 	width: 100%;
 }
@@ -639,6 +638,79 @@ h1 {
 	color: #6991CE;
 }
 
+.unitime-TimeGrid .selection-layer {
+	position: absolute;
+	display: block;
+	width: 100%;
+	height: 100%;
+	cursor: crosshair;
+	z-index: 100;
+}
+
+.unitime-TimeGrid .active-selection {
+	position: absolute;
+	background-color: #6991CE;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    cursor: crosshair;
+    z-index: 50;
+}
+
+.unitime-TimeGrid .selection {
+	position: absolute;
+	background-color: #92c1f0;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    z-index: 200;
+}
+
+.unitime-TimeGrid .selection .text {
+    font-size: x-small;
+    color: black;
+    padding: 0px 3px 1px 3px;
+    width: 100%;
+    height: 100%;
+}
+
+.unitime-TimeGrid .selection .x {
+	color: #6991CE;
+	font-size: x-small;
+	cursor: pointer;
+	z-index: 200;
+	padding-left: 2px;
+	margin-top: -2px;
+}
+
+.unitime-TimeGrid .selection .x:hover {
+	color: black;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+}
+
+.unitime-TimeGridSelectionPopup {
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    background-color: white;
+	margin: 5px 0px 0px 5px;
+	position: absolute;
+	overflow: hidden;
+	font-size: xx-small;
+	color: #6991CE;
+	border: 1px solid #6991CE;
+	overflow: hidden;
+	white-space: nowrap;
+	z-index: 1000;
+}
+
+.unitime-TimeGridSelectionPopup .content {
+	padding: 2px;
+	
+}
+
 .unitime-TinyLabel {
 	font-size: x-small;
 	font-family: arial;
@@ -673,6 +745,7 @@ h1 {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	color: #FFFFFF;
+	z-index: 500;
 }
 
 .unitime-TimeGrid .meeting .header {
@@ -1478,6 +1551,7 @@ h1 {
 	font-weight: 400;
 	font-style: normal;
 	color: #333333;
+	z-index: 1000000;
 }
 
 .unitime-FilterBoxPopup .suggestPopupMiddleCenter {
@@ -1952,6 +2026,7 @@ h1 {
 	box-shadow: 1px 2px 4px #9CB0CE;
 	margin-top: -1px;
 	min-width: 150px;
+	z-index: 1000000;
 }
 
 
