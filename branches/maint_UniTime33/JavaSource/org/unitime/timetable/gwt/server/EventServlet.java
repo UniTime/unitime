@@ -674,7 +674,7 @@ public class EventServlet extends RemoteServiceServlet implements EventService {
 					}
 					break;
 				case PERSON:
-					User user = Web.getUser(getThreadLocalRequest().getSession());
+					User user = (checkAuthentication ? Web.getUser(getThreadLocalRequest().getSession()) : null);
 					boolean overrideStatus = user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 					boolean canViewFinalExams = overrideStatus || session.getStatusType().canNoRoleReportExamFinal();
 					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
