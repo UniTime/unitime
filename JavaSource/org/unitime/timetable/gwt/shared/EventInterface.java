@@ -25,8 +25,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -44,6 +50,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iInstruction = null;
 	private Integer iInstructionType = null;
 	private List<String> iExternalIds = null;
+	private boolean iCanView = false, iCanEdit = false;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("room", "Room Timetable", true),
@@ -111,6 +118,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		iExternalIds.add(externalId);
 	}
 	
+	public boolean isCanView() { return iCanView; }
+	public void setCanView(boolean canView) { iCanView = canView; }
+	public boolean isCanEdit() { return iCanEdit; }
+	public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventInterface)) return false;
@@ -151,11 +163,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iAbbreviation;
 		private String iResourceName;
 		private String iTitle;
-		private Long iSessionId;
-		private String iSessionName;
-		private String iSessionAbbv;
-		private List<WeekInterface> iWeeks = null;
-		private String iCalendar;
 		private String iHint = null;
 		private Integer iSize = null;
 		private Double iDistance = null;
@@ -174,15 +181,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setAbbreviation(String abbv) { iAbbreviation = abbv; }
 		public String getName() { return iResourceName; }
 		public void setName(String name) { iResourceName = name; }
-		public Long getSessionId() { return iSessionId; }
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		public String getSessionName() { return iSessionName; }
-		public void setSessionName(String sessionName) { iSessionName = sessionName; }
-		public String getSessionAbbv() { return iSessionAbbv; }
-		public void setSessionAbbv(String sessionAbbv) { iSessionAbbv = sessionAbbv; }
-		public boolean hasCalendar() { return iCalendar != null && !iCalendar.isEmpty(); }
-		public String getCalendar() { return iCalendar; }
-		public void setCalendar(String calendar) { iCalendar = calendar; }
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
@@ -204,13 +202,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
 			if (iHint == null || iHint.isEmpty()) return iResourceName;
 			return "<span onmouseover=\"showGwtHint(this, '" + iHint + "');\" onmouseout=\"hideGwtHint();\">" + iResourceName + "</span>";
-		}
-		
-		public boolean hasWeeks() { return iWeeks != null && !iWeeks.isEmpty(); }
-		public List<WeekInterface> getWeeks() { return iWeeks; }
-		public void addWeek(WeekInterface week) {
-			if (iWeeks == null) iWeeks = new ArrayList<WeekInterface>();
-			iWeeks.add(week);
 		}
 		
 		public String toString() {
@@ -449,4 +440,313 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public ResourceInterface getLocation() { return iLocation; }
 		public void setLocation(ResourceInterface location) { iLocation = location; }
 	}
+	
+	public static abstract class FilterRpcRequest implements GwtRpcRequest<FilterRpcResponse> {
+		public static enum Command implements IsSerializable {
+			LOAD,
+			SUGGESTIONS,
+			ENUMERATE,
+		}
+		
+		private Command iCommand;
+		private Long iSessionId;
+		private String iText;
+		private HashMap<String, Set<String>> iOptions;
+		
+		public FilterRpcRequest() {}
+		
+		public Command getCommand() { return iCommand; }
+		public void setCommand(Command command) { iCommand = command; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public String getText() { return iText; }
+		public void setText(String text) { iText = text; }
+		public Set<String> getOptions(String command) {
+			return (iOptions == null ? null : iOptions.get(command));
+		}
+		public boolean hasOption(String command) {
+			Set<String> options = getOptions(command);
+			return (options != null && options.size() == 1);
+		}
+		public String getOption(String command) {
+			Set<String> options = getOptions(command);
+			return (options == null || options.isEmpty() ? null : options.iterator().next());
+		}
+		public Map<String, Set<String>> getOptions() {
+			return iOptions;
+		}
+		public boolean hasOptions(String command) {
+			Set<String> options = getOptions(command);
+			return (options != null && !options.isEmpty());
+		}
+		public void addOption(String command, String value) {
+			if (iOptions == null) iOptions = new HashMap<String, Set<String>>();
+			Set<String> options = iOptions.get(command);
+			if (options == null) {
+				options = new HashSet<String>();
+				iOptions.put(command, options);
+			}
+			options.add(value);
+		}
+		
+		public void setOption(String command, String value) {
+			if (iOptions == null) iOptions = new HashMap<String, Set<String>>();
+			Set<String> options = iOptions.get(command);
+			if (options == null) {
+				options = new HashSet<String>();
+				iOptions.put(command, options);
+			} else {
+				options.clear();
+			}
+			options.add(value);
+		}
+		
+		@Override
+		public String toString() { return (getCommand() == null ? "NULL" : getCommand().name()) + "(" + getSessionId() + "," + iOptions + "," + getText() + ")"; }
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventFilterBackend")
+	public static class EventFilterRpcRequest extends FilterRpcRequest {
+		public EventFilterRpcRequest() {}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.RoomFilterBackend")
+	public static class RoomFilterRpcRequest extends FilterRpcRequest {
+		public RoomFilterRpcRequest() {}
+	}
+	
+	public static class FilterRpcResponse implements GwtRpcResponse {
+		private HashMap<String, ArrayList<Entity>> iEntities = null;
+		
+		public FilterRpcResponse() {}
+		
+		public boolean hasEntities(String type) {
+			List<Entity> entities = getEntities(type);
+			return entities != null && !entities.isEmpty();
+		}
+		
+		public List<Entity> getEntities(String type) {
+			return (iEntities == null ? null : iEntities.get(type));
+		}
+		
+		public void add(String type, Entity entity) {
+			if (iEntities == null) iEntities = new HashMap<String, ArrayList<Entity>>();
+			ArrayList<Entity> entities = iEntities.get(type);
+			if (entities == null) {
+				entities = new ArrayList<Entity>();
+				iEntities.put(type, entities);
+			}
+			entities.add(entity);
+		}
+		
+		public void add(String type, Collection<Entity> entity) {
+			if (iEntities == null) iEntities = new HashMap<String, ArrayList<Entity>>();
+			ArrayList<Entity> entities = iEntities.get(type);
+			if (entities == null) {
+				entities = new ArrayList<Entity>(entity);
+				iEntities.put(type, entities);
+			} else {
+				entities.addAll(entity);
+			}
+		}
+		
+		public void addResult(Entity entity) { add("results", entity); }
+		public boolean hasResults() { return hasEntities("results"); }
+		public List<Entity> getResults() { return getEntities("results"); }
+		
+		public void addSuggestion(String message, String replacement, String hint) {
+			add("suggestion", new Entity(0l, replacement, message, "hint", hint));
+		}
+		
+		public boolean hasSuggestions() { return hasEntities("suggestion"); }
+		
+		public List<Entity> getSuggestions() { return getEntities("suggestion"); }
+		
+		public static class Entity implements IsSerializable, Comparable<Entity> {
+			private Long iUniqueId;
+			private String iAbbv, iName;
+			private int iCount = 0;
+			private HashMap<String, String> iParams;
+			
+			public Entity() {}
+			
+			public Entity(Long uniqueId, String abbv, String name, String... properties) {
+				iUniqueId = uniqueId;
+				iAbbv = abbv;
+				iName = name;
+				for (int i = 0; i + 1 < properties.length; i += 2)
+					if (properties[i + 1] != null)
+						setProperty(properties[i], properties[i + 1]);
+			}
+			
+			public Long getUniqueId() { return iUniqueId; }
+			public String getAbbreviation() { return iAbbv; }
+			public String getName() { return iName; }
+			public int getCount() { return iCount; }
+			public void setCount(int count) { iCount = count; }
+			public void incCount() { iCount ++; }
+			
+			public void setProperty(String property, String value) {
+				if (iParams == null) iParams = new HashMap<String, String>();
+				iParams.put(property, value);
+			}
+			
+			public String getProperty(String property, String defaultValue) {
+				String value = (iParams == null ? null : iParams.get(property));
+				return (value == null ? defaultValue : value);
+			}
+			
+			public int hasCode() { return getUniqueId().hashCode(); }
+			public boolean equals(Object o) {
+				if (o == null || !(o instanceof Entity)) return false;
+				Entity e = (Entity)o;
+				return getUniqueId().equals(e.getUniqueId()) && getName().equals(e.getName());
+			}
+			public int compareTo(Entity e) {
+				if (getUniqueId() < 0) {
+					return (e.getUniqueId() >= 0 ? -1 : e.getUniqueId().compareTo(getUniqueId()));
+				} else if (e.getUniqueId() < 0) return 1;
+				return getName().compareToIgnoreCase(e.getName());
+			}
+			public String toString() { return getName(); }
+		}
+		
+		public String toString() { return (iEntities == null ? "null" : iEntities.toString()); }
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.ResourceLookupBackend")
+	public static class ResourceLookupRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ResourceInterface>> {
+		private Long iSessionId;
+		private ResourceType iResourceType;
+		private String iName;
+		private Integer iLimit;
+		
+		public ResourceLookupRpcRequest() {}
+		
+		public Long getSessionId() {  return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public ResourceType getResourceType() { return iResourceType; }
+		public void setResourceType(ResourceType resourceType) { iResourceType = resourceType; }
+		
+		public String getName() { return iName; }
+		public boolean hasName() { return iName != null && !iName.isEmpty(); }
+		public void setName(String name) { iName = name; }
+		
+		public boolean hasLimit() { return iLimit != null && iLimit > 0; }
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
+		
+		public String toString() { return getResourceType().getLabel() + (getName() == null || getName().isEmpty() ? "" : "{" + getName() + "}"); }
+		
+		public static ResourceLookupRpcRequest findResource(Long sessionId, ResourceType type, String name) {
+			ResourceLookupRpcRequest request = new ResourceLookupRpcRequest();
+			request.setSessionId(sessionId);
+			request.setLimit(1);
+			request.setResourceType(type);
+			request.setName(name);
+			return request;
+		}
+		
+		public static ResourceLookupRpcRequest findResources(Long sessionId, ResourceType type, String name, int limit) {
+			ResourceLookupRpcRequest request = new ResourceLookupRpcRequest();
+			request.setSessionId(sessionId);
+			request.setLimit(limit);
+			request.setResourceType(type);
+			request.setName(name);
+			return request;
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventLookupBackend")
+	public static class EventLookupRpcRequest implements GwtRpcRequest<GwtRpcResponseList<EventInterface>> {
+		private Long iSessionId;
+		private ResourceType iResourceType;
+		private Long iResourceId;
+		private String iResourceExternalId;
+		private FilterRpcRequest iEventFilter, iRoomFilter;
+		private int iLimit = -1;
+		
+		public EventLookupRpcRequest() {}
+		
+		public Long getSessionId() {  return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public ResourceType getResourceType() { return iResourceType; }
+		public void setResourceType(ResourceType resourceType) { iResourceType = resourceType; }
+
+		public Long getResourceId() { return iResourceId; }
+		public void setResourceId(Long resourceId) { iResourceId = resourceId; }
+		
+		public boolean hasResourceExternalId() { return iResourceExternalId != null && !iResourceExternalId.isEmpty(); }
+		public String getResourceExternalId() { return iResourceExternalId; }
+		public void setResourceExternalId(String resourceExternalId) { iResourceExternalId = resourceExternalId; }
+		
+		public FilterRpcRequest getEventFilter() { return iEventFilter; }
+		public void setEventFilter(FilterRpcRequest eventFilter) { iEventFilter = eventFilter; }
+
+		public FilterRpcRequest getRoomFilter() { return iRoomFilter; }
+		public void setRoomFilter(FilterRpcRequest roomFilter) { iRoomFilter = roomFilter; }
+		
+		public boolean hasLimit() { return iLimit > 0; }
+		public int getLimit() { return iLimit; }
+		public void setLimit(int limit) { iLimit = limit; }
+		
+		public static EventLookupRpcRequest findEvents(Long sessionId, ResourceInterface resource, FilterRpcRequest eventFilter, FilterRpcRequest roomFilter, int limit) {
+			EventLookupRpcRequest request = new EventLookupRpcRequest();
+			request.setSessionId(sessionId);
+			request.setResourceType(resource.getType());
+			request.setResourceId(resource.getId());
+			request.setResourceExternalId(resource.getExternalId());
+			request.setEventFilter(eventFilter);
+			request.setRoomFilter(roomFilter);
+			request.setLimit(limit);
+			return request;
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.QueryEncoderBackend")
+	public static class EncodeQueryRpcRequest implements GwtRpcRequest<EncodeQueryRpcResponse> {
+		private String iQuery;
+		
+		public EncodeQueryRpcRequest() {}
+		public EncodeQueryRpcRequest(String query) { iQuery = query; }
+
+		public String getQuery() { return iQuery; }
+		public void setQuery(String query) { iQuery = query; }
+		
+		public static EncodeQueryRpcRequest encode(String query) {
+			return new EncodeQueryRpcRequest(query); 
+		}
+	}
+	
+	public static class EncodeQueryRpcResponse implements GwtRpcResponse {
+		private String iQuery;
+		
+		public EncodeQueryRpcResponse() {}
+		public EncodeQueryRpcResponse(String query) { iQuery = query; }
+
+		public String getQuery() { return iQuery; }
+		public void setQuery(String query) { iQuery = query; }
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventPropertiesBackend")
+	public static class EventPropertiesRpcRequest implements GwtRpcRequest<EventPropertiesRpcResponse> {
+		
+		public EventPropertiesRpcRequest() {}
+		
+		public static EventPropertiesRpcRequest requestEventProperties() {
+			return new EventPropertiesRpcRequest();
+		}
+	}
+	
+	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
+		private boolean iCanLookupPeople = false;
+	
+		public EventPropertiesRpcResponse() {}
+		
+		public boolean isCanLookupPeople() { return iCanLookupPeople; }
+		public void setCanLookupPeople(boolean canLookupPeople) { iCanLookupPeople = canLookupPeople; }
+	}
+	
 }

@@ -247,6 +247,7 @@ public class TimeGrid extends Composite {
 	public void setMode(Mode mode) {
 		iMode = mode;
 		iSelectionLayer.setVisible(getMode() == Mode.OVERLAP && isRoomResource());
+		showSelections();
 	}
 	public Mode getMode() { return iMode; }
 	

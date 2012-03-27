@@ -32,11 +32,11 @@ import java.util.StringTokenizer;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcRequest;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcResponse;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
