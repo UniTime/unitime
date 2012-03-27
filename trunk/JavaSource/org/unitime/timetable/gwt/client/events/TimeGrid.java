@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
@@ -84,6 +85,7 @@ public class TimeGrid extends Composite {
 	private ImageLink iCalendar;
 	private SelectionLayer iSelectionLayer;
 	private List<SelectionInterface> iAllSelections = new ArrayList<SelectionInterface>();
+	private ResourceType iResourceType;
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -100,7 +102,7 @@ public class TimeGrid extends Composite {
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private HashMap<Long, String> iColors = new HashMap<Long, String>();
 	
-	private ResourceInterface iRoomResource = null;
+	private List<ResourceInterface> iRoomResources = null;
 	private List<WeekInterface> iSelectedWeeks = null;
 	
 	private List<HandlerRegistration> iHandlerRegistrations = new ArrayList<HandlerRegistration>();
@@ -233,20 +235,35 @@ public class TimeGrid extends Composite {
 			reg.removeHandler();
 	}
 	
+	public void setResourceType(ResourceType resourceType) { iResourceType = resourceType; }
+	public ResourceType getResourceType() { return iResourceType; }
+	
+	public boolean isShowVerticalSplit() {
+		return getMode() == Mode.OVERLAP && (getResourceType() != ResourceType.PERSON || !isSingleWeek());
+	}
+
+	public boolean isAllowSelection() {
+		return getMode() == Mode.OVERLAP && (isSingleRoom() || isSingleWeek()) && (getResourceType() != ResourceType.PERSON);
+	}
+	
+	private boolean isVerticalSplitByWeek() {
+		return isSingleRoom() || getResourceType() == ResourceType.PERSON;
+	}
+
 	public List<WeekInterface> getSelectedWeeks() { return iSelectedWeeks; }
 	public void setSelectedWeeks(List<WeekInterface> weeks) {
 		iSelectedWeeks = weeks;
-		showSelections();
 	}
-	public boolean isRoomResource() { return iRoomResource != null; }
-	public void setRoomResource(ResourceInterface roomResource) {
-		iRoomResource = roomResource;
-		iSelectionLayer.setVisible(getMode() == Mode.OVERLAP && isRoomResource());
-		showSelections();
+	public boolean isSingleWeek() { return iSelectedWeeks != null && iSelectedWeeks.size() == 1; }
+	
+	public void setRoomResources(List<ResourceInterface> roomResources) {
+		iRoomResources = roomResources;
 	}
+	public List<ResourceInterface> getRoomResources() { return iRoomResources; }
+	public boolean isSingleRoom() { return iRoomResources != null && iRoomResources.size() == 1; }
+	
 	public void setMode(Mode mode) {
 		iMode = mode;
-		iSelectionLayer.setVisible(getMode() == Mode.OVERLAP && isRoomResource());
 		showSelections();
 	}
 	public Mode getMode() { return iMode; }
@@ -269,7 +286,9 @@ public class TimeGrid extends Composite {
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iNrDays, (int) (0.9 * Window.getClientWidth() / iNrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		tg.setSelectedWeeks(getSelectedWeeks());
-		tg.setRoomResource(iRoomResource);
+		tg.setRoomResources(getRoomResources());
+		tg.setResourceType(getResourceType());
+		tg.setMode(getMode());
 		return tg;
 	}
 	
@@ -372,14 +391,26 @@ public class TimeGrid extends Composite {
 		else setNrDays(7);
 		
 		iVLines.clear();
-		if (iMode == Mode.OVERLAP && iSelectedWeeks != null && iSelectedWeeks.size() > 1) {
-			for (int d = 0; d < iNrDays; d++) {
-				for (int w = 0; w < iSelectedWeeks.size(); w++) {
-					if (w > 0)
-						iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
-					P p = new P("week-title"); p.setHTML(iSelectedWeeks.get(w).getDayNames().get(d).replaceAll("/", "<br>"));
-					p.setWidth((iCellWidth - 6) / iSelectedWeeks.size());
-					iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
+		if (isShowVerticalSplit()) {
+			if (isVerticalSplitByWeek()) {
+				for (int d = 0; d < iNrDays; d++) {
+					for (int w = 0; w < iSelectedWeeks.size(); w++) {
+						if (w > 0)
+							iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
+						P p = new P("week-title"); p.setHTML(iSelectedWeeks.get(w).getDayNames().get(d).replaceAll("/", "<br>"));
+						p.setWidth((iCellWidth - 6) / iSelectedWeeks.size());
+						iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
+					}
+				}
+			} else {
+				for (int d = 0; d < iNrDays; d++) {
+					for (int w = 0; w < iRoomResources.size(); w++) {
+						if (w > 0)
+							iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iRoomResources.size(), 0);
+						P p = new P("week-title"); p.setHTML(iRoomResources.get(w).getName().replaceAll(" ", "<br>"));
+						p.setWidth((iCellWidth - 6) / iRoomResources.size());
+						iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iRoomResources.size(), 0);
+					}
 				}
 			}
 		}
@@ -398,12 +429,17 @@ public class TimeGrid extends Composite {
 	}
 	
 	public void showSelections() {
+		iSelectionLayer.setVisible(isAllowSelection());
 		iSelections.clear();
-		if (iRoomResource == null || !iSelectionLayer.isVisible()) return;
+		if (!isAllowSelection()) return;
 		for (SelectionInterface selection: iAllSelections) {
-			if (!iRoomResource.equals(selection.getLocation())) continue;
-			SelectionPanel panel = new SelectionPanel(selection);
-			if (panel.isVisible()) iSelections.add(panel, panel.getLeft(), panel.getTop());
+			for (ResourceInterface location: iRoomResources) {
+				if (selection.getLocations().contains(location)) {
+					SelectionPanel panel = new SelectionPanel(selection);
+					if (panel.isVisible()) iSelections.add(panel, panel.getLeft(), panel.getTop());
+					break;
+				}
+			}
 		}
 	}
 	
@@ -539,11 +575,18 @@ public class TimeGrid extends Composite {
 	}
 	
 	private int weekIndex(MeetingInterface m) {
-		for (int i = 0; i < iSelectedWeeks.size(); i++) {
-			if (iSelectedWeeks.get(i).getDayOfYear() <= m.getDayOfYear() && m.getDayOfYear() <= iSelectedWeeks.get(i).getDayOfYear() + 6)
-				return i;
+		if (isVerticalSplitByWeek()) {
+			if (iSelectedWeeks == null) return -1;
+			for (int i = 0; i < iSelectedWeeks.size(); i++) {
+				if (iSelectedWeeks.get(i).getDayOfYear() <= m.getDayOfYear() && m.getDayOfYear() <= iSelectedWeeks.get(i).getDayOfYear() + 6)
+					return i;
+			}
+			return -1;
+		} else if (isSingleWeek()) {
+			return (iRoomResources == null || m.getLocation() == null ? -1 : iRoomResources.indexOf(m.getLocation()));
+		} else {
+			return -1;
 		}
-		return -1;
 	}
 	
 	public ArrayList<Meeting> addEvent(EventInterface event) {
@@ -558,8 +601,13 @@ public class TimeGrid extends Composite {
 			MeetingInterface meeting = null;
 			TreeSet<MeetingInterface> dates = new TreeSet<MeetingInterface>(new Comparator<MeetingInterface>() {
 				public int compare(MeetingInterface m1, MeetingInterface m2) {
-					int cmp = new Integer(m1.getDayOfYear()).compareTo(new Integer(m2.getDayOfYear()));
-					if (cmp != 0) return cmp;
+					if (isVerticalSplitByWeek()) {
+						int cmp = new Integer(m1.getDayOfYear()).compareTo(new Integer(m2.getDayOfYear()));
+						if (cmp != 0) return cmp;
+					} else {
+						int cmp = (m1.getLocationName() == null ? "" : m1.getLocationName()).compareTo(m2.getLocationName() == null ? "" : m2.getLocationName());
+						if (cmp != 0) return cmp;
+					}
 					return m1.getId().compareTo(m2.getId());
 				}
 			});
@@ -614,7 +662,7 @@ public class TimeGrid extends Composite {
 				if (!roomString.isEmpty()) roomString += ", ";
 				roomString += room;
 			}
-			if (!isRoomResource())
+			if (!isSingleRoom() || getResourceType() != ResourceType.ROOM)
 				notes.add(roomString);
 			if (event.hasInstructor())
 				notes.add(event.getInstructor().replace("|", "<br>"));
@@ -626,8 +674,7 @@ public class TimeGrid extends Composite {
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
-					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, 
-					weekIndex(meeting), days.size(), done));
+					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, weekIndex(meeting), days.size(), done));
 		}
 		iMeetings.add(done);
 		return done;
@@ -696,8 +743,9 @@ public class TimeGrid extends Composite {
 		        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
 		        break;
 	        case OVERLAP:
-	        	iWidth = iNrMeetings * (iCellWidth - 6) / iSelectedWeeks.size() + (iColumn + iNrMeetings != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? -3 : 0) - 5 * iNrColumns;
-	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
+	        	int weeks = (isVerticalSplitByWeek() ? iSelectedWeeks.size() : iRoomResources.size());
+	        	iWidth = iNrMeetings * (iCellWidth - 6) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
 	        }
 	        getElement().getStyle().setWidth(iWidth, Unit.PX);
 	        getElement().getStyle().setHeight(iCellHeight * length / 12 - 3, Unit.PX);
@@ -793,8 +841,9 @@ public class TimeGrid extends Composite {
 		        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
 		        break;
 	        case OVERLAP:
-	        	iWidth = iNrMeetings * (iCellWidth - 6) / iSelectedWeeks.size() + (iColumn + iNrMeetings != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? -3 : 0) - 5 * iNrColumns;
-	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iSelectedWeeks.size() + 5 * iNrColumns;
+	        	int weeks = (isVerticalSplitByWeek() ? iSelectedWeeks.size() : iRoomResources.size());
+	        	iWidth = iNrMeetings * (iCellWidth - 6) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
 	        	break;
 	        }
 			getElement().getStyle().setWidth(iWidth, Unit.PX);
@@ -869,12 +918,14 @@ public class TimeGrid extends Composite {
 
 			int slot = 3 * Math.min(Math.max(0, (int)Math.round(4 * (y - 1 + iStart * iCellHeight) / iCellHeight)), 96);
 			int day = Math.min(Math.max(0, (int)Math.floor((x - 2) / iCellWidth)), iNrDays - 1);
-			int week = Math.min(Math.max(0, (int)Math.floor(iSelectedWeeks.size() * (x - 2 - iCellWidth * day) / (iCellWidth - 6))), iSelectedWeeks.size() - 1);
+			int weeks = (isSingleRoom() ? iSelectedWeeks.size() : iRoomResources.size());
+			int week = Math.min(Math.max(0, (int)Math.floor(weeks * (x - 2 - iCellWidth * day) / (iCellWidth - 6))), weeks - 1);
 			int h = slot / 12;
 			int m = 5 * (slot % 12);
 			String time = (CONSTANTS.useAmPm() ? (h == 0 ? "12": h <= 12 ? h : h-12) : h) + ":" + (m < 10 ? "0" : "") + m + (CONSTANTS.useAmPm() ? (h <= 11 ? "a" : "p") : "");
 			
-			String text = CONSTANTS.longDays()[day] + " " + iSelectedWeeks.get(week).getDayNames().get(day) + " " + time;
+			String text = CONSTANTS.longDays()[day] + " " + (isSingleRoom() ? iSelectedWeeks.get(week) : iSelectedWeeks.get(0)).getDayNames().get(day) +
+					" " + time + (isSingleRoom() ? "" : " " + iRoomResources.get(week).getName());
 			iPopup.setPopupPosition(event.getClientX() + Window.getScrollLeft(), event.getClientY() + Window.getScrollTop());
 			
 			getElement().getStyle().setCursor(Cursor.CROSSHAIR);
@@ -1017,12 +1068,13 @@ public class TimeGrid extends Composite {
 					getElement().getStyle().setCursor(iCursor);
 					
 					int dSlot = 3 * (int)Math.round(4 * (y - iY) / iCellHeight);
-					int dWeek = (int)Math.round(iSelectedWeeks.size() * (x - iX) / (iCellWidth - 6));
+					int weeks = (isSingleRoom() ? iSelectedWeeks.size() : iRoomResources.size());
+					int dWeek = (int)Math.round(weeks * (x - iX) / (iCellWidth - 6));
 					
 					switch (iCursor) {
 					case MOVE:
 						dSlot = Math.min(Math.max(dSlot, iStart * 12 - iSS), 12 * iEnd - iES);
-						dWeek = Math.min(Math.max(dWeek, -iSW), iSelectedWeeks.size() - iEW - 1);
+						dWeek = Math.min(Math.max(dWeek, -iSW), weeks - iEW - 1);
 						iStartSlot = iSS + dSlot; iEndSlot = iES + dSlot;
 						iStartWeek = iSW + dWeek; iEndWeek = iEW + dWeek;
 						break;
@@ -1038,16 +1090,16 @@ public class TimeGrid extends Composite {
 						break;
 					case NE_RESIZE:
 						dSlot = Math.max(dSlot, iStart * 12 - iSS);
-						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						dWeek = Math.min(dWeek, weeks - iEW - 1);
 						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
 						break;
 					case E_RESIZE:
-						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						dWeek = Math.min(dWeek, weeks - iEW - 1);
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
 						break;
 					case SE_RESIZE:
-						dWeek = Math.min(dWeek, iSelectedWeeks.size() - iEW - 1);
+						dWeek = Math.min(dWeek, weeks - iEW - 1);
 						dSlot = Math.min(dSlot, 12 * iEnd - iES);
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
 						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
@@ -1073,9 +1125,15 @@ public class TimeGrid extends Composite {
 						iSelection.setLength(getLength());
 					}
 					if (iSW != iStartWeek || iEW != iEndWeek) {
-						iSelection.getDays().clear();
-						for (int i = getStartWeek(); i <= getEndWeek(); i++)
-							iSelection.getDays().add(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+						if (isSingleRoom()) {
+							iSelection.getDays().clear();
+							for (int i = getStartWeek(); i <= getEndWeek(); i++)
+								iSelection.getDays().add(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+						} else {
+							iSelection.getLocations().clear();
+							for (int i = getStartWeek(); i <= getEndWeek(); i++)
+								iSelection.addLocation(iRoomResources.get(i));
+						}
 					}
 				}
 				break;
@@ -1105,10 +1163,17 @@ public class TimeGrid extends Composite {
 			iSelection = new SelectionInterface();
 			iSelection.setStartSlot(getStartSlot());
 			iSelection.setLength(getLength());
-			for (int i = getStartWeek(); i <= getEndWeek(); i++) {
-				iSelection.addDay(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+			if (isSingleRoom()) {
+				for (int i = getStartWeek(); i <= getEndWeek(); i++) {
+					iSelection.addDay(iSelectedWeeks.get(i).getDayOfYear() + getDay());
+				}
+				iSelection.addLocation(getRoomResources().get(0));
+			} else {
+				iSelection.addDay(iSelectedWeeks.get(0).getDayOfYear() + getDay());
+				for (int i = getStartWeek(); i <= getEndWeek(); i++) {
+					iSelection.addLocation(iRoomResources.get(i));
+				}
 			}
-			iSelection.setLocation(iRoomResource);
 			iAllSelections.add(iSelection);
 		}
 		
@@ -1127,9 +1192,19 @@ public class TimeGrid extends Composite {
 					}
 				}
 			}
+			int startRoom = iRoomResources.size(), endRoom = -1;
+			for (ResourceInterface location: selection.getLocations()) {
+				for (int i = 0; i < iRoomResources.size(); i++) {
+					ResourceInterface r = iRoomResources.get(i);
+					if (r.equals(location)) {
+						startRoom = Math.min(startRoom, i);
+						endRoom = Math.max(endRoom, i);
+					}
+				}
+			}
 			if (day >= 0) {
-				setStart(day, selection.getStartSlot(), startWeek);
-				setEnd(day, selection.getStartSlot() + selection.getLength(), endWeek);
+				setStart(day, selection.getStartSlot(), isSingleRoom() ? startWeek : startRoom);
+				setEnd(day, selection.getStartSlot() + selection.getLength(), isSingleRoom() ? endWeek : endRoom);
 			} else {
 				setVisible(false);
 			}
@@ -1146,7 +1221,7 @@ public class TimeGrid extends Composite {
 			} else if (day < iDay) {
 				iEndWeek = 0;
 			} else {
-				iEndWeek = iSelectedWeeks.size() - 1;
+				iEndWeek = (isSingleRoom() ? iSelectedWeeks.size() : iRoomResources.size()) - 1;
 			}
 			move();
 		}
@@ -1165,12 +1240,17 @@ public class TimeGrid extends Composite {
 	        if (iText != null)
 	        	iText.setHTML(
 	        		CONSTANTS.days()[getDay()] + " " +
-	        		iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + (getNrWeeks() <= 1 ? "" : "&nbsp;&#8209;&nbsp;" + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) + " " +
-	        		getStartTime() + "&nbsp;&#8209;&nbsp;" + getEndTime() + " (" + (5 * getLength()) + "&nbsp;mins)");
+	        		(isSingleRoom() ?
+	        			iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + (getNrWeeks() <= 1 ? "" : "&nbsp;&#8209;&nbsp;" + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) :
+	        			iSelectedWeeks.get(0).getDayNames().get(getDay())) + " " +
+	        		getStartTime() + "&nbsp;&#8209;&nbsp;" + getEndTime() + " (" + (5 * getLength()) + "&nbsp;mins) " +
+	        		(isSingleRoom() ? iRoomResources.get(0).getName().replace(" ", "&nbsp;") :
+	        			iRoomResources.get(getStartWeek()).getName().replace(" ", "&nbsp;") + (getNrWeeks() <= 1 ? "" : "&nbsp;&#8209;&nbsp;" + iRoomResources.get(getEndWeek()).getName().replace(" ", "&nbsp;")))
+	        		);
 		}
 		
 		public int getLeft() {
-			return 4 + iCellWidth * getDay() + getStartWeek() * (iCellWidth - 6) / iSelectedWeeks.size();
+			return 4 + iCellWidth * getDay() + getStartWeek() * (iCellWidth - 6) / (isSingleRoom() ? iSelectedWeeks.size() : iRoomResources.size());
 		}
 		
 		public int getTop() {
@@ -1182,7 +1262,8 @@ public class TimeGrid extends Composite {
 		}
 		
 		public int getWidth() {
-			return getNrWeeks() * (iCellWidth - 6) / iSelectedWeeks.size() + (getStartWeek() + getNrWeeks() != iSelectedWeeks.size() && iSelectedWeeks.size() > 1 ? 0 : 3);
+			int weeks = (isSingleRoom() ? iSelectedWeeks.size() : iRoomResources.size());
+			return getNrWeeks() * (iCellWidth - 6) / weeks + (getStartWeek() + getNrWeeks() != weeks && weeks > 1 ? 0 : 3);
 		}
 		
 		public int getDay() { return iDay; }
@@ -1223,9 +1304,14 @@ public class TimeGrid extends Composite {
 		}
 		
 		public String toString() {
-			return CONSTANTS.longDays()[getDay()] + " " + iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + 
-				(getNrWeeks() <= 1 ? "" : " - " + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) +
-				" " + getStartTime() + " - " + getEndTime() + " (" + (5 * getLength()) + " mins)";
+			return CONSTANTS.longDays()[getDay()] + " " +
+				(isSingleRoom() ?
+        			iSelectedWeeks.get(getStartWeek()).getDayNames().get(getDay()) + (getNrWeeks() <= 1 ? "" : " - " + iSelectedWeeks.get(getEndWeek()).getDayNames().get(getDay())) :
+        			iSelectedWeeks.get(0).getDayNames().get(getDay())) + " " +
+				getStartTime() + " - " + getEndTime() + " (" + (5 * getLength()) + " mins)" + " " +
+        		(isSingleRoom() ? iRoomResources.get(0).getName() :
+        			iRoomResources.get(getStartWeek()).getName() + (getNrWeeks() <= 1 ? "" : " - " + iRoomResources.get(getEndWeek()).getName()))
+				;
 		}
 		
 		public SelectionInterface getSelection() {
