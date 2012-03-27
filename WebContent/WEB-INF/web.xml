@@ -112,11 +112,6 @@
     </servlet>
 
 	<servlet>
-    	<servlet-name>eventServiceServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.EventServlet</servlet-class>
-    </servlet>
-
-	<servlet>
     	<servlet-name>savedHQLServiceServlet</servlet-name>
     	<servlet-class>org.unitime.timetable.gwt.server.SavedHQLServlet</servlet-class>
     </servlet>
@@ -167,11 +162,6 @@
         <url-pattern>/unitime/lookup.gwt</url-pattern>
     </servlet-mapping>
     
-    <servlet-mapping>
-        <servlet-name>eventServiceServlet</servlet-name>
-        <url-pattern>/unitime/event.gwt</url-pattern>
-    </servlet-mapping>
-
 	<servlet-mapping>
         <servlet-name>reservationServiceServlet</servlet-name>
         <url-pattern>/unitime/reservation.gwt</url-pattern>

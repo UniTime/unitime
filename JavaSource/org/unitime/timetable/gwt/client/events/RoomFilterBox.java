@@ -26,8 +26,10 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -328,11 +330,6 @@ public class RoomFilterBox extends UniTimeFilterBox {
 		} else return super.populateFilter(filter, entities);
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.events.RoomFilterBackend")
-	public static class RoomFilterRpcRequest extends FilterRpcRequest {
-		public RoomFilterRpcRequest() {}
-	}
-
 	@Override
 	public FilterRpcRequest createRpcRequest() {
 		return new RoomFilterRpcRequest();

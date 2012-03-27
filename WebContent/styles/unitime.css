@@ -2056,3 +2056,7 @@ h1 {
 .unitime-IntervalSelectorPopup .item-selected {
 	background-color: #92c1f0;
 }
+
+div.gwt-MenuBarPopup {
+	z-index: 1000000;
+}

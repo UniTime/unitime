@@ -43,14 +43,22 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.client.widgets.WeekSelector;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.services.EventService;
-import org.unitime.timetable.gwt.services.EventServiceAsync;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -91,6 +99,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
  */
 public class EventResourceTimetable extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	
 	private SimpleForm iPanel, iFilter;
@@ -112,8 +121,6 @@ public class EventResourceTimetable extends Composite {
 	private String iLocDate = null, iLocRoom = null;
 	
 	private static EventResourceTimetable sInstance = null;
-	
-	private final EventServiceAsync iEventService = GWT.create(EventService.class);
 	
 	public EventResourceTimetable(String type) {
 		sInstance = this; 
@@ -210,9 +217,11 @@ public class EventResourceTimetable extends Composite {
 			@Override
 			public void requestSuggestions(final Request request, final Callback callback) {
 				if (iSession.getAcademicSessionId() != null) {
-					iEventService.findResources(iSession.getAcademicSessionId().toString(),
-							ResourceType.valueOf(iResourceTypes.getValue(iResourceTypes.getSelectedIndex())),
-							request.getQuery(), request.getLimit(), new AsyncCallback<List<ResourceInterface>>() {
+					RPC.execute(
+							ResourceLookupRpcRequest.findResources(iSession.getAcademicSessionId(),
+									ResourceType.valueOf(iResourceTypes.getValue(iResourceTypes.getSelectedIndex())),
+									request.getQuery(),
+									request.getLimit()), new AsyncCallback<GwtRpcResponseList<ResourceInterface>>() {
 								@Override
 								public void onFailure(final Throwable caught) {
 									ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
@@ -229,7 +238,7 @@ public class EventResourceTimetable extends Composite {
 									ToolBox.checkAccess(caught);
 								}
 								@Override
-								public void onSuccess(List<ResourceInterface> result) {
+								public void onSuccess(GwtRpcResponseList<ResourceInterface> result) {
 									ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
 									for (ResourceInterface resource: result) {
 										suggestions.add(new ResourceSuggestion(resource));
@@ -348,13 +357,13 @@ public class EventResourceTimetable extends Composite {
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
 		
-		iEventService.canLookupPeople(new AsyncCallback<Boolean>() {
+		RPC.execute(EventPropertiesRpcRequest.requestEventProperties(), new AsyncCallback<EventPropertiesRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
 			@Override
-			public void onSuccess(Boolean result) {
-				iCanLookupPeople = (result == null ? false: result);
+			public void onSuccess(EventPropertiesRpcResponse result) {
+				iCanLookupPeople = (result == null ? false: result.isCanLookupPeople());
 				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
 			}
 		});
@@ -397,9 +406,6 @@ public class EventResourceTimetable extends Composite {
 				if (iSession.getAcademicSessionId() != null && (!iRooms.getValue().isEmpty() || !iEvents.getValue().isEmpty())) {
 					ResourceInterface resource = new ResourceInterface();
 					resource.setType(ResourceType.ROOM);
-					resource.setSessionAbbv(iSession.getAcademicSessionAbbreviation());
-					resource.setSessionId(iSession.getAcademicSessionId());
-					resource.setSessionName(iSession.getAcademicSessionName());
 					resource.setName(iRooms.getValue());
 					if (allowEmptyResource)
 						resourceChanged(resource);
@@ -411,7 +417,8 @@ public class EventResourceTimetable extends Composite {
 				if (iSession.getAcademicSessionId() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
 					iFilterHeader.clearMessage();
 					LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
-					iEventService.findResource(iSession.getAcademicSessionId().toString(), type, getResourceName(), new AsyncCallback<ResourceInterface>() {
+					RPC.execute(ResourceLookupRpcRequest.findResource(iSession.getAcademicSessionId(), type, getResourceName()),
+							new AsyncCallback<GwtRpcResponseList<ResourceInterface>>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
@@ -423,9 +430,9 @@ public class EventResourceTimetable extends Composite {
 							iHeader.setEnabled("export", false);
 						}
 						@Override
-						public void onSuccess(ResourceInterface result) {
+						public void onSuccess(GwtRpcResponseList<ResourceInterface> result) {
 							LoadingWidget.getInstance().hide();
-							resourceChanged(result);
+							resourceChanged(result.get(0));
 						}
 					});
 				}				
@@ -436,17 +443,18 @@ public class EventResourceTimetable extends Composite {
 	private void resourceChanged(ResourceInterface resource) {
 		final String locDate = iLocDate;
 		final String locRoom = iLocRoom;
-		LoadingWidget.getInstance().show("Loading " + (resource.getType() == ResourceType.ROOM ? "room" : resource.getName()) + " timetable for " + resource.getSessionName() + " ...");
+		LoadingWidget.getInstance().show("Loading " + (resource.getType() == ResourceType.ROOM ? "room" : resource.getName()) + " timetable for " + iSession.getAcademicSessionName() + " ...");
 		iResource = resource;
 		iFilterHeader.clearMessage();
-		iEventService.findEvents(iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings(), new AsyncCallback<List<EventInterface>>() {
+		RPC.execute(EventLookupRpcRequest.findEvents(iSession.getAcademicSessionId(), iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings()), 
+				new AsyncCallback<GwtRpcResponseList<EventInterface>>() {
 			@Override
-			public void onSuccess(List<EventInterface> result) {
+			public void onSuccess(GwtRpcResponseList<EventInterface> result) {
 				iData = result;
 				LoadingWidget.getInstance().hide();
 				changeUrl();
 				if (iData.isEmpty()) {
-					iFilterHeader.setErrorMessage("No events found for " + (iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel() + " ") + iResource.getName() + " in " + iResource.getSessionName() + "."); 
+					iFilterHeader.setErrorMessage("No events found for " + (iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel() + " ") + iResource.getName() + " in " + iSession.getAcademicSessionName() + "."); 
 					for (int i = 1; i < iPanel.getRowCount(); i++)
 						iPanel.getRowFormatter().setVisible(i, i == iLastRow);
 					iGridPanel.setVisible(false);
@@ -501,22 +509,7 @@ public class EventResourceTimetable extends Composite {
 					populateEventTable(iTable);
 					iTablePanel.setWidget(iTable);
 					
-					if (iResource.hasWeeks()) {
-						List<WeekInterface> weeks = new ArrayList<WeekInterface>();
-						for (WeekInterface week: iResource.getWeeks()) {
-							boolean hasEvents = false;
-							events: for (EventInterface event: iData) {
-								for (MeetingInterface meeting: event.getMeetings()) {
-									if (meeting.getDayOfYear() >= week.getDayOfYear() && meeting.getDayOfYear() < week.getDayOfYear() + 7) {
-										hasEvents = true;
-										break events;
-									}
-								}
-							}
-							if (hasEvents) weeks.add(week);
-						}						
-						iWeekPanel.setValues(weeks);
-					} else if (iWeekPanel.getAllWeeks() != null) {
+					if (iWeekPanel.getAllWeeks() != null) {
 						List<WeekInterface> weeks = new ArrayList<WeekInterface>();
 						for (WeekInterface week: iWeekPanel.getAllWeeks()) {
 							boolean hasEvents = false;
@@ -543,7 +536,7 @@ public class EventResourceTimetable extends Composite {
 					
 					iHeader.setEnabled("print", true);
 					for (int i = 1; i < iPanel.getRowCount(); i++)
-						iPanel.getRowFormatter().setVisible(i, i != iWeekRow || iResource.hasWeeks() || iWeekPanel.getAllWeeks() != null);
+						iPanel.getRowFormatter().setVisible(i, true);
 					iGridPanel.setVisible(true);
 				}
 			}
@@ -597,7 +590,7 @@ public class EventResourceTimetable extends Composite {
 		}
 		ret += (timetable ? " timetable for " : " events for ");
 		if (iWeekPanel.getValue() == null || iWeekPanel.getValue().isAll())
-			ret += iResource.getSessionName();
+			ret += iSession.getAcademicSessionName();
 		else
 			ret += iWeekPanel.getValue().toString().toLowerCase();
 		return ret;
@@ -1058,7 +1051,7 @@ public class EventResourceTimetable extends Composite {
 	}
 	
 	private String serialize(IsSerializable object) throws SerializationException {
-		SerializationStreamFactory factory = (SerializationStreamFactory)iEventService;
+		SerializationStreamFactory factory = (SerializationStreamFactory)RPC;
 		SerializationStreamWriter writer = factory.createStreamWriter();
 		writer.writeObject(object);
 		return URL.encodeQueryString(writer.toString());
@@ -1067,8 +1060,8 @@ public class EventResourceTimetable extends Composite {
 	
 	
 	protected void changeUrl() {
-		UniTimeFilterBox.FilterRpcRequest events = iEvents.getElementsRequest();
-		UniTimeFilterBox.FilterRpcRequest rooms = iRooms.getElementsRequest();
+		FilterRpcRequest events = iEvents.getElementsRequest();
+		FilterRpcRequest rooms = iRooms.getElementsRequest();
 		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
 			events.setOption("from", String.valueOf(iWeekPanel.getValue().getFirst().getDayOfYear()));
 			events.setOption("to", String.valueOf((iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6));
@@ -1077,7 +1070,7 @@ public class EventResourceTimetable extends Composite {
 			for (ResourceInterface resource: iRoomPanel.getValue().getSelected())
 				events.addOption("room", resource.getId().toString());
 		}
-		String query = "sid=" + (iResource == null || iResource.getSessionId() == null ? iSession.getAcademicSessionId() : iResource.getSessionId()) +
+		String query = "sid=" + iSession.getAcademicSessionId() +
 			(iResource == null || iResource.getType() == null ? "" : "&type=" + iResource.getType().toString().toLowerCase()) +
 			(iResource == null || iResource.getId() == null ? "" : "&id=" + iResource.getId()) +
 			(iResource == null || iResource.getExternalId() == null ? "" : "&ext=" + iResource.getExternalId());
@@ -1102,15 +1095,15 @@ public class EventResourceTimetable extends Composite {
 				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
 			}
 		}
-		iEventService.encode(query, new AsyncCallback<String>() {
+		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iHeader.setEnabled("export", false);
 						iTimeGrid.setCalendarUrl(null);
 					}
 					@Override
-					public void onSuccess(String result) {
-						iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + result);
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + result.getQuery());
 						iHeader.setEnabled("export", true);
 					}
 		});
@@ -1118,7 +1111,7 @@ public class EventResourceTimetable extends Composite {
 		iLocDate = iWeekPanel.getSelection();
 		iLocRoom = iRoomPanel.getSelection();
 		changeUrl(Window.Location.getParameter("page"),
-				"term=" + URL.encodeQueryString(iResource == null || iResource.getSessionAbbv() == null ? iSession.getAcademicSessionAbbreviation() : iResource.getSessionAbbv()) +
+				"term=" + URL.encodeQueryString(iSession.getAcademicSessionAbbreviation()) +
 				"&type=" + iResourceTypes.getValue(iResourceTypes.getSelectedIndex()).toLowerCase() +
 				(iResource == null || iResource.getAbbreviation() == null || iResource.getType() == ResourceType.PERSON ? "" : "&name=" + URL.encodeQueryString(iResource.getAbbreviation())) +
 				(iLocDate.isEmpty() ? "" : "&date=" + URL.encodeQueryString(iLocDate)) +

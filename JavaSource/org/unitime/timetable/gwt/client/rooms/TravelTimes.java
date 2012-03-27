@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.RoomFilterBox;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -36,6 +35,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -150,7 +150,7 @@ public class TravelTimes extends Composite {
 				iFooter.setVisible(false);
 				iMatrix.clear();
 				LoadingWidget.showLoading("Loading travel times...");
-				iRoomFilter.getElements(new AsyncCallback<List<UniTimeFilterBox.FilterRpcResponse.Entity>>() {
+				iRoomFilter.getElements(new AsyncCallback<List<FilterRpcResponse.Entity>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.hideLoading();
@@ -158,7 +158,7 @@ public class TravelTimes extends Composite {
 					}
 
 					@Override
-					public void onSuccess(List<UniTimeFilterBox.FilterRpcResponse.Entity> result) {
+					public void onSuccess(List<FilterRpcResponse.Entity> result) {
 						if (result == null || result.isEmpty()) {
 							LoadingWidget.hideLoading();
 							iHeader.setErrorMessage("There are no rooms are matching the filter.");
@@ -167,7 +167,7 @@ public class TravelTimes extends Composite {
 							iHeader.setErrorMessage("There is only one room matching the filter.");
 						} else {
 							TravelTimesRequest request = TravelTimesRequest.loadRooms();
-							for (UniTimeFilterBox.FilterRpcResponse.Entity e: result) {
+							for (FilterRpcResponse.Entity e: result) {
 								request.addRoom(new Room(e.getUniqueId(), null));
 							}
 							RPC.execute(request, new AsyncCallback<TravelTimeResponse>() {

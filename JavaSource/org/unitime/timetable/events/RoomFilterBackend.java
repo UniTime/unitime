@@ -35,11 +35,11 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcRequest;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcResponse;
-import org.unitime.timetable.gwt.client.events.UniTimeFilterBox.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
