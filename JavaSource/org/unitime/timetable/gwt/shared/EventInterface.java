@@ -246,6 +246,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (o == null || !(o instanceof WeekInterface)) return false;
 			return getDayOfYear() == ((WeekInterface)o).getDayOfYear();
 		}
+		
+		public String toString() { return getName(); }
 	}
 	
 	public static class MeetingInterface implements Comparable<MeetingInterface>, IsSerializable {
@@ -424,7 +426,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class SelectionInterface implements IsSerializable {
 		private Set<Integer> iDays = new TreeSet<Integer>();
 		private int iStartSlot, iLength;
-		private ResourceInterface iLocation;
+		private Set<ResourceInterface> iLocations = new TreeSet<ResourceInterface>();
 		
 		public SelectionInterface() {}
 		
@@ -437,8 +439,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int getLength() { return iLength; }
 		public void setLength(int length) { iLength = length; }
 		
-		public ResourceInterface getLocation() { return iLocation; }
-		public void setLocation(ResourceInterface location) { iLocation = location; }
+		public Set<ResourceInterface> getLocations() { return iLocations; }
+		public void addLocation(ResourceInterface location) { iLocations.add(location); }
 	}
 	
 	public static abstract class FilterRpcRequest implements GwtRpcRequest<FilterRpcResponse> {
