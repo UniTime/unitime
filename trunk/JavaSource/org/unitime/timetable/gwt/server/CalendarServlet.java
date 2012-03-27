@@ -23,13 +23,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -46,26 +41,23 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
-import org.unitime.timetable.gwt.client.events.EventFilterBox;
+import org.unitime.timetable.events.EventLookupBackend;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -103,7 +95,6 @@ import net.sf.cpsolver.studentsct.model.Section;
  */
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Params params = null;
@@ -145,7 +136,7 @@ public class CalendarServlet extends HttpServlet {
     	String eventIds = params.getParameter("eid");
     	String meetingIds = params.getParameter("mid");
     	String userId = params.getParameter("uid");
-    	if (q == null) userId = decode(userId);
+    	if (q == null) userId = QueryEncoderBackend.decode(userId);
     	String type = params.getParameter("type");
    
 		response.setContentType("text/calendar; charset=UTF-8");
@@ -280,17 +271,18 @@ public class CalendarServlet extends HttpServlet {
                 }
             }
             if (type != null) {
-            	ResourceInterface r = new ResourceInterface();
+            	EventLookupRpcRequest r = new EventLookupRpcRequest();
             	r.setSessionId(sessionId);
             	String id = params.getParameter("id");
-            	if (id != null) r.setId(Long.valueOf(id));
+            	if (id != null) r.setResourceId(Long.valueOf(id));
             	String ext = params.getParameter("ext");
             	if (ext != null)
-            		r.setExternalId(ext);
-            	r.setType(ResourceType.valueOf(type.toUpperCase()));
-            	EventFilterBox.EventFilterRpcRequest eventFilter = new EventFilterBox.EventFilterRpcRequest();
+            		r.setResourceExternalId(ext);
+            	r.setResourceType(ResourceType.valueOf(type.toUpperCase()));
+            	EventFilterRpcRequest eventFilter = new EventFilterRpcRequest();
             	eventFilter.setSessionId(sessionId);
-            	EventFilterBox.EventFilterRpcRequest roomFilter = new EventFilterBox.EventFilterRpcRequest();
+            	r.setEventFilter(eventFilter);
+            	RoomFilterRpcRequest roomFilter = new RoomFilterRpcRequest();
             	roomFilter.setSessionId(sessionId);
             	boolean hasRoomFilter = false;
             	for (Enumeration<String> e = params.getParameterNames(); e.hasMoreElements(); ) {
@@ -309,6 +301,8 @@ public class CalendarServlet extends HttpServlet {
             				roomFilter.addOption(command.substring(2), value);
             		}
             	}
+            	if (hasRoomFilter)
+            		r.setRoomFilter(roomFilter);
             	String user = params.getParameter("user");
             	if (user != null) {
             		eventFilter.setOption("user", user);
@@ -319,7 +313,7 @@ public class CalendarServlet extends HttpServlet {
             			roomFilter.setOption("role", role);
             		}
             	}
-            	for (EventInterface e: new EventServlet().findEvents(r, eventFilter, (hasRoomFilter ? roomFilter : null), false, -1))
+            	for (EventInterface e: new EventLookupBackend().findEvents(r))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");
@@ -1045,45 +1039,6 @@ public class CalendarServlet extends HttpServlet {
     	
         out.println("END:VFREEBUSY");
 	}
-	
-	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
-		byte salt[] = new byte[] { (byte)0x33, (byte)0x7b, (byte)0x09, (byte)0x0e, (byte)0xcf, (byte)0x5a, (byte)0x58, (byte)0xd9 };
-		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-		KeySpec spec = new PBEKeySpec(ApplicationProperties.getProperty("unitime.encode.secret", "ThisIs8Secret").toCharArray(), salt, 1024, 128);
-		SecretKey key = factory.generateSecret(spec);
-		return new SecretKeySpec(key.getEncoded(), "AES");
-	}
-	
-	public static String encode(String text) {
-		try {
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-			cipher.init(Cipher.ENCRYPT_MODE, secret());
-			return new BigInteger(cipher.doFinal(text.getBytes())).toString(36);
-		} catch (Exception e) {
-			sLog.warn("Encoding failed: " + e.getMessage());
-			try {
-				return URLEncoder.encode(text, "ISO-8859-1");
-			} catch (UnsupportedEncodingException x) {
-				return null;
-			}
-		}
-	}
-	
-	public static String decode(String text) {
-		try {
-			if (text == null || text.isEmpty()) return null;
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-			cipher.init(Cipher.DECRYPT_MODE, secret());
-			return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
-		} catch (Exception e) {
-			sLog.warn("Decoding failed: " + e.getMessage());
-			try {
-				return URLDecoder.decode(text, "ISO-8859-1");
-			} catch (UnsupportedEncodingException x) {
-				return null;
-			}
-		}
-	}
 
 	private static interface Params {
 		public String getParameter(String name);
@@ -1116,7 +1071,7 @@ public class CalendarServlet extends HttpServlet {
 		private Map<String, List<String>> iParams = new HashMap<String, List<String>>();
 		
 		QParams(String q) throws UnsupportedEncodingException {
-			for (String p: decode(q).split("&")) {
+			for (String p: QueryEncoderBackend.decode(q).split("&")) {
 				String name = p.substring(0, p.indexOf('='));
 				String value = URLDecoder.decode(p.substring(p.indexOf('=') + 1), "UTF-8");
 				List<String> values = iParams.get(name);

@@ -54,8 +54,8 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.commons.web.WebTable.WebTableTweakStyle;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
-import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.Assignment;
@@ -151,7 +151,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         if (request.getParameter("q") != null) {
-        	String[] params = CalendarServlet.decode(request.getParameter("q")).split(":");
+        	String[] params = QueryEncoderBackend.decode(request.getParameter("q")).split(":");
         	if (params != null && params.length == 2) {
         		myForm.setUid(params[0]);
         		myForm.setSessionId(Long.valueOf(params[1]));
@@ -435,7 +435,7 @@ public class PersonalizedExamReportAction extends Action {
         
         if ("iCalendar".equals(myForm.getOp())) {
         	Long sid = (instructor != null ? instructor.getDepartment().getSession().getUniqueId() : student.getSession().getUniqueId());
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?q=" + CalendarServlet.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid)));
+        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?q=" + QueryEncoderBackend.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid)));
         }
         
         /*
@@ -605,7 +605,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getStudentExamSchedule(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         PdfWebTable table = new PdfWebTable( 5,
                 student.getSession().getLabel()+" Examination Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o1=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
+                "personalSchedule.do?o1=%%&q=" + QueryEncoderBackend.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
                 new String[] {
                     "Class / Course",
                     "Meeting Time",
@@ -653,7 +653,7 @@ public class PersonalizedExamReportAction extends Action {
         boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.student.btb","true"));
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Examination Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o3=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
+                "personalSchedule.do?o3=%%&q=" + QueryEncoderBackend.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -839,7 +839,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o2=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":" + instructor.getDepartment().getSession().getUniqueId()),
+                "personalSchedule.do?o2=%%&q=" + QueryEncoderBackend.encode(instructor.getExternalUniqueId()+ ":" + instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Class / Course",
                     "Enrollment",
@@ -894,7 +894,7 @@ public class PersonalizedExamReportAction extends Action {
         boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.instructor.btb","true"));
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o4=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
+                "personalSchedule.do?o4=%%&q=" + QueryEncoderBackend.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -1100,7 +1100,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Conflicts for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o5=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
+                "personalSchedule.do?o5=%%&q=" + QueryEncoderBackend.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Name",
                     "Type",
@@ -1407,7 +1407,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Class Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o6=%%&q=" + CalendarServlet.encode(student.getExternalUniqueId()+ ":"+student.getSession().getUniqueId()),
+                "personalSchedule.do?o6=%%&q=" + QueryEncoderBackend.encode(student.getExternalUniqueId()+ ":"+student.getSession().getUniqueId()),
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",
@@ -1456,7 +1456,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 instructor.getDepartment().getSession().getLabel()+" Class Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "personalSchedule.do?o7=%%&q=" + CalendarServlet.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
+                "personalSchedule.do?o7=%%&q=" + QueryEncoderBackend.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",

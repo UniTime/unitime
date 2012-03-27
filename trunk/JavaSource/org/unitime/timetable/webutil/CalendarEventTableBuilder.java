@@ -30,9 +30,9 @@ import java.util.TimeZone;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
-import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.util.Constants;
@@ -124,7 +124,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             			}
             }
         }
-        return "calendar?q=" + CalendarServlet.encode((sid == null ? "" : "sid=" + sid + "&") + "eid=" + eventIds);
+        return "calendar?q=" + QueryEncoderBackend.encode((sid == null ? "" : "sid=" + sid + "&") + "eid=" + eventIds);
     }
     
     public File calendarTableForEvents (EventListForm form){
@@ -189,7 +189,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             		sid = meeting.getLocation().getSession().getUniqueId();
             }
         }
-        return "calendar?q=" + CalendarServlet.encode((sid == null ? "" : "sid=" + sid + "&") + "mid=" + meetingIds);
+        return "calendar?q=" + QueryEncoderBackend.encode((sid == null ? "" : "sid=" + sid + "&") + "mid=" + meetingIds);
     }
 
     public File calendarTableForMeetings (MeetingListForm form){

@@ -466,6 +466,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         		createQuery("select distinct dp from SchedulingSubpart as s inner join s.datePattern as dp where dp.session.uniqueId=:sessionId").
         		setLong("sessionId", sessionId.longValue()).
         		setCacheable(true).list());
+    	ret.addAll((new DatePatternDAO()).
+        		getSession().
+        		createQuery("select distinct dp from Assignment a inner join a.datePattern dp where dp.session.uniqueId=:sessionId").
+        		setLong("sessionId", sessionId.longValue()).
+        		setCacheable(true).list());
     	Session session = new SessionDAO().get(sessionId);
     	if (session.getDefaultDatePattern()!=null) ret.add(session.getDefaultDatePattern());
     	return ret;

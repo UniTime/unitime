@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -38,6 +37,9 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -440,11 +442,6 @@ public class EventFilterBox extends UniTimeFilterBox {
 		} else {
 			super.addSuggestion(suggestions, entity);
 		}
-	}
-
-	@GwtRpcImplementedBy("org.unitime.timetable.events.EventFilterBackend")
-	public static class EventFilterRpcRequest extends FilterRpcRequest {
-		public EventFilterRpcRequest() {}
 	}
 
 	@Override

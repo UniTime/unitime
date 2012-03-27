@@ -23,5 +23,5 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 
 public interface GwtRpcImplementation<T extends GwtRpcRequest<R>, R extends GwtRpcResponse> {
-	public R execute(T command, GwtRpcHelper helper);
+	public R execute(T request, GwtRpcHelper helper);
 }
