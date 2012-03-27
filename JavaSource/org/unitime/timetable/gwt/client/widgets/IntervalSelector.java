@@ -429,6 +429,14 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		return iValue;
 	}
 	
+	public boolean isOne() {
+		return (iValues != null && iValues.size() == 1) || (iValue != null && iValue.isOne());
+	}
+	
+	public List<T> getSelected() {
+		return (iValue == null ? iValues : iValue.getSelected());
+	}
+	
 	public Interval getDefaultValue() {
 		return iDefaultValue;
 	}
