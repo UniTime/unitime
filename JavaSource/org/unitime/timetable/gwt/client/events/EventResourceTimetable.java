@@ -506,12 +506,14 @@ public class EventResourceTimetable extends Composite {
 						}
 					}
 					nrDays ++;
+					int days[] = new int[nrDays];
+					for (int i = 0; i < days.length; i++) days[i] = i;
 					int firstHour = firstSlot / 12;
 					int lastHour = 1 + (lastSlot - 1) / 12;
 					HashMap<Long, String> colors = new HashMap<Long, String>();
 					
 					if (iTimeGrid != null) iTimeGrid.destroy();
-					iTimeGrid = new TimeGrid(colors, nrDays, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+					iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					populateGrid();
 					iGridPanel.setWidget(iTimeGrid);
 					
@@ -1071,18 +1073,19 @@ public class EventResourceTimetable extends Composite {
 				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
 			}
 		}
-		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						iHeader.setEnabled("export", false);
-						iTimeGrid.setCalendarUrl(null);
-					}
-					@Override
-					public void onSuccess(EncodeQueryRpcResponse result) {
-						iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + result.getQuery());
-						iHeader.setEnabled("export", true);
-					}
-		});
+		if (iTimeGrid != null)
+			RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iHeader.setEnabled("export", false);
+					iTimeGrid.setCalendarUrl(null);
+				}
+				@Override
+				public void onSuccess(EncodeQueryRpcResponse result) {
+					iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "calendar?q=" + result.getQuery());
+					iHeader.setEnabled("export", true);
+				}
+			});
 		
 		iLocDate = iWeekPanel.getSelection();
 		iLocRoom = iRoomPanel.getSelection();
