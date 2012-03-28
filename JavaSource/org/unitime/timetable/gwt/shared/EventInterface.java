@@ -39,16 +39,21 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class EventInterface implements Comparable<EventInterface>, IsSerializable {
+public class EventInterface implements Comparable<EventInterface>, IsSerializable, GwtRpcResponse {
 	private Long iEventId;
 	private String iEventName;
-	private String iEventType;
+	private EventType iEventType;
+	private String iEventEmail;
 	private TreeSet<MeetingInterface> iMeetings = null;
-	private String iSponsor, iInstructor, iContact, iEmail;
+	private ContactInterface iContact;
+	private SponsoringOrganizationInterface iSponsor;
+	private List<ContactInterface> iInstructors, iAdditionalContacts;
+	private String iLastChange = null;
+	private TreeSet<NoteInterface> iNotes;
 	
 	private List<String> iCourseNames = null;
 	private String iInstruction = null;
-	private Integer iInstructionType = null;
+	private Integer iInstructionType = null, iMaxCapacity = null;
 	private List<String> iExternalIds = null;
 	private boolean iCanView = false, iCanEdit = false;
 	
@@ -70,6 +75,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getPageTitle() { return iPageTitle; }
 		public boolean isVisible() { return iVisible; }
 	}
+	
+	public static enum EventType implements IsSerializable {
+		Class("Class", "Class Event"),
+		FinalExam("Final Exam", "Final Examination Event"),
+		MidtermExam("Midterm Exam", "Midterm Examination Event"),
+		Course("Course", "Course Related Event"),
+		Special("Special", "Special Event");
+		
+		private String iAbbreviation, iName;
+		EventType(String abbv, String name) { iAbbreviation = abbv; iName = name; }
+		
+		public String getAbbreviation() { return iAbbreviation; }
+		public String getName() { return iName; }
+		public int getType() { return ordinal(); }
+		public String toString() { return getAbbreviation(); }
+	}
 
 	public EventInterface() {}
 	
@@ -77,19 +98,65 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public void setId(Long id) { iEventId = id; }
 	public String getName() { return iEventName; }
 	public void setName(String name) { iEventName = name; }
-	public String getType() { return iEventType; }
-	public void setType(String type) { iEventType = type; }
-	public String getSponsor() { return iSponsor; }
-	public void setSponsor(String sponsor) { iSponsor = sponsor; }
-	public boolean hasSponsor() { return iSponsor != null && !iSponsor.isEmpty(); }
-	public String getInstructor() { return iInstructor; }
-	public void setInstructor(String instructor) { iInstructor = instructor; }
-	public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
-	public String getEmail() { return iEmail; }
-	public void setEmail(String email) { iEmail = email; }
-	public String getContact() { return iContact; }
-	public void setContact(String contact) { iContact = contact; }
-	public boolean hasContact() { return iContact != null && !iContact.isEmpty(); }
+	public EventType getType() { return iEventType; }
+	public void setType(EventType type) { iEventType = type; }
+	public SponsoringOrganizationInterface getSponsor() { return iSponsor; }
+	public void setSponsor(SponsoringOrganizationInterface sponsor) { iSponsor = sponsor; }
+	public boolean hasSponsor() { return iSponsor != null; }
+
+	public String getEmail() { return iEventEmail; }
+	public boolean hasEmail() { return iEventEmail != null && !iEventEmail.isEmpty(); }
+	public void setEmail(String email) { iEventEmail = email; }
+	
+	public TreeSet<NoteInterface> getNotes() { return iNotes; }
+	public boolean hasNotes() { return iNotes != null && !iNotes.isEmpty(); }
+	public void addNote(NoteInterface note) {
+		if (iNotes == null) iNotes = new TreeSet<NoteInterface>();
+		iNotes.add(note);
+	}
+
+	public String getLastChange() { return iLastChange; }
+	public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
+	public void setLastChange(String lastChange) { iLastChange = lastChange; }
+
+	public boolean hasMaxCapacity() { return iMaxCapacity != null; }
+	public Integer getMaxCapacity() { return iMaxCapacity; }
+	public void setMaxCapacity(Integer maxCapacity) { iMaxCapacity = maxCapacity; }
+
+	public List<ContactInterface> getInstructors() { return iInstructors; }
+	public void addInstructor(ContactInterface instructor) {
+		if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
+		iInstructors.add(instructor);
+	}
+	public String getInstructorNames(String separator) { 
+		if (!hasInstructors()) return "";
+		String ret = "";
+		for (ContactInterface instructor: getInstructors()) {
+			ret += (ret.isEmpty() ? "" : separator) + instructor.getName();
+		}
+		return ret;
+	}
+	public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+	
+	public ContactInterface getContact() { return iContact; }
+	public void setContact(ContactInterface contact) { iContact = contact; }
+	public boolean hasContact() { return iContact != null; }
+	
+	public List<ContactInterface> getAdditionalContacts() { return iAdditionalContacts; }
+	public void addAdditionalContact(ContactInterface contact) {
+		if (iAdditionalContacts == null) iAdditionalContacts = new ArrayList<ContactInterface>();
+		iAdditionalContacts.add(contact);
+	}
+	public String getAdditionalContactNames(String separator) { 
+		if (!hasAdditionalContacts()) return "";
+		String ret = "";
+		for (ContactInterface contact: getAdditionalContacts()) {
+			ret += (ret.isEmpty() ? "" : separator) + contact.getName();
+		}
+		return ret;
+	}
+	public boolean hasAdditionalContacts() { return iAdditionalContacts != null && !iAdditionalContacts.isEmpty(); }
+	
 	public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
 	public void addMeeting(MeetingInterface meeting) {
 		if (iMeetings == null) iMeetings = new TreeSet<MeetingInterface>();
@@ -423,6 +490,111 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
         return ret;
     }
     
+    public static class ContactInterface implements IsSerializable {
+    	private String iFirstName, iMiddleName, iLastName;
+    	private String iExternalId, iEmail, iPhone;
+    	
+    	public ContactInterface() {}
+    	
+    	public void setFirstName(String name) { iFirstName = name; }
+    	public boolean hasFirstName() { return iFirstName != null && !iFirstName.isEmpty(); }
+    	public String getFirstName() { return iFirstName; }
+
+    	public void setMiddleName(String name) { iMiddleName = name; }
+    	public boolean hasMiddleName() { return iMiddleName != null && !iMiddleName.isEmpty(); }
+    	public String getMiddleName() { return iMiddleName; }
+
+    	public void setLastName(String name) { iLastName = name; }
+    	public boolean hasLastName() { return iLastName != null && !iLastName.isEmpty(); }
+    	public String getLastName() { return iLastName; }
+
+    	public void setExternalId(String externalId) { iExternalId = externalId; }
+    	public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+    	public String getExternalId() { return iExternalId; }
+
+    	public void setEmail(String email) { iEmail = email; }
+    	public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
+    	public String getEmail() { return iEmail; }
+
+    	public void setPhone(String phone) { iPhone = phone; }
+    	public boolean hasPhone() { return iPhone != null && !iPhone.isEmpty(); }
+    	public String getPhone() { return iPhone; }
+    	
+    	public String getName() {
+    		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
+    				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : ""); 
+    	}
+    	
+    	public String toString() { return getName(); }
+    }
+    
+    public static class SponsoringOrganizationInterface implements IsSerializable {
+    	private String iName, iEmail;
+    	private Long iUniqueId;
+    	
+    	public SponsoringOrganizationInterface() {}
+    	
+    	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+    	public Long getUniqueId() { return iUniqueId; }
+
+    	public void setName(String name) { iName = name; }
+    	public boolean hasName() { return iName != null && !iName.isEmpty(); }
+    	public String getName() { return iName; }
+
+    	public void setEmail(String email) { iEmail = email; }
+    	public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
+    	public String getEmail() { return iEmail; }
+
+    	public String toString() { return getName(); }
+    }
+    
+    public static class NoteInterface implements IsSerializable, Comparable<NoteInterface> {
+    	private Date iDate;
+    	private String iUser;
+    	private NoteType iType;
+    	private String iMeetings;
+    	private String iNote;
+    	
+    	public static enum NoteType {
+    		Create("Create"),
+    		AddMeetings("Update"),
+    		Approve("Approve"),
+    		Reject("Reject"),
+    		Delete("Delete"),
+    		Edit("Edit"),
+    		Inquire("Inquire");
+    		
+    		private String iName;
+    		
+    		NoteType(String name) { iName = name; }
+    		
+    		public String getName() { return iName; }
+    		public String toString() { return iName; }
+    	}
+    	
+    	public NoteInterface() {}
+    	
+    	public Date getDate() { return iDate; }
+    	public void setDate(Date date) { iDate = date; }
+    	
+    	public String getUser() { return iUser; }
+    	public void setUser(String user) { iUser = user; }
+    	
+    	public NoteType getType() { return iType; }
+    	public void setType(NoteType type) { iType = type; }
+    	
+    	public String getMeetings() { return iMeetings; }
+    	public void setMeetings(String meetings) { iMeetings = meetings; }
+    	
+    	public String getNote() { return iNote; }
+    	public void setNote(String note) { iNote = note; }
+
+		@Override
+		public int compareTo(NoteInterface note) {
+			return getDate().compareTo(note.getDate());
+		}
+    }
+    
 	public static class SelectionInterface implements IsSerializable {
 		private Set<Integer> iDays = new TreeSet<Integer>();
 		private int iStartSlot, iLength;
@@ -749,6 +921,26 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isCanLookupPeople() { return iCanLookupPeople; }
 		public void setCanLookupPeople(boolean canLookupPeople) { iCanLookupPeople = canLookupPeople; }
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventDetailBackend")
+	public static class EventDetailRpcRequest implements GwtRpcRequest<EventInterface> {
+		private Long iSessionId;
+		private Long iEventId;
+		public EventDetailRpcRequest() {}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public Long getEventId() { return iEventId; }
+		public void setEventId(Long eventId) { iEventId = eventId; }
+		
+		public static EventDetailRpcRequest requestEventDetails(Long sessionId, Long eventId) {
+			EventDetailRpcRequest request = new EventDetailRpcRequest();
+			request.setSessionId(sessionId);
+			request.setEventId(eventId);
+			return request;
+		}
 	}
 	
 }

@@ -41,11 +41,13 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -622,7 +624,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						event = new EventInterface();
 						event.setId(m.getEvent().getUniqueId());
 						event.setName(m.getEvent().getEventName());
-						event.setType(m.getEvent().getEventTypeAbbv());
+						event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 						events.put(m.getEvent().getUniqueId(), event);
 						event.setCanView(request.getEventFilter().hasOption("role") || (request.getEventFilter().hasOption("user") && request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
 						event.setCanEdit(event.isCanView() && (
@@ -631,29 +633,37 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 								request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
 						ret.add(event);
 						
-						if (m.getEvent().getMainContact() != null)
-							event.setContact(
-									(m.getEvent().getMainContact().getLastName() == null ? "" : m.getEvent().getMainContact().getLastName() + ", ") +
-									(m.getEvent().getMainContact().getFirstName() == null ? "" : m.getEvent().getMainContact().getFirstName()) + 
-									(m.getEvent().getMainContact().getMiddleName() == null ? "" : " " + m.getEvent().getMainContact().getMiddleName()));
-						
+						if (m.getEvent().getMainContact() != null) {
+							ContactInterface contact = new ContactInterface();
+							contact.setFirstName(m.getEvent().getMainContact().getFirstName());
+							contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
+							contact.setLastName(m.getEvent().getMainContact().getLastName());
+							// contact.setExternalId(m.getEvent().getMainContact().getExternalUniqueId());
+							// contact.setPhone(m.getEvent().getMainContact().getPhone());
+							// contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
+							event.setContact(contact);
+						}
 						if (m.getEvent().getSponsoringOrganization() != null) {
-							event.setSponsor(m.getEvent().getSponsoringOrganization().getName());
-							event.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
+							SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
+							sponsor.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
+							sponsor.setName(m.getEvent().getSponsoringOrganization().getName());
+							sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
+							event.setSponsor(sponsor);
 						}
 						
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
 				    		if (clazz.getDisplayInstructor()) {
-				    			String instructor = "", email = "";
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
-				    				if (!instructor.isEmpty()) { instructor += "|"; email += "|"; }
-				    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
-				    				email += (i.getInstructor().getEmail() == null ? "-" : i.getInstructor().getEmail());
+									ContactInterface instructor = new ContactInterface();
+									instructor.setFirstName(i.getInstructor().getFirstName());
+									instructor.setMiddleName(i.getInstructor().getMiddleName());
+									instructor.setLastName(i.getInstructor().getLastName());
+									// instructor.setExternalId(i.getInstructor().getExternalUniqueId());
+									// instructor.setEmail(i.getInstructor().getEmail());
+									event.addInstructor(instructor);
 				    			}
-				    			event.setInstructor(instructor);
-				    			event.setEmail(email);
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
@@ -722,14 +732,15 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
-			    			String instructor = "", email = "";;
 			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
-			    				if (!instructor.isEmpty()) { instructor += "|"; email += "|"; }
-			    				instructor += Constants.toInitialCase(i.nameLastNameFirst());
-			    				email += (i.getEmail() == null ? "" : i.getEmail());
+								ContactInterface instructor = new ContactInterface();
+								instructor.setFirstName(i.getFirstName());
+								instructor.setMiddleName(i.getMiddleName());
+								instructor.setLastName(i.getLastName());
+								// instructor.setExternalId(i.getExternalUniqueId());
+								// instructor.setEmail(i.getEmail());
+								event.addInstructor(instructor);
 			    			}
-			    			event.setInstructor(instructor);
-			    			event.setEmail(email);
 			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
 			    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						    		switch (request.getResourceType()) {

@@ -38,6 +38,9 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("MM/dd/yyyy")
 	String eventDateFormat();
 	
+	@DefaultStringValue("MM/dd hh:mmaa")
+	String timeStampFormat();
+	
 	@DefaultIntValue(3)
 	int eventSlotIncrement();
 	
