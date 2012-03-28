@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -229,6 +230,7 @@ public class TimeGrid extends Composite {
 	}
 	
 	public void destroy() {
+		iMeetingClickHandlers.clear();
 		for (HandlerRegistration reg: iHandlerRegistrations)
 			reg.removeHandler();
 	}
@@ -678,10 +680,11 @@ public class TimeGrid extends Composite {
 			}
 			if (!isSingleRoom() || getResourceType() != ResourceType.ROOM)
 				notes.add(roomString);
-			if (event.hasInstructor())
-				notes.add(event.getInstructor().replace("|", "<br>"));
+			if (event.hasInstructors())
+				for (ContactInterface instructor: event.getInstructors())
+					notes.add(instructor.getName());
 			if (event.hasSponsor())
-				notes.add(event.getSponsor());
+				notes.add(event.getSponsor().getName());
 			done.add(addMeeting(
 					event,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
@@ -708,6 +711,10 @@ public class TimeGrid extends Composite {
 	
 	public void addMeetingClickHandler(MeetingClickHandler h) {
 		iMeetingClickHandlers.add(h);
+	}
+	
+	public void removeMeetingClickHandler(MeetingClickHandler h) {
+		iMeetingClickHandlers.remove(h);
 	}
 
 	public class Meeting extends AbsolutePanel {
@@ -1361,5 +1368,4 @@ public class TimeGrid extends Composite {
 	public List<SelectionInterface> getSelections() {
 		return iAllSelections;
 	}
-
 }

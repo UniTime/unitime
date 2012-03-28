@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -95,6 +96,16 @@ public class SimpleForm extends FlexTable {
 		setWidget(row, 0, header);
 		setWidget(row, 1, widget);
 		return row;
+	}
+	
+	public int getRow(String text) {
+		for (int row = 0; row < getRowCount(); row ++) {
+			if (getCellCount(row) > 1) {
+				Widget w = getWidget(row, 0);
+				if (w instanceof HasText && text.equals(((HasText)w).getText())) return row;
+			}
+		}
+		return -1;
 	}
 	
 }

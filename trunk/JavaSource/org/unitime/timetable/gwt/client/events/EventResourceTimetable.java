@@ -32,12 +32,17 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickEvent;
+import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
@@ -49,6 +54,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
@@ -63,6 +69,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -70,6 +77,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -88,6 +99,9 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -119,6 +133,7 @@ public class EventResourceTimetable extends Composite {
 	private EventFilterBox iEvents = null;
 	private RoomFilterBox iRooms = null;
 	private String iLocDate = null, iLocRoom = null;
+	private MeetingClickHandler iMeetingClickHandler;
 	
 	private static EventResourceTimetable sInstance = null;
 	
@@ -366,6 +381,72 @@ public class EventResourceTimetable extends Composite {
 				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
 			}
 		});
+		
+		final EventDetail detail = new EventDetail();
+		final ScrollPanel detailScroll = new ScrollPanel(detail);
+		detailScroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+		detailScroll.setStyleName("unitime-ScrollPanel");
+		final UniTimeDialogBox detailDialog = new UniTimeDialogBox(true, false);
+		detailDialog.setEscapeToHide(true);
+		detailDialog.setWidget(detailScroll);
+		detailDialog.setText("Event Detail");
+		detailDialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+			@Override
+			public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+				detailScroll.setHeight(Math.min(detail.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+				detailDialog.setPopupPosition(
+						Math.max(Window.getScrollLeft() + (Window.getClientWidth() - detailDialog.getOffsetWidth()) / 2, 0),
+						Math.max(Window.getScrollTop() + (Window.getClientHeight() - detailDialog.getOffsetHeight()) / 2, 0));
+			}
+		});
+		detailDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+			}
+		});
+		
+		iMeetingClickHandler = new MeetingClickHandler() {
+			@Override
+			public void onMeetingClick(final MeetingClickEvent event) {
+				LoadingWidget.getInstance().show("Loading " + event.getEvent().getName() + "...");
+				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().show("Failed to load " + event.getEvent().getName() + ": " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						detail.setEvent(result);
+						detailDialog.center();
+					}
+				});
+			}
+		};
+		
+		iTable = createEventTable();
+		iTable.addMouseClickListener(new MouseClickListener<EventInterface>() {
+			@Override
+			public void onMouseClick(final TableEvent<EventInterface> event) {
+				LoadingWidget.getInstance().show("Loading " + event.getData().getName() + "...");
+				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().show("Failed to load " + event.getData().getName() + ": " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						detail.setEvent(result);
+						detailDialog.center();
+					}
+				});
+			}
+		});
 	}
 	
 	private Collection<EventInterface> sortedEvents() {
@@ -514,10 +595,10 @@ public class EventResourceTimetable extends Composite {
 					
 					if (iTimeGrid != null) iTimeGrid.destroy();
 					iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+					iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 					populateGrid();
 					iGridPanel.setWidget(iTimeGrid);
 					
-					iTable = createEventTable();
 					populateEventTable(iTable);
 					iTablePanel.setWidget(iTable);
 										
@@ -821,8 +902,7 @@ public class EventResourceTimetable extends Composite {
 				table.sort(new Comparator<EventInterface>() {
 					@Override
 					public int compare(EventInterface o1, EventInterface o2) {
-						int cmp = (o1.hasInstructor() ? o1.getInstructor() : o1.hasSponsor() ? o1.getSponsor() : "").compareTo(
-								o2.hasInstructor() ? o2.getInstructor() : o2.hasSponsor() ? o2.getSponsor() : "");
+						int cmp = o1.getInstructorNames("|").compareTo(o2.getInstructorNames("|"));
 						if (cmp != 0) return cmp;
 						cmp = o1.getName().compareTo(o2.getName());
 						if (cmp != 0) return cmp;
@@ -919,10 +999,10 @@ public class EventResourceTimetable extends Composite {
 				}
 				line.add(new HTML(name, false));
 				line.add(new NumberCell(section));
-				line.add(new Label(event.getInstruction() == null ? event.getType() : event.getInstruction(), false));
+				line.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
 			} else {
 				line.add(new DoubleCell(event.getName()));
-				line.add(new Label(event.getType(), false));
+				line.add(new Label(event.getType().getAbbreviation(), false));
 			}
 			String date = "", time = "", room = "", approved = "";
 			TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
@@ -955,10 +1035,10 @@ public class EventResourceTimetable extends Composite {
 			line.add(new HTML(date, false));
 			line.add(new HTML(time, false));
 			line.add(new HTML(room, false));
-			if (event.hasInstructor()) {
-				line.add(new HTML(event.getInstructor().replace("|", "<br>"), false));
+			if (event.hasInstructors()) {
+				line.add(new HTML(event.getInstructorNames("<br>"), false));
 			} else {
-				line.add(new Label(event.hasSponsor() ? event.getSponsor() : ""));
+				line.add(new Label(event.hasSponsor() ? event.getSponsor().getName() : ""));
 			}
 			line.add(new HTML(approved, false));
 			int row = table.addRow(event, line);

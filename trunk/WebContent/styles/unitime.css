@@ -1381,6 +1381,10 @@ h1 {
 	white-space: normal;
 }
 
+.gwt-DialogBox {
+	z-index: 500000;
+}
+
 .gwt-DialogBox .dialogContainer {
   position: relative;  
 }
@@ -2059,4 +2063,34 @@ h1 {
 
 div.gwt-MenuBarPopup {
 	z-index: 1000000;
+}
+
+.unitime-EventContacts {
+	width: 100%;
+}
+
+.unitime-EventMeetings {
+	width: 100%;
+}
+
+.unitime-EventMeetings .past-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .not-approved {
+	font-style: italic;
+	color: red;
+}
+
+.unitime-EventNotes {
+	width: 100%;
+}
+
+.unitime-EventNotes .approve {
+	background-color: #D7FFD7;
+}
+
+.unitime-EventNotes .reject {
+	background-color: #FFD7D7;
 }
