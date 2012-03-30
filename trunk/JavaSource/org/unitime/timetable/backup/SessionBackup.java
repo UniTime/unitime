@@ -124,7 +124,7 @@ public class SessionBackup {
         iHibSessionFactory = iHibSession.getSessionFactory();
         try {
     		iProgress.setStatus("Exporting Session");
-    		iProgress.setPhase("Loding Model", 3);
+    		iProgress.setPhase("Loading Model", 3);
     		TreeSet<ClassMetadata> allMeta = new TreeSet<ClassMetadata>(new Comparator<ClassMetadata>() {
     			@Override
     			public int compare(ClassMetadata m1, ClassMetadata m2) {
