@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.DOM;
@@ -179,5 +180,9 @@ public class ToolBox {
 			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + t.getMessage(), "700px", "420px");
 		}
 	}
+	
+	public native static void setWhiteSpace(Style style, String value) /*-{
+		style["white-space"] = value;
+	}-*/;
 
 }
