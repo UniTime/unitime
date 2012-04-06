@@ -83,6 +83,8 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	
     public abstract Set<Student> getStudents();
     
+    public abstract Collection<StudentClassEnrollment> getStudentClassEnrollments();
+    
     public abstract Collection<Long> getStudentIds();
     
     public abstract Set<DepartmentalInstructor> getInstructors();

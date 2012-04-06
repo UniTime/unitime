@@ -55,4 +55,9 @@ public class SpecialEvent extends BaseSpecialEvent {
     public int getEventType() { return sEventTypeSpecial; }
 
     public Collection<Long> getStudentIds() { return null; }
+
+    @Override
+	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+    	return null;
+    }
 }

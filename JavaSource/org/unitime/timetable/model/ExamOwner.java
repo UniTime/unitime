@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -183,6 +184,38 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId")
                     .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass : 
+            return new ExamOwnerDAO().getSession().createQuery(
+            		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
+        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+                    .setLong("classId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeConfig : 
+            return new ExamOwnerDAO().getSession().createQuery(
+            		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
+            		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+                    .setLong("configId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeCourse : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId")
+                    .setLong("courseId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeOffering : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId")
+                    .setLong("offeringId", getOwnerId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());

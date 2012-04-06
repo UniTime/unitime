@@ -22,9 +22,11 @@ package org.unitime.timetable.model;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseClassEvent;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.RelatedCourseInfoDAO;
 
 
@@ -74,5 +76,15 @@ public class ClassEvent extends BaseClassEvent {
     public int getEventType() { return sEventTypeClass; }
     
     public Session getSession() { return getClazz().getSession(); }
+
+	@Override
+	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+		return (List<StudentClassEnrollment>)
+			ClassEventDAO.getInstance().getSession().createQuery(
+					"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
+        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+				.setLong("classId", getClazz().getUniqueId())
+				.list();
+	}
 
 }

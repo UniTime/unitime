@@ -57,4 +57,9 @@ public abstract class ExamEvent extends BaseExamEvent {
     public Collection<Long> getStudentIds() {
         return getExam().getStudentIds();
     }
+    
+	@Override
+	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+		return getExam().getStudentClassEnrollments();
+	}
 }
