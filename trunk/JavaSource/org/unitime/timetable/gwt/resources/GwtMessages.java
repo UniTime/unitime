@@ -44,4 +44,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No academic session selected.")
 	String authenticationNoSession();
 
+	@DefaultMessage("Export in iCalendar format.")
+	String exportICalendar();
+
 }

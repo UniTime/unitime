@@ -55,7 +55,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iInstruction = null;
 	private Integer iInstructionType = null, iMaxCapacity = null;
 	private List<String> iExternalIds = null;
+	private String iSectionNumber = null;
 	private boolean iCanView = false, iCanEdit = false;
+	private List<RelatedObjectInterface> iRelatedObjects = null;
+	private List<ClassAssignmentInterface.Enrollment> iEnrollments = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("room", "Room Timetable", true),
@@ -182,9 +185,28 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public List<String> getExternalIds() { return iExternalIds; }
 	public void addExternalId(String externalId) {
 		if (iExternalIds == null) iExternalIds = new ArrayList<String>();
-		iExternalIds.add(externalId);
+		if (!iExternalIds.contains(externalId))
+			iExternalIds.add(externalId);
 	}
+
+	public boolean hasSectionNumber() { return iSectionNumber != null && !iSectionNumber.isEmpty(); }
+	public String getSectionNumber() { return iSectionNumber; }
+	public void setSectionNumber(String sectionNumber) { iSectionNumber = sectionNumber; }
 	
+	public boolean hasRelatedObjects() { return iRelatedObjects != null && !iRelatedObjects.isEmpty(); }
+	public void addRelatedObject(RelatedObjectInterface relatedObject) {
+		if (iRelatedObjects == null) iRelatedObjects = new ArrayList<RelatedObjectInterface>();
+		iRelatedObjects.add(relatedObject);
+	}
+	public List<RelatedObjectInterface> getRelatedObjects() { return iRelatedObjects; }
+	
+	public boolean hasEnrollments() { return iEnrollments != null && !iEnrollments.isEmpty(); }
+	public List<ClassAssignmentInterface.Enrollment> getEnrollments() { return iEnrollments; }
+	public void addEnrollment(ClassAssignmentInterface.Enrollment enrollment) {
+		if (iEnrollments == null) iEnrollments = new ArrayList<ClassAssignmentInterface.Enrollment>();
+		iEnrollments.add(enrollment);
+	}
+
 	public boolean isCanView() { return iCanView; }
 	public void setCanView(boolean canView) { iCanView = canView; }
 	public boolean isCanEdit() { return iCanEdit; }
@@ -321,7 +343,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private ResourceInterface iLocation;
 		private Long iMeetingId;
 		private String iMeetingTime;
-		private String iMeetingDate;
+		private Date iMeetingDate;
 		private int iStartSlot;
 		private int iEndSlot;
 		private int iDayOfWeek;
@@ -334,8 +356,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public Long getId() { return iMeetingId; }
 		public void setId(Long id) { iMeetingId = id; }
-		public String getMeetingDate() { return iMeetingDate; }
-		public void setMeetingDate(String date) { iMeetingDate = date; }
+		public Date getMeetingDate() { return iMeetingDate; }
+		public void setMeetingDate(Date date) { iMeetingDate = date; }
 		public int getStartSlot() { return iStartSlot; }
 		public void setStartSlot(int slot) { iStartSlot = slot; }
 		public int getEndSlot() { return iEndSlot; }
@@ -427,10 +449,24 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    	return getDays() + " " + iMeetings.first().getMeetingTime();
 	    }
 	    
+	    /*
 	    public String getMeetingDates() {
 	    	if (iMeetings.size() == 1)
 	    		return iMeetings.first().getMeetingDate();
 	    	return iMeetings.first().getMeetingDate() + " - " + iMeetings.last().getMeetingDate();
+	    }
+	    */
+	    
+	    public Date getFirstMeetingDate() {
+	    	return iMeetings.first().getMeetingDate();
+	    }
+	    
+	    public Date getLastMeetingDate() {
+	    	return iMeetings.last().getMeetingDate();
+	    }
+	    
+	    public int getNrMeetings() {
+	    	return iMeetings.size();
 	    }
 	    
 	    public String getLocationName() {
@@ -593,6 +629,99 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int compareTo(NoteInterface note) {
 			return getDate().compareTo(note.getDate());
 		}
+    }
+    
+    public static class RelatedObjectInterface implements IsSerializable {
+    	private Long iUniqueId;
+    	private RelatedObjectType iType;
+    	private List<String> iCourseNames = null;
+    	private String iName;
+    	private String iInstruction = null;
+    	private Integer iInstructionType = null, iMaxCapacity = null;
+    	private List<ContactInterface> iInstructors;
+		private Set<ResourceInterface> iLocations = new TreeSet<ResourceInterface>();
+		private String iDate, iTime, iConflicts;
+    	private List<String> iExternalIds;
+    	private String iSectionNumber = null;
+
+    	public static enum RelatedObjectType {
+    		Offering,
+    		Course,
+    		Config,
+    		Class,
+    		Examination
+    	}
+    	
+    	public RelatedObjectInterface() {}
+    	
+    	public Long getUniqueId() { return iUniqueId; }
+    	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+    	public RelatedObjectType getType() { return iType; }
+    	public void setType(RelatedObjectType type) { iType = type; }
+    	public String getName() { return iName; }
+    	public void setName(String name) { iName = name; }
+    	
+    	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
+    	public void addCourseName(String name) {
+    		if (iCourseNames == null) iCourseNames = new ArrayList<String>();
+    		iCourseNames.add(name);
+    	}
+    	public List<String> getCourseNames() {
+    		return iCourseNames;
+    	}
+    	
+    	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
+    	public String getInstruction() { return iInstruction; }
+    	public void setInstruction(String instruction) { iInstruction = instruction; }
+    	public boolean hasInstructionType() { return iInstructionType != null; }
+    	public Integer getInstructionType() { return iInstructionType; }
+    	public void setInstructionType(Integer type) { iInstructionType = type; }
+    	public boolean hasExternalIds() { return iExternalIds != null && !iExternalIds.isEmpty(); }
+    	public List<String> getExternalIds() { return iExternalIds; }
+    	public void addExternalId(String externalId) {
+    		if (iExternalIds == null) iExternalIds = new ArrayList<String>();
+    		if (!iExternalIds.contains(externalId))
+    			iExternalIds.add(externalId);
+    	}
+
+    	public boolean hasSectionNumber() { return iSectionNumber != null && !iSectionNumber.isEmpty(); }
+    	public String getSectionNumber() { return iSectionNumber; }
+    	public void setSectionNumber(String sectionNumber) { iSectionNumber = sectionNumber; }
+    	
+		public Set<ResourceInterface> getLocations() { return iLocations; }
+		public boolean hasLocations() { return iLocations != null && !iLocations.isEmpty(); }
+		public void addLocation(ResourceInterface location) { iLocations.add(location); }
+
+		public List<ContactInterface> getInstructors() { return iInstructors; }
+		public void addInstructor(ContactInterface instructor) {
+			if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
+			iInstructors.add(instructor);
+		}
+		public String getInstructorNames(String separator) { 
+			if (!hasInstructors()) return "";
+			String ret = "";
+			for (ContactInterface instructor: getInstructors()) {
+				ret += (ret.isEmpty() ? "" : separator) + instructor.getName();
+			}
+			return ret;
+		}
+		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+
+		public boolean hasMaxCapacity() { return iMaxCapacity != null; }
+		public Integer getMaxCapacity() { return iMaxCapacity; }
+		public void setMaxCapacity(Integer maxCapacity) { iMaxCapacity = maxCapacity; }
+		
+		public String getTime() { return iTime; }
+		public boolean hasTime() { return iTime != null && !iTime.isEmpty(); }
+		public void setTime(String time) { iTime = time; }
+		
+		public String getDate() { return iDate; }
+		public boolean hasDate() { return iDate != null && !iDate.isEmpty(); }
+		public void setDate(String date) { iDate = date; }
+		
+		public String getConflicts() { return iConflicts; }
+		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+		public void setConflicts(String conflicts) { iConflicts = conflicts; }
     }
     
 	public static class SelectionInterface implements IsSerializable {

@@ -38,7 +38,6 @@ import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
-import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
@@ -69,7 +68,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -77,10 +75,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.OpenEvent;
-import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -99,9 +93,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -115,6 +106,10 @@ public class EventResourceTimetable extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	
+	private SimplePanel iRootPanel;
+	
+	private EventDetail iEventDetail;
 	
 	private SimpleForm iPanel, iFilter;
 	private SimplePanel iGridPanel, iTablePanel;
@@ -321,7 +316,8 @@ public class EventResourceTimetable extends Composite {
 		iPanel.addRow(iTablePanel);
 		iFooter = iHeader.clonePanel();
 		iLastRow = iPanel.addBottomRow(iFooter);
-		initWidget(iPanel);
+		iRootPanel = new SimplePanel(iPanel);
+		initWidget(iRootPanel);
 		
 		iRoomPanel.addValueChangeHandler(new ValueChangeHandler<IntervalSelector<ResourceInterface>.Interval>() {
 			@Override
@@ -382,7 +378,19 @@ public class EventResourceTimetable extends Composite {
 			}
 		});
 		
-		final EventDetail detail = new EventDetail();
+		iEventDetail = new EventDetail() {
+			@Override
+			protected void onHide() {
+				iRootPanel.setWidget(iPanel);
+				UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+			}
+			@Override
+			protected void onShow() {
+				iRootPanel.setWidget(iEventDetail);
+			}
+		};
+		
+		/*
 		final ScrollPanel detailScroll = new ScrollPanel(detail);
 		detailScroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 		detailScroll.setStyleName("unitime-ScrollPanel");
@@ -406,6 +414,7 @@ public class EventResourceTimetable extends Composite {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
+		*/
 		
 		iMeetingClickHandler = new MeetingClickHandler() {
 			@Override
@@ -414,14 +423,14 @@ public class EventResourceTimetable extends Composite {
 				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().show("Failed to load " + event.getEvent().getName() + ": " + caught.getMessage());
+						LoadingWidget.getInstance().fail("Failed to load " + event.getEvent().getName() + ": " + caught.getMessage());
 					}
 
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
-						detail.setEvent(result);
-						detailDialog.center();
+						iEventDetail.setEvent(result);
+						iEventDetail.show();
 					}
 				});
 			}
@@ -435,14 +444,14 @@ public class EventResourceTimetable extends Composite {
 				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().show("Failed to load " + event.getData().getName() + ": " + caught.getMessage());
+						LoadingWidget.getInstance().fail("Failed to load " + event.getData().getName() + ": " + caught.getMessage());
 					}
 
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
-						detail.setEvent(result);
-						detailDialog.center();
+						iEventDetail.setEvent(result);
+						iEventDetail.show();
 					}
 				});
 			}
@@ -981,22 +990,26 @@ public class EventResourceTimetable extends Composite {
 			if (event.hasCourseNames()) {
 				String name = "";
 				String section = "";
-				String prevCn = "", prevExt = "";
-				for (int i = 0; i < event.getCourseNames().size(); i++) {
-					String cn = event.getCourseNames().get(i);
-					String ext = event.getExternalIds().get(i);
+				for (String cn: event.getCourseNames())
 					if (name.isEmpty()) {
 						name += cn;
-						section += ext;
 					} else if (event.getInstruction() != null) {
-						name += "<br><span style='color:gray;'>" + (cn.equals(prevCn) ? "" : cn) + "</span>";
-						section += "<br><span style='color:gray;'>" + (ext.equals(prevExt) ? "" : ext) + "</span>";
+						name += "<br><span style='color:gray;'>" + cn + "</span>";
 					} else {
-						name += "<br>" + (cn.equals(prevCn) ? "" : cn);
-						section += "<br>" + (ext.equals(prevExt) ? "" : ext);
+						name += "<br>" + cn;
 					}
-					prevCn = cn; prevExt = ext;
-				}
+				if (event.hasExternalIds())
+					for (String ex: event.getExternalIds()) {
+						if (section.isEmpty()) {
+							section += ex;
+						} else if (event.getInstruction() != null) {
+							section += "<br><span style='color:gray;'>" + ex + "</span>";
+						} else {
+							section += "<br>" + ex;
+						}
+					}
+				else if (event.hasSectionNumber())
+					section = event.getSectionNumber();
 				line.add(new HTML(name, false));
 				line.add(new NumberCell(section));
 				line.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
@@ -1014,9 +1027,10 @@ public class EventResourceTimetable extends Composite {
 			String prevDate = "", prevTime = "", prevRoom = "", prevApproved = "";
 			boolean prevPast = false;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, true, true)) {
+				String meetingDates = (m.getNrMeetings() == 1 ? sDateFormat.format(m.getFirstMeetingDate()) : sDateFormat.format(m.getFirstMeetingDate()) + " - " + sDateFormat.format(m.getLastMeetingDate()));
 				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; approved += "<br>"; }
-				if (prevPast != m.isPast() || !prevDate.equals(m.getMeetingDates()))
-					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingDates() + (m.isPast() ? "</span>" : "");
+				if (prevPast != m.isPast() || !prevDate.equals(meetingDates))
+					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + meetingDates + (m.isPast() ? "</span>" : "");
 				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime()))
 					time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime() + (m.isPast() ? "</span>" : "");
 				if (prevPast != m.isPast() || !prevRoom.equals(m.getApprovalDate())) {
@@ -1030,7 +1044,7 @@ public class EventResourceTimetable extends Composite {
 					}
 				}
 				prevPast = m.isPast(); prevApproved = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "-");
-				prevDate = m.getMeetingDates(); prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
+				prevDate = meetingDates; prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
 			}
 			line.add(new HTML(date, false));
 			line.add(new HTML(time, false));
@@ -1041,6 +1055,7 @@ public class EventResourceTimetable extends Composite {
 				line.add(new Label(event.hasSponsor() ? event.getSponsor().getName() : ""));
 			}
 			line.add(new HTML(approved, false));
+			GWT.log("line[" + table.getRowCount() + "]:" + line);
 			int row = table.addRow(event, line);
 			table.getRowFormatter().setVerticalAlign(row, HasVerticalAlignment.ALIGN_TOP);
 		}

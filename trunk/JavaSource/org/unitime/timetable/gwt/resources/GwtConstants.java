@@ -55,4 +55,15 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultIntValue(10000)
 	int maxMeetings();
+	
+	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"})
+	String[] longDays();
+
+	@DefaultStringArrayValue({
+		"blue", "green", "orange", "yellow", "pink",
+		"purple", "teal", "darkpurple", "steelblue", "lightblue",
+		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
+		"grey", "bluegrey", "lightteal", "yellowgrey", "brown", "red"})
+	String[] meetingColors();
+
 }
