@@ -73,7 +73,12 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 	}
 	
 	public void setFrameSize(String width, String height) {
-		iFrame.setSize(width, height);
+		try {
+			iFrame.getElement().getStyle().setWidth(Double.parseDouble(width), Unit.PX);
+			iFrame.getElement().getStyle().setHeight(Double.parseDouble(height), Unit.PX);
+		} catch (NumberFormatException e) {
+			iFrame.setSize(width, height);
+		}
 	}
 	
 	public void center() {

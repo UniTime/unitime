@@ -111,7 +111,7 @@ public class CurriculaPage extends Composite {
 		
 		iFilter = new UniTimeTextBox();
 		iFilter.setWidth("400px");
-		iFilter.setHeight("26");
+		iFilter.setHeight("26px");
 		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button("<u>S</u>earch");
