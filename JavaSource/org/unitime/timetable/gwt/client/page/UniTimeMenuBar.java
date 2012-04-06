@@ -117,7 +117,7 @@ public class UniTimeMenuBar extends Composite {
 					rootPanel.add(iSimple);
 				rootPanel.add(UniTimeMenuBar.this);
 				if (iSimple != null)
-					iSimple.setHeight(String.valueOf(iMenu.getOffsetHeight()));
+					iSimple.setHeight(iMenu.getOffsetHeight() + "px");
 			}
 			@Override
 			public void onFailure(Throwable caught) {
