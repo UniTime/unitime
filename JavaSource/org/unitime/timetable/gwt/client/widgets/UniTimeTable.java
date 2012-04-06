@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -357,6 +358,8 @@ public class UniTimeTable<T> extends FlexTable {
 		switch (DOM.eventGetType(event)) {
 		case Event.ONMOUSEOVER:
 			if (hasData) {
+				if (!iMouseClickListeners.isEmpty())
+					getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
 				if (isAllowSelection()) {
 					if ("unitime-TableRowSelected".equals(style))
 						getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");	
@@ -387,6 +390,8 @@ public class UniTimeTable<T> extends FlexTable {
 			break;
 		case Event.ONMOUSEOUT:
 			if (hasData) {
+				if (!iMouseClickListeners.isEmpty())
+					getRowFormatter().getElement(row).getStyle().clearCursor();
 				if (isAllowSelection()) {
 					if ("unitime-TableRowHover".equals(style))
 						getRowFormatter().setStyleName(row, null);	

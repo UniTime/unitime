@@ -111,7 +111,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	}
 	
 	public String getStyleName() {
-		return "unitime-ClickableTableHeader";
+		return (iOperations.isEmpty() ? "unitime-TableHeader" : "unitime-ClickableTableHeader");
 	}
 	
 
