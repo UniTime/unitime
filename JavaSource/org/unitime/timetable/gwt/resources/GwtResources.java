@@ -71,4 +71,7 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/application_edit.png")
 	ImageResource edit();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/date.png")
+	ImageResource calendar();
 }

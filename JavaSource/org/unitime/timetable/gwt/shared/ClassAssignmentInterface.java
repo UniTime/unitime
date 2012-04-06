@@ -515,6 +515,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null;
 		private String iReservation = null;
 		private String iApprovedBy = null;
+		private List<Conflict> iConflicts = null;
 		
 		public Enrollment() {}
 		
@@ -575,6 +576,40 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getReservation() { return iReservation; }
 		public void setReservation(String reservation) { iReservation = reservation; }
+		
+		public boolean hasConflict() { return iConflicts != null && !iConflicts.isEmpty(); }
+		public void addConflict(Conflict conflict) {
+			if (iConflicts == null) iConflicts = new ArrayList<ClassAssignmentInterface.Conflict>();
+			iConflicts.add(conflict);
+		}
+		public List<Conflict> getConflicts() { return iConflicts; }
+	}
+	
+	public static class Conflict implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iName, iType, iDate, iTime, iRoom;
+		
+		public Conflict() {}
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type; }
+		
+		public String getDate() { return iDate; }
+		public void setDate(String date) { iDate = date; }
+		
+		public String getTime() { return iTime; }
+		public void setTime(String time) { iTime = time; }
+		
+		public String getRoom() { return iRoom; }
+		public void setRoom(String room) { iRoom = room; }
+		
+		@Override
+		public String toString() {
+			return getName() + " " + getType() + " " + getDate() + " " + getTime() + " " + getRoom();
+		}
 	}
 	
 	public static class EnrollmentInfo implements IsSerializable, Serializable {

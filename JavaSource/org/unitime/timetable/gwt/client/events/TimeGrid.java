@@ -29,9 +29,9 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -51,6 +51,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -69,9 +70,10 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class TimeGrid extends Composite {
-	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
-	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
-	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 
 	private P iContainer;
 	private ScrollPanel iScrollPanel;
@@ -652,16 +654,16 @@ public class TimeGrid extends Composite {
 				days.add(m.getDayOfYear());
 				if (m.getLocation() != null) rooms.add(m.getLocation().getName());
 				if (dateString == null) {
-					dateString = m.getMeetingDate();
+					dateString = sDateFormat.format(m.getMeetingDate());
 					lastDay = m.getDayOfYear();
 					endDate = null;
 				} else if (lastDay == m.getDayOfYear()) {
 				} else if (lastDay + 7 == m.getDayOfYear()) {
-					endDate = m.getMeetingDate();
+					endDate = sDateFormat.format(m.getMeetingDate());
 					lastDay = m.getDayOfYear();
 				} else {
 					if (endDate != null) dateString += " - " + endDate;
-					dateString += ", " + m.getMeetingDate();
+					dateString += ", " + sDateFormat.format(m.getMeetingDate());
 					lastDay = m.getDayOfYear();
 					endDate = null;
 				}

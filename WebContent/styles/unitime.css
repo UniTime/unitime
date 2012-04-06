@@ -2092,3 +2092,21 @@ div.gwt-MenuBarPopup {
 .unitime-EventNotes .reject {
 	background-color: #FFD7D7;
 }
+
+.unitime-EventOwners {
+	width: 100%;
+}
+
+.unitime-EventOwners .cross-list {
+	display: block;
+	color: gray;
+	padding-left: 10px;
+}
+
+.unitime-Enrollments {
+	width: 100%;
+}
+
+.unitime-Enrollments .conflict {
+	color: red;
+}
