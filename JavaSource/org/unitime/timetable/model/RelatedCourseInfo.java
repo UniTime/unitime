@@ -19,6 +19,7 @@
  
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseRelatedCourseInfo;
@@ -26,6 +27,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.ExamOwnerDAO;
 import org.unitime.timetable.model.dao.RelatedCourseInfoDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -174,6 +176,38 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :eventOwnerId")
                     .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+        switch (getOwnerType()) {
+        case ExamOwner.sOwnerTypeClass : 
+            return new ExamOwnerDAO().getSession().createQuery(
+            		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
+        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+                    .setLong("classId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeConfig : 
+            return new ExamOwnerDAO().getSession().createQuery(
+            		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
+            		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+                    .setLong("configId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeCourse : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId")
+                    .setLong("courseId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeOffering : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId")
+                    .setLong("offeringId", getOwnerId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
