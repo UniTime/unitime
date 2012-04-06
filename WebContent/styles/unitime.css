@@ -232,12 +232,10 @@ h1 {
 }
 
 .unitime-TableRowSelectedHover {
-	cursor: pointer;
 	background-color: #92c1f0;
 }
 
 .unitime-TableRowHover {
-	cursor: pointer;
 	background-color: #d0e4f6;
 }
 
