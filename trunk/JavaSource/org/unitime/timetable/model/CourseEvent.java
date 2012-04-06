@@ -71,4 +71,12 @@ public class CourseEvent extends BaseCourseEvent {
         return studentIds;
     }
 
+	@Override
+	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+        HashSet<StudentClassEnrollment> enrollments = new HashSet();
+        for (RelatedCourseInfo owner: getRelatedCourses())
+            enrollments.addAll(owner.getStudentClassEnrollments());
+        return enrollments;
+	}
+
 }

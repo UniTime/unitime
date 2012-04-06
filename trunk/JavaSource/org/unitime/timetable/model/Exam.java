@@ -266,6 +266,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return students;
     }
     
+    public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
+        HashSet<StudentClassEnrollment> enrollments = new HashSet();
+        for (ExamOwner owner: getOwners())
+            enrollments.addAll(owner.getStudentClassEnrollments());
+        return enrollments;
+    }
+    
     public Set<Long> getStudentIds() {
         HashSet<Long> studentIds = new HashSet();
         for (Iterator i=getOwners().iterator();i.hasNext();)
