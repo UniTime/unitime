@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
@@ -190,7 +191,7 @@ public class UniTimeHeaderPanel extends Composite {
 	
 	public void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
 		Button button = new Button(name, clickHandler);
-		button.getElement().getStyle().setProperty("white-space", "nowrap");
+		ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
 		if (accessKey != null)
 			button.setAccessKey(accessKey);
 		if (width != null)
