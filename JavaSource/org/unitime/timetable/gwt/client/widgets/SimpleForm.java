@@ -108,4 +108,10 @@ public class SimpleForm extends FlexTable {
 		return -1;
 	}
 	
+	@Override
+	public void clear() {
+		for (int row = getRowCount() - 1; row >= 0; row--)
+			removeRow(row);
+	}
+	
 }

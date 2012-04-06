@@ -125,7 +125,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 
 		final TextBox requested = new TextBox();
 		requested.setStyleName("gwt-SuggestBox");
-		requested.setMaxLength(100); requested.setWidth("200");
+		requested.setMaxLength(100); requested.setWidth("200px");
 		
 		final CheckBox conflicts = new CheckBox("Display Conflicts");
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);

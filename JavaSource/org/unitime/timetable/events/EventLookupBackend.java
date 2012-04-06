@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -120,7 +119,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 		try {
 			// EventFilterBackend.
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
-			boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
 			try {
 				Map<Long, Double> distances = new HashMap<Long, Double>();
 				if (request.getRoomFilter() != null) {
@@ -719,16 +717,17 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				    		event.addCourseName(correctedOffering.getCourseName());
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
-				    		String section = (suffix && clazz.getClassSuffix(correctedOffering) != null ? clazz.getClassSuffix(correctedOffering) : clazz.getSectionNumberString(hibSession));
-				    		event.addExternalId(section);
-				    		if (clazz.getClassSuffix(correctedOffering) == null) {
+				    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
+				    		if (clazz.getSectionNumberString(hibSession) == null) {
 					    		event.setName(clazz.getClassLabel(correctedOffering));
 				    		} else {
-				    			event.setName(correctedOffering.getCourseName() + " " + section);
+					    		event.addExternalId(clazz.getClassSuffix(correctedOffering));
+				    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 				    		}
 			    			for (CourseOffering co: courses) {
 					    		event.addCourseName(co.getCourseName());
-					    		event.addExternalId(suffix && clazz.getClassSuffix(co) != null ? clazz.getClassSuffix(co) : clazz.getSectionNumberString(hibSession));
+					    		if (clazz.getSectionNumberString(hibSession) != null)
+					    			event.addExternalId(clazz.getClassSuffix(co));
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
@@ -778,7 +777,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
-					meeting.setMeetingDate(new SimpleDateFormat("MM/dd").format(m.getMeetingDate()));
+					meeting.setMeetingDate(m.getMeetingDate());
 					meeting.setDayOfWeek(Constants.getDayOfWeek(m.getMeetingDate()));
 					meeting.setStartTime(m.getStartTime().getTime());
 					meeting.setStopTime(m.getStopTime().getTime());

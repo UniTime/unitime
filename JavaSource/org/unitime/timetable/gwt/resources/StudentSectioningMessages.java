@@ -78,6 +78,21 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requires")
 	String colParent();
 	
+	@DefaultMessage("Conflict")
+	String colConflictName();
+
+	@DefaultMessage("Type")
+	String colConflictType();
+
+	@DefaultMessage("Date")
+	String colConflictDate();
+
+	@DefaultMessage("Time")
+	String colConflictTime();
+
+	@DefaultMessage("Room")
+	String colConflictRoom();
+
 	@DefaultMessage("&nbsp;")
 	String colSaved();
 	
