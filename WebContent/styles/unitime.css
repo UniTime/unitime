@@ -1170,6 +1170,7 @@ h1 {
 	color: #000000;
 	border: 1px solid #AB8B00;
 	background: #FFF0AB;
+	z-index: 1000000;
 }
 
 .unitime-PopupWarning {
@@ -1876,6 +1877,7 @@ h1 {
 	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
 	box-shadow: 1px 2px 4px #9CB0CE;
 	margin-top: -1px;
+	z-index: 1000000;
 }
 
 .unitime-TimeSelector {
@@ -1897,6 +1899,7 @@ h1 {
 	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
 	box-shadow: 1px 2px 4px #9CB0CE;
 	margin-top: -1px;
+	z-index: 1000000;
 }
 
 .unitime-TimeSelectorPopup .scroll {
@@ -2081,6 +2084,16 @@ div.gwt-MenuBarPopup {
 	color: red;
 }
 
+.unitime-EventMeetings .new-meeting {
+	font-style: italic;
+	color: blue;
+}
+
+.unitime-EventMeetings .conflict {
+	font-style: italic;
+	background-color: #FFD7D7;
+}
+
 .unitime-EventNotes {
 	width: 100%;
 }
@@ -2097,6 +2110,26 @@ div.gwt-MenuBarPopup {
 	width: 100%;
 }
 
+.unitime-EventOwners .subject {
+	width: 80px;
+}
+
+.unitime-EventOwners .course {
+	width: 240px;
+}
+
+.unitime-EventOwners .subpart {
+	width: 150px;
+}
+
+.unitime-EventOwners .class {
+	width: 140px;
+}
+
+.unitime-EventOwners .remove {
+	cursor: pointer;
+}
+
 .unitime-EventOwners .cross-list {
 	display: block;
 	color: gray;
@@ -2109,4 +2142,82 @@ div.gwt-MenuBarPopup {
 
 .unitime-Enrollments .conflict {
 	color: red;
+}
+
+.unitime-MeetingSelection .box {
+	display: table;
+}
+
+.unitime-MeetingSelection .row {
+	display: table-row;
+}
+
+.unitime-MeetingSelection .corner {
+	display: table-cell;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+}
+
+.unitime-MeetingSelection .cell {
+	display: table-cell;
+	width: 100px;
+	max-width: 100px;
+	white-space: nowrap;
+	overflow: hidden;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	font-size: small;	
+	text-overflow: ellipsis;
+	cursor: pointer;
+	padding: 2px;
+}
+
+.unitime-MeetingSelection .hover {
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-MeetingSelection .selected {
+	background-color: #92c1f0;
+}
+
+.unitime-MeetingSelection .conflict {
+	color: red;
+}
+
+.unitime-MeetingSelection .date {
+	display: table-cell;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	text-align: center;
+	padding: 2px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.unitime-MeetingSelection .date:hover {
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-MeetingSelection .room {
+	display: table-cell;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	border-top: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	padding: 2px;
+	cursor: pointer;
+}
+
+.unitime-MeetingSelection .room:hover {
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
 }

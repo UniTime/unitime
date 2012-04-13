@@ -20,7 +20,6 @@
 package org.unitime.timetable.events;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -65,6 +63,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
 public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRequest, GwtRpcResponseList<EventInterface>>{
@@ -781,20 +780,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					meeting.setDayOfWeek(Constants.getDayOfWeek(m.getMeetingDate()));
 					meeting.setStartTime(m.getStartTime().getTime());
 					meeting.setStopTime(m.getStopTime().getTime());
-					Calendar c = Calendar.getInstance(Locale.US);
-					c.setTime(m.getMeetingDate());
-					int dayOfYear = c.get(Calendar.DAY_OF_YEAR);
-					int sessionYear = session.getSessionStartYear();
-					if (c.get(Calendar.YEAR) < sessionYear) {
-						Calendar x = Calendar.getInstance(Locale.US);
-					    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
-					    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
-					} else if (c.get(Calendar.YEAR) > sessionYear) {
-						Calendar x = Calendar.getInstance(Locale.US);
-					    x.set(sessionYear,11,31,0,0,0);
-					    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
-					}
-					meeting.setDayOfYear(dayOfYear);
+					meeting.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
 					meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					meeting.setStartSlot(m.getStartPeriod());
 					meeting.setEndSlot(m.getStopPeriod());
