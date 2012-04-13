@@ -42,16 +42,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EventDetail extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private EventInterface iEvent = null;
 	
@@ -59,7 +56,7 @@ public class EventDetail extends Composite {
 	private UniTimeHeaderPanel iHeader, iFooter;
 	
 	private UniTimeTable<ContactInterface> iContacts;
-	private UniTimeTable<MeetingInterface> iMeetings;
+	private MeetingTable iMeetings;
 	private UniTimeTable<NoteInterface> iNotes;
 	private UniTimeTable<RelatedObjectInterface> iOwners;
 	private EnrollmentTable iEnrollments;
@@ -84,17 +81,7 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader("Phone"));
 		iContacts.addRow(null, contactHeader);
 		
-		iMeetings = new UniTimeTable<MeetingInterface>();
-		iMeetings.setStyleName("unitime-EventMeetings");
-		
-		List<Widget> meetingsHeader = new ArrayList<Widget>();
-		meetingsHeader.add(new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER));
-		meetingsHeader.add(new UniTimeTableHeader("Date"));
-		meetingsHeader.add(new UniTimeTableHeader("Time"));
-		meetingsHeader.add(new UniTimeTableHeader("Location"));
-		meetingsHeader.add(new UniTimeTableHeader("Capacity"));
-		meetingsHeader.add(new UniTimeTableHeader("Approved"));
-		iMeetings.addRow(null, meetingsHeader);
+		iMeetings = new MeetingTable();
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -211,23 +198,7 @@ public class EventDetail extends Composite {
 		
 		iMeetings.clearTable(1);
 		for (MeetingInterface meeting: iEvent.getMeetings()) {
-			List<Widget> row = new ArrayList<Widget>();
-			row.add(new CheckBox());
-			row.add(new Label(sDateFormat.format(meeting.getMeetingDate())));
-			row.add(new Label(meeting.getMeetingTime()));
-			if (meeting.getLocation() == null) {
-				row.add(new Label(""));
-				row.add(new Label(""));
-			} else {
-				row.add(new Label(meeting.getLocationName()));
-				row.add(new Label(meeting.getLocation().getSize() == null ? "N/A" : meeting.getLocation().getSize().toString()));
-			}
-			row.add(new Label(meeting.getApprovalDate() == null ? "not approved" : sDateFormat.format(meeting.getApprovalDate())));
-			if (!meeting.isApproved())
-				row.get(row.size() - 1).addStyleName("not-approved");
-			int r = iMeetings.addRow(meeting, row);
-			if (meeting.isPast())
-				iMeetings.getRowFormatter().addStyleName(r, "past-meeting");
+			iMeetings.add(meeting);
 		}
 		if (iMeetings.getRowCount() > 1) {
 			iForm.addHeaderRow("Meetings");

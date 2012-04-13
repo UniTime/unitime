@@ -51,7 +51,7 @@ public class SponsoringOrganization extends BaseSponsoringOrganization implement
     	else return so1.getUniqueId().compareTo(so2.getUniqueId());
 	}
 
-    public static List findAll() {
+    public static List<SponsoringOrganization> findAll() {
         return new SponsoringOrganizationDAO().getSession().createQuery(
                 "select so from SponsoringOrganization so order by so.name"
                 ).setCacheable(true).list();

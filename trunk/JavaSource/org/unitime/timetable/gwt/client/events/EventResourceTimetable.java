@@ -110,6 +110,7 @@ public class EventResourceTimetable extends Composite {
 	private SimplePanel iRootPanel;
 	
 	private EventDetail iEventDetail;
+	private EventAdd iEventAdd;
 	
 	private SimpleForm iPanel, iFilter;
 	private SimplePanel iGridPanel, iTablePanel;
@@ -132,6 +133,8 @@ public class EventResourceTimetable extends Composite {
 	
 	private static EventResourceTimetable sInstance = null;
 	
+	private EventPropertiesRpcResponse iProperties;
+	
 	public EventResourceTimetable(String type) {
 		sInstance = this; 
 		
@@ -151,13 +154,23 @@ public class EventResourceTimetable extends Composite {
 		});
 		Lookup.getInstance().setOptions("mustHaveExternalId");
 		Lookup.getInstance().setCallback(createLookupCallback());
-		iFilterHeader.addButton("lookup", "<u>L</u>ookup", 'p', 75, new ClickHandler() {
+		iFilterHeader.addButton("lookup", "<u>L</u>ookup", 'l', 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				Lookup.getInstance().center();
 			}
 		});
 		iFilterHeader.setEnabled("lookup", false);
+		iFilterHeader.addButton("add", "<u>A</u>dd Event", 'a', 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEventAdd.reset(iRooms.getValue(),
+						(iTimeGrid == null ? null : iTimeGrid.getSelections()),
+						iProperties == null ? null : iProperties.getMainContact());
+				iEventAdd.show();
+			}
+		});
+		iFilterHeader.setEnabled("add", false);
 		iFilter.addHeaderRow(iFilterHeader);
 		
 		iSession = new AcademicSessionSelectionBox() {
@@ -373,8 +386,11 @@ public class EventResourceTimetable extends Composite {
 			}
 			@Override
 			public void onSuccess(EventPropertiesRpcResponse result) {
+				iProperties = result;
 				iCanLookupPeople = (result == null ? false: result.isCanLookupPeople());
 				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
+				iFilterHeader.setEnabled("add", result.isCanAddEvent());
+				iEventAdd.setup(result);
 			}
 		});
 		
@@ -387,6 +403,18 @@ public class EventResourceTimetable extends Composite {
 			@Override
 			protected void onShow() {
 				iRootPanel.setWidget(iEventDetail);
+			}
+		};
+		
+		iEventAdd = new EventAdd(iSession) {
+			@Override
+			protected void onHide() {
+				iRootPanel.setWidget(iPanel);
+				UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+			}
+			@Override
+			protected void onShow() {
+				iRootPanel.setWidget(iEventAdd);
 			}
 		};
 		
@@ -545,7 +573,7 @@ public class EventResourceTimetable extends Composite {
 				if (iData.isEmpty()) {
 					iFilterHeader.setErrorMessage("No events found for " + (iResource.getType() == ResourceType.PERSON ? "" : iResource.getType().getLabel() + " ") + iResource.getName() + " in " + iSession.getAcademicSessionName() + "."); 
 					for (int i = 1; i < iPanel.getRowCount(); i++)
-						iPanel.getRowFormatter().setVisible(i, i == iLastRow);
+						iPanel.getRowFormatter().setVisible(i, false);
 					iGridPanel.setVisible(false);
 					iHeader.setEnabled("print", false);
 					iHeader.setEnabled("export", false);

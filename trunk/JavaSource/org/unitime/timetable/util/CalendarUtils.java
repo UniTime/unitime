@@ -21,7 +21,9 @@ package org.unitime.timetable.util;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author Heston Fernandes
@@ -70,4 +72,35 @@ public class CalendarUtils {
 		
 		return null;
 	}
+	
+	public static int date2dayOfYear(int sessionYear, Date meetingDate) {
+		Calendar c = Calendar.getInstance(Locale.US);
+		c.setTime(meetingDate);
+		int dayOfYear = c.get(Calendar.DAY_OF_YEAR);
+		if (c.get(Calendar.YEAR) < sessionYear) {
+			Calendar x = Calendar.getInstance(Locale.US);
+		    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
+		    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
+		} else if (c.get(Calendar.YEAR) > sessionYear) {
+			Calendar x = Calendar.getInstance(Locale.US);
+		    x.set(sessionYear,11,31,0,0,0);
+		    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
+		}
+		return dayOfYear;
+	}
+	
+	public static Date dateOfYear2date(int sessionYear, int dayOfYear) {
+		Calendar c = Calendar.getInstance(Locale.US);
+		c.set(sessionYear, 11, 31, 0, 0, 0);
+		if (dayOfYear < 0) {
+			c.set(Calendar.YEAR, sessionYear - 1);
+			dayOfYear += c.get(Calendar.DAY_OF_YEAR);
+		} else if (dayOfYear > c.get(Calendar.DAY_OF_YEAR)) {
+			dayOfYear -= c.get(Calendar.DAY_OF_YEAR);
+			c.set(Calendar.YEAR, sessionYear + 1);
+		}
+		c.set(Calendar.DAY_OF_YEAR, dayOfYear);
+		return c.getTime();
+	}
+
 }

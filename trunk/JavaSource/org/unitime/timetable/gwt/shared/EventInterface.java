@@ -351,6 +351,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iPast;
 		private Date iApprovalDate = null;
 		private Long iStartTime, iStopTime;
+		private Set<MeetingConglictInterface> iConflicts;
 		
 		public MeetingInterface() {}
 		
@@ -369,6 +370,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getMeetingTime() { return iMeetingTime; }
 		public void setMeetingTime(String time) { iMeetingTime = time; }	
 		public ResourceInterface getLocation() { return iLocation; }
+		public boolean hasLocation() { return iLocation != null; }
 		public String getLocationName() { return (iLocation == null ? "" : iLocation.getName()); }
 		public String getLocationNameWithHint() {
 			return (iLocation == null ? "" : iLocation.getNameWithHint());
@@ -385,12 +387,20 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public Long getStartTime() { return iStartTime; }
 		public void setStartTime(Long startTime) { iStartTime = startTime; }
 		
+		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+		public void addConflict(MeetingConglictInterface conflict) {
+			if (iConflicts == null) iConflicts = new TreeSet<MeetingConglictInterface>();
+			iConflicts.add(conflict);
+		}
+		public Set<MeetingConglictInterface> getConflicts() { return iConflicts; }
+		public void setConflicts(Set<MeetingConglictInterface> conflicts) { iConflicts = conflicts; }
+		
 		public int compareTo(MeetingInterface meeting) {
 			int cmp = new Integer(getDayOfYear()).compareTo(meeting.getDayOfYear());
 			if (cmp != 0) return cmp;
 			cmp = getLocationName().compareTo(meeting.getLocationName());
 			if (cmp != 0) return cmp;
-			return getId().compareTo(meeting.getId());
+			return (getId() == null ? new Long(-1) : getId()).compareTo(meeting.getId() == null ? new Long(-1) : meeting.getId());
 		}
 		
 		public int hashCode() {
@@ -399,8 +409,40 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof MeetingInterface)) return false;
-			return getId().equals(((MeetingInterface)o).getId());
+			MeetingInterface m = (MeetingInterface)o;
+			if (getId() != null)
+				return getId().equals(m.getId());
+			return getDayOfYear() == m.getDayOfYear() && EventInterface.equals(getMeetingDate(), m.getMeetingDate()) &&
+				EventInterface.equals(getLocation(), m.getLocation()) && getStartSlot() == m.getStartSlot() && getEndSlot() == m.getEndSlot();
 		}
+	}
+	
+	public static class MeetingConglictInterface extends MeetingInterface {
+		private Long iEventId;
+		private String iEventName;
+		private EventType iEventType;
+		
+		public MeetingConglictInterface() {}
+		
+		public Long getEventId() { return iEventId; }
+		public void setEventId(Long id) { iEventId = id; }
+		public String getName() { return iEventName; }
+		public void setName(String name) { iEventName = name; }
+		public EventType getType() { return iEventType; }
+		public void setType(EventType type) { iEventType = type; }
+		
+		public int compareTo(MeetingInterface conflict) {
+			int cmp = new Integer(getStartSlot()).compareTo(conflict.getStartSlot());
+			if (cmp != 0) return cmp;
+			cmp = new Integer(getEndSlot()).compareTo(conflict.getEndSlot());
+			if (cmp != 0) return cmp;
+			cmp = getName().compareTo(((MeetingConglictInterface)conflict).getName());
+			if (cmp != 0) return cmp;
+			cmp = getType().compareTo(((MeetingConglictInterface)conflict).getType());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(conflict.getId());
+		}
+		
 	}
 	
     public static boolean equals(Object o1, Object o2) {
@@ -1044,12 +1086,28 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false;
+		private boolean iCanLookupPeople = false, iCanAddEvent = false;
+		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
+		private ContactInterface iMainContact = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
 		public boolean isCanLookupPeople() { return iCanLookupPeople; }
 		public void setCanLookupPeople(boolean canLookupPeople) { iCanLookupPeople = canLookupPeople; }
+		
+		public boolean isCanAddEvent() { return iCanAddEvent; }
+		public void setCanAddEvent(boolean canAddEvent) { iCanAddEvent = canAddEvent; }
+
+		public boolean hasSponsoringOrganizations() { return iSponsoringOrganizations != null && !iSponsoringOrganizations.isEmpty(); }
+		public List<SponsoringOrganizationInterface> getSponsoringOrganizations() { return iSponsoringOrganizations; }
+		public void addSponsoringOrganization(SponsoringOrganizationInterface sponsor) {
+			if (iSponsoringOrganizations == null) iSponsoringOrganizations = new ArrayList<SponsoringOrganizationInterface>();
+			iSponsoringOrganizations.add(sponsor);
+		}
+		
+		public boolean hasMainContact() { return iMainContact != null; }
+		public ContactInterface getMainContact() { return iMainContact; }
+		public void setMainContact(ContactInterface mainContact) { iMainContact = mainContact; }
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventDetailBackend")
@@ -1072,4 +1130,187 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventRoomAvailabilityBackend")
+	public static class EventRoomAvailabilityRpcRequest implements GwtRpcRequest<EventRoomAvailabilityRpcResponse> {
+		private Long iSessionId;
+		private Integer iStartSlot, iEndSlot;
+		private List<Date> iDates;
+		private List<Long> iLocations;
+		private List<MeetingInterface> iMeetings;
+		
+		public EventRoomAvailabilityRpcRequest() {}
+		
+		public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
+		public Integer getStartSlot() { return iStartSlot; }
+		
+		public void setEndSlot(Integer endSlot) { iEndSlot = endSlot; }
+		public Integer getEndSlot() { return iEndSlot; }
+		
+		public void setDates(List<Date> dates) { iDates = dates; }
+		public boolean hasDates() { return iDates != null && !iDates.isEmpty(); }
+		public List<Date> getDates() { return iDates; }
+		
+		public void setLocations(List<Long> locations) { iLocations = locations; }
+		public boolean hasLocations() { return iLocations != null && !iLocations.isEmpty(); }
+		public List<Long> getLocations() { return iLocations; }
+		
+		public void setMeetings(List<MeetingInterface> meetings) { iMeetings = meetings; }
+		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
+		public List<MeetingInterface> getMeetings() { return iMeetings; }
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+
+		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Date> dates, List<FilterRpcResponse.Entity> locations, Long sessionId) {
+			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
+			request.setStartSlot(startSlot);
+			request.setEndSlot(endSlot);
+			request.setDates(dates);
+			List<Long> locationIds = new ArrayList<Long>();
+			for (FilterRpcResponse.Entity location: locations)
+				locationIds.add(Long.valueOf(location.getProperty("permId", null)));
+			request.setLocations(locationIds);
+			request.setSessionId(sessionId);
+			return request;
+		}
+		
+		public static EventRoomAvailabilityRpcRequest checkAvailability(List<MeetingInterface> meetings, Long sessionId) {
+			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
+			request.setMeetings(meetings);
+			request.setSessionId(sessionId);
+			return request;
+		}
+	}
+	
+	public static class EventRoomAvailabilityRpcResponse implements GwtRpcResponse {
+		private Map<Date, Map<Long, Set<MeetingConglictInterface>>> iOverlaps = new HashMap<Date, Map<Long, Set<MeetingConglictInterface>>>();
+		private List<MeetingInterface> iMeetings;
+		
+		public EventRoomAvailabilityRpcResponse() {}
+		
+		public void setMeetings(List<MeetingInterface> meetings) { iMeetings = meetings; }
+		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
+		public List<MeetingInterface> getMeetings() { return iMeetings; }
+		
+		public void addOverlap(Date date, Long locationId, MeetingConglictInterface conflict) {
+			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
+			if (loc2overlaps == null) {
+				loc2overlaps = new HashMap<Long, Set<MeetingConglictInterface>>();
+				iOverlaps.put(date, loc2overlaps);
+			}
+			Set<MeetingConglictInterface> overlaps = loc2overlaps.get(locationId);
+			if (overlaps == null) {
+				overlaps = new TreeSet<MeetingConglictInterface>();
+				loc2overlaps.put(locationId, overlaps);
+			}
+			overlaps.add(conflict);
+		}
+		
+		public boolean isAvailable(Date date, Long locationId) {
+			Set<MeetingConglictInterface> overlaps = getOverlaps(date, locationId);
+			return (overlaps == null || overlaps.isEmpty());
+		}
+		
+		public Set<MeetingConglictInterface> getOverlaps(Date date, Long locationId) {
+			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
+			return (loc2overlaps == null ? null : loc2overlaps.get(locationId));
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.RelatedObjectLookupBackend")
+	public static class RelatedObjectLookupRpcRequest implements GwtRpcRequest<GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
+		public static enum Level {
+			SESSION,
+			SUBJECT,
+			OFFERING,
+			COURSE,
+			CONFIG,
+			SUBPART,
+			CLASS,
+			NONE
+		}
+		private Long iUniqueId;
+		private Long iCourseId;
+		private Level iLevel;
+		
+		public RelatedObjectLookupRpcRequest() {}
+		
+		public Long getUniqueId() { return iUniqueId; }
+		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+		
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		
+		public Level getLevel() { return iLevel; }
+		public void setLevel(Level level) { iLevel = level; }
+		
+		@Override
+		public String toString() {
+			return getLevel().name() + "[" + getUniqueId() + "]";
+		}
+		
+		public static RelatedObjectLookupRpcRequest getChildren(Level level, Long uniqueId) {
+			RelatedObjectLookupRpcRequest request = new RelatedObjectLookupRpcRequest();
+			request.setLevel(level);
+			request.setUniqueId(uniqueId);
+			return request;
+		}
+		
+		public static RelatedObjectLookupRpcRequest getChildren(RelatedObjectLookupRpcResponse... response) {
+			RelatedObjectLookupRpcRequest request = new RelatedObjectLookupRpcRequest();
+			request.setLevel(response[response.length - 1].getLevel());
+			request.setUniqueId(response[response.length - 1].getUniqueId());
+			for (RelatedObjectLookupRpcResponse r: response)
+				if (r.getLevel() == Level.COURSE)
+					request.setCourseId(r.getUniqueId());
+			return request;
+		}
+	}
+	
+	public static class RelatedObjectLookupRpcResponse implements GwtRpcResponse {
+		private RelatedObjectLookupRpcRequest.Level iLevel;
+		private Long iUniqueId;
+		private String iName, iText;
+		private RelatedObjectInterface iRelatedObject = null;
+		
+		public RelatedObjectLookupRpcResponse() {}
+		public RelatedObjectLookupRpcResponse(RelatedObjectLookupRpcRequest.Level level, Long uniqueId, String name) {
+			this(level, uniqueId, name, null, null);
+		}
+		public RelatedObjectLookupRpcResponse(RelatedObjectLookupRpcRequest.Level level, Long uniqueId, String name, String text) {
+			this(level, uniqueId, name, text, null);
+		}
+		public RelatedObjectLookupRpcResponse(RelatedObjectLookupRpcRequest.Level level, Long uniqueId, String name, RelatedObjectInterface related) {
+			this(level, uniqueId, name, null, related);
+		}
+		public RelatedObjectLookupRpcResponse(RelatedObjectLookupRpcRequest.Level level, Long uniqueId, String name, String text, RelatedObjectInterface related) {
+			iLevel = level; iUniqueId = uniqueId; iName = name; iText = text; iRelatedObject = related;
+		}
+		
+		public Long getUniqueId() { return iUniqueId; }
+		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+		
+		public RelatedObjectLookupRpcRequest.Level getLevel() { return iLevel; }
+		public void setLevel(RelatedObjectLookupRpcRequest.Level level) { iLevel = level; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public String getText() { return iText; }
+		public void setText(String text) { iText = text; }
+		
+		public String getLabel() {
+			return getName() + (getText() == null || getText().isEmpty() ? "" : " - " + getText());
+		}
+
+		public boolean hasRelatedObject() { return iRelatedObject != null; }
+		public RelatedObjectInterface getRelatedObject() { return iRelatedObject; }
+		public void setRelatedObject(RelatedObjectInterface relatedObject) { iRelatedObject = relatedObject; }
+		
+		public boolean equals(Object o) {
+			if (o == null || ! (o instanceof RelatedObjectLookupRpcResponse)) return false;
+			RelatedObjectLookupRpcResponse r = (RelatedObjectLookupRpcResponse)o;
+			return EventInterface.equals(getLevel(), r.getLevel()) && EventInterface.equals(getUniqueId(), r.getUniqueId());
+		}
+	}
 }
