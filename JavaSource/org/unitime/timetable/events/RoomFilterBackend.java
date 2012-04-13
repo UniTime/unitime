@@ -339,6 +339,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			if (!coord.isEmpty()) {
 				locations: for (Location location: locations) {
 					if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
+					if (building != null && !building.isEmpty() && (location instanceof Room) && building.contains(((Room)location).getBuilding().getAbbreviation())) continue;
 					if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
 					if (query != null && !query.match(new LocationMatcher(location))) continue;
 					if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
@@ -436,6 +437,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					location.getUniqueId(),
 					location.getDisplayName(),
 					location.getLabel(),
+					"permId", location.getPermanentId().toString(),
 					"type", location.getRoomType().getLabel(),
 					"capacity", location.getCapacity().toString(),
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),

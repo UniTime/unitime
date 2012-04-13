@@ -48,8 +48,9 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Widget;
 
-public class SessionDatesSelector extends Composite {
+public class SessionDatesSelector extends Composite implements HasValue<List<Date>> {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	AcademicSessionProvider iAcademicSession;
@@ -427,8 +428,8 @@ public class SessionDatesSelector extends Composite {
 		public P getDays(int dayOfWeek) { return iWeekDays[dayOfWeek]; }
 		public List<D> getDays() { return iDays; }
 		
-
-		
+		public int getYear() { return iSessionMonth.getYear(); }
+		public int getMonth() { return iSessionMonth.getMonth(); }
 	}
 	
 	public static class Legend extends AbsolutePanel {
@@ -490,5 +491,60 @@ public class SessionDatesSelector extends Composite {
 			}
 		}
 	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(
+			ValueChangeHandler<List<Date>> handler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	@SuppressWarnings("deprecation")
+	public List<Date> getValue() {
+		List<Date> ret = new ArrayList<Date>();
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays()) {
+					if (d.getValue()) ret.add(new Date(s.getYear() - 1900, s.getMonth(), 1 + d.getNumber()));
+				}
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public void setValue(List<Date> value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(List<Date> value, boolean fireEvents) {
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays())
+					d.setValue(false);
+				if (value != null) {
+					for (Date d: value) {
+						if (s.getYear() == Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d)) &&
+							s.getMonth() + 1 == Integer.parseInt(DateTimeFormat.getFormat("MM").format(d))) {
+							s.get(Integer.parseInt(DateTimeFormat.getFormat("dd").format(d)) - 1).setValue(true);
+						}
+					}
+				}
+			}
+		}
+		if (fireEvents) {
+			ValueChangeEvent.fire(this, getValue());
+		}
+	}
+	
+	public void clearMessage() { iPanel.clearHint(); }
+	public void setMessage(String message) { iPanel.setHint(message); }
+	public void setError(String message) { iPanel.setErrorHint(message); }
 
 }

@@ -268,6 +268,10 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		return TimeUtils.slot2time(slot, CONSTANTS.useAmPm());
 	}
 	
+	public static String slot2short(int slot) {
+		return TimeUtils.slot2short(slot, CONSTANTS.useAmPm());
+	}
+	
 	public static String slot2time(int slot, int diff) {
 		if (diff <= 0) return slot2time(slot);
 		if (diff < 24 && diff != 12) return slot2time(slot) + " (" + (5 * diff) + " mins)";
@@ -440,6 +444,19 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	        int m = 5 * (slot % 12);
 	        if (useAmPm)
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? " am" : h >= 12 ? " pm" : " am");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
+		
+		public static String slot2short(int slot, boolean useAmPm) {
+			if (useAmPm) {
+				if (slot == 0 || slot == 288) return "midnight";
+				if (slot == 144) return "noon";
+			}
+			int h = slot / 12;
+	        int m = 5 * (slot % 12);
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}

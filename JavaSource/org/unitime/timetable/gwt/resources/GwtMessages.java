@@ -46,5 +46,46 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Export in iCalendar format.")
 	String exportICalendar();
+	
+	@DefaultMessage("Select All")
+	String opSelectAll();
 
+	@DefaultMessage("Clear Selection")
+	String opClearSelection();
+	
+	@DefaultMessage("Remove Selected Meetings")
+	String opDeleteSelectedMeetings();
+	
+	@DefaultMessage("Remove All New Meetings")
+	String opDeleteNewMeetings();
+	
+	@DefaultMessage("Add Meetings")
+	String opAddMeetings();
+
+	@DefaultMessage("Sort by {0}")
+	String opSortBy(String column);
+	
+	@DefaultMessage("Date")
+	String colDate();
+
+	@DefaultMessage("Time")
+	String colTime();
+
+	@DefaultMessage("Location")
+	String colLocation();
+	
+	@DefaultMessage("Capacity")
+	String colCapacity();
+
+	@DefaultMessage("Approved")
+	String colApproval();
+
+	@DefaultMessage("Conflicts with {0}")
+	String conflictWith(String event);
+	
+	@DefaultMessage("not approved")
+	String approvalNotApproved();
+
+	@DefaultMessage("new meeting")
+	String approvalNewMeeting();
 }
