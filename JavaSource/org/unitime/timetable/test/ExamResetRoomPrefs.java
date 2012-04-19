@@ -38,7 +38,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 public class ExamResetRoomPrefs {
     private static Log sLog = LogFactory.getLog(ExamResetRoomPrefs.class);
 
-    public static void doUpdate(Long sessionId, Integer examType, org.hibernate.Session hibSession) {
+    public static void doUpdate(Long sessionId, Integer examType, boolean override, org.hibernate.Session hibSession) {
         for (Iterator i=new TreeSet(Exam.findAll(sessionId, examType)).iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sLog.info("Updating "+exam.getLabel());
@@ -47,7 +47,7 @@ public class ExamResetRoomPrefs {
                 if (p instanceof RoomPref) { j.remove(); }
                 else if (p instanceof ExamPeriodPref) { j.remove(); }
             }
-            exam.generateDefaultPreferences(true);
+            exam.generateDefaultPreferences(override);
             hibSession.saveOrUpdate(exam);
             hibSession.flush();
         }
@@ -82,8 +82,9 @@ public class ExamResetRoomPrefs {
             }
             
             int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
+            boolean override = "true".equals(ApplicationProperties.getProperty("override", "false"));
             
-            doUpdate(session.getUniqueId(), examType, new _RootDAO().getSession());
+            doUpdate(session.getUniqueId(), examType, override, new _RootDAO().getSession());
 
         } catch (Exception e) {
             e.printStackTrace();
