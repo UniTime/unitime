@@ -107,7 +107,7 @@
 		</TR>
 
 		<TR>
-			<TD width='10%'>Number:</TD>
+			<TD width='10%'>Code:</TD>
 			<TD>
 				<html:text property="deptCode" size="50" maxlength="50"/>
 			</TD>
