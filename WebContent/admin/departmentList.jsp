@@ -64,10 +64,10 @@
 		WebTable webTable = new WebTable((dispLastChanges ? 10 : 9), "",
 				"departmentList.do?ord=%%",
 				(dispLastChanges 
-					? new String[] { "Number", "Abbv", "Name", "External<br>Manager", 
+					? new String[] { "Code", "Abbv", "Name", "External<br>Manager", 
 									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref Priority", 
 									 "Allow Required", "Last Change" } 
-					: new String[] { "Number", "Abbreviation", "Name", "External Manager",
+					: new String[] { "Code", "Abbreviation", "Name", "External Manager",
 									 "Subjects", "Rooms", "Status", "Dist Pref Priority", 
 									 "Allow Required" }),
 				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left" },

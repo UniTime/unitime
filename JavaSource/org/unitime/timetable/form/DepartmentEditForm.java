@@ -75,11 +75,11 @@ public class DepartmentEditForm extends ActionForm {
         }
 
         if (iDeptCode==null || iDeptCode.trim().equalsIgnoreCase("")) {
-        	errors.add("deptCode", new ActionMessage("errors.required", "Number") );
+        	errors.add("deptCode", new ActionMessage("errors.required", "Code") );
         }
         
         if (iDeptCode!=null && iDeptCode.trim().length() > 50) {
-        	errors.add("deptCode", new ActionMessage("errors.maxlength", "Number", "50") );
+        	errors.add("deptCode", new ActionMessage("errors.maxlength", "Code", "50") );
         }
 
         if (iIsExternal && (iExtName==null || iExtName.trim().length()==0)) {
