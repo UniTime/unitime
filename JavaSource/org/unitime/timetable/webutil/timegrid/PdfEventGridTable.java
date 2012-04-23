@@ -104,7 +104,6 @@ public class PdfEventGridTable extends EventGridTable {
 
         if (iDates.size()>1) {
             for (TableModel m : iModel) {
-                int nrCols = 0;
                 boolean split = false;
                 boolean first = true;
                 int firstColSpan = sDefaultNumberOfColumns;
@@ -116,7 +115,6 @@ public class PdfEventGridTable extends EventGridTable {
                     		firstColSpan = colSpan;
                     	}
                     }
-                    nrCols += colSpan;
                     if (colSpan>1) split = true;
                 }
                 MyTable table = new MyTable(m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+")\n"+m.getLocation().getRoomTypeLabel(), firstColSpan);
@@ -198,7 +196,6 @@ public class PdfEventGridTable extends EventGridTable {
         } else {
             Date date = iDates.firstElement();
             boolean split = false;
-            int nrCols = 0;
             boolean first = true;
             int firstColSpan = sDefaultNumberOfColumns;
             for (TableModel m : iModel) {
@@ -209,7 +206,6 @@ public class PdfEventGridTable extends EventGridTable {
                 		firstColSpan = colSpan;
                 	}
                 }
-                nrCols += colSpan;
                 if (colSpan>1) split = true;
             }
             MyTable table = new MyTable(df1.format(date)+"\n"+df2.format(date), firstColSpan);

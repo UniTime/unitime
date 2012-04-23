@@ -1643,7 +1643,6 @@ public class CurriculaCourses extends Composite {
 			}
 
 			column = 0;
-			int total = 0;
 			int totalC[] = new int [other.size()];
 			for (int i = 0; i < totalC.length; i++)
 				totalC[i] = 0;
@@ -1653,7 +1652,6 @@ public class CurriculaCourses extends Composite {
 				if (iClassifications.getExpected(c) == null) continue;
 				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
 				if (thisEnrollment != null && count(tc,thisEnrollment) != 0) {
-					total += thisEnrollment.size();
 					Set<Long> sharedWithOneOther = new HashSet<Long>();
 					Set<Long> sharedWithTwoOther = new HashSet<Long>();
 					Set<Long> sharedWithThreeOther = new HashSet<Long>();

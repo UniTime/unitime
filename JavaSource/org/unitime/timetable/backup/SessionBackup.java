@@ -528,7 +528,6 @@ public class SessionBackup {
 				else
 					meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
 				relation = new HashMap<Serializable, List<Object>>();
-				int cnt = 0;
 				String idProperty = meta.getIdentifierPropertyName();
 				if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
 					idProperty = "externalUniqueId";
@@ -542,7 +541,6 @@ public class SessionBackup {
 						relation.put((Serializable)o[0], list);
 					}
 					list.add(o[1]);
-					cnt++;
 				}
 				iRelationCache.put(property, relation);
 				// iProgress.info("Fetched " + property + " (" + cnt + (data ? " items" : " ids") + ")");

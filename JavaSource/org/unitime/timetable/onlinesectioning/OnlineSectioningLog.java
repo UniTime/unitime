@@ -9262,7 +9262,6 @@ public final class OnlineSectioningLog {
       
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log buildPartial() {
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log result = new org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log(this);
-        int from_bitField0_ = bitField0_;
         if (actionBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             action_ = java.util.Collections.unmodifiableList(action_);

@@ -575,9 +575,6 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             File file = ApplicationProperties.getTempFile("meetings", "pdf");
             
             float[] widths = getWidths(false, mainContact);
-            float totalWidth = 0;
-            for (int i=0;i<widths.length;i++)
-                totalWidth += widths[i];
             
             iDocument = new Document(PageSize.LETTER.rotate(), 15, 15, 15, 30); 
 

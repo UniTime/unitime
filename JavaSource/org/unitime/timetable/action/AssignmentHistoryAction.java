@@ -269,8 +269,7 @@ public class AssignmentHistoryAction extends Action {
         			new String[] {"left", "left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
         try {
-        	int idx = 0;
-        	for (Enumeration e=history.elements();e.hasMoreElements();idx++) {
+        	for (Enumeration e=history.elements();e.hasMoreElements();) {
         		AssignmentRecord record = (AssignmentRecord)e.nextElement();
         		StringBuffer classes = new StringBuffer();
         	    StringBuffer rooms = new StringBuffer();
