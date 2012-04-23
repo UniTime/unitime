@@ -113,7 +113,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setTitle(info.getTitle());
 				e.setConsent(info.getConsentAbbv());
 
-				int match = 0, nomatch = 0;
+				int match = 0;
 				int enrl = 0, wait = 0, res = 0;
 				int tEnrl = 0, tWait = 0, tRes = 0;
 				int conNeed = 0, tConNeed = 0;
@@ -134,8 +134,6 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						} else if (m.student().canAssign(m.request())) {
 							wait ++;
 						}
-					} else {
-						nomatch++;
 					}
 					
 					if (m.enrollment() != null) {
@@ -331,7 +329,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					parent = parent.getParent();
 				}
 				
-				int match = 0, nomatch = 0;
+				int match = 0;
 				int enrl = 0, wait = 0, res = 0;
 				int tEnrl = 0, tWait = 0, tRes = 0;
 				int conNeed = 0, tConNeed = 0;
@@ -345,8 +343,6 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						enrl ++;
 						if (m.enrollment().getReservation() != null) res ++;
 						if (info.getConsent() != null && m.enrollment().getApproval() == null) conNeed ++;
-					} else {
-						nomatch++;
 					}
 					
 					tEnrl ++;
@@ -371,8 +367,6 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (query().match(m)) {
 						match++;
 						wait++;
-					} else {
-						nomatch++;
 					}
 					tWait ++;
 				}

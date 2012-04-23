@@ -58,14 +58,12 @@ public class EventFilterBackend extends FilterBoxBackend {
 		EventQuery query = getQuery(request);
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
-		int total = 0;
 		for (Object[] o: (List<Object[]>)query.select("e.class, count(distinct e)").group("e.class").order("e.class").exclude("query").exclude("type").query(hibSession).list()) {
 			int type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
 			Entity e = new Entity(new Long(type), Event.sEventTypesAbbv[type], Event.sEventTypesAbbv[type]);
 			e.setCount(count);
 			response.add("type", e);
-			total += count;
 		}
 		
 		for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
@@ -86,7 +84,6 @@ public class EventFilterBackend extends FilterBoxBackend {
 			Entity e = new Entity(new Long(type), day, day);
 			e.setCount(count);
 			response.add("day", e);
-			total += count;
 		}
 		
 		Entity all = new Entity(0l, "All", "All Events");

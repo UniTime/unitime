@@ -2507,7 +2507,6 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						throw new CurriculaException("not authorized to populate course projected demands");
 				}
 				
-				int offeringDemand = 0;
 				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
 					CourseOffering courseOffering = i.next();
 					
@@ -2554,19 +2553,15 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						
 					if (area2major2clasf2ll != null) {
 						for (Map.Entry<String, Hashtable<String, Hashtable<String, Integer>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
-							float demandThisArea = 0;
 							for (Map.Entry<String, Hashtable<String, Integer>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
 								for (Map.Entry<String, Integer> clasfEll: majorEclasf2ll.getValue().entrySet()) {
 									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue());
-									demandThisArea += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue());
 								}
 							}
 						}
 					}
 					
 					courseOffering.setProjectedDemand(demand);
-					
-					offeringDemand += Math.round(demand);
 					
 					if (oldDemand == null || demand != oldDemand) {
 						ChangeLog.addChange(hibSession,

@@ -669,12 +669,12 @@ public class PersonalizedExamReportAction extends Action {
             for (DirectConflict conflict : exam.getDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
                 if (!conflict.getStudents().contains(student.getUniqueId())) continue;
-                String classes = "", date = "", time = "", room = "", distance = "", blank="";
+                String classes = "", date = "", time = "", room = "";
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                     if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                     if (classes.length()>0) {
-                        blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                        classes += nl; date += nl; time += nl; room += nl;
                     }
                     classes += section.getName();
                     if (firstSection) {
@@ -689,7 +689,7 @@ public class PersonalizedExamReportAction extends Action {
                     for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         if (firstSection) {
@@ -698,7 +698,7 @@ public class PersonalizedExamReportAction extends Action {
                         firstSection = false;
                     }
                 } else if (conflict.getOtherEventId()!=null) {
-                    blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                    classes += nl; date += nl; time += nl; room += nl;
                     classes += conflict.getOtherEventName();
                     room += conflict.getOtherEventRoom();
                     //date += conflict.getOtherEventDate();
@@ -725,12 +725,12 @@ public class PersonalizedExamReportAction extends Action {
                 for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
                     if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
                     if (!conflict.getStudents().contains(student.getUniqueId())) continue;
-                    String classes = "", date = "", time = "", room = "", distance = "", blank="";
+                    String classes = "", date = "", time = "", room = "";
                     boolean firstSection = true;
                     for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         if (firstSection) {
@@ -744,7 +744,7 @@ public class PersonalizedExamReportAction extends Action {
                     for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         if (firstSection) {
@@ -774,12 +774,12 @@ public class PersonalizedExamReportAction extends Action {
                 for (ExamAssignment other : conflict.getOtherExams())
                     if (exam.compareTo(other)>=0 && exams.contains(other)) continue conflicts;
                 if (!conflict.getStudents().contains(student.getUniqueId())) continue;
-                String classes = "", date = "", time = "", room = "", distance = "", blank="";
+                String classes = "", date = "", time = "", room = "";
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                     if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                     if (classes.length()>0) {
-                        blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                        classes += nl; date += nl; time += nl; room += nl;
                     }
                     classes += section.getName();
                     if (firstSection) {
@@ -794,7 +794,7 @@ public class PersonalizedExamReportAction extends Action {
                     for (ExamSectionInfo section : other.getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         if (firstSection) {
@@ -911,11 +911,11 @@ public class PersonalizedExamReportAction extends Action {
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
-                String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                     if (classes.length()>0) {
-                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                        classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                     }
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
@@ -931,7 +931,7 @@ public class PersonalizedExamReportAction extends Action {
                 if (conflict.getOtherExam()!=null) {
                     for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -942,7 +942,7 @@ public class PersonalizedExamReportAction extends Action {
                         firstSection = false;
                     }
                 } else if (conflict.getOtherEventId()!=null) {
-                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                    classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                     classes += conflict.getOtherEventName();
                     enrollment += conflict.getOtherEventSize();
                     seating += conflict.isOtherClass()?"Class":"Event";
@@ -974,11 +974,11 @@ public class PersonalizedExamReportAction extends Action {
             if (showBackToBack)
                 for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
                     if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
-                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                     boolean firstSection = true;
                     for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -993,7 +993,7 @@ public class PersonalizedExamReportAction extends Action {
                     firstSection = true;
                     for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -1028,12 +1028,12 @@ public class PersonalizedExamReportAction extends Action {
             conflicts: for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
                 for (ExamAssignment other : conflict.getOtherExams())
                     if (exam.compareTo(other)>=0 && exams.contains(other)) continue conflicts;
-                String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                 int nrStudents = exam.getNrStudents();
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                     if (classes.length()>0) {
-                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                        classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                     }
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
@@ -1050,7 +1050,7 @@ public class PersonalizedExamReportAction extends Action {
                     nrStudents += other.getNrStudents();
                     for (ExamSectionInfo section : other.getSectionsIncludeCrosslistedDummies()) {
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -1122,12 +1122,12 @@ public class PersonalizedExamReportAction extends Action {
                     Student student = new StudentDAO().get(studentId);
                     String id = student.getExternalUniqueId();
                     String name = student.getName(DepartmentalInstructor.sNameFormatLastFist);
-                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                     boolean firstSection = true;
                     for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(studentId)) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -1144,7 +1144,7 @@ public class PersonalizedExamReportAction extends Action {
                         for (ExamSectionInfo section : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!section.getStudentIds().contains(studentId)) continue;
                             if (classes.length()>0) {
-                                blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                             }
                             classes += section.getName();
                             enrollment += String.valueOf(section.getNrStudents());
@@ -1155,7 +1155,7 @@ public class PersonalizedExamReportAction extends Action {
                             firstSection = false;
                         }
                     } else if (conflict.getOtherEventId()!=null) {
-                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                        classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         classes += conflict.getOtherEventName();
                         enrollment += conflict.getOtherEventSize();
                         seating += conflict.isOtherClass()?"Class":"Event";
@@ -1254,13 +1254,13 @@ public class PersonalizedExamReportAction extends Action {
                     Student student = new StudentDAO().get(studentId);
                     String id = student.getExternalUniqueId();
                     String name = student.getName(DepartmentalInstructor.sNameFormatLastFist);
-                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                    String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                     int nrStudents = exam.getNrStudents();
                     boolean firstSection = true;
                     for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (!section.getStudentIds().contains(studentId)) continue;
                         if (classes.length()>0) {
-                            blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                         }
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
@@ -1278,7 +1278,7 @@ public class PersonalizedExamReportAction extends Action {
                         for (ExamSectionInfo section : other.getSectionsIncludeCrosslistedDummies()) {
                             if (!section.getStudentIds().contains(studentId)) continue;
                             if (classes.length()>0) {
-                                blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                             }
                             classes += section.getName();
                             enrollment += String.valueOf(section.getNrStudents());

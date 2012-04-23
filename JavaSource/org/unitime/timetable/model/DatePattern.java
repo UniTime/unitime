@@ -326,7 +326,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public String getBorderArray(Long uniqueId) {
 		int startMonth = getSession().getPatternStartMonth();
 		int endMonth = getSession().getPatternEndMonth();
-		int dayOfYear = 0;
 		int year = getSession().getSessionStartYear();
 		Set usage = (uniqueId!=null?getUsage(uniqueId):null);
 		StringBuffer sb = new StringBuffer("[");
@@ -335,7 +334,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 			sb.append("[");
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
-				dayOfYear++;
 				if (d>1) sb.append(",");
 				String border = getSession().getBorder(d,m);
 				if (isUsed(d,m,usage)) 

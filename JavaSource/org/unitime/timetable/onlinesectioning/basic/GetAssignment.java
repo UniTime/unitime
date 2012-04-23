@@ -72,7 +72,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
 			int nrUnassignedCourses = 0;
-			int nrAssignedAlt = 0;
 			boolean assigned = false;
 			for (Request request: student.getRequests()) {
 				if (request.getAssignment() != null) assigned = true;
@@ -146,7 +145,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						}
 						if (avEnrls.isEmpty()) ca.setNotAvailable(true);
 					} else {
-						if (r.isAlternative() && r.isAssigned()) nrAssignedAlt++;
 						TreeSet<Section> sections = new TreeSet<Section>(new EnrollmentSectionComparator());
 						sections.addAll(r.getAssignment().getSections());
 						boolean hasAlt = false;

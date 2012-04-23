@@ -2074,7 +2074,6 @@ public class SessionRollForward {
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
         		.setLong("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();;
         
-        int total = 0;
         for (int i=0;i<query.length;i++) {
             for (Iterator j=hibSession.createQuery(query[i]).setLong("toSessionId", toSession.getUniqueId()).list().iterator();j.hasNext();) {
                 Object[] o = (Object[])j.next();
@@ -2088,7 +2087,6 @@ public class SessionRollForward {
                 d.setCoursePermId(co.getPermId());
                 d.setStudent(s);
                 hibSession.saveOrUpdate(d);
-                total ++;
             }
         }
         hibSession.flush(); hibSession.clear();

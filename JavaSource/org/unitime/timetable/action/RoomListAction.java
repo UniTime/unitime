@@ -1616,8 +1616,7 @@ public class RoomListAction extends Action {
 	                if (ts.size() == session.getDepartments().size()) {
 	                	text[idx] = new CSVField("");
 	                } else {
-	                	int cnt = 0;
-		                for (Iterator it = ts.iterator(); it.hasNext(); cnt++) {
+		                for (Iterator it = ts.iterator(); it.hasNext();) {
 		                    Department d = (Department) it.next();
 		                    text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") + d.getShortLabel()); 
 		                }

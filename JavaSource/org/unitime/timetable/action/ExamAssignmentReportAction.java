@@ -1255,12 +1255,12 @@ public class ExamAssignmentReportAction extends Action {
                         }
                         if (!match(form,id) && !match(form,name)) continue;
                         if (form.getShowSections()) {
-                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
                                 if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
-                                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                    classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 }
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
@@ -1277,7 +1277,7 @@ public class ExamAssignmentReportAction extends Action {
                                 for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
                                     if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                     if (classes.length()>0) {
-                                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                        classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                     }
                                     classes += section.getName();
                                     enrollment += String.valueOf(section.getNrStudents());
@@ -1288,7 +1288,7 @@ public class ExamAssignmentReportAction extends Action {
                                     firstSection = false;
                                 }
                             } else if (conflict.getOtherEventId()!=null) {
-                                blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 classes += conflict.getOtherEventName();
                                 enrollment += conflict.getOtherEventSize();
                                 seating += (conflict.isOtherClass()?"Class":"Event");
@@ -1398,12 +1398,12 @@ public class ExamAssignmentReportAction extends Action {
                         }
                         if (!match(form,id) && !match(form,name)) continue;
                         if (form.getShowSections()) {
-                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
                                 if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
-                                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                    classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 }
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
@@ -1419,7 +1419,7 @@ public class ExamAssignmentReportAction extends Action {
                             for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
                                 if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
-                                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                    classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 }
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
@@ -1503,13 +1503,13 @@ public class ExamAssignmentReportAction extends Action {
                         }
                         if (!match(form,id) && !match(form,name)) continue;
                         if (form.getShowSections()) {
-                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
+                            String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
                             int nrStudents = exam.getNrStudents();
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
                                 if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
-                                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                    classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 }
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
@@ -1527,7 +1527,7 @@ public class ExamAssignmentReportAction extends Action {
                                 for (ExamSectionInfo section : other.getSections()) {
                                     if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                     if (classes.length()>0) {
-                                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                        classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                     }
                                     classes += section.getName();
                                     enrollment += String.valueOf(section.getNrStudents());
@@ -1567,7 +1567,7 @@ public class ExamAssignmentReportAction extends Action {
                                     exam.getExamId().toString());
                         } else {
                             String classes = exam.getExamName(), enrollment = ""+exam.getNrStudents(), seating = exam.getSeatingTypeLabel();
-                            String date = exam.getDate(html), time = exam.getTime(html), room = exam.getRoomsName(html, ", "), distance = "", blank="";
+                            String date = exam.getDate(html), time = exam.getTime(html), room = exam.getRoomsName(html, ", ");
                             int nrStudents = exam.getNrStudents();
                             for (ExamAssignment other : conflict.getOtherExams()) {
                                 classes += nl+other.getExamName();
@@ -1575,7 +1575,6 @@ public class ExamAssignmentReportAction extends Action {
                                 seating += nl+other.getSeatingTypeLabel();
                                 time += nl+other.getTime(html);
                                 room += nl+other.getRoomsName(html, ", ");
-                                blank += nl; distance += nl;
                             }
                             table.addLine(
                                     "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",

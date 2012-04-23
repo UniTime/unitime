@@ -2623,7 +2623,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 5993231932828326663L;
 		private CourseOffering courseOffering;
 		private Element element;
 

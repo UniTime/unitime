@@ -145,8 +145,7 @@ public class SolutionChangesAction extends Action {
         			null ));
         webTable.setRowStyle("white-space:nowrap");
         try {
-        	int idx = 0;
-        	for (Enumeration e=changes.elements();e.hasMoreElements();idx++) {
+        	for (Enumeration e=changes.elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
     	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
     	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
@@ -268,8 +267,7 @@ public class SolutionChangesAction extends Action {
         			new String[] {"left", "left", "left", "left", "right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
         try {
-        	int idx = 0;
-        	for (Enumeration e=changes.elements();e.hasMoreElements();idx++) {
+        	for (Enumeration e=changes.elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
     	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
     	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));

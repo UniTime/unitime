@@ -183,8 +183,7 @@ public class AssignedClassesAction extends Action {
         			null ));
         
         try {
-        	int idx = 0;
-        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();idx++) {
+        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();) {
         		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         		AssignmentPreferenceInfo ci = ca.getInfo(); 
 
@@ -291,8 +290,7 @@ public class AssignedClassesAction extends Action {
         			null ));
         webTable.setRowStyle("white-space:nowrap");
         try {
-        	int idx = 0;
-        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();idx++) {
+        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();) {
         		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         		AssignmentPreferenceInfo ci = ca.getInfo(); 
 
