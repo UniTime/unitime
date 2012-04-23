@@ -286,7 +286,7 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 		if (o == null) {
 			ret[0] = "";
 		} else if (o instanceof Object[]) {
-			int a = 0, idx = 0;
+			int idx = 0;
 			for (Object x: (Object[])o) {
 				if (x == null) {
 					ret[idx++] = "";
@@ -303,7 +303,6 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 		                }
 					}
 				}
-				a++;					
 			}
 		} else {
 			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());

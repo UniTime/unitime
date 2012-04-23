@@ -183,7 +183,6 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public String getCurriculumText() {
 		if (!hasCurricula()) return "";
 		int top = 0;
-		double cover = 0.0;
 		double total = 0.0;
 		for (CurriculumInfo i: iCurriculum2nrStudents) {
 			total += i.getNrStudents();
@@ -193,7 +192,6 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			double fraction = i.getNrStudents() / total;
 			if (top < 3) {
 				top++;
-				cover += fraction;
 				if (!ret.isEmpty()) ret += ", ";
 				ret += sDF.format(100.0 * fraction) + "% " + i.getName();
 				if (fraction == 1.0) return i.getName();

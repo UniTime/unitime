@@ -347,7 +347,6 @@ public class SolutionReportAction extends Action {
         int nrLines = 0;
         
         try {
-        	int idx = 0;
             int nrAllRooms = 0, nrAllLectureUse = 0, nrAllLectureShouldUse = 0;
             double allSlotsUse = 0.0, allSlotsShouldUse = 0.0;
             
@@ -360,7 +359,7 @@ public class SolutionReportAction extends Action {
             });
             groups.addAll(report.getGroups());
             
-        	for (Iterator i=groups.iterator();i.hasNext();idx++) {
+        	for (Iterator i=groups.iterator();i.hasNext();) {
         		RoomReport.RoomAllocationGroup g = (RoomReport.RoomAllocationGroup)i.next();
         		if (g.getNrRooms()==0) continue;
         		
@@ -430,9 +429,7 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
-        	
-        	for (Iterator it=deptBalancingReport.getGroups().iterator();it.hasNext();idx++) {
+        	for (Iterator it=deptBalancingReport.getGroups().iterator();it.hasNext();) {
         		DeptBalancingReport.DeptBalancingGroup g = (DeptBalancingReport.DeptBalancingGroup)it.next();
         		
         		String[] line = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
@@ -498,8 +495,7 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
-        	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
+        	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		ViolatedDistrPreferencesReport.ViolatedDistrPreference g = (ViolatedDistrPreferencesReport.ViolatedDistrPreference)i.next();
         		
         		StringBuffer cSB = new StringBuffer();
@@ -560,8 +556,7 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
-        	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
+        	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		DiscouragedInstructorBtbReport.DiscouragedBtb g = (DiscouragedInstructorBtbReport.DiscouragedBtb)i.next();
         		
         		StringBuffer rSB = new StringBuffer();
@@ -619,9 +614,8 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
         	int total[] = new int [] { 0, 0, 0, 0, 0, 0};
-        	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
+        	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		JenrlInfo g = (JenrlInfo)i.next();
         		
         		if (Math.round(g.getJenrl()) <= 0) continue;
@@ -772,9 +766,7 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
-        	
-        	for (Iterator it=report.getGroups().iterator();it.hasNext();idx++) {
+        	for (Iterator it=report.getGroups().iterator();it.hasNext();) {
         		SameSubpartBalancingReport.SameSubpartBalancingGroup g = (SameSubpartBalancingReport.SameSubpartBalancingGroup)it.next();
         		
         		String[] line = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
@@ -846,8 +838,7 @@ public class SolutionReportAction extends Action {
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int idx = 0;
-        	for (Iterator i=report.getGroups().iterator();i.hasNext();idx++) {
+        	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		PerturbationReport.PerturbationGroup g = (PerturbationReport.PerturbationGroup)i.next();
         		
         		webTable.addLine(null,

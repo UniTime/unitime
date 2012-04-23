@@ -385,8 +385,7 @@ public class Suggestion implements Serializable, Comparable {
     public String getBtbInstructorInfosAsHtml(HttpSession session, boolean link) {
     	Collections.sort(iBtbInstructorInfos,new BtbInstructorInfoComparator(session));
     	StringBuffer sb = new StringBuffer();
-    	int idx = 0; 
-    	for (Enumeration e=iBtbInstructorInfos.elements();e.hasMoreElements();idx++) {
+    	for (Enumeration e=iBtbInstructorInfos.elements();e.hasMoreElements();) {
     		BtbInstructorInfo info = (BtbInstructorInfo)e.nextElement();
     		sb.append(info.toHtml(session, link));
     	}

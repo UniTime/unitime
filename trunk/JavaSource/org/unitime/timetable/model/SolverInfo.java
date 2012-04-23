@@ -191,17 +191,13 @@ public class SolverInfo extends BaseSolverInfo {
 					if (sInfoCache==null) return;
 					synchronized (sInfoCache) {
 						if (sInfoCache.isEmpty()) continue;
-						//Debug.debug("InfoCache cleanup started ...");
-						int removed = 0;
 						for (Iterator i=sInfoCache.entrySet().iterator();i.hasNext();) {
 							Map.Entry entry = (Map.Entry)i.next();
 							CachedTimetableInfo cInfo = (CachedTimetableInfo)entry.getValue();
 							if (cInfo.getAge()>sInfoCacheTimeToLive) {
 								i.remove();
-								removed++;
 							}
 						}
-						//Debug.debug("InfoCache cleanup finished ("+removed+" of "+(removed+sInfoCache.size())+" items purged).");
 					}
 				}
 			} catch (InterruptedException ex) {

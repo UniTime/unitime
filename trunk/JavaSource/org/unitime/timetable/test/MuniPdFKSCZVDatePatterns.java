@@ -302,13 +302,11 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             for (String c: sCombinations) {
                 BitSet weekCode = new BitSet(weeks.get(0).length());
                 String dp = "";
-                long id = 0;
                 int f = -1, i = 0;;
                 for (String x: c.split(",")) {
                     if (x.equals("1")) {
                         if (f < 0) f = 1 + i;
                         weekCode.or(weeks.get(i));
-                        id += (1 << i);
                     } else {
                         if (f > 0) {
                             if (!dp.isEmpty()) dp += ",";
