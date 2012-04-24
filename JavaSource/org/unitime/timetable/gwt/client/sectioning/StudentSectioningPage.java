@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.sectioning.UserAuthentication.UserAuthenticatedEvent;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
@@ -40,6 +41,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class StudentSectioningPage extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
@@ -62,7 +64,7 @@ public class StudentSectioningPage extends Composite {
 		titlePanel.setHTML(0, 0, "&nbsp;");
 		
 		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
-		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning());
+		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning() ? !CONSTANTS.isAuthenticationRequired() : false);
 		titlePanel.setWidget(0, 1, userAuthentication);
 		
 		if (Window.Location.getParameter("student") == null)
@@ -71,8 +73,11 @@ public class StudentSectioningPage extends Composite {
 					userAuthentication.authenticate();
 				}
 				public void onSuccess(String result) {
-					if (!mode.isSectioning() && MESSAGES.userGuest().equals(result)) {
-						userAuthentication.authenticate();
+					if (MESSAGES.userGuest().equals(result)) { // user is guest (i.e., not truly authenticated)
+						if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest())
+							userAuthentication.authenticate();
+						else
+							userAuthentication.authenticated(result);
 					} else {
 						userAuthentication.authenticated(result);
 					}
