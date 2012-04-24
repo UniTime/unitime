@@ -116,4 +116,11 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultStringValue("MM/dd")
 	String patternDateFormat();
+	
+	@DefaultBooleanValue(false)
+	boolean isAuthenticationRequired();
+	
+	@DefaultBooleanValue(true)
+	boolean tryAuthenticationWhenGuest();
+
 }
