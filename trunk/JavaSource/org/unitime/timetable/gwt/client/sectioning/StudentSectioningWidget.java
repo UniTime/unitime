@@ -125,6 +125,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iFooter = new HorizontalPanel();
 		iFooter.setStyleName("unitime-MainTableBottomHeader");
+		iFooter.setWidth("100%");
 		
 		HorizontalPanel leftFooterPanel = new HorizontalPanel();
 		iRequests = new Button(MESSAGES.buttonRequests());
