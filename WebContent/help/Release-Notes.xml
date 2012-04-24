@@ -53,6 +53,24 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Log in: when the page is opened and the user is not logged-in automatically popup the login dialog.
+					<line>This behavior can be change in the student scheduling constants,
+						together with the ability to disable guest access.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Enrollments, Classes, Assistant dialogs: widths changed so that the dialog size better fits the content.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible</name>

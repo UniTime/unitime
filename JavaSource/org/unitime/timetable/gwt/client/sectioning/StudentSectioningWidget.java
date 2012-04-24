@@ -125,6 +125,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iFooter = new HorizontalPanel();
 		iFooter.setStyleName("unitime-MainTableBottomHeader");
+		iFooter.setWidth("100%");
 		
 		HorizontalPanel leftFooterPanel = new HorizontalPanel();
 		iRequests = new Button(MESSAGES.buttonRequests());
@@ -248,6 +249,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.WidgetCell(iCalendar, MESSAGES.colSaved(), 1, "10"),
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
 			));
+		iAssignments.setWidth("100%");
 		
 		VerticalPanel vp = new VerticalPanel();
 		vp.add(iAssignments);
