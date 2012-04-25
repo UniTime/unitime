@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -477,7 +478,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	return ret;
     }
     
-    public List<DatePattern> findChildren() {    	
+    public List<DatePattern> findChildren() {
+    	if (getType() != null && getType() != sTypePatternSet) return new ArrayList<DatePattern>();
     	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
         		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId").
         		setLong("parentId",getUniqueId()).setCacheable(true).list();
