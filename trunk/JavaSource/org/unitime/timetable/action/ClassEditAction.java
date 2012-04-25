@@ -312,30 +312,27 @@ public class ClassEditAction extends PreferencesAction {
 			initPrefs(user, frm, c, leadInstructors, true);
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
-			DatePattern selectedDatePattern = new DatePattern(
-					frm.getDatePattern());
-		    
-		    if(selectedDatePattern.getUniqueId().equals(new Long(-1)) && c.getSchedulingSubpart() != null && c.getSchedulingSubpart().getDatePattern()!= null){
-				selectedDatePattern = c.getSchedulingSubpart().getDatePattern();
-			}
-			
+			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 			if (selectedDatePattern != null) {
-				Set<DatePatternPref> parentPrefs = (Set<DatePatternPref>)c.getSchedulingSubpart().effectivePreferences(DatePatternPref.class);
 				for (DatePattern dp: selectedDatePattern.findChildren()) {
-					if (!frm.getDatePatternPrefs().contains(dp.getUniqueId().toString())) {
-						boolean found = false;
-						for (DatePatternPref dpp: parentPrefs) {
-							if (dpp.getDatePattern().equals(dp)) {
+					boolean found = false;
+					for (DatePatternPref dpp: (Set<DatePatternPref>)c.getPreferences(DatePatternPref.class)) {
+						if (dp.equals(dpp.getDatePattern())) {
+							frm.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
+							found = true;
+						}
+					}
+					if (!found)
+						for (DatePatternPref dpp: (Set<DatePatternPref>)c.getSchedulingSubpart().getPreferences(DatePatternPref.class)) {
+							if (dp.equals(dpp.getDatePattern())) {
 								frm.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
 								found = true;
 							}
 						}
-						if (!found)
-							frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
-					}
+					if (!found)
+						frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
 				}
 			}
-        	
 		}
         
         
@@ -644,10 +641,7 @@ public class ClassEditAction extends PreferencesAction {
      * @throws Exception 
      */
 	protected void setupChildren(ClassEditForm frm, HttpServletRequest request, Class_ c) throws Exception {
-		DatePattern selectedDatePattern = new DatePattern(frm.getDatePattern());
-		if(selectedDatePattern.getUniqueId().equals(new Long(-1)) && c.getSchedulingSubpart() != null && c.getSchedulingSubpart().getDatePattern()!= null){
-			selectedDatePattern = c.getSchedulingSubpart().getDatePattern();
-		}
+		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 		if (selectedDatePattern != null) {
 			List<DatePattern> v =  selectedDatePattern.findChildren();
 			request.setAttribute(DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR, v);	

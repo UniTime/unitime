@@ -1121,6 +1121,7 @@ public class PreferencesAction extends Action {
     	iter = datePatternPrefs.iterator();
     	while (iter.hasNext()){
     		DatePatternPref dp = (DatePatternPref) iter.next();
+    		if (!dp.appliesTo(pg)) continue;
     		Debug.debug("Adding date pattern pref ... " + dp.getDatePattern().getUniqueId().toString());
     		frm.addToDatePatternPrefs(
                 dp.getDatePattern().getUniqueId().toString(), 

@@ -41,6 +41,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -230,8 +231,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         	initPrefs(user, frm, ss, null, true);
         	timePatterns = ss.getTimePatterns();
         	
-        	DatePattern selectedDatePattern = new DatePattern(
-					frm.getDatePattern());
+        	DatePattern selectedDatePattern = ss.effectiveDatePattern();
 			if (selectedDatePattern != null) {
 				for (DatePattern dp: selectedDatePattern.findChildren()) {					
 					if (!frm.getDatePatternPrefs().contains(
@@ -248,15 +248,18 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 			timePatterns = ss.getTimePatterns();
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
-			DatePattern selectedDatePattern = new DatePattern(
-					frm.getDatePattern());
+			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 			if (selectedDatePattern != null) {
-				for (DatePattern dp: selectedDatePattern.findChildren()) {					
-					if (!frm.getDatePatternPrefs().contains(
-							dp.getUniqueId().toString())) {
-						frm.addToDatePatternPrefs(dp.getUniqueId()
-								.toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+				for (DatePattern dp: selectedDatePattern.findChildren()) {
+					boolean found = false;
+					for (DatePatternPref dpp: (Set<DatePatternPref>)ss.getPreferences(DatePatternPref.class)) {
+						if (dp.equals(dpp.getDatePattern())) {
+							frm.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
+							found = true;
+						}
 					}
+					if (!found)
+						frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
 				}
 			}
 			
@@ -267,7 +270,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         // Generate Time Pattern Grids
 		super.generateTimePatternGrids(request, frm, ss, timePatterns, op, timeVertical, true, null);
-		setupChildren(frm, request); // Date patterns allowed in the DDL for Date pattern preferences
+		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
 		LookupTables.setupDatePatterns(request, "Default", ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
 
         LookupTables.setupRooms(request, ss);		 // Room Prefs
@@ -490,8 +493,8 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                 ss.getManagingDept());
     }
     
-    protected void setupChildren(SchedulingSubpartEditForm frm, HttpServletRequest request) {
-		DatePattern selectedDatePattern = new DatePattern(frm.getDatePattern());
+    protected void setupChildren(SchedulingSubpartEditForm frm, HttpServletRequest request, SchedulingSubpart ss) {
+		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 		try {
 			if (selectedDatePattern != null) {
 				List<DatePattern> v = selectedDatePattern.findChildren();
