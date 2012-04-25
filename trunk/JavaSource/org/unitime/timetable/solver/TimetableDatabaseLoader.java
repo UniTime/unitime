@@ -83,6 +83,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
@@ -165,6 +166,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private double iNormalizedPrefDecreaseFactor = TimePatternModel.sDefaultDecreaseFactor;
     
     private double iAlterTimePatternWeight = 0.0;
+    private double iAlterDatePatternWeight = 1.0;
     private TimePatternModel iAlterTimePatternModel = (TimePatternModel)TimePattern.getDefaultRequiredTimeTable().getModel(); 
     private boolean iWeakenTimePreferences = false;
     
@@ -225,6 +227,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iFixMinPerWeek = getModel().getProperties().getPropertyBoolean("Global.FixMinPerWeek", iFixMinPerWeek);
         
         iAlterTimePatternWeight = getModel().getProperties().getPropertyDouble("TimePreferences.Weight", iAlterTimePatternWeight);
+        iAlterDatePatternWeight = getModel().getProperties().getPropertyDouble("General.AlternativeDatePatternWeight", iAlterDatePatternWeight);
         iAlterTimePatternModel.setPreferences(getModel().getProperties().getProperty("TimePreferences.Pref", null));
         
         iWeakenTimePreferences = getModel().getProperties().getPropertyBoolean("TimePreferences.Weaken", iWeakenTimePreferences);
@@ -816,10 +819,44 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	TimePatternModel pattern = timePref.getTimePatternModel();
         	if (pattern.isExactTime()) {
         		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-        		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
-                TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
-                loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                timeLocations.add(loc);
+        		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
+        		
+                if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+                	boolean hasReq = false;
+                	for (DatePatternPref p: datePatternPrefs) {
+                		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
+                	}
+                	for (DatePattern child: datePattern.findChildren()) {
+                		String pr = PreferenceLevel.sNeutral;
+                		for (DatePatternPref p: datePatternPrefs) {
+                			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+                		}
+                		int prVal = 0;
+                		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                			prVal = PreferenceLevel.prolog2int(pr);
+                		}
+                		if (iInteractiveMode) {
+                			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
+                			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
+                			
+                		} else {
+                			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
+                			if (PreferenceLevel.sProhibited.equals(pr)) continue;
+                		}
+                        TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
+                        loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                        if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                        	loc.setNormalizedPreference(iAlterDatePatternWeight * prVal);
+                        }
+                        timeLocations.add(loc);
+                	}
+                } else {
+                    TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
+                    loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                    timeLocations.add(loc);
+                }
+        		
                 continue;
         	}
         	
@@ -849,28 +886,79 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     	iProgress.trace("time is not required :-(");
                     	continue;
                     }
-                    TimeLocation  loc = new TimeLocation(
-                            pattern.getDayCode(day),
-                            pattern.getStartSlot(time),
-                            pattern.getSlotsPerMtg(),
-                            PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
-                            pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                            datePattern.getUniqueId(),
-                            datePattern.getName(),
-                            datePattern.getPatternBitSet(),
-                            pattern.getBreakTime());
-                    loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
-                	if (iAlterTimePatternWeight!=0.0) {
-                		String altPref = iAlterTimePatternModel.getCombinedPreference(loc.getDayCode(), loc.getStartSlot(), loc.getLength(), TimePatternModel.sMixAlgMinMax);
-                		if (!altPref.equals(PreferenceLevel.sNeutral)) {
-                			loc.setNormalizedPreference(loc.getNormalizedPreference()+iAlterTimePatternWeight*PreferenceLevel.prolog2int(altPref));
-                		}
-                	}
-                    if (iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
-                        loc.setPreference(PreferenceLevel.sIntLevelProhibited);
-                        loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
+                    if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                    	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+                    	boolean hasReq = false;
+                    	for (DatePatternPref p: datePatternPrefs) {
+                    		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
+                    	}
+                    	for (DatePattern child: datePattern.findChildren()) {
+                    		String pr = PreferenceLevel.sNeutral;
+                    		for (DatePatternPref p: datePatternPrefs) {
+                    			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+                    		}
+                    		int prVal = 0;
+                    		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                    			prVal = PreferenceLevel.prolog2int(pr);
+                    		}
+                    		if (iInteractiveMode) {
+                    			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
+                    			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
+                    			
+                    		} else {
+                    			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
+                    			if (PreferenceLevel.sProhibited.equals(pr)) continue;
+                    		}
+                    		TimeLocation  loc = new TimeLocation(
+                                    pattern.getDayCode(day),
+                                    pattern.getStartSlot(time),
+                                    pattern.getSlotsPerMtg(),
+                                    PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
+                                    pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                    child.getUniqueId(),
+                                    child.getName(),
+                                    child.getPatternBitSet(),
+                                    pattern.getBreakTime());
+                            loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                        	if (iAlterTimePatternWeight!=0.0) {
+                        		String altPref = iAlterTimePatternModel.getCombinedPreference(loc.getDayCode(), loc.getStartSlot(), loc.getLength(), TimePatternModel.sMixAlgMinMax);
+                        		if (!altPref.equals(PreferenceLevel.sNeutral)) {
+                        			loc.setNormalizedPreference(loc.getNormalizedPreference()+iAlterTimePatternWeight*PreferenceLevel.prolog2int(altPref));
+                        		}
+                        	}
+                            if (iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
+                                loc.setPreference(PreferenceLevel.sIntLevelProhibited);
+                                loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
+                            }
+                            if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+                            	loc.setNormalizedPreference(loc.getNormalizedPreference() + iAlterDatePatternWeight * prVal);
+                            }
+                            timeLocations.add(loc);
+                    	}
+                    } else {
+                        TimeLocation  loc = new TimeLocation(
+                                pattern.getDayCode(day),
+                                pattern.getStartSlot(time),
+                                pattern.getSlotsPerMtg(),
+                                PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
+                                pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                datePattern.getUniqueId(),
+                                datePattern.getName(),
+                                datePattern.getPatternBitSet(),
+                                pattern.getBreakTime());
+                        loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                    	if (iAlterTimePatternWeight!=0.0) {
+                    		String altPref = iAlterTimePatternModel.getCombinedPreference(loc.getDayCode(), loc.getStartSlot(), loc.getLength(), TimePatternModel.sMixAlgMinMax);
+                    		if (!altPref.equals(PreferenceLevel.sNeutral)) {
+                    			loc.setNormalizedPreference(loc.getNormalizedPreference()+iAlterTimePatternWeight*PreferenceLevel.prolog2int(altPref));
+                    		}
+                    	}
+                        if (iInteractiveMode && onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
+                            loc.setPreference(PreferenceLevel.sIntLevelProhibited);
+                            loc.setNormalizedPreference(PreferenceLevel.sIntLevelProhibited);
+                        }
+                        timeLocations.add(loc);                    	
                     }
-                    timeLocations.add(loc);
                 }
             }
         }

@@ -16,10 +16,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.util.IdValue"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.action.PreferencesAction" %>
 <%@ page import="org.unitime.timetable.model.Building" %>
 <%@ page import="org.unitime.timetable.model.Room" %>
+<%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.model.RoomFeature" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
@@ -67,7 +69,45 @@
 			</TD>
 		</TR>
 	</logic:notEmpty>
-	
+<!-- date Pattern Preferences -->
+	<logic:notEqual value="false" parameter="datePatternPref">
+		<logic:notEmpty name="<%=frmName%>" property="datePatternPrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyDatePatterns"/> </TD>
+			<TD>
+				<% String patterns = ""; boolean hasReq = false; %>
+				<logic:iterate name="<%=frmName%>" property="datePatternPrefs" id="datePatternPref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="datePatternPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
+						<logic:equal name="dp" property="id" value="<%=(String)datePatternPref%>">
+							<%
+								if (PreferenceLevel.sRequired.equals(preference.getPrefProlog()) && !hasReq) { hasReq = true; patterns = ""; }
+								if (!PreferenceLevel.sProhibited.equals(preference.getPrefProlog()) && (!hasReq || PreferenceLevel.sRequired.equals(preference.getPrefProlog()))) {
+									IdValue idVal = (IdValue)dp;
+									String color =  preference.prefcolor();
+									String name = "<b>" + idVal.getValue() + "</b>";
+									if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) {
+										color = "black"; name = idVal.getValue();
+									}
+									String onClick = "showGwtDialog('Preview of " + idVal.getValue() + "', 'user/dispDatePattern.jsp?id=" + idVal.getId() + "','840','520');";
+									patterns += (patterns.isEmpty() ? "" : ", ") +
+										"<span style='color:" + color + ";cursor:pointer;' title='" + preference.getPrefName() + ": " + idVal.getValue() + "' " +
+										"onClick=\"" + onClick + "\">" + name + "</span>";
+								}
+							%>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+	   			<%=patterns%>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>	
 <!-- Room Group -->
 	<logic:notEqual value="false" parameter="roomGroupPref">
 		<logic:notEmpty name="<%=frmName%>" property="roomGroups">
@@ -225,6 +265,8 @@
 		</logic:notMatch>
 		</logic:notEmpty>
 	</logic:notEqual>
+	
+
 
 	</loc:bundle>		
 <% } catch (Exception e) { 

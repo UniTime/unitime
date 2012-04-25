@@ -55,6 +55,8 @@ public class DatePatternEditForm extends ActionForm {
     private DatePattern iDp = null;
     private Vector iDepartmentIds = new Vector();
     private Long iDepartmentId;
+    private Vector iParentIds = new Vector();
+    private Long iParentId;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -79,8 +81,16 @@ public class DatePatternEditForm extends ActionForm {
 		
 		try {
 			DatePattern dp = getDatePattern(request);
-			if (dp.size()==0)
-				errors.add("pattern", new ActionMessage("errors.required", ""));
+			if (getTypeInt() == DatePattern.sTypePatternSet) {
+				if (dp.size()!=0)
+					errors.add("type", new ActionMessage("errors.generic", "Alternative pattern set date pattern can not have any dates selected."));
+				if (getParentIds() != null && !getParentIds().isEmpty()) {
+					errors.add("type", new ActionMessage("errors.generic", "Alternative pattern set date pattern can not have a pattern set."));
+				}
+			} else {
+				if (dp.size()==0)
+					errors.add("pattern", new ActionMessage("errors.required", ""));
+			}
 			if (dp.getPattern().length() > 366)
 				errors.add("pattern", new ActionMessage("errors.generic", "Date Patterns cannot contain more than 1 year."));
 		} catch (Exception e) {}
@@ -91,7 +101,7 @@ public class DatePatternEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; iUniqueId = new Long(-1); iType = DatePattern.sTypes[0]; 
 		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false;
-		iDp = null; iDepartmentId = null; iDepartmentIds.clear();
+		iDp = null; iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear(); 
 	}
 	
 	public void load(DatePattern dp) {
@@ -106,6 +116,13 @@ public class DatePatternEditForm extends ActionForm {
 			setTypeInt(dp.getType().intValue());
 			setUniqueId(dp.getUniqueId());
 			setIsDefault(dp.isDefault());
+			
+			iParentIds.clear();
+			TreeSet parents = new TreeSet(dp.getParents());
+			for (Iterator i=parents.iterator();i.hasNext();) {
+				DatePattern d = (DatePattern)i.next();
+				iParentIds.add(d.getUniqueId());
+			}
 			iDepartmentIds.clear();
 			TreeSet depts = new TreeSet(dp.getDepartments());
 			for (Iterator i=depts.iterator();i.hasNext();) {
@@ -121,6 +138,25 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
+		
+		HashSet oldParents = new HashSet(dp.getParents());
+		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
+			Long parentId = (Long)e.nextElement();
+			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
+			if (d==null) continue;
+			if (oldParents.remove(d)) {
+				//not changed -> do nothing
+			} else {
+				dp.getParents().add(d);				
+				hibSession.saveOrUpdate(dp);				
+			}
+		}
+		for (Iterator i=oldParents.iterator();i.hasNext();) {
+			DatePattern d = (DatePattern)i.next();
+			dp.getParents().remove(d);			
+			hibSession.saveOrUpdate(d);
+		}
+		
 		HashSet oldDepts = new HashSet(dp.getDepartments());
 		for (Enumeration e=iDepartmentIds.elements();e.hasMoreElements();) {
 			Long departmentId = (Long)e.nextElement();
@@ -152,6 +188,15 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
+		
+		HashSet newParents = new HashSet();
+		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
+			Long parentId = (Long)e.nextElement();
+			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
+			if (d==null) continue;
+			newParents.add(d);
+		}
+		dp.setParents(newParents);
 		HashSet newDepts = new HashSet();
 		for (Enumeration e=iDepartmentIds.elements();e.hasMoreElements();) {
 			Long departmentId = (Long)e.nextElement();
@@ -190,6 +235,13 @@ public class DatePatternEditForm extends ActionForm {
 			d.getDatePatterns().remove(dp);
 			hibSession.saveOrUpdate(d);
 		}
+		for (Iterator i=dp.findChildren().iterator();i.hasNext();) {
+			DatePattern d = (DatePattern)i.next();
+			d.getParents().remove(dp);
+			hibSession.saveOrUpdate(d);
+		}
+		dp.getParents().clear();
+		hibSession.saveOrUpdate(dp);
 		hibSession.delete(dp);
 	}
 	
@@ -218,6 +270,10 @@ public class DatePatternEditForm extends ActionForm {
 	public void setDepartmentIds(Vector departmentIds) { iDepartmentIds = departmentIds; }
 	public Long getDepartmentId() { return iDepartmentId; }
 	public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
+	public Long getParentId() {return iParentId;}
+	public void setParentId(Long parentId) {iParentId = parentId;}
+	public Vector getParentIds() {return iParentIds;}
+	public void setParentIds(Vector parentIds) {iParentIds = parentIds;}
 	
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
 		if (getUniqueId()!=null) {

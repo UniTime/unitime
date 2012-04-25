@@ -49,9 +49,12 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.InstructorComparator;
@@ -125,6 +128,7 @@ public class ClassEditAction extends PreferencesAction {
                 || op.equals(MSG.actionAddDistributionPreference())
                 || op.equals(MSG.actionAddInstructor())
                 || op.equals(MSG.actionUpdatePreferences())
+                || op.equals(MSG.actionAddDatePatternPreference())
                 || op.equals(rsc.getMessage("button.cancel"))
                 || op.equals(MSG.actionClearClassPreferences())
                 || op.equals(MSG.actionRemoveBuildingPreference())
@@ -132,6 +136,7 @@ public class ClassEditAction extends PreferencesAction {
         		|| op.equals(MSG.actionRemoveRoomFeaturePreference())
         		|| op.equals(MSG.actionRemoveRoomGroupPreference())
         		|| op.equals(MSG.actionRemoveRoomPreference())
+        		|| op.equals(MSG.actionRemoveDatePatternPreference())
         		|| op.equals(MSG.actionRemoveTimePattern())
         		|| op.equals(MSG.actionRemoveInstructor())
                 || op.equals(rsc.getMessage("button.changeOwner"))
@@ -139,6 +144,7 @@ public class ClassEditAction extends PreferencesAction {
                 || op.equals(MSG.actionBackToDetail())
                 || op.equals(MSG.actionNextClass())
                 || op.equals(MSG.actionPreviousClass())
+                || op.equals("updateDatePattern")
                 || op.equals("updatePref")) {
             classId = frm.getClassId().toString();
         }
@@ -301,13 +307,56 @@ public class ClassEditAction extends PreferencesAction {
         }
 
         User user = Web.getUser(httpSession);
-
+        
+        if (op.equals("updateDatePattern")) {        	
+			initPrefs(user, frm, c, leadInstructors, true);
+			frm.getDatePatternPrefs().clear();
+        	frm.getDatePatternPrefLevels().clear();
+			DatePattern selectedDatePattern = new DatePattern(
+					frm.getDatePattern());
+		    
+		    if(selectedDatePattern.getUniqueId().equals(new Long(-1)) && c.getSchedulingSubpart() != null && c.getSchedulingSubpart().getDatePattern()!= null){
+				selectedDatePattern = c.getSchedulingSubpart().getDatePattern();
+			}
+			
+			if (selectedDatePattern != null) {
+				Set<DatePatternPref> parentPrefs = (Set<DatePatternPref>)c.getSchedulingSubpart().effectivePreferences(DatePatternPref.class);
+				for (DatePattern dp: selectedDatePattern.findChildren()) {
+					if (!frm.getDatePatternPrefs().contains(dp.getUniqueId().toString())) {
+						boolean found = false;
+						for (DatePatternPref dpp: parentPrefs) {
+							if (dpp.getDatePattern().equals(dp)) {
+								frm.addToDatePatternPrefs(dp.getUniqueId().toString(), dpp.getPrefLevel().getUniqueId().toString());
+								found = true;
+							}
+						}
+						if (!found)
+							frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+					}
+				}
+			}
+        	
+		}
+        
+        
         // Initialize Preferences for initial load
         frm.setAvailableTimePatterns(TimePattern.findApplicable(request,c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
 		Set timePatterns = null;
         if(op.equals("init")) {
         	initPrefs(user, frm, c, leadInstructors, true);
 		    timePatterns = c.effectiveTimePatterns();
+		    
+		    DatePattern selectedDatePattern = c.effectiveDatePattern();
+			
+			if (selectedDatePattern != null) {
+				for (DatePattern dp: selectedDatePattern.findChildren()) {					
+					if (!frm.getDatePatternPrefs().contains(
+							dp.getUniqueId().toString())) {
+						frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+					}
+				}
+			}
+		   
         }
 
 		// Process Preferences Action
@@ -318,7 +367,7 @@ public class ClassEditAction extends PreferencesAction {
 
 		// Instructors
         setupInstructors(request, frm, c);
-
+        setupChildren(frm, request, c); // Date patterns allowed in the DDL for Date pattern preferences
         LookupTables.setupDatePatterns(request, "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
 
         LookupTables.setupRooms(request, c);		 // Rooms
@@ -584,4 +633,25 @@ public class ClassEditAction extends PreferencesAction {
             request.setAttribute(HASH_ATTR, HASH_INSTR_PREF);
         }
     }
+    
+    /**
+     * This method is called to setup children of the selected date pattern of the class
+     * or the selected date pattern of the scheduling subpart of the current class.
+     * 
+     * @param frm ClassEditForm
+     * @param request HttpServletRequest
+     * @param c Class_
+     * @throws Exception 
+     */
+	protected void setupChildren(ClassEditForm frm, HttpServletRequest request, Class_ c) throws Exception {
+		DatePattern selectedDatePattern = new DatePattern(frm.getDatePattern());
+		if(selectedDatePattern.getUniqueId().equals(new Long(-1)) && c.getSchedulingSubpart() != null && c.getSchedulingSubpart().getDatePattern()!= null){
+			selectedDatePattern = c.getSchedulingSubpart().getDatePattern();
+		}
+		if (selectedDatePattern != null) {
+			List<DatePattern> v =  selectedDatePattern.findChildren();
+			request.setAttribute(DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR, v);	
+			frm.sortDatePatternPrefs(frm.getDatePatternPrefs(), frm.getDatePatternPrefLevels(), v);
+		}
+	}
 }

@@ -47,7 +47,7 @@ public abstract class Preference extends BasePreference implements Comparable {
 		return getPrefLevel().getPrefName()+" "+preferenceText();
 	}
 
-    protected String preferenceHtml() {
+    public String preferenceHtml() {
 	StringBuffer sb = new StringBuffer("<span ");
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
 			sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");

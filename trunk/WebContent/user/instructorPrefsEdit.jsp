@@ -120,6 +120,7 @@
 		<jsp:include page="preferencesEdit.jspf">
 			<jsp:param name="frmName" value="<%=frmName%>"/>
 			<jsp:param name="periodPref" value="false"/>
+			<jsp:param name="datePatternPref" value="false"/>
 		</jsp:include>
 		
 	</TABLE>

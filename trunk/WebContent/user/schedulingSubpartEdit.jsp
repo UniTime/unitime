@@ -48,6 +48,15 @@
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+	
+	function datePatternChanged(){			
+		var op2Obj = document.getElementById('op2');
+		if (op2Obj!=null) {
+			op2Obj.value='updateDatePattern';
+			document.forms[0].submit();
+		}			
+	}
+	
 	// -->
 </SCRIPT>
 		
@@ -162,7 +171,8 @@
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
-				<html:select style="width:200;" property="datePattern">
+				<html:hidden property="op2" value="" styleId="op2"/>
+				<html:select style="width:200;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+SchedulingSubpartEditForm.datePattern.options[SchedulingSubpartEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+SchedulingSubpartEditForm.datePattern.value+'&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
