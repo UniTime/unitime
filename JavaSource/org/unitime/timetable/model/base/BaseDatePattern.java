@@ -38,6 +38,7 @@ public abstract class BaseDatePattern implements Serializable {
 	private Boolean iVisible;
 
 	private Session iSession;
+	private Set<DatePattern> iParents;
 	private Set<Department> iDepartments;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -79,6 +80,13 @@ public abstract class BaseDatePattern implements Serializable {
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
+
+	public Set<DatePattern> getParents() { return iParents; }
+	public void setParents(Set<DatePattern> parents) { iParents = parents; }
+	public void addToparents(DatePattern datePattern) {
+		if (iParents == null) iParents = new HashSet<DatePattern>();
+		iParents.add(datePattern);
+	}
 
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }

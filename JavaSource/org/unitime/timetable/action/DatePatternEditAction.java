@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -113,7 +115,14 @@ public class DatePatternEditAction extends Action {
 	        	for (int i=0;i<depts.length;i++)
 	        		myForm.getDepartmentIds().add(new Long(depts[i]));
 	        }
-
+	        
+	        if (request.getParameterValues("prnts")!=null) {
+	        	String[] prnts = request.getParameterValues("prnts");
+	        	for (int i=0;i<prnts.length;i++){
+	        		myForm.getParentIds().add(new Long(prnts[i]));
+	        	}	        	      
+	        }
+	        
 	        if (op==null) {
 	            myForm.load(null);
 	            myForm.setOp("List");
@@ -122,7 +131,9 @@ public class DatePatternEditAction extends Action {
 	    	User user = Web.getUser(request.getSession());
 	    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 
-	    	List list = (new DepartmentDAO()).getSession()
+	        request.setAttribute(DatePattern.DATE_PATTERN_PARENT_LIST_ATTR, DatePattern.findAllParents(sessionId));
+
+	        List list = (new DepartmentDAO()).getSession()
 						.createCriteria(Department.class)
 						.add(Restrictions.eq("session.uniqueId", sessionId))
 						.addOrder(Order.asc("deptCode"))
@@ -132,7 +143,7 @@ public class DatePatternEditAction extends Action {
 	    		Department d = (Department) iter.next();
 	    		availableDepts.add(new LabelValueBean(d.getDeptCode() + "-" + d.getName(), d.getUniqueId().toString()));
 	    	}
-	    	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
+	    	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);        	
 	        
 	        // Reset Form
 	        if ("Back".equals(op)) {
@@ -164,6 +175,23 @@ public class DatePatternEditAction extends Action {
 	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	        }
 
+            if ("Add Pattern Set".equals(op)) {
+	            ActionMessages errors = new ActionErrors();
+				if (myForm.getParentId()==null || myForm.getParentId().longValue()<0)
+					errors.add("parent", new ActionMessage("errors.generic", "No date pattern selected."));
+				else {
+					boolean contains = myForm.getParentIds().contains(myForm.getParentId());
+					if (contains)
+						errors.add("parent", new ActionMessage("errors.generic", "Date pattern already present in the list of alternative pattern sets."));
+				}
+	            if(errors.size()>0) {
+	                saveErrors(request, errors);
+	            } else {
+	            	myForm.getParentIds().add(myForm.getParentId());
+	            }
+	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
+	        }
+            
 	        if ("Remove Department".equals(op)) {
 	            ActionMessages errors = new ActionErrors();
 				if (myForm.getDepartmentId()==null || myForm.getDepartmentId().longValue()<0)
@@ -177,6 +205,23 @@ public class DatePatternEditAction extends Action {
 	                saveErrors(request, errors);
 	            } else {
 	            	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
+	            }	
+	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
+	        }
+	        
+	        if ("Remove Pattern Set".equals(op)) {
+	            ActionMessages errors = new ActionErrors();
+				if (myForm.getParentId()==null || myForm.getParentId().longValue()<0)
+					errors.add("parent", new ActionMessage("errors.generic", "No date pattern selected."));
+				else {
+					boolean contains = myForm.getParentIds().contains(myForm.getParentId());
+					if (!contains)
+						errors.add("parent", new ActionMessage("errors.generic", "Date pattern not present in the list of alternative pattern sets."));
+				}
+	            if(errors.size()>0) {
+	                saveErrors(request, errors);
+	            } else {
+	            	myForm.getParentIds().remove(myForm.getParentId());
 	            }	
 	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	        }
@@ -677,6 +722,7 @@ public class DatePatternEditAction extends Action {
 	            					new CSVFile.CSVField("From"),
 	            					new CSVFile.CSVField("To"),
 	            					new CSVFile.CSVField("Dates"),
+	            					new CSVFile.CSVField("Parent"),
 	            					new CSVFile.CSVField("Departments"),
 	            					new CSVFile.CSVField("Classes")
 	            			});
@@ -724,14 +770,22 @@ public class DatePatternEditAction extends Action {
 	                		if (j.hasNext()) { classStr += ", "; }
 	                	}
 	                	
+	                	String datePattStr = "";
+	                	for (Iterator j=dp.getParents().iterator();j.hasNext();) {
+	                		DatePattern d = (DatePattern)j.next();
+	                		datePattStr += d.getName();
+	                		if (j.hasNext()) { datePattStr += ", "; }
+	                	}
+	                	
 	                	csv.addLine(
 	                			new CSVFile.CSVField[] {
-		            					new CSVFile.CSVField(dp.getName()),
+		            					new CSVFile.CSVField(dp.getName()),		            					
 		            					new CSVFile.CSVField(DatePattern.sTypes[dp.getType().intValue()]),
 		            					new CSVFile.CSVField(String.valueOf(dp.size())),
 		            					new CSVFile.CSVField(sdf.format(dp.getStartDate())),
 		            					new CSVFile.CSVField(sdf.format(dp.getEndDate())),
 		            					new CSVFile.CSVField(dp.getPatternString()),
+		            					new CSVFile.CSVField(datePattStr),
 		            					new CSVFile.CSVField(deptStr),
 		            					new CSVFile.CSVField(classStr)
 		            			});
@@ -776,26 +830,36 @@ public class DatePatternEditAction extends Action {
 			throw e;
 		}
 	}
-
+	
+	
     private void getDatePatterns(HttpServletRequest request) throws Exception {
-		WebTable.setOrder(request.getSession(),"datePatterns.ord",request.getParameter("ord"),1);
-		// Create web table instance 
-        WebTable webTable = new WebTable( 5,
-			    null, "datePatternEdit.do?ord=%%",
-			    new String[] {"Name", "Type", "Used", "Dates", "Departments"},
-			    new String[] {"left", "left", "left", "left", "left"},
-			    null );
-        
-        Vector patterns = DatePattern.findAll(request, null, null);
-		if(patterns.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null );			    
-		}
-		
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
 		Set used = DatePattern.findAllUsed(session.getUniqueId());
+		boolean hasSet = !DatePattern.findAllParents(session.getUniqueId()).isEmpty(); 
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd");
 
+		WebTable.setOrder(request.getSession(),"datePatterns.ord",request.getParameter("ord"),1);
+		// Create web table instance 
+        WebTable webTable = (hasSet ?
+        		new WebTable( 6,
+        				null, 
+        				"datePatternEdit.do?ord=%%",
+        				new String[] {"Name", "Type", "Used", "Dates / Patterns", "Pattern Sets", "Departments"},
+        				new String[] {"left", "left", "left", "left", "left", "left"},
+        				null ) :
+			    new WebTable( 5,
+			    		null,
+			    		"datePatternEdit.do?ord=%%",
+						new String[] {"Name", "Type", "Used", "Dates", "Departments"},
+						new String[] {"left", "left", "left", "left", "left"},
+						null ) );
+        
+        Vector patterns = DatePattern.findAll(request, null, null);
+		if(patterns.isEmpty()) {
+		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null);			    
+		}
+		
         for (Enumeration e=patterns.elements();e.hasMoreElements();) {
         	DatePattern pattern = (DatePattern)e.nextElement();
         	String onClick = "onClick=\"document.location='datePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
@@ -808,6 +872,16 @@ public class DatePatternEditAction extends Action {
         		deptCmp += d.getDeptCode();
         		if (i.hasNext()) { deptStr += ", "; deptCmp += ","; }
         	}
+        	
+        	String datePatternStr = "";        	
+        	List dps = new ArrayList(pattern.getParents()); 
+        	Collections.sort(dps);
+        	for (Iterator i=dps.iterator();i.hasNext();) {
+        		DatePattern d = (DatePattern)i.next();
+        		datePatternStr += d.getName();
+        		if (i.hasNext()) { datePatternStr += ", ";}
+        	}
+        	
             String pattStr = pattern.getPatternString();
             if (pattern.getName().startsWith("generated")) {
                 int first = pattern.getPattern().indexOf('1') - pattern.getOffset().intValue();
@@ -838,28 +912,46 @@ public class DatePatternEditAction extends Action {
                     if (Math.abs(lastDiff)>3 || Math.abs(firstDiff)>3) pattStr += "</b>";
                 }
             }
+            
+            if (pattern.getType() == DatePattern.sTypePatternSet) {
+            	for (DatePattern child: new TreeSet<DatePattern>(pattern.findChildren())) {
+            		pattStr += (pattStr.isEmpty() ? "" : ", ") + child.getName();
+            	}
+            }
+            
         	boolean isUsed = used.contains(pattern) || pattern.isDefault();
-        	webTable.addLine(onClick, new String[] {
-        	        (pattern.isDefault()?"<B>":"")+
-        	        (pattern.isVisible()?"":"<font color='gray'>")+
-        	        "<a name='"+pattern.getUniqueId()+"'>"+
-        	            pattern.getName().replaceAll(" ","&nbsp;")+
-        	        "</a>"+
-        	        (pattern.isVisible()?"":"</font>")+
-        	        (pattern.isDefault()?"</B>":""),
-        	        (pattern.isVisible()?"":"<font color='gray'>")+
-        			    DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
-        			(pattern.isVisible()?"":"</font>"),
-        			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
-        			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")
-        		},new Comparable[] {
-        			pattern.getName(),
-        			pattern.getType(),
-        			(isUsed?"0":"1"),
-        			pattStr,
-        			deptCmp
-        		});
+        	if (hasSet)
+            	webTable.addLine(onClick, new String[] {
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
+            	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
+            	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
+            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+            			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='gray'>")+datePatternStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
+            		},new Comparable[] {
+            			pattern.getName(),
+            			pattern.getType(),
+            			(isUsed?"0":"1"),
+            			pattStr,
+            			datePatternStr,
+            			deptCmp,
+            		});
+        	else
+            	webTable.addLine(onClick, new String[] {
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
+            	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
+            	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
+            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+            			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
+            		},new Comparable[] {
+            			pattern.getName(),
+            			pattern.getType(),
+            			(isUsed?"0":"1"),
+            			pattStr,
+            			deptCmp,
+            		});
         }
         
 	    request.setAttribute("DatePatterns.table", webTable.printTable(WebTable.getOrder(request.getSession(),"datePatterns.ord")));

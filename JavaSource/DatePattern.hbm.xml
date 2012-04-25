@@ -71,7 +71,18 @@
             column="session_id"
             not-null="true"
             foreign-key="fk_datepatt_session"/>
-
+            
+        <set
+            name="parents"
+            table="date_pattern_parent">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="date_pattern_id"/>
+            <many-to-many
+                class="DatePattern"
+                column="parent_id"
+                foreign-key="fk_date_patt_parent_parent"/>
+        </set> 
+              
         <set
             name="departments"
             table="date_pattern_dept"
@@ -82,7 +93,6 @@
                 class="Department"
                 column="dept_id"
                 foreign-key="fk_date_pattern_dept_dept"/>
-
         </set>
 
     </class>

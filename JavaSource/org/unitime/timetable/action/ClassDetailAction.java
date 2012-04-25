@@ -45,6 +45,7 @@ import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Location;
@@ -211,6 +212,9 @@ public class ClassDetailAction extends PreferencesAction {
 
 			// Instructors
 	        setupInstructors(request, frm, c);
+	        
+	        // date Patterns
+	        setupDatePatterns(request, frm, c);
 
 	        LookupTables.setupDatePatterns(request, "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
 
@@ -378,5 +382,21 @@ public class ClassDetailAction extends PreferencesAction {
     	        request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME + i, deptInstrList);
 	        }
 	    }
+	        	    
+	    private void setupDatePatterns(HttpServletRequest request, ClassEditForm frm, Class_ c) throws Exception {	    	  
+	    	DatePattern selectedDatePattern = c.effectiveDatePattern();			
+			if (selectedDatePattern != null) {
+				List<DatePattern> children = selectedDatePattern.findChildren();
+				for (DatePattern dp: children) {
+					if (!frm.getDatePatternPrefs().contains(
+							dp.getUniqueId().toString())) {
+						frm.addToDatePatternPrefs(dp.getUniqueId()
+								.toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+					}
+				}
+				frm.sortDatePatternPrefs(frm.getDatePatternPrefs(), frm.getDatePatternPrefLevels(), children);
+			}			
+		}
+
 }
 

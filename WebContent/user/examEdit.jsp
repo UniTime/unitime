@@ -232,6 +232,7 @@
 			<jsp:param name="frmName" value="<%=frmName%>"/>
 			<jsp:param name="distPref" value="false"/>
 			<jsp:param name="timePref" value="false"/>
+			<jsp:param name="datePatternPref" value="false"/>
 		</jsp:include>
 	
 	</TABLE>

@@ -52,9 +52,12 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     public static final int sTypeAlternate = 1;
     public static final int sTypeNonStandard = 2;
     public static final int sTypeExtended = 3;
-    public static final String[] sTypes = new String[] {"Standard", "Alternate Weeks", "Non-standard", "Extended" };
+    public static final int sTypePatternSet = 4;
+    public static final String[] sTypes = new String[] {"Standard", "Alternate Weeks", "Non-standard", "Extended", "Alternative Pattern Set" };
     
     public static String DATE_PATTERN_LIST_ATTR = "datePatternList";
+    public static String DATE_PATTERN_PARENT_LIST_ATTR = "datePatternParentsList";
+    public static String DATE_PATTERN_CHILDREN_LIST_ATTR = "datePatternChildrenList";
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public DatePattern () {
@@ -407,7 +410,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 			setPattern(sb.substring(0,lastOne-firstOne+1));
 			setOffset(new Integer(cal.get(Calendar.DAY_OF_YEAR)-firstOne-1));
 		} else {
-			setPattern(""); setOffset(new Integer(0));
+			setPattern("0"); setOffset(new Integer(0));
 		}
 	}
 
@@ -473,6 +476,18 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	if (session.getDefaultDatePattern()!=null) ret.add(session.getDefaultDatePattern());
     	return ret;
     }
+    
+    public List<DatePattern> findChildren() {    	
+    	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
+        		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId").
+        		setLong("parentId",getUniqueId()).setCacheable(true).list();
+    }
+    
+    public static List<DatePattern> findAllParents(Long sessionId) {    	
+    	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
+        		createQuery("from DatePattern where type = :parentType and session.uniqueId=:sessionId order by name").
+        		setInteger("parentType", sTypePatternSet).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
 
     public boolean isUsed() {
     	return findAllUsed(getSession().getUniqueId()).contains(this);
@@ -495,7 +510,9 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	DatePattern dp = (DatePattern)o;
     	int cmp = getType().compareTo(dp.getType());
     	if (cmp!=0) return cmp;
-    	if (dp.getType().intValue()==sTypeStandard) {
+    	if (dp.getType().intValue() == sTypePatternSet) {
+    		// compare just by name
+    	} else if (dp.getType().intValue()==sTypeStandard) {
     		if (Math.abs(dp.size()-size())>5) {
     			cmp = Double.compare(dp.size(),size());
     			if (cmp!=0) return cmp;
@@ -529,7 +546,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public Date getStartDate() {
 		if (getPattern()==null || getOffset()==null) return null;
 		int idx = getPattern().indexOf('1');
-		if (idx<0) return null;
+		if (idx<0) return getSession().getSessionBeginDateTime();
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(getSession().getSessionBeginDateTime());
 		cal.add(Calendar.DAY_OF_YEAR, idx - getOffset().intValue());
@@ -539,7 +556,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public Date getEndDate() {
 		if (getPattern()==null || getOffset()==null) return null;
 		int idx = getPattern().lastIndexOf('1');
-		if (idx<0) return null;
+		if (idx<0) return getSession().getSessionEndDateTime();
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(getSession().getSessionBeginDateTime());
 		cal.add(Calendar.DAY_OF_YEAR, idx - getOffset().intValue());

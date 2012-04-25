@@ -377,7 +377,7 @@ public class Class_ extends BaseClass_ {
     		return prefs;
     	}
 
-    	Set classPrefs = super.effectivePreferences(type);
+    	Set classPrefs = getPreferences(type, this);
 
     	Set instrPrefs = null;
     	if (mngDept == null || !mngDept.isExternalManager().booleanValue()) { // departmental class -> take instructor preferences
@@ -405,7 +405,7 @@ public class Class_ extends BaseClass_ {
 
     	if (mngDept!=null && mngDept.getUniqueId().equals(getSchedulingSubpart().getManagingDept().getUniqueId())) {
     		//subpart with the same owner -> take subpart preferences
-        	Set subpartPrefs = (hasExactTimePattern?null:getSchedulingSubpart().getPreferences(type));
+        	Set subpartPrefs = (hasExactTimePattern?null:getSchedulingSubpart().getPreferences(type, this));
 
         	return removeNeutralPreferences(combinePreferences(type, classPrefs, subpartPrefs, instrPrefs));
     	} else {

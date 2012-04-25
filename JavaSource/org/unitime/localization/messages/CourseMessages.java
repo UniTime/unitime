@@ -815,11 +815,20 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete")
 	String actionRemoveRoomGroupPreference();
 	
+	@DefaultMessage("Delete")
+	String titleRemoveDatePatternPreference();
+	
 	@DefaultMessage("Add Room Preference")
 	String actionAddRoomPreference();
 	
+	@DefaultMessage("Add Date Pattern Preference")
+	String actionAddDatePatternPreference();
+	
 	@DefaultMessage("Delete")
 	String actionRemoveRoomPreference();
+	
+	@DefaultMessage("Delete")
+	String actionRemoveDatePatternPreference();
 	
 	@DefaultMessage("Add Building Preference")
 	String actionAddBuildingPreference();
@@ -1283,6 +1292,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add Room Preference (Alt+{0})")
 	String titleAddRoomPreference(String accessKey);
 	
+	@DefaultMessage("Add Date Pattern Preference (Alt+{0})")
+	String titleAddDatePatternPreference(String accessKey);
+	
 	@DefaultMessage("Remove Room Preference")
 	String titleRemoveRoomPreference();
 	
@@ -1543,6 +1555,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Invalid distribution preference: Check for duplicate / blank selection. ")
 	String errorInvalidDistributionPreference();
+	
+	@DefaultMessage("Invalid date pattern preference: Check for duplicate / blank selection. ")
+	String errorInvalidDatePatternPreference();
 
 	@DefaultMessage("Invalid distribution preference level.")
 	String errorInvalidDistributionPreferenceLevel();
@@ -1840,6 +1855,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Distribution Preferences")
 	String sectionTitleDistributionPreferences();
+	
+	@DefaultMessage("Date Pattern Preferences")
+	String sectionTitleDatePatternPreferences();
 	
 	@DefaultMessage("Instructors")
 	String sectionTitleInstructors();

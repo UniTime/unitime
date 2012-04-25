@@ -49,6 +49,8 @@ import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
@@ -71,6 +73,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -112,6 +115,7 @@ public class PreferencesAction extends Action {
     public final String HASH_BLDG_PREF = "BldgPref";
     public final String HASH_DIST_PREF = "DistPref";
     public final String HASH_PERIOD_PREF = "PeriodPref";
+    public final String HASH_DATE_PATTERN_PREF = "DatePatternPref";
     
     // --------------------------------------------------------- Methods
 
@@ -453,6 +457,15 @@ public class PreferencesAction extends Action {
             	frm.setTimePatterns(tps);
             	request.setAttribute(HASH_ATTR, HASH_TIME_PREF);
             }
+            if(deleteType.equals("dpPref")) {
+                List lst = frm.getDatePatternPrefs();
+                List lstL = frm.getDatePatternPrefLevels();
+                lst.remove(deleteId);
+                lstL.remove(deleteId);
+                frm.setDatePatternPrefs(lst);
+                frm.setDatePatternPrefLevels(lstL);
+                request.setAttribute(HASH_ATTR, HASH_RM_GROUP);
+            }
         }
     }
     
@@ -735,7 +748,53 @@ public class PreferencesAction extends Action {
         		s.add(gp);
         	}
         }        
-        // Distribution Prefs not updated as it is done on a global level        
+
+        // Date pattern Prefs
+        lst = frm.getDatePatternPrefs();
+        lstL = frm.getDatePatternPrefLevels();        
+        Set parentDatePatternPrefs = pg.effectivePreferences(DatePatternPref.class);
+        
+        for(int i=0; i<lst.size(); i++) {
+            String id = (String)lst.get(i);
+            if (id==null || id.equals(Preference.BLANK_PREF_VALUE) || lstL.get(i).equals(PreferenceLevel.PREF_LEVEL_NEUTRAL))
+                continue;
+            
+            String pref = (String) lstL.get(i);
+            Debug.debug("Datepattern: " + id + ": " + pref);
+
+            DatePatternDAO dpdao = new DatePatternDAO();
+            DatePattern dp = dpdao.get(new Long(id));           
+            
+           DatePatternPref dpp = new DatePatternPref();
+           dpp.setOwner(pg);
+           dpp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+           dpp.setDatePattern(dp);          
+				           
+            DatePatternPref sameParentDp = null;
+            for (Iterator j=parentDatePatternPrefs.iterator();j.hasNext();) {
+            	DatePatternPref p = (DatePatternPref)j.next();
+            	if (p.isSame(dpp)) {
+            		if (p.getPrefLevel().equals(dpp.getPrefLevel()))
+            			sameParentDp = dpp;
+            		j.remove();
+            		break;
+            	}
+            }
+
+            if (sameParentDp==null)
+            	s.add(dpp);
+        }
+        if (parentDatePatternPrefs!=null && !parentDatePatternPrefs.isEmpty()) {
+        	for (Iterator i=parentDatePatternPrefs.iterator();i.hasNext();) {
+        		DatePatternPref gp = (DatePatternPref)((DatePatternPref)i.next()).clone();        		
+        		if(!pg.effectiveDatePattern().findChildren().contains(gp.getDatePattern())){
+              	   continue;
+                 }
+        		gp.setOwner(pg);
+        		gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+        		s.add(gp);
+        	}
+        } 
         
         // Set values in subpart
         pg.setPreferences(s);
@@ -1054,8 +1113,20 @@ public class PreferencesAction extends Action {
                     bp.getRoomGroup().getUniqueId().toString(), 
                     bp.getPrefLevel().getUniqueId().toString() );
         }
-        // Distribution Prefs - displayed at the subclass level 
-        
+
+        // Date Pattern Prefs
+        Set datePatternPrefs = pg.effectivePreferences(DatePatternPref.class);
+    	frm.getDatePatternPrefs().clear();
+    	frm.getDatePatternPrefLevels().clear();
+    	iter = datePatternPrefs.iterator();
+    	while (iter.hasNext()){
+    		DatePatternPref dp = (DatePatternPref) iter.next();
+    		Debug.debug("Adding date pattern pref ... " + dp.getDatePattern().getUniqueId().toString());
+    		frm.addToDatePatternPrefs(
+                dp.getDatePattern().getUniqueId().toString(), 
+                dp.getPrefLevel().getUniqueId().toString() );
+    	}
+
         if (addBlankRows) frm.addBlankPrefRows();
     }
 
