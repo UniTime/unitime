@@ -721,9 +721,8 @@ public class ManageSolversAction extends Action {
                    if (runnerName==null)
                        runnerName = "N/A";
                    Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-                   String sessionLabel = "N/A";
-                   if (session!=null)
-                       sessionLabel = session.getLabel();
+                   if (session==null) continue;
+                   String sessionLabel = session.getLabel();
                    SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
                    String settingLabel = properties.getProperty("Basic.Mode","N/A");
                    if (setting!=null)
