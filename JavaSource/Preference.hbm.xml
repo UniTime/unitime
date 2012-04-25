@@ -127,6 +127,22 @@
                 lazy="false"/>
 
         </union-subclass>
+        
+        <union-subclass
+            name="DatePatternPref"
+            table="date_pattern_pref"
+            abstract="false">
+            
+            <many-to-one
+                name="datePattern"
+                class="DatePattern"
+                column="date_pattern_id"
+                not-null="false"
+                insert="true"
+                update="true"
+                foreign-key="fk_date_pref_date_ptrn"
+                lazy="false"/>
+        </union-subclass>
 
         <union-subclass
             name="DistributionPref"

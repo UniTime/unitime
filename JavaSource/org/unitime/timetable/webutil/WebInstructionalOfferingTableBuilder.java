@@ -50,6 +50,7 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -57,6 +58,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
@@ -593,6 +595,19 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (dp==null) {
     		cell = initNormalCell("", isEditable);
+    	} else if (dp.getType() == DatePattern.sTypePatternSet) {
+    		String text = "";
+    		boolean hasReq = false;
+			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
+				Preference pref = (Preference)i.next();
+				if (!hasReq && PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
+					hasReq = true; text = "";
+				}
+				if (!hasReq || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
+					text +=  (text.isEmpty() ? "" : "<br>") + pref.preferenceHtml();
+				}
+			}
+    		cell = initNormalCell("<div>"+dp.getName()+"</div>" + text, isEditable);
     	} else {
     		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"'>"+dp.getName()+"</div>", isEditable);
     	}

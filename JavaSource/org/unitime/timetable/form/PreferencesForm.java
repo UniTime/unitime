@@ -20,6 +20,7 @@
 package org.unitime.timetable.form;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
@@ -70,6 +72,8 @@ public class PreferencesForm extends ActionForm {
     protected List availableTimePatterns;
     protected List distPrefs;
     protected List distPrefLevels;
+    protected List datePatternPrefs;
+    protected List datePatternPrefLevels;
     
     private String nextId;
     private String previousId;
@@ -258,6 +262,8 @@ public class PreferencesForm extends ActionForm {
         roomGroupLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         distPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
         distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        datePatternPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        datePatternPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true; editable = false;
         hasNotAvailable = false;
@@ -617,6 +623,38 @@ public class PreferencesForm extends ActionForm {
         this.roomFeaturePrefLevels = roomFeaturePrefLevels;
     }
 
+    
+	public List getDatePatternPrefs() {
+		return datePatternPrefs;
+	}
+	
+	public String getDatePatternPrefs(int key) {
+		return datePatternPrefs.get(key).toString();
+	}
+
+	public void setDatePatternPrefs(int key, Object value) {
+		this.datePatternPrefs.set(key, value);
+	}
+	public void setDatePatternPrefs(List datePatternPrefs) {
+		this.datePatternPrefs = datePatternPrefs;
+	}
+
+	public List getDatePatternPrefLevels() {
+		return datePatternPrefLevels;
+	}
+	
+	public String getDatePatternPrefLevels(int key) {
+		return datePatternPrefLevels.get(key).toString();
+	}
+
+	public void setDatePatternPrefLevels(List datePatternPrefLevels) {
+		this.datePatternPrefLevels = datePatternPrefLevels;
+	}
+	
+	public void setDatePatternPrefLevels(int key, Object value) {
+		this.datePatternPrefLevels.set(key, value);
+	}
+
 	/**
      * Add a room preference to the existing list
      * @param roomPref Room Id
@@ -666,6 +704,39 @@ public class PreferencesForm extends ActionForm {
         this.distPrefs.add(distPref);
         this.distPrefLevels.add(level);
     }
+    
+    /**
+     * Add a date pattern preference to the existing list
+     * @param datePatternPref Date pattern pref Id
+     * @param level Preference Level
+     */
+    public void addToDatePatternPrefs(String datePatternPref, String level) {
+        this.datePatternPrefs.add(datePatternPref);
+        this.datePatternPrefLevels.add(level);
+    }
+    
+	public void sortDatePatternPrefs(List prefs, List prefLevels,
+			List<DatePattern> patterns) {
+		if (prefs.size() == patterns.size()) {
+			Collections.sort(patterns); //, new DatePattenNameComparator()
+			List newPrefs = DynamicList.getInstance(new ArrayList(),
+					factoryPref);
+			List newPrefLevels = DynamicList.getInstance(new ArrayList(),
+					factoryPrefLevel);
+			newPrefs.addAll(prefs);
+			for (int i = 0; i < newPrefs.size(); i++) {
+				String ith_pattern = patterns.get(i).getUniqueId().toString();
+				int indexOfPatternInPrefs = prefs.indexOf(ith_pattern);
+
+				newPrefs.set(i, ith_pattern);
+				newPrefLevels.set(i, prefLevels.get(indexOfPatternInPrefs));
+			}
+			prefs.clear();
+			prefLevels.clear();
+			prefs.addAll(newPrefs);
+			prefLevels.addAll(newPrefLevels);
+		}
+	}
 
     public void addBlankPrefRows() {
         for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
@@ -691,6 +762,8 @@ public class PreferencesForm extends ActionForm {
         this.roomPrefLevels.clear();
         this.roomFeaturePrefs.clear();
         this.roomFeaturePrefLevels.clear();
+        this.datePatternPrefs.clear();
+        this.datePatternPrefLevels.clear();
     }
     
     public String getNextId() { return nextId; }

@@ -141,7 +141,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return(sb.toString());
     }
     
-    protected String preferenceHtml() {
+    public String preferenceHtml() {
     	StringBuffer sb = new StringBuffer();
     	String color = getPrefLevel().prefcolor();
     	if (PreferenceLevel.sNeutral.equals(getPrefLevel().getPrefProlog()))

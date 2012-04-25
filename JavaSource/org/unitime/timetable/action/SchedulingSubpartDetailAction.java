@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,9 +40,11 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -205,6 +208,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 			// Process Preferences Action
 			processPrefAction(request, frm, errors);
+			setupDatePatterns(request, frm);
 
 	        // Generate Time Pattern Grids
 			super.generateTimePatternGrids(request, frm, ss, timePatterns, "init", timeVertical, false, null);
@@ -305,6 +309,22 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 	        frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
 	    }
+	    
+	    private void setupDatePatterns(HttpServletRequest request, SchedulingSubpartEditForm frm) throws Exception {
+	    	DatePattern selectedDatePattern = new DatePattern(frm.getDatePattern());			
+			if (selectedDatePattern != null) {
+				List<DatePattern> children = selectedDatePattern.findChildren();
+				for (DatePattern dp: children) {					
+					if (!frm.getDatePatternPrefs().contains(
+							dp.getUniqueId().toString())) {
+						frm.addToDatePatternPrefs(dp.getUniqueId()
+								.toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
+					}
+				}
+				frm.sortDatePatternPrefs(frm.getDatePatternPrefs(), frm.getDatePatternPrefLevels(), children);
+			}
+			
+		}
 
 }
 

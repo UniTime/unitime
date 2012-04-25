@@ -42,6 +42,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -190,7 +191,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()) width[idx++] = 50f;
     	if (isShowRoomRatio()) width[idx++] = 50f;
     	if (isShowManager()) width[idx++] = 75f;
-    	if (isShowDatePattern()) width[idx++] = 80f;
+    	if (isShowDatePattern()) width[idx++] = 100f;
     	if (isShowMinPerWk()) width[idx++] = 60f;
     	if (isShowTimePattern()) width[idx++] = 80f;
     	if (isShowPreferences()) {
@@ -509,7 +510,21 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	PdfPCell cell = createCell();
     	if (dp!=null) {
     		Color color = (isEditable?sEnableColor:sDisableColor);
-    		addText(cell, dp.getName(), false, false, Element.ALIGN_CENTER, color, true);
+			addText(cell,dp.getName(), false, false, Element.ALIGN_CENTER, color, true);
+    		if (dp.getType() == DatePattern.sTypePatternSet) {
+    			boolean hasReq = false;
+    			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
+    				Preference pref = (Preference)i.next();
+    				if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
+    					hasReq = true; break;
+    				}
+    			}
+    			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
+    				Preference pref = (Preference)i.next();
+    				if (!hasReq || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
+    					addText(cell,PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_CENTER, color, true);
+    			}
+    		}
     	}
         return cell;
     }
