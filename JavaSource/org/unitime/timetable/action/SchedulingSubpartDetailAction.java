@@ -208,7 +208,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 			// Process Preferences Action
 			processPrefAction(request, frm, errors);
-			setupDatePatterns(request, frm);
+			setupDatePatterns(request, frm, ss);
 
 	        // Generate Time Pattern Grids
 			super.generateTimePatternGrids(request, frm, ss, timePatterns, "init", timeVertical, false, null);
@@ -310,8 +310,8 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
 	    }
 	    
-	    private void setupDatePatterns(HttpServletRequest request, SchedulingSubpartEditForm frm) throws Exception {
-	    	DatePattern selectedDatePattern = new DatePattern(frm.getDatePattern());			
+	    private void setupDatePatterns(HttpServletRequest request, SchedulingSubpartEditForm frm, SchedulingSubpart ss) throws Exception {
+	    	DatePattern selectedDatePattern = ss.effectiveDatePattern();			
 			if (selectedDatePattern != null) {
 				List<DatePattern> children = selectedDatePattern.findChildren();
 				for (DatePattern dp: children) {					
