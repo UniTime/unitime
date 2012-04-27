@@ -3188,6 +3188,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (endDate == null || endDate.compareTo(dp.getEndDate())<0)
                 endDate = dp.getEndDate();
         }
+        if (startDate == null || endDate == null) {
+        	iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to load room availability, reason: no dates");
+        	return;
+        }
         Calendar startDateCal = Calendar.getInstance(Locale.US);
         startDateCal.setTime(startDate);
         startDateCal.set(Calendar.HOUR_OF_DAY, 0);
