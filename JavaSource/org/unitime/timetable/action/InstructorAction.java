@@ -208,18 +208,18 @@ public class InstructorAction extends Action {
 			}
 
 			if (frm.getFname() != null && frm.getFname().trim().length()>0) {
-				inst.setFirstName(frm.getFname().trim().toUpperCase());
+				inst.setFirstName(frm.getFname().trim());
 			} else {
 				inst.setFirstName(null);
 			}
 			
 			if (frm.getMname() != null && frm.getMname().trim().length()>0) {
-				inst.setMiddleName(frm.getMname().trim().toUpperCase());
+				inst.setMiddleName(frm.getMname().trim());
 			} else {
 				inst.setMiddleName(null);
 			}
 			
-			inst.setLastName(frm.getLname().trim().toUpperCase());
+			inst.setLastName(frm.getLname().trim());
 			
 			if (frm.getPuId() != null && frm.getPuId().trim().length()>0 && !frm.getPuId().equalsIgnoreCase("null")) {
 				inst.setExternalUniqueId(frm.getPuId().trim());
