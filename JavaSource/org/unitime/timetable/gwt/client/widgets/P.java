@@ -141,15 +141,15 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
 		getElement().setInnerHTML(html == null ? "" : html);
 	}
 	
-	public void setWidth(int width) {
+	public void setWidth(double width) {
 		getElement().getStyle().setWidth(width, Unit.PX);
 	}
 	
-	public void setHeight(int height) {
+	public void setHeight(double height) {
 		getElement().getStyle().setHeight(height, Unit.PX);
 	}
 	
-	public void setSize(int width, int height) {
+	public void setSize(double width, double height) {
 		getElement().getStyle().setWidth(width, Unit.PX);
 		getElement().getStyle().setHeight(height, Unit.PX);
 	}

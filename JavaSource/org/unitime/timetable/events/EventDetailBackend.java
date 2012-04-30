@@ -367,6 +367,8 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 			meeting.setStartSlot(m.getStartPeriod());
 			meeting.setEndSlot(m.getStopPeriod());
+			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 			meeting.setPast(m.getStartTime().before(now));
 			if (m.isApproved())
 				meeting.setApprovalDate(m.getApprovedDate());

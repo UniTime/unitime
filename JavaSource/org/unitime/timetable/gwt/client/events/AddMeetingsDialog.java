@@ -185,6 +185,9 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setStartSlot(getStartSlot());
 							meeting.setEndSlot(getEndSlot());
 							meeting.setMeetingTime(TimeSelector.slot2short(getStartSlot()) + " - " + TimeSelector.slot2short(getEndSlot()));
+							meeting.setStartOffset(0);
+							meeting.setEndOffset(0); //TODO: add ability to enter offsets
+
 							
 							ResourceInterface location = new ResourceInterface();
 							location.setId(room.getUniqueId());

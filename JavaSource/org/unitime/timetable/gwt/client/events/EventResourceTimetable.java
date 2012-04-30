@@ -289,7 +289,7 @@ public class EventResourceTimetable extends Composite {
 			}
 		});
 
-		iResourceTypes.setSelectedIndex(ResourceType.PERSON.ordinal());
+		iResourceTypes.setSelectedIndex(ResourceType.ROOM.ordinal());
 		String typeString = (type != null ? type : Window.Location.getParameter("type"));
 		if (typeString != null)
 			for (int idx = 0; idx < iResourceTypes.getItemCount(); idx ++) {
@@ -447,6 +447,7 @@ public class EventResourceTimetable extends Composite {
 		iMeetingClickHandler = new MeetingClickHandler() {
 			@Override
 			public void onMeetingClick(final MeetingClickEvent event) {
+				if (!event.getEvent().isCanView()) return;
 				LoadingWidget.getInstance().show("Loading " + event.getEvent().getName() + "...");
 				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
 					@Override
@@ -468,6 +469,7 @@ public class EventResourceTimetable extends Composite {
 		iTable.addMouseClickListener(new MouseClickListener<EventInterface>() {
 			@Override
 			public void onMouseClick(final TableEvent<EventInterface> event) {
+				if (!event.getData().isCanView()) return;
 				LoadingWidget.getInstance().show("Loading " + event.getData().getName() + "...");
 				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
 					@Override

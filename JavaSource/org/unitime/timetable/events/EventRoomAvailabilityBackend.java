@@ -83,6 +83,8 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 					conflict.setMeetingDate(m.getMeetingDate());
 					conflict.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
 					conflict.setMeetingTime(m.startTime() + " - " + m.stopTime());
+					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					conflict.setStartSlot(m.getStartPeriod());
 					conflict.setEndSlot(m.getStopPeriod());
 					if (m.isApproved())
@@ -126,6 +128,8 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 					conflict.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					conflict.setStartSlot(m.getStartPeriod());
 					conflict.setEndSlot(m.getStopPeriod());
+					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					if (m.isApproved())
 						conflict.setApprovalDate(m.getApprovedDate());
 					

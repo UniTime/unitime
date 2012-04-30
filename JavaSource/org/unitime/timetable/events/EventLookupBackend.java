@@ -717,7 +717,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
-				    		if (clazz.getSectionNumberString(hibSession) == null) {
+				    		if (clazz.getClassSuffix(correctedOffering) == null) {
 					    		event.setName(clazz.getClassLabel(correctedOffering));
 				    		} else {
 					    		event.addExternalId(clazz.getClassSuffix(correctedOffering));
@@ -784,6 +784,8 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					meeting.setStartSlot(m.getStartPeriod());
 					meeting.setEndSlot(m.getStopPeriod());
+					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					meeting.setPast(m.getStartTime().before(now));
 					if (m.isApproved())
 						meeting.setApprovalDate(m.getApprovedDate());
