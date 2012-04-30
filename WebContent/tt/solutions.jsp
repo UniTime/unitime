@@ -411,14 +411,4 @@
 <% } %>
 </logic:notEmpty>
 </logic:equal>
-<logic:equal name="listSolutionsForm" property="changeTab" value="true">
-	<script language="javascript" type="text/javascript">
-	top.frames[4].location='admin/userinfo.jsp?tab=1';
-	</script>
-</logic:equal>
-<logic:equal name="listSolutionsForm" property="changeTab" value="false">
-	<script language="javascript" type="text/javascript">
-	top.frames[4].location='admin/userinfo.jsp';
-	</script>
-</logic:equal>
 </html:form>
