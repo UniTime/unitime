@@ -57,13 +57,10 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -89,6 +86,7 @@ public class TimeGrid extends Composite {
 	private SelectionLayer iSelectionLayer;
 	private List<SelectionInterface> iAllSelections = new ArrayList<SelectionInterface>();
 	private ResourceType iResourceType;
+	private boolean iShowShadows;
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -129,6 +127,7 @@ public class TimeGrid extends Composite {
 		iCellWidth = cellWidth;
 		iStart = start;
 		iEnd = end;
+		iShowShadows = !print;
 		
 		iContainer = new P("unitime-TimeGrid");
 		iContainer.setSize(40 + iDays.length * iCellWidth, scroll ? 575 : 25 + iCellHeight * (iEnd - iStart));
@@ -286,7 +285,7 @@ public class TimeGrid extends Composite {
 	public TimeGrid getPrintWidget() {
 		int firstHour = firstSlot() / 12;
 		int lastHour = (11 + lastSlot()) / 12;
-		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (0.9 * Window.getClientWidth() / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResources(getRoomResources());
 		tg.setResourceType(getResourceType());
@@ -436,8 +435,11 @@ public class TimeGrid extends Composite {
 	
 	public void clear() {
 		for (ArrayList<Meeting> meetings: iMeetings)
-			for (Meeting meeting: meetings)
+			for (Meeting meeting: meetings) {
+				if (meeting.hasShadow())
+					iPanel.remove(meeting.getShadow());
 				iPanel.remove(meeting);
+			}
 		iMeetings.clear();
 		for (int i = 0; i < iMeetingTable.length; i++)
 			for (int j = 0 ; j < iMeetingTable[i].length; j++)
@@ -470,7 +472,7 @@ public class TimeGrid extends Composite {
 		return color;
 	}
 	
-	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, String name, ArrayList<String> note, String title, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings) {
+	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, int startOffset, int endOffset, String name, ArrayList<String> note, String title, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings) {
 		switch (iMode) {
 		case PROPORTIONAL: {
 			boolean used[] = new boolean[iTotalNrColumns + nrMeetings];
@@ -498,9 +500,10 @@ public class TimeGrid extends Composite {
 					if (w instanceof Meeting) ((Meeting)w).move();
 				}
 			}
-			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, 1, nrMeetings, meetings);
-	        meeting.addStyleName(color);
+			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, 1, nrMeetings, meetings, startOffset, endOffset);
+	        meeting.setColor(color);
 	        meeting.setTitle(title);
+	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
 				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
@@ -534,10 +537,11 @@ public class TimeGrid extends Composite {
 				for (int i = 0; i < cols - 1; i++)
 					if (!used[i]) {col = i; cols--; break; }
 			}
-	        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, 1, meetings);
-	        meeting.addStyleName(color);
+	        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, 1, meetings, startOffset, endOffset);
+	        meeting.setColor(color);
 
 	        meeting.setTitle(title);
+	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
 				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
@@ -577,9 +581,10 @@ public class TimeGrid extends Composite {
 					if (!used[i]) {overlap = i; overlaps--; break; }
 			}
 			
-			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, firstWeekIndex, overlap, nrMeetings, meetings);
-	        meeting.addStyleName(color);
+			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, firstWeekIndex, overlap, nrMeetings, meetings, startOffset, endOffset);
+			meeting.setColor(color);
 	        meeting.setTitle(title);
+	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
 				if (iMeetingTable[day][startSlot + i] == null) iMeetingTable[day][startSlot + i] = new ArrayList<Meeting>();
@@ -638,7 +643,7 @@ public class TimeGrid extends Composite {
 					dates.add(m);
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
-						meeting.getDayOfWeek() == m.getDayOfWeek()) {
+						meeting.getDayOfWeek() == m.getDayOfWeek() && meeting.getStartOffset() == m.getStartOffset() && meeting.getEndOffset() == m.getEndOffset()) {
 					if (iMode == Mode.OVERLAP && (weekIndex(prev) != weekIndex(m) && weekIndex(prev) + 1 != weekIndex(m))) continue;
 					dates.add(m);
 					prev = m;
@@ -691,6 +696,7 @@ public class TimeGrid extends Composite {
 					event,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
+					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
 					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, weekIndex(meeting), days.size(), done));
@@ -718,17 +724,17 @@ public class TimeGrid extends Composite {
 	public void removeMeetingClickHandler(MeetingClickHandler h) {
 		iMeetingClickHandlers.remove(h);
 	}
-
+	
 	public class Meeting extends AbsolutePanel {
 		private EventInterface iEvent;
 		private int iColumn, iDayOfWeek, iNrColumns;
-		private int iLeft, iWidth;
+		private double iLeft, iWidth;
 		private ArrayList<Meeting> iMeetings;
-		private HorizontalPanel iHeaderPanel;
 		private boolean iDummy = false;
 		private int iNrMeetings;
+		private P iShadow;
 		
-		private Meeting(EventInterface event, String name, ArrayList<String> note, int dayOfWeek, int start, int length, int column, int nrColumns, int nrMeetings, ArrayList<Meeting> meetings) {
+		private Meeting(EventInterface event, String name, ArrayList<String> note, int dayOfWeek, int start, int length, int column, int nrColumns, int nrMeetings, ArrayList<Meeting> meetings, int startOffset, int endOffset) {
 			super();
 			iEvent = event;
 			iMeetings = meetings;
@@ -736,13 +742,13 @@ public class TimeGrid extends Composite {
 			iColumn = column;
 			iNrMeetings = nrMeetings;
 			iNrColumns = nrColumns;
-	    	iHeaderPanel = new HorizontalPanel();
-	        iHeaderPanel.setStylePrimaryName("header");
-	        HTML nameLabel = new HTML(name);
-	        nameLabel.setStyleName("label");
-	        iHeaderPanel.add(nameLabel);
-	        SimplePanel mbot = new SimplePanel();
-	        mbot.setStylePrimaryName("footer");
+			
+	        setStyleName("meeting");
+	    	P header = new P("header", "label");
+	    	header.setHTML(name);
+	        add(header);
+
+	        P footer = new P("footer");
 	        String notes = "";
 	        String delim = "<br>";
 	        if (note.size() > 2 && length < 12) delim = ", ";
@@ -752,45 +758,96 @@ public class TimeGrid extends Composite {
 	        	if (notes.length() > 0) notes += delim;
 	        	notes += "<span  style=\"white-space: nowrap\">" + n + "</span>";
 	        }
-	        mbot.add(new HTML(notes));
-	        setStylePrimaryName("meeting");
-	        add(iHeaderPanel);
-	        add(mbot);
+	        footer.setHTML(notes);
+	        add(footer);
+	        
+			double totalHeight = iCellHeight * length / 12.0 - 3;
+			double setupHeight = iCellHeight * startOffset / 60.0;
+			double teardownHeight = - iCellHeight * endOffset / 60.0;
+			
 			int day = -1;
 			for (int d = 0; d < iDays.length; d++)
 				if (iDays[d] == iDayOfWeek) { day = d; break; }
 	        switch (iMode) {
 	        case PROPORTIONAL:
-		        iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
-		        iLeft = 4 + iCellWidth * day + iColumn * (iCellWidth - 6) / iTotalNrColumns;
+		        iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6.0) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
+		        iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6.0) / iTotalNrColumns;
 		        break;
 	        case FILLSPACE:
-		        iWidth = (iCellWidth - 6) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
-		        iLeft = 4 + iCellWidth * day + iColumn * (iCellWidth - 6) / iNrColumns;
+		        iWidth = (iCellWidth - 6.0) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
+		        iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6) / iNrColumns;
 		        break;
 	        case OVERLAP:
 	        	int weeks = (isVerticalSplitByWeek() ? iSelectedWeeks.size() : iRoomResources.size());
-	        	iWidth = iNrMeetings * (iCellWidth - 6) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
-	        	iLeft = 4 + iCellWidth * day + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
+	        	iWidth = iNrMeetings * (iCellWidth - 6.0) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
 	        }
 	        getElement().getStyle().setWidth(iWidth, Unit.PX);
-	        getElement().getStyle().setHeight(iCellHeight * length / 12 - 3, Unit.PX);
+	        getElement().getStyle().setHeight(totalHeight - setupHeight - teardownHeight, Unit.PX);
 	        getElement().getStyle().setPosition(Position.ABSOLUTE);
 			getElement().getStyle().setLeft(iLeft, Unit.PX);
-			getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart, Unit.PX);
-
+			getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart + setupHeight, Unit.PX);
+			
+			if (iShowShadows && (startOffset != 0 || endOffset != 0)) {
+		        iShadow = new P("meeting-shadow");
+		        iShadow.getElement().getStyle().setHeight(totalHeight, Unit.PX);
+		        iShadow.getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart, Unit.PX);
+		        iShadow.getElement().getStyle().setLeft(iLeft, Unit.PX);
+		        iShadow.getElement().getStyle().setWidth(iWidth, Unit.PX);
+		        iShadow.getElement().getStyle().setPosition(Position.ABSOLUTE);
+			}
+	        
 			sinkEvents(Event.ONCLICK);
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEMOVE);
 			sinkEvents(Event.ONMOUSEOUT);
 		}
 		
+		public void setColor(String color) {
+			addStyleName(color);
+			if (hasShadow()) iShadow.addStyleName(color);
+		}
+		
 		public EventInterface getEvent() {
 			return iEvent;
 		}
 		
-		public void addIcon(Widget image) {
-			iHeaderPanel.add(image);
+		public boolean hasShadow() {
+			return iShadow != null;
+		}
+		
+		public P getShadow() {
+			return iShadow;
+		}
+		
+		private void select(boolean selected) {
+			if (selected) {
+				getElement().getStyle().setWidth(iCellWidth - 6, Unit.PX);
+				getElement().getStyle().setLeft(4 + iCellWidth * getDay(), Unit.PX);
+				if (hasShadow()) {
+					iShadow.getElement().getStyle().setWidth(iCellWidth - 6, Unit.PX);
+					iShadow.getElement().getStyle().setLeft(4 + iCellWidth * getDay(), Unit.PX);
+				}
+				getElement().getStyle().setZIndex(1001);
+				if (hasShadow()) iShadow.getElement().getStyle().setZIndex(1000);
+				for (Meeting meeting: iMeetings) {
+					meeting.addStyleName("meeting-selected");
+					meeting.getElement().getStyle().setCursor(iEvent.isCanView() ? Cursor.POINTER : Cursor.AUTO);
+				}
+			} else {
+				getElement().getStyle().setWidth(iWidth, Unit.PX);
+				getElement().getStyle().setLeft(iLeft, Unit.PX);
+				if (hasShadow()) {
+					iShadow.getElement().getStyle().setWidth(iWidth, Unit.PX);
+					iShadow.getElement().getStyle().setLeft(iLeft, Unit.PX);
+				}
+				getElement().getStyle().clearZIndex();
+				if (hasShadow()) iShadow.getElement().getStyle().clearZIndex();
+				for (Meeting meeting: iMeetings) {
+					meeting.removeStyleName("meeting-selected");
+					meeting.getElement().getStyle().clearCursor();
+				}
+			}
 		}
 		
 		public void onBrowserEvent(Event event) {
@@ -809,11 +866,7 @@ public class TimeGrid extends Composite {
 			EventTarget related = event.getRelatedEventTarget();
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONCLICK:
-				getElement().getStyle().setWidth(iWidth, Unit.PX);
-				getElement().getStyle().clearZIndex();
-				getElement().getStyle().setLeft(iLeft, Unit.PX);
-				for (Meeting meeting: iMeetings)
-					meeting.removeStyleName("meeting-selected");
+				select(false);
 				if (!anchor) {
 					MeetingClickEvent e = new MeetingClickEvent(Meeting.this);
 					for (MeetingClickHandler h: iMeetingClickHandlers)
@@ -822,28 +875,18 @@ public class TimeGrid extends Composite {
 				break;
 			case Event.ONMOUSEOVER:
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
-					getElement().getStyle().setWidth(iCellWidth - 6, Unit.PX);
-					getElement().getStyle().setZIndex(1000);
-					getElement().getStyle().setLeft(4 + iCellWidth * getDay(), Unit.PX);
-					for (Meeting meeting: iMeetings)
-						meeting.addStyleName("meeting-selected");
+					select(true);
 		        }
 				break;
 			case Event.ONMOUSEOUT:
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
-					getElement().getStyle().setWidth(iWidth, Unit.PX);
-					getElement().getStyle().clearZIndex();
-					getElement().getStyle().setLeft(iLeft, Unit.PX);
-					for (Meeting meeting: iMeetings)
-						meeting.removeStyleName("meeting-selected");
+		        	select(false);
 		        }
 				break;
 			case Event.ONMOUSEMOVE:
 				int relativeX = event.getClientX() - getElement().getAbsoluteLeft() + getElement().getScrollLeft() + getElement().getOwnerDocument().getScrollLeft();
 				if (relativeX < iLeft - 6 - getDay() * iCellWidth || relativeX > iLeft - 2 - getDay() * iCellWidth + iWidth) {
-					getElement().getStyle().setWidth(iWidth, Unit.PX);
-					getElement().getStyle().clearZIndex();
-					getElement().getStyle().setLeft(iLeft, Unit.PX);
+					select(false);
 				}
 				break;
 			}
@@ -859,21 +902,24 @@ public class TimeGrid extends Composite {
 		public void move() {
 	        switch (iMode) {
 	        case PROPORTIONAL:
-	        	iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
-	        	iLeft = 4 + iCellWidth * getDay() + iColumn * (iCellWidth - 6) / iTotalNrColumns;
-	        	break;
+		        iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6.0) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
+		        iLeft = 4.0 + iCellWidth * getDay() + iColumn * (iCellWidth - 6.0) / iTotalNrColumns;
+		        break;
 	        case FILLSPACE:
-		        iWidth = (iCellWidth - 6) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
-		        iLeft = 4 + iCellWidth * getDay() + iColumn * (iCellWidth - 6) / iNrColumns;
+		        iWidth = (iCellWidth - 6.0) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
+		        iLeft = 4.0 + iCellWidth * getDay() + iColumn * (iCellWidth - 6) / iNrColumns;
 		        break;
 	        case OVERLAP:
 	        	int weeks = (isVerticalSplitByWeek() ? iSelectedWeeks.size() : iRoomResources.size());
-	        	iWidth = iNrMeetings * (iCellWidth - 6) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
-	        	iLeft = 4 + iCellWidth * getDay() + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
-	        	break;
+	        	iWidth = iNrMeetings * (iCellWidth - 6.0) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iLeft = 4.0 + iCellWidth * getDay() + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
 	        }
 			getElement().getStyle().setWidth(iWidth, Unit.PX);
 			getElement().getStyle().setLeft(iLeft, Unit.PX);
+			if (hasShadow()) {
+				iShadow.getElement().getStyle().setWidth(iWidth, Unit.PX);
+				iShadow.getElement().getStyle().setLeft(iLeft, Unit.PX);
+			}
 		}
 		
 		public void setTitle(String title) {

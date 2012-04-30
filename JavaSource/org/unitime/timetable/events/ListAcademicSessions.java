@@ -21,7 +21,6 @@ package org.unitime.timetable.events;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
@@ -65,9 +64,10 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, "current");
 			} catch (EventException e) {}
 		GwtRpcResponseList<AcademicSession> ret = new GwtRpcResponseList<AcademicSession>();
-		Set<Session> sessions = new TreeSet<Session>(hibSession.createQuery(
+		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery(
 				"select distinct s from Session s, RoomTypeOption o where o.session = s and o.status = 1"
 		).list());
+		if (selected == null) selected = sessions.last();
 		for (Session session: sessions) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() , session.equals(selected));

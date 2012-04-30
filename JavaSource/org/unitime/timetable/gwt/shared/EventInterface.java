@@ -346,6 +346,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Date iMeetingDate;
 		private int iStartSlot;
 		private int iEndSlot;
+		private int iStartOffset, iEndOffset;
 		private int iDayOfWeek;
 		private int iDayOfYear;
 		private boolean iPast;
@@ -363,6 +364,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setStartSlot(int slot) { iStartSlot = slot; }
 		public int getEndSlot() { return iEndSlot; }
 		public void setEndSlot(int slot) { iEndSlot = slot; }
+		public int getStartOffset() { return iStartOffset; }
+		public void setStartOffset(int offset) { iStartOffset = offset; }
+		public int getEndOffset() { return iEndOffset; }
+		public void setEndOffset(int offset) { iEndOffset = offset; }
 		public int getDayOfWeek() { return iDayOfWeek; }
 		public void setDayOfWeek(int dayOfWeek) { iDayOfWeek = dayOfWeek; }
 		public int getDayOfYear() { return iDayOfYear; }
@@ -415,6 +420,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			return getDayOfYear() == m.getDayOfYear() && EventInterface.equals(getMeetingDate(), m.getMeetingDate()) &&
 				EventInterface.equals(getLocation(), m.getLocation()) && getStartSlot() == m.getStartSlot() && getEndSlot() == m.getEndSlot();
 		}
+		
+		@Override
+		public String toString() { return (getId() == null ? "" : getId().toString()); }
 	}
 	
 	public static class MeetingConglictInterface extends MeetingInterface {
@@ -1048,6 +1056,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			request.setLimit(limit);
 			return request;
 		}
+		
+		@Override
+		public String toString() { return "sessionId=" + getSessionId() + ",resource=" + getResourceType() + "@" + (hasResourceExternalId() ? getResourceExternalId() : getResourceId()); }
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.QueryEncoderBackend")
@@ -1063,6 +1074,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public static EncodeQueryRpcRequest encode(String query) {
 			return new EncodeQueryRpcRequest(query); 
 		}
+		
+		@Override
+		public String toString() { return getQuery(); }
 	}
 	
 	public static class EncodeQueryRpcResponse implements GwtRpcResponse {
@@ -1083,6 +1097,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public static EventPropertiesRpcRequest requestEventProperties() {
 			return new EventPropertiesRpcRequest();
 		}
+		
+		@Override
+		public String toString() { return ""; }
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
@@ -1128,6 +1145,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			request.setEventId(eventId);
 			return request;
 		}
+		
+		@Override
+		public String toString() { return "sessionId=" + getSessionId() + ",eventId=" + getEventId(); }
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventRoomAvailabilityBackend")
@@ -1180,6 +1200,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			request.setSessionId(sessionId);
 			return request;
 		}
+		
+		@Override
+		public String toString() { return "sessionId="+ getSessionId() + (hasMeetings() ? ",meetings=" + getMeetings() : ",start=" + getStartSlot() + ",end=" + getEndSlot() + ",dates=" + getDates() + ",locations=" + getLocations()); }
 	}
 	
 	public static class EventRoomAvailabilityRpcResponse implements GwtRpcResponse {

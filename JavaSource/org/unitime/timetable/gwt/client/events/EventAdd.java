@@ -290,6 +290,8 @@ public class EventAdd extends Composite {
 						MeetingInterface meeting = new MeetingInterface();
 						meeting.setStartSlot(s.getStartSlot());
 						meeting.setEndSlot(s.getStartSlot() + s.getLength());
+						meeting.setStartOffset(0);
+						meeting.setEndOffset(0);
 						meeting.setMeetingTime(TimeSelector.slot2short(meeting.getStartSlot()) + " - " + TimeSelector.slot2short(meeting.getEndSlot()));
 						meeting.setDayOfYear(day);
 						meeting.setLocation(room);

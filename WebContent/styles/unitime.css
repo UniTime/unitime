@@ -31,7 +31,7 @@
 
 @media print {
 	.unitime-Body {
-		zoom: 80%;
+		width: 100% !important;
 	}
 }
 
@@ -161,7 +161,6 @@ h1 {
 }
 
 .unitime-MainTableHeader {
-	width: 100%;
 	border-bottom: 1px solid #9CB0CE;
 	padding-top: 5px;
 	font-size: large;
@@ -731,6 +730,20 @@ h1 {
 	color: #FFFFFF;
 }
 
+.unitime-TimeGrid .meeting-shadow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	filter: alpha(opacity = 25);
+	opacity: .25;
+    -moz-opacity: .25;
+	-webkit-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	-moz-border-radius: 5px;
+	z-index: 499;
+}
+
 .unitime-TimeGrid .meeting {
 	position: absolute;
 	font-size: x-small;
@@ -746,24 +759,16 @@ h1 {
 }
 
 .unitime-TimeGrid .meeting .header {
-	padding-left: 4px;
-	padding-right: 4px;
-	padding-bottom: 2px;
-	padding-top: 2px;
+	padding: 2px 2px 0px 2px;
+	font-size: x-small;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #FFFFFF;
 	width: 100%;
 	-webkit-border-top-left-radius: 5px;
 	-webkit-border-top-right-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;	
-}
-
-.unitime-TimeGrid .meeting .header .label {
-	padding-left: 2px;
-	width: 100%;
-	font-size: x-small;
-	white-space: nowrap;
-	overflow: hidden;
-	color: #FFFFFF;
 }
 
 @media print {
@@ -773,8 +778,6 @@ h1 {
 	}
 	.unitime-TimeGrid .meeting .header {
 		padding-bottom: 0px;
-	}
-	.unitime-TimeGrid .meeting .header .label {
 		color: #000000;
 		background-color: #FFFFFF;
 	}
@@ -782,7 +785,7 @@ h1 {
 
 .unitime-TimeGrid .meeting .footer {
 	font-size: x-small;
-	padding-left: 4px;
+	padding-left: 2px;
 	white-space: wrap;
 	-webkit-border-bottom-left-radius: 5px;
 	-webkit-border-bottom-right-radius: 5px;
