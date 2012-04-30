@@ -527,8 +527,13 @@ public class SavedHQLPage extends Composite {
 	public static int compare(String[] a, String[] b, int col) {
 		for (int i = 0; i < a.length; i++) {
 			int c = (col + i) % a.length;
-			int cmp = (a[c] == null ? "" : a[c]).compareTo(b[c] == null ? "" : b[c]);
-			if (cmp != 0) return cmp;
+			try {
+				int cmp = Double.valueOf(a[c] == null ? "0" : a[c]).compareTo(Double.valueOf(b[c] == null ? "0" : b[c]));
+				if (cmp != 0) return cmp;
+			} catch (NumberFormatException e) {
+				int cmp = (a[c] == null ? "" : a[c]).compareTo(b[c] == null ? "" : b[c]);
+				if (cmp != 0) return cmp;
+			}
 		}
 		return 0;
 	}
