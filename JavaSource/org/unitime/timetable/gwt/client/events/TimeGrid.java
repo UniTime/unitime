@@ -770,16 +770,16 @@ public class TimeGrid extends Composite {
 				if (iDays[d] == iDayOfWeek) { day = d; break; }
 	        switch (iMode) {
 	        case PROPORTIONAL:
-		        iWidth = Math.max(3, iNrMeetings * (iCellWidth - 6.0) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
+		        iWidth = Math.max(3.0, iNrMeetings * (iCellWidth - 6.0) / iTotalNrColumns + (iColumn + iNrMeetings != iTotalNrColumns && iTotalNrColumns > 1 ? -3 : 0));
 		        iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6.0) / iTotalNrColumns;
 		        break;
 	        case FILLSPACE:
-		        iWidth = (iCellWidth - 6.0) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0);
+		        iWidth = Math.max(3.0, (iCellWidth - 6.0) / iNrColumns + (iColumn + 1 != iNrColumns && iNrColumns > 1 ? -3 : 0));
 		        iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6) / iNrColumns;
 		        break;
 	        case OVERLAP:
 	        	int weeks = (isVerticalSplitByWeek() ? iSelectedWeeks.size() : iRoomResources.size());
-	        	iWidth = iNrMeetings * (iCellWidth - 6.0) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns;
+	        	iWidth = Math.max(3.0, iNrMeetings * (iCellWidth - 6.0) / weeks + (iColumn + iNrMeetings != weeks && weeks > 1 ? -3 : 0) - 5 * iNrColumns);
 	        	iLeft = 4.0 + iCellWidth * day + iColumn * (iCellWidth - 6) / weeks + 5 * iNrColumns;
 	        }
 	        getElement().getStyle().setWidth(iWidth, Unit.PX);
