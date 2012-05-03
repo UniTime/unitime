@@ -424,7 +424,32 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					Collection<LinkedSections> links = server.getLinkedSections(clonedCourse.getOffering().getId());
 					if (links != null) linkedSections.addAll(links);
 				}
-				new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false, null);
+				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false, null);
+				if (originalStudent != null)
+					for (Request originalRequest: originalStudent.getRequests()) {
+						Enrollment originalEnrollment = originalRequest.getAssignment();
+						for (Course clonnedCourse: clonnedRequest.getCourses()) {
+							if (!clonnedCourse.getOffering().hasReservations()) continue;
+							if (originalEnrollment != null && clonnedCourse.equals(originalEnrollment.getCourse())) {
+								boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(clonnedRequest) < 1.0;
+								if (!needReservation) {
+									boolean configChecked = false;
+									for (Section originalSection: originalEnrollment.getSections()) {
+										Section clonnedSection = classTable.get(originalSection.getId()); 
+										if (clonnedSection.getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
+										if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
+										configChecked = true;
+									}
+								}
+								if (needReservation) {
+									Reservation reservation = new DummyReservation(-originalStudent.getId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
+									for (Section originalSection: originalEnrollment.getSections())
+										reservation.addSection(classTable.get(originalSection.getId()));
+								}
+								break;
+							}
+						}
+					}
 			}
 		}
 	}
