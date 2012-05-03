@@ -677,7 +677,7 @@ public class TimeGrid extends Composite {
 				dateString += " - " + endDate;
 			}
 			ArrayList<String> notes = new ArrayList<String>();
-			notes.add(meeting.getMeetingTime());
+			notes.add(meeting.getMeetingTime(CONSTANTS.useAmPm()));
 			if (dates.size() != getSelectedWeeks().size())
 				notes.add(dateString);
 			String roomString = "";
@@ -699,7 +699,7 @@ public class TimeGrid extends Composite {
 					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
-					dateString + " " + meeting.getMeetingTime() + " " + roomString, color, weekIndex(meeting), days.size(), done));
+					dateString + " " + meeting.getMeetingTime(CONSTANTS.useAmPm()) + " " + roomString, color, weekIndex(meeting), days.size(), done));
 		}
 		iMeetings.add(done);
 		return done;

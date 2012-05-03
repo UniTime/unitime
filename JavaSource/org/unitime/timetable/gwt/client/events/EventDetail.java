@@ -65,7 +65,7 @@ public class EventDetail extends Composite {
 		iForm = new SimpleForm();
 		
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler() {
+		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -96,7 +96,7 @@ public class EventDetail extends Composite {
 		ownersHeader.add(new UniTimeTableHeader("Instructor"));
 		iOwners.addRow(null, ownersHeader);
 		
-		iEnrollments = new EnrollmentTable(false, false);
+		iEnrollments = new EnrollmentTable(false, true);
 		iEnrollments.getTable().setStyleName("unitime-Enrollments");
 		
 		iNotes = new UniTimeTable<NoteInterface>();

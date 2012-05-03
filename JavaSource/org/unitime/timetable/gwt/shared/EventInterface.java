@@ -56,7 +56,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private Integer iInstructionType = null, iMaxCapacity = null;
 	private List<String> iExternalIds = null;
 	private String iSectionNumber = null;
-	private boolean iCanView = false, iCanEdit = false;
+	private boolean iCanView = false;
 	private List<RelatedObjectInterface> iRelatedObjects = null;
 	private List<ClassAssignmentInterface.Enrollment> iEnrollments = null;
 	
@@ -209,8 +209,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 
 	public boolean isCanView() { return iCanView; }
 	public void setCanView(boolean canView) { iCanView = canView; }
-	public boolean isCanEdit() { return iCanEdit; }
-	public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
 	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
@@ -342,14 +340,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class MeetingInterface implements Comparable<MeetingInterface>, IsSerializable {
 		private ResourceInterface iLocation;
 		private Long iMeetingId;
-		private String iMeetingTime;
 		private Date iMeetingDate;
 		private int iStartSlot;
 		private int iEndSlot;
 		private int iStartOffset, iEndOffset;
 		private int iDayOfWeek;
 		private int iDayOfYear;
-		private boolean iPast;
+		private boolean iPast, iCanEdit, iCanApprove;
 		private Date iApprovalDate = null;
 		private Long iStartTime, iStopTime;
 		private Set<MeetingConglictInterface> iConflicts;
@@ -372,8 +369,33 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setDayOfWeek(int dayOfWeek) { iDayOfWeek = dayOfWeek; }
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
-		public String getMeetingTime() { return iMeetingTime; }
-		public void setMeetingTime(String time) { iMeetingTime = time; }	
+		public String getStartTime(boolean useAmPm, boolean useOffsets) {
+			int min = 5 * iStartSlot + (useOffsets ? iStartOffset : 0);
+			int h = min / 60;
+	        int m = min % 60;
+	        if (useAmPm) {
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+			} else {
+				return h + ":" + (m < 10 ? "0" : "") + m;
+			}
+		}
+		public String getEndTime(boolean useAmPm, boolean useOffsets) {
+			int min = 5 * iEndSlot + (useOffsets ? iEndOffset : 0);
+			int h = min / 60;
+	        int m = min % 60;
+	        if (useAmPm) {
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+			} else {
+				return h + ":" + (m < 10 ? "0" : "") + m;
+			}
+			
+		}
+		public String getMeetingTime(boolean useAmPm) {
+			return getStartTime(useAmPm, true) + " - " + getEndTime(useAmPm, true);
+		}
+		public String getAllocatedTime(boolean useAmPm) {
+			return getStartTime(useAmPm, false) + " - " + getEndTime(useAmPm, false);
+		}
 		public ResourceInterface getLocation() { return iLocation; }
 		public boolean hasLocation() { return iLocation != null; }
 		public String getLocationName() { return (iLocation == null ? "" : iLocation.getName()); }
@@ -383,6 +405,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
+		public boolean isCanEdit() { return iCanEdit; }
+		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+		public boolean isCanApprove() { return iCanApprove; }
+		public void setCanApprove(boolean canApprove) { iCanApprove = canApprove; }
 		public boolean isApproved() { return iApprovalDate != null; }
 		public Date getApprovalDate() { return iApprovalDate; }
 		public void setApprovalDate(Date date) {  iApprovalDate = date; }
@@ -398,10 +424,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			iConflicts.add(conflict);
 		}
 		public Set<MeetingConglictInterface> getConflicts() { return iConflicts; }
-		public void setConflicts(Set<MeetingConglictInterface> conflicts) { iConflicts = conflicts; }
+		public void setConflicts(Set<MeetingConglictInterface> conflicts) {
+			iConflicts = conflicts;
+		}
 		
 		public int compareTo(MeetingInterface meeting) {
 			int cmp = new Integer(getDayOfYear()).compareTo(meeting.getDayOfYear());
+			if (cmp != 0) return cmp;
+			cmp = new Integer(getStartSlot()).compareTo(meeting.getStartSlot());
 			if (cmp != 0) return cmp;
 			cmp = getLocationName().compareTo(meeting.getLocationName());
 			if (cmp != 0) return cmp;
@@ -495,8 +525,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	        return ret;
 	    }
 	    
-	    public String getMeetingTime() {
-	    	return getDays() + " " + iMeetings.first().getMeetingTime();
+	    public String getMeetingTime(boolean useAmPm) {
+	    	return getDays() + " " + iMeetings.first().getMeetingTime(useAmPm);
 	    }
 	    
 	    /*
@@ -548,7 +578,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             HashMap<Integer,MeetingInterface> similar = new HashMap<Integer, MeetingInterface>(); 
             TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
             for (MeetingInterface m : meetingSet) {
-            	if (m.getMeetingTime().equals(meeting.getMeetingTime()) &&
+            	if (m.getMeetingTime(true).equals(meeting.getMeetingTime(true)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
             		(!checkApproval ||( m.isApproved() == meeting.isApproved() && (!m.isApproved() || m.getApprovalDate().equals(meeting.getApprovalDate()))))) {
@@ -581,6 +611,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private String iExternalId, iEmail, iPhone;
     	
     	public ContactInterface() {}
+    	
+    	public ContactInterface(PersonInterface person) {
+    		iFirstName = person.getFirstName();
+    		iMiddleName = person.getMiddleName();
+    		iLastName = person.getLastName();
+    		iExternalId = person.getId();
+    		iEmail = person.getEmail();
+    		iPhone = person.getPhone();
+    	}
     	
     	public void setFirstName(String name) { iFirstName = name; }
     	public boolean hasFirstName() { return iFirstName != null && !iFirstName.isEmpty(); }

@@ -82,7 +82,6 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 					conflict.setId(m.getUniqueId());
 					conflict.setMeetingDate(m.getMeetingDate());
 					conflict.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
-					conflict.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					conflict.setStartSlot(m.getStartPeriod());
@@ -105,6 +104,8 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 				
 				if (!meeting.hasLocation()) continue;
 				
+				meeting.setEndOffset(-10);
+				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
 						"select m from Meeting m, Location l "+
 						"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
@@ -125,7 +126,6 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 					conflict.setId(m.getUniqueId());
 					conflict.setMeetingDate(m.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());
-					conflict.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					conflict.setStartSlot(m.getStartPeriod());
 					conflict.setEndSlot(m.getStopPeriod());
 					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
