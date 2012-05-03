@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
@@ -36,6 +37,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -79,6 +82,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 	private boolean iAllowGuest = false;
 	
 	private Command iOnLoginCommand = null;
+	
+	private Lookup iLookupDialog = null;
 
 	public UserAuthentication(boolean allowGuest) {
 		iAllowGuest = allowGuest;
@@ -135,7 +140,15 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		buttonPanel.add(iSkip);
 		iSkip.setVisible(iAllowGuest);
 		
-		Lookup.getInstance().setCallback(createLookupCallback());
+		iLookupDialog = new Lookup();
+		iLookupDialog.setOptions("mustHaveExternalId,source=students");
+		iLookupDialog.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				if (event.getValue() != null)
+					sSectioningService.logIn("LOOKUP", event.getValue().getId(), sAuthenticateCallback);
+			}
+		});
 		iLookup = new Button(MESSAGES.buttonUserLookup());
 		buttonPanel.add(iLookup);
 		iLookup.setVisible(false);
@@ -156,7 +169,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			@Override
 			public void onClick(ClickEvent event) {
 				iDialog.hide();
-				Lookup.getInstance().center();
+				iLookupDialog.center();
 			}
 		});
 		
@@ -237,6 +250,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			}
 		};
 	}
+	
+	public void setLookupOptions(String options) { iLookupDialog.setOptions(options); }
 	
 	public void setAllowLookup(boolean allow) {
 		iLookup.setVisible(allow);

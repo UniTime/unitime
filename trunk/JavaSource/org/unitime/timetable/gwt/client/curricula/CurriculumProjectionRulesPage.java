@@ -169,11 +169,11 @@ public class CurriculumProjectionRulesPage extends Composite {
 		};
 
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("edit", "<u>E</u>dit", 's', 75, edit);
-		iHeader.addButton("save", "<u>S</u>ave", 's', 75, save);
-		iHeader.addButton("print", "<u>P</u>rint", 'p', 75, print);
-		iHeader.addButton("close", "<u>C</u>lose", 'c', 75, close);
-		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, back);
+		iHeader.addButton("edit", "<u>E</u>dit", 75, edit);
+		iHeader.addButton("save", "<u>S</u>ave", 75, save);
+		iHeader.addButton("print", "<u>P</u>rint", 75, print);
+		iHeader.addButton("close", "<u>C</u>lose", 75, close);
+		iHeader.addButton("back", "<u>B</u>ack", 75, back);
 				
 		iPanel.addHeaderRow(iHeader);
 		

@@ -44,12 +44,16 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -63,19 +67,17 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 /**
  * @author Tomas Muller
  */
-public class Lookup extends UniTimeDialogBox {
+public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface> {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
 	private VerticalPanel iPanel;
 	private UniTimeTable<PersonInterface> iTable;
 	private ScrollPanel iScroll;
 	private TextBox iQuery;
-	private JavaScriptObject iCallback;
 	private String iOptions;
 	private Timer iTimer;
 	private String iLastQuery = null;
-	
-	private static Lookup sInstance = null;
+	private PersonInterface iValue = null;
 	
 	private final LookupServiceAsync iLookupService = GWT.create(LookupService.class);
 	
@@ -128,13 +130,7 @@ public class Lookup extends UniTimeDialogBox {
 				if (event.getData() != null) {
 					iTimer.cancel();
 					Lookup.this.hide();
-					fireCallback(getCallback(),
-							event.getData().getId(),
-							event.getData().getFirstName(),
-							event.getData().getMiddleName(),
-							event.getData().getLastName(),
-							event.getData().getEmail(),
-							event.getData().getPhone());
+					setValue(event.getData(), true);
 				}
 			}
 		});
@@ -197,13 +193,7 @@ public class Lookup extends UniTimeDialogBox {
 					if (person != null) {
 						iTimer.cancel();
 						Lookup.this.hide();
-						fireCallback(getCallback(),
-								person.getId(),
-								person.getFirstName(),
-								person.getMiddleName(),
-								person.getLastName(),
-								person.getEmail(),
-								person.getPhone());
+						setValue(person, true);
 					}
 				}
 			}
@@ -214,8 +204,6 @@ public class Lookup extends UniTimeDialogBox {
 	public void setQuery(String query) {
 		iQuery.setText(query);
 	}
-	
-	public void setCallback(JavaScriptObject callback) { iCallback = callback; }
 	
 	public void setOptions(String options) { iOptions = options; }
 	
@@ -307,13 +295,6 @@ public class Lookup extends UniTimeDialogBox {
 		}
 	}
 	
-	public static Lookup getInstance() {
-		if (sInstance == null) {
-			sInstance = new Lookup();
-		}
-		return sInstance;
-	}
-
 	public static native void createTriggers()/*-{
 		$wnd.peopleLookup = function(query, callback, options) {
 			@org.unitime.timetable.gwt.client.Lookup::peopleLookup(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(query,callback,options);
@@ -333,19 +314,50 @@ public class Lookup extends UniTimeDialogBox {
 		});
 	}
 	
-	public static void peopleLookup(String query, JavaScriptObject callback, String options) {
+	public static void peopleLookup(String query, final JavaScriptObject callback, String options) {
+		final Lookup lookup = new Lookup();
 		if (query != null && !query.trim().isEmpty())
-			getInstance().setQuery(query);
-		getInstance().setCallback(callback);
-		getInstance().setOptions(options);
-		getInstance().center();
-	}
-	
-	public static JavaScriptObject getCallback() {
-		return getInstance().iCallback;
+			lookup.setQuery(query);
+		lookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				if (event.getValue() != null)
+					lookup.fireCallback(callback,
+						event.getValue().getId(),
+						event.getValue().getFirstName(),
+						event.getValue().getMiddleName(),
+						event.getValue().getLastName(),
+						event.getValue().getEmail(),
+						event.getValue().getPhone());				
+			}
+		});
+		lookup.setOptions(options);
+		lookup.center();
 	}
 	
 	public native void fireCallback(JavaScriptObject callback, String... person)/*-{
 		callback(person);
 	}-*/;
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PersonInterface> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public PersonInterface getValue() {
+		return iValue;
+	}
+
+	@Override
+	public void setValue(PersonInterface value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(PersonInterface value, boolean fireEvents) {
+		iValue = value;
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
+	}
 }

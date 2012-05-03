@@ -122,9 +122,9 @@ public class ClassificationsEdit extends Composite {
 		
 		iHeaderPanel = new UniTimeHeaderPanel();
 		
-		iHeaderPanel.addButton("save", "<u>S</u>ave", 's', 75, save);
-		iHeaderPanel.addButton("back", "<u>B</u>ack", 'b', 75, back);
-		iHeaderPanel.addButton("print", "<u>P</u>rint", 'p', 75, print);
+		iHeaderPanel.addButton("save", "<u>S</u>ave", 75, save);
+		iHeaderPanel.addButton("back", "<u>B</u>ack", 75, back);
+		iHeaderPanel.addButton("print", "<u>P</u>rint", 75, print);
 		
 		iPanel.addHeaderRow(iHeaderPanel);
 

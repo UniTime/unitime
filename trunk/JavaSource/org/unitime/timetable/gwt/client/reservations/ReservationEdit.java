@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Clazz;
@@ -49,7 +50,6 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.Offering;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Subpart;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -104,12 +104,10 @@ public class ReservationEdit extends Composite {
 	private UniTimeWidget<TextArea> iStudents;
 	private ReservationInterface iReservation;
 	private CurriculaCourseSelectionBox iCourseBox;
+	private Lookup iLookup;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 
-	private static TextArea sLastStudents;
-	private static TextBox sLastLimit;
-	
 	private int iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine;
 	
 	private Offering iOffering = null;
@@ -152,7 +150,7 @@ public class ReservationEdit extends Composite {
 		initWidget(iPanel);
 
 		iTitleAndButtons = new UniTimeHeaderPanel("Reservation Details");
-		iTitleAndButtons.addButton("save", "<u>S</u>ave", 's', 75, new ClickHandler() {
+		iTitleAndButtons.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iTitleAndButtons.clearMessage();
@@ -178,7 +176,7 @@ public class ReservationEdit extends Composite {
 				}
 			}
 		});
-		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 'd', 75, new ClickHandler() {
+		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iReservation == null) {
@@ -203,7 +201,7 @@ public class ReservationEdit extends Composite {
 			}
 		});
 		iTitleAndButtons.setEnabled("delete", false);
-		iTitleAndButtons.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler() {
+		iTitleAndButtons.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				EditFinishedEvent e = new EditFinishedEvent(iReservation == null ? null : iReservation.getId());
@@ -270,8 +268,6 @@ public class ReservationEdit extends Composite {
 				iLimit.getWidget().setValue(String.valueOf(iStudents.getWidget().getText().split("\n").length), true);
 			}
 		});
-		sLastStudents = iStudents.getWidget();
-		sLastLimit = iLimit.getWidget();
 		iStudents.getWidget().setStyleName("unitime-TextArea");
 		iStudents.getWidget().setVisibleLines(10);
 		iStudents.getWidget().setCharacterWidth(80);
@@ -279,14 +275,25 @@ public class ReservationEdit extends Composite {
 		students.add(iStudents);
 		Button lookup = new Button("<u>L</u>ookup");
 		lookup.setAccessKey('l');
+		iLookup = new Lookup();
 		lookup.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				Lookup.getInstance().center();
+				iLookup.center();
 			}
 		});
-		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
-		Lookup.getInstance().setCallback(createLookupCallback());
+		iLookup.setOptions("mustHaveExternalId,source=students");
+		iLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				PersonInterface student = event.getValue();
+				if (student != null) {
+					iStudents.getWidget().setValue(iStudents.getWidget().getValue() + (iStudents.getWidget().getValue().isEmpty() ? "" : "\n")
+							+ student.getId() + " " + student.getLastName() + ", " + student.getFirstName() + (student.getMiddleName() == null ? "" : " " + student.getMiddleName()), true);
+					iLimit.getWidget().setValue(String.valueOf(iStudents.getWidget().getText().split("\n").length), true);
+				}
+			}
+		});
 		students.add(lookup);
 		students.setCellHorizontalAlignment(lookup, HasHorizontalAlignment.ALIGN_RIGHT);
 		iPanel.addRow("Students:", students);
@@ -611,8 +618,6 @@ public class ReservationEdit extends Composite {
 			iStructure.addItem(configItem);
 		}
 		
-		iStudents.getWidget().setText("");
-
 		iCourse.getWidget().clear();
 		iCourse.getWidget().addItem("Select...", "");
 		for (Course course: iOffering.getCourses()) {
@@ -971,18 +976,6 @@ public class ReservationEdit extends Composite {
 			}
 		}
 		return (ok ? r : null);
-	}
-	
-	private native JavaScriptObject createLookupCallback() /*-{
-		return function(person) {
-			@org.unitime.timetable.gwt.client.reservations.ReservationEdit::personFound(Ljava/lang/String;Ljava/lang/String;)(person[0],
-				person[3] + ", " + person[1] + (person[2] == null ? "" : " " + person[2]));
-    	};
- 	}-*/;
-	
-	public static void personFound(String externalUniqueId, String name) {
-		sLastStudents.setText(sLastStudents.getText() + (sLastStudents.getText().isEmpty() ? "" : "\n") + externalUniqueId + " " + name);
-		sLastLimit.setValue(String.valueOf(sLastStudents.getText().split("\n").length), true);
 	}
 
 	private class ClassSelection extends CheckBox implements ClickHandler {
