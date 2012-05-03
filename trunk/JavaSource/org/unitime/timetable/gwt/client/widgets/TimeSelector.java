@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -46,6 +47,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class TimeSelector extends Composite implements HasValue<Integer>{
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
 	
@@ -220,7 +222,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 						iLastSelected = iText.getText(); 
 					}
 				};
-				MenuItem item = new MenuItem(slot2time(t), true, command);
+				MenuItem item = new MenuItem(TimeUtils.slot2time(t), true, command);
 				item.setStyleName("item");
 				DOM.setStyleAttribute(item.getElement(), "whiteSpace", "nowrap");
 				iTimes.addItem(item);
@@ -264,23 +266,15 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		return iPopup.isShowing();
 	}
 	
-	public static String slot2time(int slot) {
-		return TimeUtils.slot2time(slot, CONSTANTS.useAmPm());
-	}
-	
-	public static String slot2short(int slot) {
-		return TimeUtils.slot2short(slot, CONSTANTS.useAmPm());
-	}
-	
 	public static String slot2time(int slot, int diff) {
-		if (diff <= 0) return slot2time(slot);
-		if (diff < 24 && diff != 12) return slot2time(slot) + " (" + (5 * diff) + " mins)";
-		else if (diff == 12) return slot2time(slot) + " (1 hr)";
-		else if (diff % 12 == 0) return slot2time(slot) + " (" + (diff/12) + " hrs)";
-		else if (diff % 12 == 3) return slot2time(slot) + " (" + (diff/12) + "&frac14; hrs)";
-		else if (diff % 12 == 6) return slot2time(slot) + " (" + (diff/12) + "&frac12; hrs)";
-		else if (diff % 12 == 9) return slot2time(slot) + " (" + (diff/12) + "&frac34; hrs)";
-		return slot2time(slot) + " (" + diff / 12 + ":" + (diff % 12 == 1 ? "0" : "") + (5 * (diff % 12)) + ")";
+		if (diff <= 0) return TimeUtils.slot2time(slot);
+		if (diff < 24 && diff != 12) return TimeUtils.slot2time(slot) + " (" + (5 * diff) + " mins)";
+		else if (diff == 12) return TimeUtils.slot2time(slot) + " (1 hr)";
+		else if (diff % 12 == 0) return TimeUtils.slot2time(slot) + " (" + (diff/12) + " hrs)";
+		else if (diff % 12 == 3) return TimeUtils.slot2time(slot) + " (" + (diff/12) + "&frac14; hrs)";
+		else if (diff % 12 == 6) return TimeUtils.slot2time(slot) + " (" + (diff/12) + "&frac12; hrs)";
+		else if (diff % 12 == 9) return TimeUtils.slot2time(slot) + " (" + (diff/12) + "&frac34; hrs)";
+		return TimeUtils.slot2time(slot) + " (" + diff / 12 + ":" + (diff % 12 == 1 ? "0" : "") + (5 * (diff % 12)) + ")";
 	}
 	
 	public Integer parseTime(String text) {
@@ -352,7 +346,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		else {
 			if (iStart != null && iStart.getValue() != null)
 				iDiff = value - iStart.getValue();
-			iText.setText(slot2time(value));
+			iText.setText(TimeUtils.slot2time(value));
 		}
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
@@ -435,27 +429,27 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			return slot;
 		}
 		
-		public static String slot2time(int slot, boolean useAmPm) {
-			if (useAmPm) {
-				if (slot == 0 || slot == 288) return "midnight";
-				if (slot == 144) return "noon";
+		public static String slot2time(int slot) {
+			if (CONSTANTS.useAmPm()) {
+				if (slot == 0 || slot == 288) return MESSAGES.timeMidnitgh();
+				if (slot == 144) return MESSAGES.timeNoon();
 			}
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
-	        if (useAmPm)
+	        if (CONSTANTS.useAmPm())
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? " am" : h >= 12 ? " pm" : " am");
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 		
-		public static String slot2short(int slot, boolean useAmPm) {
-			if (useAmPm) {
-				if (slot == 0 || slot == 288) return "midnight";
-				if (slot == 144) return "noon";
+		public static String slot2short(int slot) {
+			if (CONSTANTS.useAmPm()) {
+				if (slot == 0 || slot == 288) return MESSAGES.timeMidnitgh();
+				if (slot == 144) return MESSAGES.timeNoon();
 			}
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
-	        if (useAmPm)
+	        if (CONSTANTS.useAmPm())
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;

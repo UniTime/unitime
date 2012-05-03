@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -309,29 +310,29 @@ public class EventFilterBox extends UniTimeFilterBox {
 				Integer stop = TimeSelector.TimeUtils.parseTime(text, chStart == null ? null : TimeSelector.TimeUtils.parseTime(chStart.getValue(), null));
 				if (chStart == null) {
 					if (start != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+3)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+6)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+9)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+3)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+6)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+9)), chStart));
 					}
 					if (stop != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+3)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+6)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+9)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+3)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+6)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+9)), chStop));
 					}					
 				} else {
 					if (stop != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+3)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+6)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeSelector.slot2time(stop+9)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+3)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+6)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+9)), chStop));
 					}					
 					if (start != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+3)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+6)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeSelector.slot2time(start+9)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+3)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+6)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+9)), chStart));
 					}
 				}
 				callback.onSuccess(suggestions);
@@ -344,7 +345,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 				if (event.getValue() == null) {
 					if (ch != null) removeChip(ch, true);
 				} else {
-					String text = TimeSelector.slot2time(event.getValue());
+					String text = TimeUtils.slot2time(event.getValue());
 					if (ch != null) {
 						if (ch.getCommand().equals(text)) return;
 						removeChip(ch, false);
@@ -360,7 +361,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 				if (event.getValue() == null) {
 					if (ch != null) removeChip(ch, true);
 				} else {
-					String text = TimeSelector.slot2time(event.getValue());
+					String text = TimeUtils.slot2time(event.getValue());
 					if (ch != null) {
 						if (ch.getCommand().equals(text)) return;
 						removeChip(ch, false);

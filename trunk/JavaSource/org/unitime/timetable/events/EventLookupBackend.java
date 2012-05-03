@@ -28,6 +28,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.ApplicationProperties;
@@ -58,6 +59,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -127,6 +129,12 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				}
 				EventFilterBackend.EventQuery query = EventFilterBackend.getQuery(request.getEventFilter());
 				int limit = request.getLimit();
+				
+		        Set<Department> userDepartments = null;
+				if (request.getEventFilter().hasOption("user") && request.getEventFilter().hasOption("role") && Roles.EVENT_MGR_ROLE.equals(request.getEventFilter().getOption("role"))) {
+					TimetableManager mgr = TimetableManager.findByExternalId(request.getEventFilter().getOption("user"));
+					if (mgr != null) userDepartments = mgr.getDepartments();
+				}
 
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
@@ -624,10 +632,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 						events.put(m.getEvent().getUniqueId(), event);
 						event.setCanView(request.getEventFilter().hasOption("role") || (request.getEventFilter().hasOption("user") && request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
-						event.setCanEdit(event.isCanView() && (
-								Roles.ADMIN_ROLE.equals(request.getEventFilter().getOption("role")) || 
-								Roles.EVENT_MGR_ROLE.equals(request.getEventFilter().getOption("role")) || 
-								request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
 						ret.add(event);
 						
 						if (m.getEvent().getMainContact() != null) {
@@ -781,12 +785,26 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					meeting.setStartTime(m.getStartTime().getTime());
 					meeting.setStopTime(m.getStopTime().getTime());
 					meeting.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
-					meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 					meeting.setStartSlot(m.getStartPeriod());
 					meeting.setEndSlot(m.getStopPeriod());
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					meeting.setPast(m.getStartTime().before(now));
+					if (request.getEventFilter().hasOption("user")) {
+						meeting.setCanEdit(false);
+						meeting.setCanApprove(false);
+					} else {
+						meeting.setCanEdit(request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId()));
+						if (request.getEventFilter().hasOption("role") && Roles.ADMIN_ROLE.equals(request.getEventFilter().getOption("role"))) {
+							meeting.setCanApprove(true);
+						} else if (request.getEventFilter().hasOption("role") && Roles.EVENT_MGR_ROLE.equals(request.getEventFilter().getOption("role"))) {
+							meeting.setCanApprove(m.getLocation() == null || 
+								(userDepartments != null && m.getLocation().getControllingDepartment() != null && userDepartments.contains(m.getLocation().getControllingDepartment()))
+								);
+						} else {
+							meeting.setCanApprove(false);
+						}
+					}
 					if (m.isApproved())
 						meeting.setApprovalDate(m.getApprovedDate());
 					if (m.getLocation() != null) {
