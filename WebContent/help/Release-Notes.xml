@@ -75,6 +75,15 @@
 				<line>When a reservation is created / updated while the student assistant is enabled (locking is not required in this case), notify the online sectioning server about an offering change.</line>
 			</description>
 		</item>
+		<item>
+			<name>Find Assignment, Compute Suggestions</name>
+			<description>
+				<line>When reservations are changed so that a student that is already enrolled in the course would not be able to enroll anymore:
+					<line>Ensure that the student will be able to remain in the course by creating a dummy reservation for the student and his/her current enrollment.</line>
+					<line>Without this change, a student (that no longer meets the required reservations) would not be able to make any changes in his/her schedule without dropping from the problematic course.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
