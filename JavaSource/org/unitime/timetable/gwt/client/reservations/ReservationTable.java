@@ -108,7 +108,7 @@ public class ReservationTable extends Composite {
 			iReservationPanel.addHeaderRow(iHeader);
 			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
 			if (editable) {
-				iHeader.addButton("add", "Add&nbsp;<u>R</u>eservation", 'r', (Integer)null, new ClickHandler() {
+				iHeader.addButton("add", "Add&nbsp;<u>R</u>eservation", new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						ToolBox.open("gwt.jsp?page=reservation&offering=" + iOfferingId);

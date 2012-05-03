@@ -119,7 +119,10 @@ public class UniTimeTable<T> extends FlexTable {
 				getFlexCellFormatter().setHorizontalAlignment(row, col, ((HasCellAlignment)widget).getCellAlignment());
 			if (widget instanceof  HasVerticalCellAlignment)
 				getFlexCellFormatter().setVerticalAlignment(row, col, ((HasVerticalCellAlignment)widget).getVerticalCellAlignment());
-			setWidget(row, col++, cell);
+			setWidget(row, col, cell);
+			if (row > 0 && col < getCellCount(0))
+				getCellFormatter().setVisible(row, col, getCellFormatter().isVisible(0, col));
+			col++;
 		}
 		if (data != null) {
 			DataChangedEvent<T> event = new DataChangedEvent<T>(data, row);

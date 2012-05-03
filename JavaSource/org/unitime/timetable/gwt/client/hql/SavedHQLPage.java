@@ -77,7 +77,7 @@ public class SavedHQLPage extends Composite {
 		iForm.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		iHeader = new UniTimeHeaderPanel("Filter");
-		iHeader.addButton("execute", "E<u>x</u>ecute", 'x', 75, new ClickHandler() {
+		iHeader.addButton("execute", "E<u>x</u>ecute", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iFirstLine = 0;
@@ -86,14 +86,14 @@ public class SavedHQLPage extends Composite {
 			}
 		});
 		
-		iHeader.addButton("print", "<u>P</u>rint", 'p', 75, new ClickHandler() {
+		iHeader.addButton("print", "<u>P</u>rint", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				Window.print();
 			}
 		});
 
-		iHeader.addButton("export", "Export&nbsp;<u>C</u>SV", 'c', 85, new ClickHandler() {
+		iHeader.addButton("export", "Export&nbsp;<u>C</u>SV", 85, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
@@ -140,7 +140,7 @@ public class SavedHQLPage extends Composite {
 		});
 
 		
-		iHeader.addButton("edit", "<u>E</u>dit", 'e', 75, new ClickHandler() {
+		iHeader.addButton("edit", "<u>E</u>dit", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				SavedHQLInterface.Query query = null;
@@ -158,7 +158,7 @@ public class SavedHQLPage extends Composite {
 			}
 		});
 		
-		iHeader.addButton("add", "<u>A</u>dd New", 'a', 75, new ClickHandler() {
+		iHeader.addButton("add", "<u>A</u>dd New", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				openDialog(null);
@@ -265,14 +265,14 @@ public class SavedHQLPage extends Composite {
 							});
 						}
 						iTableHeader = new UniTimeHeaderPanel("Results");
-						iTableHeader.addButton("previous", "Previous", null, 75, new ClickHandler() {
+						iTableHeader.addButton("previous", "Previous", 75, new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
 								iFirstLine -= 100;
 								execute();
 							}
 						});
-						iTableHeader.addButton("next", "Next", null, 75, new ClickHandler() {
+						iTableHeader.addButton("next", "Next", 75, new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
 								iFirstLine += 100;
@@ -358,7 +358,7 @@ public class SavedHQLPage extends Composite {
 			}
 			iDialogHeader = new UniTimeHeaderPanel();
 			iDialogForm.addBottomRow(iDialogHeader);
-			iDialogHeader.addButton("save", "Save", null, 75, new ClickHandler() {
+			iDialogHeader.addButton("save", "Save", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iDialogQuery.setName(iDialogName.getText());
@@ -401,7 +401,7 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
-			iDialogHeader.addButton("test", "Test", null, 75, new ClickHandler() {
+			iDialogHeader.addButton("test", "Test", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (iDialogQueryArea.getText().isEmpty()) {
@@ -427,7 +427,7 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
-			iDialogHeader.addButton("delete", "Delete", null, 75, new ClickHandler() {
+			iDialogHeader.addButton("delete", "Delete", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iService.delete(iDialogQuery.getId(), new AsyncCallback<Boolean>() {
@@ -444,7 +444,7 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
-			iDialogHeader.addButton("back", "Back", null, 75, new ClickHandler() {
+			iDialogHeader.addButton("back", "Back", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iDialog.hide();

@@ -84,7 +84,7 @@ public class TravelTimes extends Composite {
 	public TravelTimes() {
 		iForm = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel("Travel time in minutes");
-		iHeader.addButton("save", "<u>S</u>ave", 's', 75	, new ClickHandler(){
+		iHeader.addButton("save", "<u>S</u>ave", 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.showLoading();
@@ -106,7 +106,7 @@ public class TravelTimes extends Composite {
 				});
 			}
 		});
-		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler(){
+		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.clearMessage();
@@ -118,7 +118,7 @@ public class TravelTimes extends Composite {
 				iShow.setEnabled(true);
 			}
 		});
-		iHeader.addButton("edit", "<u>E</u>dit", 'e', 75, new ClickHandler(){
+		iHeader.addButton("edit", "<u>E</u>dit", 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.clearMessage();

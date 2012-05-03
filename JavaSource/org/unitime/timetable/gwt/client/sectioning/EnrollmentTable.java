@@ -113,7 +113,7 @@ public class EnrollmentTable extends Composite {
 		if (!showHeader)
 			iEnrollmentPanel.addBottomRow(iHeader);
 		
-		iHeader.addButton("approve", MESSAGES.buttonApproveSelectedEnrollments(), 'a', (Integer) null, new ClickHandler() {
+		iHeader.addButton("approve", MESSAGES.buttonApproveSelectedEnrollments(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iApprove != null && iApprove.isApplicable())
@@ -121,7 +121,7 @@ public class EnrollmentTable extends Composite {
 			}
 		});
 		
-		iHeader.addButton("reject", MESSAGES.buttonRejectSelectedEnrollments(), 'r', (Integer) null, new ClickHandler() {
+		iHeader.addButton("reject", MESSAGES.buttonRejectSelectedEnrollments(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iReject != null && iReject.isApplicable())
@@ -279,7 +279,7 @@ public class EnrollmentTable extends Composite {
 				dialog.setWidget(form);
 				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
 				dialog.setEscapeToHide(true);
-				buttons.addButton("assistant", MESSAGES.buttonAssistant(), 'a', (Integer)null, new ClickHandler() {
+				buttons.addButton("assistant", MESSAGES.buttonAssistant(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
 						LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(student.getName()));
@@ -299,7 +299,7 @@ public class EnrollmentTable extends Composite {
 				});
 				buttons.setEnabled("assistant", false);
 				if (iOnline) {
-					buttons.addButton("log", MESSAGES.buttonChangeLog(), 'l', (Integer) null, new ClickHandler() {
+					buttons.addButton("log", MESSAGES.buttonChangeLog(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
 							LoadingWidget.getInstance().show(MESSAGES.loadingChangeLog(student.getName()));
@@ -318,7 +318,7 @@ public class EnrollmentTable extends Composite {
 						}
 					});					
 				}
-				buttons.addButton("close", MESSAGES.buttonClose(), null, (Integer)null, new ClickHandler() {
+				buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						dialog.hide();

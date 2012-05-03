@@ -184,5 +184,9 @@ public class ToolBox {
 	public native static void setWhiteSpace(Style style, String value) /*-{
 		style["white-space"] = value;
 	}-*/;
+	
+	public native static void setMaxHeight(Style style, String value) /*-{
+		style["max-height"] = value;
+	}-*/;
 
 }

@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.services.SimpleEditService;
 import org.unitime.timetable.gwt.services.SimpleEditServiceAsync;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -55,7 +56,6 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -102,7 +102,8 @@ public class SimpleEditPage extends Composite {
 	private SimplePanel iSimple;
 	
 	private boolean iEditable = false;
-	private static TextArea sStudentsText = null;
+	private TextArea iStudentsText = null;
+	private Lookup iLookup;
 	
 	public SimpleEditPage() throws SimpleEditException {
 		String typeString = Window.Location.getParameter("type");
@@ -160,10 +161,10 @@ public class SimpleEditPage extends Composite {
 
 		iPanel = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("add", "<u>A</u>dd", 'a', 75, add);
-		iHeader.addButton("edit", "<u>E</u>dit", 'e', 75, edit);
-		iHeader.addButton("save", "<u>S</u>ave", 's', 75, save);
-		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, back);
+		iHeader.addButton("add", "<u>A</u>dd", 75, add);
+		iHeader.addButton("edit", "<u>E</u>dit", 75, edit);
+		iHeader.addButton("save", "<u>S</u>ave", 75, save);
+		iHeader.addButton("back", "<u>B</u>ack", 75, back);
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
@@ -209,8 +210,18 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 		
-		Lookup.getInstance().setOptions("mustHaveExternalId,source=students");
-		Lookup.getInstance().setCallback(createLookupCallback());
+		iLookup = new Lookup();
+		iLookup.setOptions("mustHaveExternalId,source=students");
+		iLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				PersonInterface student = event.getValue();
+				if (student != null) {
+					iStudentsText.setValue(iStudentsText.getValue() + (iStudentsText.getValue().isEmpty() ? "" : "\n")
+							+ student.getId() + " " + student.getLastName() + ", " + student.getFirstName() + (student.getMiddleName() == null ? "" : " " + student.getMiddleName()), true);
+				}
+			}
+		});
 		
 		load();
 	}
@@ -220,7 +231,7 @@ public class SimpleEditPage extends Composite {
 		UniTimePageLabel.getInstance().setPageName((record.getUniqueId() == null ? "Add " : "Edit ") + iData.getType().getTitleSingular());
 		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
 		
-		header.addButton("save", "<u>S</u>ave", 's', 75, new ClickHandler() {
+		header.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				final Set<Long> old = new HashSet<Long>();
@@ -265,7 +276,7 @@ public class SimpleEditPage extends Composite {
 		});
 		
 		if (record.getUniqueId() != null && record.isDeletable()) {
-			header.addButton("delete", "<u>D</u>elete", 'd', 75, new ClickHandler() {
+			header.addButton("delete", "<u>D</u>elete", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iData.getRecords().clear();
@@ -290,7 +301,7 @@ public class SimpleEditPage extends Composite {
 			});
 		}
 		
-		header.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler() {
+		header.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iSimple.setWidget(iPanel);
@@ -602,8 +613,8 @@ public class SimpleEditPage extends Composite {
 						lookup.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
-								sStudentsText = text;
-								Lookup.getInstance().center();
+								iStudentsText = text;
+								iLookup.center();
 							}
 						});
 						students.add(lookup);
@@ -636,14 +647,14 @@ public class SimpleEditPage extends Composite {
 								});
 								form.addRow(text);
 								UniTimeHeaderPanel header = new UniTimeHeaderPanel();
-								header.addButton("lookup", "<u>L</u>ookup", 'l', 75, new ClickHandler() {
+								header.addButton("lookup", "<u>L</u>ookup", 75, new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
-										sStudentsText = text;
-										Lookup.getInstance().center();
+										iStudentsText = text;
+										iLookup.center();
 									}
 								});
-								header.addButton("close", "<u>C</u>lose", 'c', 75, new ClickHandler() {
+								header.addButton("close", "<u>C</u>lose", 75, new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
 										dialog.hide();
@@ -748,16 +759,5 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 	}
-	
-	public static void personFound(String externalUniqueId, String name) {
-		sStudentsText.setValue(sStudentsText.getValue() + (sStudentsText.getValue().isEmpty() ? "" : "\n") + externalUniqueId + " " + name, true);
-	}
-	
-	private native JavaScriptObject createLookupCallback() /*-{
-		return function(person) {
-			@org.unitime.timetable.gwt.client.admin.SimpleEditPage::personFound(Ljava/lang/String;Ljava/lang/String;)(person[0],
-				person[3] + ", " + person[1] + (person[2] == null ? "" : " " + person[2]));
-		};
-	}-*/;
 
 }
