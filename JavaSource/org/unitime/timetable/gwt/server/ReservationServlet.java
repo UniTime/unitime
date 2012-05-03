@@ -67,6 +67,7 @@ import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -656,6 +657,10 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				}
 				hibSession.saveOrUpdate(r);
 				hibSession.saveOrUpdate(r.getInstructionalOffering());
+				if (offering.getSession().getStatusType().canSectionAssistStudents()) {
+					if (!offering.getSession().isOfferingLocked(offering.getUniqueId()))
+						StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
+				}
 				hibSession.flush();
 				return r.getUniqueId();
 			} finally {
