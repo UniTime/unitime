@@ -71,6 +71,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Other</title>
+		<item>
+			<name>HQL Reports</name>
+			<description>
+				<line>Sorting by: When comparing two cells, if both cells are numbers then compare cells as numbers.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible</name>
