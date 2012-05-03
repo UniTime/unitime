@@ -2086,6 +2086,11 @@ div.gwt-MenuBarPopup {
 	color: red;
 }
 
+.unitime-EventMeetings .not-approved-past {
+	font-style: italic;
+	color: orange;
+}
+
 .unitime-EventMeetings .new-meeting {
 	font-style: italic;
 	color: blue;

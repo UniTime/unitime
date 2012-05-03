@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -67,7 +68,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRespons
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -130,14 +130,11 @@ public class EventResourceTimetable extends Composite {
 	private RoomFilterBox iRooms = null;
 	private String iLocDate = null, iLocRoom = null;
 	private MeetingClickHandler iMeetingClickHandler;
-	
-	private static EventResourceTimetable sInstance = null;
+	private Lookup iLookup;
 	
 	private EventPropertiesRpcResponse iProperties;
 	
 	public EventResourceTimetable(String type) {
-		sInstance = this; 
-		
 		iLocDate = Window.Location.getParameter("date");
 		iLocRoom = Window.Location.getParameter("room");
 		
@@ -146,27 +143,38 @@ public class EventResourceTimetable extends Composite {
 		iFilter.getColumnFormatter().setWidth(0, "120px");
 		
 		iFilterHeader = new UniTimeHeaderPanel("Filter");
-		iFilterHeader.addButton("search", "<u>S</u>earch", 's', 75, new ClickHandler() {
+		iFilterHeader.addButton("search", "<u>S</u>earch", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				resourceTypeChanged(true);
 			}
 		});
-		Lookup.getInstance().setOptions("mustHaveExternalId");
-		Lookup.getInstance().setCallback(createLookupCallback());
-		iFilterHeader.addButton("lookup", "<u>L</u>ookup", 'l', 75, new ClickHandler() {
+		iLookup = new Lookup();
+		iLookup.setOptions("mustHaveExternalId");
+		iLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				if (event.getValue() != null) {
+					iResources.setText(event.getValue().getId());
+					resourceTypeChanged(false);
+				}
+			}
+		});
+		iFilterHeader.addButton("lookup", "<u>L</u>ookup", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				Lookup.getInstance().center();
+				iLookup.center();
 			}
 		});
 		iFilterHeader.setEnabled("lookup", false);
-		iFilterHeader.addButton("add", "<u>A</u>dd Event", 'a', 75, new ClickHandler() {
+		iFilterHeader.addButton("add", "<u>A</u>dd Event", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEventAdd.reset(iRooms.getValue(),
 						(iTimeGrid == null ? null : iTimeGrid.getSelections()),
-						iProperties == null ? null : iProperties.getMainContact());
+						iLookup.getValue() != null ? new EventInterface.ContactInterface(iLookup.getValue()) :
+							iProperties == null ? null : iProperties.getMainContact(),
+						(iProperties == null ? false : iProperties.isCanLookupPeople()));
 				iEventAdd.show();
 			}
 		});
@@ -178,7 +186,7 @@ public class EventResourceTimetable extends Composite {
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
 				if (iSession.getAcademicSessionId() != null)
-					Lookup.getInstance().setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+					iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
 			}
 			
 			@Override
@@ -345,7 +353,7 @@ public class EventResourceTimetable extends Composite {
 			iPanel.getRowFormatter().setVisible(i, false);
 		iGridPanel.setVisible(false);
 					
-		iHeader.addButton("print", "<u>P</u>rint", 'p', 75, new ClickHandler() {
+		iHeader.addButton("print", "<u>P</u>rint", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
 				
@@ -370,7 +378,7 @@ public class EventResourceTimetable extends Composite {
 						);
 			}
 		});
-		iHeader.addButton("export", "E<u>x</u>port", 'x', 75, new ClickHandler() {
+		iHeader.addButton("export", "E<u>x</u>port", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
 				if (iTimeGrid.getCalendarUrl() != null)
@@ -516,7 +524,7 @@ public class EventResourceTimetable extends Composite {
 	
 	private void resourceTypeChanged(boolean allowEmptyResource) {
 		if (iSession.getAcademicSessionId() != null)
-			Lookup.getInstance().setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+			iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
 		ResourceType type = getResourceType();
 		if (type != null) {
 			if (type == ResourceType.ROOM) {
@@ -1061,8 +1069,8 @@ public class EventResourceTimetable extends Composite {
 				if (!date.isEmpty()) { date += "<br>"; time += "<br>"; room += "<br>"; approved += "<br>"; }
 				if (prevPast != m.isPast() || !prevDate.equals(meetingDates))
 					date += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + meetingDates + (m.isPast() ? "</span>" : "");
-				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime()))
-					time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime() + (m.isPast() ? "</span>" : "");
+				if (prevPast != m.isPast() || !prevTime.equals(m.getMeetingTime(CONSTANTS.useAmPm())))
+					time += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getMeetingTime(CONSTANTS.useAmPm()) + (m.isPast() ? "</span>" : "");
 				if (prevPast != m.isPast() || !prevRoom.equals(m.getApprovalDate())) {
 					room += (m.isPast() ? "<span style='font-style:italic;color:gray;'>" : "") + m.getLocationNameWithHint() + (m.isPast() ? "</span>" : "");
 				}
@@ -1074,7 +1082,7 @@ public class EventResourceTimetable extends Composite {
 					}
 				}
 				prevPast = m.isPast(); prevApproved = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "-");
-				prevDate = meetingDates; prevTime = m.getMeetingTime(); prevRoom = m.getLocationName();
+				prevDate = meetingDates; prevTime = m.getMeetingTime(CONSTANTS.useAmPm()); prevRoom = m.getLocationName();
 			}
 			line.add(new HTML(date, false));
 			line.add(new HTML(time, false));
@@ -1148,19 +1156,12 @@ public class EventResourceTimetable extends Composite {
 		}
 	}
 	
-	public static void personFound(String externalUniqueId) {
-		sInstance.iResources.setText(externalUniqueId);
-		sInstance.resourceTypeChanged(false);
-	}
-	
 	private String serialize(IsSerializable object) throws SerializationException {
 		SerializationStreamFactory factory = (SerializationStreamFactory)RPC;
 		SerializationStreamWriter writer = factory.createStreamWriter();
 		writer.writeObject(object);
 		return URL.encodeQueryString(writer.toString());
 	}
-	
-	
 	
 	protected void changeUrl() {
 		FilterRpcRequest events = iEvents.getElementsRequest();
@@ -1223,12 +1224,6 @@ public class EventResourceTimetable extends Composite {
 				(iRooms.getValue().isEmpty() ? "" : "&rooms=" + URL.encodeQueryString(iRooms.getValue().trim())) +
 				(iLocRoom.isEmpty() ? "" : "&room=" + URL.encodeQueryString(iLocRoom)));
 	}
-	
-	private native JavaScriptObject createLookupCallback() /*-{
-		return function(person) {
-			@org.unitime.timetable.gwt.client.events.EventResourceTimetable::personFound(Ljava/lang/String;)(person[0]);
-	    };
-	 }-*/;
 	
 	private native static void changeUrl(String page, String query) /*-{
 		try {

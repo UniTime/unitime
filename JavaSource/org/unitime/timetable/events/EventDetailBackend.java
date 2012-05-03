@@ -8,10 +8,12 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
@@ -27,6 +29,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInt
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -43,6 +46,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamEvent;
@@ -78,8 +82,7 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 		
 		checkAccess(event, helper);
 		
-		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event);
-		detail.setCanEdit(canEdit(event, helper));
+		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, helper.getUser());
 		
 		return detail;
 	}
@@ -106,9 +109,17 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 	}
 		
 	
-	public EventInterface getEventDetail(Session session, Event e) throws EventException {
+	public EventInterface getEventDetail(Session session, Event e, User user) throws EventException {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		Date now = new Date();
+		
+        Set<Department> userDepartments = null;
+		if (user != null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+			TimetableManager mgr = TimetableManager.getManager(user);
+			if (mgr != null)
+				userDepartments = mgr.getDepartments();
+		}
+
 		
 		EventInterface event = new EventInterface();
 		event.setId(e.getUniqueId());
@@ -355,6 +366,25 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			}
     		
     	}
+    	
+    	// overlaps
+    	Map<Long, Set<Meeting>> overlaps = new HashMap<Long, Set<Meeting>>();
+    	for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
+				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o "+
+				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
+				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and " +
+				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
+				.setLong("eventId", e.getUniqueId())
+				.list()) {
+    		Long meetingId = (Long)o[0];
+    		Meeting overlap = (Meeting)o[1];
+    		Set<Meeting> overlapsThisMeeting = overlaps.get(meetingId);
+    		if (overlapsThisMeeting == null) {
+    			overlapsThisMeeting = new TreeSet<Meeting>();
+    			overlaps.put(meetingId, overlapsThisMeeting);
+    		}
+    		overlapsThisMeeting.add(overlap);
+		}
     		
     	for (Meeting m: e.getMeetings()) {
 			MeetingInterface meeting = new MeetingInterface();
@@ -364,7 +394,6 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			meeting.setStartTime(m.getStartTime().getTime());
 			meeting.setStopTime(m.getStopTime().getTime());
 			meeting.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
-			meeting.setMeetingTime(m.startTime() + " - " + m.stopTime());
 			meeting.setStartSlot(m.getStartPeriod());
 			meeting.setEndSlot(m.getStopPeriod());
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
@@ -372,6 +401,20 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			meeting.setPast(m.getStartTime().before(now));
 			if (m.isApproved())
 				meeting.setApprovalDate(m.getApprovedDate());
+			if (user == null) {
+				meeting.setCanEdit(false);
+			} else {
+				meeting.setCanEdit(user.getId().equals(m.getEvent().getMainContact().getExternalUniqueId()));
+				if (Roles.ADMIN_ROLE.equals(user.getRole())) {
+					meeting.setCanApprove(true);
+				} else if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+					meeting.setCanApprove(m.getLocation() == null || 
+							(userDepartments != null && m.getLocation().getControllingDepartment() != null && userDepartments.contains(m.getLocation().getControllingDepartment()))
+							);
+				} else {
+					meeting.setCanApprove(false);
+				}
+			}
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);
@@ -382,6 +425,29 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 				location.setRoomType(m.getLocation().getRoomTypeLabel());
 				meeting.setLocation(location);
 			}
+			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());
+			if (overlapsThisMeeting != null) {
+				for (Meeting overlap: overlapsThisMeeting) {
+					MeetingConglictInterface conflict = new MeetingConglictInterface();
+
+					conflict.setEventId(overlap.getEvent().getUniqueId());
+					conflict.setName(overlap.getEvent().getEventName());
+					conflict.setType(EventInterface.EventType.values()[overlap.getEvent().getEventType()]);
+					
+					conflict.setId(overlap.getUniqueId());
+					conflict.setMeetingDate(overlap.getMeetingDate());
+					conflict.setDayOfYear(meeting.getDayOfYear());
+					conflict.setStartSlot(overlap.getStartPeriod());
+					conflict.setEndSlot(overlap.getStopPeriod());
+					conflict.setStartOffset(overlap.getStartOffset() == null ? 0 : overlap.getStartOffset());
+					conflict.setEndOffset(overlap.getStopOffset() == null ? 0 : overlap.getStopOffset());
+					if (overlap.isApproved())
+						conflict.setApprovalDate(overlap.getApprovedDate());
+					
+					meeting.addConflict(conflict);
+				}
+			}
+			
 			event.addMeeting(meeting);
 		}
     	

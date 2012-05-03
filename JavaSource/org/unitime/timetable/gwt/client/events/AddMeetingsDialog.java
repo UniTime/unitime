@@ -28,12 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.GwtHint;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
-import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -108,7 +109,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iDatesForm = new SimpleForm();
 		
 		iDatesHeader = new UniTimeHeaderPanel();
-		iDatesHeader.addButton("next", "<u>N</u>ext", 'n', 75, new ClickHandler() {
+		iDatesHeader.addButton("next", "<u>N</u>ext", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iDates.getValue().isEmpty()) {
@@ -150,7 +151,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		iAvailabilityHeader = new UniTimeHeaderPanel();
 		
-		iAvailabilityHeader.addButton("dates", "<u>P</u>revious", 'd', "75px", new ClickHandler() {
+		iAvailabilityHeader.addButton("dates", "<u>P</u>revious", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				setWidget(iDatesForm);
@@ -158,19 +159,19 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				iResponse = null;
 			}
 		});
-		iAvailabilityHeader.addButton("prev", "&laquo;", (Character)null, (String)null, new ClickHandler() {
+		iAvailabilityHeader.addButton("prev", "&laquo;", new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex - 10);
 			}
 		});
-		iAvailabilityHeader.addButton("next", "&raquo;", (Character)null, (String)null, new ClickHandler() {
+		iAvailabilityHeader.addButton("next", "&raquo;", new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex + 10);
 			}
 		});
-		iAvailabilityHeader.addButton("select", "<u>S</u>elect", 's', "75px", new ClickHandler() {
+		iAvailabilityHeader.addButton("select", "<u>S</u>elect", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -184,7 +185,6 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setMeetingDate(date);
 							meeting.setStartSlot(getStartSlot());
 							meeting.setEndSlot(getEndSlot());
-							meeting.setMeetingTime(TimeSelector.slot2short(getStartSlot()) + " - " + TimeSelector.slot2short(getEndSlot()));
 							meeting.setStartOffset(0);
 							meeting.setEndOffset(0); //TODO: add ability to enter offsets
 
@@ -212,7 +212,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iRoomAvailability = new P("unitime-MeetingSelection");
 		
 		iScroll = new ScrollPanel(iRoomAvailability);
-		iScroll.getElement().getStyle().setProperty("max-height", (Window.getClientHeight() - 200) + "px");
+		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
+		
 		iStep = (Window.getClientWidth() - 200) / 100;
 		
 		iAvailabilityForm.addRow("", iScroll);
@@ -330,7 +331,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			row = new P("row"); box.add(row);
 			
 			P day = new P("date");
-			day.setHTML(sDayOfWeek.format(date) + "<br>" + sDateFormat.format(date) + "<br>" + TimeSelector.slot2short(getStartSlot()) + " - " + TimeSelector.slot2short(getEndSlot()));
+			day.setHTML(sDayOfWeek.format(date) + "<br>" + sDateFormat.format(date) + "<br>" + TimeUtils.slot2short(getStartSlot()) + " - " + TimeUtils.slot2short(getEndSlot()));
 			row.add(day);
 			day.addMouseDownHandler(new MouseDownHandler() {
 				@Override

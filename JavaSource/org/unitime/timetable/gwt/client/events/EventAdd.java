@@ -22,10 +22,10 @@ package org.unitime.timetable.gwt.client.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
-import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
@@ -53,6 +54,8 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -85,13 +88,42 @@ public class EventAdd extends Composite {
 	
 	private AddMeetingsDialog iEventAddMeetings;
 	private AcademicSessionProvider iSession;
+	private Lookup iLookup;
 			
 	public EventAdd(AcademicSessionProvider session) {
 		iSession = session;
 		iForm = new SimpleForm();
 		
+		iLookup = new Lookup();
+		iLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				if (event.getValue() != null) {
+					iMainFName.setText(event.getValue().getFirstName() == null ? "" : event.getValue().getFirstName());
+					iMainMName.setText(event.getValue().getMiddleName() == null ? "" : event.getValue().getMiddleName());
+					iMainLName.setText(event.getValue().getLastName() == null ? "" : event.getValue().getLastName());
+					iMainPhone.setText(event.getValue().getPhone() == null ? "" : event.getValue().getPhone());
+					iMainEmail.setText(event.getValue().getEmail() == null ? "" : event.getValue().getEmail());
+				}
+			}
+		});
+		iLookup.setOptions("mustHaveExternalId" + (iSession.getAcademicSessionId() == null ? "" : ",session=" + iSession.getAcademicSessionId()));
+		iSession.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
+			@Override
+			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
+				iLookup.setOptions("mustHaveExternalId,session=" + event.getNewAcademicSessionId());
+			}
+		});
+		
 		iHeader = new UniTimeHeaderPanel("Event");
-		iHeader.addButton("back", "<u>B</u>ack", 'b', 75, new ClickHandler() {
+		iHeader.addButton("lookup", "<u>L</u>ookup Contact", 125, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iLookup.setQuery((iMainFName.getText() + (iMainMName.getText().isEmpty() ? "" : " " + iMainMName.getText()) + " " + iMainLName.getText()).trim()); 
+				iLookup.center();
+			}
+		});
+		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -200,12 +232,26 @@ public class EventAdd extends Composite {
 
 			@Override
 			public void onSuccess(List<MeetingInterface> result) {
-				addMeetings(result);
+				LoadingWidget.getInstance().show("Checking room availability...");
+				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						iHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+						LoadingWidget.getInstance().hide();
+						addMeetings(result.getMeetings());
+					}
+				});
+				// addMeetings(result);
 			}
 		});
 		
 		iMeetingsHeader = new UniTimeHeaderPanel("Meetings");
-		iMeetingsHeader.addButton("add", "<u>A</u>dd", 'a', 75, new ClickHandler() {
+		iMeetingsHeader.addButton("add", "<u>A</u>dd", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEventAddMeetings.showDialog();
@@ -269,7 +315,7 @@ public class EventAdd extends Composite {
 		}
 	}
 	
-	public void reset(String roomFilterValue, List<SelectionInterface> selection, ContactInterface mainContact) {
+	public void reset(String roomFilterValue, List<SelectionInterface> selection, ContactInterface mainContact, boolean canLookup) {
 		iHeader.clearMessage();
 		iName.setText("");
 		iSponsors.setSelectedIndex(0);
@@ -280,6 +326,7 @@ public class EventAdd extends Composite {
 		iNotes.setText("");
 		iEmails.setText("");
 		iCourses.reset();
+		iHeader.setEnabled("lookup", canLookup);
 		
 		iMeetings.clearTable(1);
 		if (selection != null && !selection.isEmpty()) {
@@ -292,7 +339,6 @@ public class EventAdd extends Composite {
 						meeting.setEndSlot(s.getStartSlot() + s.getLength());
 						meeting.setStartOffset(0);
 						meeting.setEndOffset(0);
-						meeting.setMeetingTime(TimeSelector.slot2short(meeting.getStartSlot()) + " - " + TimeSelector.slot2short(meeting.getEndSlot()));
 						meeting.setDayOfYear(day);
 						meeting.setLocation(room);
 						meetings.add(meeting);

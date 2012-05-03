@@ -53,23 +53,65 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Clear Selection")
 	String opClearSelection();
 	
-	@DefaultMessage("Remove Selected Meetings")
+	@DefaultMessage("&#10007; Remove")
 	String opDeleteSelectedMeetings();
 	
-	@DefaultMessage("Remove All New Meetings")
+	@DefaultMessage("&#10008 Remove All")
 	String opDeleteNewMeetings();
 	
-	@DefaultMessage("Add Meetings")
+	@DefaultMessage("Setup Times ...")
+	String opChangeOffsets();
+	
+	@DefaultMessage("<b><i>+</i></b> Add Meetings ...")
 	String opAddMeetings();
 
 	@DefaultMessage("Sort by {0}")
 	String opSortBy(String column);
 	
+	@DefaultMessage("&#9744; {0}")
+	String opShow(String column);
+
+	@DefaultMessage("&#9746; {0}")
+	String opHide(String column);
+	
+	@DefaultMessage("&#10003; Approve ...")
+	String opApproveSelectedMeetings();
+
+	@DefaultMessage("&#10004; Approve All ...")
+	String opApproveAllMeetings();
+
+	@DefaultMessage("&#10007; Reject ...")
+	String opRejectSelectedMeetings();
+
+	@DefaultMessage("&#10008; Reject All ...")
+	String opRejectAllMeetings();
+
+	@DefaultMessage("<i>?</i> Inquire ...")
+	String opInquireSelectedMeetings();
+
+	@DefaultMessage("<b><i>?</i></b> Inquire ...")
+	String opInquireAllMeetings();
+
 	@DefaultMessage("Date")
 	String colDate();
 
-	@DefaultMessage("Time")
-	String colTime();
+	@DefaultMessage("Published Time")
+	String colPublishedTime();
+
+	@DefaultMessage("Allocated Time")
+	String colAllocatedTime();
+
+	@DefaultMessage("Setup")
+	String colSetupTimeShort();
+
+	@DefaultMessage("Setup Time")
+	String colSetupTime();
+
+	@DefaultMessage("Teardown")
+	String colTeardownTimeShort();
+
+	@DefaultMessage("Teardown Time")
+	String colTeardownTime();
 
 	@DefaultMessage("Location")
 	String colLocation();
@@ -86,6 +128,33 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("not approved")
 	String approvalNotApproved();
 
+	@DefaultMessage("not approved")
+	String approvalNotApprovedPast();
+
 	@DefaultMessage("new meeting")
 	String approvalNewMeeting();
+	
+	@DefaultMessage("midnight")
+	String timeMidnitgh();
+
+	@DefaultMessage("noon")
+	String timeNoon();
+	
+	@DefaultMessage("all day")
+	String timeAllDay();
+	
+	@DefaultMessage("Setup / Teardown Times")
+	String dlgChangeOffsets();
+	
+	@DefaultMessage("Setup Time:")
+	String propSetupTime();
+
+	@DefaultMessage("Teardown Time:")
+	String propTeardownTime();
+	
+	@DefaultMessage("<u>O</u>k")
+	String buttonOk();
+
+	@DefaultMessage("<u>C</u>ancel")
+	String buttonCancel();
 }
