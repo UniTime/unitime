@@ -32,6 +32,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -45,6 +47,7 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class UniTimeHeaderPanel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	private static RegExp sAcessKeyRegExp = RegExp.compile("<u>(\\w)</u>", "i");
 
 	private HashMap<String, Integer> iOperations = new HashMap<String, Integer>();
 	private HTML iMessage;
@@ -185,11 +188,26 @@ public class UniTimeHeaderPanel extends Composite {
 			clone.showLoading();
 	}
 
+	@Deprecated
 	public void addButton(String operation, String name, Character accessKey, Integer width, ClickHandler clickHandler) {
 		addButton(operation, name, accessKey, width == null ? null : width + "px", clickHandler);
 	}
 	
-	public void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
+	public void addButton(String operation, String name, ClickHandler clickHandler) {
+		addButton(operation, name, null, clickHandler);
+	}
+	
+	public void addButton(String operation, String name, Integer width, ClickHandler clickHandler) {
+		addButton(operation, name, guessAccessKey(name), width == null ? null : width + "px", clickHandler);
+	}
+	
+	public static Character guessAccessKey(String name) {
+		if (name == null || name.isEmpty()) return null;
+		MatchResult result = sAcessKeyRegExp.exec(name);
+		return (result == null ? null : result.getGroup(1).toLowerCase().charAt(0));
+	}
+
+	private void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
 		Button button = new Button(name, clickHandler);
 		ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
 		if (accessKey != null)

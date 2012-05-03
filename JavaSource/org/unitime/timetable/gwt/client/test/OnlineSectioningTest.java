@@ -160,7 +160,7 @@ public class OnlineSectioningTest extends Composite {
 		iLog = new VerticalPanel();
 		form.addRow("Log:", iLog);
 		
-		iHeader.addButton("start", "<u>S</u>tart", 's', 75, new ClickHandler() {
+		iHeader.addButton("start", "<u>S</u>tart", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				try {
@@ -177,7 +177,7 @@ public class OnlineSectioningTest extends Composite {
 			}
 		});
 		
-		iHeader.addButton("stop", "Sto<u>p</u>", 'p', 75, new ClickHandler() {
+		iHeader.addButton("stop", "Sto<u>p</u>", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				try {
@@ -197,7 +197,7 @@ public class OnlineSectioningTest extends Composite {
 		iHeader.setEnabled("start", false);
 		iHeader.setEnabled("stop", false);
 
-		iHeader.addButton("clear", "<u>C</u>lear", 'c', 75, new ClickHandler() {
+		iHeader.addButton("clear", "<u>C</u>lear", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iLog.clear();

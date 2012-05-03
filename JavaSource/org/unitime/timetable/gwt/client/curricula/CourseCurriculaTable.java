@@ -290,7 +290,7 @@ public class CourseCurriculaTable extends Composite {
 		iHeader.setCollapsible(showHeader ? CurriculumCookie.getInstance().getCurriculaCoursesDetails() : null);
 		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		if (showHeader) {
-			iHeader.addButton("operations", "Curricula&nbsp;<u>O</u>perations&nbsp;&or;", 'o', (Integer)null, iMenu);
+			iHeader.addButton("operations", "Curricula&nbsp;<u>O</u>perations&nbsp;&or;", (Integer)null, iMenu);
 			iHeader.setEnabled("operations", false);
 			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
 		}

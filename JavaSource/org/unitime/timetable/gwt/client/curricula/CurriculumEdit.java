@@ -273,13 +273,13 @@ public class CurriculumEdit extends Composite {
 		iCurriculaTable = new SimpleForm();
 
 		iTitleAndButtons = new UniTimeHeaderPanel("Curriculum Details");
-		iTitleAndButtons.addButton("edit", "<u>E</u>dit", 'e', 75, editHandler);
-		iTitleAndButtons.addButton("save", "<u>S</u>ave", 's', 75, saveHandler);
-		iTitleAndButtons.addButton("previous", "<u>P</u>revious", 'p', 75, previousHandler);
-		iTitleAndButtons.addButton("next", "<u>N</u>ext", 'n', 75, nextHandler);
-		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 'd', 75, deleteHandler);
-		iTitleAndButtons.addButton("print", "Prin<u>t</u>", 't', 75, printHandler);
-		iTitleAndButtons.addButton("back", "<u>B</u>ack", 'b', 75, backHandler);
+		iTitleAndButtons.addButton("edit", "<u>E</u>dit", 75, editHandler);
+		iTitleAndButtons.addButton("save", "<u>S</u>ave", 75, saveHandler);
+		iTitleAndButtons.addButton("previous", "<u>P</u>revious", 75, previousHandler);
+		iTitleAndButtons.addButton("next", "<u>N</u>ext", 75, nextHandler);
+		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 75, deleteHandler);
+		iTitleAndButtons.addButton("print", "Prin<u>t</u>", 75, printHandler);
+		iTitleAndButtons.addButton("back", "<u>B</u>ack", 75, backHandler);
 		
 		
 		iCurriculaTable.addHeaderRow(iTitleAndButtons);
