@@ -53,15 +53,16 @@ public class GwtHint extends PopupPanel {
 	
 	public static native void createTriggers()/*-{
 		$wnd.showGwtHint = function(source, content) {
-			@org.unitime.timetable.gwt.client.GwtHint::showHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
+			@org.unitime.timetable.gwt.client.GwtHint::_showHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
 		};
 		$wnd.hideGwtHint = function() {
 			@org.unitime.timetable.gwt.client.GwtHint::hideHint()();
 		};
 	}-*/;
 	
-	public static void showHint(JavaScriptObject source, String content) {
-		showHint(source.cast(), content);
+	/** Never use from GWT code */
+	public static void _showHint(JavaScriptObject source, String content) {
+		showHint((Element) source.cast(), content);
 	}
 	
 	public static void showHint(final Element relativeObject, String content) {
