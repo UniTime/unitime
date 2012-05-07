@@ -451,8 +451,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				EventInterface.equals(getLocation(), m.getLocation()) && getStartSlot() == m.getStartSlot() && getEndSlot() == m.getEndSlot();
 		}
 		
+		@SuppressWarnings("deprecation")
 		@Override
-		public String toString() { return (getId() == null ? "" : getId().toString()); }
+		public String toString() {
+			return (getId() == null ?
+					(getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDay() + " ") + 
+					getAllocatedTime(true) + (getLocation() == null ? "" : " " + getLocationName()) :
+					getId().toString());
+		}
 	}
 	
 	public static class MeetingConglictInterface extends MeetingInterface {
@@ -732,6 +738,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iDate, iTime, iConflicts;
     	private List<String> iExternalIds;
     	private String iSectionNumber = null;
+    	private long[] iSelection = null;
 
     	public static enum RelatedObjectType {
     		Offering,
@@ -811,6 +818,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getConflicts() { return iConflicts; }
 		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
 		public void setConflicts(String conflicts) { iConflicts = conflicts; }
+		
+		public long[] getSelection() { return iSelection; }
+		public boolean hasSelection() { return iSelection != null; }
+		public void setSelection(long[] selection) { iSelection = selection; }
+		
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof RelatedObjectInterface)) return false;
+			RelatedObjectInterface r = (RelatedObjectInterface)o;
+			return getType() == r.getType() && getUniqueId().equals(r.getUniqueId());
+		}
+		
+		public int hashCode() { return getUniqueId().hashCode(); }
+		
+		public String toString() {
+			return getName() + " (" + getType() + ")";
+		}
     }
     
 	public static class SelectionInterface implements IsSerializable {
@@ -1193,7 +1216,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class EventRoomAvailabilityRpcRequest implements GwtRpcRequest<EventRoomAvailabilityRpcResponse> {
 		private Long iSessionId;
 		private Integer iStartSlot, iEndSlot;
-		private List<Date> iDates;
+		private List<Integer> iDates;
 		private List<Long> iLocations;
 		private List<MeetingInterface> iMeetings;
 		
@@ -1205,9 +1228,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setEndSlot(Integer endSlot) { iEndSlot = endSlot; }
 		public Integer getEndSlot() { return iEndSlot; }
 		
-		public void setDates(List<Date> dates) { iDates = dates; }
+		public void setDates(List<Integer> dates) { iDates = dates; }
 		public boolean hasDates() { return iDates != null && !iDates.isEmpty(); }
-		public List<Date> getDates() { return iDates; }
+		public List<Integer> getDates() { return iDates; }
 		
 		public void setLocations(List<Long> locations) { iLocations = locations; }
 		public boolean hasLocations() { return iLocations != null && !iLocations.isEmpty(); }
@@ -1220,7 +1243,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getSessionId() { return iSessionId; }
 
-		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Date> dates, List<FilterRpcResponse.Entity> locations, Long sessionId) {
+		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Integer> dates, List<FilterRpcResponse.Entity> locations, Long sessionId) {
 			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
 			request.setStartSlot(startSlot);
 			request.setEndSlot(endSlot);
@@ -1245,7 +1268,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventRoomAvailabilityRpcResponse implements GwtRpcResponse {
-		private Map<Date, Map<Long, Set<MeetingConglictInterface>>> iOverlaps = new HashMap<Date, Map<Long, Set<MeetingConglictInterface>>>();
+		private Map<Integer, Map<Long, Set<MeetingConglictInterface>>> iOverlaps = new HashMap<Integer, Map<Long, Set<MeetingConglictInterface>>>();
 		private List<MeetingInterface> iMeetings;
 		
 		public EventRoomAvailabilityRpcResponse() {}
@@ -1254,7 +1277,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
 		public List<MeetingInterface> getMeetings() { return iMeetings; }
 		
-		public void addOverlap(Date date, Long locationId, MeetingConglictInterface conflict) {
+		public void addOverlap(Integer date, Long locationId, MeetingConglictInterface conflict) {
 			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
 			if (loc2overlaps == null) {
 				loc2overlaps = new HashMap<Long, Set<MeetingConglictInterface>>();
@@ -1268,12 +1291,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			overlaps.add(conflict);
 		}
 		
-		public boolean isAvailable(Date date, Long locationId) {
+		public boolean isAvailable(Integer date, Long locationId) {
 			Set<MeetingConglictInterface> overlaps = getOverlaps(date, locationId);
 			return (overlaps == null || overlaps.isEmpty());
 		}
 		
-		public Set<MeetingConglictInterface> getOverlaps(Date date, Long locationId) {
+		public Set<MeetingConglictInterface> getOverlaps(Integer date, Long locationId) {
 			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
 			return (loc2overlaps == null ? null : loc2overlaps.get(locationId));
 		}
@@ -1373,6 +1396,47 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (o == null || ! (o instanceof RelatedObjectLookupRpcResponse)) return false;
 			RelatedObjectLookupRpcResponse r = (RelatedObjectLookupRpcResponse)o;
 			return EventInterface.equals(getLevel(), r.getLevel()) && EventInterface.equals(getUniqueId(), r.getUniqueId());
+		}
+		
+		public String toString() {
+			return getLevel() + "@" + getUniqueId() + " " + getLabel();
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.GetEnrollmentsFromRelatedObjectsBackend")
+	public static class GetEnrollmentsFromRelatedObjectsRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
+		private List<RelatedObjectInterface> iRelatedObjects = null;
+		private List<MeetingInterface> iMeetings = null;
+		private Long iEventId;
+		
+		public GetEnrollmentsFromRelatedObjectsRpcRequest() {}
+		public GetEnrollmentsFromRelatedObjectsRpcRequest(List<RelatedObjectInterface> objects, List<MeetingInterface> meetings, Long eventId) {
+			iRelatedObjects = objects;
+			iMeetings = meetings;
+			iEventId = eventId;
+		}
+		
+		public boolean hasRelatedObjects() { return iRelatedObjects != null && !iRelatedObjects.isEmpty(); }
+		public void addRelatedObject(RelatedObjectInterface relatedObject) {
+			if (iRelatedObjects == null) iRelatedObjects = new ArrayList<RelatedObjectInterface>();
+			iRelatedObjects.add(relatedObject);
+		}
+		public List<RelatedObjectInterface> getRelatedObjects() { return iRelatedObjects; }
+		
+		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
+		public void addMeeting(MeetingInterface meeting) {
+			if (iMeetings == null) iMeetings = new ArrayList<MeetingInterface>();
+			iMeetings.add(meeting);
+		}
+		public List<MeetingInterface> getMeetings() { return iMeetings; }
+
+		public boolean hasEventId() { return iEventId != null; }
+		public Long getEventId() { return iEventId; }
+		public void setEventId(Long eventId) { iEventId = eventId; }
+		
+		public String toString() {
+			return "objects=" + (hasRelatedObjects() ? iRelatedObjects.toString() : "NULL") +
+				", meetings=" + (hasMeetings() ? getMeetings().toString() : "NULL");
 		}
 	}
 }

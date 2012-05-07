@@ -48,7 +48,7 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
-
+		
 		if (request.hasDates() && request.hasLocations()) {
 			for (int idx = 0; idx < request.getLocations().size(); idx += 1000) {
 			
@@ -68,7 +68,7 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 				query.setInteger("startTime", request.getStartSlot());
 				query.setInteger("stopTime", request.getEndSlot());
 				for (int i = 0; i < request.getDates().size(); i++)
-					query.setDate("d" + i, request.getDates().get(i));
+					query.setDate("d" + i, CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i)));
 				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 				
@@ -89,7 +89,7 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 					if (m.isApproved())
 						conflict.setApprovalDate(m.getApprovedDate());
 					
-					response.addOverlap(m.getMeetingDate(), m.getLocationPermanentId(), conflict);
+					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), m.getLocationPermanentId(), conflict);
 				}
 				
 			}
