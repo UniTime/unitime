@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -34,11 +35,14 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.GetEnrollmentsFromRelatedObjectsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
@@ -46,6 +50,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRes
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface.RelatedObjectType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
@@ -56,11 +61,14 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -89,6 +97,10 @@ public class EventAdd extends Composite {
 	private AddMeetingsDialog iEventAddMeetings;
 	private AcademicSessionProvider iSession;
 	private Lookup iLookup;
+	
+	private EnrollmentTable iEnrollments;
+	private UniTimeHeaderPanel iEnrollmentHeader;
+	private int iEnrollmentRow;
 			
 	public EventAdd(AcademicSessionProvider session) {
 		iSession = session;
@@ -152,7 +164,19 @@ public class EventAdd extends Composite {
 		iLimit.setWidth("50px");
 		iForm.addRow("Expected Attendance:", iLimit);
 
-		iCourses = new CourseRelatedObjectsTable();
+		iCourses = new CourseRelatedObjectsTable(iSession) {
+			@Override
+			public void setErrorMessage(String message) {
+				iHeader.setErrorMessage(message);
+			}
+		};
+		
+		iCourses.addValueChangeHandler(new ValueChangeHandler<List<RelatedObjectInterface>>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<List<RelatedObjectInterface>> event) {
+				checkEnrollments(event.getValue(), iMeetings.getValue());
+			}
+		});
 		
 		iReqAttendance = new CheckBox("Students are required to attend this event.");
 						
@@ -221,6 +245,7 @@ public class EventAdd extends Composite {
 					iCoursesForm.setVisible(false);
 					iForm.getRowFormatter().setVisible(row, true);
 				}
+				checkEnrollments(iCourses.getValue(), iMeetings.getValue());
 			}
 		});
 		
@@ -266,8 +291,23 @@ public class EventAdd extends Composite {
 				iEventAddMeetings.showDialog();
 			}
 		});
+		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<MeetingInterface>>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<List<MeetingInterface>> event) {
+				checkEnrollments(iCourses.getValue(), event.getValue());
+			}
+		});
+
 		
 		iForm.addRow(iMeetings);
+		
+		iEnrollments = new EnrollmentTable(false, true);
+		iEnrollments.getTable().setStyleName("unitime-Enrollments");
+		iEnrollmentHeader = new UniTimeHeaderPanel("Enrollments");
+		iEnrollmentRow = iForm.addHeaderRow(iEnrollmentHeader);
+		iForm.addRow(iEnrollments.getTable());
+		iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
+		iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
 		
 		iFooter = iHeader.clonePanel("");
 		
@@ -281,6 +321,7 @@ public class EventAdd extends Composite {
 			for (MeetingInterface meeting: meetings)
 				if (!iMeetings.hasMeeting(meeting))
 					iMeetings.add(meeting);
+		ValueChangeEvent.fire(iMeetings, iMeetings.getValue());
 	}
 	
 	private int iLastScrollTop, iLastScrollLeft;
@@ -325,7 +366,7 @@ public class EventAdd extends Composite {
 		iEventAddMeetings.reset(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue);
 		iNotes.setText("");
 		iEmails.setText("");
-		iCourses.reset();
+		iCourses.setValue(null);
 		iHeader.setEnabled("lookup", canLookup);
 		
 		iMeetings.clearTable(1);
@@ -378,7 +419,7 @@ public class EventAdd extends Composite {
 		}
 	}
 	
-	class CourseRelatedObjectLine {
+	public static class CourseRelatedObjectLine {
 		List<RelatedObjectLookupRpcResponse> iSubjects, iCourses, iSubparts, iClasses;
 		
 		public List<RelatedObjectLookupRpcResponse> getSubjects() { return iSubjects; }
@@ -404,7 +445,7 @@ public class EventAdd extends Composite {
 		public RelatedObjectLookupRpcResponse getSubpart(String value) {
 			if (value == null || value.isEmpty() || iSubparts == null) return null;
 			for (RelatedObjectLookupRpcResponse r: iSubparts)
-				if (r.getUniqueId() != null && r.getUniqueId().toString().equals(value)) return r;
+				if (r.getUniqueId() != null && (r.getLevel() + ":" + r.getUniqueId()).equals(value)) return r;
 			return null;
 		}
 
@@ -418,10 +459,48 @@ public class EventAdd extends Composite {
 		}
 
 	}
+	
+	private List<RelatedObjectInterface> iLastRelatedObjects = null;
+	private List<MeetingInterface> iLastMeetings = null;
+	public void checkEnrollments(final List<RelatedObjectInterface> relatedObjects, final List<MeetingInterface> meetings) {
+		if (relatedObjects == null || relatedObjects.isEmpty() || iEventType.getSelectedIndex() != 1) {
+			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
+			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
+		} else {
+			iForm.getRowFormatter().setVisible(iEnrollmentRow, true);
+			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, true);
+			if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) return;
+			iEnrollmentHeader.showLoading();
+			iLastMeetings = meetings; iLastRelatedObjects = relatedObjects;
+			RPC.execute(new GetEnrollmentsFromRelatedObjectsRpcRequest(relatedObjects, meetings, null), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
+						iEnrollments.clear();
+						iEnrollmentHeader.setErrorMessage(caught.getMessage());
+					}
+				}
 
-	class CourseRelatedObjectsTable extends UniTimeTable<CourseRelatedObjectLine> {
+				@Override
+				public void onSuccess(GwtRpcResponseList<Enrollment> result) {
+					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
+						iEnrollmentHeader.clearMessage();
+						iEnrollments.clear();
+						iEnrollments.populate(result, false);
+					}
+				}
+			});
+		}
+	}
+
+	public static abstract class CourseRelatedObjectsTable extends UniTimeTable<CourseRelatedObjectLine> implements HasValue<List<RelatedObjectInterface>> {
+		private Timer iChangeTimer = null;
+		private static int sChangeWaitTime = 500;
+		private AcademicSessionProvider iSession = null;
+		private List<RelatedObjectInterface> iLastChange = null;
 		
-		public CourseRelatedObjectsTable() {
+		public CourseRelatedObjectsTable(AcademicSessionProvider session) {
+			iSession = session;
 			setStyleName("unitime-EventOwners");
 			
 			List<Widget> header = new ArrayList<Widget>();
@@ -432,15 +511,21 @@ public class EventAdd extends Composite {
 			header.add(new UniTimeTableHeader("&nbsp;"));
 			
 			addRow(null, header);
+			
+			iChangeTimer = new Timer() {
+				@Override
+				public void run() {
+					List<RelatedObjectInterface> value = getValue();
+					if (iLastChange != null && iLastChange.equals(value)) return;
+					iLastChange = value;
+					ValueChangeEvent.fire(CourseRelatedObjectsTable.this, value);
+				}
+			};
 		}
 		
-		public void reset() {
-			clearTable(1);
-			addBlankLine();
-			addBlankLine();
-		}
+		public abstract void setErrorMessage(String message);
 		
-		public void addBlankLine() {
+		private void addLine(final RelatedObjectInterface data) {
 			List<Widget> row = new ArrayList<Widget>();
 			
 			final CourseRelatedObjectLine line = new CourseRelatedObjectLine();
@@ -453,15 +538,21 @@ public class EventAdd extends Composite {
 
 				@Override
 				public void onFailure(Throwable caught) {
-					iHeader.setErrorMessage(caught.getMessage());
+					setErrorMessage(caught.getMessage());
 				}
 
 				@Override
 				public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
 					line.setSubjects(result);
-					for (RelatedObjectLookupRpcResponse r: result) {
+					Long selectedId = (data != null && data.hasSelection() ? data.getSelection()[0] : null);
+					int selectedIdx = -1;
+					for (int idx = 0; idx < result.size(); idx++) {
+						RelatedObjectLookupRpcResponse r = result.get(idx);
 						subject.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
+						if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
 					}
+					if (selectedIdx >= 0)
+						subject.setSelectedIndex(selectedIdx);
 				}
 			});
 			
@@ -486,7 +577,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								iHeader.setErrorMessage(caught.getMessage());
+								setErrorMessage(caught.getMessage());
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -496,16 +587,24 @@ public class EventAdd extends Composite {
 								line.setCourses(result);
 								if (result.size() > 1)
 									course.addItem("-", "");
-								for (RelatedObjectLookupRpcResponse r: result) {
+								Long selectedId = (data != null && data.hasSelection() ? data.getSelection()[1] : null);
+								int selectedIdx = -1;
+								for (int idx = 0; idx < result.size(); idx++) {
+									RelatedObjectLookupRpcResponse r = result.get(idx);
 									course.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
+									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
 								}
+								if (selectedIdx >= 0)
+									subject.setSelectedIndex(selectedIdx);
 								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), course);
 							}
 						});
 					}
 					
 					if (line.equals(getData(getRowCount() - 1)))
-						addBlankLine();
+						addLine(null);
+
+					iChangeTimer.schedule(sChangeWaitTime);
 				}
 			});
 			
@@ -530,7 +629,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								iHeader.setErrorMessage(caught.getMessage());
+								setErrorMessage(caught.getMessage());
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -538,14 +637,30 @@ public class EventAdd extends Composite {
 								if (!rCourse.equals(res)) return;
 								subpart.clear();
 								line.setSubparts(result);
-								for (RelatedObjectLookupRpcResponse r: result) {
-									subpart.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
+								Long selectedId = (data != null && data.hasSelection() && data.getSelection().length >= 3 ? data.getSelection()[2] : null);
+								int selectedIdx = -1;
+								RelatedObjectLookupRpcRequest.Level selectedLevel = RelatedObjectLookupRpcRequest.Level.SUBPART;
+								if (selectedId != null) {
+									if (data.getType() == RelatedObjectType.Config)
+										selectedLevel = RelatedObjectLookupRpcRequest.Level.CONFIG;
+									if (data.getType() == RelatedObjectType.Course)
+										selectedLevel = RelatedObjectLookupRpcRequest.Level.COURSE;
+									if (data.getType() == RelatedObjectType.Offering)
+										selectedLevel = RelatedObjectLookupRpcRequest.Level.OFFERING;
 								}
+								for (int idx = 0; idx < result.size(); idx++) {
+									RelatedObjectLookupRpcResponse r = result.get(idx);
+									subpart.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getLevel() + ":" + r.getUniqueId().toString());
+									if (selectedId != null && selectedId.equals(r.getUniqueId()) && selectedLevel == r.getLevel()) selectedIdx = idx;
+								}
+								if (selectedIdx >= 0)
+									subject.setSelectedIndex(selectedIdx);
 								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), subpart);
 							}
 						});
 					}
 					
+					iChangeTimer.schedule(sChangeWaitTime);
 				}
 			});
 			
@@ -571,7 +686,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse, rSubpart), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								iHeader.setErrorMessage(caught.getMessage());
+								setErrorMessage(caught.getMessage());
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -581,13 +696,27 @@ public class EventAdd extends Composite {
 								line.setClasses(result);
 								if (result.size() > 1)
 									clazz.addItem("-", "");
-								for (RelatedObjectLookupRpcResponse r: result) {
+								Long selectedId = (data != null && data.hasSelection() && data.getSelection().length >= 4 ? data.getSelection()[3] : null);
+								int selectedIdx = -1;
+								for (int idx = 0; idx < result.size(); idx++) {
+									RelatedObjectLookupRpcResponse r = result.get(idx);
 									clazz.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
+									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
 								}
+								if (selectedIdx >= 0)
+									subject.setSelectedIndex(selectedIdx);
 							}
 						});
 					}
 					
+					iChangeTimer.schedule(sChangeWaitTime);
+				}
+			});
+			
+			clazz.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					iChangeTimer.schedule(sChangeWaitTime);
 				}
 			});
 			
@@ -603,42 +732,68 @@ public class EventAdd extends Composite {
 							removeRow(row);
 							break;
 						}
-					if (getRowCount() <= 1) addBlankLine();
+					if (getRowCount() <= 1) addLine(null);
+					iChangeTimer.schedule(sChangeWaitTime);
 				}
 			});
 			row.add(remove);
 			
 			addRow(line, row);
 		}
+
+		@Override
+		public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<RelatedObjectInterface>> handler) {
+			return addHandler(handler, ValueChangeEvent.getType());
+		}
+
+		@Override
+		public List<RelatedObjectInterface> getValue() {
+			List<RelatedObjectInterface> objects = new ArrayList<RelatedObjectInterface>();
+			for (int row = 1; row < getRowCount(); row ++) {
+				CourseRelatedObjectLine line = getData(row);
+				ListBox subject = (ListBox)getWidget(row, 0);
+				RelatedObjectLookupRpcResponse rSubject = (subject.getSelectedIndex() < 0 ? null : line.getSubject(subject.getValue(subject.getSelectedIndex())));
+				ListBox course = (ListBox)getWidget(row, 1);
+				RelatedObjectLookupRpcResponse rCourse = (course.getSelectedIndex() < 0 ? null : line.getCourse(course.getValue(course.getSelectedIndex())));
+				ListBox subpart = (ListBox)getWidget(row, 2);
+				RelatedObjectLookupRpcResponse rSubpart = (subpart.getSelectedIndex() < 0 ? null : line.getSubpart(subpart.getValue(subpart.getSelectedIndex())));
+				ListBox clazz = (ListBox)getWidget(row, 3);
+				RelatedObjectLookupRpcResponse rClazz = (clazz.getSelectedIndex() < 0 ? null : line.getClass(clazz.getValue(clazz.getSelectedIndex())));
+				if (rClazz != null && rClazz.getRelatedObject() != null) {
+					objects.add(rClazz.getRelatedObject()); continue;
+				}
+				if (rSubpart != null && rSubpart.getRelatedObject() != null) {
+					objects.add(rSubpart.getRelatedObject()); continue;
+				}
+				if (rCourse != null && rCourse.getRelatedObject() != null) {
+					objects.add(rCourse.getRelatedObject()); continue;
+				}
+				if (rSubject != null && rSubject.getRelatedObject() != null) {
+					objects.add(rSubject.getRelatedObject()); continue;
+				}
+			}
+			return objects;
+		}
+
+		@Override
+		public void setValue(List<RelatedObjectInterface> value) {
+			setValue(value, false);
+		}
+
+		@Override
+		public void setValue(List<RelatedObjectInterface> value, boolean fireEvents) {
+			iLastChange = null;
+			clearTable(1);
+			if (value != null)
+				for (RelatedObjectInterface line: value)
+					addLine(line);
+			addLine(null);
+			addLine(null);
+			if (fireEvents)
+				ValueChangeEvent.fire(CourseRelatedObjectsTable.this, getValue());
+		}
 		
 	}
-	
-	public List<RelatedObjectInterface> getRelatedObjects() {
-		List<RelatedObjectInterface> objects = new ArrayList<RelatedObjectInterface>();
-		for (int row = 1; row < iCourses.getRowCount(); row ++) {
-			CourseRelatedObjectLine line = iCourses.getData(row);
-			ListBox subject = (ListBox)iCourses.getWidget(row, 0);
-			RelatedObjectLookupRpcResponse rSubject = (subject.getSelectedIndex() < 0 ? null : line.getSubject(subject.getValue(subject.getSelectedIndex())));
-			ListBox course = (ListBox)iCourses.getWidget(row, 1);
-			RelatedObjectLookupRpcResponse rCourse = (course.getSelectedIndex() < 0 ? null : line.getCourse(course.getValue(course.getSelectedIndex())));
-			ListBox subpart = (ListBox)iCourses.getWidget(row, 2);
-			RelatedObjectLookupRpcResponse rSubpart = (subpart.getSelectedIndex() < 0 ? null : line.getSubpart(subpart.getValue(subpart.getSelectedIndex())));
-			ListBox clazz = (ListBox)iCourses.getWidget(row, 3);
-			RelatedObjectLookupRpcResponse rClazz = (clazz.getSelectedIndex() < 0 ? null : line.getSubpart(clazz.getValue(clazz.getSelectedIndex())));
-			if (rClazz != null && rClazz.getRelatedObject() != null) {
-				objects.add(rClazz.getRelatedObject()); continue;
-			}
-			if (rSubpart != null && rSubpart.getRelatedObject() != null) {
-				objects.add(rSubpart.getRelatedObject()); continue;
-			}
-			if (rCourse != null && rCourse.getRelatedObject() != null) {
-				objects.add(rCourse.getRelatedObject()); continue;
-			}
-			if (rSubject != null && rSubject.getRelatedObject() != null) {
-				objects.add(rSubject.getRelatedObject()); continue;
-			}
-		}
-		return objects;
-	}
+
 
 }

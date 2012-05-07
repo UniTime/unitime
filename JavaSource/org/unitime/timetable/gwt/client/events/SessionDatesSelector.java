@@ -55,6 +55,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	AcademicSessionProvider iAcademicSession;
 	UniTimeWidget<AbsolutePanel> iPanel;
+	private int iSessionYear = 1900;
 	
 	public SessionDatesSelector(AcademicSessionProvider session) {
 		iAcademicSession = session;
@@ -102,11 +103,11 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1; 
+		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1; 
 		for (SessionMonth month: months) {
 			iPanel.getWidget().add(new SingleMonth(month));
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
-			if (start < 0) start = month.getFirst(SessionMonth.Flag.END);
+			if (end < 0) end = month.getFirst(SessionMonth.Flag.END);
 			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.EXAM_START);
 			if (firstHoliday < 0) firstHoliday = month.getFirst(SessionMonth.Flag.HOLIDAY);
 			if (firstBreak < 0) firstBreak = month.getFirst(SessionMonth.Flag.BREAK);
@@ -114,6 +115,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (month.getYear() == Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date())) &&
 				month.getMonth() + 1 == Integer.parseInt(DateTimeFormat.getFormat("MM").format(new Date())))
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
+			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
 		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, today));
 	}
@@ -493,26 +495,66 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 
 	@Override
-	public HandlerRegistration addValueChangeHandler(
-			ValueChangeHandler<List<Date>> handler) {
-		// TODO Auto-generated method stub
-		return null;
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<Date>> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+	
+	private int dayOfYear(int year, int month, int day) {
+		int dayOfYear = SingleDateSelector.dayOfYear(year, month, day);
+		if (year < iSessionYear) {
+			dayOfYear -= SingleDateSelector.dayOfYear(year,12,31);
+		} else if (year > iSessionYear) {
+			dayOfYear += SingleDateSelector.dayOfYear(iSessionYear, 12, 31);
+		}
+		return dayOfYear;
 	}
 
 	@Override
-	@SuppressWarnings("deprecation")
 	public List<Date> getValue() {
 		List<Date> ret = new ArrayList<Date>();
+		DateTimeFormat df = DateTimeFormat.getFormat("yyyy/MM/dd");
 		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
 			Widget w = iPanel.getWidget().getWidget(i);
 			if (w instanceof SingleMonth) {
 				SingleMonth s = (SingleMonth)w;
 				for (D d: s.getDays()) {
-					if (d.getValue()) ret.add(new Date(s.getYear() - 1900, s.getMonth(), 1 + d.getNumber()));
+					if (d.getValue()) ret.add(df.parse(s.getYear() + "/" + (1 + s.getMonth()) + "/" + (1 + d.getNumber())));
 				}
 			}
 		}
 		return ret;
+	}
+	
+	public int getSelectedDaysCount() {
+		int ret = 0;
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays()) {
+					if (d.getValue()) ret ++;
+				}
+			}
+		}
+		return ret;
+	}
+	
+	public List<Integer> getSelectedDays() {
+		List<Integer> ret = new ArrayList<Integer>();
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays()) {
+					if (d.getValue()) ret.add(dayOfYear(s.getYear(), 1 + s.getMonth(), 1 + d.getNumber()));
+				}
+			}
+		}
+		return ret;
+	}
+	
+	public Date getDate(int day) {
+		return SingleDateSelector.dayOfYear(iSessionYear, day);
 	}
 
 	@Override

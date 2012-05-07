@@ -68,17 +68,32 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 			}
 			break;
 		case SUBJECT:
-			for (Object[] object: (List<Object[]>)hibSession.createQuery(
-					"select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
+			for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
+					"select co from CourseOffering co "+
                     "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false " +
                     "order by co.courseNbr"
                     ).setLong("subjectAreaId", request.getUniqueId()).setCacheable(true).list()) {
+				RelatedObjectInterface related = new RelatedObjectInterface();
+				if (course.getIsControl()) {
+					related.setType(RelatedObjectInterface.RelatedObjectType.Offering);
+					related.setUniqueId(course.getInstructionalOffering().getUniqueId());
+					related.setName(course.getCourseName());
+					related.addCourseName(course.getCourseName());
+					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
+				} else {
+					related.setType(RelatedObjectInterface.RelatedObjectType.Course);
+					related.setUniqueId(course.getUniqueId());
+					related.setName(course.getCourseName());
+					related.addCourseName(course.getCourseName());
+					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
+				}
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.COURSE,
-						(Long)object[0],
-						(String)object[1],
-						(String)object[2]));
+						course.getUniqueId(),
+						course.getCourseNbr(),
+						course.getTitle(),
+						related));
 			}
 			break;
 		case COURSE:
@@ -90,6 +105,7 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 				relatedOffering.setUniqueId(course.getInstructionalOffering().getUniqueId());
 				relatedOffering.setName(course.getCourseName());
 				relatedOffering.addCourseName(course.getCourseName());
+				relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.OFFERING,
 						course.getInstructionalOffering().getUniqueId(),
@@ -102,9 +118,10 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 			relatedCourse.setUniqueId(course.getUniqueId());
 			relatedCourse.setName(course.getCourseName());
 			relatedCourse.addCourseName(course.getCourseName());
+			relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 			response.add(new RelatedObjectLookupRpcResponse(
 					RelatedObjectLookupRpcRequest.Level.COURSE,
-					course.getInstructionalOffering().getUniqueId(),
+					course.getUniqueId(),
 					"Course",
 					relatedCourse));
 			
@@ -124,6 +141,7 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 					relatedConfig.setUniqueId(config.getUniqueId());
 					relatedConfig.setName(config.getName());
 					relatedConfig.addCourseName(course.getCourseName());
+					relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CONFIG,
 							config.getUniqueId(),
@@ -164,11 +182,18 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 			
 			for (Class_ clazz: classes) {
 				String extId = clazz.getClassSuffix(course);
+				RelatedObjectInterface relatedClass = new RelatedObjectInterface();
+				relatedClass.setType(RelatedObjectInterface.RelatedObjectType.Class);
+				relatedClass.setUniqueId(clazz.getUniqueId());
+				relatedClass.setName(clazz.getClassLabel(course));
+				relatedClass.addCourseName(course.getCourseName());
+				relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), subpart.getUniqueId(), clazz.getUniqueId()});
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.CLASS,
 						clazz.getUniqueId(),
 						clazz.getSectionNumberString(hibSession),
-						(extId == null || extId.isEmpty() || extId.equalsIgnoreCase(clazz.getSectionNumberString(hibSession)) ? null : extId)
+						(extId == null || extId.isEmpty() || extId.equalsIgnoreCase(clazz.getSectionNumberString(hibSession)) ? null : extId),
+						relatedClass
 						));
 			}
 			

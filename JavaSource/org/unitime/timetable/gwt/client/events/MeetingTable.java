@@ -41,16 +41,20 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class MeetingTable extends UniTimeTable<MeetingInterface[]>{
+public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements HasValue<List<MeetingInterface>>{
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
@@ -161,6 +165,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]>{
 				while (row + 1 < getRowCount() && getData(row + 1).length == 2)
 					removeRow(row + 1);
 				removeRow(row);
+				ValueChangeEvent.fire(MeetingTable.this, getValue());
 			}
 		});
 		hTimes.addOperation(new MeetingOperation() {
@@ -504,7 +509,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]>{
 		setColumnVisible(iColumnTeardownTime, EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
 		setColumnVisible(iColumnCapacity, EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
 	}
-
+	
 	@Override
 	public void clearTable(int headerRows) {
 		super.clearTable(headerRows);
@@ -882,5 +887,35 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]>{
 
 		@Override
 		public boolean hasSeparator() { return false; }
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<MeetingInterface>> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public List<MeetingInterface> getValue() {
+		List<MeetingInterface> value = new ArrayList<MeetingInterface>();
+		for (int row = 1; row < getRowCount(); row++) {
+			MeetingInterface[] data = getData(row);
+			if (data != null && data.length == 1) value.add(data[0]);
+		}
+		return value;
+	}
+
+	@Override
+	public void setValue(List<MeetingInterface> value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(List<MeetingInterface> value, boolean fireEvents) {
+		clearTable(1);
+		if (value != null)
+			for (MeetingInterface meeting: value)
+				add(meeting);
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
 	}
 }

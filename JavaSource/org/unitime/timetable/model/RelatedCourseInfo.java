@@ -332,9 +332,9 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         Object owner = getOwnerObject();
         switch (getOwnerType()) {
             case ExamOwner.sOwnerTypeClass : 
-                return ((Class_)owner).getClassLabel();
+                return ((Class_)owner).getClassLabel(getCourse());
             case ExamOwner.sOwnerTypeConfig : 
-                return ((InstrOfferingConfig)owner).toString();
+                return getCourse().getCourseName() + " [" + ((InstrOfferingConfig)owner).getName() + "]";
             case ExamOwner.sOwnerTypeCourse : 
                 return ((CourseOffering)owner).getCourseName();
             case ExamOwner.sOwnerTypeOffering : 
