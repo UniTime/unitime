@@ -298,9 +298,8 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 		return (6 + CalendarUtil.getStartingDayOfWeek()) % 7;
 	}
 	
-	@SuppressWarnings("deprecation")
 	static Date toDate(int year, int month, int day) {
-		return new Date(year - 1900, month, 1 + day);
+		return DateTimeFormat.getFormat("yyyy/MM/dd").parse(year + "/" + month + "/" + day);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -324,8 +323,24 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 	}
 	
 	@SuppressWarnings("deprecation")
+	static int dayOfYear(int year, int month, int day) {
+		Date d = new Date(year - 1900, month - 1, day);
+		int doy = 0, y = d.getYear();
+		while (d.getYear() == y) { d.setDate(d.getDate() - 1); doy ++; }
+		return doy;
+	}
+	
+	@SuppressWarnings("deprecation")
+	static Date dayOfYear(int year, int dayOfYear) {
+		Date d = new Date(year - 1900, 0, 1); dayOfYear--;
+		while (dayOfYear < 0) { d.setDate(d.getDate() - 1); dayOfYear ++; }
+		while (dayOfYear > 0) { d.setDate(d.getDate() + 1); dayOfYear --; }
+		return d;
+	}
+
+	
 	static String monthName(int year, int month) {
-		return DateTimeFormat.getFormat("MMMM yyyy").format(new Date(year - 1900, month - 1, 1));
+		return DateTimeFormat.getFormat("MMMM yyyy").format(toDate(year, month, 1));
 	}
 	
 	public static class SingleMonth extends AbsolutePanel implements HasValue<Date> {
@@ -631,10 +646,9 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 		}
 
 		@Override
-		@SuppressWarnings("deprecation")
 		public Date getValue() {
 			if (iDay < 0 || iDay > iDays.size()) return null;
-			return new Date(iYear - 1900, iMonth - 1, iDay);
+			return DateTimeFormat.getFormat("yyyy/MM/dd").parse(iYear + "/" + iMonth + "/" + iDay);
 		}
 
 		@Override
