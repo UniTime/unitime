@@ -363,10 +363,10 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				sPassivationDir = new File(properties.getProperty("tmtbl.solver.passivation.dir"));
 			}
             
-            properties.setProperty("connection.url", url);
-            
             if (properties.getProperty("tmtbl.solver.connection.url")!=null) {
             	properties.setProperty("connection.url", properties.getProperty("tmtbl.solver.connection.url"));
+            } else {
+				properties.setProperty("connection.url", url);
             }
 
 			HibernateUtil.configureHibernate(properties);
