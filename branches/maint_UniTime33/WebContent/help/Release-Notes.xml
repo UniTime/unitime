@@ -101,6 +101,53 @@
 		</item>
 	</category>
 	<category>
+		<title>Constraint Solver Update</title>
+		<item>
+			<name>Precedence Constraint changed to consider date patterns</name>
+			<description>
+				<line>If two classes (with a precedence constraint) have different date patterns, also check on what date the first meeting occurs.
+					<line>This means that the first meeting of the first class must happen before the first meeting of the second class.</line>
+					<line>Example: if the first class has date pattern Week 1 and the second class has Week 2, first class will always precede the second class.</line>
+				</line>
+				<line>Former behavior (date patterns are ignored) can be enabled by setting the solver property Precedence.ConsiderDatePatterns to false (defaults to true).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling, Examination Timetabling, Student Scheduling: Distances</name>
+			<description>
+				<line>Added ability to override distances computed using room coordinates by individual travel times set between pairs of rooms.</line>
+				<line>This functionality is not enabled in UniTime 3.3 as there is no user interface to define travel times.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling, Batch Student Scheduling: Back-To-Back Student Distance Conflicts</name>
+			<description>
+				<line>Added ability to consider student distance conflicts between classes that are not directly back-to-back.
+					<line>Distance conflict is there if room distance (in minutes) is greater than the break time of the first class plus the difference between end of the first and start of the second class.</line>
+					<line>To be enabled if needed by setting the solver parameter Distances.ComputeDistanceConflictsBetweenNonBTBClasses to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Meet Together Constraint</name>
+			<description>
+				<line>Avoid cycling between multiple meet with constraints.
+					<line>For instance, when there is a MEET_WITH between classes A and B, and another one between classes B and C.</line>
+					<line>In which case, one MEET_WITH constraint between all three classes A, B, and C would work better anyway.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Reservations</name>
+			<description>
+				<line>For enrollments without a reservation in an offering with a reservation:
+					<line>Only penalize enrollments (+1 in priority) if there is a reservation available to the student in the offering.</line>
+					<line>This is the intended behavior, i.e., to favor enrollments that are meeting a reservation against enrollments avoiding the reservation.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible</name>
