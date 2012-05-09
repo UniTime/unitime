@@ -97,29 +97,33 @@ public class OnlineSectioningServerUpdater extends Thread {
 	}
 	
 	public void checkForUpdates() {
-		org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
 		try {
-			if (getAcademicSession() != null) {
-				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
-					try {
-						processChange(q);
-					} catch (Exception e) {
-						iLog.error("Update failed: " + e.getMessage(), e);
+			org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
+			try {
+				if (getAcademicSession() != null) {
+					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
+						try {
+							processChange(q);
+						} catch (Exception e) {
+							iLog.error("Update failed: " + e.getMessage(), e);
+						}
+						iLastTimeStamp = q.getTimeStamp();
 					}
-					iLastTimeStamp = q.getTimeStamp();
-				}
-			} else {
-				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, null, iLastTimeStamp)) {
-					try {
-						processGenericChange(q);
-					} catch (Exception e) {
-						iLog.error("Update failed: " + e.getMessage(), e);
+				} else {
+					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, null, iLastTimeStamp)) {
+						try {
+							processGenericChange(q);
+						} catch (Exception e) {
+							iLog.error("Update failed: " + e.getMessage(), e);
+						}
+						iLastTimeStamp = q.getTimeStamp();
 					}
-					iLastTimeStamp = q.getTimeStamp();
 				}
+			} finally {
+				hibSession.close();
 			}
-		} finally {
-			hibSession.close();
+		} catch (Exception e) {
+			iLog.error("Unable to check for updates: " + e.getMessage(), e);
 		}
 	}
 	

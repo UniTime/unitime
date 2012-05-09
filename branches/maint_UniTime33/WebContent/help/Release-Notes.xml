@@ -84,6 +84,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Sectioning Server Updater</name>
+			<description>
+				<line>Check for updates: failure of getting a hibernate session (e.g., due to a temporary database unavailability) should not make the updater thread to stop.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
