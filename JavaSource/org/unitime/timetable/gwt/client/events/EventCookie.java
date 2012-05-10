@@ -30,7 +30,10 @@ public class EventCookie {
 		SHOW_ALLOCATED_TIME,
 		SHOW_SETUP_TIME,
 		SHOW_TEARDOWN_TIME,
-		SHOW_CAPACITY;
+		SHOW_CAPACITY,
+		SHOW_LIMIT,
+		SHOW_ENROLLMENT,
+		SHOW_MAIN_CONTACT;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {

@@ -957,6 +957,10 @@ public class TimeGrid extends Composite {
 		}
 	}
 	
+	public void hideSelectionPopup() {
+		if (iSelectionLayer != null) iSelectionLayer.iPopup.hide();
+	}
+	
 	class SelectionLayer extends AbsolutePanel {
 		private SelectionPanel iSelection;
 		private P iHint;
