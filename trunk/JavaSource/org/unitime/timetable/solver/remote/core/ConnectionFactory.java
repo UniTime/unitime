@@ -48,6 +48,14 @@ public class ConnectionFactory {
 	
 	public static void init(Properties properties, File defaultKeyFolder) throws Exception {
 		if (sInitialized) return;
+		RemoteIo.sDebug = "true".equals(properties.getProperty("tmtbl.solver.register.debug", "false"));
+		RemoteIo.sZip = "true".equals(properties.getProperty("tmtbl.solver.register.zip", "true"));
+		if ("false".equalsIgnoreCase(properties.getProperty("tmtbl.solver.register.ssl", "true"))) {
+			sServerSocketFactory = ServerSocketFactory.getDefault();
+			sSocketFactory = SocketFactory.getDefault();
+			sInitialized = true;
+			return;
+		}
 		String keyStore = properties.getProperty("tmtbl.solver.register.keystore");
 		String keyStorePasswd = properties.getProperty("tmtbl.solver.register.keystore.passwd","Fh3g1H03e95kf54xZ");
 		InputStream keyStoreIs = null;
