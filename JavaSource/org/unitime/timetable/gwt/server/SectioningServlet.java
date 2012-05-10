@@ -1066,15 +1066,17 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 
 	public Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
-		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
-		if (principal == null) throw new SectioningException(MSG.exceptionEnrollNotAuthenticated());
-		Long studentId = principal.getStudentId(request.getAcademicSessionId());
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
-		if (studentId == null && isAdminOrAdvisor())
-			studentId = request.getStudentId();
 		if (server != null) {
 			if (server.getAcademicSession().isSectioningEnabled()) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
+		}
+		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+		if (principal == null) throw new SectioningException(MSG.exceptionEnrollNotAuthenticated());
+		Long studentId = principal.getStudentId(request.getAcademicSessionId());
+		if (studentId == null && isAdminOrAdvisor())
+			studentId = request.getStudentId();
+		if (server != null) {
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 			server.execute(new SaveStudentRequests(studentId, request, true), currentUser());
