@@ -100,6 +100,16 @@
 				<line>Display XML columns (of org.dom4j.Document type) properly.</line>
 			</description>
 		</item>
+		<item>
+			<name>Communication between solver register service (UniTime deployed on a Tomcat) and remote solver servers</name>
+			<description>
+				<line>The following parameters have been added:
+					<line>tmtbl.solver.register.ssl (defaults to true, when set to false communication is done unencrypted)</line>
+					<line>tmtbl.solver.register.zip (defaults to true, when set to false individual messages are not gzipped to conserve network bandwidth)</line>
+				</line>
+				<line>If changed, same values must be set on the solver register (Tomcat) side and on the remote server side!</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver Update</title>
