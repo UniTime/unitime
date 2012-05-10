@@ -685,12 +685,18 @@ public class ReservationServlet extends RemoteServiceServlet implements Reservat
 				Reservation reservation = ReservationDAO.getInstance().get(reservationId, hibSession);
 				if (reservation == null)
 					return false;
+				InstructionalOffering offering = reservation.getInstructionalOffering();
+		    	if (offering.getSession().isOfferingLockNeeded(offering.getUniqueId()))
+					throw new ReservationException("Offering " + offering.getCourseName() + " is unlocked, please lock it first.");
 				if (!reservation.isEditableBy(user))
 					throw new ReservationException("You are not not authorized to delete reservations for " + reservation.getInstructionalOffering().getCourseName() + ".");
-				InstructionalOffering offering = reservation.getInstructionalOffering();
 				offering.getReservations().remove(reservation);
 				hibSession.delete(reservation);
 				hibSession.saveOrUpdate(offering);
+				if (offering.getSession().getStatusType().canSectionAssistStudents()) {
+					if (!offering.getSession().isOfferingLocked(offering.getUniqueId()))
+						StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
+				}
 				hibSession.flush();
 			} finally {
 				hibSession.close();
