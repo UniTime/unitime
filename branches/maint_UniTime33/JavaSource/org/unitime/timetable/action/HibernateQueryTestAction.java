@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.dom4j.Document;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.Query;
@@ -255,7 +256,13 @@ public class HibernateQueryTestAction extends Action {
     
     private void line(StringBuffer s, Object text) {
         s.append("<td>");
-        if (text!=null) s.append(text.toString());
+        if (text!=null) {
+        	if (text instanceof Document) {
+        		s.append(((Document)text).asXML().replace("<", "&lt;").replace(">", "&gt;"));
+        	} else {
+        		s.append(text.toString());
+        	}
+        }
         s.append("</td>");
     }
     
