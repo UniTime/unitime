@@ -121,6 +121,27 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Approved")
 	String colApproval();
+	
+	@DefaultMessage("Name")
+	String colName();
+	
+	@DefaultMessage("Section")
+	String colSection();
+	
+	@DefaultMessage("Type")
+	String colType();
+	
+	@DefaultMessage("Instructor / Sponsor")
+	String colSponsorOrInstructor();
+
+	@DefaultMessage("Main Contact")
+	String colMainContact();
+	
+	@DefaultMessage("Attend/Limit")
+	String colLimit();
+
+	@DefaultMessage("Enrollment")
+	String colEnrollment();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -152,9 +173,75 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teardown Time:")
 	String propTeardownTime();
 	
+	@DefaultMessage("Academic Session:")
+	String propAcademicSession();
+	
+	@DefaultMessage("Event Filter:")
+	String propEventFilter();
+	
+	@DefaultMessage("Room Filter:")
+	String propRoomFilter();
+	
+	@DefaultMessage("Resource Type:")
+	String propResourceType();
+	
+	@DefaultMessage("Resource:")
+	String propResource();
+	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
 	@DefaultMessage("<u>C</u>ancel")
 	String buttonCancel();
+	
+	@DefaultMessage("<u>S</u>earch")
+	String buttonSearch();
+	
+	@DefaultMessage("<u>L</u>ookup")
+	String buttonLookup();
+	
+	@DefaultMessage("<u>A</u>dd Event")
+	String buttonAddEvent();
+	
+	@DefaultMessage("<u>P</u>rint")
+	String buttonPrint();
+	
+	@DefaultMessage("E<u>x</u>port")
+	String buttonExportICal();
+	
+	@DefaultMessage("Filter")
+	String sectFilter();
+	
+	@DefaultMessage("{0} timetable for {1}")
+	String sectTimetable(String resource, String session);
+
+	@DefaultMessage("{0} events for {1}")
+	String sectEvents(String resource, String session);
+	
+	@DefaultMessage("Loading {0}...")
+	String waitLoading(String name);
+	
+	@DefaultMessage("Loading {0} timetable for {1} ...")
+	String waitLoadingTimetable(String name, String session);
+	
+	@DefaultMessage("Failed to load {0}: {1}")
+	String failedLoad(String name, String reason);
+	
+	@DefaultMessage("No events found for {0} in {1}.")
+	String failedNoEvents(String name, String session);
+	
+	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
+	String warnTooManyMeetings(int maximum);
+	
+	@DefaultMessage("Room")
+	String resourceRoom();
+	
+	@DefaultMessage("All Rooms")
+	String allRooms();
+	
+	@DefaultMessage("<u>T</u>imetable")
+	String tabGrid();
+	
+	@DefaultMessage("<u>L</u>ist of Events")
+	String tabTable();
 }

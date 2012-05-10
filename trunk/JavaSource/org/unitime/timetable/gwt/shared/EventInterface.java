@@ -53,12 +53,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	private List<String> iCourseNames = null;
 	private String iInstruction = null;
-	private Integer iInstructionType = null, iMaxCapacity = null;
+	private Integer iInstructionType = null, iMaxCapacity = null, iEnrollment;
 	private List<String> iExternalIds = null;
 	private String iSectionNumber = null;
 	private boolean iCanView = false;
 	private List<RelatedObjectInterface> iRelatedObjects = null;
 	private List<ClassAssignmentInterface.Enrollment> iEnrollments = null;
+	private Set<EventInterface> iConflicts;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("room", "Room Timetable", true),
@@ -125,6 +126,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean hasMaxCapacity() { return iMaxCapacity != null; }
 	public Integer getMaxCapacity() { return iMaxCapacity; }
 	public void setMaxCapacity(Integer maxCapacity) { iMaxCapacity = maxCapacity; }
+
+	public boolean hasEnrollment() { return iEnrollment != null; }
+	public Integer getEnrollment() { return iEnrollment; }
+	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
 	public List<ContactInterface> getInstructors() { return iInstructors; }
 	public void addInstructor(ContactInterface instructor) {
@@ -210,6 +215,16 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean isCanView() { return iCanView; }
 	public void setCanView(boolean canView) { iCanView = canView; }
 	
+	public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+	public void addConflict(EventInterface conflict) {
+		if (iConflicts == null) iConflicts = new TreeSet<EventInterface>();
+		iConflicts.add(conflict);
+	}
+	public Set<EventInterface> getConflicts() { return iConflicts; }
+	public void setConflicts(Set<EventInterface> conflicts) {
+		iConflicts = conflicts;
+	}
+	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventInterface)) return false;
@@ -241,6 +256,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setValue(String value) { iValue = value; }
 		public boolean isSelected() { return iSelected; }
 		public void setSelected(boolean selected) { iSelected = selected; }
+		
+		public String toString() { return getValue(); }
 	}
 	
 	public static class ResourceInterface implements IsSerializable, Comparable<ResourceInterface> {

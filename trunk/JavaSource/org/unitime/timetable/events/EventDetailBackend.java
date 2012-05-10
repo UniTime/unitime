@@ -426,7 +426,7 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			if (user == null) {
 				meeting.setCanEdit(false);
 			} else {
-				meeting.setCanEdit(user.getId().equals(m.getEvent().getMainContact().getExternalUniqueId()));
+				meeting.setCanEdit(m.getEvent().getMainContact() != null && user.getId().equals(m.getEvent().getMainContact().getExternalUniqueId()));
 				if (Roles.ADMIN_ROLE.equals(user.getRole())) {
 					meeting.setCanApprove(true);
 				} else if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {

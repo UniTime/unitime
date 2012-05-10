@@ -420,86 +420,14 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		header.get(iColumnCapacity).addOperation(opCapacity);
 
 		// Add sorting operations
-		hDate.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.DATE)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colDate()); }
-		});
-		hTimePub.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.PUBLISHED_TIME)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colPublishedTime()); }
-		});
-		hTimeSetup.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.SETUP_TIME)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colSetupTime()); }
-		});
-		hTimeAll.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.ALLOCATED_TIME)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colAllocatedTime()); }
-		});
-		hTimeTeardown.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.TEARDOWN_TIME)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colTeardownTime()); }
-		});
-		hLocation.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.LOCATION)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colLocation()); }
-		});
-		hCapacity.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.CAPACITY)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colCapacity()); }
-		});
-		hApproval.addOperation(new Operation() {
-			@Override
-			public void execute() { sort(createComparator(SortBy.APPROVAL)); }
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(MESSAGES.colApproval()); }
-		});
+		addSortByOperation(hDate, createComparator(MeetingsSortBy.DATE));
+		addSortByOperation(hTimePub, createComparator(MeetingsSortBy.PUBLISHED_TIME));
+		addSortByOperation(hTimeSetup, createComparator(MeetingsSortBy.SETUP_TIME));
+		addSortByOperation(hTimeAll, createComparator(MeetingsSortBy.ALLOCATED_TIME));
+		addSortByOperation(hTimeTeardown, createComparator(MeetingsSortBy.TEARDOWN_TIME));
+		addSortByOperation(hLocation, createComparator(MeetingsSortBy.LOCATION));
+		addSortByOperation(hCapacity, createComparator(MeetingsSortBy.CAPACITY));
+		addSortByOperation(hApproval, createComparator(MeetingsSortBy.APPROVAL));
 				
 		addRow(null, header);
 		
@@ -564,6 +492,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 				row.get(row.size() - 1).addStyleName("not-approved");
 		}
 		int meetingRow = addRow(new MeetingInterface[] {meeting}, row);
+		getRowFormatter().addStyleName(meetingRow, "meeting-row");
 		if (meeting.isPast())
 			getRowFormatter().addStyleName(meetingRow, "past-meeting");
 		if (meeting.hasConflicts()) {
@@ -587,38 +516,47 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		}
 	}
 	
-	public int compare(MeetingInterface[] m1, MeetingInterface[] m2, SortBy sortBy) {
-		int cmp = compare(m1[0], m2[0], sortBy);
-		if (cmp != 0) return cmp;
-		if (m1.length == 2) {
-			if (m2.length == 2) return compare(m1[1], m2[1], sortBy);
-			else return 1; 
-		} else {
-			return -1;
-		}
+	protected void addSortByOperation(final UniTimeTableHeader header, final Comparator<MeetingInterface[]> comparator) {
+		header.addOperation(new Operation() {
+			@Override
+			public void execute() { sort(comparator); }
+			@Override
+			public boolean isApplicable() { return getRowCount() > 1; }
+			@Override
+			public boolean hasSeparator() { return true; }
+			@Override
+			public String getName() { return MESSAGES.opSortBy(header.getHTML()); }
+		});
 	}
 	
-	public static enum SortBy {
+	public static enum MeetingsSortBy {
 		DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, APPROVAL
 	}
 	
-	protected Comparator<MeetingInterface[]> createComparator(final SortBy sortyBy) {
+	protected Comparator<MeetingInterface[]> createComparator(final MeetingsSortBy sortBy) {
 		return new Comparator<MeetingInterface[]>() {
 			@Override
-			public int compare(MeetingInterface[] o1, MeetingInterface[] o2) {
-				return MeetingTable.this.compare(o1, o2, sortyBy);
+			public int compare(MeetingInterface[] m1, MeetingInterface[] m2) {
+				int cmp = MeetingTable.compare(m1[0], m2[0], sortBy);
+				if (cmp != 0) return cmp;
+				if (m1.length == 2) {
+					if (m2.length == 2) return MeetingTable.compare(m1[1], m2[1], sortBy);
+					else return 1; 
+				} else {
+					return -1;
+				}
 			}
 		};
 	}
 	
-	private int compateByApproval(MeetingInterface m1, MeetingInterface m2) {
+	private static int compateByApproval(MeetingInterface m1, MeetingInterface m2) {
 		if (m1.getId() == null && m2.getId() != null) return -1;
 		if (m1.getId() != null && m2.getId() == null) return 1;
 		Date now = new Date();
 		return (m1.getApprovalDate() == null ? now : m1.getApprovalDate()).compareTo(m2.getApprovalDate() == null ? now : m2.getApprovalDate());
 	}
 	
-	private int compareByDate(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareByDate(MeetingInterface m1, MeetingInterface m2) {
 		if (m1 instanceof MeetingConglictInterface && m2 instanceof MeetingConglictInterface) {
 			int cmp = ((MeetingConglictInterface)m1).getName().compareTo(((MeetingConglictInterface)m2).getName());
 			if (cmp != 0) return cmp;
@@ -626,35 +564,35 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		return m1.getMeetingDate().compareTo(m2.getMeetingDate());
 	}
 	
-	private int compareByAllocatedTime(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareByAllocatedTime(MeetingInterface m1, MeetingInterface m2) {
 		int cmp = new Integer(m1.getStartSlot()).compareTo(m2.getStartSlot());
 		if (cmp != 0) return cmp;
 		return new Integer(m1.getEndSlot()).compareTo(m2.getEndSlot());
 	}
 	
-	private int compareByPublishedTime(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareByPublishedTime(MeetingInterface m1, MeetingInterface m2) {
 		int cmp = new Integer((5 * m1.getStartSlot()) + m1.getStartOffset()).compareTo((5 * m2.getStartSlot()) + m2.getStartOffset());
 		if (cmp != 0) return cmp;
 		return new Integer((5 * m1.getEndSlot()) + m2.getEndOffset()).compareTo((5 * m2.getEndSlot()) + m2.getEndOffset());
 	}
 
-	private int compareBySetupTime(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareBySetupTime(MeetingInterface m1, MeetingInterface m2) {
 		return new Integer(m1.getStartOffset()).compareTo(m2.getStartOffset());
 	}
 
-	private int compareByTeardownTime(MeetingInterface m1, MeetingInterface m2) {
-		return new Integer(m1.getEndOffset()).compareTo(m2.getEndOffset());
+	private static int compareByTeardownTime(MeetingInterface m1, MeetingInterface m2) {
+		return new Integer(m2.getEndOffset()).compareTo(m1.getEndOffset());
 	}
 	
-	private int compareByLocation(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareByLocation(MeetingInterface m1, MeetingInterface m2) {
 		return m1.getLocationName().compareTo(m2.getLocationName());
 	}
 	
-	private int compareByCapacity(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareByCapacity(MeetingInterface m1, MeetingInterface m2) {
 		return (m1.getLocation() == null ? new Integer(-1) : m1.getLocation().getSize()).compareTo(m2.getLocation() == null ? new Integer(-1) : m2.getLocation().getSize());
 	}
 
-	private int compareFallback(MeetingInterface m1, MeetingInterface m2) {
+	private static int compareFallback(MeetingInterface m1, MeetingInterface m2) {
 		int cmp = compareByDate(m1, m2);
 		if (cmp != 0) return cmp;
 		cmp = compareByPublishedTime(m1, m2);
@@ -664,7 +602,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		return m1.compareTo(m2);
 	}
 	
-	public int compare(MeetingInterface m1, MeetingInterface m2, SortBy sortBy) {
+	public static int compare(MeetingInterface m1, MeetingInterface m2, MeetingsSortBy sortBy) {
 		int cmp;
 		switch (sortBy) {
 		case APPROVAL:
@@ -747,6 +685,12 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		
 		public CheckBoxCell() {
 			super();
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
 		}
 
 		@Override

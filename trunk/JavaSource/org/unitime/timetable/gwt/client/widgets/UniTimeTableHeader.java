@@ -25,6 +25,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasAdditionalStyleNames;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColumn;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 
 import com.google.gwt.dom.client.Style.Cursor;
@@ -41,8 +42,8 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAlignment, HasColSpan, HasAdditionalStyleNames {
-	private int iColSpan = 1;
+public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAlignment, HasColSpan, HasAdditionalStyleNames, HasColumn {
+	private int iColSpan = 1, iColumn = -1;
 	private HorizontalAlignmentConstant iAlign;
 	private List<Operation> iOperations = new ArrayList<Operation>();
 	private List<String> iStyleNames = new ArrayList<String>();
@@ -139,5 +140,15 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public void addAdditionalStyleName(String styleName) {
 		iStyleNames.add(styleName);
+	}
+
+	@Override
+	public int getColumn() {
+		return iColumn;
+	}
+
+	@Override
+	public void setColumn(int column) {
+		iColumn = column;
 	}
 }
