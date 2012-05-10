@@ -38,6 +38,12 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("MM/dd/yyyy")
 	String eventDateFormat();
 	
+	@DefaultStringValue("MM/dd")
+	String eventDateFormatShort();
+
+	@DefaultStringValue("MM/dd, yyyy")
+	String eventDateFormatLong();
+
 	@DefaultStringValue("EEE, MM/dd/yyyy")
 	String meetingDateFormat();
 	
@@ -61,6 +67,9 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"})
 	String[] longDays();
+	
+	@DefaultStringArrayValue({"M", "T", "W", "Th", "F", "S", "Su"})
+	String[] shortDays();
 
 	@DefaultStringArrayValue({
 		"blue", "green", "orange", "yellow", "pink",

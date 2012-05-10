@@ -324,6 +324,17 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		createSuggestions();
 	}
 	public List<T> getValues() { return iValues; }
+	public void setValues(T... values) {
+		List<T> valuesAsList = new ArrayList<T>(values == null ? 0 : values.length);
+		if (values != null)
+			for (T t: values)
+				valuesAsList.add(t);
+		setValues(valuesAsList);
+	}
+	
+	public Interval createInterval(T first, T last) { return new Interval(first, last); }
+	public Interval createInterval(T first) { return new Interval(first); }
+	public Interval createInterval() { return new Interval(); }
 	
 	public class Interval {
 		private T iFirst = null, iLast = null;
