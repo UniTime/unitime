@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -279,7 +280,8 @@ public class SavedHQLServlet extends RemoteServiceServlet implements SavedHQLSer
 	}
 	
 	private String toString(Object o) {
-		return o == null ? "" : o.toString();
+		if (o != null && o instanceof Document) return ((Document)o).asXML();
+		return (o == null ? "" : o.toString());
 	}
 	
 	private void line(String[] ret, Object o, SessionImplementor session) {

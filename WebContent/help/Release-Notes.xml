@@ -97,6 +97,7 @@
 			<name>HQL Reports</name>
 			<description>
 				<line>Sorting by: When comparing two cells, if both cells are numbers then compare cells as numbers.</line>
+				<line>Display XML columns (of org.dom4j.Document type) properly.</line>
 			</description>
 		</item>
 	</category>
