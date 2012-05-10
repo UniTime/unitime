@@ -72,7 +72,7 @@
 		<item>
 			<name>Student Scheduling Assistant: Reservations</name>
 			<description>
-				<line>When a reservation is created / updated while the student assistant is enabled (locking is not required in this case), notify the online sectioning server about an offering change.</line>
+				<line>When a reservation is created, updated, or deleted while the student assistant is enabled (locking is not required in this case), notify the online sectioning server about an offering change.</line>
 			</description>
 		</item>
 		<item>
