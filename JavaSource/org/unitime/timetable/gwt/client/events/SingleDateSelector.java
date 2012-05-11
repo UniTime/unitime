@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
@@ -66,6 +67,7 @@ import com.google.gwt.user.datepicker.client.CalendarUtil;
 public class SingleDateSelector extends Composite implements HasValue<Date> {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private PopupPanel iPopup;
 	private SingleMonth iMonth;
@@ -208,9 +210,9 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 	
 	public void init(Long sessionId) {
 		if (sessionId == null) {
-			iPicker.setHint("No academic session is selected.");
+			iPicker.setHint(MESSAGES.hintNoSession());
 		} else {
-			iPicker.setHint("Loading data for " + iAcademicSession.getAcademicSessionName() + " ...");
+			iPicker.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override

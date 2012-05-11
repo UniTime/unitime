@@ -21,7 +21,9 @@ package org.unitime.timetable.gwt.client.events;
 
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -34,6 +36,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 
 public class StartEndTimeSelector extends Composite implements HasValue<StartEndTimeSelector.StartEndTime> {
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeWidget<HorizontalPanel> iPanel;
 	private TimeSelector iStart, iEnd;
 	
@@ -41,12 +44,12 @@ public class StartEndTimeSelector extends Composite implements HasValue<StartEnd
 		HorizontalPanel panel = new HorizontalPanel();
 		panel.setSpacing(2);
 		panel.setStyleName("unitime-TimeSelectorPanel");
-		Label labelFrom = new Label("From:");
+		Label labelFrom = new Label(MESSAGES.propFrom());
 		panel.add(labelFrom);
 		panel.setCellVerticalAlignment(labelFrom, HasVerticalAlignment.ALIGN_MIDDLE);
 		iStart = new TimeSelector(null);
 		panel.add(iStart);
-		Label labelTo = new Label("To:");
+		Label labelTo = new Label(MESSAGES.propTo());
 		labelTo.getElement().getStyle().setPaddingLeft(5, Unit.PX);
 		panel.add(labelTo);
 		panel.setCellVerticalAlignment(labelTo, HasVerticalAlignment.ALIGN_MIDDLE);

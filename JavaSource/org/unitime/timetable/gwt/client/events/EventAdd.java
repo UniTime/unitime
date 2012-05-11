@@ -30,13 +30,16 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
+import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
@@ -66,10 +69,12 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -78,6 +83,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class EventAdd extends Composite {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private TextBox iName, iLimit;
 	private ListBox iSponsors, iEventType;
@@ -96,11 +102,14 @@ public class EventAdd extends Composite {
 	
 	private AddMeetingsDialog iEventAddMeetings;
 	private AcademicSessionProvider iSession;
-	private Lookup iLookup;
+	private Lookup iLookup, iAdditionalLookup;
+	private UniTimeTable<ContactInterface> iContacts;
+	private int iContactRow;
 	
 	private EnrollmentTable iEnrollments;
 	private UniTimeHeaderPanel iEnrollmentHeader;
 	private int iEnrollmentRow;
+	private Button iLookupButton, iAdditionalLookupButton;
 			
 	public EventAdd(AcademicSessionProvider session) {
 		iSession = session;
@@ -119,23 +128,50 @@ public class EventAdd extends Composite {
 				}
 			}
 		});
+		iAdditionalLookup = new Lookup();
+		iAdditionalLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+				if (event.getValue() != null) {
+					final ContactInterface contact = new ContactInterface(event.getValue());
+					List<Widget> row = new ArrayList<Widget>();
+					row.add(new Label(contact.getName(), false));
+					row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
+					row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
+					Image remove = new Image(RESOURCES.delete());
+					remove.addStyleName("remove");
+					remove.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							for (int row = 1; row < iContacts.getRowCount(); row ++)
+								if (contact.equals(iContacts.getData(row))) {
+									iContacts.removeRow(row);
+									break;
+								}
+							iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
+						}
+					});
+					row.add(remove);
+					int rowNum = iContacts.addRow(contact, row);
+					for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+						iContacts.getCellFormatter().addStyleName(rowNum, col, "main-contact");
+				}
+				iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
+			}
+		});
 		iLookup.setOptions("mustHaveExternalId" + (iSession.getAcademicSessionId() == null ? "" : ",session=" + iSession.getAcademicSessionId()));
+		iAdditionalLookup.setOptions("mustHaveExternalId" + (iSession.getAcademicSessionId() == null ? "" : ",session=" + iSession.getAcademicSessionId()));
 		iSession.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
 			@Override
 			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
 				iLookup.setOptions("mustHaveExternalId,session=" + event.getNewAcademicSessionId());
+				iAdditionalLookup.setOptions("mustHaveExternalId,session=" + event.getNewAcademicSessionId());
 			}
 		});
 		
-		iHeader = new UniTimeHeaderPanel("Event");
-		iHeader.addButton("lookup", "<u>L</u>ookup Contact", 125, new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				iLookup.setQuery((iMainFName.getText() + (iMainMName.getText().isEmpty() ? "" : " " + iMainMName.getText()) + " " + iMainLName.getText()).trim()); 
-				iLookup.center();
-			}
-		});
-		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
+		
+		iHeader = new UniTimeHeaderPanel(MESSAGES.sectEvent());
+		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -148,21 +184,20 @@ public class EventAdd extends Composite {
 		iName.setStyleName("unitime-TextBox");
 		iName.setMaxLength(100);
 		iName.setWidth("480px");
-		iForm.addRow("Event Name:", iName);
+		iForm.addRow(MESSAGES.propEventName(), iName);
 		
 		iSponsors = new ListBox();
-		iForm.addRow("Sponsoring Organization:", iSponsors);
+		iForm.addRow(MESSAGES.propSponsor(), iSponsors);
 		
 		iEventType = new ListBox();
-		iEventType.addItem("Special Event");
-		iEventType.addItem("Course Related Event");
-		iForm.addRow("Event Type:", iEventType);
+		iEventType.addItem(EventInterface.EventType.Special.getName());
+		iForm.addRow(MESSAGES.propEventType(), iEventType);
 		
 		iLimit = new TextBox();
 		iLimit.setStyleName("unitime-TextBox");
 		iLimit.setMaxLength(10);
 		iLimit.setWidth("50px");
-		iForm.addRow("Expected Attendance:", iLimit);
+		iForm.addRow(MESSAGES.propAttendance(), iLimit);
 
 		iCourses = new CourseRelatedObjectsTable(iSession) {
 			@Override
@@ -178,57 +213,102 @@ public class EventAdd extends Composite {
 			}
 		});
 		
-		iReqAttendance = new CheckBox("Students are required to attend this event.");
+		iReqAttendance = new CheckBox(MESSAGES.checkRequiredAttendance());
 						
 		SimpleForm mainContact = new SimpleForm();
+		mainContact.getElement().getStyle().clearWidth();
 		mainContact.removeStyleName("unitime-NotPrintableBottomLine");
+		
+		iLookupButton = new Button(MESSAGES.buttonLookupMainContact());
+		iLookupButton.setWidth("75px");
+		Character lookupAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonLookupMainContact());
+		if (lookupAccessKey != null) iLookupButton.setAccessKey(lookupAccessKey);
+		iLookupButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (!iLookupButton.isVisible()) return;
+					iLookup.setQuery((iMainFName.getText() + (iMainMName.getText().isEmpty() ? "" : " " + iMainMName.getText()) + " " + iMainLName.getText()).trim()); 
+					iLookup.center();
+				}
+		});
+		iLookupButton.setVisible(false);
+		
+		iAdditionalLookupButton = new Button(MESSAGES.buttonLookupAdditionalContact());
+		iAdditionalLookupButton.setWidth("125px");
+		Character additionalLookupAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonLookupAdditionalContact());
+		if (additionalLookupAccessKey != null) iAdditionalLookupButton.setAccessKey(additionalLookupAccessKey);
+		iAdditionalLookupButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (iAdditionalLookupButton.isVisible()) iAdditionalLookup.center();
+				}
+		});
+		iAdditionalLookupButton.setVisible(false);
+		
 		
 		iMainFName = new TextBox();
 		iMainFName.setStyleName("unitime-TextBox");
 		iMainFName.setMaxLength(100);
-		iMainFName.setWidth("280px");
-		mainContact.addRow("First Name:", iMainFName);
+		iMainFName.setWidth("285px");
+		mainContact.addRow(MESSAGES.propFirstName(), iMainFName);
+		mainContact.setWidget(0, 2, iLookupButton);
 		
 		iMainMName = new TextBox();
 		iMainMName.setStyleName("unitime-TextBox");
 		iMainMName.setMaxLength(100);
-		iMainMName.setWidth("280px");
-		mainContact.addRow("Middle Name:", iMainMName);
+		iMainMName.setWidth("285px");
+		mainContact.addRow(MESSAGES.propMiddleName(), iMainMName);
 		
 		iMainLName = new TextBox();
 		iMainLName.setStyleName("unitime-TextBox");
 		iMainLName.setMaxLength(100);
-		iMainLName.setWidth("280px");
-		mainContact.addRow("Last Name:", iMainLName);
+		iMainLName.setWidth("285px");
+		mainContact.addRow(MESSAGES.propLastName(), iMainLName);
 		
 		iMainEmail = new TextBox();
 		iMainEmail.setStyleName("unitime-TextBox");
 		iMainEmail.setMaxLength(200);
-		iMainEmail.setWidth("280px");
-		mainContact.addRow("Email:", iMainEmail);
+		iMainEmail.setWidth("285px");
+		mainContact.addRow(MESSAGES.propEmail(), iMainEmail);
 		
 		iMainPhone = new TextBox();
 		iMainPhone.setStyleName("unitime-TextBox");
 		iMainPhone.setMaxLength(35);
-		iMainPhone.setWidth("280px");
-		mainContact.addRow("Phone:", iMainPhone);
+		iMainPhone.setWidth("285px");
+		mainContact.addRow(MESSAGES.propPhone(), iMainPhone);
+		mainContact.setWidget(mainContact.getRowCount() - 1, 2, iAdditionalLookupButton);
 		
-		iForm.addRow("Main Contact:", mainContact);
+		iForm.addRow(MESSAGES.propMainContact(), mainContact);
+		
+		iContacts = new UniTimeTable<ContactInterface>();
+		iContacts.setStyleName("unitime-EventContacts");
+		
+		List<Widget> contactHeader = new ArrayList<Widget>();
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colName()));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colEmail()));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
+		contactHeader.add(new UniTimeTableHeader("&nbsp;"));
+		iContacts.addRow(null, contactHeader);
+		
+		iContactRow = iForm.addRow(MESSAGES.propAdditionalContacts(), iContacts);
+		iForm.getRowFormatter().setVisible(iContactRow, false);
 		
 		iEmails = new TextArea();
 		iEmails.setStyleName("unitime-TextArea");
 		iEmails.setVisibleLines(3);
 		iEmails.setCharacterWidth(80);
-		iForm.addRow("Additional Emails:", iEmails);
+		UniTimeWidget<TextArea> emailsWithHint = new UniTimeWidget<TextArea>(iEmails);
+		emailsWithHint.setHint(MESSAGES.hintAdditionalEmails());
+		iForm.addRow(MESSAGES.propAdditionalEmails(), emailsWithHint);
 		
 		iNotes = new TextArea();
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setVisibleLines(5);
 		iNotes.setCharacterWidth(80);
-		iForm.addRow("Additional Information:", iNotes);
+		iForm.addRow(MESSAGES.propAdditionalInformation(), iNotes);
 		
 		iCoursesForm = new SimpleForm();
-		iCoursesForm.addHeaderRow("Courses / Classes");
+		iCoursesForm.addHeaderRow(MESSAGES.sectRelatedCourses());
 		iCoursesForm.removeStyleName("unitime-NotPrintableBottomLine");
 		iCoursesForm.addRow(iCourses);
 		iCoursesForm.addRow(iReqAttendance);
@@ -237,7 +317,7 @@ public class EventAdd extends Composite {
 		iEventType.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				int row = iForm.getRow("Expected Attendance:");
+				int row = iForm.getRow(MESSAGES.propAttendance());
 				if (iEventType.getSelectedIndex() == 1) {
 					iCoursesForm.setVisible(true);
 					iForm.getRowFormatter().setVisible(row, false);
@@ -257,7 +337,7 @@ public class EventAdd extends Composite {
 
 			@Override
 			public void onSuccess(List<MeetingInterface> result) {
-				LoadingWidget.getInstance().show("Checking room availability...");
+				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -275,8 +355,8 @@ public class EventAdd extends Composite {
 			}
 		});
 		
-		iMeetingsHeader = new UniTimeHeaderPanel("Meetings");
-		iMeetingsHeader.addButton("add", "<u>A</u>dd", 75, new ClickHandler() {
+		iMeetingsHeader = new UniTimeHeaderPanel(MESSAGES.sectMeetings());
+		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEventAddMeetings.showDialog();
@@ -303,7 +383,7 @@ public class EventAdd extends Composite {
 		
 		iEnrollments = new EnrollmentTable(false, true);
 		iEnrollments.getTable().setStyleName("unitime-Enrollments");
-		iEnrollmentHeader = new UniTimeHeaderPanel("Enrollments");
+		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
 		iEnrollmentRow = iForm.addHeaderRow(iEnrollmentHeader);
 		iForm.addRow(iEnrollments.getTable());
 		iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
@@ -326,7 +406,7 @@ public class EventAdd extends Composite {
 	
 	private int iLastScrollTop, iLastScrollLeft;
 	public void show() {
-		UniTimePageLabel.getInstance().setPageName("Add Event");
+		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddEvent());
 		setVisible(true);
 		iLastScrollLeft = Window.getScrollLeft();
 		iLastScrollTop = Window.getScrollTop();
@@ -348,15 +428,16 @@ public class EventAdd extends Composite {
 	
 	public void setup(EventPropertiesRpcResponse properties) {
 		if (properties.hasSponsoringOrganizations()) {
+			iSponsors.clear();
 			iSponsors.addItem("Select...", "");
 			for (SponsoringOrganizationInterface sponsor: properties.getSponsoringOrganizations())
 				iSponsors.addItem(sponsor.getName(), sponsor.getUniqueId().toString());
 		} else {
-			iForm.getRowFormatter().setVisible(iForm.getRow("Sponsoring Organization:"), false);
+			iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), false);
 		}
 	}
 	
-	public void reset(String roomFilterValue, List<SelectionInterface> selection, ContactInterface mainContact, boolean canLookup) {
+	public void reset(String roomFilterValue, List<SelectionInterface> selection, ContactInterface mainContact, boolean canLookup, boolean canAddCourseEvent) {
 		iHeader.clearMessage();
 		iName.setText("");
 		iSponsors.setSelectedIndex(0);
@@ -367,7 +448,15 @@ public class EventAdd extends Composite {
 		iNotes.setText("");
 		iEmails.setText("");
 		iCourses.setValue(null);
-		iHeader.setEnabled("lookup", canLookup);
+		iLookupButton.setVisible(canLookup);
+		iAdditionalLookupButton.setVisible(canLookup);
+		if (canAddCourseEvent) {
+			if (iEventType.getItemCount() == 1)
+				iEventType.addItem(EventInterface.EventType.Course.getName());
+		} else {
+			if (iEventType.getItemCount() == 2)
+				iEventType.removeItem(1);
+		}
 		
 		iMeetings.clearTable(1);
 		if (selection != null && !selection.isEmpty()) {
@@ -387,7 +476,7 @@ public class EventAdd extends Composite {
 				}
 			}
 			if (!meetings.isEmpty()) {
-				LoadingWidget.getInstance().show("Checking room availability...");
+				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(meetings, iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -504,10 +593,10 @@ public class EventAdd extends Composite {
 			setStyleName("unitime-EventOwners");
 			
 			List<Widget> header = new ArrayList<Widget>();
-			header.add(new UniTimeTableHeader("Subject"));
-			header.add(new UniTimeTableHeader("Course Number"));
-			header.add(new UniTimeTableHeader("Config / Subpart"));
-			header.add(new UniTimeTableHeader("Class Number"));
+			header.add(new UniTimeTableHeader(MESSAGES.colSubject()));
+			header.add(new UniTimeTableHeader(MESSAGES.colCourseNumber()));
+			header.add(new UniTimeTableHeader(MESSAGES.colConfigOrSubpart()));
+			header.add(new UniTimeTableHeader(MESSAGES.colClassNumber()));
 			header.add(new UniTimeTableHeader("&nbsp;"));
 			
 			addRow(null, header);
@@ -560,7 +649,7 @@ public class EventAdd extends Composite {
 			
 			final ListBox course = new ListBox();
 			course.addStyleName("course");
-			course.addItem("N/A", "");
+			course.addItem(MESSAGES.itemNotApplicable(), "");
 			course.setSelectedIndex(0);
 			
 			subject.addChangeHandler(new ChangeHandler() {
@@ -569,7 +658,7 @@ public class EventAdd extends Composite {
 					final RelatedObjectLookupRpcResponse rSubject = (subject.getSelectedIndex() < 0 ? null : line.getSubject(subject.getValue(subject.getSelectedIndex())));
 					if (rSubject == null) {
 						course.clear();
-						course.addItem("N/A", "");
+						course.addItem(MESSAGES.itemNotApplicable(), "");
 						course.setSelectedIndex(0);
 						DomEvent.fireNativeEvent(Document.get().createChangeEvent(), course);
 					} else {
@@ -612,7 +701,7 @@ public class EventAdd extends Composite {
 			
 			final ListBox subpart = new ListBox();
 			subpart.addStyleName("subpart");
-			subpart.addItem("N/A", "");
+			subpart.addItem(MESSAGES.itemNotApplicable(), "");
 			subpart.setSelectedIndex(0);
 			
 			course.addChangeHandler(new ChangeHandler() {
@@ -622,7 +711,7 @@ public class EventAdd extends Composite {
 					final RelatedObjectLookupRpcResponse rCourse = (course.getSelectedIndex() < 0 ? null : line.getCourse(course.getValue(course.getSelectedIndex())));
 					if (rCourse == null) {
 						subpart.clear();
-						subpart.addItem("N/A", "");
+						subpart.addItem(MESSAGES.itemNotApplicable(), "");
 						DomEvent.fireNativeEvent(Document.get().createChangeEvent(), subpart);
 					} else {
 						subpart.clear();
@@ -668,7 +757,7 @@ public class EventAdd extends Composite {
 			
 			final ListBox clazz = new ListBox();
 			clazz.addStyleName("class");
-			clazz.addItem("N/A", "");
+			clazz.addItem(MESSAGES.itemNotApplicable(), "");
 			clazz.setSelectedIndex(0);
 			
 			subpart.addChangeHandler(new ChangeHandler() {
@@ -679,7 +768,7 @@ public class EventAdd extends Composite {
 					final RelatedObjectLookupRpcResponse rSubpart = (subpart.getSelectedIndex() < 0 ? null : line.getSubpart(subpart.getValue(subpart.getSelectedIndex())));
 					if (rSubpart == null) {
 						clazz.clear();
-						clazz.addItem("N/A", "");
+						clazz.addItem(MESSAGES.itemNotApplicable(), "");
 						clazz.setSelectedIndex(0);
 					} else {
 						clazz.clear();

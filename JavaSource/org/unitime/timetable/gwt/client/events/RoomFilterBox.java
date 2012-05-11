@@ -26,11 +26,13 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -46,6 +48,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class RoomFilterBox extends UniTimeFilterBox {
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private ListBox iBuildings, iDepartments;
 	
 	public RoomFilterBox(AcademicSessionProvider session) {
@@ -150,20 +153,20 @@ public class RoomFilterBox extends UniTimeFilterBox {
 			}
 		});
 		
-		Label l1 = new Label("Min:");
+		Label l1 = new Label(MESSAGES.propMin());
 
 		final TextBox min = new TextBox();
 		min.setStyleName("gwt-SuggestBox");
 		min.setMaxLength(10); min.getElement().getStyle().setWidth(50, Unit.PX);
 		
-		Label l2 = new Label("Max:");
+		Label l2 = new Label(MESSAGES.propMax());
 		l2.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
 		final TextBox max = new TextBox();
 		max.setMaxLength(10); max.getElement().getStyle().setWidth(50, Unit.PX);
 		max.setStyleName("gwt-SuggestBox");
 		
-		final CheckBox nearby = new CheckBox("Include close by locations");
+		final CheckBox nearby = new CheckBox(MESSAGES.checkIncludeNearby());
 		nearby.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
 		addFilter(new FilterBox.CustomFilter("other", l1, min, l2, max, nearby) {
@@ -173,8 +176,8 @@ public class RoomFilterBox extends UniTimeFilterBox {
 					callback.onSuccess(null);
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
-					if ("nearby".startsWith(text.toLowerCase()) || "include close by locations".startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion("Include close by locations", new Chip("flag", "nearby")));
+					if ("nearby".startsWith(text.toLowerCase()) || MESSAGES.checkIncludeNearby().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkIncludeNearby(), new Chip("flag", "nearby")));
 					} else {
 						Chip old = null;
 						for (Chip c: chips) { if (c.getCommand().equals("size")) { old = c; break; } }
@@ -313,7 +316,7 @@ public class RoomFilterBox extends UniTimeFilterBox {
 			return true;
 		} else if ("department".equals(filter.getCommand())) {
 			iDepartments.clear();
-			iDepartments.addItem("All Departments", "");
+			iDepartments.addItem(MESSAGES.itemAllDepartments(), "");
 			if (entities != null)
 				for (FilterRpcResponse.Entity entity: entities)
 					iDepartments.addItem(entity.getName() + " (" + entity.getCount() + ")", entity.getAbbreviation());

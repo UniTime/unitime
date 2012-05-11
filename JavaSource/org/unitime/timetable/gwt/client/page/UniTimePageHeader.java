@@ -140,7 +140,7 @@ public class UniTimePageHeader extends Composite {
 				userLabel.setStyleName("unitime-SessionSelector");
 				iUserInfo.add(userLabel);
 				HTML hint = new HTML(result.get("2Role"), false);
-				hint.setStyleName("unitime-Hint");
+				hint.setStyleName(result.containsKey("Chameleon") ? "unitime-Hint" : "unitime-NotClickableHint");
 				iUserInfo.add(hint);
 				if (result.containsKey("Chameleon")) {
 					ClickHandler c = new ClickHandler() {

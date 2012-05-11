@@ -125,23 +125,62 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Name")
 	String colName();
 	
+	@DefaultMessage("Course")
+	String colCourse();
+	
 	@DefaultMessage("Section")
 	String colSection();
 	
 	@DefaultMessage("Type")
 	String colType();
 	
+	@DefaultMessage("Time")
+	String colTime();
+
+	@DefaultMessage("Instructor")
+	String colInstructor();
+
 	@DefaultMessage("Instructor / Sponsor")
 	String colSponsorOrInstructor();
 
 	@DefaultMessage("Main Contact")
 	String colMainContact();
 	
-	@DefaultMessage("Attend/Limit")
+	@DefaultMessage("Limit")
 	String colLimit();
 
 	@DefaultMessage("Enrollment")
 	String colEnrollment();
+	
+	@DefaultMessage("Email")
+	String colEmail();
+	
+	@DefaultMessage("Phone")
+	String colPhone();
+	
+	@DefaultMessage("Subject")
+	String colSubject();
+	
+	@DefaultMessage("Course Number")
+	String colCourseNumber();
+	
+	@DefaultMessage("Config / Subpart")
+	String colConfigOrSubpart();
+	
+	@DefaultMessage("Class Number")
+	String colClassNumber();
+	
+	@DefaultMessage("User")
+	String colUser();
+	
+	@DefaultMessage("Action")
+	String colAction();
+	
+	@DefaultMessage("Meetings")
+	String colMeetings();
+	
+	@DefaultMessage("Note")
+	String colNote();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -188,6 +227,87 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Resource:")
 	String propResource();
 	
+	@DefaultMessage("Event Name:")
+	String propEventName();
+	
+	@DefaultMessage("Sponsoring Organization:")
+	String propSponsor();
+	
+	@DefaultMessage("Enrollment:")
+	String propEnrollment();
+	
+	@DefaultMessage("Student Conflicts:")
+	String propStudentConflicts();
+	
+	@DefaultMessage("Event Type:")
+	String propEventType();
+	
+	@DefaultMessage("Expected Attendance:")
+	String propAttendance();
+	
+	@DefaultMessage("Main Contact:")
+	String propMainContact();
+	
+	@DefaultMessage("First Name:")
+	String propFirstName();
+	
+	@DefaultMessage("Middle Name:")
+	String propMiddleName();
+
+	@DefaultMessage("Last Name:")
+	String propLastName();
+
+	@DefaultMessage("Email:")
+	String propEmail();
+
+	@DefaultMessage("Phone:")
+	String propPhone();
+
+	@DefaultMessage("Additional Contacts:")
+	String propAdditionalContacts();
+	
+	@DefaultMessage("Contacts")
+	String propContacts();
+	
+	@DefaultMessage("Additional Emails:")
+	String propAdditionalEmails();
+
+	@DefaultMessage("Additional Information:")
+	String propAdditionalInformation();
+	
+	@DefaultMessage("Last Change:")
+	String propLastChange();
+	
+	@DefaultMessage("Dates:")
+	String propDates();
+	
+	@DefaultMessage("Times:")
+	String propTimes();
+	
+	@DefaultMessage("Locations:")
+	String propLocations();
+	
+	@DefaultMessage("Requested By:")
+	String propRequestedBy();
+	
+	@DefaultMessage("After:")
+	String propAfter();
+	
+	@DefaultMessage("Before:")
+	String propBefore();
+	
+	@DefaultMessage("Min:")
+	String propMin();
+
+	@DefaultMessage("Max:")
+	String propMax();
+	
+	@DefaultMessage("From:")
+	String propFrom();
+	
+	@DefaultMessage("To:")
+	String propTo();
+
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -203,15 +323,60 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd Event")
 	String buttonAddEvent();
 	
+	@DefaultMessage("<u>A</u>dd")
+	String buttonAddMeetings();
+	
 	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
 	
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExportICal();
 	
+	@DefaultMessage("<u>B</u>ack")
+	String buttonBack();
+	
+	@DefaultMessage("<u>L</u>ookup")
+	String buttonLookupMainContact();
+	
+	@DefaultMessage("More <u>C</u>ontacts...")
+	String buttonLookupAdditionalContact();
+	
+	@DefaultMessage("<u>N</u>ext")
+	String buttonNext();
+	
+	@DefaultMessage("<u>P</u>revious")
+	String buttonPrevious();
+	
+	@DefaultMessage("&laquo;")
+	String buttonLeft();
+	
+	@DefaultMessage("&raquo;")
+	String buttonRight();
+	
+	@DefaultMessage("<u>S</u>elect")
+	String buttonSelect();
+
 	@DefaultMessage("Filter")
 	String sectFilter();
 	
+	@DefaultMessage("Event")
+	String sectEvent();
+	
+	@DefaultMessage("Meetings")
+	String sectMeetings();
+	
+	@DefaultMessage("Courses / Classes")
+	String sectRelatedCourses();
+	
+	@DefaultMessage("Enrollments")
+	String sectEnrollments();
+	
+	@DefaultMessage("Notes")
+	String sectNotes();
+	
+	@DefaultMessage("Relations")
+	String sectRelations();
+
 	@DefaultMessage("{0} timetable for {1}")
 	String sectTimetable(String resource, String session);
 
@@ -221,8 +386,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
+	@DefaultMessage("Loading data for {0} ...")
+	String waitLoadingData(String session);
+	
 	@DefaultMessage("Loading {0} timetable for {1} ...")
 	String waitLoadingTimetable(String name, String session);
+	
+	@DefaultMessage("Checking room availability...")
+	String waitCheckingRoomAvailability();
+	
+	@DefaultMessage("Loading academic sessions...")
+	String waitLoadingSessions();
 	
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -232,6 +406,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
+	
+	@DefaultMessage("No date is selected.")
+	String errorNoDateSelected();
+	
+	@DefaultMessage("No rooms are matching the filter.")
+	String errorNoMatchingRooms();
 	
 	@DefaultMessage("Room")
 	String resourceRoom();
@@ -244,4 +424,65 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>L</u>ist of Events")
 	String tabTable();
+	
+	@DefaultMessage("Students are required to attend this event.")
+	String checkRequiredAttendance();
+	
+	@DefaultMessage("Display Conflicts")
+	String checkDisplayConflicts();
+	
+	@DefaultMessage("Include close by locations")
+	String checkIncludeNearby();
+	
+	@DefaultMessage("One email per line please.")
+	String hintAdditionalEmails();
+	
+	@DefaultMessage("No academic session is selected.")
+	String hintNoSession();
+	
+	@DefaultMessage("Add Event")
+	String pageAddEvent();
+	
+	@DefaultMessage("Event Detail")
+	String pageEventDetail();
+	
+	@DefaultMessage("N/A")
+	String itemNotApplicable();
+	
+	@DefaultMessage("All Departments")
+	String itemAllDepartments();
+	
+	@DefaultMessage("Add Meetings...")
+	String dialogAddMeetings();
+	
+	@DefaultMessage("{0}<br>{1}<br>{2} seats")
+	String singleRoomSelection(String name, String type, String capacity);
+	
+	@DefaultMessage("{0}<br>{1}<br>{2} - {3}")
+	String dateTimeHeader(String dow, String date, String start, String end);
+	
+	@DefaultMessage("Selected")
+	String legendSelected();
+	
+	@DefaultMessage("Not Selected")
+	String legendNotSelected();
+	
+	@DefaultMessage("Not in Session")
+	String legendNotInSession();
+	
+	@DefaultMessage("Classes Start/End")
+	String legendClassesStartOrEnd();
+	
+	@DefaultMessage("Examination Start")
+	String legendExamStart();
+	
+	@DefaultMessage("Holiday")
+	String legendHoliday();
+	
+	@DefaultMessage("Break")
+	String legendBreak();
+	
+	@DefaultMessage("Today")
+	String legendToday();
+	
 }

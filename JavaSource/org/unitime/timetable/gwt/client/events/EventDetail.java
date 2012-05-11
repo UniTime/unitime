@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
@@ -49,6 +50,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class EventDetail extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private EventInterface iEvent = null;
 	
@@ -65,7 +67,7 @@ public class EventDetail extends Composite {
 		iForm = new SimpleForm();
 		
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
+		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -76,9 +78,9 @@ public class EventDetail extends Composite {
 		iContacts.setStyleName("unitime-EventContacts");
 		
 		List<Widget> contactHeader = new ArrayList<Widget>();
-		contactHeader.add(new UniTimeTableHeader("Name"));
-		contactHeader.add(new UniTimeTableHeader("Email"));
-		contactHeader.add(new UniTimeTableHeader("Phone"));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colName()));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colEmail()));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
 		iMeetings = new MeetingTable();
@@ -87,13 +89,13 @@ public class EventDetail extends Composite {
 		iOwners.setStyleName("unitime-EventOwners");
 
 		List<Widget> ownersHeader = new ArrayList<Widget>();
-		ownersHeader.add(new UniTimeTableHeader("Course"));
-		ownersHeader.add(new UniTimeTableHeader("Section"));
-		ownersHeader.add(new UniTimeTableHeader("Type"));
-		ownersHeader.add(new UniTimeTableHeader("Date"));
-		ownersHeader.add(new UniTimeTableHeader("Time"));
-		ownersHeader.add(new UniTimeTableHeader("Room"));
-		ownersHeader.add(new UniTimeTableHeader("Instructor"));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colType()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colLocation()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
 		iOwners.addRow(null, ownersHeader);
 		
 		iEnrollments = new EnrollmentTable(false, true);
@@ -103,11 +105,11 @@ public class EventDetail extends Composite {
 		iNotes.setStyleName("unitime-EventNotes");
 
 		List<Widget> notesHeader = new ArrayList<Widget>();
-		notesHeader.add(new UniTimeTableHeader("Date"));
-		notesHeader.add(new UniTimeTableHeader("User"));
-		notesHeader.add(new UniTimeTableHeader("Action"));
-		notesHeader.add(new UniTimeTableHeader("Meetings"));
-		notesHeader.add(new UniTimeTableHeader("Note"));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colUser()));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colAction()));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colMeetings()));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colNote()));
 		iNotes.addRow(null, notesHeader);
 		
 		iFooter = iHeader.clonePanel();
@@ -117,7 +119,7 @@ public class EventDetail extends Composite {
 	
 	private int iLastScrollTop, iLastScrollLeft;
 	public void show() {
-		UniTimePageLabel.getInstance().setPageName("Event Detail");
+		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventDetail());
 		setVisible(true);
 		iLastScrollLeft = Window.getScrollLeft();
 		iLastScrollTop = Window.getScrollTop();
@@ -146,7 +148,7 @@ public class EventDetail extends Composite {
 		iHeader.setHeaderTitle(iEvent.getName() + " (" + iEvent.getType().getName() + ")");
 		iForm.addHeaderRow(iHeader);
 		
-		iForm.addRow("Event Type:", new Label(iEvent.getType().getName()));
+		iForm.addRow(MESSAGES.propEventType(), new Label(iEvent.getType().getName()));
 		
 		iContacts.clearTable(1);
 		if (iEvent.hasContact()) {
@@ -154,7 +156,9 @@ public class EventDetail extends Composite {
 			row.add(new Label(iEvent.getContact().getName(), false));
 			row.add(new Label(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "", false));
 			row.add(new Label(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "", false));
-			iContacts.addRow(iEvent.getContact(), row);
+			int rowNum = iContacts.addRow(iEvent.getContact(), row);
+			for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+				iContacts.getCellFormatter().addStyleName(rowNum, col, "main-contact");
 		}
 		if (iEvent.hasAdditionalContacts()) {
 			for (ContactInterface contact: iEvent.getAdditionalContacts()) {
@@ -162,38 +166,40 @@ public class EventDetail extends Composite {
 				row.add(new Label(contact.getName(), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
-				for (Label label: row) label.addStyleName("main-contact");
-				iContacts.addRow(contact, row);
+				int rowNum = iContacts.addRow(contact, row);
+				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+					iContacts.getCellFormatter().addStyleName(rowNum, col, "additional-contact");
+
 			}
 		}
 		if (iContacts.getRowCount() > 1)
-			iForm.addRow("Contact:", iContacts);
+			iForm.addRow(MESSAGES.propContacts(), iContacts);
 		
 		if (iEvent.hasEmail()) {
-			iForm.addRow("Additional Emails:", new Label(iEvent.getEmail()));
+			iForm.addRow(MESSAGES.propAdditionalEmails(), new Label(iEvent.getEmail()));
 		}
 
 		if (iEvent.hasSponsor()) {
-			iForm.addRow("Sponsoring Organization:", new Label(iEvent.getSponsor().getName()));
+			iForm.addRow(MESSAGES.propSponsor(), new Label(iEvent.getSponsor().getName()));
 		}
 
 		if (iEvent.hasEnrollments()) {
-			iForm.addRow("Enrollment:", new Label(String.valueOf(iEvent.getEnrollments().size())));
+			iForm.addRow(MESSAGES.propEnrollment(), new Label(String.valueOf(iEvent.getEnrollments().size())));
 			int conf = 0;
 			for (Enrollment enrollment: iEvent.getEnrollments()) {
 				if (enrollment.hasConflict()) { conf ++; }
 			}
 			if (conf > 0) {
-				iForm.addRow("Student Conflicts:", new Label(String.valueOf(conf)));
+				iForm.addRow(MESSAGES.propStudentConflicts(), new Label(String.valueOf(conf)));
 			}
 		}
 		
 		if (iEvent.hasMaxCapacity()) {
-			iForm.addRow("Event Attendance:", new Label(iEvent.getMaxCapacity().toString()));
+			iForm.addRow(MESSAGES.propAttendance(), new Label(iEvent.getMaxCapacity().toString()));
 		}
 		
 		if (iEvent.hasLastChange()) {
-			iForm.addRow("Last Change:", new Label(iEvent.getLastChange()));
+			iForm.addRow(MESSAGES.propLastChange(), new Label(iEvent.getLastChange()));
 		}
 		
 		iMeetings.clearTable(1);
@@ -201,7 +207,7 @@ public class EventDetail extends Composite {
 			iMeetings.add(meeting);
 		}
 		if (iMeetings.getRowCount() > 1) {
-			iForm.addHeaderRow("Meetings");
+			iForm.addHeaderRow(MESSAGES.sectMeetings());
 			iForm.addRow(iMeetings);
 		}
 		
@@ -219,7 +225,7 @@ public class EventDetail extends Composite {
 			}
 		}
 		if (iNotes.getRowCount() > 1) {
-			iForm.addHeaderRow("Notes");
+			iForm.addHeaderRow(MESSAGES.sectNotes());
 			iForm.addRow(iNotes);
 		}
 
@@ -288,14 +294,14 @@ public class EventDetail extends Composite {
 			}
 		}
 		if (iOwners.getRowCount() > 1) {
-			iForm.addHeaderRow("Relations");
+			iForm.addHeaderRow(MESSAGES.sectRelations());
 			iForm.addRow(iOwners);
 		}
 		
 		iEnrollments.clear();
 		if (iEvent.hasEnrollments()) {
 			iEnrollments.populate(iEvent.getEnrollments(), false);
-			iForm.addHeaderRow("Enrollments");
+			iForm.addHeaderRow(MESSAGES.sectEnrollments());
 			iForm.addRow(iEnrollments.getTable());
 		}
 
