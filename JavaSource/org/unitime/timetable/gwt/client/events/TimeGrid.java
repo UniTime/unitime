@@ -283,13 +283,16 @@ public class TimeGrid extends Composite {
 	}
 	
 	public TimeGrid getPrintWidget() {
-		int firstHour = firstSlot() / 12;
+		int firstSlot = firstSlot();
+		int firstHour = firstSlot / 12;
+		if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResources(getRoomResources());
 		tg.setResourceType(getResourceType());
 		tg.setMode(getMode());
+		tg.showVerticalSplit();
 		return tg;
 	}
 	
@@ -365,7 +368,10 @@ public class TimeGrid extends Composite {
 			if (w instanceof SelectionPanel)
 				((SelectionPanel)w).move();
 		}
-		
+		showVerticalSplit();
+	}
+	
+	public void showVerticalSplit() {
 		iVLines.clear();
 		if (isShowVerticalSplit()) {
 			if (isVerticalSplitByWeek()) {
@@ -389,7 +395,7 @@ public class TimeGrid extends Composite {
 					}
 				}
 			}
-		}
+		}		
 	}
 	
 	public int firstSlot() {
@@ -1034,7 +1040,8 @@ public class TimeGrid extends Composite {
 				}	
 				break;
 			case Event.ONMOUSEOUT:
-				if (!DOM.isOrHasChild(getElement(), DOM.eventGetToElement(event))) {
+				com.google.gwt.user.client.Element child = DOM.eventGetToElement(event);
+				if (child != null && !DOM.isOrHasChild(getElement(), child)) {
 					if (iPopup.isShowing()) iPopup.hide();
 					iSelection.setVisible(false);
 				}

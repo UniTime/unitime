@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.SuggestionsProvider;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
@@ -50,8 +51,10 @@ import com.google.gwt.user.client.ui.HasValue;
 
 public abstract class UniTimeFilterBox extends Composite implements HasValue<String> {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
 	private UniTimeWidget<FilterBox> iFilter;
+	private boolean iInitialized = false;
 	
 	public UniTimeFilterBox(AcademicSessionProvider session) {
 		iFilter = new UniTimeWidget<FilterBox>(new FilterBox());
@@ -114,9 +117,12 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 
 	protected void init(final boolean init, Long academicSessionId, final Command onSuccess) {
 		if (academicSessionId == null) {
-			iFilter.setHint("No academic session is selected.");
+			iFilter.setHint(MESSAGES.hintNoSession());
 		} else {
-			if (init) iFilter.setHint("Loading data for " + iAcademicSession.getAcademicSessionName() + " ...");
+			if (init) {
+				iFilter.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
+				iInitialized = false;
+			}
 			final String value = iFilter.getWidget().getValue();
 			RPC.execute(createRpcRequest(FilterRpcRequest.Command.LOAD, academicSessionId, iFilter.getWidget().getChips(null), iFilter.getWidget().getText()), new AsyncCallback<FilterRpcResponse>() {
 				@Override
@@ -131,11 +137,16 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 					for (FilterBox.Filter filter: iFilter.getWidget().getFilters())
 						populateFilter(filter, result.getEntities(filter.getCommand()));
 					if (onSuccess != null) onSuccess.execute();
-					if (init) initAsync();
+					if (init) {
+						iInitialized = true;
+						initAsync();
+					}
 				}
 			});
 		}
 	}
+	
+	public boolean isInitialized() { return iInitialized; }
 	
 	protected boolean populateFilter(FilterBox.Filter filter, List<FilterRpcResponse.Entity> entities) {
 		if (filter != null && filter instanceof FilterBox.StaticSimpleFilter) {

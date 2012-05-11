@@ -32,7 +32,9 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRespons
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 public class EventPropertiesBackend implements GwtRpcImplementation<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
 
@@ -40,26 +42,35 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, GwtRpcHelper helper) {
 		EventPropertiesRpcResponse response = new EventPropertiesRpcResponse();
 		
-		response.setCanLookupPeople(canLookupPeople(helper.getUser()));
+		Session session = SessionDAO.getInstance().get(request.getSessionId());
 		
-		response.setCanAddEvent(canAddEvent(helper.getUser()));
+		response.setCanLookupPeople(canLookupPeople(session, helper.getUser()));
 		
-		setupSponsoringOrganizations(response);
+		response.setCanAddEvent(canAddEvent(session, helper.getUser()));
+		response.setCanAddCourseEvent(canAddCourseEvent(session, helper.getUser()));
 		
-		setupMainContact(response, helper.getUser());
+		setupSponsoringOrganizations(session,  response);
+		
+		setupMainContact(session, response, helper.getUser());
 		
 		return response;
 	}
 	
-	public boolean canLookupPeople(User user) {
+	public boolean canLookupPeople(Session session, User user) {
 		return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.STUDENT_ADVISOR.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 	}
 	
-	public boolean canAddEvent(User user) {
+	public boolean canAddEvent(Session session, User user) {
 		return user != null;
 	}
 
-	public void setupSponsoringOrganizations(EventPropertiesRpcResponse response) {
+	public boolean canAddCourseEvent(Session session, User user) {
+		return user != null && user.getRole() != null && (
+				Roles.ADMIN_ROLE.equals(user.getRole()) ||
+				Roles.EVENT_MGR_ROLE.equals(user.getRole()));
+	}
+
+	public void setupSponsoringOrganizations(Session session, EventPropertiesRpcResponse response) {
 		for (SponsoringOrganization s: SponsoringOrganization.findAll()) {
 			SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
 			sponsor.setUniqueId(s.getUniqueId());
@@ -69,7 +80,7 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 		}
 	}
 	
-	public void setupMainContact(EventPropertiesRpcResponse response, User user) {
+	public void setupMainContact(Session session, EventPropertiesRpcResponse response, User user) {
 		if (user == null) return;
 		EventContact contact = EventContact.findByExternalUniqueId(user.getId());
 		if (contact != null) {
@@ -82,7 +93,7 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 			c.setExternalId(contact.getExternalUniqueId());
 			response.setMainContact(c);
 		} else {
-			List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId");
+			List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId" + (session == null ? "" : ",session=" + session.getUniqueId()));
 			if (people != null) {
 				for (PersonInterface person: people) {
 					if (user.getId().equals(person.getId())) {

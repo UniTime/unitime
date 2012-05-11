@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
@@ -52,6 +53,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class SessionDatesSelector extends Composite implements HasValue<List<Date>> {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	AcademicSessionProvider iAcademicSession;
 	UniTimeWidget<AbsolutePanel> iPanel;
@@ -82,9 +84,9 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(Long sessionId) {
 		if (sessionId == null) {
-			iPanel.setHint("No academic session is selected.");
+			iPanel.setHint(MESSAGES.hintNoSession());
 		} else {
-			iPanel.setHint("Loading data for " + iAcademicSession.getAcademicSessionName() + " ...");
+			iPanel.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override
@@ -442,53 +444,53 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			
 			P line = new P(null, "row");
 			line.add(new P(null, "cell", "selected", "first"));
-			line.add(new P("Selected", "title"));
+			line.add(new P(MESSAGES.legendSelected(), "title"));
 			box.add(line);
 
 			line = new P(null, "row");
 			line.add(new P(null, "cell"));
-			line.add(new P("Not Selected", "title"));
+			line.add(new P(MESSAGES.legendNotSelected(), "title"));
 			box.add(line);
 			
 			if (firstOutside >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(firstOutside + 1), "cell", "disabled"));
-				line.add(new P("Not in Session", "title"));
+				line.add(new P(MESSAGES.legendNotInSession(), "title"));
 				box.add(line);
 			}
 			
 			if (start >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(start + 1), "cell", "start"));
-				line.add(new P("Classes Start/End", "title"));
+				line.add(new P(MESSAGES.legendClassesStartOrEnd(), "title"));
 				box.add(line);
 			}
 			
 			if (exam >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(exam + 1), "cell", "exam"));
-				line.add(new P("Examination Start", "title"));
+				line.add(new P(MESSAGES.legendExamStart(), "title"));
 				box.add(line);
 			}
 			
 			if (firstHoliday >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(firstHoliday + 1), "cell", "holiday"));
-				line.add(new P("Holiday", "title"));
+				line.add(new P(MESSAGES.legendHoliday(), "title"));
 				box.add(line);
 			}
 
 			if (firstBreak >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(firstBreak + 1), "cell", "break"));
-				line.add(new P("Break", "title"));
+				line.add(new P(MESSAGES.legendBreak(), "title"));
 				box.add(line);
 			}
 			
 			if (today >= 1) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(today), "cell", "today"));
-				line.add(new P("Today", "title"));
+				line.add(new P(MESSAGES.legendToday(), "title"));
 				box.add(line);
 			}
 		}

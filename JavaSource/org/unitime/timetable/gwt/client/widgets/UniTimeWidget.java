@@ -43,7 +43,7 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 		iPanel.add(iWidget);
 		
 		iHint = new Label(hint == null ? "" : hint, false);
-		iHint.setStyleName("unitime-Hint");
+		iHint.setStyleName("unitime-NotClickableHint");
 		if (hint == null || hint.isEmpty())
 			iHint.setVisible(false);
 		iPanel.add(iHint);
@@ -106,7 +106,7 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 		if (hint == null || hint.isEmpty()) {
 			clearHint();
 		} else {
-			iHint.setStyleName("unitime-Hint");
+			iHint.setStyleName("unitime-NotClickableHint");
 			iHint.setText(hint);
 			iHint.setVisible(true);
 		}

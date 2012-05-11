@@ -268,7 +268,16 @@ h1 {
 	color: #9CB0CE;
 	text-align: right;
 	margin-top: -2px;
+	white-space: nowrap;
 	cursor: pointer;
+}
+
+.unitime-NotClickableHint{
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
 	white-space: nowrap;
 }
 
@@ -2078,6 +2087,10 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventContacts {
 	width: 100%;
+}
+
+.unitime-EventContacts .remove {
+	cursor: pointer;
 }
 
 .unitime-EventMeetings {
