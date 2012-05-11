@@ -46,10 +46,6 @@
 	<%@ include file="/checkAccessLevel.jspf"%>
 </logic:equal>
 
-<%String path = request.getContextPath();
-String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
-String serverPath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+"/";
-%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html:html>
 <head>
@@ -58,23 +54,23 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<meta http-equiv="expires" content="0">
     <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
-	<style type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</style>
-	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime/gwt/standard/standard.css">
-    <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime.css">
-	<link rel="stylesheet" type="text/css" href="<%=basePath%>styles/timetabling.css">
+	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
+	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
-    	<link rel="stylesheet" type="text/css" href="<%=basePath%>%tmtbl.custom.css%" />
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>
-    <link rel="shortcut icon" href="<%=basePath%>images/timetabling.ico" />
+    <link rel="shortcut icon" href="images/timetabling.ico" />
 	<title>UniTime <%=Constants.VERSION%>| <tiles:getAsString name="title" /></title>
-    <script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/loading.js"></script>
-    <script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/validator.js"></script>
-	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar.js"></script>
-	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/lang/calendar-en.js"></script>
-	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar-setup.js"></script>
-	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/select.js"></script>
-	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/rtt.js"></script>
-	<script type="text/javascript" language="javascript" src="<%=basePath%>unitime/unitime.nocache.js"></script>
+    <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
+    <script language="JavaScript" type="text/javascript" src="scripts/validator.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar-setup.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/select.js"></script>
+	<script language="JavaScript" type="text/javascript" src="scripts/rtt.js"></script>
+	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
 	<script language="JavaScript" type="text/javascript">
