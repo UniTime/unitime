@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
@@ -40,13 +41,14 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessionSelectionBox.AcademicSession> implements AcademicSessionProvider {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private List<AcademicSessionChangeHandler> iChangeHandlers = new ArrayList<AcademicSessionChangeHandler>();
 	
 	public AcademicSessionSelectionBox() {
 		super(false);
 		
-		setHint("Loading academic sessions...");
+		setHint(MESSAGES.waitLoadingSessions());
 		RPC.execute(new ListAcademicSessions(Window.Location.getParameter("term")), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
 
 			@Override

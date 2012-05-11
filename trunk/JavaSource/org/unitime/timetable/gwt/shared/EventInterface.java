@@ -673,6 +673,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : ""); 
     	}
     	
+    	public boolean equals(Object o) {
+    		if (o == null || !(o instanceof ContactInterface)) return false;
+    		if (getExternalId() != null)
+    			return getExternalId().equals(((ContactInterface)o).getExternalId());
+    		return getName().equals(((ContactInterface)o).getName());
+    	}
+    	
     	public String toString() { return getName(); }
     }
     
@@ -1170,19 +1177,26 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventPropertiesBackend")
 	public static class EventPropertiesRpcRequest implements GwtRpcRequest<EventPropertiesRpcResponse> {
+		private Long iSessionId = null;
 		
 		public EventPropertiesRpcRequest() {}
+		public EventPropertiesRpcRequest(Long sessionId) { 
+			setSessionId(sessionId);
+		}
 		
-		public static EventPropertiesRpcRequest requestEventProperties() {
-			return new EventPropertiesRpcRequest();
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public static EventPropertiesRpcRequest requestEventProperties(Long sessionId) {
+			return new EventPropertiesRpcRequest(sessionId);
 		}
 		
 		@Override
-		public String toString() { return ""; }
+		public String toString() { return iSessionId == null ? "NULL" : iSessionId.toString(); }
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanAddEvent = false;
+		private boolean iCanLookupPeople = false, iCanAddEvent = false, iCanAddCourseEvent = false;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 	
@@ -1193,6 +1207,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isCanAddEvent() { return iCanAddEvent; }
 		public void setCanAddEvent(boolean canAddEvent) { iCanAddEvent = canAddEvent; }
+
+		public boolean isCanAddCourseEvent() { return iCanAddCourseEvent; }
+		public void setCanAddCourseEvent(boolean canAddEvent) { iCanAddCourseEvent = canAddEvent; }
 
 		public boolean hasSponsoringOrganizations() { return iSponsoringOrganizations != null && !iSponsoringOrganizations.isEmpty(); }
 		public List<SponsoringOrganizationInterface> getSponsoringOrganizations() { return iSponsoringOrganizations; }

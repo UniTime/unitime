@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
@@ -72,6 +73,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 
 public class AddMeetingsDialog extends UniTimeDialogBox {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private static DateTimeFormat sDayOfWeek = DateTimeFormat.getFormat("EEEE");
@@ -103,17 +105,17 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iCallback = callback;
 		iSession = session;
 		
-		setText("Add Meetings...");
+		setText(MESSAGES.dialogAddMeetings());
 		setEscapeToHide(true);
 		
 		iDatesForm = new SimpleForm();
 		
 		iDatesHeader = new UniTimeHeaderPanel();
-		iDatesHeader.addButton("next", "<u>N</u>ext", 75, new ClickHandler() {
+		iDatesHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iDates.getSelectedDaysCount() == 0) {
-					iDatesHeader.setErrorMessage("No date is selected.");
+					iDatesHeader.setErrorMessage(MESSAGES.errorNoDateSelected());
 				}
 				iRooms.getElements(new AsyncCallback<List<Entity>>() {
 					@Override
@@ -124,7 +126,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					public void onSuccess(List<Entity> result) {
 						iMatchingRooms = result;
 						if (result.isEmpty()) {
-							iDatesHeader.setErrorMessage("No rooms are matching the filter.");
+							iDatesHeader.setErrorMessage(MESSAGES.errorNoMatchingRooms());
 						} else if (iDates.getSelectedDaysCount() > 0) {
 							iDatesHeader.clearMessage();
 							loadAndShow();
@@ -137,13 +139,13 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iDatesForm.addHeaderRow(iDatesHeader);
 		
 		iDates = new SessionDatesSelector(session);
-		iDatesForm.addRow("Dates:", iDates);
+		iDatesForm.addRow(MESSAGES.propDates(), iDates);
 		
 		iTimes = new StartEndTimeSelector();
-		iDatesForm.addRow("Times:", iTimes);
+		iDatesForm.addRow(MESSAGES.propTimes(), iTimes);
 		
 		iRooms = new RoomFilterBox(session);
-		iDatesForm.addRow("Locations:", iRooms);
+		iDatesForm.addRow(MESSAGES.propLocations(), iRooms);
 		
 		iDatesForm.addBottomRow(iDatesHeader.clonePanel());
 		
@@ -151,7 +153,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		iAvailabilityHeader = new UniTimeHeaderPanel();
 		
-		iAvailabilityHeader.addButton("dates", "<u>P</u>revious", 75, new ClickHandler() {
+		iAvailabilityHeader.addButton("dates", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				setWidget(iDatesForm);
@@ -159,19 +161,19 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				iResponse = null;
 			}
 		});
-		iAvailabilityHeader.addButton("prev", "&laquo;", new ClickHandler() {
+		iAvailabilityHeader.addButton("prev", MESSAGES.buttonLeft(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex - 10);
 			}
 		});
-		iAvailabilityHeader.addButton("next", "&raquo;", new ClickHandler() {
+		iAvailabilityHeader.addButton("next", MESSAGES.buttonRight(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex + 10);
 			}
 		});
-		iAvailabilityHeader.addButton("select", "<u>S</u>elect", 75, new ClickHandler() {
+		iAvailabilityHeader.addButton("select", MESSAGES.buttonSelect(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -252,7 +254,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 
 	public void loadAndShow() {
-		LoadingWidget.getInstance().show("Loading room availability...");
+		LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 		RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(
 					getStartSlot(), getEndSlot(), getDates(), getRooms(), iSession.getAcademicSessionId()
 				), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -294,7 +296,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 			final Entity room = getRooms().get(i);
 			final P p = new P("room");
-			p.setHTML(room.getName() + "<br>" + room.getProperty("type", null) + "<br>" + room.getProperty("capacity", null) + " seats");
+			p.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
 			p.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
@@ -332,7 +334,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			P day = new P("date");
 			Date d = iDates.getDate(date);
-			day.setHTML(sDayOfWeek.format(d) + "<br>" + sDateFormat.format(d) + "<br>" + TimeUtils.slot2short(getStartSlot()) + " - " + TimeUtils.slot2short(getEndSlot()));
+			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
 			row.add(day);
 			day.addMouseDownHandler(new MouseDownHandler() {
 				@Override

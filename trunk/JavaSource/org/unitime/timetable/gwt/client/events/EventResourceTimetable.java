@@ -48,6 +48,8 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -118,7 +120,6 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	private AcademicSessionSelectionBox iSession;
 	private ListBox iResourceTypes;
 	private SuggestBox iResources;
-	private boolean iCanLookupPeople = false;
 	private int iResourcesRow = -1;
 	private EventFilterBox iEvents = null;
 	private RoomFilterBox iRooms = null;
@@ -128,7 +129,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	private IntervalSelector<String> iViewMode;
 	private TabBar iTabBar;
 	
-	private EventPropertiesRpcResponse iProperties;
+	private EventPropertiesRpcResponse iProperties = null;
 	
 	public EventResourceTimetable(String type) {
 		iLocDate = Window.Location.getParameter("date");
@@ -169,8 +170,9 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				iEventAdd.reset(iRooms.getValue(),
 						(iTimeGrid == null ? null : iTimeGrid.getSelections()),
 						iLookup.getValue() != null ? new EventInterface.ContactInterface(iLookup.getValue()) :
-							iProperties == null ? null : iProperties.getMainContact(),
-						(iProperties == null ? false : iProperties.isCanLookupPeople()));
+						iProperties == null ? null : iProperties.getMainContact(),
+						(iProperties == null ? false : iProperties.isCanLookupPeople()),
+						(iProperties == null ? false : iProperties.isCanAddCourseEvent()));
 				iEventAdd.show();
 			}
 		});
@@ -182,7 +184,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
 				if (iSession.getAcademicSessionId() != null)
-					iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+					loadProperties();
 			}
 			
 			@Override
@@ -315,7 +317,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iWeekPanel.addValueChangeHandler(new ValueChangeHandler<WeekSelector.Interval>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
-				iTable.populateTable(iData, EventResourceTimetable.this, iProperties.isCanLookupPeople());
+				iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
 				populateGrid();
 				changeUrl();
 			}
@@ -384,7 +386,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iRoomPanel.addValueChangeHandler(new ValueChangeHandler<IntervalSelector<ResourceInterface>.Interval>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<IntervalSelector<ResourceInterface>.Interval> e) {
-				iTable.populateTable(iData, EventResourceTimetable.this, iProperties.isCanLookupPeople());
+				iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
 				populateGrid();
 				changeUrl();
 			}
@@ -398,7 +400,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			public void onClick(ClickEvent clickEvent) {
 				
 				EventTable table  = new EventTable();
-				table.populateTable(iData, EventResourceTimetable.this, iProperties.isCanLookupPeople());
+				table.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
 				
 				TimeGrid tg = iTimeGrid.getPrintWidget();
 				for (EventInterface event: iData) {
@@ -428,17 +430,10 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
 		
-		RPC.execute(EventPropertiesRpcRequest.requestEventProperties(), new AsyncCallback<EventPropertiesRpcResponse>() {
+		iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
-			public void onFailure(Throwable caught) {
-			}
-			@Override
-			public void onSuccess(EventPropertiesRpcResponse result) {
-				iProperties = result;
-				iCanLookupPeople = (result == null ? false: result.isCanLookupPeople());
-				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
-				iFilterHeader.setEnabled("add", result.isCanAddEvent());
-				iEventAdd.setup(result);
+			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+				loadProperties();
 			}
 		});
 		
@@ -534,13 +529,12 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	}
 	
 	public String getResourceName() {
-		if (getResourceType() == ResourceType.PERSON && !iCanLookupPeople) return "";
+		if (getResourceType() == ResourceType.PERSON && (iProperties == null || !iProperties.isCanLookupPeople())) return "";
 		return (iResources.getText() == null || iResources.getText().isEmpty() ? null : iResources.getText());
 	}
 	
 	private void resourceTypeChanged(boolean allowEmptyResource) {
-		if (iSession.getAcademicSessionId() != null)
-			iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+		if (iProperties == null || !iRooms.isInitialized() || !iEvents.isInitialized()) return;
 		ResourceType type = getResourceType();
 		if (type != null) {
 			if (type == ResourceType.ROOM) {
@@ -556,7 +550,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			} else {
 				iFilter.getRowFormatter().setVisible(iResourcesRow, type != ResourceType.PERSON);
 				((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getLabel().substring(0,1).toUpperCase() + type.getLabel().substring(1) + ":");
-				iFilterHeader.setEnabled("lookup", iCanLookupPeople && getResourceType() == ResourceType.PERSON);
+				iFilterHeader.setEnabled("lookup", iProperties != null && iProperties.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 				if (iSession.getAcademicSessionId() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
 					iFilterHeader.clearMessage();
 					LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
@@ -646,13 +640,14 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 					for (int i = 0; i < days.length; i++) days[i] = i;
 					int firstHour = firstSlot / 12;
 					int lastHour = 1 + (lastSlot - 1) / 12;
+					if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 					HashMap<Long, String> colors = new HashMap<Long, String>();
 					
 					if (iTimeGrid != null) iTimeGrid.destroy();
 					iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 					iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 					populateGrid();
-					iTable.populateTable(iData, EventResourceTimetable.this, iProperties.isCanLookupPeople());
+					iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
 					iGridOrTablePanel.setWidget(iTabBar.getSelectedTab() == 0 ? iTimeGrid : iTable);
 										
 					showResults();
@@ -903,5 +898,29 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iHeader.setEnabled("print", true);
 		// iGridOrTablePanel.setVisible(true);
 		// iTabBar.setVisible(true);
+	}
+	
+	private void loadProperties() {
+		iProperties = null;
+		iFilterHeader.setEnabled("lookup", false);
+		iFilterHeader.setEnabled("add", false);
+		if (iSession.getAcademicSessionId() != null) {
+			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+				@Override
+				public void onSuccess(EventPropertiesRpcResponse result) {
+					iProperties = result;
+					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
+					iFilterHeader.setEnabled("add", result.isCanAddEvent());
+					iEventAdd.setup(result);
+					resourceTypeChanged(true);
+				}
+			});
+			iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+		} else {
+			iLookup.setOptions("mustHaveExternalId");
+		}
 	}
 }

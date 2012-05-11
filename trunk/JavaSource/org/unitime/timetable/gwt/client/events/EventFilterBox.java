@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
@@ -62,6 +63,7 @@ import com.google.gwt.user.client.ui.TextBox;
 public class EventFilterBox extends UniTimeFilterBox {
 	private ListBox iSponsors;
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	
@@ -122,13 +124,13 @@ public class EventFilterBox extends UniTimeFilterBox {
 		mode.setMultipleSelection(false);
 		addFilter(mode);
 		
-		Label reqLab = new Label("Requested By:");
+		Label reqLab = new Label(MESSAGES.propRequestedBy());
 
 		final TextBox requested = new TextBox();
 		requested.setStyleName("gwt-SuggestBox");
 		requested.setMaxLength(100); requested.setWidth("200px");
 		
-		final CheckBox conflicts = new CheckBox("Display Conflicts");
+		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
 		addFilter(new FilterBox.CustomFilter("other", reqLab, requested, conflicts) {
@@ -138,8 +140,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 					callback.onSuccess(null);
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
-					if ("conflicts".startsWith(text.toLowerCase()) || "display conflicts".startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion("Display Conflicts", new Chip("flag", "conflicts")));
+					if ("conflicts".startsWith(text.toLowerCase()) || MESSAGES.checkDisplayConflicts().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkDisplayConflicts(), new Chip("flag", "conflicts")));
 					}
 					callback.onSuccess(suggestions);
 				}
@@ -297,7 +299,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 		
 		final TimeSelector st = new TimeSelector(null);
 		final TimeSelector et = new TimeSelector(st);
-		addFilter(new FilterBox.CustomFilter("time", new Label("After:"), st, new Label(" Before:"), et) {
+		addFilter(new FilterBox.CustomFilter("time", new Label(MESSAGES.propAfter()), st, new Label(" " + MESSAGES.propBefore()), et) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
