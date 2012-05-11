@@ -159,12 +159,7 @@
 	
 </html:form>
 
-<%
-String path = request.getContextPath();
-String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
-%>
-
-<SCRIPT type="text/javascript" language="javascript" src="<%=basePath%>scripts/smooth_scroll.js"></SCRIPT>
+<SCRIPT type="text/javascript" language="javascript" src="scripts/smooth_scroll.js"></SCRIPT>
 <SCRIPT type="text/javascript" language="javascript">
 	
 	function jumpToAnchor() {
