@@ -24,4 +24,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GwtRpcServiceAsync {
 	public <T extends GwtRpcResponse> void execute(GwtRpcRequest<T> request, AsyncCallback<T> callback) throws GwtRpcException;
+	public <T extends GwtRpcResponse> void executeAsync(GwtRpcRequest<T> request, AsyncCallback<Long> callback) throws GwtRpcException;
+	public <T extends GwtRpcResponse> void waitForResults(Long executionId, AsyncCallback<T> callback) throws GwtRpcException;
+	public void cancelExecution(Long executionId, AsyncCallback<Boolean> callback) throws GwtRpcException;
 }

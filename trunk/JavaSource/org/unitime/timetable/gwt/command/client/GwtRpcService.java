@@ -26,4 +26,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("gwt.rpc")
 public interface GwtRpcService extends RemoteService {
 	public <T extends GwtRpcResponse> T execute(GwtRpcRequest<T> request) throws GwtRpcException;
+	public <T extends GwtRpcResponse> Long executeAsync(GwtRpcRequest<T> request) throws GwtRpcException;
+	public <T extends GwtRpcResponse> T waitForResults(Long executionId) throws GwtRpcException;
+	public Boolean cancelExecution(Long executionId) throws GwtRpcException;
 }
