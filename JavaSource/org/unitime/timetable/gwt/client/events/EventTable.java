@@ -47,7 +47,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EventTable extends UniTimeTable<EventInterface> {
+public class EventTable extends UniTimeTable<EventInterface[]> {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
@@ -375,12 +375,123 @@ public class EventTable extends UniTimeTable<EventInterface> {
 			
 		row.add(new HTML(approval, false));
 		
-		int rowNumber = addRow(event, row);
+		int rowNumber = addRow(new EventInterface[] {event}, row);
 		getRowFormatter().addStyleName(rowNumber, "event-row");
 		for (int i = 0; i < getCellCount(rowNumber); i++)
 			getCellFormatter().addStyleName(rowNumber, i, "event-cell");
-		// int row = addRow(event, line);
-		// getRowFormatter().setVerticalAlign(row, HasVerticalAlignment.ALIGN_TOP);
+		
+		if (event.hasConflicts())
+			for (EventInterface conflict: event.getConflicts())
+				addConflict(event, conflict, filter);
+	}
+	
+	private void addConflict(EventInterface parent, EventInterface event, MeetingFilter filter) {
+		TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
+		for (MeetingInterface meeting: event.getMeetings())
+			if (filter == null || !filter.filter(meeting)) {
+				meetings.add(meeting);
+			}
+		if (meetings.isEmpty()) return;
+
+		List<Widget> row = new ArrayList<Widget>();
+		
+		row.add(new HTML("&nbsp;"));
+
+		if (event.hasCourseNames()) {
+			String name = "";
+			String section = "";
+			if (event.getType() == EventType.Course) { name = event.getName(); section = "&nbsp;"; }
+			for (String cn: event.getCourseNames())
+				if (name.isEmpty()) {
+					name += cn;
+				} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
+					name += "<br><span class='no-control'>" + cn + "</span>";
+				} else {
+					name += "<br>" + cn;
+				}
+			if (event.hasExternalIds())
+				for (String ex: event.getExternalIds()) {
+					if (section.isEmpty()) {
+						section += ex;
+					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
+						section += "<br><span class='no-control'>" + ex + "</span>";
+					} else {
+						section += "<br>" + ex;
+					}
+				}
+			else if (event.hasSectionNumber())
+				section = event.getSectionNumber();
+			row.add(new HTML(name, false));
+			row.add(new NumberCell(section));
+			row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
+			if (!isColumnVisible(iColumnSection)) setColumnVisible(iColumnSection, true);
+		} else {
+			row.add(new HTML(event.getName()));
+			row.add(new HTML("&nbsp;"));
+			row.add(new Label(event.getType().getAbbreviation(), false));
+		}
+
+		String[] mtgs = new String[] {"", "", "", "", "", ""};
+		String approval = "", prevApproval = null;
+		String[] prev = null;
+		boolean prevPast = false;
+		for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, true, true)) {
+			String[] mtg = new String[] {
+					m.getDays(CONSTANTS.days(), CONSTANTS.shortDays()) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate())),
+					MeetingTable.meetingTime(m.getMeetings().first()),
+					MeetingTable.allocatedTime(m.getMeetings().first()),
+					String.valueOf(m.getMeetings().first().getStartOffset()),
+					String.valueOf(- m.getMeetings().first().getEndOffset()),
+					m.getLocationNameWithHint()
+					};
+			for (int i = 0; i < mtgs.length; i++) {
+				mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i].equals(mtg[i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
+			}
+			approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "") ? "" : 
+					(m.isApproved() ?
+					m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
+					m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+			prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
+		}
+		for (int i = 0; i < mtgs.length; i++) {
+			if (i == 3 || i == 4)
+				row.add(new NumberCell(mtgs[i]));
+			else
+				row.add(new HTML(mtgs[i], false));
+		}
+		
+		if (event.hasEnrollment() && iShowMainContact) {
+			row.add(new NumberCell(event.getEnrollment().toString()));
+			if (!isColumnVisible(iColumnEnrollment)) setColumnVisible(iColumnEnrollment, true);
+		} else {
+			row.add(new HTML("&nbsp;"));
+		}
+
+		if (event.hasMaxCapacity() && iShowMainContact) {
+			row.add(new NumberCell(event.getMaxCapacity().toString()));
+			if (!isColumnVisible(iColumnLimit)) setColumnVisible(iColumnLimit, true);
+		} else {
+			row.add(new HTML("&nbsp;"));
+		}
+		
+		if (event.hasInstructors()) {
+			row.add(new HTML(event.getInstructorNames("<br>"), false));
+		} else {
+			row.add(new Label(event.hasSponsor() ? event.getSponsor().getName() : ""));
+		}
+		
+		if (iShowMainContact) {
+			row.add(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;"));
+		} else {
+			row.add(new HTML("&nbsp;"));
+		}
+			
+		row.add(new HTML(approval, false));
+		
+		int rowNumber = addRow(new EventInterface[] {parent, event}, row);
+		getRowFormatter().addStyleName(rowNumber, "conflict");
+		for (int i = 0; i < getCellCount(rowNumber); i++)
+			getCellFormatter().addStyleName(rowNumber, i, "conflict-cell");
 	}
 	
 	public void resetColumnVisibility() {
@@ -408,7 +519,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
 	}
 	
-	protected void addSortByOperation(final UniTimeTableHeader header, final Comparator<EventInterface> comparator) {
+	protected void addSortByOperation(final UniTimeTableHeader header, final Comparator<EventInterface[]> comparator) {
 		header.addOperation(new Operation() {
 			@Override
 			public void execute() { sort(comparator); }
@@ -486,11 +597,18 @@ public class EventTable extends UniTimeTable<EventInterface> {
 		return null;
 	}
 	
-	protected Comparator<EventInterface> createComparator(final EventSortBy sortyBy) {
-		return new Comparator<EventInterface>() {
+	protected Comparator<EventInterface[]> createComparator(final EventSortBy sortBy) {
+		return new Comparator<EventInterface[]>() {
 			@Override
-			public int compare(EventInterface o1, EventInterface o2) {
-				return EventTable.compare(o1, o2, sortyBy);
+			public int compare(EventInterface[] o1, EventInterface[] o2) {
+				int cmp = EventTable.compare(o1[0], o2[0], sortBy);
+				if (cmp != 0) return cmp;
+				if (o1.length == 2) {
+					if (o2.length == 2) return EventTable.compare(o1[1], o2[1], sortBy);
+					else return 1; 
+				} else {
+					return -1;
+				}
 			}
 		};
 	}
@@ -637,7 +755,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row);
+							EventInterface e = getData(row)[0];
 							if (isApplicable(e)) execute(row, e);
 						}
 					}
@@ -646,7 +764,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 				for (int row = getRowCount() - 1; row >= 1; row--) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row);
+						EventInterface e = getData(row)[0];
 						if (isApplicable(e)) execute(row, e);
 					}
 				}
@@ -674,7 +792,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row);
+							EventInterface e = getData(row)[0];
 							if (isApplicable(e)) {
 								if (!allMustMatch) return true;
 							} else {
@@ -688,7 +806,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row);
+						EventInterface e = getData(row)[0];
 						if (isApplicable(e)) {
 							if (!allMustMatch) return true;
 						} else {
@@ -710,7 +828,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row);
+							EventInterface e = getData(row)[0];
 							if (isApplicable(e)) events.add(e);
 						}
 					}
@@ -719,7 +837,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row);
+						EventInterface e = getData(row)[0];
 						if (isApplicable(e)) events.add(e);
 					}
 				}
@@ -735,7 +853,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row);
+							EventInterface e = getData(row)[0];
 							if (isApplicable(e)) rows.add(row);
 						}
 					}
@@ -744,7 +862,7 @@ public class EventTable extends UniTimeTable<EventInterface> {
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row);
+						EventInterface e = getData(row)[0];
 						if (isApplicable(e)) rows.add(row);
 					}
 				}
