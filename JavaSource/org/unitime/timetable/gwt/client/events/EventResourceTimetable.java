@@ -484,15 +484,16 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		};
 		
 		iTable = new EventTable();
-		iTable.addMouseClickListener(new MouseClickListener<EventInterface>() {
+		iTable.addMouseClickListener(new MouseClickListener<EventInterface[]>() {
 			@Override
-			public void onMouseClick(final TableEvent<EventInterface> event) {
-				if (!event.getData().isCanView()) return;
+			public void onMouseClick(final TableEvent<EventInterface[]> event) {
+				EventInterface e = event.getData()[event.getData().length - 1];
+				if (!e.isCanView()) return;
 				iFilterHeader.clearMessage();
-				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
+				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), e.getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iFilterHeader.setErrorMessage(MESSAGES.failedLoad(event.getData().getName(), caught.getMessage()));
+						iFilterHeader.setErrorMessage(MESSAGES.failedLoad(event.getData()[0].getName(), caught.getMessage()));
 					}
 					@Override
 					public void onSuccess(EventInterface result) {
@@ -500,7 +501,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 						iEventDetail.setEvent(result);
 						iEventDetail.show();
 					}
-				}, MESSAGES.waitLoading(event.getData().getName()));
+				}, MESSAGES.waitLoading(e.getName()));
 			}
 		});
 	}
