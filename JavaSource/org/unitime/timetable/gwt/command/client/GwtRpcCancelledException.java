@@ -17,36 +17,21 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.command.server;
+package org.unitime.timetable.gwt.command.client;
 
-import javax.servlet.http.HttpSession;
-
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.util.Constants;
-
-public class GwtRpcHelper {
-	private HttpSession iHttpSession;
+public class GwtRpcCancelledException extends GwtRpcException {
+	private static final long serialVersionUID = 1L;
 	
-	protected GwtRpcHelper(HttpSession httpSession) {
-		iHttpSession = httpSession;
+	public GwtRpcCancelledException() {
+		super();
 	}
 	
-	public User getUser() {
-		return Web.getUser(iHttpSession);
+	public GwtRpcCancelledException(String message) {
+		super(message);
 	}
 	
-	public Long getAcademicSessionId() {
-		User user = getUser();
-		return (user == null ? null : (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-	}
-	
-	public boolean isHttpSessionNew() {
-		return iHttpSession.isNew();
-	}
-	
-	public String getHttpSessionId() {
-		return iHttpSession.getId();
+	public GwtRpcCancelledException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }
