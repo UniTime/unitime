@@ -123,7 +123,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 	
 	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request) throws EventException {
 		try {
-			// EventFilterBackend.
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				Map<Long, Double> distances = new HashMap<Long, Double>();
@@ -140,7 +139,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					TimetableManager mgr = TimetableManager.findByExternalId(request.getEventFilter().getOption("user"));
 					if (mgr != null) userDepartments = mgr.getDepartments();
 				}
-
+				
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
@@ -312,6 +311,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 							.set("resourceId", request.getResourceId())
 							.where("o.ownerType = :type and o.ownerId = co.uniqueId")
 							.set("type", ExamOwner.sOwnerTypeCourse)
+							.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 							.query(hibSession).list());
 					if (limit <= 0 || meetings.size() < limit)
 						meetings.addAll(query.select("distinct m").type("CourseEvent")
@@ -636,7 +636,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						event.setName(m.getEvent().getEventName());
 						event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 						events.put(m.getEvent().getUniqueId(), event);
-						event.setCanView(request.getEventFilter().hasOption("role") || (request.getEventFilter().hasOption("user") && request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
+						event.setCanView(request.getEventFilter().hasOption("role") || (request.getEventFilter().hasOption("user") && m.getEvent().getMainContact() != null && request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
 						event.setMaxCapacity(m.getEvent().getMaxCapacity());
 						ret.add(event);
 						
@@ -645,9 +645,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 							contact.setFirstName(m.getEvent().getMainContact().getFirstName());
 							contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 							contact.setLastName(m.getEvent().getMainContact().getLastName());
-							// contact.setExternalId(m.getEvent().getMainContact().getExternalUniqueId());
-							// contact.setPhone(m.getEvent().getMainContact().getPhone());
-							// contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
 							event.setContact(contact);
 						}
 						if (m.getEvent().getSponsoringOrganization() != null) {
@@ -668,8 +665,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
-									// instructor.setExternalId(i.getInstructor().getExternalUniqueId());
-									// instructor.setEmail(i.getInstructor().getEmail());
 									event.addInstructor(instructor);
 				    			}
 				    		}
@@ -747,8 +742,6 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 								instructor.setFirstName(i.getFirstName());
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
-								// instructor.setExternalId(i.getExternalUniqueId());
-								// instructor.setEmail(i.getEmail());
 								event.addInstructor(instructor);
 			    			}
 			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
@@ -864,6 +857,454 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					}
 					event.addMeeting(meeting);
 				}
+				
+				if (request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("conflicts")) {
+					/*
+					if (!request.getEventFilter().hasOption("mode") || "All Events".equals(request.getEventFilter().getOption("mode")))
+						request.getEventFilter().setOption("mode", "Conflicting Events");
+						*/
+					query = EventFilterBackend.getQuery(request.getEventFilter());
+					
+					List<Object[]> conflicts = null;
+					switch (request.getResourceType()) {
+					case ROOM:
+						if (request.getResourceId() == null)
+							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm").query(hibSession).list();
+						else
+							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm")
+								.where("l.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list();
+						break;
+					case SUBJECT:
+					case COURSE:
+						String resourceCheck = (request.getResourceType() == ResourceType.SUBJECT ? "co.subjectArea.uniqueId = :resourceId" : "co.uniqueId = :resourceId");
+						
+						conflicts = new ArrayList<Object[]>();
+						
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ClassEvent")
+								.from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co")
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co")
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg")
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeConfig)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co")
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co")
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg")
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeConfig)
+								.where(resourceCheck)
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+
+						break;			
+					case CURRICULUM:
+						conflicts = new ArrayList<Object[]>();
+
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ClassEvent")
+								.from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+								.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeConfig)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.query(hibSession).list());
+						conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg, CurriculumCourse cc")
+								.where("co = cc.course")
+								.where("cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.set("resourceId", request.getResourceId())
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeConfig)
+								.query(hibSession).list());
+
+						break;
+						
+					case DEPARTMENT:
+
+						if (department.isExternalManager()) {
+							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm").type("ClassEvent")
+										.from("inner join e.clazz.managingDept d")
+										.where("d.uniqueId = :resourceId")
+										.set("resourceId", request.getResourceId())
+										.query(hibSession).list();
+						} else {
+							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm").type("ClassEvent")
+									.from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.query(hibSession).list();
+							
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+									.from("inner join e.exam.owners o, CourseOffering co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeCourse)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+									.from("inner join e.exam.owners o, CourseOffering co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeOffering)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+									.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeClass)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("ExamEvent")
+									.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeConfig)
+									.query(hibSession).list());
+							
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+									.from("inner join e.relatedCourses o, CourseOffering co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeCourse)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+									.from("inner join e.relatedCourses o, CourseOffering co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeOffering)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+									.from("inner join e.relatedCourses o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeClass)
+									.query(hibSession).list());
+							conflicts.addAll(query.select("distinct m.event.uniqueId, Xm").type("CourseEvent")
+									.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg inner join co.subjectArea.department d")
+									.where("d.uniqueId = :resourceId")
+									.set("resourceId", request.getResourceId())
+									.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+									.set("type", ExamOwner.sOwnerTypeConfig)
+									.query(hibSession).list());
+						}
+						break;
+					}
+					
+					if (conflicts != null) {
+						Hashtable<Long, EventInterface> conflictingEvents = new Hashtable<Long, EventInterface>();
+						for (Object[] o: conflicts) {
+							EventInterface parent = events.get((Long)o[0]);
+							if (parent == null) continue;
+							Meeting m = (Meeting)o[1];
+							EventInterface event = conflictingEvents.get(m.getEvent().getUniqueId());
+							if (event == null) {	
+								event = new EventInterface();
+								event.setId(m.getEvent().getUniqueId());
+								event.setName(m.getEvent().getEventName());
+								event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
+								conflictingEvents.put(m.getEvent().getUniqueId(), event);
+								event.setCanView(request.getEventFilter().hasOption("role") || (request.getEventFilter().hasOption("user") && m.getEvent().getMainContact() != null && request.getEventFilter().getOption("user").equals(m.getEvent().getMainContact().getExternalUniqueId())));
+								event.setMaxCapacity(m.getEvent().getMaxCapacity());
+								parent.addConflict(event);
+								if (m.getEvent().getMainContact() != null) {
+									ContactInterface contact = new ContactInterface();
+									contact.setFirstName(m.getEvent().getMainContact().getFirstName());
+									contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
+									contact.setLastName(m.getEvent().getMainContact().getLastName());
+									event.setContact(contact);
+								}
+								if (m.getEvent().getSponsoringOrganization() != null) {
+									SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
+									sponsor.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
+									sponsor.setName(m.getEvent().getSponsoringOrganization().getName());
+									sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
+									event.setSponsor(sponsor);
+								}
+						    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
+						    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+						    		Class_ clazz = ce.getClazz();
+									event.setEnrollment(clazz.getEnrollment());
+						    		if (clazz.getDisplayInstructor()) {
+						    			for (ClassInstructor i: clazz.getClassInstructors()) {
+											ContactInterface instructor = new ContactInterface();
+											instructor.setFirstName(i.getInstructor().getFirstName());
+											instructor.setMiddleName(i.getInstructor().getMiddleName());
+											instructor.setLastName(i.getInstructor().getLastName());
+											event.addInstructor(instructor);
+						    			}
+						    		}
+						    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+						    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+						    		switch (request.getResourceType()) {
+						    		case SUBJECT:
+					    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+					    					CourseOffering co = i.next();
+					    					if (co.getSubjectArea().getUniqueId().equals(request.getResourceId())) {
+					    						if (!correctedOffering.getSubjectArea().getUniqueId().equals(request.getResourceId()))
+					    							correctedOffering = co;
+					    					} else {
+					    						i.remove();
+					    					}
+					    				}
+						    			break;
+						    		case COURSE:
+					    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+					    					CourseOffering co = i.next();
+					    					if (co.getUniqueId().equals(request.getResourceId())) {
+					    						if (!correctedOffering.getUniqueId().equals(request.getResourceId()))
+					    							correctedOffering = co;
+					    					} else {
+					    						i.remove();
+					    					}
+					    				}
+						    			break;
+						    		case DEPARTMENT:
+						    			if (department.isExternalManager()) break;
+					    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+					    					CourseOffering co = i.next();
+					    					if (co.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId())) {
+					    						if (!correctedOffering.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId()))
+					    							correctedOffering = co;
+					    					} else {
+					    						i.remove();
+					    					}
+					    				}
+						    			break;
+						    		case CURRICULUM:
+					    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+					    					CourseOffering co = i.next();
+					    					if (curriculumCourses.contains(co.getUniqueId())) {
+					    						if (!curriculumCourses.contains(correctedOffering.getUniqueId()))
+					    							correctedOffering = co;
+					    					} else {
+					    						i.remove();
+					    					}
+					    				}
+						    			break;
+						    		}
+						    		courses.remove(correctedOffering);
+						    		event.addCourseName(correctedOffering.getCourseName());
+						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+						    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+						    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
+						    		if (clazz.getClassSuffix(correctedOffering) == null) {
+							    		event.setName(clazz.getClassLabel(correctedOffering));
+						    		} else {
+							    		event.addExternalId(clazz.getClassSuffix(correctedOffering));
+						    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
+						    		}
+					    			for (CourseOffering co: courses) {
+							    		event.addCourseName(co.getCourseName());
+							    		if (clazz.getSectionNumberString(hibSession) != null)
+							    			event.addExternalId(clazz.getClassSuffix(co));
+					    			}
+						    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
+						    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+						    		event.setEnrollment(xe.getExam().countStudents());
+					    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
+										ContactInterface instructor = new ContactInterface();
+										instructor.setFirstName(i.getFirstName());
+										instructor.setMiddleName(i.getMiddleName());
+										instructor.setLastName(i.getLastName());
+										event.addInstructor(instructor);
+					    			}
+					    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
+					    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+								    		switch (request.getResourceType()) {
+								    		case SUBJECT:
+								    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case COURSE:
+								    			if (!course.getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case DEPARTMENT:
+								    			if (department.isExternalManager()) break courses;
+								    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case CURRICULUM:
+								    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+								    			break;
+								    		}
+						    				String courseName = owner.getCourse().getCourseName();
+						    				String label = owner.getLabel();
+						    				if (label.startsWith(courseName)) {
+						    					label = label.substring(courseName.length());
+						    				}
+						    				event.addCourseName(course.getCourseName());
+						    				event.addExternalId(label.trim());
+					    				}
+					    			}
+					    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && request.getResourceType() == ResourceType.PERSON)
+				    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
+						    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
+						    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+									int enrl = 0;
+									for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
+										enrl += owner.countStudents();
+										courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+								    		switch (request.getResourceType()) {
+								    		case SUBJECT:
+								    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case COURSE:
+								    			if (!course.getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case DEPARTMENT:
+								    			if (department.isExternalManager()) break courses;
+								    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId())) continue courses;
+								    			break;
+								    		case CURRICULUM:
+								    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+								    			break;
+								    		}
+						    				String courseName = owner.getCourse().getCourseName();
+						    				String label = owner.getLabel();
+						    				if (label.startsWith(courseName)) {
+						    					label = label.substring(courseName.length());
+						    				}
+						    				event.addCourseName(course.getCourseName());
+						    				event.addExternalId(label.trim());
+					    				}
+									}
+									event.setEnrollment(enrl);
+						    	}
+							}
+							MeetingInterface meeting = new MeetingInterface();
+							meeting.setId(m.getUniqueId());
+							meeting.setMeetingDate(m.getMeetingDate());
+							meeting.setDayOfWeek(Constants.getDayOfWeek(m.getMeetingDate()));
+							meeting.setStartTime(m.getStartTime().getTime());
+							meeting.setStopTime(m.getStopTime().getTime());
+							meeting.setDayOfYear(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()));
+							meeting.setStartSlot(m.getStartPeriod());
+							meeting.setEndSlot(m.getStopPeriod());
+							meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+							meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
+							meeting.setPast(m.getStartTime().before(now));
+							if (m.isApproved())
+								meeting.setApprovalDate(m.getApprovedDate());
+							if (m.getLocation() != null) {
+								ResourceInterface location = new ResourceInterface();
+								location.setType(ResourceType.ROOM);
+								location.setId(m.getLocation().getUniqueId());
+								location.setName(m.getLocation().getLabel());
+								location.setHint(m.getLocation().getHtmlHint());
+								location.setSize(m.getLocation().getCapacity());
+								location.setRoomType(m.getLocation().getRoomTypeLabel());
+								meeting.setLocation(location);
+							}
+							event.addMeeting(meeting);							
+						}
+					}
+				}
+				
 				return ret;
 			} finally {
 				hibSession.close();
