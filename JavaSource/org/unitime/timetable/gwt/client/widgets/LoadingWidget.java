@@ -19,12 +19,19 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.command.client.GwtRpc;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -35,16 +42,20 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class LoadingWidget extends Composite {
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	public static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private static LoadingWidget sInstance = null;
 
 	private AbsolutePanel iPanel = null;
 	private Image iImage = null;
 	private int iCount = 0;
-	private Timer iTimer = null;
+	private Timer iWarningTimer = null;
 	private HTML iWarning;
 	private HTML iMessage = null;
+	private HTML iCancel;
+	private Timer iCancelTimer = null;
+	private Long iExecutionId = null;
 	
 	public LoadingWidget() {
 		iPanel = new AbsolutePanel();
@@ -64,19 +75,36 @@ public class LoadingWidget extends Composite {
 					DOM.setStyleAttribute(iWarning.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
 					DOM.setStyleAttribute(iMessage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 200));
 					DOM.setStyleAttribute(iMessage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 3));
+					DOM.setStyleAttribute(iCancel.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 200));
+					DOM.setStyleAttribute(iCancel.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
 				}
 			}
 		});
-		iWarning = new HTML("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.", true);
+		iWarning = new HTML(MESSAGES.warnLoadingTooLong(), true);
 		iWarning.setWidth("400px");
 		iWarning.setStyleName("unitime-PopupWarning");
+		iCancel = new HTML(MESSAGES.warnLoadingTooLongCanCancel());
+		iCancel.setWidth("400px");
+		iCancel.setStyleName("unitime-PopupCancel");
+		iCancel.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iExecutionId != null) GwtRpc.cancel(iExecutionId);
+			}
+		});
 		iMessage = new HTML("", true);
 		iMessage.setWidth("400px");
 		iMessage.setStyleName("unitime-PopupMessage");
-		iTimer = new Timer() {
+		iWarningTimer = new Timer() {
 			@Override
 			public void run() {
 				RootPanel.get().add(iWarning, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
+			}
+		};
+		iCancelTimer = new Timer() {
+			@Override
+			public void run() {
+				RootPanel.get().add(iCancel, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
 			}
 		};
 	}
@@ -88,12 +116,23 @@ public class LoadingWidget extends Composite {
 	public void show(String message) {
 		show(message, 120000);
 	}
+	
+	protected void showCancel(Long executionId) {
+		iExecutionId = executionId;
+		iWarningTimer.cancel();
+		iCancelTimer.schedule(2500);
+	}
+	
+	protected void hideCancel() {
+		iCancelTimer.cancel();
+		RootPanel.get().remove(iCancel);
+	}
 
 	public void show(String message, int warningDelayInMillis) {
 		if (iCount == 0) {
 			RootPanel.get().add(this, Window.getScrollLeft(), Window.getScrollTop());
 			RootPanel.get().add(iImage, Window.getScrollLeft() + Window.getClientWidth() / 2, Window.getScrollTop() + Window.getClientHeight() / 2);
-			iTimer.schedule(warningDelayInMillis);
+			iWarningTimer.schedule(warningDelayInMillis);
 		}
 		if (message != null) {
 			boolean showing = (iCount > 0 && !iMessage.getText().isEmpty());
@@ -118,7 +157,8 @@ public class LoadingWidget extends Composite {
 	}
 	
 	public void fail(String message, int hideDelayInMillis) {
-		iTimer.cancel();
+		iWarningTimer.cancel();
+		iCancelTimer.cancel();
 		iMessage.setHTML(message);
 		iMessage.setStyleName("unitime-PopupWarning");
 		Timer t = new Timer() {
@@ -135,9 +175,11 @@ public class LoadingWidget extends Composite {
 		if (iCount == 0) {
 			RootPanel.get().remove(iImage);
 			RootPanel.get().remove(this);
-			iTimer.cancel();
+			iWarningTimer.cancel();
+			iCancelTimer.cancel();
 			RootPanel.get().remove(iWarning);
 			RootPanel.get().remove(iMessage);
+			RootPanel.get().remove(iCancel);
 			iMessage.setHTML("");
 		}
 	}
@@ -166,5 +208,28 @@ public class LoadingWidget extends Composite {
 	
 	public static void hideLoading() {
 		getInstance().hide();
+	}
+	
+	public static <T extends GwtRpcResponse> void execute(GwtRpcRequest<T> request, final AsyncCallback<T> callback, final String loadingMessage) {
+		showLoading(loadingMessage);
+		GwtRpc.execute(request, new GwtRpc.CancellableCallback<T>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				hideLoading();
+				callback.onFailure(caught);
+			}
+
+			@Override
+			public void onSuccess(T result) {
+				hideLoading();
+				callback.onSuccess(result);
+			}
+
+			@Override
+			public void onExecution(Long executionId) {
+				getInstance().showCancel(executionId);
+			}
+		});
 	}
 }

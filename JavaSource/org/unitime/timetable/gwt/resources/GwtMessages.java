@@ -32,6 +32,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
 	
+	@DefaultMessage("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.")
+	String warnLoadingTooLong();
+	
+	@DefaultMessage("The operation is taking a lot of time...<br>Click this message to cancel the operation.")
+	String warnLoadingTooLongCanCancel();
+
 	@DefaultMessage("Login is required to access this page.")
 	String authenticationRequired();
 	

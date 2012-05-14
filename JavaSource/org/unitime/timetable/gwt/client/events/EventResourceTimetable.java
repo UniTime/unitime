@@ -467,20 +467,19 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onMeetingClick(final MeetingClickEvent event) {
 				if (!event.getEvent().isCanView()) return;
-				LoadingWidget.getInstance().show(MESSAGES.waitLoading(event.getEvent().getName()));
-				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
+				iFilterHeader.clearMessage();
+				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().fail(MESSAGES.failedLoad(event.getEvent().getName(), caught.getMessage()));
+						iFilterHeader.setErrorMessage(MESSAGES.failedLoad(event.getEvent().getName(), caught.getMessage()));
 					}
-
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
 						iEventDetail.setEvent(result);
 						iEventDetail.show();
 					}
-				});
+				}, MESSAGES.waitLoading(event.getEvent().getName()));
 			}
 		};
 		
@@ -489,20 +488,19 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onMouseClick(final TableEvent<EventInterface> event) {
 				if (!event.getData().isCanView()) return;
-				LoadingWidget.getInstance().show(MESSAGES.waitLoading(event.getData().getName()));
-				RPC.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
+				iFilterHeader.clearMessage();
+				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getData().getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().fail(MESSAGES.failedLoad(event.getData().getName(), caught.getMessage()));
+						iFilterHeader.setErrorMessage(MESSAGES.failedLoad(event.getData().getName(), caught.getMessage()));
 					}
-
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
 						iEventDetail.setEvent(result);
 						iEventDetail.show();
 					}
-				});
+				}, MESSAGES.waitLoading(event.getData().getName()));
 			}
 		});
 	}
@@ -553,6 +551,21 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				iFilterHeader.setEnabled("lookup", iProperties != null && iProperties.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 				if (iSession.getAcademicSessionId() != null && ((type == ResourceType.PERSON && allowEmptyResource) || getResourceName() != null)) {
 					iFilterHeader.clearMessage();
+					LoadingWidget.execute(ResourceLookupRpcRequest.findResource(iSession.getAcademicSessionId(), type, getResourceName()),
+							new AsyncCallback<GwtRpcResponseList<ResourceInterface>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iFilterHeader.setErrorMessage(caught.getMessage());
+							hideResults();
+						}
+						@Override
+						public void onSuccess(GwtRpcResponseList<ResourceInterface> result) {
+							LoadingWidget.getInstance().hide();
+							resourceChanged(result.get(0));
+						}
+					}, "Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
+					/*
 					LoadingWidget.getInstance().show("Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
 					RPC.execute(ResourceLookupRpcRequest.findResource(iSession.getAcademicSessionId(), type, getResourceName()),
 							new AsyncCallback<GwtRpcResponseList<ResourceInterface>>() {
@@ -568,6 +581,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 							resourceChanged(result.get(0));
 						}
 					});
+					*/
 				}				
 			}
 		}
@@ -576,10 +590,9 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	private void resourceChanged(ResourceInterface resource) {
 		final String locDate = iLocDate;
 		final String locRoom = iLocRoom;
-		LoadingWidget.getInstance().show(MESSAGES.waitLoadingTimetable(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), iSession.getAcademicSessionName()));
 		iResource = resource;
 		iFilterHeader.clearMessage();
-		RPC.execute(EventLookupRpcRequest.findEvents(iSession.getAcademicSessionId(), iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings()), 
+		LoadingWidget.execute(EventLookupRpcRequest.findEvents(iSession.getAcademicSessionId(), iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings()), 
 				new AsyncCallback<GwtRpcResponseList<EventInterface>>() {
 			@Override
 			public void onSuccess(GwtRpcResponseList<EventInterface> result) {
@@ -660,7 +673,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				iFilterHeader.setErrorMessage(caught.getMessage());
 				hideResults();
 			}
-		});
+		}, MESSAGES.waitLoadingTimetable(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), iSession.getAcademicSessionName()));
 	}
 	
 	private void populateGrid() {
