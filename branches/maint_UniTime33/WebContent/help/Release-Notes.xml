@@ -61,6 +61,7 @@
 					<line>This behavior can be change in the student scheduling constants,
 						together with the ability to disable guest access.</line>
 				</line>
+				<line>Log In: clear user name and password every time the authentication dialog is closed.</line>
 			</description>
 		</item>
 		<item>
