@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.events.EventCookie.EventFlag;
-import org.unitime.timetable.gwt.client.events.MeetingTable.CheckBoxCell;
 import org.unitime.timetable.gwt.client.events.MeetingTable.MeetingsSortBy;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -395,7 +394,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 
 		List<Widget> row = new ArrayList<Widget>();
 		
-		row.add(new HTML("&nbsp;"));
+		row.add(new CenterredCell(MESSAGES.signConflict()));
 
 		if (event.hasCourseNames()) {
 			String name = "";
@@ -724,28 +723,6 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		public boolean filter(MeetingInterface meeting);
 	}
 
-	public static class NumberCell extends HTML implements HasCellAlignment {
-		public NumberCell(String text) {
-			super(text, false);
-		}
-
-		@Override
-		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_RIGHT;
-		}
-	}
-	
-	public static class DoubleCell extends HTML implements HasColSpan {
-		public DoubleCell(String text) {
-			super(text, false);
-		}
-
-		@Override
-		public int getColSpan() {
-			return 2;
-		}
-	}
-	
 	protected abstract class EventOperation implements Operation {
 		@Override
 		public void execute() {

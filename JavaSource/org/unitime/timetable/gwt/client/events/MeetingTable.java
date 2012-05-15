@@ -49,7 +49,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -498,7 +497,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		if (meeting.hasConflicts()) {
 			for (MeetingConglictInterface m: meeting.getConflicts()) {
 				List<Widget> r = new ArrayList<Widget>();
-				r.add(new Label(""));
+				r.add(new CenterredCell(MESSAGES.signConflict()));
 				r.add(new Label(MESSAGES.conflictWith(m.getName()), false));
 				r.add(new Label(meetingTime(m)));
 				r.add(new Label(allocatedTime(m)));
@@ -666,40 +665,6 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		return startTime + " - " + endTime;
 	}
 
-	public static class NumberCell extends HTML implements HasCellAlignment {
-		public NumberCell(String text) {
-			super(text, false);
-		}
-		
-		public NumberCell(int text) {
-			super(String.valueOf(text), false);
-		}
-
-		@Override
-		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_RIGHT;
-		}
-	}
-	
-	public static class CheckBoxCell extends CheckBox implements HasCellAlignment {
-		
-		public CheckBoxCell() {
-			super();
-			addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					event.stopPropagation();
-				}
-			});
-		}
-
-		@Override
-		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_CENTER;
-		}
-
-	}
-	
 	private abstract class MeetingOperation implements Operation {
 		@Override
 		public void execute() {
