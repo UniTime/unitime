@@ -2117,10 +2117,11 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventMeetings .meeting-row {
+	page-break-inside: avoid;
 }
 
 .unitime-EventMeetings .event-row {
-	page-break-before: always;
+	page-break-inside: avoid;
 	vertical-align: top;
 }
 
@@ -2152,6 +2153,14 @@ div.gwt-MenuBarPopup {
 	font-style: italic;
 	background-color: #FFD7D7;
 	vertical-align: top;
+}
+
+@media print {
+	.unitime-EventMeetings .conflict {
+		font-style: italic;
+		vertical-align: top;
+		color: gray;
+	}
 }
 
 .unitime-EventMeetings .no-control {

@@ -491,4 +491,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Today")
 	String legendToday();
 	
+	@DefaultMessage("<span title=\"Conflicting event\" style=\"font-style:normal;\">&#9785;</span>")
+	String signConflict();
 }
