@@ -25,15 +25,19 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBoxBase;
@@ -673,4 +677,48 @@ public class UniTimeTable<T> extends FlexTable {
 		iHintProvider = hintProvider;
 	}
 	
+	public static class NumberCell extends HTML implements HasCellAlignment {
+		public NumberCell(String text) {
+			super(text, false);
+		}
+		
+		public NumberCell(int text) {
+			super(String.valueOf(text), false);
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
+	}
+	
+	public static class CenterredCell extends HTML implements HasCellAlignment {
+		public CenterredCell(String text) {
+			super(text, false);
+		}
+		
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
+	}
+	
+	public static class CheckBoxCell extends CheckBox implements HasCellAlignment {
+		
+		public CheckBoxCell() {
+			super();
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
+
+	}
 }
