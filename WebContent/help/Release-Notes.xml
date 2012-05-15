@@ -187,6 +187,12 @@
 				<line>Computation of distances between rooms changed to allow for non-euclidian coordinates (e.g., GPS coordinates).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Room Availability</name>
+			<description>
+				<line>Meetings ending at midnight were ignored from room availability in course timetabling solver. This is now corrected.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
