@@ -30,6 +30,7 @@ import javax.servlet.ServletResponse;
 
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 import net.sf.cpsolver.ifs.util.JProf;
@@ -95,6 +96,8 @@ public class HibSessionFilter implements Filter {
 
             // Let others handle it... maybe another interceptor for exceptions?
             throw new ServletException(ex);
+        } finally {
+        	_BaseRootDAO.closeCurrentThreadSessions();
         }
  		
 	}
