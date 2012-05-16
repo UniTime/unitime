@@ -41,7 +41,6 @@ public class MultiLock {
     private Lock iLock = new ReentrantLock();
     private Condition iAllLocked = null;
     private Map<Long, Condition> iIndividualLocks = new HashMap<Long, Condition>();
-    private ThreadLocal<Set<Long>> iCurrentLock = new ThreadLocal<Set<Long>>();
 
     public MultiLock() {
     	iLog = LogFactory.getLog(MultiLock.class.getName() + ".lock");
@@ -109,28 +108,11 @@ public class MultiLock {
 			Condition myCondition = iLock.newCondition();
 			for (Long id: ids)
 				iIndividualLocks.put(id, myCondition);
-			iCurrentLock.set(new TreeSet<Long>(ids));
 			iLog.debug("Locked: " + ids);
 			return new Unlock(ids);
 		} finally {
 			iLock.unlock();
 		}
-	}
-	
-	public void unlock() {
-		iLock.lock();
-		try {
-			unlock(iCurrentLock.get());
-		} finally {
-			iLock.unlock();
-		}
-	}
-
-	public void unlock(Long... ids) {
-		List<Long> list = new ArrayList<Long>(ids.length);
-		for (Long id: ids)
-			list.add(id);
-		unlock(list);
 	}
 	
 	private void unlock(Collection<Long> ids) {
@@ -209,13 +191,13 @@ public class MultiLock {
 									s += (i > 0 ? ", " : "") + courseId;
 								}
 								System.out.println(Thread.currentThread().getName() + "Locking: [" + s + "]");
-								lock.lock(courses);
+								Unlock l = lock.lock(courses);
 								System.out.println(Thread.currentThread().getName() + "Locked: [" + s + "]");
 								try {
 									Thread.sleep(ToolBox.random(1000));
 								} catch (InterruptedException e) {}
 								System.out.println(Thread.currentThread().getName() + "Unlocking: [" + s + "]");
-								lock.unlock();
+								l.release();
 								System.out.println(Thread.currentThread().getName() + "Unlocked: [" + s + "]");
 							}
 						} catch (Exception e) {
