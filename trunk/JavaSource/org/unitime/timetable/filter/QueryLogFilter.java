@@ -194,6 +194,7 @@ public class QueryLogFilter implements Filter {
 		public void interrupt() {
 			iActive = false;
 			super.interrupt();
+			try { join(); } catch (InterruptedException e) {}
 		}
 		
 		public void add(QueryLog q) {
