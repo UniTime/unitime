@@ -207,6 +207,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				session.close();
 				ret = true;
 			}
+			sSessions.remove();
 		}
 		if (sMappedSessions != null) {
 			HashMap<String,Session> map = sMappedSessions.get();
@@ -225,6 +226,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				map.clear();
 				if (null != thrownException) throw thrownException;
 			}
+			sMappedSessions.remove();
 		}
 		return ret;
 	}
