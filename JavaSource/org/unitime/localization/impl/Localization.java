@@ -74,6 +74,11 @@ public class Localization {
 		sJavaLocale.set(guessJavaLocale(locale));
 	}
 	
+	public static void removeLocale() {
+		sLocale.remove();
+		sJavaLocale.remove();
+	}
+	
 	public static String getLocale() { return sLocale.get(); }
 	
 	public static Locale getJavaLocale() { return sJavaLocale.get(); }
