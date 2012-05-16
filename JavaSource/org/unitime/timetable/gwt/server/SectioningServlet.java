@@ -97,6 +97,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerUpdater;
@@ -138,6 +139,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public void init() throws ServletException {
 		sLog.info("Student Sectioning Service is starting up ...");
 		OnlineSectioningService.init();
+		OnlineSectioningLogger.startLogger();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
 		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
@@ -198,6 +200,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		sLog.info("Student Sectioning Service is going down ...");
 		iUpdater.stopUpdating();
 		OnlineSectioningService.unloadAll();
+		OnlineSectioningLogger.stopLogger();
 	}
 	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException {
