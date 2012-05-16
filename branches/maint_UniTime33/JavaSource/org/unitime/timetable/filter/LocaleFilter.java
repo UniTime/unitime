@@ -23,29 +23,33 @@ public class LocaleFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
-		if (req instanceof HttpServletRequest) {
-			HttpServletRequest request = (HttpServletRequest)req;
-			String locale = null;
-			
-			// Try HTTP header, Accept-Language field
-			if (iUseBrowserSettings)
-				locale = request.getHeader("Accept-Language");
-			
-			// Try locale parameter (use http session to store)
-			if (req.getParameter("locale") != null) {
-				locale = req.getParameter("locale");
-				request.getSession().setAttribute("unitime.locale", locale);
-			} else if (request.getSession().getAttribute("unitime.locale") != null) {
-				locale = (String)request.getSession().getAttribute("unitime.locale");
+		try {
+			if (req instanceof HttpServletRequest) {
+				HttpServletRequest request = (HttpServletRequest)req;
+				String locale = null;
+				
+				// Try HTTP header, Accept-Language field
+				if (iUseBrowserSettings)
+					locale = request.getHeader("Accept-Language");
+				
+				// Try locale parameter (use http session to store)
+				if (req.getParameter("locale") != null) {
+					locale = req.getParameter("locale");
+					request.getSession().setAttribute("unitime.locale", locale);
+				} else if (request.getSession().getAttribute("unitime.locale") != null) {
+					locale = (String)request.getSession().getAttribute("unitime.locale");
+				}
+				
+				// Fall back to unitime.locale
+				if (locale == null)
+					locale = ApplicationProperties.getProperty("unitime.locale", "en");
+				
+				Localization.setLocale(locale);
 			}
-			
-			// Fall back to unitime.locale
-			if (locale == null)
-				locale = ApplicationProperties.getProperty("unitime.locale", "en");
-			
-			Localization.setLocale(locale);
+			chain.doFilter(req, resp);
+		} finally {
+			Localization.removeLocale();
 		}
-		chain.doFilter(req, resp);
 	}
 
 	@Override
