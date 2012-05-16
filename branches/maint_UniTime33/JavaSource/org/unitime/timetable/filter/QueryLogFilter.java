@@ -181,8 +181,12 @@ public class QueryLogFilter implements Filter {
 
 	public void destroy() {
 		iActive = false;
-		if (iSaver != null)
+		if (iSaver != null) {
 			iSaver.interrupt();
+			try {
+				iSaver.join();
+			} catch (InterruptedException e) {}
+		}
 	}
 	
 	private class Saver extends Thread {
