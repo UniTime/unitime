@@ -51,11 +51,15 @@ public class OnlineSectioningLogger extends Thread {
 	private static OnlineSectioningLogger sInstance = null;
 	
 	public static OnlineSectioningLogger getInstance() {
+		if (sInstance == null) startLogger();
+		return sInstance;
+	}
+	
+	public static void startLogger() {
 		if (sInstance == null) {
 			sInstance = new OnlineSectioningLogger();
 			sInstance.start();
 		}
-		return sInstance;
 	}
 	
 	public static void stopLogger() {
