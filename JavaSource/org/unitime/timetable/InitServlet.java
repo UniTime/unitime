@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServlet;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
@@ -116,9 +115,7 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         
 	         QueueProcessor.stopProcessor();
 	         
-	         OnlineSectioningLogger.stopLogger();
-			
-				Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+	         Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
 						" shut down successfully *******");
 		} catch (Exception e) {
 			Debug.error("UniTime Shutdown Failed : " + e.getMessage(), e);
