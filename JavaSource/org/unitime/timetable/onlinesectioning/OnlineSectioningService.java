@@ -158,8 +158,13 @@ public class OnlineSectioningService {
 	public static void unloadAll() {
 		sGlobalLock.writeLock().lock();
 		try {
-			for (OnlineSectioningServerUpdater u: sUpdaters.values())
+			for (OnlineSectioningServerUpdater u: sUpdaters.values()) {
 				u.stopUpdating();
+				if (u.getAcademicSession() != null) {
+					OnlineSectioningServer s = sInstances.get(u.getAcademicSession().getUniqueId());
+					if (s != null) s.unload();
+				}
+			}
 			sInstances.clear();
 		} finally {
 			sGlobalLock.writeLock().unlock();
