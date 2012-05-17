@@ -41,8 +41,11 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	protected org.hibernate.Session iHibSession = null;
 	protected Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = null;
 	protected Long iSessionId = null;
+	protected double iBasePriorityWeight = 0.9;
+	private Hashtable<Long, Hashtable<Long, Double>> iEnrollmentPriorities = new Hashtable<Long, Hashtable<Long, Double>>();
 	
 	public StudentCourseRequests(DataProperties conf) {
+		iBasePriorityWeight = conf.getPropertyDouble("StudentCourseRequests.BasePriorityWeight", iBasePriorityWeight);
 	}
 
 	@Override
@@ -54,7 +57,8 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	protected Hashtable<Long, Set<WeightedStudentId>> loadDemandsForSubjectArea(SubjectArea subjectArea) {
 		Hashtable<Long, Set<WeightedStudentId>> demands = new Hashtable<Long, Set<WeightedStudentId>>();
 		for (Object[] o: (List<Object[]>) iHibSession.createQuery(
-					"select distinct r.courseOffering.uniqueId, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code from CourseRequest r inner join r.courseDemand.student s " +
+					"select distinct r.courseOffering.uniqueId, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code, " +
+					"r.courseDemand.priority, r.courseDemand.alternative, r.order from CourseRequest r inner join r.courseDemand.student s " +
 					"left outer join s.academicAreaClassifications c left outer join s.posMajors m left outer join c.academicArea a left outer join c.academicClassification f " +
 					"where r.courseOffering.subjectArea.uniqueId = :subjectId")
 					.setLong("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
@@ -63,6 +67,9 @@ public class StudentCourseRequests implements StudentCourseDemands {
 			String areaAbbv = (String)o[2];
 			String clasfCode = (String)o[3];
 			String majorCode = (String)o[4];
+			Integer priority = (Integer)o[5];
+			Boolean alternative = (Boolean)o[6];
+			Integer order = (Integer)o[7];
 			Set<WeightedStudentId> students = demands.get(courseId);
 			if (students == null) {
 				students = new HashSet<WeightedStudentId>();
@@ -72,6 +79,15 @@ public class StudentCourseRequests implements StudentCourseDemands {
 			student.setStats(areaAbbv, clasfCode, majorCode);
 			student.setCurriculum(areaAbbv == null ? null : majorCode == null ? areaAbbv : areaAbbv + "/" + majorCode);
 			students.add(student);
+			if (priority != null && Boolean.FALSE.equals(alternative)) {
+				if (order != null) priority += order;
+				Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+				if (priorities == null) {
+					priorities = new Hashtable<Long, Double>();
+					iEnrollmentPriorities.put(studentId, priorities);
+				}
+				priorities.put(courseId, Math.pow(iBasePriorityWeight, priority));
+			}
 		}
 		return demands;
 	}
@@ -81,17 +97,29 @@ public class StudentCourseRequests implements StudentCourseDemands {
 		if (iStudentRequests == null) {
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
-					"select distinct r.courseDemand.student.uniqueId, r.courseOffering " +
+					"select distinct r.courseDemand.student.uniqueId, r.courseOffering, r.courseDemand.priority, r.courseDemand.alternative, r.order " +
 					"from CourseRequest r where r.courseDemand.student.session.uniqueId = :sessionId")
 					.setLong("sessionId", iSessionId).setCacheable(true).list()) {
 				Long sid = (Long)o[0];
 				CourseOffering co = (CourseOffering)o[1];
+				Integer priority = (Integer)o[2];
+				Boolean alternative = (Boolean)o[3];
+				Integer order = (Integer)o[4];
 				Set<WeightedCourseOffering> courses = iStudentRequests.get(sid);
 				if (courses == null) {
 					courses = new HashSet<WeightedCourseOffering>();
 					iStudentRequests.put(sid, courses);
 				}
 				courses.add(new WeightedCourseOffering(co));
+				if (priority != null && Boolean.FALSE.equals(alternative)) {
+					if (order != null) priority += order;
+					Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+					if (priorities == null) {
+						priorities = new Hashtable<Long, Double>();
+						iEnrollmentPriorities.put(studentId, priorities);
+					}
+					priorities.put(co.getUniqueId(), Math.pow(iBasePriorityWeight, priority));
+				}
 			}
 		}
 		return iStudentRequests.get(studentId);
@@ -122,4 +150,9 @@ public class StudentCourseRequests implements StudentCourseDemands {
 		return true;
 	}
 
+	@Override
+	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+		return (priorities == null ? null : priorities.get(courseId));
+	}
 }

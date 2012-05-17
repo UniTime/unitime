@@ -41,12 +41,14 @@ public class CurCourse extends Constraint<CurVariable, CurValue> {
 	private CurModel iModel;
 	private double iMaxSize;
 	private double iSize = 0.0;
+	private Double iPriority = null;
 	
-	public CurCourse(CurModel model, Long course, String courseName, int maxNrStudents, double maxSize) {
+	public CurCourse(CurModel model, Long course, String courseName, int maxNrStudents, double maxSize, Double priority) {
 		iModel = model;
 		iCourseId = course;
 		iCourseName = courseName;
 		iMaxSize = maxSize;
+		iPriority = priority;
 		for (int i = 0; i < maxNrStudents; i++) {
 			CurVariable c = new CurVariable(model, this, 0, model.getStudents().size());
 			model.addVariable(c);
@@ -221,4 +223,6 @@ public class CurCourse extends Constraint<CurVariable, CurValue> {
 	public boolean isComplete() {
 		return getSize() + iModel.getMinStudentWidth() > getMaxSize();
 	}
+	
+	public Double getPriority() { return iPriority; }
 }

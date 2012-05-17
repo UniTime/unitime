@@ -1954,7 +1954,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
     }
     
-    private boolean somehowEnroll(Student student, CourseOffering course, float weight) {
+    private boolean somehowEnroll(Student student, CourseOffering course, float weight, Double priority) {
     	if (course.getInstructionalOffering().isNotOffered()) return false;
     	boolean hasSomethingCommitted = false;
     	config: for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
@@ -1970,7 +1970,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hasSomethingCommitted) return false;
     	if (!iOfferings.containsKey(course.getInstructionalOffering()))
 			iOfferings.put(course.getInstructionalOffering(), loadOffering(course.getInstructionalOffering(), true));
-    	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight);
+    	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight, priority);
         Set<Student> students = iCourse2students.get(course);
         if (students==null) {
             students = new HashSet<Student>();
@@ -1988,7 +1988,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (courses == null) continue;
     		for (WeightedCourseOffering course: courses) {
     			if (offeringsToAvoid.contains(course.getCourseOffering().getInstructionalOffering().getUniqueId())) continue;
-    			if (!somehowEnroll(student, course.getCourseOffering(), course.getWeight())) offeringsToAvoid.add(course.getCourseOffering().getInstructionalOffering().getUniqueId());
+    			if (!somehowEnroll(student, course.getCourseOffering(), course.getWeight(), iStudentCourseDemands.getEnrollmentPriority(student.getId(), course.getCourseOfferingId())))
+    				offeringsToAvoid.add(course.getCourseOffering().getInstructionalOffering().getUniqueId());
     		}
     	}
     }
@@ -2633,7 +2634,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				getModel().addStudent(student);
         				iStudents.put(studentId.getStudentId(), student);
         			}
-        			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight());
+        			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight(), iStudentCourseDemands.getEnrollmentPriority(studentId.getStudentId(), course.getUniqueId()));
         			
                     Set<Student> students = iCourse2students.get(course);
                     if (students==null) {

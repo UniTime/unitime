@@ -84,4 +84,8 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 		return iStudentRequests.get(studentId);
 	}
 
+	@Override
+	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		return null;
+	}
 }
