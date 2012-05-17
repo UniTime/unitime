@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.command.client.GwtRpc;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -71,21 +72,21 @@ public class LoadingWidget extends Composite {
 					DOM.setStyleAttribute(iPanel.getElement(), "top", String.valueOf(event.getScrollTop()));
 					DOM.setStyleAttribute(iImage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2));
 					DOM.setStyleAttribute(iImage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 2));
-					DOM.setStyleAttribute(iWarning.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 200));
+					DOM.setStyleAttribute(iWarning.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
 					DOM.setStyleAttribute(iWarning.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
-					DOM.setStyleAttribute(iMessage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 200));
+					DOM.setStyleAttribute(iMessage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
 					DOM.setStyleAttribute(iMessage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 3));
-					DOM.setStyleAttribute(iCancel.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 200));
+					DOM.setStyleAttribute(iCancel.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
 					DOM.setStyleAttribute(iCancel.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
 				}
 			}
 		});
 		iWarning = new HTML(MESSAGES.warnLoadingTooLong(), true);
-		iWarning.setWidth("400px");
-		iWarning.setStyleName("unitime-PopupWarning");
+		iWarning.setStyleName("unitime-Notification");
+		iWarning.addStyleName("unitime-NotificationError");
 		iCancel = new HTML(MESSAGES.warnLoadingTooLongCanCancel());
-		iCancel.setWidth("400px");
-		iCancel.setStyleName("unitime-PopupCancel");
+		iCancel.setStyleName("unitime-Notification");
+		iCancel.addStyleName("unitime-NotificationWarning");
 		iCancel.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -93,18 +94,18 @@ public class LoadingWidget extends Composite {
 			}
 		});
 		iMessage = new HTML("", true);
-		iMessage.setWidth("400px");
-		iMessage.setStyleName("unitime-PopupMessage");
+		iMessage.setStyleName("unitime-Notification");
+		iMessage.addStyleName("unitime-NotificationInfo");
 		iWarningTimer = new Timer() {
 			@Override
 			public void run() {
-				RootPanel.get().add(iWarning, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
+				RootPanel.get().add(iWarning, Window.getScrollLeft() + Window.getClientWidth() / 2 - 225, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
 			}
 		};
 		iCancelTimer = new Timer() {
 			@Override
 			public void run() {
-				RootPanel.get().add(iCancel, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
+				RootPanel.get().add(iCancel, Window.getScrollLeft() + Window.getClientWidth() / 2 - 225, Window.getScrollTop() + 5 * Window.getClientHeight() / 12);
 			}
 		};
 	}
@@ -137,9 +138,8 @@ public class LoadingWidget extends Composite {
 		if (message != null) {
 			boolean showing = (iCount > 0 && !iMessage.getText().isEmpty());
 			iMessage.setHTML(message);
-			iMessage.setStyleName("unitime-PopupMessage");
 			if (!showing && !iMessage.getText().isEmpty()) {
-				RootPanel.get().add(iMessage, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + Window.getClientHeight() / 3);
+				RootPanel.get().add(iMessage, Window.getScrollLeft() + Window.getClientWidth() / 2 - 225, Window.getScrollTop() + Window.getClientHeight() / 3);
 			} else if (showing && iMessage.getText().isEmpty()) {
 				RootPanel.get().remove(iMessage);
 			}
@@ -149,25 +149,15 @@ public class LoadingWidget extends Composite {
 	
 	public void setMessage(String message) {
 		iMessage.setHTML(message);
-		iMessage.setStyleName("unitime-PopupMessage");
 	}
-	
+
+	/**
+	 * Call {@link LoadingWidget#hide()} and {@link UniTimeNotifications#error(String)} instead.
+	 */
+	@Deprecated
 	public void fail(String message) {
-		fail(message, 5000);
-	}
-	
-	public void fail(String message, int hideDelayInMillis) {
-		iWarningTimer.cancel();
-		iCancelTimer.cancel();
-		iMessage.setHTML(message);
-		iMessage.setStyleName("unitime-PopupWarning");
-		Timer t = new Timer() {
-			@Override
-			public void run() {
-				hide();
-			}
-		};
-		t.schedule(hideDelayInMillis);
+		hide();
+		UniTimeNotifications.error(message);
 	}
 	
 	public void hide() {

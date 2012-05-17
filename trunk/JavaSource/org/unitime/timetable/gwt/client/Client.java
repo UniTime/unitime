@@ -49,6 +49,7 @@ public class Client implements EntryPoint {
 			public void onSuccess() {
 				for (Triggers t: Triggers.values())
 					t.register();
+				callGwtOnLoadIfExists();
 			}
 			@Override
 			public void onFailure(Throwable reason) {
@@ -146,4 +147,9 @@ public class Client implements EntryPoint {
 		for (GwtPageChangedHandler h: iGwtPageChangedHandlers)
 			h.onChange(event);
 	}
+	
+	public static native void callGwtOnLoadIfExists()/*-{
+		if ($wnd.gwtOnLoad)
+			$wnd.gwtOnLoad();
+	}-*/;
 }

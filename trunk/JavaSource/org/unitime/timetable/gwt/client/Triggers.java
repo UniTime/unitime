@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.page.Refresh;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 
@@ -51,6 +52,11 @@ public enum Triggers {
 	refresh(new Command() {
 		public void execute() {
 			Refresh.createTriggers();
+		}
+	}),
+	notifications(new Command() {
+		public void execute() {
+			UniTimeNotifications.createTriggers();
 		}
 	});
 	
