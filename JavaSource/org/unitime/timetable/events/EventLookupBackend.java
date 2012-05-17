@@ -859,10 +859,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				}
 				
 				if (request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("conflicts")) {
-					/*
-					if (!request.getEventFilter().hasOption("mode") || "All Events".equals(request.getEventFilter().getOption("mode")))
-						request.getEventFilter().setOption("mode", "Conflicting Events");
-						*/
+					request.getEventFilter().setOption("mode", "Conflicting Events");
 					query = EventFilterBackend.getQuery(request.getEventFilter());
 					
 					List<Object[]> conflicts = null;
