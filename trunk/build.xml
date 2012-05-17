@@ -395,13 +395,10 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" includes="org/unitime/timetable/gwt/command/client/GwtRpcImplementedBy.java" debug="true" includeantruntime="false">
-			<src path="${src.dir}" />
-			<classpath refid="build.classpath"/>
-		</javac>
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
+			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
 			<jvmarg value="-Xmx600M"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
@@ -419,13 +416,10 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" includes="org/unitime/timetable/gwt/command/client/GwtRpcImplementedBy.java" debug="true" includeantruntime="false">
-			<src path="${src.dir}" />
-			<classpath refid="build.classpath"/>
-		</javac>
-		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="JavaSource">
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
+			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
 			<jvmarg value="-Xmx600M"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
