@@ -52,6 +52,14 @@ public interface StudentCourseDemands {
 	public Set<WeightedStudentId> getDemands(CourseOffering course);
 	
 	/**
+	 * Returns enrollment priority, i.e., an importance of a course request to a student 
+	 * @param studentId identification of a student, e.g., as returned by {@link StudentCourseDemands#getDemands(CourseOffering)}
+	 * @param course one of the course offerings requested by the student
+	 * @return <code>null</code> if not implemented, 0.0 no priority, 1.0 highest priority
+	 */
+	public Double getEnrollmentPriority(Long studentId, Long courseId);
+	
+	/**
 	 * Return true if students are made up (i.e, it does not make any sense to save them with the solution).
 	 */
 	public boolean isMakingUpStudents();

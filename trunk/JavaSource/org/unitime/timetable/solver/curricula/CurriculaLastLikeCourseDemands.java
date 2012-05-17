@@ -64,14 +64,26 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
+	private Hashtable<Long, Hashtable<Long, Double>> iEnrollmentPriorities = new Hashtable<Long, Hashtable<Long, Double>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
+	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
 
 	public CurriculaLastLikeCourseDemands(DataProperties config) {
 		iProjectedDemands = new ProjectedStudentCourseDemands(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
+		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(config);
+		if (config.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider") != null) {
+			try {
+				iEnrollmentPriorityProvider = (CurriculumEnrollmentPriorityProvider)Class.forName(
+						config.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider"))
+						.getConstructor(DataProperties.class).newInstance(config);
+			} catch (Exception e) {
+				sLog.error("Failed to use custom enrollment priority provider: " + e.getMessage(), e);
+			}
+		}
 	}
 
 	@Override
@@ -215,7 +227,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		CurModel m = new CurModel(curStudents);
 		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
-			m.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), clasf.getNrStudents() * course.getPercShare());
+			m.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), clasf.getNrStudents() * course.getPercShare(), iEnrollmentPriorityProvider.getEnrollmentPriority(course));
 			courses.put(course.getCourse().getUniqueId(), course.getCourse());
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
 			if (curricula == null) {
@@ -302,8 +314,10 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			}
 			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 			iStudentRequests.put(student.getStudentId(), studentCourses);
+			Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
 			for (CurCourse course: s.getCourses()) {
 				CourseOffering co = courses.get(course.getCourseId());
+				if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
 				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
 				if (courseStudents == null) {
 					courseStudents = new HashSet<WeightedStudentId>();
@@ -412,5 +426,11 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	@Override
 	public boolean isWeightStudentsToFillUpOffering() {
 		return false;
+	}
+
+	@Override
+	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+		return (priorities == null ? null : priorities.get(courseId));
 	}
 }

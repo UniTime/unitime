@@ -158,4 +158,8 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands {
 		return iStudentRequests.get(studentId);
 	}
 
+	@Override
+	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		return null;
+	}
 }
