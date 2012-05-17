@@ -56,18 +56,30 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private static Log sLog = LogFactory.getLog(CurriculaCourseDemands.class);
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
+	private Hashtable<Long, Hashtable<Long, Double>> iEnrollmentPriorities = new Hashtable<Long, Hashtable<Long, Double>>();
 	private IdGenerator lastStudentId = new IdGenerator();
 	protected ProjectedStudentCourseDemands iFallback;
 	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
+	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
 
 	public CurriculaCourseDemands(DataProperties properties) {
 		if (properties != null)
 			iFallback = new ProjectedStudentCourseDemands(properties);
 		iIncludeOtherStudents = properties.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = properties.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
+		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(properties);
+		if (properties.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider") != null) {
+			try {
+				iEnrollmentPriorityProvider = (CurriculumEnrollmentPriorityProvider)Class.forName(
+						properties.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider"))
+						.getConstructor(DataProperties.class).newInstance(properties);
+			} catch (Exception e) {
+				sLog.error("Failed to use custom enrollment priority provider: " + e.getMessage(), e);
+			}
+		}
 	}
 	
 	public CurriculaCourseDemands() {
@@ -136,7 +148,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 		CurModel m = new CurModel(students);
 		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
-			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), course.getPercShare() * clasf.getNrStudents());
+			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), course.getPercShare() * clasf.getNrStudents(), iEnrollmentPriorityProvider.getEnrollmentPriority(course));
 			courses.put(course.getUniqueId(), course.getCourse());
 			
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
@@ -199,8 +211,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			student.setCurriculum(clasf.getCurriculum().getAbbv());
 			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 			iStudentRequests.put(student.getStudentId(), studentCourses);
+			Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
 			for (CurCourse course: s.getCourses()) {
 				CourseOffering co = courses.get(course.getCourseId());
+				if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
 				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
 				if (courseStudents == null) {
 					courseStudents = new HashSet<WeightedStudentId>();
@@ -270,5 +284,11 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
 		if (iIncludeOtherStudents && studentId >= 0) return iFallback.getCourses(studentId);
 		return iStudentRequests.get(studentId);
+	}
+
+	@Override
+	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+		return (priorities == null ? null : priorities.get(courseId));
 	}
 }

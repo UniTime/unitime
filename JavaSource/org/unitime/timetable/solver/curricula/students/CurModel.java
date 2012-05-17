@@ -77,8 +77,8 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		return iMaxStudentWeight;
 	}
 
-	public void addCourse(Long courseId, String courseName, double size) {
-		CurCourse course = new CurCourse(this, courseId, courseName, Math.min(iStudents.size(), (int)Math.round(size/getMinStudentWidth())), size);
+	public void addCourse(Long courseId, String courseName, double size, Double priority) {
+		CurCourse course = new CurCourse(this, courseId, courseName, Math.min(iStudents.size(), (int)Math.round(size/getMinStudentWidth())), size, priority);
 		iCourses.put(courseId, course);
 		if (course.getNrStudents() < iStudents.size())
 			iSwapableCourses.add(course);
@@ -289,6 +289,8 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		courseElement.addAttribute("id", course.getCourseId().toString());
     		courseElement.addAttribute("name", course.getCourseName());
     		courseElement.addAttribute("limit", String.valueOf(course.getOriginalMaxSize()));
+    		if (course.getPriority() != null)
+    			courseElement.addAttribute("priority", course.getPriority().toString());
     		if (!courses.isEmpty()) {
         		String share = "";
     			for (Long other: courses) {
@@ -324,7 +326,8 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			Long courseId = Long.valueOf(courseElement.attributeValue("id"));
 			String courseName = courseElement.attributeValue("name");
 			double size = Float.parseFloat(courseElement.attributeValue("limit"));
-			m.addCourse(courseId, courseName, size);
+			String priority = courseElement.attributeValue("priority");
+			m.addCourse(courseId, courseName, size, priority == null ? null : Double.valueOf(priority));
     		if (!courses.isEmpty()) {
     			String share[] = courseElement.attributeValue("share").split(",");
     			for (int j = 0; j < courses.size(); j++)
@@ -516,13 +519,17 @@ public class CurModel extends Model<CurVariable, CurValue> {
     	}
     	for (CurCourse c1: getCourses()) {
     		CurCourse x1 = m.getCourse(c1.getCourseId());
-    		if (x1 == null || x1.getNrStudents() != c1.getNrStudents()) return false;
+    		if (x1 == null || x1.getNrStudents() != c1.getNrStudents() || !equals(x1.getPriority(), c1.getPriority())) return false;
     		for (CurCourse c2: getCourses())
     			if (c1.getCourseId() < c2.getCourseId() && Math.abs(c1.getTargetShare(c2.getCourseId()) - x1.getTargetShare(c2.getCourseId())) > 0.001) {
     				return false;
     			}
     	}
     	return true;
+    }
+    
+    public static boolean equals(Object o1, Object o2) {
+        return (o1 == null ? o2 == null : o1.equals(o2));
     }
     
     public static void main(String[] args) {
@@ -532,7 +539,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     			students.add(new CurStudent(new Long(1 + i), (i < 10 ? 0.5f: 2f)));
     		CurModel m = new CurModel(students);
     		for (int i = 1; i <= 10; i++)
-    			m.addCourse((long)i, "C" + i,  2 * i);
+    			m.addCourse((long)i, "C" + i,  2 * i, null);
     		for (int i = 1; i < 10; i++)
     			for (int j = i + 1; j <= 10; j++)
     				m.setTargetShare((long)i, (long)j, i);
