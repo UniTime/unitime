@@ -49,6 +49,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 
@@ -58,9 +59,11 @@ public class QueryLogFilter implements Filter {
 	private boolean iActive = false;
 	private Saver iSaver;
 	private HashSet<String> iExclude = new HashSet<String>();
+	private int iLogLimit = -1;
 
 	public void init(FilterConfig cfg) throws ServletException {
 		iActive = true;
+		iLogLimit = Integer.parseInt(ApplicationProperties.getProperty("unitime.query.log.limit", "5000"));
 		Saver iSaver = new Saver();
 		iSaver.start();
 		String exclude = cfg.getInitParameter("exclude");
@@ -164,7 +167,10 @@ public class QueryLogFilter implements Filter {
 					q.setException(ex);
 			}
 			if (!iExclude.contains(q.getUri()) || q.getException() != null) {
-				synchronized (iQueries) { iQueries.add(q); }
+				synchronized (iQueries) {
+					if (iLogLimit <= 0 || iQueries.size() < iLogLimit)
+						iQueries.add(q);
+				}
 			}
 		}
 		
@@ -212,6 +218,8 @@ public class QueryLogFilter implements Filter {
 					}
 					if (queriesToSave != null) {
 						sLog.debug("Persisting " + queriesToSave.size() + " log entries...");
+						if (iLogLimit > 0 && queriesToSave.size() >= iLogLimit)
+							sLog.warn("The limit of " + iLogLimit + " unpersisted log messages was reached, some messages have been dropped.");
 						Session hibSession = QueryLogDAO.getInstance().createNewSession();
 						try {
 							for (QueryLog q: queriesToSave)
