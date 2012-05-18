@@ -46,6 +46,7 @@ public class OnlineSectioningLogger extends Thread {
 	private List<OnlineSectioningLog.Action> iActions = new Vector<OnlineSectioningLog.Action>();
 	private boolean iActive = false;
 	private boolean iEnabled = false;
+	private int iLogLimit = -1;
 	private PrintWriter iOut = null;
 	
 	private static OnlineSectioningLogger sInstance = null;
@@ -77,8 +78,10 @@ public class OnlineSectioningLogger extends Thread {
 		super("OnlineSectioningLogger");
 		setDaemon(true);
 		iEnabled = "true".equals(ApplicationProperties.getProperty("unitime.sectioning.log", "true"));
+		iLogLimit = Integer.parseInt(ApplicationProperties.getProperty("unitime.sectioning.log.limit", "5000"));
 		try {
-			iOut = new PrintWriter(new FileWriter(new File(ApplicationProperties.getDataFolder(), "sectioning.log"), true));
+			if (ApplicationProperties.getProperty("unitime.sectioning.log.file") != null)
+				iOut = new PrintWriter(new FileWriter(new File(ApplicationProperties.getProperty("unitime.sectioning.log.file")), true));
 		} catch (IOException e) {
 			sLog.warn("Unable to create sectioning log: " + e.getMessage(), e);
 		}
@@ -93,7 +96,8 @@ public class OnlineSectioningLogger extends Thread {
 		for (OnlineSectioningLog.Action action: log.getActionList()) {
 			if (action.hasStartTime() && action.hasStudent() && action.hasOperation() && action.hasSession()) {
 				synchronized (iActions) {
-					iActions.add(action);
+					if (iLogLimit <= 0 || iActions.size() < iLogLimit)
+						iActions.add(action);
 				}
 				if (iOut != null) {
 					synchronized (iOut) {
@@ -129,6 +133,8 @@ public class OnlineSectioningLogger extends Thread {
 				try {
 					if (actionsToSave != null) {
 						sLog.debug("Persisting " + actionsToSave.size() + " actions...");
+						if (iLogLimit > 0 && actionsToSave.size() >= iLogLimit)
+							sLog.warn("The limit of " + iLogLimit + " unpersisted log messages was reached, some messages have been dropped.");
 						org.hibernate.Session hibSession = OnlineSectioningLogDAO.getInstance().createNewSession();
 						try {
 							Hashtable<Long, Session> sessions = new Hashtable<Long, Session>();
