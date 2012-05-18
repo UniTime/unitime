@@ -22,17 +22,23 @@ package org.unitime.timetable.gwt.client.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -43,19 +49,21 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EventDetail extends Composite {
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private EventInterface iEvent = null;
 	
 	private SimpleForm iForm;
-	private UniTimeHeaderPanel iHeader, iFooter;
+	private UniTimeHeaderPanel iHeader, iFooter, iEnrollmentHeader;
 	
 	private UniTimeTable<ContactInterface> iContacts;
 	private MeetingTable iMeetings;
@@ -98,6 +106,7 @@ public class EventDetail extends Composite {
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
 		iOwners.addRow(null, ownersHeader);
 		
+		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
 		iEnrollments = new EnrollmentTable(false, true);
 		iEnrollments.getTable().setStyleName("unitime-Enrollments");
 		
@@ -183,15 +192,10 @@ public class EventDetail extends Composite {
 			iForm.addRow(MESSAGES.propSponsor(), new Label(iEvent.getSponsor().getName()));
 		}
 
-		if (iEvent.hasEnrollments()) {
-			iForm.addRow(MESSAGES.propEnrollment(), new Label(String.valueOf(iEvent.getEnrollments().size())));
-			int conf = 0;
-			for (Enrollment enrollment: iEvent.getEnrollments()) {
-				if (enrollment.hasConflict()) { conf ++; }
-			}
-			if (conf > 0) {
-				iForm.addRow(MESSAGES.propStudentConflicts(), new Label(String.valueOf(conf)));
-			}
+		if (iEvent.hasEnrollment()) {
+			iForm.addRow(MESSAGES.propEnrollment(), new Label(String.valueOf(iEvent.getEnrollment().toString())));
+			int r = iForm.addRow(MESSAGES.propStudentConflicts(), new Label(""));
+			iForm.getRowFormatter().setVisible(r, false);
 		}
 		
 		if (iEvent.hasMaxCapacity()) {
@@ -290,7 +294,10 @@ public class EventDetail extends Composite {
 					row.add(new HTML());
 				}
 				
-				iOwners.addRow(obj, row);
+				int rowNumber = iOwners.addRow(obj, row);
+				iOwners.getRowFormatter().addStyleName(rowNumber, "owner-row");
+				for (int i = 0; i < iOwners.getCellCount(rowNumber); i++)
+					iOwners.getCellFormatter().addStyleName(rowNumber, i, "owner-cell");
 			}
 		}
 		if (iOwners.getRowCount() > 1) {
@@ -299,10 +306,39 @@ public class EventDetail extends Composite {
 		}
 		
 		iEnrollments.clear();
-		if (iEvent.hasEnrollments()) {
-			iEnrollments.populate(iEvent.getEnrollments(), false);
-			iForm.addHeaderRow(MESSAGES.sectEnrollments());
+		if (iEvent.hasEnrollment()) {
+			final int enrollmentsRow = iForm.addHeaderRow(iEnrollmentHeader);
 			iForm.addRow(iEnrollments.getTable());
+			iEnrollmentHeader.showLoading();
+			final Long eventId = iEvent.getId();
+			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForEvent(eventId), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (eventId.equals(iEvent.getId())) {
+						iEnrollmentHeader.clearMessage();
+						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()));
+						iForm.getRowFormatter().setVisible(enrollmentsRow, false);
+						iForm.getRowFormatter().setVisible(enrollmentsRow + 1, false);
+					}
+				}
+
+				@Override
+				public void onSuccess(GwtRpcResponseList<Enrollment> result) {
+					if (eventId.equals(iEvent.getId())) {
+						iEnrollmentHeader.clearMessage();
+						iEnrollments.clear();
+						iEnrollments.populate(result, false);
+						int conf = 0;
+						for (Enrollment e: result)
+							if (e.hasConflict()) conf ++;
+						if (conf != 0) {
+							int row = iForm.getRow(MESSAGES.propStudentConflicts());
+							((Label)iForm.getWidget(row, 1)).setText(String.valueOf(conf));
+							iForm.getRowFormatter().setVisible(row, true);
+						}
+					}
+				}
+			});
 		}
 
 		iForm.addNotPrintableBottomRow(iFooter);

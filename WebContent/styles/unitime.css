@@ -2184,6 +2184,10 @@ div.gwt-MenuBarPopup {
 	width: 100%;
 }
 
+.unitime-EventOwners .owner-row {
+	vertical-align: top;
+}
+
 .unitime-EventOwners .subject {
 	width: 80px;
 }

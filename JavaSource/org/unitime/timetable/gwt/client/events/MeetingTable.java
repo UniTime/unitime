@@ -60,8 +60,6 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	
 	private Command iAddMeetingsCommand;
 	
-	private int iColumnPublishedTime, iColumnAllocatedTime, iColumnSetupTime, iColumnTeardownTime, iColumnLocation, iColumnCapacity;
-
 	public MeetingTable() {
 		setStyleName("unitime-EventMeetings");
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
@@ -227,23 +225,17 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		UniTimeTableHeader hDate = new UniTimeTableHeader(MESSAGES.colDate());
 		header.add(hDate);
 		UniTimeTableHeader hTimePub = new UniTimeTableHeader(MESSAGES.colPublishedTime()); 
-		iColumnPublishedTime = header.size();
 		header.add(hTimePub);
 		UniTimeTableHeader hTimeAll = new UniTimeTableHeader(MESSAGES.colAllocatedTime()); 
-		iColumnAllocatedTime = header.size();
 		header.add(hTimeAll);
 		UniTimeTableHeader hTimeSetup = new UniTimeTableHeader(MESSAGES.colSetupTimeShort(), HasHorizontalAlignment.ALIGN_RIGHT); 
-		iColumnSetupTime = header.size();
 		header.add(hTimeSetup);
 		UniTimeTableHeader hTimeTeardown = new UniTimeTableHeader(MESSAGES.colTeardownTimeShort(), HasHorizontalAlignment.ALIGN_RIGHT); 
-		iColumnTeardownTime = header.size();
 		header.add(hTimeTeardown);
 
 		UniTimeTableHeader hLocation = new UniTimeTableHeader(MESSAGES.colLocation());
-		iColumnLocation = header.size();
 		header.add(hLocation);
 		UniTimeTableHeader hCapacity = new UniTimeTableHeader(MESSAGES.colCapacity(), HasHorizontalAlignment.ALIGN_RIGHT);
-		iColumnCapacity = header.size();
 		header.add(hCapacity);
 		UniTimeTableHeader hApproval = new UniTimeTableHeader(MESSAGES.colApproval());
 		header.add(hApproval);
@@ -272,17 +264,20 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 				footer.addButton("ok", MESSAGES.buttonOk(), 75, new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
+						int colSetup = getHeader(MESSAGES.colSetupTimeShort()).getColumn();
+						int colTear = getHeader(MESSAGES.colTeardownTimeShort()).getColumn();
+						int colPubl = getHeader(MESSAGES.colPublishedTime()).getColumn();
 						for (Integer row: rows()) {
 							MeetingInterface meeting = getData(row)[0];
 							if (setupTime.toInteger() != null)
 								meeting.setStartOffset(setupTime.toInteger());
 							if (teardownTime.toInteger() != null)
 								meeting.setEndOffset(-teardownTime.toInteger());
-							((NumberCell)getWidget(row, iColumnSetupTime)).setText(String.valueOf(meeting.getStartOffset()));
-							((NumberCell)getWidget(row, iColumnTeardownTime)).setText(String.valueOf(-meeting.getEndOffset()));
-							((Label)getWidget(row, iColumnPublishedTime)).setText(meetingTime(meeting));
+							((NumberCell)getWidget(row, colSetup)).setText(String.valueOf(meeting.getStartOffset()));
+							((NumberCell)getWidget(row, colTear)).setText(String.valueOf(-meeting.getEndOffset()));
+							((Label)getWidget(row, colPubl)).setText(meetingTime(meeting));
 						}
-						dialog.hide();						
+						dialog.hide();
 					}
 				});
 				footer.addButton("cancel", MESSAGES.buttonCancel(), 75, new ClickHandler() {
@@ -310,113 +305,14 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 		});
 		
-		Operation opTimePub = new Operation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(iColumnPublishedTime);
-				setColumnVisible(iColumnPublishedTime, !visible);
-				EventCookie.getInstance().set(EventFlag.SHOW_PUBLISHED_TIME, !visible);
-				boolean other = isColumnVisible(iColumnAllocatedTime);
-				if (visible && !other) {
-					setColumnVisible(iColumnAllocatedTime, !other);
-					EventCookie.getInstance().set(EventFlag.SHOW_ALLOCATED_TIME, !other);
-				}
-			}
-			@Override
-			public boolean isApplicable() { return true; }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return isColumnVisible(iColumnPublishedTime) ? MESSAGES.opHide(MESSAGES.colPublishedTime()) : MESSAGES.opShow(MESSAGES.colPublishedTime()); }
-		};
-		header.get(0).addOperation(opTimePub);
-		header.get(iColumnPublishedTime).addOperation(opTimePub);
-		header.get(iColumnAllocatedTime).addOperation(opTimePub);
-		header.get(iColumnSetupTime).addOperation(opTimePub);
-		header.get(iColumnTeardownTime).addOperation(opTimePub);
+		addRow(null, header);
 		
-		Operation opTimeAll = new Operation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(iColumnAllocatedTime);
-				setColumnVisible(iColumnAllocatedTime, !visible);
-				EventCookie.getInstance().set(EventFlag.SHOW_ALLOCATED_TIME, !visible);
-				boolean other = isColumnVisible(iColumnPublishedTime);
-				if (visible && !other) {
-					setColumnVisible(iColumnPublishedTime, !other);
-					EventCookie.getInstance().set(EventFlag.SHOW_PUBLISHED_TIME, !other);
-				}
-			}
-			@Override
-			public boolean isApplicable() { return true; }
-			@Override
-			public boolean hasSeparator() { return false; }
-			@Override
-			public String getName() { return isColumnVisible(iColumnAllocatedTime) ? MESSAGES.opHide(MESSAGES.colAllocatedTime()) : MESSAGES.opShow(MESSAGES.colAllocatedTime()); }
-		};
-		header.get(0).addOperation(opTimeAll);
-		header.get(iColumnPublishedTime).addOperation(opTimeAll);
-		header.get(iColumnAllocatedTime).addOperation(opTimeAll);
-		header.get(iColumnSetupTime).addOperation(opTimeAll);
-		header.get(iColumnTeardownTime).addOperation(opTimeAll);
-		
-		Operation opTimeSetup = new Operation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(iColumnSetupTime);
-				setColumnVisible(iColumnSetupTime, !visible);
-				EventCookie.getInstance().set(EventFlag.SHOW_SETUP_TIME, !visible);
-			}
-			@Override
-			public boolean isApplicable() { return true; }
-			@Override
-			public boolean hasSeparator() { return false; }
-			@Override
-			public String getName() { return isColumnVisible(iColumnSetupTime) ? MESSAGES.opHide(MESSAGES.colSetupTime()) : MESSAGES.opShow(MESSAGES.colSetupTime()); }
-		};
-		header.get(0).addOperation(opTimeSetup);
-		header.get(iColumnPublishedTime).addOperation(opTimeSetup);
-		header.get(iColumnAllocatedTime).addOperation(opTimeSetup);
-		header.get(iColumnSetupTime).addOperation(opTimeSetup);
-		header.get(iColumnTeardownTime).addOperation(opTimeSetup);
-	
-		Operation opTimeTeardown = new Operation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(iColumnTeardownTime);
-				setColumnVisible(iColumnTeardownTime, !visible);
-				EventCookie.getInstance().set(EventFlag.SHOW_TEARDOWN_TIME, !visible);
-			}
-			@Override
-			public boolean isApplicable() { return true; }
-			@Override
-			public boolean hasSeparator() { return false; }
-			@Override
-			public String getName() { return isColumnVisible(iColumnTeardownTime) ? MESSAGES.opHide(MESSAGES.colTeardownTime()) : MESSAGES.opShow(MESSAGES.colTeardownTime()); }
-		};
-		header.get(0).addOperation(opTimeTeardown);
-		header.get(iColumnPublishedTime).addOperation(opTimeTeardown);
-		header.get(iColumnAllocatedTime).addOperation(opTimeTeardown);
-		header.get(iColumnSetupTime).addOperation(opTimeTeardown);
-		header.get(iColumnTeardownTime).addOperation(opTimeTeardown);
-		
-		Operation opCapacity = new Operation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(iColumnCapacity);
-				setColumnVisible(iColumnCapacity, !visible);
-				EventCookie.getInstance().set(EventFlag.SHOW_CAPACITY, !visible);
-			}
-			@Override
-			public boolean isApplicable() { return true; }
-			@Override
-			public boolean hasSeparator() { return false; }
-			@Override
-			public String getName() { return isColumnVisible(iColumnCapacity) ? MESSAGES.opHide(MESSAGES.colCapacity()) : MESSAGES.opShow(MESSAGES.colCapacity()); }
-		};
-		header.get(0).addOperation(opCapacity);
-		header.get(iColumnLocation).addOperation(opCapacity);
-		header.get(iColumnCapacity).addOperation(opCapacity);
+		// Add show/hide operations
+		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME);
+		addHideOperation(hTimeAll, EventFlag.SHOW_ALLOCATED_TIME);
+		addHideOperation(hTimeSetup, EventFlag.SHOW_SETUP_TIME);
+		addHideOperation(hTimeTeardown, EventFlag.SHOW_TEARDOWN_TIME);
+		addHideOperation(hCapacity, EventFlag.SHOW_CAPACITY);
 
 		// Add sorting operations
 		addSortByOperation(hDate, createComparator(MeetingsSortBy.DATE));
@@ -428,24 +324,112 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		addSortByOperation(hCapacity, createComparator(MeetingsSortBy.CAPACITY));
 		addSortByOperation(hApproval, createComparator(MeetingsSortBy.APPROVAL));
 				
-		addRow(null, header);
-		
-		setColumnVisible(iColumnPublishedTime, EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
-		setColumnVisible(iColumnAllocatedTime, EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
-		setColumnVisible(iColumnSetupTime, EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
-		setColumnVisible(iColumnTeardownTime, EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
-		setColumnVisible(iColumnCapacity, EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
+		resetColumnVisibility();
 	}
 	
 	@Override
 	public void clearTable(int headerRows) {
 		super.clearTable(headerRows);
-		setColumnVisible(iColumnPublishedTime, EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
-		setColumnVisible(iColumnAllocatedTime, EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
-		setColumnVisible(iColumnSetupTime, EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
-		setColumnVisible(iColumnTeardownTime, EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
-		setColumnVisible(iColumnCapacity, EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
+		resetColumnVisibility();
+	}
+	
+	public void resetColumnVisibility() {
+		setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
+		setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
+		setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
 		setColumnVisible(0, false);
+	}
+	
+	protected void addHideOperation(final UniTimeTableHeader header, final EventFlag flag) {
+		Operation op = new Operation() {
+			@Override
+			public void execute() {
+				boolean visible = isColumnVisible(header.getColumn());
+				setColumnVisible(header.getColumn(), !visible);
+				EventCookie.getInstance().set(flag, !visible);
+				if (flag == EventFlag.SHOW_ALLOCATED_TIME && visible) {
+					UniTimeTableHeader other = getHeader(MESSAGES.colPublishedTime());
+					if (!isColumnVisible(other.getColumn())) {
+						setColumnVisible(other.getColumn(), true);
+						EventCookie.getInstance().set(EventFlag.SHOW_PUBLISHED_TIME, true);
+					}
+				} else if (flag == EventFlag.SHOW_PUBLISHED_TIME && visible) {
+					UniTimeTableHeader other = getHeader(MESSAGES.colAllocatedTime());
+					if (!isColumnVisible(other.getColumn())) {
+						setColumnVisible(other.getColumn(), true);
+						EventCookie.getInstance().set(EventFlag.SHOW_ALLOCATED_TIME, true);
+					}
+				}
+			}
+			@Override
+			public boolean isApplicable() { return true; }
+			@Override
+			public boolean hasSeparator() { return false; }
+			@Override
+			public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML()) : MESSAGES.opShow(header.getHTML()); }
+		};
+		getHeader(null).addOperation(flag == EventFlag.SHOW_PUBLISHED_TIME ? separated(op) : op);
+		getHeader(MESSAGES.colDate()).addOperation(ifNotSelectable(op));
+		switch (flag) {
+		case SHOW_ALLOCATED_TIME:
+		case SHOW_PUBLISHED_TIME:
+		case SHOW_SETUP_TIME:
+		case SHOW_TEARDOWN_TIME:
+			getHeader(MESSAGES.colAllocatedTime()).addOperation(op);
+			getHeader(MESSAGES.colPublishedTime()).addOperation(op);
+			getHeader(MESSAGES.colSetupTimeShort()).addOperation(op);
+			getHeader(MESSAGES.colTeardownTimeShort()).addOperation(op);
+			break;
+		case SHOW_CAPACITY:
+			getHeader(MESSAGES.colLocation()).addOperation(op);
+			header.addOperation(op);
+		default:
+			header.addOperation(op);
+		}
+	}
+	
+	private Operation separated(final Operation op) {
+		return new Operation() {
+			@Override
+			public void execute() {
+				op.execute();
+			}
+			@Override
+			public String getName() {
+				return op.getName();
+			}
+			@Override
+			public boolean isApplicable() {
+				return op.isApplicable();
+			}
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+		};
+	}
+	
+	private Operation ifNotSelectable(final Operation op) {
+		return new Operation() {
+			@Override
+			public void execute() {
+				op.execute();
+			}
+			@Override
+			public String getName() {
+				return op.getName();
+			}
+			@Override
+			public boolean isApplicable() {
+				return op.isApplicable() && !isColumnVisible(getHeader(null).getColumn());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return op.hasSeparator();
+			}
+		};
 	}
 	
 	public void setAddMeetingsCommand(Command command) {

@@ -45,7 +45,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
-import org.unitime.timetable.gwt.shared.EventInterface.GetEnrollmentsFromRelatedObjectsRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
@@ -561,7 +561,7 @@ public class EventAdd extends Composite {
 			if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) return;
 			iEnrollmentHeader.showLoading();
 			iLastMeetings = meetings; iLastRelatedObjects = relatedObjects;
-			RPC.execute(new GetEnrollmentsFromRelatedObjectsRpcRequest(relatedObjects, meetings, null), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForRelatedObjects(relatedObjects, meetings), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
