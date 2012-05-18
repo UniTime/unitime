@@ -31,9 +31,11 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -42,12 +44,15 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
-import org.unitime.timetable.gwt.shared.EventInterface.GetEnrollmentsFromRelatedObjectsRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PosMajor;
@@ -56,14 +61,18 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 
-public class GetEnrollmentsFromRelatedObjectsBackend implements GwtRpcImplementation<GetEnrollmentsFromRelatedObjectsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
+public class EventEnrollmentsBackend implements GwtRpcImplementation<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd");
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	private static SimpleDateFormat sDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormatShort());
 	
 	@Override
-	public GwtRpcResponseList<Enrollment> execute(GetEnrollmentsFromRelatedObjectsRpcRequest request, GwtRpcHelper helper) {
+	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, GwtRpcHelper helper) {
 		checkAccess(helper);
 
 		if (request.hasRelatedObjects()) {
@@ -79,11 +88,25 @@ public class GetEnrollmentsFromRelatedObjectsBackend implements GwtRpcImplementa
 			}				
 
 			return convert(enrollments, conflicts);
-		} else {
-			return null;
+		} else if (request.hasEventId()) {
+			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+			Event event = EventDAO.getInstance().get(request.getEventId());
+			if (event == null) throw new GwtRpcException(MESSAGES.errorBadEventId());
+
+	    	Collection<StudentClassEnrollment> enrollments = event.getStudentClassEnrollments();
+	    	if (enrollments == null || enrollments.isEmpty()) return null;
+	    	
+	    	if (Event.sEventTypeClass == event.getEventType()) {
+	    		return convert(enrollments, computeConflicts(event instanceof ClassEvent ? (ClassEvent)event : ClassEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    	} else if (Event.sEventTypeFinalExam == event.getEventType() || Event.sEventTypeMidtermExam == event.getEventType()) {
+	    		return convert(enrollments, computeConflicts(event instanceof ExamEvent ? (ExamEvent)event : ExamEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    	} else  if (Event.sEventTypeCourse == event.getEventType()) {
+	    		return convert(enrollments, computeConflicts(event instanceof CourseEvent ? (CourseEvent)event : CourseEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    	}
 		}
+		
+		return null;
 	}
-	
 	
 	public void checkAccess(GwtRpcHelper helper) throws PageAccessException {
 		if (helper.getUser() == null) {
@@ -125,21 +148,6 @@ public class GetEnrollmentsFromRelatedObjectsBackend implements GwtRpcImplementa
         }
     }
 	
-	
-	private static String where(int type, int idx) {
-		switch (type) {
-		case ExamOwner.sOwnerTypeClass:
-			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".clazz.uniqueId";
-		case ExamOwner.sOwnerTypeConfig:
-			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".clazz.schedulingSubpart.instrOfferingConfig.uniqueId";
-		case ExamOwner.sOwnerTypeCourse:
-			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".courseOffering.uniqueId";
-		case ExamOwner.sOwnerTypeOffering:
-			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".courseOffering.instructionalOffering.uniqueId";
-		default:
-			return "";
-		}
-	}
 	
 	public static void computeConflicts(Map<Long, List<Meeting>> conflicts, MeetingInterface meeting, RelatedObjectInterface relatedObject, Long eventId) {
         org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
@@ -552,5 +560,220 @@ public class GetEnrollmentsFromRelatedObjectsBackend implements GwtRpcImplementa
     		c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
     	}
 		return converted;
+	}
+	
+	private static String where(int type, int idx) {
+		switch (type) {
+		case ExamOwner.sOwnerTypeClass:
+			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".clazz.uniqueId";
+		case ExamOwner.sOwnerTypeConfig:
+			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".clazz.schedulingSubpart.instrOfferingConfig.uniqueId";
+		case ExamOwner.sOwnerTypeCourse:
+			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".courseOffering.uniqueId";
+		case ExamOwner.sOwnerTypeOffering:
+			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".courseOffering.instructionalOffering.uniqueId";
+		default:
+			return "";
+		}
+	}
+	
+	private Map<Long, List<Meeting>> computeConflicts(ClassEvent event) {
+		Map<Long, List<Meeting>> conflicts = new HashMap<Long, List<Meeting>>();
+		
+        org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+
+		// class events
+    	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+    			"select s1.student.uniqueId, m1" +
+    			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
+    			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and e2.clazz = s2.clazz and s1.student = s2.student" +
+    			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+    			.setLong("eventId", event.getUniqueId()).list()) {
+    		Long studentId = (Long)o[0];
+    		Meeting meeting = (Meeting)o[1];
+    		List<Meeting> meetings = conflicts.get(studentId);
+    		if (meetings == null) {
+    			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+    		}
+    		meetings.add(meeting);
+    	}
+    	
+    	// examination events
+    	for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+        	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+        			"select s1.student.uniqueId, m1" +
+        			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
+        			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
+        			where(t1, 1) +
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			.setLong("eventId", event.getUniqueId()).list()) {
+        		Long studentId = (Long)o[0];
+        		Meeting meeting = (Meeting)o[1];
+        		List<Meeting> meetings = conflicts.get(studentId);
+        		if (meetings == null) {
+        			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+        		}
+        		meetings.add(meeting);
+        	}    		
+    	}
+    	
+    	// course events
+    	for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+        	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+        			"select s1.student.uniqueId, m1" +
+        			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
+        			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
+        			where(t1, 1) +
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			.setLong("eventId", event.getUniqueId()).list()) {
+        		Long studentId = (Long)o[0];
+        		Meeting meeting = (Meeting)o[1];
+        		List<Meeting> meetings = conflicts.get(studentId);
+        		if (meetings == null) {
+        			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+        		}
+        		meetings.add(meeting);
+        	}
+    	}
+    	
+    	return conflicts;
+	}
+	
+	private Map<Long, List<Meeting>> computeConflicts(ExamEvent event) {
+		Map<Long, List<Meeting>> conflicts = new HashMap<Long, List<Meeting>>();
+		
+        org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+        
+		// class events
+        for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+        	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+        			"select s1.student.uniqueId, m1" +
+        			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
+        			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
+        			where(t2, 2) + 
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			.setLong("eventId", event.getUniqueId()).list()) {
+        		Long studentId = (Long)o[0];
+        		Meeting meeting = (Meeting)o[1];
+        		List<Meeting> meetings = conflicts.get(studentId);
+        		if (meetings == null) {
+        			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+        		}
+        		meetings.add(meeting);
+        	}
+        }
+        
+    	// examination events
+        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            			"select s1.student.uniqueId, m1" +
+            			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
+            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
+            			where(t1, 1) + where(t2, 2) +
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+            			.setLong("eventId", event.getUniqueId()).list()) {
+            		Long studentId = (Long)o[0];
+            		Meeting meeting = (Meeting)o[1];
+            		List<Meeting> meetings = conflicts.get(studentId);
+            		if (meetings == null) {
+            			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+            		}
+            		meetings.add(meeting);
+            	}
+            }
+        }
+        
+    	// course events
+        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            			"select s1.student.uniqueId, m1" +
+            			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
+            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
+            			where(t1, 1) + where(t2, 2) +
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+            			.setLong("eventId", event.getUniqueId()).list()) {
+            		Long studentId = (Long)o[0];
+            		Meeting meeting = (Meeting)o[1];
+            		List<Meeting> meetings = conflicts.get(studentId);
+            		if (meetings == null) {
+            			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+            		}
+            		meetings.add(meeting);
+            	}
+            }
+        }
+    	
+    	return conflicts;
+	}
+	
+	private Map<Long, List<Meeting>> computeConflicts(CourseEvent event) {
+		Map<Long, List<Meeting>> conflicts = new HashMap<Long, List<Meeting>>();
+		
+        org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+        
+		// class events
+        for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+        	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+        			"select s1.student.uniqueId, m1" +
+        			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, CourseEvent e2 inner join e2.meetings m2 inner join e2.relatedCourses o2, StudentClassEnrollment s2" +
+        			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
+        			where(t2, 2) + 
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			.setLong("eventId", event.getUniqueId()).list()) {
+        		Long studentId = (Long)o[0];
+        		Meeting meeting = (Meeting)o[1];
+        		List<Meeting> meetings = conflicts.get(studentId);
+        		if (meetings == null) {
+        			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+        		}
+        		meetings.add(meeting);
+        	}
+        }
+        
+    	// examination events
+        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            			"select s1.student.uniqueId, m1" +
+            			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, CourseEvent e2 inner join e2.meetings m2 inner join e2.relatedCourses o2, StudentClassEnrollment s2" +
+            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
+            			where(t1, 1) + where(t2, 2) +
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+            			.setLong("eventId", event.getUniqueId()).list()) {
+            		Long studentId = (Long)o[0];
+            		Meeting meeting = (Meeting)o[1];
+            		List<Meeting> meetings = conflicts.get(studentId);
+            		if (meetings == null) {
+            			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+            		}
+            		meetings.add(meeting);
+            	}
+            }
+        }
+        
+    	// course events
+        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            			"select s1.student.uniqueId, m1" +
+            			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, CourseEvent e2 inner join e2.meetings m2 inner join e2.relatedCourses o2, StudentClassEnrollment s2" +
+            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
+            			where(t1, 1) + where(t2, 2) +
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+            			.setLong("eventId", event.getUniqueId()).list()) {
+            		Long studentId = (Long)o[0];
+            		Meeting meeting = (Meeting)o[1];
+            		List<Meeting> meetings = conflicts.get(studentId);
+            		if (meetings == null) {
+            			meetings = new ArrayList<Meeting>(); conflicts.put(studentId, meetings);
+            		}
+            		meetings.add(meeting);
+            	}
+            }
+        }
+    	
+    	return conflicts;
 	}
 }

@@ -53,7 +53,6 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 	private static DateTimeFormat sDateFormatShort = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
 	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
 	
-	private int iColumnSection, iColumnPublishedTime, iColumnAllocatedTime, iColumnSetupTime, iColumnTeardownTime, iColumnMainContact, iColumnEnrollment, iColumnLimit;
 	private boolean iShowMainContact = false;
 
 	public EventTable() {
@@ -191,7 +190,6 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 
 		UniTimeTableHeader hSection = new UniTimeTableHeader(MESSAGES.colSection(), HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hSection);
-		iColumnSection = header.size();
 
 		UniTimeTableHeader hType = new UniTimeTableHeader(MESSAGES.colType());
 		header.add(hType);
@@ -201,34 +199,30 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		
 
 		UniTimeTableHeader hTimePub = new UniTimeTableHeader(MESSAGES.colPublishedTime()); 
-		iColumnPublishedTime = header.size();
 		header.add(hTimePub);
 		UniTimeTableHeader hTimeAll = new UniTimeTableHeader(MESSAGES.colAllocatedTime()); 
-		iColumnAllocatedTime = header.size();
 		header.add(hTimeAll);
 		UniTimeTableHeader hTimeSetup = new UniTimeTableHeader(MESSAGES.colSetupTimeShort(), HasHorizontalAlignment.ALIGN_RIGHT); 
-		iColumnSetupTime = header.size();
 		header.add(hTimeSetup);
 		UniTimeTableHeader hTimeTeardown = new UniTimeTableHeader(MESSAGES.colTeardownTimeShort(), HasHorizontalAlignment.ALIGN_RIGHT); 
-		iColumnTeardownTime = header.size();
 		header.add(hTimeTeardown);
 
 		UniTimeTableHeader hLocation = new UniTimeTableHeader(MESSAGES.colLocation());
 		header.add(hLocation);
 		
+		UniTimeTableHeader hCapacity = new UniTimeTableHeader(MESSAGES.colCapacity());
+		header.add(hCapacity);
+
 		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment(), HasHorizontalAlignment.ALIGN_RIGHT);
-		iColumnEnrollment = header.size();
 		header.add(hEnrollment);
 
 		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colLimit(), HasHorizontalAlignment.ALIGN_RIGHT);
-		iColumnLimit = header.size();
 		header.add(hLimit);
 
 		UniTimeTableHeader hSponsor = new UniTimeTableHeader(MESSAGES.colSponsorOrInstructor());
 		header.add(hSponsor);
 
 		UniTimeTableHeader hContact = new UniTimeTableHeader(MESSAGES.colMainContact());
-		iColumnMainContact = header.size();
 		header.add(hContact);
 
 		UniTimeTableHeader hApproval = new UniTimeTableHeader(MESSAGES.colApproval());
@@ -236,12 +230,13 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 
 		addRow(null, header);
 		
-		addHideOperation(hEnrollment, EventFlag.SHOW_ENROLLMENT);
-		addHideOperation(hLimit, EventFlag.SHOW_LIMIT);
 		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME);
 		addHideOperation(hTimeAll, EventFlag.SHOW_ALLOCATED_TIME);
 		addHideOperation(hTimeSetup, EventFlag.SHOW_SETUP_TIME);
 		addHideOperation(hTimeTeardown, EventFlag.SHOW_TEARDOWN_TIME);
+		addHideOperation(hCapacity, EventFlag.SHOW_CAPACITY);
+		addHideOperation(hEnrollment, EventFlag.SHOW_ENROLLMENT);
+		addHideOperation(hLimit, EventFlag.SHOW_LIMIT);
 		addHideOperation(hContact, EventFlag.SHOW_MAIN_CONTACT);
 		
 		addSortByOperation(hName, createComparator(EventSortBy.NAME));
@@ -253,6 +248,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		addSortByOperation(hTimeSetup, createComparator(EventSortBy.SETUP_TIME));
 		addSortByOperation(hTimeTeardown, createComparator(EventSortBy.TEARDOWN_TIME));
 		addSortByOperation(hLocation, createComparator(EventSortBy.LOCATION));
+		addSortByOperation(hCapacity, createComparator(EventSortBy.CAPACITY));
 		addSortByOperation(hEnrollment, createComparator(EventSortBy.ENROLLMENT));
 		addSortByOperation(hLimit, createComparator(EventSortBy.LIMIT));
 		addSortByOperation(hSponsor, createComparator(EventSortBy.SPONSOR));
@@ -310,14 +306,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			row.add(new HTML(name, false));
 			row.add(new NumberCell(section));
 			row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
-			if (!isColumnVisible(iColumnSection)) setColumnVisible(iColumnSection, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 		} else {
 			row.add(new HTML(event.getName()));
 			row.add(new HTML("&nbsp;"));
 			row.add(new Label(event.getType().getAbbreviation(), false));
 		}
 
-		String[] mtgs = new String[] {"", "", "", "", "", ""};
+		String[] mtgs = new String[] {"", "", "", "", "", "", ""};
 		String approval = "", prevApproval = null;
 		String[] prev = null;
 		boolean prevPast = false;
@@ -328,7 +324,8 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 					MeetingTable.allocatedTime(m.getMeetings().first()),
 					String.valueOf(m.getMeetings().first().getStartOffset()),
 					String.valueOf(- m.getMeetings().first().getEndOffset()),
-					m.getLocationNameWithHint()
+					m.getLocationNameWithHint(),
+					(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : "")
 					};
 			for (int i = 0; i < mtgs.length; i++) {
 				mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i].equals(mtg[i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
@@ -340,7 +337,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
 		}
 		for (int i = 0; i < mtgs.length; i++) {
-			if (i == 3 || i == 4)
+			if (i == 3 || i == 4 || i == 6)
 				row.add(new NumberCell(mtgs[i]));
 			else
 				row.add(new HTML(mtgs[i], false));
@@ -348,14 +345,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		
 		if (event.hasEnrollment() && iShowMainContact) {
 			row.add(new NumberCell(event.getEnrollment().toString()));
-			if (!isColumnVisible(iColumnEnrollment)) setColumnVisible(iColumnEnrollment, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
 
 		if (event.hasMaxCapacity() && iShowMainContact) {
 			row.add(new NumberCell(event.getMaxCapacity().toString()));
-			if (!isColumnVisible(iColumnLimit)) setColumnVisible(iColumnLimit, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
@@ -423,7 +420,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			row.add(new HTML(name, false));
 			row.add(new NumberCell(section));
 			row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
-			if (!isColumnVisible(iColumnSection)) setColumnVisible(iColumnSection, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 		} else {
 			row.add(new HTML(event.getName()));
 			row.add(new HTML("&nbsp;"));
@@ -461,14 +458,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		
 		if (event.hasEnrollment() && iShowMainContact) {
 			row.add(new NumberCell(event.getEnrollment().toString()));
-			if (!isColumnVisible(iColumnEnrollment)) setColumnVisible(iColumnEnrollment, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
 
 		if (event.hasMaxCapacity() && iShowMainContact) {
 			row.add(new NumberCell(event.getMaxCapacity().toString()));
-			if (!isColumnVisible(iColumnLimit)) setColumnVisible(iColumnLimit, true);
+			if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
@@ -495,14 +492,15 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 	
 	public void resetColumnVisibility() {
 		setColumnVisible(0, false);
-		setColumnVisible(iColumnSection, false);
-		setColumnVisible(iColumnPublishedTime, EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
-		setColumnVisible(iColumnAllocatedTime, EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
-		setColumnVisible(iColumnSetupTime, EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
-		setColumnVisible(iColumnTeardownTime, EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
-		setColumnVisible(iColumnMainContact, iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT));
-		setColumnVisible(iColumnLimit, iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
-		setColumnVisible(iColumnEnrollment, iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));		
+		setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
+		setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
+		setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT));
+		setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
+		setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
+		setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
 	}
 	
 	public void populateTable(List<EventInterface> events, MeetingFilter filter, boolean showMainContact) {
@@ -515,7 +513,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 	}
 	
 	public static enum EventSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
 	}
 	
 	protected void addSortByOperation(final UniTimeTableHeader header, final Comparator<EventInterface[]> comparator) {
@@ -560,6 +558,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 				case SHOW_LIMIT:
 				case SHOW_ENROLLMENT:
 				case SHOW_MAIN_CONTACT:
+				case SHOW_CAPACITY:
 					return iShowMainContact;
 				default:
 					return true;
@@ -571,6 +570,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML()) : MESSAGES.opShow(header.getHTML()); }
 		};
 		getHeader(null).addOperation(op);
+		getHeader(MESSAGES.colName()).addOperation(ifNotSelectable(op));
 		switch (flag) {
 		case SHOW_ALLOCATED_TIME:
 		case SHOW_PUBLISHED_TIME:
@@ -581,21 +581,42 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			getHeader(MESSAGES.colSetupTimeShort()).addOperation(op);
 			getHeader(MESSAGES.colTeardownTimeShort()).addOperation(op);
 			break;
+		case SHOW_CAPACITY:
+		case SHOW_LIMIT:
+		case SHOW_ENROLLMENT:
+			getHeader(MESSAGES.colLocation()).addOperation(op);
+			header.addOperation(op);
+			break;
+		case SHOW_MAIN_CONTACT:
+			getHeader(MESSAGES.colApproval()).addOperation(op);
+			header.addOperation(op);
+			break;
 		default:
 			header.addOperation(op);
 		}
 	}
 	
-	private UniTimeTableHeader getHeader(String name) {
-		if (getRowCount() <= 0) return null;
-		if (name == null) return (UniTimeTableHeader)getWidget(0, 0);
-		for (int i = 0; i < getCellCount(0); i++) {
-			UniTimeTableHeader w = (UniTimeTableHeader)getWidget(0, i);
-			if (w.getHTML().equals(name)) return w;
-		}
-		return null;
+	private Operation ifNotSelectable(final Operation op) {
+		return new Operation() {
+			@Override
+			public void execute() {
+				op.execute();
+			}
+			@Override
+			public String getName() {
+				return op.getName();
+			}
+			@Override
+			public boolean isApplicable() {
+				return op.isApplicable() && !isColumnVisible(getHeader(null).getColumn());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return op.hasSeparator();
+			}
+		};
 	}
-	
+		
 	protected Comparator<EventInterface[]> createComparator(final EventSortBy sortBy) {
 		return new Comparator<EventInterface[]>() {
 			@Override
@@ -675,6 +696,10 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			break;
 		case LOCATION:
 			cmp = compareMeetings(o1, o2, MeetingsSortBy.LOCATION);
+			if (cmp != 0) return cmp;
+			break;
+		case CAPACITY:
+			cmp = compareMeetings(o1, o2, MeetingsSortBy.CAPACITY);
 			if (cmp != 0) return cmp;
 			break;
 		case SPONSOR:
