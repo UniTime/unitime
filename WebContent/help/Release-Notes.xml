@@ -111,6 +111,16 @@
 				<line>If changed, same values must be set on the solver register (Tomcat) side and on the remote server side!</line>
 			</description>
 		</item>
+		<item>
+			<name>Query Log, Online Sectioning Log</name>
+			<description>
+				<line>Added an ability to limit the number of messages in the queue waiting to be persisted:
+					<line>Query Log: unitime.query.log.limit</line>
+					<line>Online Sectioning Log: unitime.sectioning.log.limit</line>
+					<line>Defaults to 5000 messages, no limit is imposed when set to 0.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver Update</title>
