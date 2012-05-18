@@ -410,6 +410,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No events found for {0} in {1}.")
 	String failedNoEvents(String name, String session);
 	
+	@DefaultMessage("Failed to load enrollments: {0}.")
+	String failedNoEnrollments(String message);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -419,6 +422,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No rooms are matching the filter.")
 	String errorNoMatchingRooms();
 	
+	@DefaultMessage("Wrong event id provided.")
+	String errorBadEventId();
+
 	@DefaultMessage("Room")
 	String resourceRoom();
 	

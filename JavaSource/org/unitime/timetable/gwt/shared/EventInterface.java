@@ -58,7 +58,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iSectionNumber = null;
 	private boolean iCanView = false;
 	private List<RelatedObjectInterface> iRelatedObjects = null;
-	private List<ClassAssignmentInterface.Enrollment> iEnrollments = null;
 	private Set<EventInterface> iConflicts;
 	
 	public static enum ResourceType implements IsSerializable {
@@ -205,13 +204,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	public List<RelatedObjectInterface> getRelatedObjects() { return iRelatedObjects; }
 	
-	public boolean hasEnrollments() { return iEnrollments != null && !iEnrollments.isEmpty(); }
-	public List<ClassAssignmentInterface.Enrollment> getEnrollments() { return iEnrollments; }
-	public void addEnrollment(ClassAssignmentInterface.Enrollment enrollment) {
-		if (iEnrollments == null) iEnrollments = new ArrayList<ClassAssignmentInterface.Enrollment>();
-		iEnrollments.add(enrollment);
-	}
-
 	public boolean isCanView() { return iCanView; }
 	public void setCanView(boolean canView) { iCanView = canView; }
 	
@@ -579,6 +571,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationNameWithHint() {
 	    	return iMeetings.first().getLocationNameWithHint();
 	    }
+	    
+	    public String getLocationCapacity() {
+	    	return (iMeetings.first().getLocation() == null ? "" : iMeetings.first().getLocation().getSize() == null ? "" : iMeetings.first().getLocation().getSize().toString());
+	    }
+
 	    
 	    public Date getApprovalDate() {
 	    	return iMeetings.first().getApprovalDate();
@@ -1437,20 +1434,16 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.events.GetEnrollmentsFromRelatedObjectsBackend")
-	public static class GetEnrollmentsFromRelatedObjectsRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
+	@GwtRpcImplementedBy("org.unitime.timetable.events.EventEnrollmentsBackend")
+	public static class EventEnrollmentsRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 		private List<RelatedObjectInterface> iRelatedObjects = null;
 		private List<MeetingInterface> iMeetings = null;
 		private Long iEventId;
 		
-		public GetEnrollmentsFromRelatedObjectsRpcRequest() {}
-		public GetEnrollmentsFromRelatedObjectsRpcRequest(List<RelatedObjectInterface> objects, List<MeetingInterface> meetings, Long eventId) {
-			iRelatedObjects = objects;
-			iMeetings = meetings;
-			iEventId = eventId;
-		}
+		public EventEnrollmentsRpcRequest() {}
 		
 		public boolean hasRelatedObjects() { return iRelatedObjects != null && !iRelatedObjects.isEmpty(); }
+		public void setRelatedObjects(List<RelatedObjectInterface> objects) { iRelatedObjects = objects; }
 		public void addRelatedObject(RelatedObjectInterface relatedObject) {
 			if (iRelatedObjects == null) iRelatedObjects = new ArrayList<RelatedObjectInterface>();
 			iRelatedObjects.add(relatedObject);
@@ -1458,6 +1451,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public List<RelatedObjectInterface> getRelatedObjects() { return iRelatedObjects; }
 		
 		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
+		public void setMeetings(List<MeetingInterface> meetings) { iMeetings = meetings; }
 		public void addMeeting(MeetingInterface meeting) {
 			if (iMeetings == null) iMeetings = new ArrayList<MeetingInterface>();
 			iMeetings.add(meeting);
@@ -1471,6 +1465,24 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String toString() {
 			return "objects=" + (hasRelatedObjects() ? iRelatedObjects.toString() : "NULL") +
 				", meetings=" + (hasMeetings() ? getMeetings().toString() : "NULL");
+		}
+		
+		public static EventEnrollmentsRpcRequest getEnrollmentsForEvent(Long eventId) {
+			EventEnrollmentsRpcRequest request = new EventEnrollmentsRpcRequest();
+			request.setEventId(eventId);
+			return request;
+		}
+		
+		public static EventEnrollmentsRpcRequest getEnrollmentsForRelatedObjects(List<RelatedObjectInterface> objects, List<MeetingInterface> meetings, Long eventId) {
+			EventEnrollmentsRpcRequest request = new EventEnrollmentsRpcRequest();
+			request.setRelatedObjects(objects);
+			request.setMeetings(meetings);
+			request.setEventId(eventId);
+			return request;
+		}
+		
+		public static EventEnrollmentsRpcRequest getEnrollmentsForRelatedObjects(List<RelatedObjectInterface> objects, List<MeetingInterface> meetings) {
+			return getEnrollmentsForRelatedObjects(objects, meetings, null);
 		}
 	}
 }

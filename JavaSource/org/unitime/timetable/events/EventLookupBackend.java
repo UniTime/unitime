@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
@@ -720,7 +721,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				    		}
 				    		courses.remove(correctedOffering);
 				    		event.addCourseName(correctedOffering.getCourseName());
-				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
 				    		if (clazz.getClassSuffix(correctedOffering) == null) {
@@ -827,7 +828,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					meeting.setPast(m.getStartTime().before(now));
-					if (!request.getEventFilter().hasOption("user")) {
+					if (!request.getEventFilter().hasOption("user") || meeting.isPast() || (event.getType() != EventType.Special && event.getType() != EventType.Course)) {
 						meeting.setCanEdit(false);
 						meeting.setCanApprove(false);
 					} else {
@@ -1188,7 +1189,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						    		}
 						    		courses.remove(correctedOffering);
 						    		event.addCourseName(correctedOffering.getCourseName());
-						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 						    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 						    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
 						    		if (clazz.getClassSuffix(correctedOffering) == null) {
