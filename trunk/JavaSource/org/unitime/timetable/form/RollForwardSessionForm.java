@@ -200,7 +200,8 @@ public class RollForwardSessionForm extends ActionForm {
 			}
 			if (getClassPrefsAction() != null 
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
-					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)){
+					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)
+					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
 				errors.add("invalidClassAction", new ActionMessage("errors.generic", "Invalid class preference roll forward action:  " + getClassPrefsAction()));			
 			}
 			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Course Offerings", new ArrayList());
