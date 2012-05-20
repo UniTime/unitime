@@ -151,6 +151,9 @@
 			<tr><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
 			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Class Level Preference Options:</td><td style="padding-top: 20px;"><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
 			<tr><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
+			<tt:propertyEquals name="unitime.rollforward.allowClassPrefs" value="true">
+				<tr><td></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward class level preferences</html:radio></td></tr>
+			</tt:propertyEquals>
 			</table>
 			</td>
 		</tr>
