@@ -135,6 +135,7 @@ public class SessionRollForward {
 	private boolean subpartLocationRollForward;
 	
 	private boolean classPrefsPushUp;
+	private boolean classRollForward;
 
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
@@ -164,10 +165,16 @@ public class SessionRollForward {
 	public void setClassPrefRollForwardParameter(String classPrefsAction){
 		if (classPrefsAction == null || classPrefsAction.equalsIgnoreCase(DO_NOT_ROLL_ACTION)){
 			classPrefsPushUp = false;
+			classRollForward = false;
 		} else if (classPrefsAction.equalsIgnoreCase(PUSH_UP_ACTION)){
 			classPrefsPushUp = true;
+			classRollForward = false;
+		} else if (classPrefsAction.equalsIgnoreCase(ROLL_PREFS_ACTION)){
+			classRollForward = true;
+			classPrefsPushUp = false;
 		} else {
 			classPrefsPushUp = false;
+			classRollForward = false;
 		}
 	}
 	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
@@ -921,7 +928,7 @@ public class SessionRollForward {
 	}
 	
 	private void createToBuildingPref(BuildingPref fromBuildingPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations, boolean isExamPref) throws Exception{
-		if (fromPrefGroup instanceof Class_) return;
+		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		BuildingPref toBuildingPref = null;
 		Building toBuilding = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
 		if (toBuilding != null){
@@ -960,7 +967,7 @@ public class SessionRollForward {
 		}
 		if (fromPrefGroup.getBuildingPreferences() != null 
 				&& !fromPrefGroup.getBuildingPreferences().isEmpty() 
-				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
 			if (!isExamPref && locations == null){
@@ -1006,7 +1013,7 @@ public class SessionRollForward {
 	}
 	
 	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations){
-		if (fromPrefGroup instanceof Class_) return;
+		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomPref toRoomPref = new RoomPref();
 		if (fromRoomPref.getRoom() instanceof Room) {
 			Room fromRoom = (Room) fromRoomPref.getRoom();
@@ -1071,7 +1078,7 @@ public class SessionRollForward {
 		Set locations = null;
 		if (fromPrefGroup.getRoomPreferences() != null 
 				&& !fromPrefGroup.getRoomPreferences().isEmpty() 
-				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
 			if (locations != null && locations.size() >0 ){					
@@ -1116,7 +1123,7 @@ public class SessionRollForward {
 	}
 	
 	private void createToRoomFeaturePref(RoomFeaturePref fromRoomFeaturePref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup instanceof Class_) return;
+		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
 		if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
 			GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(toSession, fromRoomFeaturePref.getRoomFeature().getLabel());
@@ -1155,7 +1162,7 @@ public class SessionRollForward {
 	protected void rollForwardRoomFeaturePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup.getRoomFeaturePreferences() != null 
 				&& !fromPrefGroup.getRoomFeaturePreferences().isEmpty() 
-				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
 			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
 				createToRoomFeaturePref((RoomFeaturePref) it.next(), fromPrefGroup, toPrefGroup, toSession);
@@ -1194,7 +1201,7 @@ public class SessionRollForward {
 	}
 	
 	private void createToRoomGroupPref(RoomGroupPref fromRoomGroupPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup instanceof Class_) return;
+		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomGroupPref toRoomGroupPref = new RoomGroupPref();
 		RoomGroup toDefaultRoomGroup = RoomGroup.getGlobalDefaultRoomGroup(toSession);
 		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup() && toDefaultRoomGroup != null){
@@ -1237,7 +1244,7 @@ public class SessionRollForward {
 	protected void rollForwardRoomGroupPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup.getRoomGroupPreferences() != null 
 				&& !fromPrefGroup.getRoomGroupPreferences().isEmpty() 
-				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
 			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
 				createToRoomGroupPref((RoomGroupPref) it.next(), fromPrefGroup, toPrefGroup, toSession);
@@ -1278,7 +1285,7 @@ public class SessionRollForward {
 	protected void rollForwardTimePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup.getTimePreferences() != null 
 				&& !fromPrefGroup.getTimePreferences().isEmpty() 
-				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
@@ -1391,7 +1398,7 @@ public class SessionRollForward {
 	}
 
 	protected void rollForwardDistributionPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, org.hibernate.Session hibSession){
-		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty() && !(fromPrefGroup instanceof Class_)){
+		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty() && (!(fromPrefGroup instanceof Class_) || isClassRollForward())){
 			DistributionObject fromDistObj = null;
 			DistributionObject toDistObj = null;
 			DistributionPref fromDistributionPref = null;
@@ -2364,6 +2371,10 @@ public class SessionRollForward {
 	 */
 	public boolean isClassPrefsPushUp() {
 		return classPrefsPushUp;
+	}
+	
+	public boolean isClassRollForward() {
+		return classRollForward;
 	}
 
 }

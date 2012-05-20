@@ -274,7 +274,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}	
 	}
 	
-	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession){
+	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession, org.hibernate.Session hibSession) throws Exception{
 		Class_ toClass = new Class_();
 		toClass.setDisplayInScheduleBook(fromClass.isDisplayInScheduleBook());
 		toClass.setDisplayInstructor(fromClass.isDisplayInstructor());
@@ -296,6 +296,14 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				toDp = fromClass.getDatePattern().findCloseMatchDatePatternInSession(toSession);
 			}
 			toClass.setDatePattern(toDp);
+		}
+		if (isClassRollForward()) {
+			rollForwardTimePrefs(fromClass, toClass, toSession);
+			rollForwardBuildingPrefs(fromClass, toClass, toSession);
+			rollForwardRoomPrefs(fromClass, toClass, toSession);
+			rollForwardRoomGroupPrefs(fromClass, toClass, toSession);
+			rollForwardRoomFeaturePrefs(fromClass, toClass, toSession);
+			rollForwardDistributionPrefs(fromClass, toClass, toSession, hibSession);
 		}
 
 		return(toClass);
@@ -340,7 +348,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			Class_ toClass = null;
 			for (Iterator it = fromSubpart.getClasses().iterator(); it.hasNext();){
 				fromClass = (Class_) it.next();
-				toClass = rollForwardClass(fromClass, toSubpart, toSession);
+				toClass = rollForwardClass(fromClass, toSubpart, toSession, hibSession);
 				RollForwardClass rfc = new RollForwardClass();
 				rfc.setToClass(toClass);
 				rfc.setFromClass(fromClass);
