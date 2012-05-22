@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2011 - 2012, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.gwt.client.test;
 
 import java.util.ArrayList;
@@ -6,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -71,7 +91,8 @@ public class OnlineSectioningTest extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
-				LoadingWidget.getInstance().fail(caught.getMessage());
+				LoadingWidget.getInstance().hide();
+				UniTimeNotifications.error(caught.getMessage());
 				ToolBox.checkAccess(caught);
 			}
 
@@ -79,14 +100,16 @@ public class OnlineSectioningTest extends Composite {
 			public void onSuccess(Boolean result) {
 				if (!result) {
 					iHeader.setErrorMessage("Only administrators can use this page.");
-					LoadingWidget.getInstance().fail("Only administrators can use this page.");
+					LoadingWidget.getInstance().hide();
+					UniTimeNotifications.error("Only administrators can use this page.");
 					return;
 				}
 				iSectioningService.listAcademicSessions(true, new AsyncCallback<Collection<String[]>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iSessions.setErrorHint(caught.getMessage());
-						LoadingWidget.getInstance().fail(caught.getMessage());
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(caught.getMessage());
 					}
 
 					@Override
@@ -120,20 +143,7 @@ public class OnlineSectioningTest extends Composite {
 		iCourses.getWidget().setStyleName("unitime-TextArea");
 		iCourses.getWidget().setVisibleLines(10);
 		iCourses.getWidget().setCharacterWidth(80);
-		iCourses.getWidget().setText(
-				"CS 11000\n" +
-				"CS 38100\n" +
-				"MA 26100\n" +
-				"CHNS 20100\n" +
-				"CS 54100\n" + 
-				"MUS 36100\n" +
-				"ENGL 10600\n" + 
-				"COM 11400F\n" +
-				"COM 10200\n" +
-				"CNIT 26700\n" +
-				"BIOL 11000\n" +
-				"BIOL 11100"
-				);
+		iCourses.getWidget().setText("");
 		iCourses.setHint("Courses to be used in the simulations.");
 		form.addRow("Courses:", iCourses);
 
@@ -141,16 +151,7 @@ public class OnlineSectioningTest extends Composite {
 		iStudents.getWidget().setStyleName("unitime-TextArea");
 		iStudents.getWidget().setVisibleLines(10);
 		iStudents.getWidget().setCharacterWidth(80);
-		iStudents.getWidget().setText("131545480\n" +
-				"131545487\n" +
-				"131545489\n" +
-				"131545491\n" +
-				"131545494\n" +
-				"131545496\n" +
-				"131545498\n" +
-				"131545501\n" +
-				"131545505\n" +
-				"131545507");
+		iStudents.getWidget().setText("");
 		iStudents.setHint("Students to be be enrolled in the simulated schedules (student unique ids), no enrollment will be made if empty.");
 		form.addRow("Students:", iStudents);
 		
