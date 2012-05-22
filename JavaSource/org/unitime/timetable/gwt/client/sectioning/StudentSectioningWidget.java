@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -424,7 +425,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						updateHistory();
 					}
 					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().fail(MESSAGES.enrollFailed(caught.getMessage()));
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(MESSAGES.enrollFailed(caught.getMessage()));
 						iErrorMessage.setHTML(MESSAGES.enrollFailed(caught.getMessage()));
 						iErrorMessage.setVisible(true);
 						updateHistory();
@@ -785,7 +787,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		} else {
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
-				LoadingWidget.getInstance().fail(MESSAGES.noSchedule());
+				LoadingWidget.getInstance().hide();
+			UniTimeNotifications.error(MESSAGES.noSchedule());
 		}
 	}
 	

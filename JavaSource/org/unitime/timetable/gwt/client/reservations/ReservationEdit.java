@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeEvent;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeHandler;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -489,7 +490,8 @@ public class ReservationEdit extends Composite {
 	}
 	
 	private void loadingFailed(Throwable caught) {
-		LoadingWidget.getInstance().fail("Load failed: " + caught.getMessage());
+		LoadingWidget.getInstance().hide();
+		UniTimeNotifications.error("Load failed: " + caught.getMessage());
 		iTitleAndButtons.setErrorMessage("Load failed: " + caught.getMessage());
 		for (EditFinishedHandler h: iEditFinishedHandlers)
 			h.onFailure(caught);

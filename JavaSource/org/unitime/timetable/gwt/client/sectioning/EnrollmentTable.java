@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -143,10 +144,10 @@ public class EnrollmentTable extends Composite {
 				showStudentSchedule(event.getData().getStudent(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
 						if (showHeader) {
-							LoadingWidget.getInstance().fail(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 						} else {
-							LoadingWidget.getInstance().hide();
 							iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 						}
 					}
@@ -286,7 +287,8 @@ public class EnrollmentTable extends Composite {
 						showStudentAssistant(student, new AsyncCallback<Boolean>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().fail(caught.getMessage());
+								LoadingWidget.getInstance().hide();
+								UniTimeNotifications.error(caught.getMessage());
 							}
 							@Override
 							public void onSuccess(Boolean result) {
@@ -306,7 +308,8 @@ public class EnrollmentTable extends Composite {
 							showChangeLog(student, new AsyncCallback<Boolean>() {
 								@Override
 								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().fail(caught.getMessage());
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught.getMessage());
 								}
 								@Override
 								public void onSuccess(Boolean result) {

@@ -31,6 +31,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -306,7 +307,8 @@ public class SectioningStatusPage extends Composite {
 							iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 								@Override
 								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().fail(caught.getMessage());
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught.getMessage());
 									setLoading(false);
 									iError.setHTML(caught.getMessage());
 									iError.setVisible(true);
@@ -330,7 +332,8 @@ public class SectioningStatusPage extends Composite {
 						
 						@Override
 						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().fail(caught.getMessage());
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught.getMessage());
 							setLoading(false);
 							iError.setHTML(caught.getMessage());
 							iError.setVisible(true);
@@ -341,7 +344,8 @@ public class SectioningStatusPage extends Composite {
 					iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().fail(caught.getMessage());
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught.getMessage());
 							setLoading(false);
 							iError.setHTML(caught.getMessage());
 							iError.setVisible(true);
@@ -1241,7 +1245,8 @@ public class SectioningStatusPage extends Composite {
 
 								@Override
 								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().fail(caught.getMessage());
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught.getMessage());
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
 										if (i != null && i.getStudent() != null && studentIds.contains(i.getStudent().getId())) {
@@ -1293,7 +1298,8 @@ public class SectioningStatusPage extends Composite {
 
 								@Override
 								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().fail(caught.getMessage());
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught.getMessage());
 								}
 
 								@Override
