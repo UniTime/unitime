@@ -204,6 +204,14 @@
 				<line>Meetings ending at midnight were ignored from room availability in course timetabling solver. This is now corrected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Student Conflicts</name>
+			<description>
+				<line>Fixed an issue with the number of student conflicts getting wrong (especially when on fly student sectioning is enabled).
+					<line>When the best solution is restored, the number of student conflicts needs to be recomputed (because the saved solution may had the students sectioned differently).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
